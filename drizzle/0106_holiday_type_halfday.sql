@@ -1,0 +1,5 @@
+-- Feature 2: Holiday type and half-day flag
+
+ALTER TABLE holidays
+  ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'PUBLIC' CHECK (type IN ('NATIONAL', 'PUBLIC', 'OPTIONAL')),
+  ADD COLUMN IF NOT EXISTS is_half_day BOOLEAN NOT NULL DEFAULT FALSE;
