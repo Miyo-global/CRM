@@ -1,0 +1,489 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1767162898184,
+      "tag": "0000_glamorous_amazoness",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768129123682,
+      "tag": "0001_typical_mockingbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768982869418,
+      "tag": "0002_flaky_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1738700000000,
+      "tag": "0003_add_overtime_and_auto_checkout",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773141065397,
+      "tag": "0004_brief_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773144395110,
+      "tag": "0005_foamy_dust",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773144609031,
+      "tag": "0006_magenta_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774072680000,
+      "tag": "0007_add_projects_crm_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774082460000,
+      "tag": "0008_add_deal_activities",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774090000000,
+      "tag": "0009_add_trigram_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774100000000,
+      "tag": "0010_add_leave_priority",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774110000000,
+      "tag": "0011_add_performance_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1774120000000,
+      "tag": "0012_add_soft_deletes",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1774130000000,
+      "tag": "0013_add_audit_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1774140000000,
+      "tag": "0014_add_webhook_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1774150000000,
+      "tag": "0015_fix_schema_drift",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1774160000000,
+      "tag": "0016_drop_workflows",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1774170000000,
+      "tag": "0017_add_totp_mfa",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1774180000000,
+      "tag": "0018_add_calendar_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1774190000000,
+      "tag": "0019_billing_payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1774200000000,
+      "tag": "0020_password_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1774210000000,
+      "tag": "0021_sessions_api_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1774220000000,
+      "tag": "0022_calendar_location",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1774230000000,
+      "tag": "0023_google_meet_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1774240000000,
+      "tag": "0024_fix_schema_drift",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1774250000000,
+      "tag": "0025_ticket_watchers",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1774260000000,
+      "tag": "0026_recruitment_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1774270000000,
+      "tag": "0027_rich_documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1774280000000,
+      "tag": "0028_performance_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1774290000000,
+      "tag": "0029_interview_rubric",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1774300000000,
+      "tag": "0030_follow_up_reminders",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1774300100000,
+      "tag": "0030_training_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1774310000000,
+      "tag": "0031_exit_management",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1774310100000,
+      "tag": "0031_sales_quotas",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1774320000000,
+      "tag": "0032_campaigns_enhance",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1774320100000,
+      "tag": "0032_recognition_kudos",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1774330000000,
+      "tag": "0033_commissions_and_approvals",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1774330100000,
+      "tag": "0033_compliance_reimbursements_loans",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1774340000000,
+      "tag": "0034_email_campaigns",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1774340100000,
+      "tag": "0034_referrals_certs_bgv",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1774350000000,
+      "tag": "0035_pip_okr_skills_surveys",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1774360000000,
+      "tag": "0036_remaining_hr_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1774370000000,
+      "tag": "0037_assessments_paths_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1774380000000,
+      "tag": "0038_optimization_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1774380100000,
+      "tag": "0038_performance_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1774390000000,
+      "tag": "0039_ensure_schema_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1774390001000,
+      "tag": "0103_leave_lop_auto_convert",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1774390002000,
+      "tag": "0104_appraisal_pip_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1774390003000,
+      "tag": "0105_payroll_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1774390004000,
+      "tag": "0106_holiday_type_halfday",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1774390005000,
+      "tag": "0107_attendance_holiday_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1774390006000,
+      "tag": "0108_holiday_work_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1774390007000,
+      "tag": "0109_comp_off_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1774390008000,
+      "tag": "0110_payroll_line_items_and_warnings",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1774390009000,
+      "tag": "0111_hwr_reason_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1774390010000,
+      "tag": "0112_crm_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1774390011000,
+      "tag": "0113_payroll_itemized_deductions",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1774390012000,
+      "tag": "0114_pf_esi_statutory",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1774390013000,
+      "tag": "0115_overtime_multipliers",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1774390014000,
+      "tag": "0116_chat_channel_pins",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1774390014500,
+      "tag": "0117_payroll_leaves_display",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1774390014750,
+      "tag": "0118_document_folders_and_org_variables",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1774390015000,
+      "tag": "0119_payroll_paid_actor_timestamps",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1774390015250,
+      "tag": "0120_handbook_enhancements",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1774390015500,
+      "tag": "0121_helpdesk_attachment_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1774390015750,
+      "tag": "0122_offer_letter_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1774390016000,
+      "tag": "0123_add_onboarding_completed",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1774390016250,
+      "tag": "0124_leave_hr_escalation_sent_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1774390016500,
+      "tag": "0125_document_types_sort_order_decimal",
+      "breakpoints": true
+    }
+  ]
+}
