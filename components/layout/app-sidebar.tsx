@@ -214,7 +214,7 @@ export function AppSidebar({
                   </span>
                 ) : (
                   <span className="text-[11px] text-sidebar-foreground/30 block mt-0.5 leading-none">
-                    Capital CRM
+                    CRM
                   </span>
                 )}
               </div>

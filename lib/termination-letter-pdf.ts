@@ -141,12 +141,10 @@ export async function generateTerminationLetterPdf(
       height: logoSize,
     });
     dt("MIYO GLOBAL", margin + 62, y - 18, bold, 26, NAVY);
-    dt("CAPITAL ADVISORS LLP", margin + 62, y - 38, regular, 11, NAVY);
   } else {
     page.drawRectangle({ x: margin, y: y - 52, width: 50, height: 50, color: GOLD });
-    dt("V", margin + 14, y - 40, bold, 30, WHITE);
+    dt("M", margin + 14, y - 40, bold, 30, WHITE);
     dt("MIYO GLOBAL", margin + 60, y - 18, bold, 26, NAVY);
-    dt("CAPITAL ADVISORS LLP", margin + 60, y - 38, regular, 11, NAVY);
   }
 
   y -= 78;
