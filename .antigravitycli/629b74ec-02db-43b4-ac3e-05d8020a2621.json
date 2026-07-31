@@ -1,0 +1,14 @@
+{
+  "id":  "629b74ec-02db-43b4-ac3e-05d8020a2621",
+  "name":  "/Users/tarunchintakunta/office/miyo-global-crm",
+  "projectResources":  {
+    "resources":  [
+      {
+        "gitFolder":  {
+          "folderUri":  "file:///Users/tarunchintakunta/office/miyo-global-crm",
+          "allowWrite":  true
+        }
+      }
+    ]
+  }
+}

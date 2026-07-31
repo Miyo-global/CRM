@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Test files
+coverage/
+playwright-report/
+test-results/
+tests/e2e/
+
+# Generated / compiled
+*.min.js
+*.min.css
+*.map
+*.d.ts
+
+# Config / lock files (low signal)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.lock
+
+# Environment & secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Media & binary files
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif
+*.webp
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.pdf
+*.docx
+*.xlsx
+
+# Logs & debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
+
+# Drizzle migrations (SQL noise)
+drizzle/
+
+# Storybook
+storybook-static/
