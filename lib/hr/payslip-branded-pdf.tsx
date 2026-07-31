@@ -191,7 +191,7 @@ function PayslipPdfPage({ vm, logoDataUri }: { vm: PayslipViewModel; logoDataUri
           <Image src={logoDataUri} style={styles.logoBox} />
         ) : (
           <View style={styles.logoFallback}>
-            <Text style={styles.logoLetter}>V</Text>
+            <Text style={styles.logoLetter}>M</Text>
           </View>
         )}
         <View style={styles.headerCenter}>

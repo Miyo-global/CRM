@@ -96,7 +96,7 @@ export function buildPayslipHtml(vm: PayslipViewModel, options: BuildPayslipHtml
   ${printBlock}
   <div class="page">
     <div class="header" style="border-bottom:1px solid #ccc;padding-bottom:12px;">
-      <div class="header-logo">${logoSvg || "V"}</div>
+      <div class="header-logo">${logoSvg || "M"}</div>
       <div class="header-company" style="flex:1;text-align:center;">
         <h1 style="font-size:15px;margin:0;text-decoration:underline;">PAYSLIP FOR THE MONTH OF ${esc(vm.monthLabel.toUpperCase())}</h1>
         <p style="font-size:11px;color:#555;margin-top:6px;">${esc(vm.orgFullName)}</p>
