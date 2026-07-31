@@ -1,0 +1,52 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-notifications",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/holiday-notifications",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/auto-checkout",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/auto-absent-leave",
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/short-hours-notifications",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-attendance-report",
+      "schedule": "0 9 * * 6"
+    },
+    {
+      "path": "/api/cron/weekly-ceo-recap",
+      "schedule": "0 10 * * 1"
+    },
+    {
+      "path": "/api/cron/monthly-expense-report",
+      "schedule": "0 9 1 * *"
+    },
+    {
+      "path": "/api/cron/monthly-leave-reset",
+      "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/appraisal-cycle-seed",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/appraisal-pip-reminders",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/close-expired-job-postings",
+      "schedule": "30 0 * * *"
+    }
+  ]
+}
