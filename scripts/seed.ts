@@ -2,6 +2,7 @@
 import * as dotenv from "dotenv";
 import { hash } from "bcryptjs";
 import { nanoid } from "nanoid";
+import { requireEmailEnv } from "./_guard";
 dotenv.config({ path: ".env" });
 
 async function main() {
@@ -31,7 +32,7 @@ async function main() {
   }
 
   // ─── CEO Account (single account) ───
-  const adminEmail = "tarunchintakunta@gmail.com";
+  const adminEmail = requireEmailEnv("SEED_ADMIN_EMAIL", "Email of the CEO/admin account to seed.");
   const existingAdmin = await db.query.users.findFirst({
     where: (u, { eq }) => eq(u.email, adminEmail),
   });

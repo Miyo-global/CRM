@@ -3,12 +3,13 @@
  * Run: pnpm exec tsx --env-file=.env scripts/send-recruitment-email-samples.ts
  */
 import { sendEmail } from "@/lib/email/sender";
+import { requireEmailEnv } from "./_guard";
 import {
   getRecruitmentHrEmail,
   type RecruitmentEmailEvent,
 } from "@/lib/email-templates/hr-recruitment";
 
-const TO = process.env.TEST_EMAIL_TO ?? "chintakuntatarun@gmail.com";
+const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the sample emails.");
 
 const SAMPLES: { event: RecruitmentEmailEvent; label: string }[] = [
   { event: "job_created", label: "Job created (draft)" },

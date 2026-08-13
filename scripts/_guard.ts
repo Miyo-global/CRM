@@ -32,6 +32,24 @@ export function assertLocalDatabase(
   }
 }
 
+/**
+ * Read a required address from the environment.
+ *
+ * Seed and preview scripts write real rows and send real mail, so they must
+ * never fall back to a hardcoded personal inbox — an unset value fails loudly
+ * instead of silently targeting whoever happened to build the script.
+ */
+export function requireEmailEnv(varName: string, hint?: string): string {
+  const value = process.env[varName]?.trim();
+  if (!value) {
+    console.error(`FATAL: ${varName} is required but not set.`);
+    if (hint) console.error(hint);
+    console.error(`Set it in .env, e.g. ${varName}=someone@yourcompany.com`);
+    process.exit(1);
+  }
+  return value;
+}
+
 export async function confirmDestructive(phrase: string): Promise<void> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const answer = await new Promise<string>((resolve) =>

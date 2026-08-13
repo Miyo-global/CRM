@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import { requireEmailEnv } from "./_guard";
 dotenv.config({ path: ".env" });
 
 async function main() {
@@ -6,7 +7,7 @@ async function main() {
   const { users, organizationMembers, organizations } = await import("../lib/db/schema");
   const { eq } = await import("drizzle-orm");
   try {
-    const user = await db.query.users.findFirst({ where: eq(users.email, "chintakuntatarun@gmail.com") });
+    const user = await db.query.users.findFirst({ where: eq(users.email, requireEmailEnv("TARGET_EMAIL", "Email of the user to inspect.")) });
     console.log("user:", user?.id, user?.email, user?.name);
 
     if (user) {

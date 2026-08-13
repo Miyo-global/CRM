@@ -3,6 +3,7 @@
  * Run: pnpm exec tsx --env-file=.env scripts/send-candidate-stage-samples.ts
  */
 import { sendEmail } from "@/lib/email/sender";
+import { requireEmailEnv } from "./_guard";
 import {
   getApplicationConfirmationEmail,
   getCandidateShortlistedEmail,
@@ -13,10 +14,7 @@ import {
   buildOfferDecisionConfirmationHtml,
 } from "@/lib/email-templates/hr-recruitment";
 
-const RECIPIENTS = [
-  "chintakuntatarun@gmail.com",
-  "hr@miyoglobal.com",
-];
+const RECIPIENTS = [requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the candidate-stage samples.")];
 
 const COMPANY = "Miyo Global";
 

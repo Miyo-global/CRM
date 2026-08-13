@@ -4,8 +4,9 @@
  * Override: TEST_EMAIL_TO=you@example.com
  */
 import { sendEmail } from "@/lib/email/sender";
+import { requireEmailEnv } from "./_guard";
 
-const TO = process.env.TEST_EMAIL_TO ?? "tarunchintakunta@gmail.com";
+const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the sample emails.");
 
 const vars: Record<string, string> = {
   name: "Priya Sharma (QA test)",

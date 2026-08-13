@@ -20,12 +20,11 @@ async function main() {
       throw new Error("No organization found. Seed org first.");
     }
 
-    const creatorEmail =
-      process.env.SEED_CREATED_BY_EMAIL ??
-      process.env.TEST_EMAIL_TO ??
-      "tarunchintakunta@gmail.com";
+    const creatorEmail = process.env.SEED_CREATED_BY_EMAIL ?? process.env.TEST_EMAIL_TO;
     const creator =
-      (await db.query.users.findFirst({ where: (u, { eq: e }) => e(u.email, creatorEmail) })) ??
+      (creatorEmail
+        ? await db.query.users.findFirst({ where: (u, { eq: e }) => e(u.email, creatorEmail) })
+        : null) ??
       (await db.query.users.findFirst({ orderBy: (u, { desc }) => desc(u.createdAt) }));
 
     const createdBy = creator?.id ?? null;

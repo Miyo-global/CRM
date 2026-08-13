@@ -396,9 +396,11 @@ async function main() {
 
   if (!org) throw new Error("No organisation found.");
 
-  const creator = await db.query.users.findFirst({
-    where: (u, { eq: e }) => e(u.email, "chintakuntatarun@gmail.com"),
-  }) ?? await db.query.users.findFirst();
+  const creatorEmail = process.env.SEED_CREATED_BY_EMAIL ?? process.env.TEST_EMAIL_TO;
+  const creator =
+    (creatorEmail
+      ? await db.query.users.findFirst({ where: (u, { eq: e }) => e(u.email, creatorEmail) })
+      : null) ?? (await db.query.users.findFirst());
 
   if (CLEAR) {
     await db.delete(interviewQuestions).where(eq(interviewQuestions.orgId, org.id));

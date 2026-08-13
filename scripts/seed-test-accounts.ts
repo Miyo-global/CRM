@@ -6,38 +6,41 @@ import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { assertNotProduction, assertLocalDatabase, generatePassword } from "./_guard";
 
+/** Domain for the generated demo logins. Override with SEED_TEST_DOMAIN. */
+const TEST_DOMAIN = process.env.SEED_TEST_DOMAIN?.trim() || "miyoglobal.test";
+
 const TEST_ACCOUNTS = [
   {
-    email: "tarunchintakunta@gmail.com",
-    firstName: "Tarun",
-    lastName: "Chintakunta",
+    email: `ceo@${TEST_DOMAIN}`,
+    firstName: "Demo",
+    lastName: "CEO",
     role: "CEO",
     designation: "Chief Executive Officer",
   },
   {
-    email: "chintakuntatarun@gmail.com",
-    firstName: "Tarun",
+    email: `hr@${TEST_DOMAIN}`,
+    firstName: "Demo",
     lastName: "HR",
     role: "HR",
     designation: "HR Manager",
   },
   {
-    email: "prazithchinna1210@gmail.com",
-    firstName: "Prazith",
-    lastName: "Chinna",
+    email: `sales@${TEST_DOMAIN}`,
+    firstName: "Demo",
+    lastName: "Sales",
     role: "SALES",
     designation: "Sales Representative",
   },
   {
-    email: "prajitkumar1904@gmail.com",
-    firstName: "Prajit",
-    lastName: "Kumar",
+    email: `support@${TEST_DOMAIN}`,
+    firstName: "Demo",
+    lastName: "Support",
     role: "CUSTOMER_SUPPORT",
     designation: "CRM Executive",
   },
   {
-    email: "tarun@miyoglobal.com",
-    firstName: "Tarun",
+    email: `marketing@${TEST_DOMAIN}`,
+    firstName: "Demo",
     lastName: "Marketing",
     role: "DIGITAL_MARKETING",
     designation: "Digital Marketing Lead",
