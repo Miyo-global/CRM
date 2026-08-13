@@ -992,7 +992,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
 
           <SectionCard id="application" n={8} title="Application Form Fields">
             <p className="text-xs text-muted-foreground mb-4">
-              Choose which fields candidates must fill in, can optionally fill, or won't see at all. Name and email are always required.
+              Choose which fields candidates must fill in, can optionally fill, or won&apos;t see at all. Name and email are always required.
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {APPLICATION_FIELD_DEFS.map(({ key, label }) => {

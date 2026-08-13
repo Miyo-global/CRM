@@ -221,7 +221,7 @@ export default function HrAssetsPage() {
   }, [editAsset, status, assignedTo]);
 
   const filteredItems = useMemo(() => {
-    let rows = statusFilter ? items.filter((a) => a.status === statusFilter) : items;
+    const rows = statusFilter ? items.filter((a) => a.status === statusFilter) : items;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((a) => {

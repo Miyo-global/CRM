@@ -668,7 +668,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                   </SelectContent>
                 </Select>
                 <p id={colorFieldDescId} className="text-xs text-muted-foreground leading-snug">
-                  Sets the fill color of this event's block on the calendar grid so it's easy to spot.
+                  Sets the fill color of this event&apos;s block on the calendar grid so it&apos;s easy to spot.
                 </p>
               </div>
             </div>
