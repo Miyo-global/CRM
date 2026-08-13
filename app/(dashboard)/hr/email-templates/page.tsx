@@ -808,7 +808,7 @@ function EmailTemplatesContent() {
               </p>
               <Textarea
                 className="text-xs min-h-[80px] font-mono"
-                placeholder={"tarun@gmail.com\nother@company.com"}
+                placeholder={"someone@gmail.com\nother@company.com"}
                 value={customEmailsRaw}
                 onChange={(e) => setCustomEmailsRaw(e.target.value)}
               />
