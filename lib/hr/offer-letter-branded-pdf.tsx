@@ -1,6 +1,7 @@
-import path from "path";
 import fs from "fs/promises";
 import React from "react";
+import { LOGO_PNG_PATH } from "@/lib/constants/paths";
+import { COMPANY_ADDRESS, COMPANY_PHONE, SUPPORT_EMAIL } from "@/lib/constants/company";
 import {
   Document,
   Image,
@@ -130,17 +131,11 @@ const styles = StyleSheet.create({
 });
 
 async function loadLogoPngBase64(): Promise<string | null> {
-  const candidates = [
-    path.join(process.cwd(), "docs/word-docs/_assets/logo.png"),
-    path.join(process.cwd(), "public", "logo.png"),
-  ];
-  for (const p of candidates) {
-    try {
-      const buf = await fs.readFile(p);
-      return `data:image/png;base64,${buf.toString("base64")}`;
-    } catch {
-      /* try next */
-    }
+  try {
+    const buf = await fs.readFile(LOGO_PNG_PATH);
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    /* no logo available */
   }
   return null;
 }
@@ -236,9 +231,9 @@ function OfferLetterPage({
   title?: string;
   signatureBlock?: HrLetterSignatureBlock;
 }): React.ReactElement {
-  const email   = headerVm.orgEmail   ?? "support@miyoglobal.com";
-  const phone   = headerVm.orgPhone   ?? "+91 9063991881";
-  const address = headerVm.orgAddress ?? "Vijay Tech Park, 3rd Floor, Madhapur, HITEC City, Hyderabad 500081";
+  const email   = headerVm.orgEmail   ?? SUPPORT_EMAIL;
+  const phone   = headerVm.orgPhone   ?? COMPANY_PHONE;
+  const address = headerVm.orgAddress ?? COMPANY_ADDRESS;
 
   return (
     <Page size="A4" style={styles.page}>

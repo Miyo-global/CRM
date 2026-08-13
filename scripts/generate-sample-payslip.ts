@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { PAYSLIP_OUTPUT_DIR } from "@/lib/constants/paths";
 import { generatePayslipPdf } from "@/lib/payslip-pdf-core";
 import {
   manualPayslipBodyToPdfData,
@@ -58,7 +59,7 @@ async function main() {
   const pdfData = manualPayslipBodyToPdfData(body);
   const buffer = await generatePayslipPdf(pdfData);
 
-  const dir = path.join(process.cwd(), "generated", "payslips");
+  const dir = PAYSLIP_OUTPUT_DIR;
   await fs.mkdir(dir, { recursive: true });
   const filename = `sample-branded-${Date.now()}.pdf`;
   const filepath = path.join(dir, filename);

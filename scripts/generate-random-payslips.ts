@@ -1,6 +1,7 @@
 import "dotenv/config";
 import fs from "fs/promises";
 import path from "path";
+import { PAYSLIP_OUTPUT_DIR } from "@/lib/constants/paths";
 import { db } from "../lib/db";
 import {
   payrolls,
@@ -188,7 +189,7 @@ async function main() {
     process.exit(1);
   }
 
-  const outDir = path.join(process.cwd(), "generated", "payslips", TARGET_MONTH);
+  const outDir = path.join(PAYSLIP_OUTPUT_DIR, TARGET_MONTH);
   await fs.mkdir(outDir, { recursive: true });
 
   const report: Record<string, unknown>[] = [];

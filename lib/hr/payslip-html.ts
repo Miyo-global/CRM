@@ -171,13 +171,18 @@ export function buildPayslipHtml(vm: PayslipViewModel, options: BuildPayslipHtml
 
 export async function loadLogoSvgForPayslip(): Promise<string> {
   const fs = await import("fs/promises");
-  const path = await import("path");
+  const { LOGO_SVG_PATH } = await import("@/lib/constants/paths");
   try {
-    const svgPath = path.join(process.cwd(), "public", "logo.svg");
-    const svgContent = await fs.readFile(svgPath, "utf-8");
-    return svgContent
-      .replace(/<\?xml[^?]*\?>/, "")
-      .replace(/viewBox="[^"]*"/, 'viewBox="0 0 180 180" width="54" height="54"');
+    const svgContent = await fs.readFile(LOGO_SVG_PATH, "utf-8");
+    // Resize via the root <svg> width/height only. The viewBox must be left
+    // alone — overriding it crops the artwork to that region instead of
+    // scaling it, and it differs between logo revisions.
+    return svgContent.replace(/<\?xml[^?]*\?>/, "").replace(/<svg\b[^>]*>/, (tag) =>
+      tag
+        .replace(/\swidth="[^"]*"/, "")
+        .replace(/\sheight="[^"]*"/, "")
+        .replace(/^<svg/, '<svg width="54" height="54"')
+    );
   } catch {
     return "";
   }

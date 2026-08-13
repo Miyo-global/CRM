@@ -2,8 +2,8 @@ import "server-only";
 
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import sharp from "sharp";
-import path from "path";
 import fs from "fs/promises";
+import { LOGO_SVG_PATH } from "@/lib/constants/paths";
 
 
 export interface TerminationLetterData {
@@ -69,8 +69,7 @@ let logoPngCache: Buffer | null = null;
 async function getLogoPng(size: number): Promise<Buffer> {
   if (logoPngCache && size === 60) return logoPngCache;
 
-  const svgPath = path.join(process.cwd(), "public", "logo.svg");
-  const svgBuffer = await fs.readFile(svgPath);
+  const svgBuffer = await fs.readFile(LOGO_SVG_PATH);
   const pngBuffer = await sharp(svgBuffer)
     .resize(size, size, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } })
     .png()
@@ -107,9 +106,7 @@ export async function generateTerminationLetterPdf(
     const logoPng = await getLogoPng(60);
     logoImage = await doc.embedPng(logoPng);
 
-    const watermarkPng = await sharp(
-      await fs.readFile(path.join(process.cwd(), "public", "logo.svg"))
-    )
+    const watermarkPng = await sharp(await fs.readFile(LOGO_SVG_PATH))
       .resize(280, 280, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } })
       .png()
       .toBuffer();

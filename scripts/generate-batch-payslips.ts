@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { PAYSLIP_OUTPUT_DIR } from "@/lib/constants/paths";
 import type { z } from "zod";
 import { generatePayslipPdf } from "@/lib/payslip-pdf-core";
 import {
@@ -247,7 +248,7 @@ const employees: EmployeeInput[] = [
 ];
 
 async function main() {
-  const dir = path.join(process.cwd(), "generated", "payslips");
+  const dir = PAYSLIP_OUTPUT_DIR;
   await fs.mkdir(dir, { recursive: true });
 
   const onlyIds = process.argv.slice(2).filter(Boolean);

@@ -1,6 +1,6 @@
-import path from "path";
 import fs from "fs/promises";
 import React, { type ReactNode } from "react";
+import { LOGO_PNG_PATH, LOGO_SVG_PATH } from "@/lib/constants/paths";
 import { Document, Image, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { PayslipViewModel } from "@/lib/hr/payslip-view-model";
 
@@ -145,22 +145,15 @@ const styles = StyleSheet.create({
 });
 
 async function loadLogoPngBase64(): Promise<string | null> {
-  const pngCandidates = [
-    path.join(process.cwd(), "docs/word-docs/_assets/logo.png"),
-    path.join(process.cwd(), "public", "logo.png"),
-  ];
-  for (const p of pngCandidates) {
-    try {
-      const buf = await fs.readFile(p);
-      return `data:image/png;base64,${buf.toString("base64")}`;
-    } catch {
-      /* try next */
-    }
+  try {
+    const buf = await fs.readFile(LOGO_PNG_PATH);
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    /* fall back to rasterising the SVG */
   }
-  const svgPath = path.join(process.cwd(), "public", "logo.svg");
   try {
     const sharp = (await import("sharp")).default;
-    const buf = await sharp(svgPath).resize(200, 200).png().toBuffer();
+    const buf = await sharp(LOGO_SVG_PATH).resize(200, 200).png().toBuffer();
     return `data:image/png;base64,${buf.toString("base64")}`;
   } catch {
     /* no logo available */

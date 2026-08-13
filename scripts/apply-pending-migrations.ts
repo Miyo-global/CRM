@@ -5,6 +5,7 @@
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { DRIZZLE_DIR } from "@/lib/constants/paths";
 import postgres from "postgres";
 import * as dotenv from "dotenv";
 
@@ -37,7 +38,6 @@ const TIMESTAMPS: Record<string, number> = {
   "0147_candidate_offer_ceo_approval": 1774390147000,
 };
 
-const DRIZZLE_DIR = join(process.cwd(), "drizzle");
 
 function hashFile(tag: string): string {
   const content = readFileSync(join(DRIZZLE_DIR, `${tag}.sql`), "utf-8");
