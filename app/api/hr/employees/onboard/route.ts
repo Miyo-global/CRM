@@ -58,7 +58,10 @@ export async function POST(req: NextRequest) {
       return err(minSalaryError, 400);
     }
 
-    const passwordHash = await hash(body.password || "Welcome@123", 12);
+    // No shared default: the employee sets their own password through the
+    // emailed setup link below, so an unsupplied password becomes an
+    // unguessable random one rather than a company-wide constant.
+    const passwordHash = await hash(body.password || nanoid(48), 12);
     const userId = randomUUID();
 
     let employeeId = normalizeEmployeeIdInput(body.employeeId);
