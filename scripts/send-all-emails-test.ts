@@ -68,9 +68,10 @@ import {
   sendLeaveStatusUpdateEmail,
   sendLeaveCancellationEmail,
 } from "@/lib/email/hr-leaves";
+import { requireEmailEnv } from "./_guard";
 
-const TO = process.env.TEST_EMAIL_TO ?? "tarun@miyoglobal.com";
-const NAME = "Tarun";
+const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the test emails.");
+const NAME = process.env.TEST_EMAIL_NAME ?? "Test User";
 const ACTOR = "QA Bot";
 const TODAY = new Date().toISOString().slice(0, 10);
 const NEXT_WEEK = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);

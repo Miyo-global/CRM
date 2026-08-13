@@ -1,6 +1,7 @@
 import { sendEmail } from "@/lib/email/sender";
+import { requireEmailEnv } from "./_guard";
 
-const RECIPIENTS = ["hr@miyoglobal.com", "tarun@miyoglobal.com"];
+const RECIPIENTS = [requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the performance notice test.")];
 const SUBJECT = "Notice Regarding Unsatisfactory Performance";
 const PERIOD_FROM = "17th February";
 const PERIOD_TO = "17th April";
