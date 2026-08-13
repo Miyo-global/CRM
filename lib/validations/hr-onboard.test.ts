@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { onboardEmployeeInputSchema } from "./hr";
-import { getMiyoGlobalEstablishedDate } from "@/lib/constants/company";
+import { getCompanyEstablishedDate } from "@/lib/constants/company";
 
 const validBase = {
   firstName: "John",
@@ -67,7 +67,7 @@ describe("onboardEmployeeInputSchema", () => {
   });
 
   it("rejects joining date before company establishment", () => {
-    const established = getMiyoGlobalEstablishedDate();
+    const established = getCompanyEstablishedDate();
     const before = new Date(established);
     before.setDate(before.getDate() - 1);
 

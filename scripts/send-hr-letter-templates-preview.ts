@@ -1,13 +1,15 @@
 /**
- * Generates all HR letter templates as PDFs and emails them one-by-one
- * to chintakuntatarun@gmail.com using that user's employee profile data.
+ * Generates all HR letter templates as PDFs and emails them one-by-one to
+ * TEST_EMAIL_TO, using that user's employee profile data.
  *
- * Run: ALLOW_REMOTE_DB=1 pnpm tsx scripts/send-hr-letter-templates-preview.ts
+ * Run: TEST_EMAIL_TO=you@example.com ALLOW_REMOTE_DB=1 pnpm tsx scripts/send-hr-letter-templates-preview.ts
  */
 import * as dotenv from "dotenv";
+import { requireEmailEnv } from "./_guard";
+import { COMPANY_ADDRESS } from "@/lib/constants/company";
 dotenv.config({ path: ".env" });
 
-const TO = "chintakuntatarun@gmail.com";
+const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the generated letter previews.");
 
 const EXTRA_VARS: Record<string, Record<string, string>> = {
   TERMINATION: {
@@ -60,8 +62,8 @@ async function main() {
     if (!employee) throw new Error(`No org membership found for ${TO} in org ${org.id}`);
 
     const empInput = {
-      firstName: employee.firstName ?? user.name?.split(" ")[0] ?? "Tarun",
-      lastName: employee.lastName ?? user.name?.split(" ").slice(1).join(" ") ?? "Chintakunta",
+      firstName: employee.firstName ?? user.name?.split(" ")[0] ?? "Employee",
+      lastName: employee.lastName ?? user.name?.split(" ").slice(1).join(" ") ?? "",
       employeeId: employee.employeeId ?? null,
       designation: employee.designation ?? null,
       departmentName: employee.department?.name ?? null,
@@ -72,7 +74,7 @@ async function main() {
     const orgAddress = addr
       ? [addr.line1, addr.line2, addr.city, addr.state, addr.country, addr.postalCode]
           .filter(Boolean).join(", ")
-      : "Vijay Tech Park, Madhapur, HITEC City, Hyderabad, Telangana 500081";
+      : COMPANY_ADDRESS;
 
     const templates = await db.query.offerLetterTemplates.findMany({
       where: and(
@@ -112,7 +114,7 @@ async function main() {
         html: `
           <div style="font-family:system-ui,sans-serif;max-width:560px;line-height:1.6;color:#333">
             <h2 style="color:#1e40af">${title}</h2>
-            <p>Hi Tarun,</p>
+            <p>Hi ${vars.employeeFirstName || "there"},</p>
             <p>Please find attached the <strong>${tmpl.name}</strong> letter template as a PDF preview.</p>
             <p>This is generated using your employee profile data from Miyo Global CRM.</p>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>

@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { onboardEmployeeInputSchema, isRoleAllowedForDepartment } from "@/lib/validations/hr";
-import { getMiyoGlobalEstablishedDate } from "@/lib/constants/company";
+import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ interface StepEmploymentProps {
 }
 
 export function StepEmployment({ form, departments, allDepartmentOptions, assignableRoles }: StepEmploymentProps) {
-  const companyEstablishedDate = useMemo(() => getMiyoGlobalEstablishedDate(), []);
+  const companyEstablishedDate = useMemo(() => getCompanyEstablishedDate(), []);
 
   const selectedDepartmentId = form.watch("departmentId");
   const selectedRole = form.watch("role");

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { COMPANY_ADDRESS } from "@/lib/constants/company";
 
 export const HR_LETTER_DOCUMENT_TYPES = [
   { value: "OFFER_LETTER",     label: "Offer Letter" },
@@ -59,7 +60,7 @@ export function buildHrLetterVars(
     date:              format(now, "dd MMMM yyyy"),
     generationDate:    format(now, "dd MMMM yyyy"),
     orgName:           org.name,
-    orgAddress:        org.address ?? "",
+    orgAddress:        org.address ?? COMPANY_ADDRESS,
     ...extra,
   };
 }
@@ -120,12 +121,14 @@ export const HR_LETTER_TOKEN_LEGEND: Record<string, readonly string[]> = {
     "{{designation}} — Designation / title of the receiving party",
     "{{date}} — Agreement date",
     "{{orgName}} — Disclosing party (organisation name)",
+    "{{orgAddress}} — Registered office of the disclosing party",
   ],
   NDA: [
     "{{employeeName}} — Full name of the receiving party",
     "{{designation}} — Designation / title of the receiving party",
     "{{date}} — Agreement date",
     "{{orgName}} — Disclosing party (organisation name)",
+    "{{orgAddress}} — Registered office of the disclosing party",
   ],
   RELIEVING: [
     "{{employeeName}} — Full name of the employee",
@@ -234,7 +237,7 @@ I sincerely thank the management for the opportunity given to work with {{orgNam
 
   NDA_SALES: `This Non-Disclosure Agreement ("Agreement") is entered into on this {{date}} by and between:
 
-Disclosing Party: {{orgName}}, a company incorporated under the Companies Act, 2013, having its registered office at Vijay Tech Park, 3rd Floor, D-1, Plot No 25, Doctor's Colony, Madhapur, HITEC City, Hyderabad, Telangana, India 500081 — hereinafter referred to as the "Disclosing Party".
+Disclosing Party: {{orgName}}, a company incorporated under the Companies Act, 2013, having its registered office at {{orgAddress}} — hereinafter referred to as the "Disclosing Party".
 
 Receiving Party: {{employeeName}}, who is employed by the Disclosing Party — hereinafter referred to as the "Receiving Party".
 
@@ -319,7 +322,7 @@ Date: {{date}}                          Date: _______________________`,
 
   NDA: `This Non-Disclosure Agreement ("Agreement") is entered into on this {{date}} by and between:
 
-Disclosing Party: {{orgName}}, a company incorporated under the Companies Act, 2013, having its registered office at Vijay Tech Park, 3rd Floor, D-1, Plot No 25, Doctor's Colony, Madhapur, HITEC City, Hyderabad, Telangana, India 500081 — hereinafter referred to as the "Disclosing Party".
+Disclosing Party: {{orgName}}, a company incorporated under the Companies Act, 2013, having its registered office at {{orgAddress}} — hereinafter referred to as the "Disclosing Party".
 
 Receiving Party: {{employeeName}}, employed as {{designation}} with the Disclosing Party — hereinafter referred to as the "Receiving Party".
 

@@ -6,7 +6,7 @@ import {
   expectedCycleEndDate,
 } from "@/lib/hr/performance-validation";
 import { isValidPhoneNumber } from "libphonenumber-js";
-import { getMiyoGlobalEstablishedDate } from "@/lib/constants/company";
+import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { bankDetailsSchema } from "@/lib/validations/bank-details";
 
 /**
@@ -319,7 +319,7 @@ function refineJoiningDateOptional(
 ) {
   if (!joiningDate) return;
 
-  const established = startOfCalendarDay(getMiyoGlobalEstablishedDate());
+  const established = startOfCalendarDay(getCompanyEstablishedDate());
   const establishedLabel = format(established, "MMMM d, yyyy");
   const joining = startOfCalendarDay(joiningDate);
 
@@ -667,7 +667,7 @@ export const onboardEmployeeInputSchema = z
   })
   .superRefine((data, ctx) => {
     const today = startOfCalendarDay(new Date());
-    const established = startOfCalendarDay(getMiyoGlobalEstablishedDate());
+    const established = startOfCalendarDay(getCompanyEstablishedDate());
     const establishedLabel = format(established, "MMMM d, yyyy");
 
     if (data.joiningDate) {

@@ -18,7 +18,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { DepartmentCombobox } from "@/components/hr/department-combobox";
 import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
 import { Briefcase } from "lucide-react";
-import { getMiyoGlobalEstablishedDate } from "@/lib/constants/company";
+import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
 import type { EmployeeFormValues } from "@/app/(dashboard)/hr/employees/[employeeId]/edit-employee-form";
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
@@ -44,7 +44,7 @@ interface ProfessionalInfoSectionProps {
 
 export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: ProfessionalInfoSectionProps) {
   const { control, watch, setValue, getValues, clearErrors } = useFormContext<EmployeeFormValues>();
-  const minJoiningDate = useMemo(() => getMiyoGlobalEstablishedDate().toISOString().split("T")[0], []);
+  const minJoiningDate = useMemo(() => getCompanyEstablishedDate().toISOString().split("T")[0], []);
 
   const { data: departments = [], isLoading: departmentsLoading } = useHrDepartments();
   const selectedDepartmentId = watch("departmentId");
