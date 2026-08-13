@@ -9,8 +9,8 @@ import { eq, and } from "drizzle-orm";
 import { generateQRCodeWithLogo } from "@/lib/qr-code";
 import { uploadFile, deleteFile, getFileKeyFromUrl, getFileUrl, isStorageConfigured } from "@/lib/storage";
 import { appUrl } from "@/lib/app-url";
-import { join } from "path";
 import { existsSync } from "fs";
+import { resolvePublicPath } from "@/lib/constants/paths";
 import { auth } from "@/lib/auth";
 
 const generateSchema = z.object({
@@ -171,8 +171,10 @@ export async function deleteQRCode(id: number) {
       } else if (process.env.NODE_ENV !== "production") {
         try {
           const { unlinkSync } = await import("fs");
-          const localPath = join(process.cwd(), "public", qrCode.imageUrl);
-          if (existsSync(localPath)) {
+          // imageUrl is stored in the database — contain the unlink to /public
+          // so a crafted value cannot delete files elsewhere on disk.
+          const localPath = resolvePublicPath(qrCode.imageUrl);
+          if (localPath && existsSync(localPath)) {
             unlinkSync(localPath);
           }
         } catch (error) {

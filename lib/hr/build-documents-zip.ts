@@ -3,8 +3,8 @@
 import JSZip from "jszip";
 import { Readable } from "stream";
 import fs from "fs/promises";
-import path from "path";
 import type { Document } from "@/types/hr";
+import { resolvePublicPath } from "@/lib/constants/paths";
 import { getFileKeyFromUrl, getFileStream, isStorageConfigured } from "@/lib/storage";
 
 async function streamToBuffer(stream: Readable): Promise<Buffer> {
@@ -32,8 +32,10 @@ export async function fetchDocumentFileBuffer(fileUrl: string): Promise<Buffer |
   if (!fileUrl?.trim()) return null;
   try {
     if (fileUrl.startsWith("/") && !fileUrl.startsWith("//")) {
-      const relative = fileUrl.replace(/^\/+/, "");
-      const fullPath = path.join(process.cwd(), "public", relative);
+      // fileUrl comes from the database, so it must not be able to escape
+      // the public directory and read arbitrary files into the export zip.
+      const fullPath = resolvePublicPath(fileUrl);
+      if (!fullPath) return null;
       return await fs.readFile(fullPath);
     }
     if (!isStorageConfigured()) return null;
