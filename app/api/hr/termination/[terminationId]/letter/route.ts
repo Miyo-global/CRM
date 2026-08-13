@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { generateTerminationLetterPdf } from "@/lib/termination-letter-pdf";
 import { escapeHtml } from "@/lib/email-templates/base";
 import { NextResponse, type NextRequest } from "next/server";
+import { HR_EMAIL } from "@/lib/constants/company";
 
 export async function GET(
   req: NextRequest,
@@ -127,7 +128,7 @@ function generateTerminationLetterHtml(data: {
   </p>
 
   <p style="margin-top: 20px; font-size: 11px; color: #999; text-align: center;">
-    For queries, please contact HR at <a href="mailto:hr@miyoglobal.com">hr@miyoglobal.com</a>
+    For queries, please contact HR at <a href="mailto:${HR_EMAIL}">${HR_EMAIL}</a>
   </p>
 </div>`.trim();
 }

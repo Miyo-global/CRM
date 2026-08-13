@@ -55,8 +55,9 @@ import {
 } from "@/lib/email-templates/organization";
 
 import type { EmailTemplateConfig } from "./types";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
-export const BASE_URL = "https://crm.miyoglobal.com";
+export const BASE_URL = CRM_BASE_URL;
 
 export const TEMPLATE_REGISTRY: EmailTemplateConfig[] = [
   {

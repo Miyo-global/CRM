@@ -75,6 +75,7 @@ import {
   getHolidayAnnouncementEmailTemplate,
   getCompanyAnnouncementEmailTemplate,
 } from "@/lib/email-templates/organization";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 interface EmailTemplateConfig {
   id: string;
@@ -83,7 +84,7 @@ interface EmailTemplateConfig {
   generate: () => { subject: string; html: string };
 }
 
-const BASE_URL = "https://crm.miyoglobal.com";
+const BASE_URL = CRM_BASE_URL;
 
 const TEMPLATE_REGISTRY: EmailTemplateConfig[] = [
   {

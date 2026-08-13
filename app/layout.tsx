@@ -6,6 +6,7 @@ import { SessionProvider } from "../components/providers/session-provider";
 import { ThemeProvider } from "../components/theme-provider";
 import { MotionProvider } from "../components/providers/motion-provider";
 import { QueryProvider } from "../components/providers/query-provider";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 export const metadata: Metadata = {
   title: {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | Miyo Global CRM",
   },
   description: "Advanced HR, Project Management, and CRM platform for modern teams.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://crm.miyoglobal.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || CRM_BASE_URL),
   openGraph: {
     type: "website",
     siteName: "Miyo Global CRM",

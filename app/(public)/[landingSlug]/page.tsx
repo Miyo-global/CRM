@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { LandingForm } from "@/features/landing/landing-form";
 import { clientEnv } from "@/lib/env";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 export const revalidate = 60;
 
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = page.title ?? "Landing Page";
   const description = page.description ?? undefined;
-  const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? "https://miyoglobal.com";
+  const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
   const pageUrl = `${baseUrl}/${slug}`;
 
   return {

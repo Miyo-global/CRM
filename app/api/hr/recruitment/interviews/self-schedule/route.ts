@@ -9,6 +9,7 @@ import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/email-templates/base";
 import { clientEnv } from "@/lib/env";
 import type { NextRequest } from "next/server";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 const slotSchema = z.object({
   start: z.string().datetime(),
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? "https://miyoglobal.com";
+    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
     const bookingUrl = `${baseUrl}/interview-booking/${token}`;
 
     if (candidate.email) {

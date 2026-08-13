@@ -5,8 +5,9 @@ import { eq, desc, and, gte, ne, inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { sendRecognitionRecipientEmail, sendRecognitionShoutoutEmail } from "@/lib/email";
+import { HR_EMAIL } from "@/lib/constants/company";
 
-const HR_INBOX = "hr@miyoglobal.com";
+const HR_INBOX = HR_EMAIL;
 
 const CATEGORY_LABEL: Record<string, string> = {
   KUDOS: "🙌 Kudos",

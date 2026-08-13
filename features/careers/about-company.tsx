@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-export const COMPANY_WEBSITE_URL = "https://miyoglobal.com";
+import { COMPANY_WEBSITE_URL } from "@/lib/constants/company";
+
+export { COMPANY_WEBSITE_URL };
 
 function ExternalLinkIcon({ className }: { className?: string }) {
   return (

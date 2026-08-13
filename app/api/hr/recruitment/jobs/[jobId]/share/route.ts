@@ -4,6 +4,7 @@ import { jobPostingPath } from "@/lib/careers/job-slug";
 import { db } from "@/lib/db";
 import { jobPostings } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 type RouteParams = { params: Promise<{ jobId: string }> };
 
@@ -25,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
     if (!job) return err("Job posting not found", 404);
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.miyoglobal.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
 
     const baseJobUrl = `${appUrl}${jobPostingPath(jobId, job.title)}`;
 

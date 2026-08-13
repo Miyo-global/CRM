@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
+import { SUPPORT_EMAIL } from "@/lib/constants/company";
 
 export function getVerificationEmailTemplate(verificationUrl: string): string {
   const content = `
@@ -140,7 +141,7 @@ export function getPasswordChangeConfirmationEmailTemplate(userName: string): st
     <div class="security-notice">
       <p class="security-text">
         <strong>Security Alert:</strong> If you did NOT make this change, please contact our support team immediately
-        at <a href="mailto:support@miyoglobal.com" style="color: #92400e; text-decoration: underline;">support@miyoglobal.com</a>
+        at <a href="mailto:${SUPPORT_EMAIL}" style="color: #92400e; text-decoration: underline;">${SUPPORT_EMAIL}</a>
         or reset your password right away.
       </p>
     </div>
@@ -206,7 +207,7 @@ export function getAccountDeactivationEmailTemplate(
 
     <p class="email-text">
       If you believe this is an error or have questions, please contact HR at
-      <a href="mailto:support@miyoglobal.com" style="color: #0f2b7f; text-decoration: underline;">support@miyoglobal.com</a>.
+      <a href="mailto:${SUPPORT_EMAIL}" style="color: #0f2b7f; text-decoration: underline;">${SUPPORT_EMAIL}</a>.
     </p>
 
     <p class="email-text" style="margin-top: 24px;">
@@ -249,7 +250,7 @@ export function getAccountLockedEmailTemplate(name: string): string {
 
     <p class="email-text" style="font-size: 14px; color: #64748b;">
       If you need immediate assistance, please contact our support team at
-      <a href="mailto:support@miyoglobal.com" style="color: #0f2b7f;">support@miyoglobal.com</a>.
+      <a href="mailto:${SUPPORT_EMAIL}" style="color: #0f2b7f;">${SUPPORT_EMAIL}</a>.
     </p>
   `;
 

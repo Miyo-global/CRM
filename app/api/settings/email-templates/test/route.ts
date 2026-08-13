@@ -58,8 +58,9 @@ import {
   getHolidayAnnouncementEmailTemplate,
   getCompanyAnnouncementEmailTemplate,
 } from "@/lib/email-templates/organization";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
-const BASE_URL = process.env.NEXTAUTH_URL ?? "https://crm.miyoglobal.com";
+const BASE_URL = process.env.NEXTAUTH_URL ?? CRM_BASE_URL;
 
 interface TemplateEntry {
   subject: string;

@@ -4,6 +4,7 @@ import { interviews, candidates, users, organizations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { addMinutes, formatISO } from "date-fns";
 import { NextResponse, type NextRequest } from "next/server";
+import { NOREPLY_EMAIL } from "@/lib/constants/company";
 
 type Params = { params: Promise<{ interviewId: string }> };
 
@@ -123,7 +124,7 @@ export async function GET(
       `SUMMARY:${summary}`,
       `DESCRIPTION:${description}`,
       `LOCATION:${location}`,
-      `ORGANIZER;CN=${escapeIcsText(orgName)}:mailto:noreply@miyoglobal.com`,
+      `ORGANIZER;CN=${escapeIcsText(orgName)}:mailto:${NOREPLY_EMAIL}`,
       ...attendeeLines,
       "STATUS:CONFIRMED",
       "TRANSP:OPAQUE",

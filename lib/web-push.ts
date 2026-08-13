@@ -3,8 +3,14 @@ import * as webpush from "web-push";
 import { db } from "@/lib/db";
 import { pushSubscriptions, chatChannelMembers } from "@/lib/db/schema";
 import { eq, and, ne, inArray } from "drizzle-orm";
+import { CRM_BASE_URL } from "@/lib/constants/company";
 
 function getVapidSubject(): string {
+  // VAPID_SUBJECT is the documented override and takes precedence; the
+  // app URL and sender address are derivations for when it is unset.
+  const explicit = process.env.VAPID_SUBJECT?.trim();
+  if (explicit) return explicit;
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (appUrl?.startsWith("https://")) return appUrl;
 
@@ -14,7 +20,7 @@ function getVapidSubject(): string {
     if (from.includes("@")) return `mailto:${from}`;
   }
 
-  return "https://crm.miyoglobal.com";
+  return CRM_BASE_URL;
 }
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
