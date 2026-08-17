@@ -7,6 +7,7 @@ import { z } from "zod";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import type { NextRequest } from "next/server";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const MAX_LOAN_AMOUNT = 10_000_000;
 
@@ -14,7 +15,7 @@ const createSchema = z.object({
   amount: z
     .number()
     .positive("Amount must be positive")
-    .max(MAX_LOAN_AMOUNT, `Amount cannot exceed ₹${MAX_LOAN_AMOUNT.toLocaleString("en-IN")}`),
+    .max(MAX_LOAN_AMOUNT, `Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_LOAN_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`),
   reason: z.string().min(1).max(500),
   totalEmis: z.number().int().min(1).max(24).optional(),
 });
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     void notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       type: "INFO",
       title: "Salary Loan Request",
-      message: `${session.user.name ?? "An employee"} requested a salary loan of ₹${body.amount.toLocaleString("en-IN")}.`,
+      message: `${session.user.name ?? "An employee"} requested a salary loan of ${CURRENCY_SYMBOL}${body.amount.toLocaleString(DEFAULT_LOCALE)}.`,
       link: "/hr/loans",
       metadata: { loanId: loan.id },
       excludeUserId: session.user.id,

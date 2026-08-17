@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useMarketingCampaigns, type MarketingCampaign } from "@/lib/api/hooks/crm";
 import Link from "next/link";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const CHANNELS = ["All", "email", "social_media", "paid_ads", "content", "event", "sms", "other"];
 
@@ -240,8 +241,8 @@ export default function MarketingCalendarPage() {
                                     <div className="text-xs space-y-1">
                                       <p className="font-medium">{campaign.name}</p>
                                       {campaign.channel && <p className="text-muted-foreground">Channel: {campaign.channel}</p>}
-                                      {campaign.startDate && <p>Start: {new Date(campaign.startDate).toLocaleDateString("en-IN")}</p>}
-                                      {campaign.endDate && <p>End: {new Date(campaign.endDate).toLocaleDateString("en-IN")}</p>}
+                                      {campaign.startDate && <p>Start: {new Date(campaign.startDate).toLocaleDateString(DEFAULT_LOCALE)}</p>}
+                                      {campaign.endDate && <p>End: {new Date(campaign.endDate).toLocaleDateString(DEFAULT_LOCALE)}</p>}
                                       <Badge className={cn("text-[10px] text-white", STATUS_COLORS[campaign.status] ?? "bg-slate-500")}>
                                         {campaign.status}
                                       </Badge>
@@ -301,9 +302,9 @@ export default function MarketingCalendarPage() {
                               </p>
                             )}
                             <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                              {c.startDate && <span>{new Date(c.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>}
+                              {c.startDate && <span>{new Date(c.startDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })}</span>}
                               {c.startDate && c.endDate && <span>→</span>}
-                              {c.endDate && <span>{new Date(c.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>}
+                              {c.endDate && <span>{new Date(c.endDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })}</span>}
                             </div>
                           </div>
                         </Link>

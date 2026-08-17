@@ -69,6 +69,7 @@ import {
   sendLeaveCancellationEmail,
 } from "@/lib/email/hr-leaves";
 import { requireEmailEnv } from "./_guard";
+import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
 
 const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the test emails.");
 const NAME = process.env.TEST_EMAIL_NAME ?? "Test User";
@@ -130,8 +131,8 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
     "April 2026",
     "Miyo Global",
     [
-      { date: TODAY, employeeName: "John Doe", category: "Travel", amount: "1500.00", currency: "INR", status: "APPROVED" },
-      { date: TODAY, employeeName: "Jane Smith", category: "Meals", amount: "850.00", currency: "INR", status: "PAID" },
+      { date: TODAY, employeeName: "John Doe", category: "Travel", amount: "1500.00", currency: DEFAULT_CURRENCY, status: "APPROVED" },
+      { date: TODAY, employeeName: "Jane Smith", category: "Meals", amount: "850.00", currency: DEFAULT_CURRENCY, status: "PAID" },
     ],
     { totalAmount: "2350.00", totalCount: 2, pendingCount: 0, approvedCount: 1, paidCount: 1, rejectedCount: 0 },
     [TO],

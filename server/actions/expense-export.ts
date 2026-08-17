@@ -14,6 +14,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { getMonthlyExpenseReportTemplate, type MonthlyExpenseReportRow } from "@/lib/email-templates";
 import { generateMonthlyExpenseReportXlsx } from "@/lib/monthly-expense-report-xlsx";
 import { formatCurrencyFull } from "@/lib/format-utils";
+import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
 
 export interface ExpenseExportMailInput {
   to: string[];
@@ -696,7 +697,7 @@ export async function emailExpenseReport(
       employeeName: e.userName,
       category: e.category,
       amount: formatCurrencyFull(e.amount),
-      currency: "INR",
+      currency: DEFAULT_CURRENCY,
       date: e.expenseDate,
       status: e.status || "PENDING",
       description: e.description || "-",

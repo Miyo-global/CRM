@@ -12,6 +12,7 @@ import { format, getDaysInMonth } from "date-fns";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import type { PayrollWithUser } from "@/types/hr";
 import { calendarDaysInMonth } from "@/lib/hr/payroll-calculations";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function n(v: string | null | undefined): number {
   return Math.round(parseFloat(String(v ?? "0")) || 0);
@@ -111,22 +112,22 @@ export function PayrollRecordPreviewSheet({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Basic Pay</span>
-                <span className="tabular-nums">₹{basicPay.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{basicPay.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">HRA</span>
-                <span className="tabular-nums">₹{hra.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{hra.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               {specialAllowance > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Special Allowance</span>
-                  <span className="tabular-nums">₹{specialAllowance.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">₹{specialAllowance.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {bonus > 0 && (
                 <div className="flex justify-between text-emerald-600">
                   <span>Bonus / Incentive</span>
-                  <span className="tabular-nums">+₹{bonus.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">+₹{bonus.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {otAmt > 0 && (
@@ -139,13 +140,13 @@ export function PayrollRecordPreviewSheet({
                         ? ` (${otHours} hrs)`
                         : ""}
                   </span>
-                  <span className="tabular-nums">+₹{otAmt.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">+₹{otAmt.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Gross Salary</span>
-                <span className="tabular-nums">₹{grossSalary.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{grossSalary.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
             </div>
           </div>
@@ -155,12 +156,12 @@ export function PayrollRecordPreviewSheet({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Professional Tax</span>
-                <span className="text-red-600 tabular-nums">-₹{pt.toLocaleString("en-IN")}</span>
+                <span className="text-red-600 tabular-nums">-₹{pt.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               {structureDed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>
-                  <span className="text-red-600 tabular-nums">-₹{structureDed.toLocaleString("en-IN")}</span>
+                  <span className="text-red-600 tabular-nums">-₹{structureDed.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {lopD > 0 && (
@@ -168,25 +169,25 @@ export function PayrollRecordPreviewSheet({
                   <span className="text-muted-foreground">
                     LOP ({lopD} {lopD === 1 ? "day" : "days"})
                   </span>
-                  <span className="text-red-600 tabular-nums">-₹{lopAmt.toLocaleString("en-IN")}</span>
+                  <span className="text-red-600 tabular-nums">-₹{lopAmt.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {otherDed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Other Deductions</span>
-                  <span className="text-red-600 tabular-nums">-₹{otherDed.toLocaleString("en-IN")}</span>
+                  <span className="text-red-600 tabular-nums">-₹{otherDed.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {advance > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Advance / loan recovery</span>
-                  <span className="text-red-600 tabular-nums">-₹{advance.toLocaleString("en-IN")}</span>
+                  <span className="text-red-600 tabular-nums">-₹{advance.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Total Deductions</span>
-                <span className="text-red-600 tabular-nums">-₹{totalDeductions.toLocaleString("en-IN")}</span>
+                <span className="text-red-600 tabular-nums">-₹{totalDeductions.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
             </div>
           </div>
@@ -196,7 +197,7 @@ export function PayrollRecordPreviewSheet({
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
             <span className="text-2xl font-bold text-emerald-600 tabular-nums">
-              ₹{netSalary.toLocaleString("en-IN")}
+              ₹{netSalary.toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>
 

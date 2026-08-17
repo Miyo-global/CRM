@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email/sender";
 import { requireEmailEnv } from "./_guard";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const RECIPIENTS = [requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the performance notice test.")];
 const SUBJECT = "Notice Regarding Unsatisfactory Performance";
@@ -21,7 +22,7 @@ const TEST_EMPLOYEES: { name: string }[] = [
 ];
 
 function buildHtml(employeeName: string): string {
-  const salary = new Intl.NumberFormat("en-IN").format(REVISED_SALARY_INR);
+  const salary = new Intl.NumberFormat(DEFAULT_LOCALE).format(REVISED_SALARY_INR);
   return `<!DOCTYPE html>
 <html>
   <body style="font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#1f2937; line-height:1.6; max-width:640px; margin:0 auto; padding:24px;">

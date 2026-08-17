@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import type { CandidateStatus } from "@/types/hr";
 import { formatPhoneForDisplay } from "@/lib/phone";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUSES: CandidateStatus[] = ["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"];
 
@@ -72,7 +73,7 @@ function formatCtc(amount?: string | number | null, currency?: string | null): s
   if (amount === null || amount === undefined || amount === "") return null;
   const num = Number(amount);
   if (!Number.isFinite(num)) return null;
-  const formatted = num.toLocaleString("en-IN");
+  const formatted = num.toLocaleString(DEFAULT_LOCALE);
   return `${currency ? `${currency} ` : ""}${formatted}`;
 }
 

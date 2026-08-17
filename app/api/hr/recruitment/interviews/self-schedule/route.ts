@@ -10,6 +10,7 @@ import { escapeHtml } from "@/lib/email-templates/base";
 import { clientEnv } from "@/lib/env";
 import type { NextRequest } from "next/server";
 import { CRM_BASE_URL } from "@/lib/constants/company";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const slotSchema = z.object({
   start: z.string().datetime(),
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
                 </a>
               </div>
               <p style="font-size: 13px; color: #6b7280;">
-                This link expires on ${expiresAt.toLocaleDateString("en-IN", { dateStyle: "long", timeZone: "Asia/Kolkata" })}.
+                This link expires on ${expiresAt.toLocaleDateString(DEFAULT_LOCALE, { dateStyle: "long", timeZone: DEFAULT_TIMEZONE })}.
               </p>
               <p>Best regards,<br/><strong>Miyo Global Recruitment Team</strong></p>
             </div>

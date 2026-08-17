@@ -25,6 +25,7 @@ import { LeadVolumeChart } from "@/features/crm/analytics/lead-volume-chart";
 import { ConversionChart } from "@/features/crm/analytics/conversion-chart";
 import { DealValueChart } from "@/features/crm/analytics/deal-value-chart";
 import { AnalyticsChartCard } from "@/features/crm/analytics/analytics-chart-card";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export default function CrmAnalyticsPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -171,7 +172,7 @@ export default function CrmAnalyticsPage() {
                 isPositive: analyticsSummary.conversionRate >= analyticsSummary.conversionRatePrevPeriod,
               } : undefined}
             />
-            <StatCard label="Total Revenue" value={`₹${(analyticsSummary.totalRevenue / 100000).toFixed(1)}L`} icon={DollarSign} index={2} />
+            <StatCard label="Total Revenue" value={`${CURRENCY_SYMBOL}${(analyticsSummary.totalRevenue / 100000).toFixed(1)}L`} icon={DollarSign} index={2} />
             <StatCard label="Active Reps" value={analyticsSummary.assignmentDistribution.length} icon={Target} index={3} />
           </motion.div>
         )}
@@ -269,7 +270,7 @@ export default function CrmAnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" tick={AXIS_TICK} />
                   <YAxis tick={AXIS_TICK} />
-                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(value) => [`₹${(Number(value) / 100000).toFixed(1)}L`, "Revenue"]} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(value) => [`${CURRENCY_SYMBOL}${(Number(value) / 100000).toFixed(1)}L`, "Revenue"]} />
                   <Area type="monotone" dataKey="revenue" stroke="#bd882c" strokeWidth={2} fill="url(#revenueGrad)" />
                 </AreaChart>
               </ResponsiveContainer>

@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCreateInvoice } from "@/lib/api/hooks/invoice";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const CURRENCY_CODES = ["INR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "AED", "JPY"];
 
 function fmt(amount: number) {
-  return `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${CURRENCY_SYMBOL}${amount.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function NewInvoicePage() {

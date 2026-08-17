@@ -49,6 +49,7 @@ import {
   type ClientOpportunity,
   type CreateClientOpportunityInput,
 } from "@/lib/api/hooks/crm";
+import { CURRENCY_SYMBOL, DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 type OppStage = "identified" | "proposed" | "negotiating" | "won" | "lost";
@@ -103,11 +104,11 @@ function formatInrShort(value: string | null | undefined): string {
   if (!value) return "";
   const num = Number(value);
   if (!Number.isFinite(num) || num === 0) return "";
-  if (num >= 1_00_00_000) return `₹${(num / 1_00_00_000).toFixed(2)}Cr`;
-  if (num >= 1_00_000) return `₹${(num / 1_00_000).toFixed(2)}L`;
-  return new Intl.NumberFormat("en-IN", {
+  if (num >= 1_00_00_000) return `${CURRENCY_SYMBOL}${(num / 1_00_00_000).toFixed(2)}Cr`;
+  if (num >= 1_00_000) return `${CURRENCY_SYMBOL}${(num / 1_00_000).toFixed(2)}L`;
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(num);
 }
@@ -172,7 +173,7 @@ function OppCard({ opp, onStageChange, onDelete, isPending }: OppCardProps) {
           {opp.expectedCloseDate && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <CalendarDays className="h-3 w-3" />
-              {new Date(opp.expectedCloseDate).toLocaleDateString("en-IN")}
+              {new Date(opp.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE)}
             </div>
           )}
 

@@ -7,6 +7,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendNotification } from "@/lib/notifications/send";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const updateStatusSchema = z.object({
   status: z.enum(["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"]),
@@ -125,7 +126,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
             userId: account.salesRepId,
             type: "SUCCESS",
             title: "Client Invested!",
-            message: `${account.clientName} has invested ₹${parseFloat(input.investmentAmount).toLocaleString("en-IN")}. Your incentive is being processed.`,
+            message: `${account.clientName} has invested ${CURRENCY_SYMBOL}${parseFloat(input.investmentAmount).toLocaleString(DEFAULT_LOCALE)}. Your incentive is being processed.`,
             link: `/crm/clients/${account.id}`,
           });
         }
@@ -142,7 +143,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
               userId: hr.userId,
               type: "SUCCESS" as const,
               title: "Client Invested!",
-              message: `${account.clientName} has invested ₹${parseFloat(input.investmentAmount!).toLocaleString("en-IN")}. Sales rep: ${account.salesRepId ? "assigned" : "N/A"}.`,
+              message: `${account.clientName} has invested ${CURRENCY_SYMBOL}${parseFloat(input.investmentAmount!).toLocaleString(DEFAULT_LOCALE)}. Sales rep: ${account.salesRepId ? "assigned" : "N/A"}.`,
               link: `/crm/clients/${account.id}`,
             }))
           );
@@ -166,7 +167,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
               userId: salesRepId,
               type: "SUCCESS",
               title: "Client Invested!",
-              message: `${account.clientName} has invested ₹${parseFloat(input.investmentAmount!).toLocaleString("en-IN")}. Your incentive is being processed.`,
+              message: `${account.clientName} has invested ${CURRENCY_SYMBOL}${parseFloat(input.investmentAmount!).toLocaleString(DEFAULT_LOCALE)}. Your incentive is being processed.`,
               link: `/crm/clients/${account.id}`,
               channel: "email",
               recipientEmail: salesRep.email,
@@ -184,7 +185,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
                 userId: hr.userId,
                 type: "SUCCESS",
                 title: "Client Invested!",
-                message: `${account.clientName} has invested ₹${parseFloat(input.investmentAmount!).toLocaleString("en-IN")}. Sales rep: ${salesRep?.name ?? "N/A"}.`,
+                message: `${account.clientName} has invested ${CURRENCY_SYMBOL}${parseFloat(input.investmentAmount!).toLocaleString(DEFAULT_LOCALE)}. Sales rep: ${salesRep?.name ?? "N/A"}.`,
                 link: `/crm/clients/${account.id}`,
                 channel: "email",
                 recipientEmail: hrUser.email,

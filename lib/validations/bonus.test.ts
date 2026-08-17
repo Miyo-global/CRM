@@ -16,6 +16,7 @@ import {
   sanitizeBonusAmountInput,
   sanitizeBonusOtherReasonInput,
 } from "./bonus";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 describe("bonusAmountSchema", () => {
   it("accepts amounts up to 1 lakh", () => {
@@ -219,7 +220,7 @@ describe("bonus amount input helpers", () => {
   });
 
   it("returns user-facing amount errors", () => {
-    expect(bonusAmountInputError("100001")).toBe(`Amount cannot exceed ₹${BONUS_MAX_AMOUNT.toLocaleString("en-IN")}`);
+    expect(bonusAmountInputError("100001")).toBe(`Amount cannot exceed ${CURRENCY_SYMBOL}${BONUS_MAX_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`);
     expect(bonusAmountInputError("1e5")).toContain("exponential");
     expect(bonusAmountInputError("-10")).toContain("exponential");
     expect(bonusAmountInputError("50000")).toBeNull();

@@ -45,6 +45,7 @@ import {
   normalizeIncentiveRateString,
   sanitizeIncentiveRateInput,
 } from "@/lib/validations/incentive-rate";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const BLOCKED_RATE_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
@@ -236,7 +237,7 @@ export default function IncentivesPage() {
               <Percent className="h-5 w-5 text-gold" />
               <div>
                 <p className="text-sm font-medium">Current Incentive Rate: <span className="text-gold font-bold">{currentConfig.incentiveRate}%</span></p>
-                <p className="text-xs text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString("en-IN")}</p>
+                <p className="text-xs text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE)}</p>
               </div>
             </CardContent>
           </Card>
@@ -481,13 +482,13 @@ export default function IncentivesPage() {
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
                     <span>
-                      Effective {new Date(entry.effectiveFrom).toLocaleDateString("en-IN", {
+                      Effective {new Date(entry.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE, {
                         day: "numeric", month: "short", year: "numeric",
                       })}
                       {entry.createdAt ? (
                         <>
                           {" · "}
-                          Updated {new Date(entry.createdAt).toLocaleString("en-IN", {
+                          Updated {new Date(entry.createdAt).toLocaleString(DEFAULT_LOCALE, {
                             day: "numeric", month: "short", year: "numeric",
                             hour: "2-digit", minute: "2-digit",
                           })}

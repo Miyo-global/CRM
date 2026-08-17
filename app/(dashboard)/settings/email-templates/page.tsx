@@ -76,6 +76,7 @@ import {
   getCompanyAnnouncementEmailTemplate,
 } from "@/lib/email-templates/organization";
 import { CRM_BASE_URL } from "@/lib/constants/company";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface EmailTemplateConfig {
   id: string;
@@ -154,7 +155,7 @@ const TEMPLATE_REGISTRY: EmailTemplateConfig[] = [
       html: getNewDeviceLoginEmailTemplate("Priya Sharma", {
         userAgent: "Chrome 123 on Windows 11",
         ipAddress: "103.45.67.89",
-        time: new Date().toLocaleString("en-IN"),
+        time: new Date().toLocaleString(DEFAULT_LOCALE),
       }),
     }),
   },

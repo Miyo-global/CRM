@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const ALLOWED_CATEGORIES = [
   "Travel", "Food", "Office Supplies", "Software", "Hardware", "Marketing",
@@ -150,7 +151,7 @@ export function ImportValidationPreview({
                       <td className="px-2 py-1">{row.expenseDate || ""}</td>
                       <td className="px-2 py-1">{row.category}</td>
                       <td className="px-2 py-1 text-right font-medium">
-                        {row.amount > 0 ? `₹${row.amount.toLocaleString("en-IN")}` : ""}
+                        {row.amount > 0 ? `${CURRENCY_SYMBOL}${row.amount.toLocaleString(DEFAULT_LOCALE)}` : ""}
                       </td>
                       <td className="px-2 py-1">
                         {row.valid ? (

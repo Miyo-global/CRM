@@ -5,6 +5,7 @@ import { eq, and, gte, lte, inArray } from "drizzle-orm";
 import { addHours, subHours } from "date-fns";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function buildCandidateReminderHtml(params: {
   candidateName: string;
@@ -16,8 +17,8 @@ function buildCandidateReminderHtml(params: {
   interviewerName: string | null;
   duration: number;
 }): { subject: string; html: string } {
-  const dateStr = params.scheduledAt.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  const dateStr = params.scheduledAt.toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     dateStyle: "full",
     timeStyle: "short",
   });
@@ -59,8 +60,8 @@ function buildInterviewerReminderHtml(params: {
   location: string | null;
   duration: number;
 }): { subject: string; html: string } {
-  const dateStr = params.scheduledAt.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  const dateStr = params.scheduledAt.toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     dateStyle: "full",
     timeStyle: "short",
   });
@@ -101,8 +102,8 @@ function buildPrepEmailHtml(params: {
   interviewerName: string | null;
   duration: number;
 }): { subject: string; html: string } {
-  const timeStr = params.scheduledAt.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  const timeStr = params.scheduledAt.toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     timeStyle: "short",
   });
 

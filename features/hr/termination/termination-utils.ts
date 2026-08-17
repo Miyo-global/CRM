@@ -4,6 +4,7 @@ import {
   TERMINATION_STATUS_LABELS,
 } from "@/lib/constants/hr-separation";
 import type { TerminationStatus } from "@/lib/api/hooks/hr";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export { getInitials } from "@/lib/format-utils";
 
@@ -62,7 +63,7 @@ export function buildLetterPreview(params: {
     reasons.length > 0 ? reasons.join(", ") : "[No reasons selected]";
   const severanceLine =
     severanceAmount && Number(severanceAmount) > 0
-      ? `\nSeverance Amount: ₹${Number(severanceAmount).toLocaleString("en-IN")}`
+      ? `\nSeverance Amount: ${CURRENCY_SYMBOL}${Number(severanceAmount).toLocaleString(DEFAULT_LOCALE)}`
       : "";
   const noticeLine = noticePeriodWaived
     ? "\nNote: Notice period has been waived."

@@ -6,6 +6,7 @@ import {
   cleanOptionalSimpleName,
   cleanRequiredName,
 } from "@/lib/validations/text-rules";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const MAX_EXPENSE_AMOUNT = 99_999;
 
@@ -14,7 +15,7 @@ export const expenseAmountSchema = z
   .positive("Amount must be greater than 0")
   .max(
     MAX_EXPENSE_AMOUNT,
-    `Amount must be at most ₹${MAX_EXPENSE_AMOUNT.toLocaleString("en-IN")}`,
+    `Amount must be at most ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`,
   );
 
 export const expensePaymentMethodSchema = cleanOptionalName("Payment method", 60);

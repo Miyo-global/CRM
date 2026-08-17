@@ -34,6 +34,7 @@ import {
   buildPayslipPdfDataFromPayroll,
   generatePayslipPdf,
 } from "../lib/payslip-pdf-core";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const TARGET_MONTH = process.argv[2] ?? "2026-04";
 const COUNT = 4;
@@ -44,7 +45,7 @@ function monthBounds(month: string): { start: string; end: string } {
 }
 
 function todayIstYmd(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
 }
 
 function eachDateInclusive(start: string, end: string): string[] {
@@ -365,7 +366,7 @@ async function main() {
       },
     });
 
-    console.log(`\n✓ ${emp.name} (${emp.employeeId}) — payroll #${payroll.id}, net ₹${netSalary.toLocaleString("en-IN")}`);
+    console.log(`\n✓ ${emp.name} (${emp.employeeId}) — payroll #${payroll.id}, net ${CURRENCY_SYMBOL}${netSalary.toLocaleString(DEFAULT_LOCALE)}`);
     console.log(`  PDF: ${pdfPath}`);
     console.log(
       `  Attendance: ${att.fullPresentDays} present, ${att.paidLeaveDays} paid leave, ${att.lopDays} LOP (${attRows.length} check-ins logged)`

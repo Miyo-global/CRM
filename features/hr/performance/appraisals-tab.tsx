@@ -37,6 +37,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Employee } from "@/types/hr";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 type AppraisalStage =
   | "CYCLE_INITIATION" | "SELF_REVIEW" | "MANAGER_REVIEW" | "CEO_REVIEW"
@@ -673,7 +674,7 @@ export function AppraisalsTab() {
                         <div className="flex justify-between text-xs"><span className="text-muted-foreground">Calibrated Rating</span><span className="font-semibold">{d.calibratedRating} / 5</span></div>
                       )}
                       {d.proposedSalary && (
-                        <div className="flex justify-between text-xs"><span className="text-muted-foreground">Proposed Salary</span><span className="font-semibold">₹{Number(d.proposedSalary).toLocaleString("en-IN")}</span></div>
+                        <div className="flex justify-between text-xs"><span className="text-muted-foreground">Proposed Salary</span><span className="font-semibold">₹{Number(d.proposedSalary).toLocaleString(DEFAULT_LOCALE)}</span></div>
                       )}
                       {d.salaryIncrementPct && (
                         <div className="flex justify-between text-xs"><span className="text-muted-foreground">Increment</span><span className="font-semibold">{d.salaryIncrementPct}%</span></div>

@@ -2,10 +2,11 @@
 import { db } from "@/lib/db";
 import { calendarEvents, leaveRequests, interviews, users, tasks, eventAttendees, holidays } from "@/lib/db/schema";
 import { eq, and, gte, lte, isNotNull, inArray } from "drizzle-orm";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function toIstDateString(d: Date): string {
   const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

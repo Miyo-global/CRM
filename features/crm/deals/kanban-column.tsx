@@ -5,6 +5,7 @@ import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
 import type { Deal } from "@/types/crm";
 import { DealKanbanCard } from "@/features/crm/deals/deal-kanban-card";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface KanbanColumnStage {
   key: string;
@@ -73,7 +74,7 @@ export const KanbanColumn = memo(function KanbanColumn({
         <p className="text-xs text-muted-foreground mt-0.5 pl-[18px]">
           {deals.length} {deals.length === 1 ? "deal" : "deals"}
           {stageValue > 0 && (
-            <> · ₹{stageValue.toLocaleString("en-IN")}</>
+            <> · ₹{stageValue.toLocaleString(DEFAULT_LOCALE)}</>
           )}
         </p>
       </div>

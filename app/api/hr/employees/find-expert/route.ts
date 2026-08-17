@@ -18,6 +18,7 @@ import {
   skillMatchesQuery,
   isPlausibleSkillLabel,
 } from "@/lib/hr/skills-catalog";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 /**
  * Ranking (server-side, primary sort for "relevance"):
@@ -233,7 +234,7 @@ export async function GET(req: NextRequest) {
       m.set(key, Math.max(m.get(key) ?? 0, lv));
     }
 
-    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: DEFAULT_TIMEZONE });
     const onLeaveRows = await db
       .select({ userId: leaveRequests.userId })
       .from(leaveRequests)

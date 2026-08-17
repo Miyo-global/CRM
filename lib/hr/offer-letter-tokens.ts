@@ -1,5 +1,6 @@
 import { toWordsInr } from "@/lib/hr/payslip-view-model";
 import { format } from "date-fns";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export interface OfferLetterCandidateVars {
   firstName: string;
@@ -27,7 +28,7 @@ export interface OfferLetterOrgVars {
 }
 
 function fmtPdfInr(amount: number): string {
-  const s = amount.toLocaleString("en-IN", {
+  const s = amount.toLocaleString(DEFAULT_LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

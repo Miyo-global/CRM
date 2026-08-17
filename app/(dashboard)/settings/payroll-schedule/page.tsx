@@ -24,6 +24,7 @@ import {
   useUpdatePayrollSchedule,
 } from "@/lib/api/hooks/hr/payroll-extended";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const DAY_OPTIONS = Array.from({ length: 28 }, (_, i) => i + 1);
 
@@ -37,14 +38,14 @@ function formatRunPeriod(period: string | null): string {
   if (!period) return "Never";
   const d = new Date(`${period}-01T00:00:00`);
   if (Number.isNaN(d.getTime())) return period;
-  return d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  return d.toLocaleDateString(DEFAULT_LOCALE, { month: "long", year: "numeric" });
 }
 
 function formatRunAt(iso: string | null): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  return d.toLocaleString(DEFAULT_LOCALE, { dateStyle: "medium", timeStyle: "short" });
 }
 
 export default function PayrollSchedulePage() {

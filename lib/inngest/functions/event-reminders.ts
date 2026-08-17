@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { calendarEvents, notifications } from "@/lib/db/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { addMinutes, subMinutes } from "date-fns";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export const eventReminders = inngest.createFunction(
   {
@@ -44,8 +45,8 @@ export const eventReminders = inngest.createFunction(
           ]),
         ];
 
-        const startStr = event.startDate.toLocaleTimeString("en-IN", {
-          timeZone: "Asia/Kolkata",
+        const startStr = event.startDate.toLocaleTimeString(DEFAULT_LOCALE, {
+          timeZone: DEFAULT_TIMEZONE,
           timeStyle: "short",
         });
 

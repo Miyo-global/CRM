@@ -63,11 +63,12 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import { PageDetailContent } from "@/features/marketing/landing-pages/page-detail-content";
 import { CrmHostedPagesTab } from "@/features/marketing/landing-pages/crm-hosted-pages-tab";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 function fmtDate(d: string | null | undefined) {
   if (!d) return "";
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString(DEFAULT_LOCALE, { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function truncateUrl(url: string, max = 40) {

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { useReportNarrator, type ReportNarratorResult } from "@/lib/api/hooks/ai";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 
@@ -66,7 +67,7 @@ interface PreviousNarrativeCardProps {
 function PreviousNarrativeCard({ entry }: PreviousNarrativeCardProps) {
   const [expanded, setExpanded] = useState(false);
   const preview = entry.narrative.slice(0, 180);
-  const generatedAt = new Date(entry.generatedAt).toLocaleString("en-IN", {
+  const generatedAt = new Date(entry.generatedAt).toLocaleString(DEFAULT_LOCALE, {
     dateStyle: "short",
     timeStyle: "short",
   });
@@ -144,7 +145,7 @@ export default function ReportNarratorPage() {
   }, []);
 
   const generatedAt = result
-    ? new Date(result.generatedAt).toLocaleString("en-IN", {
+    ? new Date(result.generatedAt).toLocaleString(DEFAULT_LOCALE, {
         dateStyle: "medium",
         timeStyle: "short",
       })

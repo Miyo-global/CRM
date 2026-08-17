@@ -10,6 +10,7 @@ import {
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
 } from "../email-templates";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export async function sendAssetAssignedEmail(
   email: string,
@@ -92,8 +93,8 @@ export async function notifyAssetAssignment(params: {
   assetType: string;
   serialNumber: string | null;
 }): Promise<void> {
-  const assignedAt = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  const assignedAt = new Date().toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     day: "2-digit",
     month: "short",
     year: "numeric",

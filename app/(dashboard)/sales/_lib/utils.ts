@@ -10,10 +10,11 @@ import {
   endOfYear,
 } from "date-fns";
 import { formatDateOnly } from "@/lib/date-utils";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export const DEFAULT_BAR_COLOR = "bg-muted-foreground/40";
 
-export const formatRevenueValue = (v: number) => `₹${(v / 1000).toFixed(0)}K`;
+export const formatRevenueValue = (v: number) => `${CURRENCY_SYMBOL}${(v / 1000).toFixed(0)}K`;
 
 export type DatePreset =
   | "all"

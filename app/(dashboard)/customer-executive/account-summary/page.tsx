@@ -17,6 +17,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { useAccountSummary, type AccountSummaryResult } from "@/lib/api/hooks/ai";
 import { useSimpleClientsList } from "@/lib/api/hooks/crm";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 
@@ -78,7 +79,7 @@ interface ResultCardProps {
 
 function ResultCard({ result, onRegenerate, isRegenerating }: ResultCardProps) {
   const paragraphs = result.summary.split(/\n{2,}/).filter(Boolean);
-  const generatedAt = new Date(result.generatedAt).toLocaleString("en-IN", {
+  const generatedAt = new Date(result.generatedAt).toLocaleString(DEFAULT_LOCALE, {
     dateStyle: "medium",
     timeStyle: "short",
   });

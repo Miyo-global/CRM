@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 
 import type { Termination } from "@/lib/api/hooks/hr";
 import { statusVariant, statusLabel, getInitials } from "../_lib/utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface TerminationCardProps {
   record: Termination;
@@ -95,7 +96,7 @@ export function TerminationCard({
               {severanceAmount && Number(severanceAmount) > 0 && (
                 <span className="flex items-center gap-1">
                   <BadgeDollarSign className="h-3 w-3" />
-                  ₹{Number(severanceAmount).toLocaleString("en-IN")}
+                  ₹{Number(severanceAmount).toLocaleString(DEFAULT_LOCALE)}
                 </span>
               )}
               {noticePeriodWaived && (

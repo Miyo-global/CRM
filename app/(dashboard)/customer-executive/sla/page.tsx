@@ -9,6 +9,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { useSlaCompliance } from "@/lib/api/hooks/crm";
 import { cn } from "@/lib/utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const PRIORITY_BADGE: Record<string, string> = {
@@ -203,7 +204,7 @@ export default function SlaCompliancePage() {
                         </div>
                         <p className="text-sm font-medium text-foreground truncate">{breach.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Created {new Date(breach.createdAt).toLocaleDateString("en-IN")}
+                          Created {new Date(breach.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
                           &nbsp;·&nbsp; Open {breach.hoursOpen}h
                           &nbsp;·&nbsp; SLA target {breach.slaTarget}h
                         </p>

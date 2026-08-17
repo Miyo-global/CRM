@@ -6,6 +6,7 @@ import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendTaskAssignedEmail } from "@/lib/email";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const updateSchema = z.object({
@@ -74,7 +75,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
         });
         if (assignee?.email) {
           const dueStr = updated.dueDate
-            ? new Date(updated.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+            ? new Date(updated.dueDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })
             : null;
           await sendTaskAssignedEmail(
             assignee.email,

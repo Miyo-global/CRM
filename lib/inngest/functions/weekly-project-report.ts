@@ -5,6 +5,7 @@ import { eq, and, count, sql, gte } from "drizzle-orm";
 import { subDays } from "date-fns";
 import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const weeklyProjectReport = inngest.createFunction(
   {
@@ -101,7 +102,7 @@ export const weeklyProjectReport = inngest.createFunction(
           );
 
         const body = [
-          `📊 Weekly Project Status (${new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })})`,
+          `📊 Weekly Project Status (${new Date().toLocaleDateString(DEFAULT_LOCALE, { weekday: "long", day: "numeric", month: "short" })})`,
           "",
           ...summaries,
           "",

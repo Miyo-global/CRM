@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/format-utils";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const HR_ADMIN_ROLES = ["CEO", "HR", "ADMIN", "BRANCH_HR", "BRANCH_MANAGER"];
 
@@ -398,7 +399,7 @@ function PayrollSummaryWidget() {
   if (!role || !["CEO", "ADMIN", "FINANCE"].includes(role)) return null;
 
   const formatINR = (n: number) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(n);
 
   return (
     <Card>

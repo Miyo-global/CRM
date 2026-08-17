@@ -8,6 +8,7 @@ import { z } from "zod";
 import { dateOnlyOptionalSchema } from "@/lib/validations/date";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
 
       const year = Number(
         new Intl.DateTimeFormat("en-CA", {
-          timeZone: "Asia/Kolkata",
+          timeZone: DEFAULT_TIMEZONE,
           year: "numeric",
         }).format(new Date())
       );

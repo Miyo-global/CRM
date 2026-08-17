@@ -2,6 +2,7 @@ import { z } from "zod";
 import { getTodayIST } from "@/lib/careers/application-deadline";
 import { formatJobPostingLocation, formatJobPostingTitle } from "@/lib/hr/job-posting-format";
 import { cleanRequiredName, cleanStrictName } from "@/lib/validations/text-rules";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const requiredString = (label: string, max = 500) =>
   z
@@ -130,7 +131,7 @@ export const JOB_POSTING_LIMITS = {
   salaryMax: 10_000_000,
 } as const;
 
-export const JOB_POSTING_SALARY_MAX_MESSAGE = `Maximum salary is ₹1 crore (${JOB_POSTING_LIMITS.salaryMax.toLocaleString("en-IN")})`;
+export const JOB_POSTING_SALARY_MAX_MESSAGE = `Maximum salary is ₹1 crore (${JOB_POSTING_LIMITS.salaryMax.toLocaleString(DEFAULT_LOCALE)})`;
 
 const optionalSalary = z.preprocess(
   (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
@@ -138,7 +139,7 @@ const optionalSalary = z.preprocess(
     .number()
     .min(
       JOB_POSTING_LIMITS.salaryFloor,
-      `Salary must be at least ₹${JOB_POSTING_LIMITS.salaryFloor.toLocaleString("en-IN")}`,
+      `Salary must be at least ${CURRENCY_SYMBOL}${JOB_POSTING_LIMITS.salaryFloor.toLocaleString(DEFAULT_LOCALE)}`,
     )
     .max(JOB_POSTING_LIMITS.salaryMax, JOB_POSTING_SALARY_MAX_MESSAGE)
     .optional(),

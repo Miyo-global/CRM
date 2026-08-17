@@ -15,6 +15,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import type { Task, TaskType } from "@/lib/api/hooks/tasks";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 export function formatTaskDue(dueDate: string | null): string {
@@ -23,8 +24,8 @@ export function formatTaskDue(dueDate: string | null): string {
   const now = new Date();
   const diffMs = d.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / 86400000);
-  const formatted = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-  const time = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const formatted = d.toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" });
+  const time = d.toLocaleTimeString(DEFAULT_LOCALE, { hour: "2-digit", minute: "2-digit", hour12: true });
   if (diffDays < 0) return `Overdue · ${formatted}`;
   if (diffDays === 0) return `Today · ${time}`;
   if (diffDays === 1) return `Tomorrow · ${time}`;
@@ -133,7 +134,7 @@ const DoneTaskRow = memo(function DoneTaskRow({ task }: DoneTaskRowProps) {
       </span>
       <span className="text-[10px] text-muted-foreground/50 shrink-0">
         {task.completedAt
-          ? new Date(task.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+          ? new Date(task.completedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
           : ""}
       </span>
     </div>

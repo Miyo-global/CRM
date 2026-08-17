@@ -1,5 +1,6 @@
 import { sendEmail } from "./sender";
 import { getPayrollApprovedEmailTemplate } from "../email-templates";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export async function sendPayslipGeneratedEmail(
   email: string,
@@ -28,7 +29,7 @@ export async function sendPayslipGeneratedEmail(
 
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
           <p style="margin: 0; color: #166534; font-size: 14px;">Net Salary</p>
-          <p style="margin: 5px 0 0 0; color: #166534; font-size: 28px; font-weight: bold;">₹${netSalary}</p>
+          <p style="margin: 5px 0 0 0; color: #166534; font-size: 28px; font-weight: bold;">${CURRENCY_SYMBOL}${netSalary}</p>
         </div>
 
         <p>You can view and download your detailed payslip by logging into your account and navigating to <strong>My Payslips</strong>.</p>

@@ -5,6 +5,7 @@ import { escapeHtml } from "@/lib/email-templates/base";
 import { getEmployee } from "@/server/queries/hr";
 import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 type Params = { params: Promise<{ employeeId: string }> };
 
@@ -33,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const empRole = employee.role ? escapeHtml(String(employee.role)) : "";
     const reportingTo = employee.reportingTo ? escapeHtml(String(employee.reportingTo)) : "";
     const monthlySalary = employee.monthlySalary
-      ? `₹${escapeHtml(String(employee.monthlySalary))}`
+      ? `${CURRENCY_SYMBOL}${escapeHtml(String(employee.monthlySalary))}`
       : "";
     const bio = employee.bio ? escapeHtml(String(employee.bio)) : "";
 

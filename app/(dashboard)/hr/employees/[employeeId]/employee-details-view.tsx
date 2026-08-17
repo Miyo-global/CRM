@@ -77,6 +77,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Employee } from "@/types/hr";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_EXTRA_FIELDS } from "@/lib/hr/hr-letter-tokens";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function getInitials(first?: string | null, last?: string | null) {
   return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
@@ -110,9 +111,9 @@ function formatMoney(v: unknown): string | null {
   if (v == null || v === "") return null;
   const n = Number(v);
   if (Number.isNaN(n)) return null;
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(n);
 }

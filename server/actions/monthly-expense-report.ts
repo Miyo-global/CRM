@@ -9,6 +9,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { formatDateOnly } from "@/lib/date-utils";
 import type { MonthlyExpenseReportRow } from "@/lib/email-templates";
 import { EXPENSE_ADMIN_ROLES } from "@/lib/constants/roles";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export async function generateAndSendMonthlyExpenseReport() {
   const today = new Date();
@@ -74,7 +75,7 @@ export async function generateAndSendMonthlyExpenseReport() {
 
       return {
         date: new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Kolkata",
+          timeZone: DEFAULT_TIMEZONE,
           month: "short",
           day: "2-digit",
           year: "numeric",

@@ -26,6 +26,7 @@ import { useCampaignInsights, type CampaignInsightsResult } from "@/lib/api/hook
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const PERIODS = [
@@ -89,7 +90,7 @@ const PreviousInsightsItem = memo(function PreviousInsightsItem({ result, onRest
             </Badge>
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" aria-hidden="true" />
-              {generatedAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {generatedAt.toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })}
             </span>
           </div>
           <p className="text-xs text-muted-foreground line-clamp-2">{preview}…</p>
@@ -252,7 +253,7 @@ export default function AIInsightsPage() {
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" aria-hidden="true" />
                   Generated at{" "}
-                  {new Date(current.generatedAt).toLocaleString("en-IN", {
+                  {new Date(current.generatedAt).toLocaleString(DEFAULT_LOCALE, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

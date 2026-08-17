@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 
 export function getWorkLogApprovedEmailTemplate(
@@ -306,7 +307,7 @@ export function getDealStageChangeEmailTemplate(
       ${dealValue ? `
       <div class="credential-item">
         <span class="credential-label">Value:</span>
-        <span class="credential-value">₹${escapeHtml(dealValue)}</span>
+        <span class="credential-value">${CURRENCY_SYMBOL}${escapeHtml(dealValue)}</span>
       </div>` : ""}
       <div class="credential-item">
         <span class="credential-label">Stage:</span>

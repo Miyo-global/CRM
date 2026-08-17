@@ -30,6 +30,7 @@ import { AIPredictDealButton } from "@/features/crm/deals/ai-predict-deal-button
 import Image from "next/image";
 import { MeetingsCard } from "@/features/crm/deals/detail/meetings-card";
 import { MeetingDialog, CreateProjectDialog } from "@/features/crm/deals/detail/deal-dialogs";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STAGES = [
   { key: "LEAD", label: "Lead", color: "#3B82F6", bg: "bg-blue-500/10" },
@@ -322,8 +323,8 @@ export default function DealDetailPage({
                       { icon: User, label: "Contact Person", value: deal.contactPerson },
                       { icon: Mail, label: "Contact Email", value: deal.contactEmail, href: deal.contactEmail ? `mailto:${deal.contactEmail}` : undefined },
                       { icon: Phone, label: "Contact Phone", value: deal.contactPhone, href: deal.contactPhone ? `tel:${deal.contactPhone}` : undefined },
-                      { icon: Calendar, label: "Expected Close", value: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString("en-IN") : null },
-                      { icon: Calendar, label: "Actual Close", value: deal.actualCloseDate ? new Date(deal.actualCloseDate).toLocaleDateString("en-IN") : null },
+                      { icon: Calendar, label: "Expected Close", value: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
+                      { icon: Calendar, label: "Actual Close", value: deal.actualCloseDate ? new Date(deal.actualCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
                       { icon: Clock, label: "Probability", value: `${deal.probability ?? 0}%` },
                     ].map(item => (
                       <div key={item.label} className="flex items-start gap-2">
@@ -441,7 +442,7 @@ export default function DealDetailPage({
                   .map(d => (
                     <div key={d.label} className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">{d.label}</span>
-                      <span>{new Date(d.value!).toLocaleDateString("en-IN")}</span>
+                      <span>{new Date(d.value!).toLocaleDateString(DEFAULT_LOCALE)}</span>
                     </div>
                   ))}
               </CardContent>

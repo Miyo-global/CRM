@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 
 /**
@@ -31,7 +32,7 @@ export function formatDateOnly(date: Date | string | null | undefined): string {
 
   try {
     const formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Kolkata",
+      timeZone: DEFAULT_TIMEZONE,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -108,7 +109,7 @@ export function compareDates(date1: Date | string, date2: Date | string): number
 export function formatDisplayDate(
   date: Date | string | null | undefined,
   options?: Intl.DateTimeFormatOptions,
-  locale: string = "en-IN",
+  locale: string = DEFAULT_LOCALE,
 ): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -118,7 +119,7 @@ export function formatDisplayDate(
 
 export function formatDisplayDateTime(
   date: Date | string | null | undefined,
-  locale: string = "en-IN",
+  locale: string = DEFAULT_LOCALE,
 ): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -236,7 +237,7 @@ export function workingDaysBetween(start: Date, end: Date): number {
 export function formatMonthLabel(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleString("en-IN", { month: "short", year: "numeric" });
+  return d.toLocaleString(DEFAULT_LOCALE, { month: "short", year: "numeric" });
 }
 
 /**
@@ -247,7 +248,7 @@ export function formatYearMonth(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     year: "numeric",
     month: "2-digit",
   }).formatToParts(d);

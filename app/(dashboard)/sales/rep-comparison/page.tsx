@@ -26,9 +26,10 @@ import {
 } from "recharts";
 import { useRepComparison, useSalesDashboardLeaderboard } from "@/lib/api/hooks/crm";
 import { GitCompare } from "lucide-react";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmt(n: number) {
-  return `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${n.toLocaleString(DEFAULT_LOCALE, { maximumFractionDigits: 0 })}`;
 }
 
 function StatPill({
@@ -177,7 +178,7 @@ export default function RepComparisonPage() {
                 <BarChart data={monthlyData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${CURRENCY_SYMBOL}${(v / 1000).toFixed(0)}K`} />
                   <Tooltip formatter={(v) => fmt(Number(v))} />
                   <Legend />
                   <Bar dataKey={`${rep1Name} rev`} fill="#3b82f6" radius={[3, 3, 0, 0]} />

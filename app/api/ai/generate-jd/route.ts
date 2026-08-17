@@ -3,6 +3,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { aiText, isOpenAIConfigured } from "@/lib/ai/openai";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const generateJdSchema = z.object({
   title: z.string().min(1).max(200),
@@ -21,7 +22,7 @@ function buildJdContextLines(input: z.infer<typeof generateJdSchema>): string[] 
   if (input.type) contextLines.push(`Employment Type: ${input.type.replace("_", " ")}`);
   if (input.salaryMin && input.salaryMax) {
     contextLines.push(
-      `Salary Range: ₹${input.salaryMin.toLocaleString("en-IN")} – ₹${input.salaryMax.toLocaleString("en-IN")} per annum`,
+      `Salary Range: ${CURRENCY_SYMBOL}${input.salaryMin.toLocaleString(DEFAULT_LOCALE)} – ${CURRENCY_SYMBOL}${input.salaryMax.toLocaleString(DEFAULT_LOCALE)} per annum`,
     );
   }
   if (input.description) contextLines.push(`Job Description:\n${input.description}`);

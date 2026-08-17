@@ -31,6 +31,7 @@ import { AIScoreButton } from "./ai-score-button";
 import { AIEmailDialog } from "./ai-email-dialog";
 import { AINextActionButton } from "./ai-next-action-button";
 import { AIEnrichLeadButton } from "./ai-enrich-lead-button";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface LeadDetailSheetProps {
   leadId: number | null;
@@ -73,8 +74,8 @@ function formatTaskDue(dueDate: string | null): string {
   const now = new Date();
   const diffMs = d.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / 86400000);
-  const formatted = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-  const time = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const formatted = d.toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" });
+  const time = d.toLocaleTimeString(DEFAULT_LOCALE, { hour: "2-digit", minute: "2-digit", hour12: true });
   if (diffDays < 0) return `Overdue · ${formatted}`;
   if (diffDays === 0) return `Today · ${time}`;
   if (diffDays === 1) return `Tomorrow · ${time}`;
@@ -306,7 +307,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                       <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
                         <p className="text-[11px] text-muted-foreground mb-1">Potential Value</p>
                         <p className="text-lg font-bold text-emerald-400">
-                          ₹{Number(lead.potentialValue).toLocaleString("en-IN")}
+                          ₹{Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
                     )}
@@ -314,7 +315,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                       <div className="p-3.5 rounded-xl bg-gold/5 border border-gold/15">
                         <p className="text-[11px] text-muted-foreground mb-1">Investment Interest</p>
                         <p className="text-lg font-bold text-gold">
-                          ₹{Number(lead.investmentInterest).toLocaleString("en-IN")}
+                          ₹{Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
                     )}
@@ -607,7 +608,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                               </span>
                               <span className="text-[10px] text-muted-foreground/50 shrink-0">
                                 {task.completedAt
-                                  ? new Date(task.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+                                  ? new Date(task.completedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
                                   : ""}
                               </span>
                             </div>

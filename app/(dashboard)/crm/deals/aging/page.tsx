@@ -24,6 +24,7 @@ import { EmptyTargetIllustration } from "@/components/illustrations";
 import { apiClient } from "@/lib/api-client";
 import { formatINR } from "@/lib/format-utils";
 import { cn } from "@/lib/utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 interface AgingDeal {
@@ -248,7 +249,7 @@ export default function DealAgingPage() {
 
                             <TableCell className="text-sm text-muted-foreground tabular-nums">
                               {deal.createdAt
-                                ? new Date(deal.createdAt).toLocaleDateString("en-IN", {
+                                ? new Date(deal.createdAt).toLocaleDateString(DEFAULT_LOCALE, {
                                     day: "2-digit",
                                     month: "short",
                                     year: "numeric",

@@ -5,6 +5,7 @@ import { users, richDocuments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const schema = z.object({
   userId: z.string().min(1),
@@ -22,14 +23,14 @@ export async function POST(req: NextRequest) {
     if (!employee) return err("Employee not found.", 404);
 
     const name = `${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim() || employee.name || "Employee";
-    const joiningDate = employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
-    const relievingDate = new Date(body.relievingDate).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+    const joiningDate = employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString(DEFAULT_LOCALE, { year: "numeric", month: "long", day: "numeric" }) : "N/A";
+    const relievingDate = new Date(body.relievingDate).toLocaleDateString(DEFAULT_LOCALE, { year: "numeric", month: "long", day: "numeric" });
 
     const content = {
       type: "doc",
       content: [
         { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "Experience Certificate" }] },
-        { type: "paragraph", content: [{ type: "text", text: `Date: ${new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}` }] },
+        { type: "paragraph", content: [{ type: "text", text: `Date: ${new Date().toLocaleDateString(DEFAULT_LOCALE, { year: "numeric", month: "long", day: "numeric" })}` }] },
         { type: "paragraph" },
         { type: "paragraph", content: [{ type: "text", text: "To Whom It May Concern," }] },
         { type: "paragraph", content: [{ type: "text", text: `This is to certify that ${name} was employed with our organization from ${joiningDate} to ${relievingDate} as ${employee.designation ?? "a team member"}.` }] },

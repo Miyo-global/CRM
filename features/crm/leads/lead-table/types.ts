@@ -1,4 +1,5 @@
 import { formatDisplayDate } from "@/lib/date-utils";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 export { timeAgo } from "@/lib/date-utils";
 
 export interface Lead {
@@ -143,10 +144,10 @@ export function formatINR(val: string | number | null | undefined): string {
   if (!val) return "";
   const num = typeof val === "string" ? parseFloat(val) : val;
   if (isNaN(num) || num === 0) return "";
-  if (num >= 10000000) return `₹${(num / 10000000).toFixed(1)}Cr`;
-  if (num >= 100000) return `₹${(num / 100000).toFixed(1)}L`;
-  if (num >= 1000) return `₹${(num / 1000).toFixed(0)}K`;
-  return `₹${num.toLocaleString("en-IN")}`;
+  if (num >= 10000000) return `${CURRENCY_SYMBOL}${(num / 10000000).toFixed(1)}Cr`;
+  if (num >= 100000) return `${CURRENCY_SYMBOL}${(num / 100000).toFixed(1)}L`;
+  if (num >= 1000) return `${CURRENCY_SYMBOL}${(num / 1000).toFixed(0)}K`;
+  return `${CURRENCY_SYMBOL}${num.toLocaleString(DEFAULT_LOCALE)}`;
 }
 
 export function formatDate(date: string | Date | null | undefined): string {

@@ -1,5 +1,6 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
 import { REJECTION_COOLDOWN_DAYS } from "@/lib/constants/recruitment";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export function getLeaveRequestEmailTemplate(
   approverName: string,
@@ -675,7 +676,7 @@ export function getPayslipEmailTemplate(params: {
     </p>
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px;margin:20px 0;text-align:center;">
       <p style="margin:0;color:#166534;font-size:13px;">Net Salary — ${sMonth}</p>
-      <p style="margin:6px 0 0 0;color:#166534;font-size:26px;font-weight:700;">₹${sNet}</p>
+      <p style="margin:6px 0 0 0;color:#166534;font-size:26px;font-weight:700;">${CURRENCY_SYMBOL}${sNet}</p>
     </div>
     ${
       params.payslipUrl
@@ -693,7 +694,7 @@ export function getPayslipEmailTemplate(params: {
 
   return {
     subject,
-    html: getEmailTemplate({ title: "Your Payslip is Ready", preheader: `Net salary: ₹${sNet}`, content }),
+    html: getEmailTemplate({ title: "Your Payslip is Ready", preheader: `Net salary: ${CURRENCY_SYMBOL}${sNet}`, content }),
   };
 }
 

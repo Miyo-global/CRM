@@ -16,6 +16,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { useRenewalAccounts, useUpdateRenewal } from "@/lib/api/hooks/crm";
 import type { ClientAccount } from "@/types/crm";
 import { cn } from "@/lib/utils";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 type RenewalStage = "upcoming" | "in_discussion" | "renewed" | "churned";
@@ -62,9 +63,9 @@ function formatInr(value: string | null | undefined): string {
   if (!value) return "";
   const num = Number(value);
   if (!Number.isFinite(num)) return "";
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(num);
 }
@@ -105,7 +106,7 @@ function AccountCard({ account, onStageChange, isPending }: AccountCardProps) {
 
         {account.renewalDate && (
           <p className="text-xs text-muted-foreground">
-            Renewal: {new Date(account.renewalDate).toLocaleDateString("en-IN")}
+            Renewal: {new Date(account.renewalDate).toLocaleDateString(DEFAULT_LOCALE)}
           </p>
         )}
 

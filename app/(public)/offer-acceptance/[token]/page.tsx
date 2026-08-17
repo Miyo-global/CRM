@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface OfferData {
   candidateName: string;
@@ -52,7 +53,7 @@ const FileIcon = () => (
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString("en-IN", {
+    return new Date(dateStr).toLocaleDateString(DEFAULT_LOCALE, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -66,7 +67,7 @@ function formatSalary(salary: string | null): string {
   if (!salary) return "";
   const num = parseFloat(salary);
   if (isNaN(num)) return salary;
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(num);
 }
 
 export default function OfferAcceptancePage() {

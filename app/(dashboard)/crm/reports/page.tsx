@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp, scaleIn } from "@/lib/motion-variants";
 import { useLeadStats, useSlaAlerts } from "@/lib/api/hooks/leads";
 import { toast } from "sonner";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const PIPELINE_COLORS: Record<string, { color: string; bg: string }> = {
   NEW: { color: "#3B82F6", bg: "bg-blue-500/10" },
@@ -69,7 +70,7 @@ export default function CrmReportsPage() {
       ws1.addRows([
         { metric: "Total Leads", value: stats.total },
         { metric: "Conversion Rate", value: `${stats.conversionRate}%` },
-        { metric: "Total Potential Value", value: `₹${stats.totalPotentialValue.toLocaleString("en-IN")}` },
+        { metric: "Total Potential Value", value: `${CURRENCY_SYMBOL}${stats.totalPotentialValue.toLocaleString(DEFAULT_LOCALE)}` },
         { metric: "Unassigned Leads", value: stats.unassigned },
         { metric: "New This Month", value: stats.thisMonth },
       ]);
@@ -119,7 +120,7 @@ export default function CrmReportsPage() {
       doc.setFontSize(11);
       doc.text(`Total Leads: ${stats.total}`, 20, 60);
       doc.text(`Conversion Rate: ${stats.conversionRate}%`, 20, 68);
-      doc.text(`Total Potential Value: INR ${stats.totalPotentialValue.toLocaleString("en-IN")}`, 20, 76);
+      doc.text(`Total Potential Value: INR ${stats.totalPotentialValue.toLocaleString(DEFAULT_LOCALE)}`, 20, 76);
       doc.text(`Unassigned: ${stats.unassigned}`, 20, 84);
       doc.text(`New This Month: ${stats.thisMonth}`, 20, 92);
 
@@ -251,7 +252,7 @@ export default function CrmReportsPage() {
               {[
                 { label: "Total Leads", value: stats.total, icon: Users, color: "text-blue-400" },
                 { label: "Conversion Rate", value: `${stats.conversionRate}%`, icon: TrendingUp, color: "text-emerald-400" },
-                { label: "Potential Value", value: `₹${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, color: "text-gold" },
+                { label: "Potential Value", value: `${CURRENCY_SYMBOL}${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, color: "text-gold" },
                 { label: "Unassigned", value: stats.unassigned, icon: UserCheck, color: "text-red-400" },
                 { label: "New This Month", value: stats.thisMonth, icon: Calendar, color: "text-purple-400" },
               ].map(s => (

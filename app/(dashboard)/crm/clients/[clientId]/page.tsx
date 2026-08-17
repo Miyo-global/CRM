@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { EmptyPersonIllustration } from "@/components/illustrations";
 import { formatINRWhole as formatINR } from "@/lib/format-utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as const;
 
@@ -203,7 +204,7 @@ export default function ClientAccountDetailPage() {
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Converted</p>
-                <p className="text-sm flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-muted-foreground" /> {new Date(account.convertedAt).toLocaleDateString("en-IN")}</p>
+                <p className="text-sm flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-muted-foreground" /> {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE)}</p>
               </div>
             </div>
 
@@ -222,7 +223,7 @@ export default function ClientAccountDetailPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-xs text-muted-foreground">Amount:</span> <span className="font-medium">{formatINR(account.investmentAmount)}</span></div>
                   <div><span className="text-xs text-muted-foreground">Plan:</span> {account.planName || ""}</div>
-                  <div><span className="text-xs text-muted-foreground">Date:</span> {account.investmentDate ? new Date(account.investmentDate).toLocaleDateString("en-IN") : ""}</div>
+                  <div><span className="text-xs text-muted-foreground">Date:</span> {account.investmentDate ? new Date(account.investmentDate).toLocaleDateString(DEFAULT_LOCALE) : ""}</div>
                   <div><span className="text-xs text-muted-foreground">Ref:</span> {account.transactionRef || ""}</div>
                 </div>
               </div>
@@ -309,7 +310,7 @@ export default function ClientAccountDetailPage() {
                       <p className="text-xs text-muted-foreground mt-0.5">{activity.description}</p>
                     )}
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      {activity.user?.name || "Unknown"} • {new Date(activity.createdAt).toLocaleString("en-IN")}
+                      {activity.user?.name || "Unknown"} • {new Date(activity.createdAt).toLocaleString(DEFAULT_LOCALE)}
                     </p>
                   </div>
                 </div>

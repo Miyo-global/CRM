@@ -6,8 +6,9 @@ import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { appUrl } from "@/lib/app-url";
 import { verifyCronSecret, cronIdempotencyCheck } from "@/lib/cron-auth";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
-const IST = "Asia/Kolkata";
+const IST = DEFAULT_TIMEZONE;
 
 function escapeHtml(value: string): string {
   return value
@@ -198,7 +199,7 @@ async function sendWeeklySalesReport(
 
   const rows = Object.values(userStats)
     .sort((a, b) => b.converted - a.converted)
-    .map((s) => [s.name, `${s.converted}/${s.leads} converted • ₹${s.revenue.toLocaleString()}`]);
+    .map((s) => [s.name, `${s.converted}/${s.leads} converted • ${CURRENCY_SYMBOL}${s.revenue.toLocaleString()}`]);
 
   const html = buildReportEmail({
     title: `Weekly Sales Performance — ${formatDate(since)} to ${formatDate(until)}`,
@@ -210,7 +211,7 @@ async function sendWeeklySalesReport(
           ["Total leads", String(weekLeads.length)],
           ["Converted", String(converted.length)],
           ["Conversion rate", `${conversionRate}%`],
-          ["Total revenue", `₹${totalRevenue.toLocaleString()}`],
+          ["Total revenue", `${CURRENCY_SYMBOL}${totalRevenue.toLocaleString()}`],
           ["Total activities", String(weekActivities.length)],
         ],
       },
@@ -245,7 +246,7 @@ async function sendMonthlyFullReport(
   const converted = monthLeads.filter((l) => l.status === "CONVERTED");
   const totalRevenue = converted.reduce((s, l) => s + Number(l.potentialValue ?? 0), 0);
 
-  const monthLabel = since.toLocaleDateString("en-IN", { timeZone: IST, month: "long", year: "numeric" });
+  const monthLabel = since.toLocaleDateString(DEFAULT_LOCALE, { timeZone: IST, month: "long", year: "numeric" });
 
   const html = buildReportEmail({
     title: `Monthly Full Report — ${monthLabel}`,
@@ -257,7 +258,7 @@ async function sendMonthlyFullReport(
           ["Total leads", String(monthLeads.length)],
           ["Converted", String(converted.length)],
           ["Conversion rate", monthLeads.length > 0 ? `${((converted.length / monthLeads.length) * 100).toFixed(1)}%` : "0%"],
-          ["Revenue generated", `₹${totalRevenue.toLocaleString()}`],
+          ["Revenue generated", `${CURRENCY_SYMBOL}${totalRevenue.toLocaleString()}`],
           ...Object.entries(byStatus).map(([s, c]) => [`  ${s}`, String(c)]),
         ],
       },
@@ -271,7 +272,7 @@ async function sendMonthlyFullReport(
 }
 
 function formatDate(d: Date) {
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return d.toLocaleDateString(DEFAULT_LOCALE, { day: "2-digit", month: "short", year: "numeric" });
 }
 
 interface ReportSection {

@@ -1,10 +1,11 @@
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
-const IST = "Asia/Kolkata";
+const IST = DEFAULT_TIMEZONE;
 
 function formatIst(d: Date): string {
-  return d.toLocaleString("en-IN", {
+  return d.toLocaleString(DEFAULT_LOCALE, {
     timeZone: IST,
     dateStyle: "medium",
     timeStyle: "short",

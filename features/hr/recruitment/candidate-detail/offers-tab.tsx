@@ -41,6 +41,7 @@ import {
   PATCH_OFFER_TRANSITIONS,
   type CandidateOfferStatus,
 } from "@/lib/constants/candidate-offers";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUS_ICONS: Partial<Record<CandidateOfferStatus, React.ReactNode>> = {
   SENT: <Send className="h-3 w-3" />,
@@ -55,7 +56,7 @@ function formatINR(val: string | null) {
   if (!val) return "";
   const num = Number(val);
   if (!Number.isFinite(num)) return "";
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(num);
 }
 
 interface Props {

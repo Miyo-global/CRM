@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { Plus, Search, FileText, Download, Trash2 } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { format } from "date-fns";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
@@ -191,7 +192,7 @@ function CreateQuoteForm({ onSuccess }: { onSuccess: () => void }) {
           <Plus className="mr-1 h-3 w-3" /> Add Line
         </Button>
         <p className="text-sm text-right mt-2 font-medium">
-          Subtotal: INR {total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          Subtotal: INR {total.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2 })}
         </p>
       </div>
 
@@ -364,7 +365,7 @@ export default function QuotesPage() {
                     {q.deal?.name || ""}
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {q.currency} {Number(q.netAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    {q.currency} {Number(q.netAmount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2 })}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {q.validUntil ? format(new Date(q.validUntil), "dd MMM yyyy") : ""}

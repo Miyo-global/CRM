@@ -15,6 +15,7 @@ import { formatINRCompact, formatDealId } from "@/lib/format-utils";
 import { DEAL_STAGES } from "@/features/crm/shared/constants";
 import type { Deal } from "@/types/crm";
 import { AIPredictDealButton } from "./ai-predict-deal-button";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function DealHealthBadge({ expectedCloseDate }: { expectedCloseDate: string | null }) {
   const status = useMemo(() => {
@@ -132,7 +133,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
           {deal.expectedCloseDate && (
             <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
               <Calendar className="h-2.5 w-2.5" />
-              {new Date(deal.expectedCloseDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+              {new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE, { month: "short", day: "numeric" })}
             </span>
           )}
         </div>

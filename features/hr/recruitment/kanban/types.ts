@@ -1,4 +1,5 @@
 import type { CandidateStatus, SlaCandidateStatus } from "@/types/hr";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export interface ColumnConfig {
   id: CandidateStatus;
@@ -58,7 +59,7 @@ export { getInitials } from "@/lib/format-utils";
 
 export function formatDate(val: Date | string | null): string {
   if (!val) return "";
-  return new Date(val).toLocaleDateString("en-IN", {
+  return new Date(val).toLocaleDateString(DEFAULT_LOCALE, {
     day: "2-digit",
     month: "short",
     year: "numeric",

@@ -44,6 +44,7 @@ import {
 } from "@/lib/hr/offer-letter-tokens";
 import { Plus, FileText, Trash2, Pencil, Star, StarOff, ChevronDown, Settings2, FileSignature } from "lucide-react";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_TOKEN_LEGEND, HR_LETTER_DEFAULT_BODIES } from "@/lib/hr/hr-letter-tokens";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const ADMIN_ROLES = new Set(["CEO", "ADMIN"]);
 
@@ -77,8 +78,8 @@ function applyPreviewVars(
     candidateFirstName: "Rahul",
     candidateLastName: "Verma",
     candidateEmail: "rahul@example.com",
-    date: new Date().toLocaleDateString("en-IN", { dateStyle: "long" }),
-    generationDate: new Date().toLocaleDateString("en-IN", { dateStyle: "long" }),
+    date: new Date().toLocaleDateString(DEFAULT_LOCALE, { dateStyle: "long" }),
+    generationDate: new Date().toLocaleDateString(DEFAULT_LOCALE, { dateStyle: "long" }),
     designation: "Senior Associate",
     joiningDate: "01 July 2026",
     validUntil: "15 June 2026",

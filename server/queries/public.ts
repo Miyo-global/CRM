@@ -4,10 +4,11 @@ import { db } from "@/lib/db";
 import { jobPostings, departments } from "@/lib/db/schema";
 import { landingPages } from "@/lib/db/schema/marketing";
 import { eq, desc, inArray, and, or, isNull, gte } from "drizzle-orm";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function todayInIst(): string {
   const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

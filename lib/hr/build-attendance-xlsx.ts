@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import type { AttendanceExportRow } from "@/server/queries/hr/attendance-export";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export interface AttendanceXlsxMeta {
   orgName: string;
@@ -13,8 +14,8 @@ function fmtTime(value: Date | string | null): string {
   if (!value) return "";
   const d = typeof value === "string" ? new Date(value) : value;
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  return d.toLocaleTimeString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,

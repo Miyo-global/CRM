@@ -16,6 +16,7 @@ import {
   OFFER_EDITABLE_STATUSES,
   type CandidateOfferStatus,
 } from "@/lib/constants/candidate-offers";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 type RouteParams = { params: Promise<{ candidateId: string; offerId: string }> };
 
@@ -159,7 +160,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             designation: existing.offeredDesignation,
             salary: existing.offeredSalary ? String(existing.offeredSalary) : null,
             joiningDate: existing.joiningDate ?? null,
-            validUntil: tokenExpiry.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
+            validUntil: tokenExpiry.toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "long", year: "numeric" }),
             acceptanceLink,
           }),
         }).catch(() => {});

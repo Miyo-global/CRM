@@ -33,6 +33,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 type QRCodeData = {
   id: number;
@@ -173,7 +174,7 @@ function QRCard({
           <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-[10px] text-muted-foreground">
             <CalendarDays className="h-2.5 w-2.5 shrink-0" />
             {qr.createdAt
-              ? new Date(qr.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+              ? new Date(qr.createdAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
               : ""}
           </span>
         </div>

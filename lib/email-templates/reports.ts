@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export function getWeeklyAttendanceReportTemplate(
   weekRange: string,
@@ -107,7 +108,7 @@ export function getMonthlyExpenseReportTemplate(
 
     <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin: 24px 0;">
       <p class="email-text" style="margin: 0 0 8px 0;"><strong>Summary</strong></p>
-      <p class="email-text" style="margin: 0; font-size: 14px;">Total amount: <strong>₹${escapeHtml(summary.totalAmount)}</strong> &nbsp;|&nbsp; Total expenses: <strong>${summary.totalCount}</strong> &nbsp;|&nbsp; Pending: ${summary.pendingCount} &nbsp;|&nbsp; Approved: ${summary.approvedCount} &nbsp;|&nbsp; Paid: ${summary.paidCount} &nbsp;|&nbsp; Rejected: ${summary.rejectedCount}</p>
+      <p class="email-text" style="margin: 0; font-size: 14px;">Total amount: <strong>${CURRENCY_SYMBOL}${escapeHtml(summary.totalAmount)}</strong> &nbsp;|&nbsp; Total expenses: <strong>${summary.totalCount}</strong> &nbsp;|&nbsp; Pending: ${summary.pendingCount} &nbsp;|&nbsp; Approved: ${summary.approvedCount} &nbsp;|&nbsp; Paid: ${summary.paidCount} &nbsp;|&nbsp; Rejected: ${summary.rejectedCount}</p>
     </div>
 
     <div class="divider"></div>

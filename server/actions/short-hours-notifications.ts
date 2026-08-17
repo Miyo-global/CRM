@@ -1,7 +1,9 @@
 "use server";
 
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+
 function istYmd(d: Date): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(d);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(d);
 }
 
 function yesterdayIstYmd(): string {

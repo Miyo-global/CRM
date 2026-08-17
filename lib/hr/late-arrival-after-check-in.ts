@@ -3,6 +3,7 @@ import { lateArrivalWarnings, emailTemplates } from "@/lib/db/schema";
 import { and, count, eq, gte, lte } from "drizzle-orm";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { sendEmail } from "@/lib/email";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function replaceTemplateVariables(text: string, vars: Record<string, string>): string {
   return text.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, rawKey: string) => {
@@ -19,7 +20,7 @@ const LATE_TEMPLATE_NAMES = [
 
 export function minutesSinceMidnightIst(d: Date): number {
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,

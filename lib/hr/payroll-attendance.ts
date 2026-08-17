@@ -10,6 +10,7 @@ import {
   type LeaveCoverage,
   type StrictAttendanceResult,
 } from "./payroll-calculations";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function monthBounds(month: string): { start: string; end: string } {
   const calDays = calendarDaysInMonth(month);
@@ -17,7 +18,7 @@ function monthBounds(month: string): { start: string; end: string } {
 }
 
 function todayIstYmd(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
 }
 
 function eachDateInclusive(start: string, end: string): string[] {

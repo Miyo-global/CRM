@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import crypto from "crypto";
+import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         amount,
-        currency: "INR",
+        currency: DEFAULT_CURRENCY,
         receipt: `sub_${session.orgId}_${Date.now()}`,
         notes: {
           orgId: session.orgId,
@@ -204,7 +205,7 @@ export async function PATCH(req: NextRequest) {
         razorpayPaymentId: input.razorpay_payment_id,
         razorpayOrderId: input.razorpay_order_id,
         amount: (amount / 100).toFixed(2),
-        currency: "INR",
+        currency: DEFAULT_CURRENCY,
         status: "captured",
         paidAt: now,
       });

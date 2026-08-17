@@ -55,10 +55,11 @@ import type { MarketingCampaign } from "@/lib/api/hooks/crm";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmt(amount: string | number | null | undefined) {
   if (!amount) return "";
-  return `₹${Number(amount).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 const STATUS_COLORS: Record<string, string> = {

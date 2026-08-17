@@ -6,6 +6,7 @@ import { eq, and, desc, ilike, sql, count } from "drizzle-orm";
 import { createAuditLog } from "@/lib/audit-log";
 import { ROLES } from "@/lib/constants/roles";
 import { z } from "zod";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const QUOTE_STATUSES = ["DRAFT", "SENT", "ACCEPTED", "REJECTED", "EXPIRED"] as const;
 type QuoteStatus = (typeof QUOTE_STATUSES)[number];
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
     const input = await parseBody(req, createSchema);
 
     const dateStr = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
+      timeZone: DEFAULT_TIMEZONE,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",

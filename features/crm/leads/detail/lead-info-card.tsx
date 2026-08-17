@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { type EditForm } from "./lead-types";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface LeadInfoCardProps {
   lead: {
@@ -382,7 +383,7 @@ export function LeadInfoCard({
                 <p className="text-2xl font-bold text-emerald-400 tabular-nums">
                   ₹
                   {Number.isFinite(Number(lead.potentialValue))
-                    ? Number(lead.potentialValue).toLocaleString("en-IN")
+                    ? Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)
                     : "0"}
                 </p>
               </div>
@@ -395,7 +396,7 @@ export function LeadInfoCard({
                 <p className="text-2xl font-bold text-gold tabular-nums">
                   ₹
                   {Number.isFinite(Number(lead.investmentInterest))
-                    ? Number(lead.investmentInterest).toLocaleString("en-IN")
+                    ? Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)
                     : "0"}
                 </p>
               </div>

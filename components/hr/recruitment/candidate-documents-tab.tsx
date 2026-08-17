@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { RolloutDocumentsDialog } from "./rollout-documents-dialog";
 import { useRolloutDocuments } from "@/lib/api/hooks/hr/recruitment";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const STATUS_VARIANTS: Record<string, string> = {
@@ -36,7 +37,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function formatDate(value: string | null): string {
   if (!value) return "";
-  return new Date(value).toLocaleDateString("en-IN", {
+  return new Date(value).toLocaleDateString(DEFAULT_LOCALE, {
     day: "2-digit",
     month: "short",
     year: "numeric",

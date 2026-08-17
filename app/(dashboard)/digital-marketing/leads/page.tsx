@@ -31,6 +31,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/use-debounce";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const PLATFORMS = [
   "linkedin", "instagram", "facebook", "google_ads", "seo", "website", "whatsapp", "email_campaign",
@@ -251,7 +252,7 @@ export default function DmLeadsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {lead.dateCaptured ? new Date(lead.dateCaptured).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : ""}
+                        {lead.dateCaptured ? new Date(lead.dateCaptured).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" }) : ""}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">

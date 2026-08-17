@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -76,9 +77,9 @@ function ReviewField({
 
 function formatCurrency(amount: number | undefined) {
   if (amount == null || Number.isNaN(amount)) return "";
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(amount);
 }

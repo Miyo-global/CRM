@@ -43,6 +43,7 @@ import {
 import { countApprovedLeaveDaysInMonth } from "../server/queries/hr/payslip-leave-days";
 import { manualPayslipBodyToPdfData, manualPayslipPdfBodySchema } from "../lib/hr/manual-payslip-pdf";
 import { generatePayslipPdf } from "../lib/payslip-pdf-core";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const TARGET_MONTH = process.argv[2]?.match(/^\d{4}-\d{2}$/) ? process.argv[2] : "2026-04";
 const EMPLOYEE_ID_FILTER = process.argv.slice(3).filter((a) => !a.startsWith("--"));
@@ -88,7 +89,7 @@ function monthBounds(month: string): { start: string; end: string } {
 }
 
 function todayIstYmd(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
 }
 
 function eachDateInclusive(start: string, end: string): string[] {
@@ -354,7 +355,7 @@ async function main() {
     console.log(
       `  Leaves: ${approvedLeaveDays} approved → ${att.paidLeaveDays} casual paid, ${att.lopDays} LOP`
     );
-    console.log(`  Net: ₹${netSalary.toLocaleString("en-IN")}`);
+    console.log(`  Net: ${CURRENCY_SYMBOL}${netSalary.toLocaleString(DEFAULT_LOCALE)}`);
   }
 
   const reportPath = path.join(outDir, "report.json");

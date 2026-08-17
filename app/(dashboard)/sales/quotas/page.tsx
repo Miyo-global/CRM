@@ -38,9 +38,10 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import type { SalesQuota } from "@/lib/api/hooks/crm";
 import { EmptyTargetIllustration } from "@/components/illustrations";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmt(amount: string | number) {
-  return `₹${Number(amount).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export default function SalesQuotasPage() {

@@ -5,6 +5,7 @@ import { genderEnum, onboardingStatusEnum, onboardingDocStatusEnum } from "./enu
 
 import { departments } from "./hr";
 import { tickets } from "./projects";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export const organizations = pgTable("organizations", {
   id: text("id").primaryKey(),
@@ -13,7 +14,7 @@ export const organizations = pgTable("organizations", {
   logo: text("logo"),
   website: text("website"),
   industry: text("industry"),
-  timezone: text("timezone").default("Asia/Kolkata"),
+  timezone: text("timezone").default(DEFAULT_TIMEZONE),
   currency: text("currency").default("INR"),
   fiscalYearStart: integer("fiscal_year_start").default(4),
   settings: jsonb("settings").$type<Record<string, unknown>>(),

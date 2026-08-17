@@ -9,6 +9,7 @@ import { createAuditLog } from "@/lib/audit-log";
 import { isAdminOrOwner, isExpenseAdmin } from "@/lib/auth/helpers";
 import { createNotification } from "@/server/actions/create-notification";
 import { getExpenseMember } from "./_helpers";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export async function approveExpense(expenseId: number) {
   const ctx = await getExpenseMember();
@@ -53,7 +54,7 @@ export async function approveExpense(expenseId: number) {
         userId: updated.userId,
         type: "SUCCESS",
         title: "Expense Approved",
-        message: `Your expense of ₹${parseFloat(updated.amount || "0").toLocaleString()} for "${updated.category}" has been approved.`,
+        message: `Your expense of ${CURRENCY_SYMBOL}${parseFloat(updated.amount || "0").toLocaleString()} for "${updated.category}" has been approved.`,
         link: "/hr/expenses",
         metadata: { expenseId, amount: updated.amount, category: updated.category },
       });
@@ -113,7 +114,7 @@ export async function rejectExpense(expenseId: number, reason: string) {
         userId: rejected.userId,
         type: "ERROR",
         title: "Expense Rejected",
-        message: `Your expense of ₹${parseFloat(rejected.amount || "0").toLocaleString()} for "${rejected.category}" has been rejected.`,
+        message: `Your expense of ${CURRENCY_SYMBOL}${parseFloat(rejected.amount || "0").toLocaleString()} for "${rejected.category}" has been rejected.`,
         link: "/hr/expenses",
         metadata: { expenseId, amount: rejected.amount, category: rejected.category, rejectionReason: reason },
       });
@@ -163,7 +164,7 @@ export async function markExpenseAsPaid(expenseId: number, transactionRef?: stri
         userId: paid.userId,
         type: "SUCCESS",
         title: "Expense Paid",
-        message: `Your expense of ₹${parseFloat(paid.amount || "0").toLocaleString()} for "${paid.category}" has been paid.`,
+        message: `Your expense of ${CURRENCY_SYMBOL}${parseFloat(paid.amount || "0").toLocaleString()} for "${paid.category}" has been paid.`,
         link: "/hr/expenses",
         metadata: { expenseId, amount: paid.amount, category: paid.category, transactionRef },
       });

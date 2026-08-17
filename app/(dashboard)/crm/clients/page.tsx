@@ -29,6 +29,7 @@ import { useDebouncedValue } from "@/hooks/use-debounce";
 import { AIChurnRiskButton } from "@/features/crm/clients/ai-churn-risk-button";
 import { AssignCrmDialog } from "@/features/crm/clients/assign-crm-dialog";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as const;
@@ -45,7 +46,7 @@ function formatINR(val: string | number | null | undefined): string {
   if (!val) return "";
   const num = typeof val === "string" ? parseFloat(val) : val;
   if (isNaN(num) || num === 0) return "";
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(num);
 }
 
 
@@ -112,7 +113,7 @@ function KanbanCard({ account }: { account: ClientAccount }) {
 
           {account.convertedAt && (
             <p className="text-[10px] text-muted-foreground">
-              {new Date(account.convertedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })}
             </p>
           )}
         </CardContent>
@@ -417,7 +418,7 @@ export default function ClientAccountsPage() {
                             {account.status === "INVESTED" ? formatINR(account.investmentAmount) : ""}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
-                            {account.convertedAt ? new Date(account.convertedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : ""}
+                            {account.convertedAt ? new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" }) : ""}
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             <AIChurnRiskButton clientId={account.id} compact />

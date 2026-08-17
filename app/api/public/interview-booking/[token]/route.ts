@@ -8,6 +8,7 @@ import { checkRateLimitRedis } from "@/lib/rate-limit-redis";
 import { logger } from "@/lib/logger";
 import { escapeHtml } from "@/lib/email-templates/base";
 import { buildBookingConfirmationHtml } from "@/lib/email-templates/hr-recruitment";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -239,10 +240,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       ]);
       const candidateName = candidate ? `${candidate.firstName} ${candidate.lastName}` : "Candidate";
       const orgName = org?.name ?? "Miyo Global";
-      const slotFormatted = slotStart.toLocaleString("en-IN", {
+      const slotFormatted = slotStart.toLocaleString(DEFAULT_LOCALE, {
         dateStyle: "full",
         timeStyle: "short",
-        timeZone: "Asia/Kolkata",
+        timeZone: DEFAULT_TIMEZONE,
       });
 
       const { users } = await import("@/lib/db/schema");

@@ -27,6 +27,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { useInvoiceStats, useInvoices } from "@/lib/api/hooks/invoice";
 import type { InvoiceStatus } from "@/types/invoice";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUS_BADGE: Record<InvoiceStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   DRAFT: { label: "Draft", variant: "secondary" },
@@ -37,7 +38,7 @@ const STATUS_BADGE: Record<InvoiceStatus, { label: string; variant: "default" | 
 };
 
 function fmt(amount: string | number) {
-  return `₹${Number(amount).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export default function BillingPage() {

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export type PayslipMoneyLine = { label: string; amount: number };
 
@@ -30,7 +31,7 @@ export type PayslipViewModel = {
 };
 
 export function fmtInr(amount: number): string {
-  return `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${CURRENCY_SYMBOL}${amount.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function toWordsInr(n: number): string {

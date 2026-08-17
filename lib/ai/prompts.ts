@@ -16,6 +16,7 @@ export type {
 } from "./schemas";
 
 import type { EmailTone } from "./schemas";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 export type { EmailTone };
 
 export interface LeadScoringInput {
@@ -64,8 +65,8 @@ Designation: ${lead.designation || "Not provided"}
 City: ${lead.city || "Not provided"}
 Source: ${lead.source || "unknown"}
 Priority: ${lead.priority || "WARM"}
-Potential Value: ${lead.potentialValue ? `₹${lead.potentialValue}` : "Not specified"}
-Investment Interest: ${lead.investmentInterest ? `₹${lead.investmentInterest}` : "Not specified"}
+Potential Value: ${lead.potentialValue ? `${CURRENCY_SYMBOL}${lead.potentialValue}` : "Not specified"}
+Investment Interest: ${lead.investmentInterest ? `${CURRENCY_SYMBOL}${lead.investmentInterest}` : "Not specified"}
 Notes: ${lead.notes || "None"}
 Tags: ${lead.tags?.length ? lead.tags.join(", ") : "None"}
 Days since created: ${lead.daysSinceCreated}
@@ -129,7 +130,7 @@ Return JSON:
 }`,
     user: `Predict win probability for this deal:
 Deal: ${deal.dealName}
-Value: ₹${deal.value.toLocaleString("en-IN")}
+Value: ${CURRENCY_SYMBOL}${deal.value.toLocaleString(DEFAULT_LOCALE)}
 Stage: ${deal.stage}
 Current Probability: ${deal.probability}%
 Days in Pipeline: ${deal.daysInPipeline}
@@ -180,7 +181,7 @@ Return JSON:
 Name: ${input.name}
 Status: ${input.status}
 ${input.priority ? `Priority: ${input.priority}` : ""}
-${input.value ? `Value: ₹${input.value.toLocaleString("en-IN")}` : ""}
+${input.value ? `Value: ${CURRENCY_SYMBOL}${input.value.toLocaleString(DEFAULT_LOCALE)}` : ""}
 Assigned To: ${input.assignedTo || "Unassigned"}
 Last Activity: ${input.lastActivityType ? `${input.lastActivityType} (${input.daysSinceLastActivity ?? "?"} days ago)` : "No activity logged"}
 Follow-up Date: ${input.followUpDate || "Not set"}${input.isOverdueFollowUp ? " (OVERDUE)" : ""}
@@ -224,7 +225,7 @@ Return JSON:
     user: `Assess churn risk for:
 Client: ${input.clientName}${input.company ? ` (${input.company})` : ""}
 Current Health Score: ${input.healthScore}/100
-Investment Value: ${input.investmentValue ? `₹${input.investmentValue.toLocaleString("en-IN")}` : "Unknown"}
+Investment Value: ${input.investmentValue ? `${CURRENCY_SYMBOL}${input.investmentValue.toLocaleString(DEFAULT_LOCALE)}` : "Unknown"}
 Last Activity: ${input.daysSinceLastActivity !== null ? `${input.daysSinceLastActivity} days ago` : "No activity recorded"}
 Open Tickets: ${input.openTickets}
 Tickets in Last 90 Days: ${input.totalTicketsLast90Days}
@@ -515,7 +516,7 @@ Return JSON:
 To: ${input.leadName}${input.designation ? `, ${input.designation}` : ""}${input.company ? ` at ${input.company}` : ""}
 From: ${input.senderName}${input.senderRole ? `, ${input.senderRole}` : ""}
 ${input.dealStage ? `Deal Stage: ${input.dealStage}` : ""}
-${input.potentialValue ? `Deal Value: ₹${input.potentialValue}` : ""}
+${input.potentialValue ? `Deal Value: ${CURRENCY_SYMBOL}${input.potentialValue}` : ""}
 ${input.lastActivityType ? `Last Activity: ${input.lastActivityType} on ${input.lastActivityDate || "recently"}` : "No previous activity"}
 ${input.lastActivityNotes ? `Notes: ${input.lastActivityNotes}` : ""}
 ${input.context ? `Additional context: ${input.context}` : ""}`,

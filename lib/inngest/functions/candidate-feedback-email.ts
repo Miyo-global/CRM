@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { sendEmail } from "@/lib/email/sender";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function buildFeedbackEmailHtml(params: {
   candidateName: string;
@@ -12,8 +13,8 @@ function buildFeedbackEmailHtml(params: {
   interviewType: string;
   scheduledAt: Date;
 }): { subject: string; html: string } {
-  const dateStr = params.scheduledAt.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  const dateStr = params.scheduledAt.toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     dateStyle: "long",
     timeStyle: "short",
   });

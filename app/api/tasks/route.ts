@@ -5,6 +5,7 @@ import { tasks, users } from "@/lib/db/schema";
 import { eq, and, desc, asc, count } from "drizzle-orm";
 import { z } from "zod";
 import { sendTaskAssignedEmail } from "@/lib/email";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 const listSchema = z.object({
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
         });
         if (assignee?.email) {
           const dueStr = body.dueDate
-            ? new Date(body.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+            ? new Date(body.dueDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })
             : null;
           const entityLabel = body.entityType ? `${body.entityType} #${body.entityId ?? ""}` : undefined;
 

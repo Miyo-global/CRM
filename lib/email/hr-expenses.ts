@@ -6,6 +6,7 @@ import {
   getExpenseRejectedEmailTemplate,
   getExpensePaidEmailTemplate,
 } from "../email-templates";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export async function sendExpenseSubmittedEmail(
   approverEmail: string,
@@ -39,7 +40,7 @@ export async function sendExpenseApprovedEmail(
 ) {
   await sendEmail({
     to: employeeEmail,
-    subject: `Expense Claim Approved - ₹${amount}`,
+    subject: `Expense Claim Approved - ${CURRENCY_SYMBOL}${amount}`,
     html: getExpenseApprovedEmailTemplate(employeeName, category, amount, approverName),
   });
 }
@@ -54,7 +55,7 @@ export async function sendExpenseRejectedEmail(
 ) {
   await sendEmail({
     to: employeeEmail,
-    subject: `Expense Claim Rejected - ₹${amount}`,
+    subject: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${amount}`,
     html: getExpenseRejectedEmailTemplate(employeeName, category, amount, approverName, reason),
   });
 }
@@ -68,7 +69,7 @@ export async function sendExpensePaidEmail(
 ) {
   await sendEmail({
     to: employeeEmail,
-    subject: `Expense Reimbursed - ₹${amount}`,
+    subject: `Expense Reimbursed - ${CURRENCY_SYMBOL}${amount}`,
     html: getExpensePaidEmailTemplate(employeeName, category, amount, transactionRef),
   });
 }

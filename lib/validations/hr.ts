@@ -8,6 +8,7 @@ import {
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { bankDetailsSchema } from "@/lib/validations/bank-details";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 /**
  * Department ↔ System-Role compatibility (D10).
@@ -152,7 +153,7 @@ export function checkMinMonthlySalary(
   if (salary == null) return null;
   if (minMonthlySalary == null || !(minMonthlySalary > 0)) return null;
   if (salary < minMonthlySalary) {
-    return `Monthly salary must be at least ₹${minMonthlySalary.toLocaleString("en-IN")} (your organization's minimum pay policy).`;
+    return `Monthly salary must be at least ${CURRENCY_SYMBOL}${minMonthlySalary.toLocaleString(DEFAULT_LOCALE)} (your organization's minimum pay policy).`;
   }
   return null;
 }
@@ -306,7 +307,7 @@ function optionalMonthlySalaryForEditSchema() {
     .min(MONTHLY_SALARY_MIN, "Monthly salary must be greater than 0")
     .max(
       MONTHLY_SALARY_MAX,
-      `Monthly salary cannot exceed ₹${MONTHLY_SALARY_MAX.toLocaleString("en-IN")}`,
+      `Monthly salary cannot exceed ${CURRENCY_SYMBOL}${MONTHLY_SALARY_MAX.toLocaleString(DEFAULT_LOCALE)}`,
     )
     .refine((val) => Number.isInteger(val), "Monthly salary must be a whole number")
     .optional();
@@ -660,7 +661,7 @@ export const onboardEmployeeInputSchema = z
       .min(MONTHLY_SALARY_MIN, "Monthly salary must be greater than 0")
       .max(
         MONTHLY_SALARY_MAX,
-        `Monthly salary cannot exceed ₹${MONTHLY_SALARY_MAX.toLocaleString("en-IN")}`,
+        `Monthly salary cannot exceed ${CURRENCY_SYMBOL}${MONTHLY_SALARY_MAX.toLocaleString(DEFAULT_LOCALE)}`,
       )
       .refine((val) => Number.isInteger(val), "Monthly salary must be a whole number"),
     bankDetails: bankDetailsSchema,

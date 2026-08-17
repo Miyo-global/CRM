@@ -11,6 +11,7 @@ import { getInterviewInviteEmail } from "@/lib/email-templates/hr";
 import { format as formatDate } from "date-fns";
 import { logger } from "@/lib/logger";
 import type { NextRequest } from "next/server";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const scheduleSchema = z
   .object({
@@ -162,7 +163,7 @@ export async function POST(req: NextRequest) {
         userId,
         type: "INFO",
         title: "New Interview Scheduled",
-        message: `You have been assigned to interview ${candidateName} on ${scheduledDate.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}.`,
+        message: `You have been assigned to interview ${candidateName} on ${scheduledDate.toLocaleString(DEFAULT_LOCALE, { timeZone: DEFAULT_TIMEZONE })}.`,
         link: `/hr/recruitment/interviews/${interview.id}`,
         metadata: { interviewId: interview.id, candidateId: body.candidateId },
       })

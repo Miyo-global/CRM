@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export function sanitizeDigitsOnly(value: string, maxLength = 12): string {
   return value.replace(/\D/g, "").slice(0, maxLength);
@@ -35,7 +36,7 @@ export function formatIndianInteger(value: string | number): string {
   if (!digits) return "";
   const n = Number(digits);
   if (!Number.isFinite(n)) return "";
-  return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat(DEFAULT_LOCALE, { maximumFractionDigits: 0 }).format(n);
 }
 
 /** Parse typed/display value to raw digit string, capped at max. */

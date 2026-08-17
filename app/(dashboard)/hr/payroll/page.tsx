@@ -52,6 +52,7 @@ import {
   pickSalaryStructureForPayrollMonth,
   resolvePayrollMonthlyCtc,
 } from "@/lib/hr/salary-effective-dates";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function ordinalDay(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -542,13 +543,13 @@ export default function PayrollPage() {
           />
           <StatCard
             label="Total Gross"
-            value={`₹${totalGross.toLocaleString("en-IN")}`}
+            value={`${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`}
             icon={DollarSign}
             color="gold"
           />
           <StatCard
             label="Total Net Payout"
-            value={`₹${totalNet.toLocaleString("en-IN")}`}
+            value={`${CURRENCY_SYMBOL}${totalNet.toLocaleString(DEFAULT_LOCALE)}`}
             icon={CreditCard}
             color="green"
           />

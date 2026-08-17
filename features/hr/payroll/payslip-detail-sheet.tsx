@@ -12,6 +12,7 @@ import { Calculator, Check } from "lucide-react";
 import { format, getDaysInMonth } from "date-fns";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import type { Employee } from "@/types/hr";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export interface PayslipPreview {
   basicPay: number;
@@ -108,22 +109,22 @@ export function PayslipDetailSheet({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Basic Pay</span>
-                <span className="tabular-nums">₹{payslipPreview?.basicPay.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{payslipPreview?.basicPay.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">HRA</span>
-                <span className="tabular-nums">₹{payslipPreview?.hra.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{payslipPreview?.hra.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               {(payslipPreview?.allowances || 0) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Special Allowance</span>
-                  <span className="tabular-nums">₹{payslipPreview?.allowances.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">₹{payslipPreview?.allowances.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {(payslipPreview?.bonus || 0) > 0 && (
                 <div className="flex justify-between text-emerald-600">
                   <span>Bonus / Incentive</span>
-                  <span className="tabular-nums">+₹{payslipPreview?.bonus.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">+₹{payslipPreview?.bonus.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {(payslipPreview?.overtimeAmount || 0) > 0 && (
@@ -136,13 +137,13 @@ export function PayslipDetailSheet({
                       ? ` (${payslipPreview.overtimeHours} hrs)`
                       : ""}
                   </span>
-                  <span className="tabular-nums">+₹{payslipPreview?.overtimeAmount.toLocaleString("en-IN")}</span>
+                  <span className="tabular-nums">+₹{payslipPreview?.overtimeAmount.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Gross Salary</span>
-                <span className="tabular-nums">₹{payslipPreview?.grossSalary.toLocaleString("en-IN")}</span>
+                <span className="tabular-nums">₹{payslipPreview?.grossSalary.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
             </div>
           </div>
@@ -153,14 +154,14 @@ export function PayslipDetailSheet({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Professional Tax</span>
                 <span className="text-red-600 tabular-nums">
-                  -₹{payslipPreview?.professionalTax.toLocaleString("en-IN")}
+                  -₹{payslipPreview?.professionalTax.toLocaleString(DEFAULT_LOCALE)}
                 </span>
               </div>
               {(payslipPreview?.salaryStructureDeductions || 0) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>
                   <span className="text-red-600 tabular-nums">
-                    -₹{Math.round(payslipPreview?.salaryStructureDeductions || 0).toLocaleString("en-IN")}
+                    -₹{Math.round(payslipPreview?.salaryStructureDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
               )}
@@ -170,7 +171,7 @@ export function PayslipDetailSheet({
                     LOP Deduction ({payslipPreview?.lopDays} {payslipPreview?.lopDays === 1 ? "day" : "days"})
                   </span>
                   <span className="text-red-600 tabular-nums">
-                    -₹{Math.round(payslipPreview?.lopDeduction || 0).toLocaleString("en-IN")}
+                    -₹{Math.round(payslipPreview?.lopDeduction || 0).toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
               )}
@@ -178,7 +179,7 @@ export function PayslipDetailSheet({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Other Deductions</span>
                   <span className="text-red-600 tabular-nums">
-                    -₹{payslipPreview?.otherDeductions.toLocaleString("en-IN")}
+                    -₹{payslipPreview?.otherDeductions.toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
               )}
@@ -186,7 +187,7 @@ export function PayslipDetailSheet({
               <div className="flex justify-between font-medium">
                 <span>Total Deductions</span>
                 <span className="text-red-600 tabular-nums">
-                  -₹{Math.round(payslipPreview?.totalDeductions || 0).toLocaleString("en-IN")}
+                  -₹{Math.round(payslipPreview?.totalDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
                 </span>
               </div>
             </div>
@@ -197,7 +198,7 @@ export function PayslipDetailSheet({
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
             <span className="text-2xl font-bold text-emerald-600 tabular-nums">
-              ₹{Math.round(payslipPreview?.netSalary || 0).toLocaleString("en-IN")}
+              ₹{Math.round(payslipPreview?.netSalary || 0).toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>
 

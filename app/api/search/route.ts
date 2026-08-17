@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { leads, deals, contacts, clients, tickets } from "@/lib/db/schema";
 import { eq, and, or, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 const querySchema = z.object({
   q: z.string().min(3, "Query must be at least 3 characters"),
@@ -67,7 +68,7 @@ async function executeSearch(orgId: string, q: string, limit?: number) {
 
     const results: SearchResult[] = [
       ...leadResults.map(l => ({ id: l.id, type: "lead" as const, title: l.name, subtitle: [l.email, l.company].filter(Boolean).join(" · ") || "Lead", href: `/crm/leads/${l.id}`, status: l.status })),
-      ...dealResults.map(d => ({ id: d.id, type: "deal" as const, title: d.name, subtitle: d.contactPerson || `₹${d.value || 0}`, href: `/crm/deals/${d.id}`, status: d.stage })),
+      ...dealResults.map(d => ({ id: d.id, type: "deal" as const, title: d.name, subtitle: d.contactPerson || `${CURRENCY_SYMBOL}${d.value || 0}`, href: `/crm/deals/${d.id}`, status: d.stage })),
       ...contactResults.map(c => ({ id: c.id, type: "contact" as const, title: c.name, subtitle: [c.email, c.company].filter(Boolean).join(" · ") || "Contact", href: `/crm/contacts` })),
       ...clientResults.map(c => ({ id: c.id, type: "client" as const, title: c.name, subtitle: c.company || "Client", href: `/crm/clients/${c.id}`, status: c.status })),
       ...ticketResults.map(t => ({ id: t.id, type: "ticket" as const, title: t.title, subtitle: `Ticket #${t.id}`, href: `/projects/${t.projectId}?ticket=${t.id}`, status: t.status })),

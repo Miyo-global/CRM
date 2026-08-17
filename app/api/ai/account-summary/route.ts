@@ -7,6 +7,7 @@ import { isOpenAIConfigured, aiText } from "@/lib/ai/openai";
 import { db } from "@/lib/db";
 import { clientAccounts, clientAccountActivities, leads } from "@/lib/db/schema/crm";
 import { eq, and, desc } from "drizzle-orm";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const BodySchema = z.object({
   clientId: z.number().int().positive(),
@@ -65,11 +66,11 @@ export async function POST(req: NextRequest) {
       .limit(5);
 
     const investmentAmount = account.investmentAmount
-      ? `₹${Number(account.investmentAmount).toLocaleString("en-IN")}`
+      ? `${CURRENCY_SYMBOL}${Number(account.investmentAmount).toLocaleString(DEFAULT_LOCALE)}`
       : "Not specified";
 
     const estimatedInvestment = account.estimatedInvestment
-      ? `₹${Number(account.estimatedInvestment).toLocaleString("en-IN")}`
+      ? `${CURRENCY_SYMBOL}${Number(account.estimatedInvestment).toLocaleString(DEFAULT_LOCALE)}`
       : "Not specified";
 
     const activitiesText =
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
         : activities
             .map((a) => {
               const date = a.createdAt
-                ? new Date(a.createdAt).toLocaleDateString("en-IN")
+                ? new Date(a.createdAt).toLocaleDateString(DEFAULT_LOCALE)
                 : "Unknown date";
               return `- [${date}] ${a.activityType}: ${a.description ?? "No description"}`;
             })
@@ -94,12 +95,12 @@ CLIENT ACCOUNT DETAILS:
 - Plan: ${account.planName ?? "Not specified"}
 - Investment Amount: ${investmentAmount}
 - Estimated Investment: ${estimatedInvestment}
-- Investment Date: ${account.investmentDate ? new Date(account.investmentDate).toLocaleDateString("en-IN") : "N/A"}
+- Investment Date: ${account.investmentDate ? new Date(account.investmentDate).toLocaleDateString(DEFAULT_LOCALE) : "N/A"}
 - Renewal Stage: ${account.renewalStage}
 - Renewal Date: ${account.renewalDate ?? "Not set"}
 - Conversion Notes: ${account.conversionNotes ?? "None"}
 - Renewal Notes: ${account.renewalNotes ?? "None"}
-- Account Created: ${new Date(account.createdAt).toLocaleDateString("en-IN")}
+- Account Created: ${new Date(account.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
 
 LEAD CONTEXT:
 ${lead ? `- Source: ${lead.source ?? "N/A"}, Priority: ${lead.priority ?? "N/A"}, City: ${lead.city ?? "N/A"}, Company: ${lead.company ?? "N/A"}` : "- No lead data available"}

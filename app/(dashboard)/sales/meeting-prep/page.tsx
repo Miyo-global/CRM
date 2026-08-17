@@ -12,6 +12,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { useMeetingPrep, type MeetingPrepResult } from "@/lib/api/hooks/ai";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 
@@ -69,13 +70,13 @@ interface ResultDisplayProps {
 
 function ResultDisplay({ result, meetingTitle, scheduledAt, onPrepareAnother }: ResultDisplayProps) {
   const formattedDate = scheduledAt
-    ? new Date(scheduledAt).toLocaleString("en-IN", {
+    ? new Date(scheduledAt).toLocaleString(DEFAULT_LOCALE, {
         dateStyle: "full",
         timeStyle: "short",
       })
     : "Not specified";
 
-  const generatedAt = new Date(result.generatedAt).toLocaleString("en-IN", {
+  const generatedAt = new Date(result.generatedAt).toLocaleString(DEFAULT_LOCALE, {
     dateStyle: "medium",
     timeStyle: "short",
   });

@@ -29,6 +29,7 @@ import {
   formatJobPostingTitle,
   formatJobTypeLabel,
 } from "@/lib/hr/job-posting-format";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const revalidate = 300;
 
@@ -218,10 +219,10 @@ export default async function JobDetailPage({ params }: Props) {
                     </dt>
                     <dd className="font-semibold text-primary">
                       {job.salaryMin && job.salaryMax
-                        ? `₹${Number(job.salaryMin).toLocaleString("en-IN")} – ₹${Number(job.salaryMax).toLocaleString("en-IN")}`
+                        ? `${CURRENCY_SYMBOL}${Number(job.salaryMin).toLocaleString(DEFAULT_LOCALE)} – ${CURRENCY_SYMBOL}${Number(job.salaryMax).toLocaleString(DEFAULT_LOCALE)}`
                         : job.salaryMin
-                          ? `From ₹${Number(job.salaryMin).toLocaleString("en-IN")}`
-                          : `Up to ₹${Number(job.salaryMax).toLocaleString("en-IN")}`}
+                          ? `From ${CURRENCY_SYMBOL}${Number(job.salaryMin).toLocaleString(DEFAULT_LOCALE)}`
+                          : `Up to ${CURRENCY_SYMBOL}${Number(job.salaryMax).toLocaleString(DEFAULT_LOCALE)}`}
                     </dd>
                   </div>
                 )}
@@ -265,7 +266,7 @@ export default async function JobDetailPage({ params }: Props) {
             <p className="text-xs text-muted-foreground text-center">
               Posted{" "}
               {job.createdAt
-                ? new Date(job.createdAt).toLocaleDateString("en-IN", {
+                ? new Date(job.createdAt).toLocaleDateString(DEFAULT_LOCALE, {
                     day: "numeric",
                     month: "long",
                     year: "numeric",

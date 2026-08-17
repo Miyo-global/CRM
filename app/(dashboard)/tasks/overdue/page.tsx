@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { useOverdueTasks } from "@/lib/api/hooks/tasks";
 import { ArrowLeft } from "lucide-react";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function overdueByDays(dueDate: string | null): number {
   if (!dueDate) return 0;
@@ -20,7 +21,7 @@ function overdueByDays(dueDate: string | null): number {
 
 function formatDate(value: string | null): string {
   if (!value) return "";
-  return new Date(value).toLocaleDateString("en-IN", {
+  return new Date(value).toLocaleDateString(DEFAULT_LOCALE, {
     day: "2-digit",
     month: "short",
     year: "numeric",

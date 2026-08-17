@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { cleanStrictName, cleanOptionalStrictName } from "@/lib/validations/text-rules";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const JOB_TYPE_OPTIONS = [
   { value: "FULL_TIME", label: "Full-Time" },
@@ -195,8 +196,8 @@ type JobOpeningRefineData = z.infer<z.ZodObject<typeof jobOpeningSharedFields>> 
 
 function refineJobOpening(d: JobOpeningRefineData, ctx: z.RefinementCtx) {
     const { salaryFloor, salaryMax: salaryCap } = JOB_OPENING_LIMITS;
-    const floorLabel = salaryFloor.toLocaleString("en-IN");
-    const capLabel = salaryCap.toLocaleString("en-IN");
+    const floorLabel = salaryFloor.toLocaleString(DEFAULT_LOCALE);
+    const capLabel = salaryCap.toLocaleString(DEFAULT_LOCALE);
     if (d.salaryMin != null && d.salaryMin < salaryFloor) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Min salary must be at least ${floorLabel}`, path: ["salaryMin"] });
     }

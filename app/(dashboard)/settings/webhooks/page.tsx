@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const AVAILABLE_EVENTS = [
   { id: "lead.created", label: "Lead Created" },
@@ -242,7 +243,7 @@ function WebhooksContent() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-3">
-                    Created {new Date(wh.createdAt).toLocaleDateString("en-IN")}
+                    Created {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
                   </p>
                 </CardContent>
               </Card>

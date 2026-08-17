@@ -20,6 +20,7 @@ import {
   formatJobTypeLabel,
 } from "@/lib/hr/job-posting-format";
 import { cn } from "@/lib/utils";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 type CareersJobCardProps = {
   job: PublicJobPosting;
@@ -52,10 +53,10 @@ export function CareersJobCard({ job, departmentName }: CareersJobCardProps) {
   const salaryLabel =
     hasSalary &&
     (job.salaryMin && job.salaryMax
-      ? `₹${Number(job.salaryMin).toLocaleString("en-IN")} – ₹${Number(job.salaryMax).toLocaleString("en-IN")}`
+      ? `${CURRENCY_SYMBOL}${Number(job.salaryMin).toLocaleString(DEFAULT_LOCALE)} – ${CURRENCY_SYMBOL}${Number(job.salaryMax).toLocaleString(DEFAULT_LOCALE)}`
       : job.salaryMin
-        ? `From ₹${Number(job.salaryMin).toLocaleString("en-IN")}`
-        : `Up to ₹${Number(job.salaryMax).toLocaleString("en-IN")}`);
+        ? `From ${CURRENCY_SYMBOL}${Number(job.salaryMin).toLocaleString(DEFAULT_LOCALE)}`
+        : `Up to ${CURRENCY_SYMBOL}${Number(job.salaryMax).toLocaleString(DEFAULT_LOCALE)}`);
 
   return (
     <article

@@ -13,6 +13,7 @@ import { useQuoteDetail, useUpdateQuote, useDeleteQuote, useSendQuote } from "@/
 import { toast } from "sonner";
 import { ArrowLeft, Send, CheckCircle, XCircle, Trash2, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
@@ -129,9 +130,9 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       for (const item of quote.lineItems ?? []) {
         doc.text(item.description.substring(0, 45), 20, y);
         doc.text(String(item.quantity), 110, y);
-        doc.text(Number(item.unitPrice).toLocaleString("en-IN"), 130, y);
+        doc.text(Number(item.unitPrice).toLocaleString(DEFAULT_LOCALE), 130, y);
         doc.text(`${item.taxRate}%`, 155, y);
-        doc.text(Number(item.amount).toLocaleString("en-IN"), 175, y);
+        doc.text(Number(item.amount).toLocaleString(DEFAULT_LOCALE), 175, y);
         y += 7;
       }
 
@@ -139,13 +140,13 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       doc.line(20, y, 190, y);
       y += 8;
       doc.setFontSize(10);
-      doc.text(`Subtotal: ${quote.currency} ${Number(quote.totalAmount).toLocaleString("en-IN")}`, 130, y);
+      doc.text(`Subtotal: ${quote.currency} ${Number(quote.totalAmount).toLocaleString(DEFAULT_LOCALE)}`, 130, y);
       y += 7;
-      doc.text(`Tax: ${quote.currency} ${Number(quote.taxAmount).toLocaleString("en-IN")}`, 130, y);
+      doc.text(`Tax: ${quote.currency} ${Number(quote.taxAmount).toLocaleString(DEFAULT_LOCALE)}`, 130, y);
       y += 7;
       doc.setFontSize(12);
       doc.setTextColor(189, 136, 44);
-      doc.text(`Net Total: ${quote.currency} ${Number(quote.netAmount).toLocaleString("en-IN")}`, 130, y);
+      doc.text(`Net Total: ${quote.currency} ${Number(quote.netAmount).toLocaleString(DEFAULT_LOCALE)}`, 130, y);
 
       if (quote.termsAndConditions) {
         y += 15;
@@ -240,22 +241,22 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
                       <TableCell>{idx + 1}</TableCell>
                       <TableCell>{item.description}</TableCell>
                       <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right">{Number(item.unitPrice).toLocaleString("en-IN")}</TableCell>
+                      <TableCell className="text-right">{Number(item.unitPrice).toLocaleString(DEFAULT_LOCALE)}</TableCell>
                       <TableCell className="text-right">{item.taxRate}%</TableCell>
-                      <TableCell className="text-right font-medium">{Number(item.amount).toLocaleString("en-IN")}</TableCell>
+                      <TableCell className="text-right font-medium">{Number(item.amount).toLocaleString(DEFAULT_LOCALE)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
               <div className="mt-4 border-t pt-4 space-y-1 text-right">
                 <p className="text-sm text-muted-foreground">
-                  Subtotal: {quote.currency} {Number(quote.totalAmount).toLocaleString("en-IN")}
+                  Subtotal: {quote.currency} {Number(quote.totalAmount).toLocaleString(DEFAULT_LOCALE)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Tax: {quote.currency} {Number(quote.taxAmount).toLocaleString("en-IN")}
+                  Tax: {quote.currency} {Number(quote.taxAmount).toLocaleString(DEFAULT_LOCALE)}
                 </p>
                 <p className="text-lg font-bold text-gold">
-                  Net Total: {quote.currency} {Number(quote.netAmount).toLocaleString("en-IN")}
+                  Net Total: {quote.currency} {Number(quote.netAmount).toLocaleString(DEFAULT_LOCALE)}
                 </p>
               </div>
             </CardContent>

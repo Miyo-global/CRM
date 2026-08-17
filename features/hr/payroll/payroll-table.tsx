@@ -36,10 +36,11 @@ import { Check, CreditCard, Download, Eye, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { getColorSafe, payrollStatusColors } from "@/lib/theme-constants";
 import type { PayrollWithUser } from "@/types/hr";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmtInr(value: string | number | null | undefined): string {
   const n = Math.round(parseFloat(String(value ?? "0")) || 0);
-  return n.toLocaleString("en-IN");
+  return n.toLocaleString(DEFAULT_LOCALE);
 }
 
 function num(value: string | number | null | undefined): number {

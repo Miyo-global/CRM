@@ -1,6 +1,7 @@
 import "server-only";
 
 import { aiText, isOpenAIConfigured } from "./openai";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 
 export type NotificationEvent =
@@ -34,7 +35,7 @@ Lead details:
 - Priority: ${ctx.priority ?? "WARM"}
 - Source: ${ctx.source ?? "Unknown"}
 - Company: ${ctx.company ?? "N/A"}
-- Potential Value: ${ctx.potentialValue ? `₹${ctx.potentialValue}` : "Not specified"}
+- Potential Value: ${ctx.potentialValue ? `${CURRENCY_SYMBOL}${ctx.potentialValue}` : "Not specified"}
 - Notes: ${ctx.notes ?? "None"}
 
 Write a short, action-oriented notification message (1-2 sentences, max 150 characters).
@@ -69,7 +70,7 @@ Deal details:
 - Deal name: ${ctx.dealName ?? "Unknown Deal"}
 - From stage: ${ctx.fromStage ?? "Unknown"}
 - To stage: ${ctx.toStage ?? "Unknown"}
-- Deal value: ${ctx.dealValue ? `₹${ctx.dealValue}` : "Not specified"}
+- Deal value: ${ctx.dealValue ? `${CURRENCY_SYMBOL}${ctx.dealValue}` : "Not specified"}
 - Client: ${ctx.clientName ?? "Unknown"}
 
 Write a short, professional notification (1-2 sentences, max 140 characters).

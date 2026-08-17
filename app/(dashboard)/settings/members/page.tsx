@@ -44,6 +44,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const ALL_ROLES = [
   { value: "CEO", label: "CEO" },
@@ -469,7 +470,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
         <Badge variant="outline" className={`text-[11px] border ${ROLE_COLORS[member.role] || ""}`}>{member.role}</Badge>
       </TableCell>
       <TableCell className="px-5 py-3.5 text-sm text-muted-foreground">
-        {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString("en-IN") : ""}
+        {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
       </TableCell>
       <TableCell className="px-5 py-3.5 text-right">
         <div className="flex items-center justify-end gap-2">

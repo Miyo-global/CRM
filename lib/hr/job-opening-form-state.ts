@@ -1,5 +1,6 @@
 import type { JobPostingStatus } from "@/types/hr";
 import type { ApplicationFieldConfig } from "@/lib/hr/application-field-config";
+import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
 
 export type JobOpeningFormStatus = "DRAFT" | "OPEN" | JobPostingStatus;
 
@@ -60,7 +61,7 @@ export const EMPTY_JOB_OPENING_FORM: JobOpeningFormState = {
   officeLocation: "",
   salaryMin: "",
   salaryMax: "",
-  currency: "INR",
+  currency: DEFAULT_CURRENCY,
   salaryType: "ANNUAL",
   bonus: "",
   minExperience: "",

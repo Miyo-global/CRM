@@ -7,6 +7,7 @@ import { isOpenAIConfigured, aiText } from "@/lib/ai/openai";
 import { db } from "@/lib/db";
 import { leads, leadActivities, clientAccounts, clientAccountActivities } from "@/lib/db/schema/crm";
 import { eq, and, desc } from "drizzle-orm";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const BodySchema = z.object({
   meetingTitle: z.string().min(1).max(200),
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
           ? "No previous interactions recorded."
           : activities
               .map((a) => {
-                const date = a.date ? new Date(a.date).toLocaleDateString("en-IN") : "Unknown";
+                const date = a.date ? new Date(a.date).toLocaleDateString(DEFAULT_LOCALE) : "Unknown";
                 return `- [${date}] ${a.type}${a.subject ? `: ${a.subject}` : ""} — ${a.notes ?? "No notes"}${a.outcome ? ` | Outcome: ${a.outcome}` : ""}`;
               })
               .join("\n");
@@ -87,8 +88,8 @@ LEAD PROFILE:
 - Status: ${lead.status}
 - Priority: ${lead.priority ?? "N/A"}
 - AI Score: ${lead.score ?? "Not scored"}
-- Potential Value: ${lead.potentialValue ? `₹${Number(lead.potentialValue).toLocaleString("en-IN")}` : "Not specified"}
-- Investment Interest: ${lead.investmentInterest ? `₹${Number(lead.investmentInterest).toLocaleString("en-IN")}` : "Not specified"}
+- Potential Value: ${lead.potentialValue ? `${CURRENCY_SYMBOL}${Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)}` : "Not specified"}
+- Investment Interest: ${lead.investmentInterest ? `${CURRENCY_SYMBOL}${Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)}` : "Not specified"}
 - Tags: ${lead.tags?.join(", ") ?? "None"}
 - Notes: ${lead.notes ?? "None"}
 - Follow-up Notes: ${lead.followUpNotes ?? "None"}
@@ -126,7 +127,7 @@ ${activitiesText}`;
           : activities
               .map((a) => {
                 const date = a.createdAt
-                  ? new Date(a.createdAt).toLocaleDateString("en-IN")
+                  ? new Date(a.createdAt).toLocaleDateString(DEFAULT_LOCALE)
                   : "Unknown";
                 return `- [${date}] ${a.activityType}: ${a.description ?? "No description"}`;
               })
@@ -140,8 +141,8 @@ CLIENT PROFILE:
 - Phone: ${account.clientPhone ?? "N/A"}
 - Account Status: ${account.status}
 - Plan: ${account.planName ?? "Not specified"}
-- Investment Amount: ${account.investmentAmount ? `₹${Number(account.investmentAmount).toLocaleString("en-IN")}` : "N/A"}
-- Investment Date: ${account.investmentDate ? new Date(account.investmentDate).toLocaleDateString("en-IN") : "N/A"}
+- Investment Amount: ${account.investmentAmount ? `${CURRENCY_SYMBOL}${Number(account.investmentAmount).toLocaleString(DEFAULT_LOCALE)}` : "N/A"}
+- Investment Date: ${account.investmentDate ? new Date(account.investmentDate).toLocaleDateString(DEFAULT_LOCALE) : "N/A"}
 - Renewal Stage: ${account.renewalStage}
 - Renewal Date: ${account.renewalDate ?? "Not set"}
 - Renewal Notes: ${account.renewalNotes ?? "None"}
@@ -152,7 +153,7 @@ ${activitiesText}`;
     }
 
     const userPrompt = `Meeting Title: ${meetingTitle}
-Scheduled: ${new Date(scheduledAt).toLocaleString("en-IN", { dateStyle: "full", timeStyle: "short" })}
+Scheduled: ${new Date(scheduledAt).toLocaleString(DEFAULT_LOCALE, { dateStyle: "full", timeStyle: "short" })}
 ${notes ? `Additional Notes from Organizer: ${notes}` : ""}
 
 ${contextString}

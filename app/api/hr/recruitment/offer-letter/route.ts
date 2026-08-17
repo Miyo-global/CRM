@@ -5,6 +5,7 @@ import { candidates, jobPostings, richDocuments } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const schema = z.object({
   candidateId: z.number().int().positive(),
@@ -32,19 +33,19 @@ export async function POST(req: NextRequest) {
     if (!job) return err("Job posting not found.", 404);
 
     const candidateName = `${candidate.firstName} ${candidate.lastName}`;
-    const formattedStartDate = new Date(`${body.startDate}T00:00:00`).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
-    const formattedSalary = body.salary.toLocaleString("en-IN");
+    const formattedStartDate = new Date(`${body.startDate}T00:00:00`).toLocaleDateString(DEFAULT_LOCALE, { year: "numeric", month: "long", day: "numeric" });
+    const formattedSalary = body.salary.toLocaleString(DEFAULT_LOCALE);
     const content = {
       type: "doc",
       content: [
         { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "Offer Letter" }] },
-        { type: "paragraph", content: [{ type: "text", text: `Date: ${new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}` }] },
+        { type: "paragraph", content: [{ type: "text", text: `Date: ${new Date().toLocaleDateString(DEFAULT_LOCALE, { year: "numeric", month: "long", day: "numeric" })}` }] },
         { type: "paragraph" },
         { type: "paragraph", content: [{ type: "text", text: `Dear ${candidateName},` }] },
         { type: "paragraph", content: [{ type: "text", text: `We are pleased to offer you the position of ${job.title} at our organization. Your start date will be ${formattedStartDate}.` }] },
         { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Compensation" }] },
         { type: "bulletList", content: [
-          { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: `Annual CTC: ₹${formattedSalary}` }] }] },
+          { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: `Annual CTC: ${CURRENCY_SYMBOL}${formattedSalary}` }] }] },
           { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: `Position: ${job.title}` }] }] },
           { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: `Location: ${job.location ?? "As per company policy"}` }] }] },
           { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: `Start Date: ${formattedStartDate}` }] }] },

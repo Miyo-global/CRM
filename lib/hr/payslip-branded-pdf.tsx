@@ -3,9 +3,10 @@ import React, { type ReactNode } from "react";
 import { LOGO_PNG_PATH, LOGO_SVG_PATH } from "@/lib/constants/paths";
 import { Document, Image, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { PayslipViewModel } from "@/lib/hr/payslip-view-model";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmtPdfInr(amount: number): string {
-  const s = amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const s = amount.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return `Rs.${s}`;
 }
 

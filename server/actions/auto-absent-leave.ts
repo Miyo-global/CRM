@@ -15,11 +15,12 @@ import { ROLES } from "@/lib/constants/roles";
 import { sendEmail } from "@/lib/email";
 import { buildNotificationEmail } from "@/lib/notifications/email";
 import { logger } from "@/lib/logger";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const ABSENT_CUTOFF_LABEL = "11:59 AM IST";
 
 function todayIstYmd(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
 }
 
 function istDayOfWeek(ymd: string): number {

@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { BONUS_MAX_AMOUNT } from "@/lib/constants/hr";
 import { isSimpleName, sanitizeSimpleName, SIMPLE_NAME_ALLOWED_HINT } from "@/lib/validations/text-rules";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export { BONUS_MAX_AMOUNT };
 
-export const BONUS_MAX_AMOUNT_LABEL = `₹${BONUS_MAX_AMOUNT.toLocaleString("en-IN")}`;
+export const BONUS_MAX_AMOUNT_LABEL = `${CURRENCY_SYMBOL}${BONUS_MAX_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`;
 export const BONUS_OTHER_REASON_MAX = 30;
 
 export const BONUS_TYPE_VALUES = [

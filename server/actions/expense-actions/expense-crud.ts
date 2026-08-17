@@ -11,6 +11,7 @@ import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { createAuditLog } from "@/lib/audit-log";
 import { getExpenseMember } from "./_helpers";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 interface CreateExpenseInput {
   category: string;
@@ -34,7 +35,7 @@ function validateExpenseFields(
   if (requireAll || data.amount !== undefined) {
     const amount = Number(data.amount);
     if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_EXPENSE_AMOUNT) {
-      return `Amount must be a positive number up to ₹${MAX_EXPENSE_AMOUNT.toLocaleString("en-IN")}.`;
+      return `Amount must be a positive number up to ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}.`;
     }
   }
   if (requireAll || data.expenseDate !== undefined) {
@@ -42,7 +43,7 @@ function validateExpenseFields(
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || Number.isNaN(new Date(day).getTime())) {
       return "Invalid expense date.";
     }
-    const todayIST = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+    const todayIST = new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
     if (day > todayIST) return "Expense date cannot be in the future.";
   }
   if (requireAll && !data.category?.trim()) {
@@ -115,7 +116,7 @@ export async function createExpense(data: CreateExpenseInput) {
       if (totalSpent > limit) {
         const remaining = Math.max(0, limit - parseFloat(spent?.total ?? "0"));
         return {
-          error: `This expense would exceed the ${period.toLowerCase()} budget limit of ₹${limit.toLocaleString()} for "${cat.name}". You have ₹${remaining.toLocaleString()} remaining.`,
+          error: `This expense would exceed the ${period.toLowerCase()} budget limit of ${CURRENCY_SYMBOL}${limit.toLocaleString()} for "${cat.name}". You have ${CURRENCY_SYMBOL}${remaining.toLocaleString()} remaining.`,
           isOverBudget: true,
         };
       }
@@ -143,7 +144,7 @@ export async function createExpense(data: CreateExpenseInput) {
       await notifyByRoles(member.orgId, [ROLES.CEO, ROLES.HR], {
         type: "INFO",
         title: "New Expense Submitted",
-        message: `A new expense of ₹${data.amount.toLocaleString()} has been submitted for "${data.category}".`,
+        message: `A new expense of ${CURRENCY_SYMBOL}${data.amount.toLocaleString()} has been submitted for "${data.category}".`,
         link: "/hr/expenses",
         metadata: { expenseId: expense.id, amount: data.amount, category: data.category },
         excludeUserId: session.user.id,

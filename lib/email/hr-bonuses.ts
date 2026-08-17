@@ -4,6 +4,7 @@ import {
   getBonusPaidEmployeeEmailTemplate,
   getBonusPaidStakeholderEmailTemplate,
 } from "../email-templates/bonus";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export async function sendBonusPaidEmployeeEmail(
   employeeEmail: string,
@@ -18,7 +19,7 @@ export async function sendBonusPaidEmployeeEmail(
   const bonusesUrl = `${baseUrl}/hr/my-bonuses`;
   await sendEmail({
     to: employeeEmail,
-    subject: `Your Bonus Has Been Paid — ₹${params.amount}`,
+    subject: `Your Bonus Has Been Paid — ${CURRENCY_SYMBOL}${params.amount}`,
     html: getBonusPaidEmployeeEmailTemplate({ ...params, bonusesUrl }),
   });
 }
@@ -36,7 +37,7 @@ export async function sendBonusPaidStakeholderEmail(
   const bonusesUrl = `${baseUrl}/hr/bonuses`;
   await sendEmail({
     to: recipientEmail,
-    subject: `Bonus Paid — ${params.employeeName} (₹${params.amount})`,
+    subject: `Bonus Paid — ${params.employeeName} (${CURRENCY_SYMBOL}${params.amount})`,
     html: getBonusPaidStakeholderEmailTemplate({ ...params, bonusesUrl }),
   });
 }

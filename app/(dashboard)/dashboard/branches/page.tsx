@@ -14,6 +14,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { Building2, Users, Clock, Wallet, Briefcase, BarChart3, MapPin } from "lucide-react";
 import Link from "next/link";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface BranchUser {
   id: string;
@@ -164,7 +165,7 @@ export default function BranchCommandCenterPage() {
                         <TableCell className="text-right">
                           {branch.kpis.pendingExpenses.count > 0 ? (
                             <span className="text-amber-600 font-medium">
-                              {branch.kpis.pendingExpenses.count} (INR {branch.kpis.pendingExpenses.total.toLocaleString("en-IN")})
+                              {branch.kpis.pendingExpenses.count} (INR {branch.kpis.pendingExpenses.total.toLocaleString(DEFAULT_LOCALE)})
                             </span>
                           ) : (
                             <span className="text-green-600">0</span>
@@ -267,7 +268,7 @@ function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSel
           <div className="mt-4 pt-4 border-t space-y-2">
             {branch.kpis.pendingExpenses.count > 0 && (
               <p className="text-sm text-amber-600">
-                INR {branch.kpis.pendingExpenses.total.toLocaleString("en-IN")} in pending expense approvals
+                INR {branch.kpis.pendingExpenses.total.toLocaleString(DEFAULT_LOCALE)} in pending expense approvals
               </p>
             )}
             <div className="flex gap-2">

@@ -12,6 +12,7 @@ import { useUpdateOrgSettings } from "@/lib/api/hooks/organization";
 import { toast } from "sonner";
 import { CURRENCIES, TIMEZONES, MONTHS } from "@/features/settings/organization/constants";
 import type { OrgSettings } from "@/types/organization";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function LoaderIcon({ className }: { className?: string }) {
   return (
@@ -128,7 +129,7 @@ export function AppConfigCard({ org }: AppConfigCardProps) {
 
   if (!initialized && org) {
     setLogoUrl(org.logo ?? "");
-    setTimezone(org.timezone ?? "Asia/Kolkata");
+    setTimezone(org.timezone ?? DEFAULT_TIMEZONE);
     setCurrency(org.currency ?? "INR");
     setFiscalYearStart(String(org.fiscalYearStart ?? 4));
     setDirectoryPublic(org.directoryPublic ?? false);
@@ -139,7 +140,7 @@ export function AppConfigCard({ org }: AppConfigCardProps) {
 
   const handleStartEdit = useCallback(() => {
     setLogoUrl(org.logo ?? "");
-    setTimezone(org.timezone ?? "Asia/Kolkata");
+    setTimezone(org.timezone ?? DEFAULT_TIMEZONE);
     setCurrency(org.currency ?? "INR");
     setFiscalYearStart(String(org.fiscalYearStart ?? 4));
     setDirectoryPublic(org.directoryPublic ?? false);
@@ -324,7 +325,7 @@ export function AppConfigCard({ org }: AppConfigCardProps) {
             ) : (
               <Input
                 id="timezone"
-                value={org.timezone ?? "Asia/Kolkata"}
+                value={org.timezone ?? DEFAULT_TIMEZONE}
                 disabled
                 className="bg-muted"
                 aria-label="Timezone"

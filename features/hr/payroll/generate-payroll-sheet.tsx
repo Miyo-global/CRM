@@ -12,6 +12,7 @@ import {
   sanitizeDigitsOnly,
 } from "@/lib/numeric-input";
 import { format } from "date-fns";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const nonNegativeInputProps = {
   type: "text" as const,
@@ -184,10 +185,10 @@ export function GeneratePayrollSheet({
             const displayName =
               `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim() || emp.email || "Employee";
             const salaryValue = Number(emp.monthlySalary);
-            const salary = (Number.isFinite(salaryValue) ? salaryValue : 0).toLocaleString("en-IN");
+            const salary = (Number.isFinite(salaryValue) ? salaryValue : 0).toLocaleString(DEFAULT_LOCALE);
             return {
               id: emp.id,
-              name: `${displayName} — ₹${salary}/month`,
+              name: `${displayName} — ${CURRENCY_SYMBOL}${salary}/month`,
             };
           })}
           value={selectedEmployee}
@@ -286,11 +287,11 @@ export function GeneratePayrollSheet({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Daily rate</span>
-                      <span className="font-medium">₹{overtimePreview.dailyRate.toLocaleString("en-IN")}</span>
+                      <span className="font-medium">₹{overtimePreview.dailyRate.toLocaleString(DEFAULT_LOCALE)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">OT amount</span>
-                      <span className="font-semibold text-green-700">+₹{overtimePreview.overtimeAmount.toLocaleString("en-IN")}</span>
+                      <span className="font-semibold text-green-700">+₹{overtimePreview.overtimeAmount.toLocaleString(DEFAULT_LOCALE)}</span>
                     </div>
                     <p className="text-[11px] text-muted-foreground pt-1">
                       Dates: {overtimePreview.eligibleDates.join(", ")}

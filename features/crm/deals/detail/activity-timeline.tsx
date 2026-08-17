@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { DealActivity } from "@/types/crm";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const ACT_ICONS: Record<string, LucideIcon> = {
   stage_change: ArrowRightLeft,
@@ -50,7 +51,7 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                   <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{activity.notes}</p>
                 )}
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  {activity.user?.name ?? "System"} • {activity.createdAt ? new Date(activity.createdAt).toLocaleString("en-IN") : ""}
+                  {activity.user?.name ?? "System"} • {activity.createdAt ? new Date(activity.createdAt).toLocaleString(DEFAULT_LOCALE) : ""}
                 </p>
               </div>
             </div>

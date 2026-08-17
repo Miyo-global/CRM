@@ -73,10 +73,11 @@ import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox
 import { EmployeeAssignedAssetsPanel } from "@/features/hr/assets/employee-assigned-assets-panel";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmt(amount: string | number | null) {
   if (amount === null || amount === undefined) return "";
-  return `₹${Number(amount).toLocaleString("en-IN", { minimumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0 })}`;
 }
 
 function assetsToExportRows(

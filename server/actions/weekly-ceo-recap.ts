@@ -15,6 +15,7 @@ import type { WeeklyCeoRecapData } from "@/lib/email-templates/weekly-ceo-recap"
 import { generateRecapNarrative } from "@/lib/ai/weekly-recap-narrator";
 import { logger } from "@/lib/logger";
 import { subDays } from "date-fns";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export async function generateAndSendWeeklyCeoRecap() {
   const allOrgs = await db.query.organizations.findMany();
@@ -23,12 +24,12 @@ export async function generateAndSendWeeklyCeoRecap() {
   const now = new Date();
   const weekStart = subDays(now, 7);
   const istDayMonth = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     month: "short",
     day: "numeric",
   });
   const istDayMonthYear = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Kolkata",
+    timeZone: DEFAULT_TIMEZONE,
     month: "short",
     day: "numeric",
     year: "numeric",

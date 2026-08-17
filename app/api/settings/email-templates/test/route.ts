@@ -59,6 +59,7 @@ import {
   getCompanyAnnouncementEmailTemplate,
 } from "@/lib/email-templates/organization";
 import { CRM_BASE_URL } from "@/lib/constants/company";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? CRM_BASE_URL;
 
@@ -100,7 +101,7 @@ const TEMPLATE_MAP: Record<string, TemplateEntry> = {
       getNewDeviceLoginEmailTemplate("Test User", {
         userAgent: "Chrome on Windows",
         ipAddress: "127.0.0.1",
-        time: new Date().toLocaleString("en-IN"),
+        time: new Date().toLocaleString(DEFAULT_LOCALE),
       }),
   },
   "auth.password_expiry": {

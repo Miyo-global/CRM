@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, Clock, TrendingUp, Pencil } from "lucide-react";
 import { useProjectBudget, useUpdateProjectBudget } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function StatCard({
   title,
@@ -80,7 +81,7 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
   }
 
   const fmt = (n: number) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(n);
 
   const overBudget = (budget?.remaining ?? 0) < 0;
 

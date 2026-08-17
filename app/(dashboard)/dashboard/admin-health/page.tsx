@@ -8,6 +8,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { Users, AlertTriangle, Clock, Wallet, CalendarDays } from "lucide-react";
 import Link from "next/link";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface AdminHealthData {
   unassignedLeads: number;
@@ -64,7 +65,7 @@ export default function AdminHealthDashboardPage() {
       icon: Wallet,
       color: (data?.pendingExpenses.count ?? 0) > 0 ? "text-blue-500" : "text-green-500",
       bgColor: (data?.pendingExpenses.count ?? 0) > 0 ? "bg-blue-50 dark:bg-blue-950" : "bg-green-50 dark:bg-green-950",
-      description: `INR ${Number(data?.pendingExpenses.totalAmount ?? 0).toLocaleString("en-IN")} awaiting approval`,
+      description: `INR ${Number(data?.pendingExpenses.totalAmount ?? 0).toLocaleString(DEFAULT_LOCALE)} awaiting approval`,
       link: "/hr/expenses?status=PENDING",
     },
     {

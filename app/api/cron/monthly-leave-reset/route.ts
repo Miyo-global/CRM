@@ -5,6 +5,7 @@ import {
 } from "@/server/actions/leave-actions";
 import { logger } from "@/lib/logger";
 import { verifyCronSecret, cronIdempotencyCheck } from "@/lib/cron-auth";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export async function GET(request: NextRequest) {
   const authError = verifyCronSecret(request.headers.get("authorization"));
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const istMonth = new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Kolkata",
+      timeZone: DEFAULT_TIMEZONE,
       month: "numeric",
     }).format(new Date());
     const isJanuary = istMonth === "1";

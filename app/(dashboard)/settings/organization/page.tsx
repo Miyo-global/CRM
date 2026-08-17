@@ -19,6 +19,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { toast } from "sonner";
 import { CURRENCIES, TIMEZONES, MONTHS } from "./_lib/constants";
 import { PayPolicyCard } from "./_components/pay-policy-card";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export default function OrganizationSettingsPage() {
   const { data: session } = useSession();
@@ -69,7 +70,7 @@ export default function OrganizationSettingsPage() {
   const initConfig = useCallback(() => {
     if (!configInitialized && org) {
       setLogoUrl(org.logo ?? "");
-      setTimezone(org.timezone ?? "Asia/Kolkata");
+      setTimezone(org.timezone ?? DEFAULT_TIMEZONE);
       setCurrency(org.currency ?? "INR");
       setFiscalYearStart(String(org.fiscalYearStart ?? 4));
       setDirectoryPublic(org.directoryPublic ?? false);
@@ -116,7 +117,7 @@ export default function OrganizationSettingsPage() {
   const handleStartEditConfig = useCallback(() => {
     if (!org) return;
     setLogoUrl(org.logo ?? "");
-    setTimezone(org.timezone ?? "Asia/Kolkata");
+    setTimezone(org.timezone ?? DEFAULT_TIMEZONE);
     setCurrency(org.currency ?? "INR");
     setFiscalYearStart(String(org.fiscalYearStart ?? 4));
     setDirectoryPublic(org.directoryPublic ?? false);
@@ -426,7 +427,7 @@ export default function OrganizationSettingsPage() {
                   ) : (
                     <Input
                       id="timezone"
-                      value={org.timezone ?? "Asia/Kolkata"}
+                      value={org.timezone ?? DEFAULT_TIMEZONE}
                       disabled
                       className="bg-muted"
                       aria-label="Timezone"

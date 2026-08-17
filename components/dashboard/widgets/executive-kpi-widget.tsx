@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
 import { useExecutiveDashboard } from "@/lib/api/hooks/dashboard";
 import { DollarSign, TrendingUp, Users, Target, Briefcase, Contact2, BarChart2 } from "lucide-react";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export function ExecutiveKpiWidget() {
   const { data, isLoading, error } = useExecutiveDashboard();
@@ -24,10 +25,10 @@ export function ExecutiveKpiWidget() {
 
   const fmt = (n: number) =>
     n >= 1_000_000
-      ? `₹${(n / 1_000_000).toFixed(1)}M`
+      ? `${CURRENCY_SYMBOL}${(n / 1_000_000).toFixed(1)}M`
       : n >= 1_000
-      ? `₹${(n / 1_000).toFixed(0)}K`
-      : `₹${n}`;
+      ? `${CURRENCY_SYMBOL}${(n / 1_000).toFixed(0)}K`
+      : `${CURRENCY_SYMBOL}${n}`;
 
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

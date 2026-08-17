@@ -15,6 +15,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { useCeoReviewTermination, type Termination } from "@/lib/api/hooks/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getInitials } from "./termination-utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function CheckCircleIcon({ className }: { className?: string }) {
   return (
@@ -204,7 +205,7 @@ export function CeoReviewSheet({
                     Severance:{" "}
                     <strong>
                       ₹
-                      {Number(reviewRecord.severanceAmount).toLocaleString("en-IN")}
+                      {Number(reviewRecord.severanceAmount).toLocaleString(DEFAULT_LOCALE)}
                     </strong>
                   </span>
                 )}

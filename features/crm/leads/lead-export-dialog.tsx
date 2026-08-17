@@ -13,6 +13,7 @@ import { Download, Loader2 } from "lucide-react";
 import { useLeads } from "@/lib/api/hooks/leads";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUSES = ["NEW", "CONTACTED", "INTERESTED", "QUALIFIED", "CONVERTED", "LOST"] as const;
 const SOURCES = ["referral", "campaign", "cold_call", "website", "social_media", "walk_in", "other"] as const;
@@ -87,7 +88,7 @@ export function LeadExportDialog() {
           city: l.city || "",
           score: l.score || 0,
           assignedTo: l.assignedTo?.name || "",
-          createdAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-IN") : "",
+          createdAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString(DEFAULT_LOCALE) : "",
           notes: l.notes || "",
         })),
       }]);

@@ -1,6 +1,7 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const calcSchema = z.object({
   annualCtc: z.number().positive(),
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
       },
       regime,
       slabs: slabs.map((s) => ({
-        range: `${s.min.toLocaleString("en-IN")} - ${s.max === Infinity ? "Above" : s.max.toLocaleString("en-IN")}`,
+        range: `${s.min.toLocaleString(DEFAULT_LOCALE)} - ${s.max === Infinity ? "Above" : s.max.toLocaleString(DEFAULT_LOCALE)}`,
         rate: `${s.rate}%`,
       })),
     });

@@ -3,6 +3,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export const offerDeadlineReminder = inngest.createFunction(
   { id: "offer-deadline-reminder", name: "Offer Deadline Reminder (24h)", triggers: { event: "hr/offer.deadline.reminder" } },
@@ -18,8 +19,8 @@ export const offerDeadlineReminder = inngest.createFunction(
     };
 
     const deadlineDate = new Date(deadline);
-    const deadlineStr = deadlineDate.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
+    const deadlineStr = deadlineDate.toLocaleString(DEFAULT_LOCALE, {
+      timeZone: DEFAULT_TIMEZONE,
       dateStyle: "full",
       timeStyle: "short",
     });

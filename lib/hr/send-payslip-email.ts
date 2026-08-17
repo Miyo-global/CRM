@@ -8,6 +8,7 @@ import { getPayslipEmailTemplate } from "@/lib/email-templates/hr";
 import { countApprovedLeaveDaysInMonth } from "@/server/queries/hr/payslip-leave-days";
 import { logger } from "@/lib/logger";
 import { appUrl } from "@/lib/app-url";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export type PayslipEmailError = "no_email" | "send_failed";
 
@@ -67,7 +68,7 @@ export async function sendPayslipEmailForPayroll(
     const emailContent = getPayslipEmailTemplate({
       employeeName: employee.name ?? "Employee",
       month: monthLabel,
-      netSalary: netSalary.toLocaleString("en-IN", { minimumFractionDigits: 2 }),
+      netSalary: netSalary.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2 }),
       orgName: org?.name ?? "Company",
       payslipUrl: `${appUrl}/api/hr/payrolls/${payroll.id}/download`,
     });

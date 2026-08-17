@@ -6,10 +6,11 @@ import { generatePayrollForOrg } from "@/lib/hr/generate-payroll-for-org";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendPayrollApprovedEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 /** Today's date in IST, as { day, period } where period is YYYY-MM. */
 function istTodayParts(): { day: number; period: string } {
-  const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
   return { day: Number(ymd.slice(8, 10)), period: ymd.slice(0, 7) };
 }
 

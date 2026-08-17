@@ -9,13 +9,14 @@ import {
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enIN } from "date-fns/locale/en-IN";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const localizer = dateFnsLocalizer({
   format,
   parse,
   startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
   getDay,
-  locales: { "en-IN": enIN },
+  locales: { DEFAULT_LOCALE: enIN },
 });
 
 export interface BigCalEvent {

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { invoices, notifications } from "@/lib/db/schema";
 import { eq, and, lte, or, sql } from "drizzle-orm";
 import { addDays, startOfDay } from "date-fns";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const paymentReminders = inngest.createFunction(
   { id: "payment-reminders", name: "Invoice Payment Reminders", triggers: { cron: "0 9 * * *" } },
@@ -40,11 +41,11 @@ export const paymentReminders = inngest.createFunction(
         let message = "";
 
         if (daysUntilDue < 0) {
-          message = `Invoice ${inv.invoiceNumber} is overdue by ${Math.abs(daysUntilDue)} day(s). Amount: ₹${Number(inv.total).toLocaleString("en-IN")}`;
+          message = `Invoice ${inv.invoiceNumber} is overdue by ${Math.abs(daysUntilDue)} day(s). Amount: ${CURRENCY_SYMBOL}${Number(inv.total).toLocaleString(DEFAULT_LOCALE)}`;
         } else if (daysUntilDue === 0) {
-          message = `Invoice ${inv.invoiceNumber} payment is due today. Amount: ₹${Number(inv.total).toLocaleString("en-IN")}`;
+          message = `Invoice ${inv.invoiceNumber} payment is due today. Amount: ${CURRENCY_SYMBOL}${Number(inv.total).toLocaleString(DEFAULT_LOCALE)}`;
         } else {
-          message = `Invoice ${inv.invoiceNumber} payment due in ${daysUntilDue} day(s). Amount: ₹${Number(inv.total).toLocaleString("en-IN")}`;
+          message = `Invoice ${inv.invoiceNumber} payment due in ${daysUntilDue} day(s). Amount: ${CURRENCY_SYMBOL}${Number(inv.total).toLocaleString(DEFAULT_LOCALE)}`;
         }
 
         await db.insert(notifications).values({

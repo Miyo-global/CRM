@@ -5,6 +5,7 @@ import { eq, and, gte, count, sql } from "drizzle-orm";
 import { subDays } from "date-fns";
 import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export const dailySalesDigest = inngest.createFunction(
   {
@@ -60,7 +61,7 @@ export const dailySalesDigest = inngest.createFunction(
         const message = [
           `New Leads: ${newLeads}`,
           `Deals Won: ${dealsWon}`,
-          `Pipeline: ₹${(pipeline / 100000).toFixed(1)}L`,
+          `Pipeline: ${CURRENCY_SYMBOL}${(pipeline / 100000).toFixed(1)}L`,
           overdue > 0 ? `Overdue Follow-ups: ${overdue}` : null,
         ].filter(Boolean).join(" · ");
 

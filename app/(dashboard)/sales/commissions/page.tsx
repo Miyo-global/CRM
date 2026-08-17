@@ -45,9 +45,10 @@ import { useCommissions, useCommissionRules, useCreateCommissionRule } from "@/l
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function fmt(amount: string | number) {
-  return `₹${Number(amount).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 const STATUS_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {

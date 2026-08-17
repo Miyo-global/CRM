@@ -32,6 +32,7 @@ import type {
   CareerLadder, CareerLevel,
   CareerLadderStatus, CareerLadderTrackType, CareerLadderVisibility,
 } from "@/types/hr";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const LEVEL_COLORS = [
   { bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700", strip: "bg-slate-400" },
@@ -85,7 +86,7 @@ function arrayFromText(text: string): string[] {
 
 function formatCurrency(n: number | undefined): string {
   if (n == null) return "";
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat(DEFAULT_LOCALE, { style: "currency", currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(n);
 }
 
 function LevelPill({ level, title, color }: { level: number; title: string; color: typeof LEVEL_COLORS[0] }) {

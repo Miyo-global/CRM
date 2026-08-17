@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export function getExpenseSubmittedEmailTemplate(
   approverName: string,
@@ -31,7 +32,7 @@ export function getExpenseSubmittedEmailTemplate(
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #0f172a; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sDescription ? `
         <tr>
@@ -57,7 +58,7 @@ export function getExpenseSubmittedEmailTemplate(
 
   return getEmailTemplate({
     title: `New Expense Claim from ${sEmployee}`,
-    preheader: `${sEmployee} submitted a ₹${sAmount} expense claim`,
+    preheader: `${sEmployee} submitted a ${CURRENCY_SYMBOL}${sAmount} expense claim`,
     content,
   });
 }
@@ -90,7 +91,7 @@ export function getExpenseApprovedEmailTemplate(
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #16a34a; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #16a34a; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Status:</td>
@@ -107,8 +108,8 @@ export function getExpenseApprovedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Claim Approved - ₹${sAmount}`,
-    preheader: `Your ₹${sAmount} expense claim has been approved`,
+    title: `Expense Claim Approved - ${CURRENCY_SYMBOL}${sAmount}`,
+    preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense claim has been approved`,
     content,
   });
 }
@@ -143,7 +144,7 @@ export function getExpenseRejectedEmailTemplate(
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #dc2626; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #dc2626; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Status:</td>
@@ -165,8 +166,8 @@ export function getExpenseRejectedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Claim Rejected - ₹${sAmount}`,
-    preheader: `Your ₹${sAmount} expense claim has been rejected`,
+    title: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${sAmount}`,
+    preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense claim has been rejected`,
     content,
   });
 }
@@ -199,7 +200,7 @@ export function getExpensePaidEmailTemplate(
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount Reimbursed:</td>
-          <td style="padding: 8px 0; color: #2563eb; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #2563eb; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sRef ? `
         <tr>
@@ -222,8 +223,8 @@ export function getExpensePaidEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Reimbursed - ₹${sAmount}`,
-    preheader: `Your ₹${sAmount} expense has been reimbursed`,
+    title: `Expense Reimbursed - ${CURRENCY_SYMBOL}${sAmount}`,
+    preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense has been reimbursed`,
     content,
   });
 }

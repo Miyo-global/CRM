@@ -11,11 +11,12 @@ import { BONUS_MANAGE_ROLES } from "@/lib/constants/hr";
 import { BONUS_TYPE_LABELS, type BonusType } from "@/lib/validations/bonus";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { logger } from "@/lib/logger";
+import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function formatBonusAmount(amount: string | null | undefined): string {
   const n = Number(amount ?? 0);
   if (!Number.isFinite(n)) return "0";
-  return n.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return n.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 function bonusTypeLabel(type: string | null | undefined): string {
@@ -78,7 +79,7 @@ export async function deliverBonusPaidNotifications(params: {
     logger.error("Failed to write bonus paid audit log", { bonusId: params.bonusId, error });
   }
 
-  const employeeMessage = `Your ${typeLabel} bonus of ₹${amount} has been marked as paid.${reasonLine}`;
+  const employeeMessage = `Your ${typeLabel} bonus of ${CURRENCY_SYMBOL}${amount} has been marked as paid.${reasonLine}`;
 
   try {
     await createNotification({
@@ -115,7 +116,7 @@ export async function deliverBonusPaidNotifications(params: {
 
   const stakeholderMessage =
     `${params.markedPaidByName} marked a bonus as paid for ${employeeName}. ` +
-    `Amount: ₹${amount} · Type: ${typeLabel}.${reasonLine}`;
+    `Amount: ${CURRENCY_SYMBOL}${amount} · Type: ${typeLabel}.${reasonLine}`;
 
   const managers = await db
     .select({ userId: organizationMembers.userId, email: users.email })

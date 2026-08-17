@@ -66,6 +66,7 @@ import {
   STATUS_FILTER_OPTIONS,
   type StatusFilter,
 } from "./_lib/utils";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 
@@ -826,7 +827,7 @@ export default function TerminationPage() {
                       Severance:{" "}
                       <strong>
                         ₹
-                        {Number(reviewRecord.severanceAmount).toLocaleString("en-IN")}
+                        {Number(reviewRecord.severanceAmount).toLocaleString(DEFAULT_LOCALE)}
                       </strong>
                     </span>
                   )}

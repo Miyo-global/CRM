@@ -1,6 +1,7 @@
+import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 export function getTodayIST(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TIMEZONE }).format(new Date());
 }
 
 export function normalizeDeadlineDate(
@@ -15,8 +16,8 @@ export function formatDeadlineDisplay(
 ): string | null {
   const normalized = normalizeDeadlineDate(deadline);
   if (!normalized) return null;
-  return new Date(`${normalized}T12:00:00+05:30`).toLocaleDateString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  return new Date(`${normalized}T12:00:00+05:30`).toLocaleDateString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
     day: "numeric",
     month: "long",
     year: "numeric",

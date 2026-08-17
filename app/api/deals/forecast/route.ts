@@ -3,6 +3,7 @@ import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { db } from "@/lib/db";
 import { deals } from "@/lib/db/schema";
 import { eq, and, notInArray } from "drizzle-orm";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STAGE_PROBABILITIES: Record<string, number> = {
   LEAD: 10,
@@ -72,7 +73,7 @@ async function buildForecast(orgId: string): Promise<ForecastSummary> {
           : new Date();
 
       const monthKey = `${closeDate.getFullYear()}-${String(closeDate.getMonth() + 1).padStart(2, "0")}`;
-      const monthLabel = closeDate.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+      const monthLabel = closeDate.toLocaleDateString(DEFAULT_LOCALE, { month: "short", year: "numeric" });
 
       const existing = monthMap.get(monthKey) ?? { month: monthKey, label: monthLabel, weighted: 0, bestCase: 0, dealCount: 0 };
       existing.weighted += weighted;

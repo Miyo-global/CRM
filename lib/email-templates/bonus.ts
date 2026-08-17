@@ -1,4 +1,5 @@
 import { getEmailTemplate, escapeHtml } from "./base";
+import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
 export function getBonusPaidEmployeeEmailTemplate(params: {
   employeeName: string;
@@ -30,7 +31,7 @@ export function getBonusPaidEmployeeEmailTemplate(params: {
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #b8860b; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #b8860b; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sReason ? `
         <tr>
@@ -53,8 +54,8 @@ export function getBonusPaidEmployeeEmailTemplate(params: {
   `;
 
   return getEmailTemplate({
-    title: `Bonus Paid — ₹${sAmount}`,
-    preheader: `Your ${sType} bonus of ₹${sAmount} has been marked as paid`,
+    title: `Bonus Paid — ${CURRENCY_SYMBOL}${sAmount}`,
+    preheader: `Your ${sType} bonus of ${CURRENCY_SYMBOL}${sAmount} has been marked as paid`,
     content,
   });
 }
@@ -90,7 +91,7 @@ export function getBonusPaidStakeholderEmailTemplate(params: {
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #b8860b; font-weight: 700; font-size: 18px;">₹${sAmount}</td>
+          <td style="padding: 8px 0; color: #b8860b; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sReason ? `
         <tr>
@@ -111,7 +112,7 @@ export function getBonusPaidStakeholderEmailTemplate(params: {
 
   return getEmailTemplate({
     title: `Bonus paid for ${sEmployee}`,
-    preheader: `${sMarkedBy} marked a ₹${sAmount} ${sType} bonus as paid for ${sEmployee}`,
+    preheader: `${sMarkedBy} marked a ${CURRENCY_SYMBOL}${sAmount} ${sType} bonus as paid for ${sEmployee}`,
     content,
   });
 }

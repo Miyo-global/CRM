@@ -9,12 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { useDealForecast } from "@/lib/api/hooks/crm";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 
 function fmtCurrency(val: number) {
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(val);
 }
