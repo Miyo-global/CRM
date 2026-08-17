@@ -1,4 +1,10 @@
 import { format } from "date-fns";
+import {
+  CURRENCY_SYMBOL,
+  DEFAULT_CURRENCY,
+  DEFAULT_LOCALE,
+  USES_INDIAN_NUMBERING,
+} from "@/lib/constants/locale";
 
 export function formatCurrency(value: number): string {
   return formatINRCompact(value);
@@ -6,12 +12,14 @@ export function formatCurrency(value: number): string {
 
 export function formatCurrencyFull(
   amount: number | string,
-  currency: string = "INR",
-  locale: string = "en-IN",
+  currency: string = DEFAULT_CURRENCY,
+  locale: string = DEFAULT_LOCALE,
   maximumFractionDigits: number = 2,
 ): string {
   const num = Number(amount);
-  if (!Number.isFinite(num)) return currency === "INR" ? "₹0.00" : "0.00";
+  if (!Number.isFinite(num)) {
+    return currency === DEFAULT_CURRENCY ? `${CURRENCY_SYMBOL}0.00` : "0.00";
+  }
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
@@ -122,36 +130,46 @@ export const calcPercent = (value: number, total: number, decimals = 1): string 
 };
 export function formatINR(amount: string | number): string {
   const num = Number(amount);
-  if (!Number.isFinite(num)) return "₹0";
+  if (!Number.isFinite(num)) return `${CURRENCY_SYMBOL}0`;
 
   const hasPaisa = num % 1 !== 0;
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     minimumFractionDigits: hasPaisa ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(num);
 }
 
+/** Compact scale: Lakh/Crore for Indian locales, K/M/B elsewhere. */
+const COMPACT_SCALE: readonly { threshold: number; divisor: number; suffix: string }[] =
+  USES_INDIAN_NUMBERING
+    ? [
+        { threshold: 1_00_00_000, divisor: 1_00_00_000, suffix: "Cr" },
+        { threshold: 1_00_000, divisor: 1_00_000, suffix: "L" },
+        { threshold: 10_000, divisor: 1_000, suffix: "K" },
+      ]
+    : [
+        { threshold: 1_000_000_000, divisor: 1_000_000_000, suffix: "B" },
+        { threshold: 1_000_000, divisor: 1_000_000, suffix: "M" },
+        { threshold: 10_000, divisor: 1_000, suffix: "K" },
+      ];
+
 export function formatINRCompact(amount: string | number): string {
   const num = Number(amount);
-  if (!Number.isFinite(num)) return "₹0";
+  if (!Number.isFinite(num)) return `${CURRENCY_SYMBOL}0`;
   const abs = Math.abs(num);
   const sign = num < 0 ? "-" : "";
-  if (abs >= 1_00_00_000) {
-    const val = abs / 1_00_00_000;
-    return `${sign}₹${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}Cr`;
+
+  for (const { threshold, divisor, suffix } of COMPACT_SCALE) {
+    if (abs >= threshold) {
+      const val = abs / divisor;
+      return `${sign}${CURRENCY_SYMBOL}${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}${suffix}`;
+    }
   }
-  if (abs >= 1_00_000) {
-    const val = abs / 1_00_000;
-    return `${sign}₹${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}L`;
-  }
-  if (abs >= 10_000) {
-    const val = abs / 1_000;
-    return `${sign}₹${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}K`;
-  }
+
   const hasPaisa = abs % 1 !== 0;
-  return `${sign}₹${new Intl.NumberFormat("en-IN", { minimumFractionDigits: hasPaisa ? 2 : 0, maximumFractionDigits: 2 }).format(abs)}`;
+  return `${sign}${CURRENCY_SYMBOL}${new Intl.NumberFormat(DEFAULT_LOCALE, { minimumFractionDigits: hasPaisa ? 2 : 0, maximumFractionDigits: 2 }).format(abs)}`;
 }
 
 
@@ -232,9 +250,9 @@ export function formatINRWhole(val: string | number | null | undefined): string 
   if (!val) return "";
   const num = typeof val === "string" ? parseFloat(val) : val;
   if (isNaN(num)) return "";
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     style: "currency",
-    currency: "INR",
+    currency: DEFAULT_CURRENCY,
     maximumFractionDigits: 0,
   }).format(num);
 }
