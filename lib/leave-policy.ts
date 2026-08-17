@@ -1,15 +1,33 @@
+/**
+ * Leave entitlements.
+ *
+ * Day counts are company policy and configurable per deployment; the defaults
+ * are what the app shipped with. The type *names* are deliberately not
+ * configurable — they are stored on every existing leave row and balance, so
+ * renaming them would orphan that data.
+ */
+
+function envDays(name: string, fallback: number): number {
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+const CASUAL_DAYS_PER_YEAR = envDays("NEXT_PUBLIC_CASUAL_LEAVE_DAYS_PER_YEAR", 12);
+const SICK_DAYS_PER_YEAR = envDays("NEXT_PUBLIC_SICK_LEAVE_DAYS_PER_YEAR", 6);
 
 export const LEAVE_POLICY = {
   CASUAL: {
     name: "Casual Leave",
-    daysPerYear: 12,
-    perMonth: 1,
+    daysPerYear: CASUAL_DAYS_PER_YEAR,
+    perMonth: CASUAL_DAYS_PER_YEAR / 12,
     carryForward: false,
     expiresMonthly: true,
   },
   SICK: {
     name: "Sick Leave",
-    daysPerYear: 6,
+    daysPerYear: SICK_DAYS_PER_YEAR,
     carryForward: false,
     expiresMonthly: false,
   },
@@ -48,7 +66,11 @@ export function calculateProratedCasualLeaves(
   if (joinYear > year) return 0;
   if (joinYear < year) return LEAVE_POLICY.CASUAL.daysPerYear;
   const joiningMonth = d.getMonth();
-  return LEAVE_POLICY.CASUAL.daysPerYear - joiningMonth;
+  // Accrue the monthly rate for each remaining month. Derived from perMonth
+  // rather than subtracting months from the annual total, which only agrees
+  // with the annual figure while the allocation happens to be 12/year.
+  const remainingMonths = 12 - joiningMonth;
+  return Math.round(LEAVE_POLICY.CASUAL.perMonth * remainingMonths);
 }
 
 export function getSickLeaveAllocation(): number {

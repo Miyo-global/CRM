@@ -1,7 +1,25 @@
 
-export const PROFESSIONAL_TAX_INR = 200;
+function envNumber(name: string, fallback: number): number {
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
 
-export const HOLIDAY_WORK_FULL_DAY_HOURS = 9;
+/**
+ * Flat monthly professional tax deduction.
+ *
+ * In India this is levied by the state, not the union, so the amount and even
+ * whether it applies at all vary by where the employee is engaged — the 200
+ * default matches Telangana. Set to 0 where it does not apply.
+ */
+export const PROFESSIONAL_TAX_INR = envNumber("NEXT_PUBLIC_PROFESSIONAL_TAX", 200);
+
+/** Hours worked on a holiday that count as a full compensatory day. */
+export const HOLIDAY_WORK_FULL_DAY_HOURS = envNumber(
+  "NEXT_PUBLIC_HOLIDAY_WORK_FULL_DAY_HOURS",
+  9,
+);
 
 export interface ProrationSegment {
   basicSalary: number;
