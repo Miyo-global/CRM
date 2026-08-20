@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = page.title ?? "Landing Page";
   const description = page.description ?? undefined;
-  const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
+  const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || CRM_BASE_URL;
   const pageUrl = `${baseUrl}/${slug}`;
 
   return {

@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
     if (!job) return err("Job posting not found", 404);
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || CRM_BASE_URL;
 
     const baseJobUrl = `${appUrl}${jobPostingPath(jobId, job.title)}`;
 

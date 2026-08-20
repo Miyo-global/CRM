@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL ?? CRM_BASE_URL;
+    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || CRM_BASE_URL;
     const bookingUrl = `${baseUrl}/interview-booking/${token}`;
 
     if (candidate.email) {

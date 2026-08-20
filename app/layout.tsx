@@ -8,13 +8,30 @@ import { MotionProvider } from "../components/providers/motion-provider";
 import { QueryProvider } from "../components/providers/query-provider";
 import { CRM_BASE_URL } from "@/lib/constants/company";
 
+/**
+ * metadataBase is evaluated while Next collects page data, so a bad value
+ * fails the production build rather than degrading at runtime. Never let a
+ * misconfigured env var get that far.
+ */
+function resolveMetadataBase(): URL {
+  for (const candidate of [process.env.NEXT_PUBLIC_APP_URL, CRM_BASE_URL]) {
+    if (!candidate?.trim()) continue;
+    try {
+      return new URL(candidate);
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  return new URL("https://crm.miyoglobal.com");
+}
+
 export const metadata: Metadata = {
   title: {
     default: "Miyo Global CRM",
     template: "%s | Miyo Global CRM",
   },
   description: "Advanced HR, Project Management, and CRM platform for modern teams.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || CRM_BASE_URL),
+  metadataBase: resolveMetadataBase(),
   openGraph: {
     type: "website",
     siteName: "Miyo Global CRM",

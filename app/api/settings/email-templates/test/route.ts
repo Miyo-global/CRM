@@ -61,7 +61,7 @@ import {
 import { CRM_BASE_URL } from "@/lib/constants/company";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const BASE_URL = process.env.NEXTAUTH_URL ?? CRM_BASE_URL;
+const BASE_URL = process.env.NEXTAUTH_URL || CRM_BASE_URL;
 
 interface TemplateEntry {
   subject: string;
