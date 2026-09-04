@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { notifications, users } from "@/lib/db/schema";
 import { sendEmail } from "@/lib/email";
+import { isEmailConfigured } from "@/lib/email/config";
 import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
 
@@ -50,7 +51,7 @@ export async function sendCalendarEventAttendeeEmails(params: {
   location?: string | null;
   variant: "created" | "updated";
 }): Promise<CalendarEventNotifyResult> {
-  const mailerConfigured = Boolean(process.env.SENDGRID_API_KEY);
+  const mailerConfigured = isEmailConfigured();
   const ids = [...new Set(params.attendeeIds)].filter(
     (id) => id && id !== params.creatorUserId,
   );
@@ -98,7 +99,7 @@ export async function sendCalendarEventAttendeeEmails(params: {
       : "";
 
   if (!mailerConfigured) {
-    logger.warn("CALENDAR_INVITE_EMAIL_SKIPPED: SENDGRID_API_KEY not set", {
+    logger.warn("CALENDAR_INVITE_EMAIL_SKIPPED: mail provider not configured", {
       subject,
       attendeeUserIds: ids,
     });

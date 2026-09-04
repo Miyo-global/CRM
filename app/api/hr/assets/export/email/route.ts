@@ -8,6 +8,7 @@ import { getAssetExportRows } from "@/server/queries/hr/assets-export";
 import { buildAssetsCsvString, assetRowsToXlsxSheets } from "@/lib/hr/assets-export-format";
 import { buildXlsxBuffer } from "@/lib/export/xlsx-utils";
 import { sendEmail } from "@/lib/email/sender";
+import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 import { assetsExportEmailSchema, assetsStatusLabel } from "@/lib/hr/assets-export-filters";
 import { logger } from "@/lib/logger";
 
@@ -21,11 +22,8 @@ function escapeHtml(s: string): string {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!process.env.SENDGRID_API_KEY?.trim()) {
-      return err(
-        "Email not configured. Set SENDGRID_API_KEY (and EMAIL_FROM_ADDRESS or SENDGRID_FROM_EMAIL).",
-        400,
-      );
+    if (!isEmailConfigured()) {
+      return err(emailNotConfiguredMessage(), 400);
     }
 
     let body;

@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email/sender";
 import { requireEmailEnv } from "./_guard";
+import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const RECIPIENTS = [requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the performance notice test.")];
@@ -61,8 +62,8 @@ function delay(ms: number): Promise<void> {
 }
 
 async function main() {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.error("SENDGRID_API_KEY is not set. Aborting.");
+  if (!isEmailConfigured()) {
+    console.error(`${emailNotConfiguredMessage()} Aborting.`);
     process.exit(1);
   }
 

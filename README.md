@@ -59,7 +59,7 @@
 - **Auth**: [NextAuth.js v5 beta](https://next-auth.js.org/)
 - **Storage**: Cloudflare R2 (S3-compatible)
 - **AI**: [Vercel AI SDK](https://sdk.vercel.ai/) with Google Generative AI
-- **Email**: SendGrid or SMTP (pluggable via `EMAIL_PROVIDER`)
+- **Email**: [ZeptoMail](https://www.zoho.com/zeptomail/) by Zoho, with SendGrid as a fallback (pluggable via `EMAIL_PROVIDER`)
 - **Tooling**:
   - [ESLint 9](https://eslint.org/) + `eslint-config-next`
   - [Vitest](https://vitest.dev/) for unit tests
@@ -104,9 +104,15 @@ Then update at least:
   - `NEXTAUTH_URL` — usually `http://localhost:3000` in development.
   - `NEXTAUTH_SECRET` — generate with `openssl rand -base64 32`.
 - **Email**
-  - `EMAIL_PROVIDER` — one of `sendgrid`, `smtp`, or `azure`.
-  - `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`.
-  - Provider-specific keys (e.g. `SENDGRID_API_KEY` or SMTP config).
+  - `EMAIL_PROVIDER` — `zeptomail` (default) or `sendgrid`.
+  - `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`, `EMAIL_REPLY_TO`. The From domain must be
+    verified with the provider or sends are rejected.
+  - ZeptoMail: `ZEPTOMAIL_TOKEN` (Mail Agent → SMTP & API → Send Mail Token). Set
+    `ZEPTOMAIL_API_URL` only if your Zoho account is outside the default US data centre
+    (`https://api.zeptomail.in/v1.1/email`, `.eu`, `.com.au`, `.ca`, `.jp`, `.sa`).
+  - SendGrid fallback: `SENDGRID_API_KEY`.
+  - Verify the setup end to end with `pnpm send:mail-test` (add `-- --check` to print the
+    resolved configuration without sending). Requires `TEST_EMAIL_TO`.
 - **Storage**
   - `R2_REGION`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `NEXT_PUBLIC_R2_PUBLIC_URL`.
 - **AI**

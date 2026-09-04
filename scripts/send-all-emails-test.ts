@@ -70,6 +70,7 @@ import {
 } from "@/lib/email/hr-leaves";
 import { requireEmailEnv } from "./_guard";
 import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
+import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 
 const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the test emails.");
 const NAME = process.env.TEST_EMAIL_NAME ?? "Test User";
@@ -164,8 +165,8 @@ function delay(ms: number): Promise<void> {
 }
 
 async function main() {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.error("SENDGRID_API_KEY is not set. Aborting.");
+  if (!isEmailConfigured()) {
+    console.error(`${emailNotConfiguredMessage()} Aborting.`);
     process.exit(1);
   }
 

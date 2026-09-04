@@ -1,42 +1,74 @@
-import sgMail from "@sendgrid/mail";
 import { logger } from "../logger";
 import { appUrl } from "../app-url";
+import {
+  getEmailProvider,
+  getFromAddress,
+  getFromName,
+  getReplyToAddress,
+  isEmailConfigured,
+} from "./config";
+import { sendViaZeptoMail } from "./providers/zeptomail";
+import { sendViaSendGrid } from "./providers/sendgrid";
+import { EmailSendError, type EmailOptions, type NormalizedEmail } from "./types";
+
+export type { EmailAttachment, EmailOptions } from "./types";
+export { EmailSendError } from "./types";
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
 export const baseUrl = appUrl;
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+function toList(value: string | string[] | undefined): string[] {
+  if (!value) return [];
+  const values = Array.isArray(value) ? value : [value];
+  const seen = new Set<string>();
+  for (const entry of values) {
+    const trimmed = entry?.trim();
+    if (trimmed) seen.add(trimmed);
+  }
+  return [...seen];
 }
 
-export interface EmailAttachment {
-  filename: string;
-  content: Buffer | string;
-  type: string;
+function htmlToText(html: string): string {
+  return html.replace(/<[^>]*>/g, "");
 }
 
-export interface EmailOptions {
-  to: string | string[];
-  subject: string;
-  html: string;
-  text?: string;
-  attachments?: EmailAttachment[];
-  cc?: string | string[];
-  bcc?: string | string[];
+function normalize(options: EmailOptions): NormalizedEmail {
+  const name = getFromName();
+  return {
+    to: toList(options.to),
+    cc: toList(options.cc),
+    bcc: toList(options.bcc),
+    from: { address: getFromAddress(), ...(name ? { name } : {}) },
+    replyTo: options.replyTo?.trim() || getReplyToAddress(),
+    subject: options.subject,
+    html: options.html,
+    text: options.text || htmlToText(options.html),
+    attachments:
+      options.attachments?.map((a) => ({
+        filename: a.filename,
+        type: a.type,
+        base64: Buffer.isBuffer(a.content) ? a.content.toString("base64") : a.content,
+      })) ?? [],
+  };
 }
 
-function isTransientError(error: unknown): boolean {
+/** Errors that predate the provider refactor (or come from elsewhere) still
+ *  need a verdict, so fall back to inspecting the shape. */
+function isRetryable(error: unknown): boolean {
+  if (error instanceof EmailSendError) return error.retryable;
+
   if (error && typeof error === "object") {
     const code = (error as { code?: number | string }).code;
     if (code === "ECONNRESET" || code === "ETIMEDOUT" || code === "ENOTFOUND" || code === "EAI_AGAIN") {
       return true;
     }
-    const statusCode = (error as { code?: number; statusCode?: number }).statusCode ?? (typeof code === "number" ? code : undefined);
+    const statusCode =
+      (error as { statusCode?: number }).statusCode ?? (typeof code === "number" ? code : undefined);
     if (typeof statusCode === "number") {
-      if (statusCode >= 500 && statusCode < 600) return true;
-      if (statusCode >= 400 && statusCode < 500) return false;
+      if (statusCode >= 500 || statusCode === 429) return true;
+      if (statusCode >= 400) return false;
     }
   }
   return false;
@@ -46,70 +78,84 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function sendEmail(options: EmailOptions) {
-  const fromEmail = process.env.EMAIL_FROM_ADDRESS || process.env.SENDGRID_FROM_EMAIL || "noreply@miyoglobal.com";
+async function dispatch(email: NormalizedEmail): Promise<{ requestId?: string }> {
+  if (getEmailProvider() === "sendgrid") {
+    await sendViaSendGrid(email);
+    return {};
+  }
+  return sendViaZeptoMail(email);
+}
 
-  const toList = Array.isArray(options.to) ? options.to : [options.to];
+/**
+ * Sends a transactional email through the configured provider (ZeptoMail by
+ * default), retrying transient failures with exponential backoff.
+ *
+ * No-ops with a warning when mail is not configured, so a deployment without
+ * credentials degrades instead of breaking the request that triggered it.
+ * Permanent failures — unverified sender, bad key, invalid address — throw.
+ */
+export async function sendEmail(options: EmailOptions): Promise<void> {
+  const email = normalize(options);
+  const provider = getEmailProvider();
 
-  if (!process.env.SENDGRID_API_KEY) {
-    logger.warn("EMAIL_SKIPPED: No SENDGRID_API_KEY configured", { to: toList, subject: options.subject });
+  if (!isEmailConfigured()) {
+    logger.warn("EMAIL_SKIPPED: mail provider not configured", {
+      provider,
+      to: email.to,
+      subject: email.subject,
+    });
     return;
   }
 
-  const attachments = options.attachments?.map((a) => ({
-    content: Buffer.isBuffer(a.content) ? a.content.toString("base64") : a.content,
-    filename: a.filename,
-    type: a.type,
-    disposition: "attachment" as const,
-  }));
-
-  const ccList = options.cc
-    ? (Array.isArray(options.cc) ? options.cc : [options.cc]).filter(Boolean)
-    : undefined;
-  const bccList = options.bcc
-    ? (Array.isArray(options.bcc) ? options.bcc : [options.bcc]).filter(Boolean)
-    : undefined;
-
-  const msg: sgMail.MailDataRequired = {
-    to: toList,
-    from: fromEmail,
-    subject: options.subject,
-    html: options.html,
-    text: options.text || options.html.replace(/<[^>]*>/g, ""),
-    ...(attachments?.length ? { attachments } : {}),
-    ...(ccList?.length ? { cc: ccList } : {}),
-    ...(bccList?.length ? { bcc: bccList } : {}),
-    trackingSettings: {
-      clickTracking: {
-        enable: false,
-        enableText: false,
-      },
-    },
-  };
+  if (email.to.length === 0) {
+    logger.warn("EMAIL_SKIPPED: no recipients", { provider, subject: email.subject });
+    return;
+  }
 
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      await sgMail.send(msg);
-      logger.info("Email sent", { to: toList, subject: options.subject });
+      const result = await dispatch(email);
+      logger.info("Email sent", {
+        provider,
+        to: email.to,
+        subject: email.subject,
+        ...(result.requestId ? { requestId: result.requestId } : {}),
+      });
       return;
     } catch (error) {
       lastError = error;
 
-      if (!isTransientError(error)) {
-        logger.error("Email send failed (non-retryable)", { to: toList, subject: options.subject, attempt, error });
+      if (!isRetryable(error)) {
+        logger.error("Email send failed (non-retryable)", {
+          provider,
+          to: email.to,
+          subject: email.subject,
+          attempt,
+          error: error instanceof Error ? error.message : error,
+        });
         throw error;
       }
 
       if (attempt < MAX_RETRIES) {
         const backoff = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-        logger.warn(`Email retry ${attempt}/${MAX_RETRIES}`, { to: toList, nextRetryMs: backoff });
+        logger.warn(`Email retry ${attempt}/${MAX_RETRIES}`, {
+          provider,
+          to: email.to,
+          nextRetryMs: backoff,
+          error: error instanceof Error ? error.message : error,
+        });
         await delay(backoff);
       }
     }
   }
 
-  logger.error("Email send failed after all retries", { to: toList, subject: options.subject, error: lastError });
+  logger.error("Email send failed after all retries", {
+    provider,
+    to: email.to,
+    subject: email.subject,
+    error: lastError instanceof Error ? lastError.message : lastError,
+  });
   throw lastError;
 }

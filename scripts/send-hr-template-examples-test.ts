@@ -1,10 +1,11 @@
 /**
- * Sends 10 HR custom-template-style emails to a test inbox (SendGrid).
+ * Sends 10 HR custom-template-style emails to a test inbox.
  * Run: pnpm exec tsx --env-file=.env scripts/send-hr-template-examples-test.ts
  * Override: TEST_EMAIL_TO=you@example.com
  */
 import { sendEmail } from "@/lib/email/sender";
 import { requireEmailEnv } from "./_guard";
+import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 
 const TO = requireEmailEnv("TEST_EMAIL_TO", "Inbox that receives the sample emails.");
 
@@ -121,8 +122,8 @@ const templates: { name: string; subject: string; body: string }[] = [
 ];
 
 async function main() {
-  if (!process.env.SENDGRID_API_KEY?.trim()) {
-    console.error("Missing SENDGRID_API_KEY in environment (.env).");
+  if (!isEmailConfigured()) {
+    console.error(emailNotConfiguredMessage());
     process.exit(1);
   }
 

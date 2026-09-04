@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { getEmployee } from "@/server/queries/hr";
 import { logger } from "@/lib/logger";
+import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 
 const sendSchema = z
   .object({
@@ -117,11 +118,8 @@ export async function POST(req: NextRequest) {
       return err("You do not have permission to send HR template emails.", 403);
     }
 
-    if (!process.env.SENDGRID_API_KEY?.trim()) {
-      return err(
-        "Email not configured. Set SENDGRID_API_KEY (and EMAIL_FROM_ADDRESS or SENDGRID_FROM_EMAIL for the From address).",
-        400
-      );
+    if (!isEmailConfigured()) {
+      return err(emailNotConfiguredMessage(), 400);
     }
 
     const body = sendSchema.parse(await req.json());

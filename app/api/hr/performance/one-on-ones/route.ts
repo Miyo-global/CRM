@@ -6,7 +6,7 @@ import { createOneOnOneSchema } from "@/lib/validations/hr";
 import { sendOneOnOneInvite } from "@/lib/hr/one-on-one-invite";
 import { logger } from "@/lib/logger";
 import type { NextRequest } from "next/server";
-import { NOREPLY_EMAIL } from "@/lib/constants/company";
+import { getFromAddress } from "@/lib/email/config";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -149,11 +149,7 @@ export async function POST(req: NextRequest) {
         agenda: body.agenda ?? null,
         meetingLink: body.meetingLink || null,
         organizerName: manager?.name ?? "Your manager",
-        organizerEmail:
-          manager?.email ??
-          process.env.EMAIL_FROM_ADDRESS ??
-          process.env.SENDGRID_FROM_EMAIL ??
-          NOREPLY_EMAIL,
+        organizerEmail: manager?.email ?? getFromAddress(),
         attendeeName: employee.name ?? "there",
         attendeeEmail: employee.email,
         additionalAttendees,

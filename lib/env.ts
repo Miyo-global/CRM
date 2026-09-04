@@ -18,17 +18,19 @@ const serverSchema = z.object({
   CRON_SECRET: z.string().optional(),
   WEBHOOK_SECRET: z.string().optional(),
 
-  SENDGRID_API_KEY: z.string().optional(),
-  EMAIL_FROM_ADDRESS: z.string().email().optional(),
-  EMAIL_FROM_NAME: z.string().optional(),
-  EMAIL_PROVIDER: z.enum(["sendgrid", "smtp", "azure"]).default("sendgrid"),
+  // Outbound mail. ZeptoMail (Zoho) is the default transport; SendGrid is kept
+  // as a fallback so an existing deployment can switch back with one env var.
+  EMAIL_PROVIDER: z.enum(["zeptomail", "sendgrid"]).default("zeptomail"),
 
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.string().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  SMTP_FROM_EMAIL: z.string().optional(),
-  SMTP_FROM_NAME: z.string().optional(),
+  ZEPTOMAIL_TOKEN: z.string().optional(),
+  ZEPTOMAIL_API_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
+  ZEPTOMAIL_BOUNCE_ADDRESS: z.string().optional(),
+
+  SENDGRID_API_KEY: z.string().optional(),
+
+  EMAIL_FROM_ADDRESS: z.string().email().optional().or(z.literal("").transform(() => undefined)),
+  EMAIL_FROM_NAME: z.string().optional(),
+  EMAIL_REPLY_TO: z.string().email().optional().or(z.literal("").transform(() => undefined)),
 
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),

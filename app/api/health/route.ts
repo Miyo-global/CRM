@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { redisHealth, isRedisEnabled } from "@/lib/redis";
+import { isEmailConfigured } from "@/lib/email/config";
 
 interface HealthCheck {
   status: "ok" | "warning" | "error";
@@ -32,11 +33,7 @@ export async function GET(req: NextRequest) {
 
   checks.auth = process.env.NEXTAUTH_SECRET ? { status: "ok" } : { status: "error" };
 
-  const emailConfigured = !!(
-    process.env.SENDGRID_API_KEY ||
-    (process.env.SMTP_HOST && process.env.SMTP_PORT)
-  );
-  checks.email = emailConfigured ? { status: "ok" } : { status: "warning" };
+  checks.email = isEmailConfigured() ? { status: "ok" } : { status: "warning" };
 
   checks.inngest = process.env.INNGEST_EVENT_KEY ? { status: "ok" } : { status: "warning" };
 

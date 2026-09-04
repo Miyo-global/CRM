@@ -26,6 +26,7 @@
     "seed:interview-questions": "npx tsx --env-file=.env scripts/seed-interview-questions.ts",
     "send:perf-notice-test": "npx tsx --env-file=.env scripts/send-performance-notice-test.ts",
     "send:all-emails-test": "npx tsx --env-file=.env scripts/send-all-emails-test.ts",
+    "send:mail-test": "npx tsx --env-file=.env scripts/send-zeptomail-test.ts",
     "gen:sample-payslip": "tsx scripts/generate-sample-payslip.ts"
   },
   "dependencies": {

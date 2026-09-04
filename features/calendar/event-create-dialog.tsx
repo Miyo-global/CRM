@@ -187,7 +187,7 @@ function calendarNotifyDescription(n: CalendarEventNotifyResult): string {
     if (n.emailFailures > 0) parts.push(`${n.emailFailures} email(s) failed — check logs`);
     if (n.emailsSkippedNoAddress > 0) parts.push(`${n.emailsSkippedNoAddress} without email on file`);
   } else if (n.attendeeCount > 0) {
-    parts.push("Outbound email not configured (SENDGRID_API_KEY)");
+    parts.push("Outbound email is not configured on the server");
   }
   return parts.join(" · ");
 }
