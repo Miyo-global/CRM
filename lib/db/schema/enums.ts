@@ -22,7 +22,6 @@ export const reviewStatusEnum = pgEnum("review_status", ["DRAFT", "IN_PROGRESS",
 export const onboardingStatusEnum = pgEnum("onboarding_status", ["PENDING", "IN_PROGRESS", "COMPLETED", "REJECTED"]);
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE", "OTHER"]);
 export const wfhRequestStatusEnum = pgEnum("wfh_request_status", ["PENDING", "APPROVED", "REJECTED"]);
-export const deviceStatusEnum = pgEnum("device_status", ["ACTIVE", "INACTIVE", "LOST", "RETURNED"]);
 export const reviewCycleStatusEnum = pgEnum("review_cycle_status", ["DRAFT", "ACTIVE", "COMPLETED", "CANCELLED"]);
 export const meetingStatusEnum = pgEnum("meeting_status", ["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]);
 export const trainingStatusEnum = pgEnum("training_status", ["DRAFT", "PUBLISHED", "ARCHIVED"]);

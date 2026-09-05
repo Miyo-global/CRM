@@ -586,22 +586,6 @@ export const crmSla = pgTable("crm_sla_policies", {
   index("idx_crm_sla_org").on(table.orgId),
 ]);
 
-export const crmViews = pgTable("crm_views", {
-  id: serial("id").primaryKey(),
-  orgId: text("org_id").references(() => organizations.id).notNull(),
-  createdBy: text("created_by").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  entityType: text("entity_type").notNull(),
-  filters: jsonb("filters").$type<Record<string, unknown>>().default({}),
-  sortBy: text("sort_by"),
-  sortDir: text("sort_dir").default("asc"),
-  isPublic: boolean("is_public").default(false).notNull(),
-  isPinned: boolean("is_pinned").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_crm_views_org").on(table.orgId),
-]);
-
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
@@ -1098,11 +1082,6 @@ export const assignmentRuleStateRelations = relations(assignmentRuleState, ({ on
 
 export const crmSlaRelations = relations(crmSla, ({ one }) => ({
   organization: one(organizations, { fields: [crmSla.orgId], references: [organizations.id] }),
-}));
-
-export const crmViewsRelations = relations(crmViews, ({ one }) => ({
-  organization: one(organizations, { fields: [crmViews.orgId], references: [organizations.id] }),
-  creator: one(users, { fields: [crmViews.createdBy], references: [users.id] }),
 }));
 
 export const contactsRelations = relations(contacts, ({ one }) => ({

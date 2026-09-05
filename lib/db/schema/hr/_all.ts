@@ -4,7 +4,7 @@ import { relations } from "drizzle-orm";
 import {
   leaveStatusEnum, payrollStatusEnum, expenseStatusEnum, assetStatusEnum,
   documentTypeEnum, reviewStatusEnum, ticketPriorityEnum, ticketStatusEnum,
-  wfhRequestStatusEnum, deviceStatusEnum,
+  wfhRequestStatusEnum,
   jobPostingStatusEnum, candidateStatusEnum, interviewTypeEnum,
   interviewResultEnum, applicationStatusEnum,
   reviewCycleStatusEnum, meetingStatusEnum,
@@ -1154,23 +1154,6 @@ export const wfhRequests = pgTable("wfh_requests", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const employeeDevices = pgTable("employee_devices", {
-  id: serial("id").primaryKey(),
-  orgId: text("org_id").references(() => organizations.id).notNull(),
-  userId: text("user_id").references(() => users.id).notNull(),
-  deviceType: text("device_type").notNull(),
-  deviceName: text("device_name").notNull(),
-  serialNumber: text("serial_number"),
-  brand: text("brand"),
-  model: text("model"),
-  assignedDate: date("assigned_date"),
-  returnDate: date("return_date"),
-  status: deviceStatusEnum("status").default("ACTIVE"),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 export const helpdeskTickets = pgTable("helpdesk_tickets", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
@@ -1721,10 +1704,6 @@ export const holidaysRelations = relations(holidays, ({ one }) => ({
 export const wfhRequestsRelations = relations(wfhRequests, ({ one }) => ({
   user: one(users, { fields: [wfhRequests.userId], references: [users.id] }),
   approver: one(users, { fields: [wfhRequests.approverId], references: [users.id], relationName: "wfhApprover" }),
-}));
-
-export const employeeDevicesRelations = relations(employeeDevices, ({ one }) => ({
-  user: one(users, { fields: [employeeDevices.userId], references: [users.id] }),
 }));
 
 export const jobPostingsRelations = relations(jobPostings, ({ one, many }) => ({

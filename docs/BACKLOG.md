@@ -25,7 +25,7 @@ behind it.**
 
 ## MIYO-2 — Drop three orphaned tables
 
-**Type:** chore · **Risk:** medium (irreversible) · **Status:** authorised by owner
+**Type:** chore · **Risk:** medium (irreversible) · **Status:** DONE
 
 `module_links` (0 rows), `crm_views` (0 rows) and `employee_devices` (4 rows)
 have no reference anywhere in application code. Confirmed against `git grep` at
@@ -40,7 +40,7 @@ HEAD, so this is not fallout from the previous deletion pass.
 
 ## MIYO-3 — Payslip view model is untested and computes money
 
-**Type:** bug-risk · **Risk:** high
+**Type:** bug-risk · **Risk:** high · **Status:** DONE — 3 defects found and fixed
 
 `lib/hr/payslip-view-model.ts` (223 lines, zero I/O dependencies) turns a
 payroll row into the figures an employee actually reads on their payslip. It
@@ -70,7 +70,7 @@ functions, no mocking required.
 
 ## MIYO-4 — Letter token substitution is untested and produces legal documents
 
-**Type:** bug-risk · **Risk:** high
+**Type:** bug-risk · **Risk:** high · **Status:** DONE — prototype-chain leak found and fixed
 
 `applyOfferTokens()` and `applyHrLetterTokens()` substitute `{{token}}`
 placeholders into offer letters, appointment letters and termination letters.
@@ -96,3 +96,18 @@ Untested. A missed token ships a legally binding document reading
 of the 692 routes have an integration test. This is what makes future
 refactoring risky, and it is a bigger body of work than one pass. MIYO-3 and
 MIYO-4 are the first two slices.
+
+---
+
+## Outcome of this pass
+
+| Ticket | Result |
+|---|---|
+| MIYO-2 | 3 tables + 1 orphaned enum dropped via `drizzle/0150_drop_orphaned_tables.sql`. Rows exported with DDL first. Zero inbound FKs verified before the drop. |
+| MIYO-3 | 3 defects found by test, all fixed: fabricated professional-tax line, malformed month silently rendering as "January 2001", negative net rendering as " Rupees Only". |
+| MIYO-4 | Prototype-chain leak in both letter-token paths: `{{toString}}` rendered "function toString() { [native code] }" into offer and termination letters. Fixed with `Object.hasOwn`. |
+
+Test count over the pass: 473 → 495. Suite, typecheck, lint (0 errors), production
+build and `lint:dead-code` all green at every commit.
+
+**MIYO-5 remains open** and is the largest standing risk.

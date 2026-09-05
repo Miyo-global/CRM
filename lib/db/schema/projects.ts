@@ -92,15 +92,6 @@ export const modules = pgTable("modules", {
   index("idx_modules_org").on(table.orgId),
 ]);
 
-export const moduleLinks = pgTable("module_links", {
-  id: serial("id").primaryKey(),
-  moduleId: integer("module_id").references(() => modules.id, { onDelete: "cascade" }).notNull(),
-  linkedModuleId: integer("linked_module_id").references(() => modules.id, { onDelete: "cascade" }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  uniqueIndex("uniq_module_links").on(table.moduleId, table.linkedModuleId),
-]);
-
 export const tickets = pgTable("tickets", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
@@ -431,12 +422,6 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
   lead: one(users, { fields: [modules.leadId], references: [users.id], relationName: "moduleLead" }),
   creator: one(users, { fields: [modules.createdBy], references: [users.id], relationName: "moduleCreator" }),
   tickets: many(tickets),
-  links: many(moduleLinks),
-}));
-
-export const moduleLinksRelations = relations(moduleLinks, ({ one }) => ({
-  module: one(modules, { fields: [moduleLinks.moduleId], references: [modules.id] }),
-  linkedModule: one(modules, { fields: [moduleLinks.linkedModuleId], references: [modules.id] }),
 }));
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
