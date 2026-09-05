@@ -58,7 +58,13 @@ export function toWordsInr(n: number): string {
     "Nineteen",
   ];
   const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-  if (n === 0) return "Zero Rupees Only";
+  if (!Number.isFinite(n)) return "Zero Rupees Only";
+  if (Math.floor(Math.abs(n)) === 0) return "Zero Rupees Only";
+
+  // A net can go negative when an advance recovery exceeds the month's pay.
+  // Without this the sign was dropped and helper(negative) fell through every
+  // branch to produce the bare string " Rupees Only".
+  if (n < 0) return `Minus ${toWordsInr(-n)}`;
   function helper(num: number): string {
     if (num < 20) return a[num] ?? "";
     if (num < 100)
@@ -124,22 +130,45 @@ export type BuildPayslipViewModelOptions = {
   orgFullNameOverride?: string;
 };
 
+const PAY_MONTH_RE = /^(\d{4})-(\d{2})$/;
+
+/** Fallback day count when the pay month is unusable. */
+const DEFAULT_DAYS_IN_MONTH = 30;
+
+/**
+ * Parses a `YYYY-MM` pay month into the first of that month, or null when the
+ * value is missing or malformed. Strict by design: `new Date()` happily coerces
+ * nonsense into a real date, and a payslip is the wrong place to guess.
+ */
+function parsePayMonth(month: string | null): Date | null {
+  if (!month) return null;
+  const match = PAY_MONTH_RE.exec(month.trim());
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  if (monthIndex < 0 || monthIndex > 11) return null;
+
+  const parsed = new Date(year, monthIndex, 1);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export function buildPayslipViewModelFromPayroll(
   payroll: PayrollLike,
   employee: UserLike,
   org: OrgLike,
   opts?: BuildPayslipViewModelOptions
 ): PayslipViewModel {
-  const monthLabel = payroll.month
-    ? format(new Date(payroll.month + "-01"), "MMMM yyyy")
-    : "Unknown Month";
+  // `new Date("garbage-01")` does not throw — it lands on an arbitrary but
+  // plausible date (January 2001), which is worse than failing, because a wrong
+  // month on a payslip that looks right is one nobody catches. Parse strictly.
+  const payMonth = parsePayMonth(payroll.month);
 
-  const daysInPayMonth = payroll.month
-    ? (() => {
-        const [yr, mo] = payroll.month.split("-").map(Number);
-        return new Date(yr, mo, 0).getDate();
-      })()
-    : 30;
+  const monthLabel = payMonth ? format(payMonth, "MMMM yyyy") : "Unknown Month";
+
+  const daysInPayMonth = payMonth
+    ? new Date(payMonth.getFullYear(), payMonth.getMonth() + 1, 0).getDate()
+    : DEFAULT_DAYS_IN_MONTH;
 
   const basic = parseFloat(payroll.basicSalary || "0");
   const hra = parseFloat(payroll.hra || "0");
@@ -149,7 +178,10 @@ export function buildPayslipViewModelFromPayroll(
   const gross = parseFloat(payroll.grossSalary || "0");
   const lopAmount = parseFloat(payroll.lopAmount ?? "0");
   const lopDays = parseFloat(payroll.lopDays ?? "0");
-  const ptAmount = parseFloat(payroll.ptAmount ?? "200");
+  // No fallback: a null column means no professional tax was deducted. Defaulting
+  // to a nominal 200 put a line on the payslip that the stored `deductions` total
+  // did not account for, so the itemisation contradicted the net pay beneath it.
+  const ptAmount = parseFloat(payroll.ptAmount ?? "0");
   const pfEmployee = parseFloat(payroll.pfEmployee ?? "0");
   const esiEmployee = parseFloat(payroll.esiEmployee ?? "0");
   const advanceRecovery = parseFloat(payroll.advanceRecoveryAmount ?? "0");
