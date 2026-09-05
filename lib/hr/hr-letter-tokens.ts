@@ -66,7 +66,12 @@ export function buildHrLetterVars(
 }
 
 export function applyHrLetterTokens(body: string, vars: Record<string, string>): string {
-  return body.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, raw: string) => vars[raw.trim()] ?? "");
+  return body.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, raw: string) => {
+    const key = raw.trim();
+    // Own properties only — see applyOfferTokens. These letters include
+    // terminations, so a stray {{constructor}} must not reach the employee.
+    return Object.hasOwn(vars, key) ? vars[key] : "";
+  });
 }
 
 export const HR_LETTER_TOKEN_LEGEND: Record<string, readonly string[]> = {

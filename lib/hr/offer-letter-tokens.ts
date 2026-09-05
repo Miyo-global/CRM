@@ -83,7 +83,11 @@ export function buildOfferLetterVars(
 export function applyOfferTokens(body: string, vars: Record<string, string>): string {
   return body.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, rawKey: string) => {
     const key = rawKey.trim();
-    return vars[key] ?? "";
+    // Own properties only. A plain lookup walks the prototype chain, so
+    // {{toString}} or {{constructor}} resolved to a real function — which `??`
+    // never treats as missing — and stringified into the letter as
+    // "function toString() { [native code] }".
+    return Object.hasOwn(vars, key) ? vars[key] : "";
   });
 }
 
