@@ -208,38 +208,3 @@ export function withRoles<T>(allowed: readonly string[]) {
     });
   };
 }
-
-/**
- * Authentication wrapper for cron job routes.
- * Validates the Authorization: Bearer <CRON_SECRET> header.
- * Prevents unauthenticated external callers from triggering payroll resets,
- * auto-checkouts, and leave operations.
- *
- * Requires CRON_SECRET env var to be set.
- *
- * @example
- * export const GET = withCronAuth(async () => {
- *   // ... cron logic
- *   return NextResponse.json({ success: true });
- * });
- */
-export function withCronAuth(
-  handler: () => Promise<NextResponse>,
-): () => Promise<NextResponse> {
-  return async function () {
-    const secret = process.env.CRON_SECRET;
-    if (!secret) {
-      return NextResponse.json({ error: "Cron secret not configured" }, { status: 500 });
-    }
-    const headersList = await import("next/headers").then((m) => m.headers());
-    const authHeader = headersList.get("authorization");
-    if (authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    try {
-      return await handler();
-    } catch {
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    }
-  };
-}

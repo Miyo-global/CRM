@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { attendance } from "@/lib/db/schema";
 import { timesheets } from "@/lib/db/schema/projects";
 import { eq, and, desc, isNull } from "drizzle-orm";
-import { getTodayString } from "@/lib/date-utils";
+import { parseAttendancePunchBody, resolvePunchDate } from "@/lib/validations/attendance";
 import { notifyHrEmployeeCheckOut } from "@/lib/hr/attendance-hr-notifications";
 import { OVERTIME_PROMPT_MIN_HOURS } from "@/lib/hr/payroll-calculations";
 import { getWorkLogBlockReason } from "@/lib/hr/work-log-guard";
@@ -12,21 +12,8 @@ import type { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    const body = await req.json().catch(() => ({})) as {
-      localDate?: string;
-    };
-
-    const serverToday = getTodayString();
-    const today =
-      body.localDate &&
-      /^\d{4}-\d{2}-\d{2}$/.test(body.localDate) &&
-      Math.abs(
-        new Date(body.localDate + "T00:00:00").getTime() -
-          new Date(serverToday + "T00:00:00").getTime()
-      ) <=
-        24 * 60 * 60 * 1000
-        ? body.localDate
-        : serverToday;
+    const body = parseAttendancePunchBody(await req.json().catch(() => ({})));
+    const today = resolvePunchDate(body.localDate);
 
     const workLogBlocked = await getWorkLogBlockReason(
       session.orgId,

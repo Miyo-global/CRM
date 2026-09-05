@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "lint:dead-code": "node scripts/find-dead-code.mjs --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

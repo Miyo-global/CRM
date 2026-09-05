@@ -2,7 +2,7 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { attendance, holidays } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { getTodayString } from "@/lib/date-utils";
+import { parseAttendancePunchBody, resolvePunchDate } from "@/lib/validations/attendance";
 import { notifyHrEmployeeCheckIn } from "@/lib/hr/attendance-hr-notifications";
 import {
   getLateCutoffMinutesIst,
@@ -13,22 +13,8 @@ import type { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    const body = await req.json().catch(() => ({})) as {
-      location?: { lat: number; lng: number; address?: string } | null;
-      localDate?: string;
-    };
-
-    const serverToday = getTodayString();
-    const today =
-      body.localDate &&
-      /^\d{4}-\d{2}-\d{2}$/.test(body.localDate) &&
-      Math.abs(
-        new Date(body.localDate + "T00:00:00").getTime() -
-          new Date(serverToday + "T00:00:00").getTime()
-      ) <=
-        24 * 60 * 60 * 1000
-        ? body.localDate
-        : serverToday;
+    const body = parseAttendancePunchBody(await req.json().catch(() => ({})));
+    const today = resolvePunchDate(body.localDate);
 
     const todayDate = new Date(today + "T00:00:00");
     const isSunday = todayDate.getDay() === 0;
