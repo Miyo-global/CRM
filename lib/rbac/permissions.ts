@@ -410,6 +410,7 @@ const EMPLOYEE_SELF_SERVICE = [
 export const SYSTEM_ROLES = [
   "CEO",
   "HR",
+  "ADMIN",
   "SALES",
   "CUSTOMER_SUPPORT",
   "ENGINEERING",

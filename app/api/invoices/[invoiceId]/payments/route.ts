@@ -1,10 +1,10 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, withRoles, ok, err } from "@/lib/api/helpers";
 import { createPayment, getInvoicePayments } from "@/server/queries/invoice";
 import { db } from "@/lib/db";
 import { invoices } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, INVOICE_ROLES } from "@/lib/constants/roles";
 import { z } from "zod";
 import { dateOnlySchema } from "@/lib/validations/date";
 
@@ -20,7 +20,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ invoiceId: string }> }
 ) {
-  return withAuth(async (session) => {
+  return withRoles(INVOICE_ROLES)(async (session) => {
     const { invoiceId: id } = await params;
     const invoiceId = Number(id);
     if (!Number.isFinite(invoiceId)) return err("Invalid ID", 400);

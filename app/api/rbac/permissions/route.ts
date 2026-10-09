@@ -1,8 +1,8 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAdmin, ok, err } from "@/lib/api/helpers";
 import { getAllPermissions } from "@/server/queries/rbac";
 
 export async function GET() {
-  return withAuth(async () => {
+  return withAdmin(async () => {
     try {
       const data = getAllPermissions();
       return ok(data);

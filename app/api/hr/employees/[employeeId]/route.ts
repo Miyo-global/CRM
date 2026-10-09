@@ -10,6 +10,7 @@ import { updateEmployeeProfileBodySchema, isRoleAllowedForDepartment, DEPARTMENT
 import { departments, organizations } from "@/lib/db/schema";
 import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
+import { redactSalary } from "@/lib/hr/redact-salary";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
 
@@ -21,7 +22,7 @@ export async function GET(
     const { employeeId: id } = await params;
     const employee = await getEmployee(session.orgId, id);
     if (!employee) return err("Employee not found.", 404);
-    return ok(employee);
+    return ok(redactSalary(employee, session.user));
   });
 }
 

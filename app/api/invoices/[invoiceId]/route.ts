@@ -1,11 +1,11 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, withRoles, ok, err } from "@/lib/api/helpers";
 import { getInvoice } from "@/server/queries/invoice";
 import { db } from "@/lib/db";
 import { invoices, payments } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, INVOICE_ROLES } from "@/lib/constants/roles";
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
@@ -30,7 +30,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ invoiceId: string }> }
 ) {
-  return withAuth(async (session) => {
+  return withRoles(INVOICE_ROLES)(async (session) => {
     try {
       const { invoiceId: id } = await params;
       const invoiceId = Number(id);

@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
+import { withAuth, withRoles, ok, err, toNumber } from "@/lib/api/helpers";
 import { getInvoices } from "@/server/queries/invoice";
 import { db } from "@/lib/db";
 import { invoices } from "@/lib/db/schema";
@@ -7,7 +7,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
 import { dateOnlyOptionalSchema } from "@/lib/validations/date";
 import { notifyByRoles } from "@/server/actions/create-notification";
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, INVOICE_ROLES } from "@/lib/constants/roles";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 const lineItemSchema = z.object({
@@ -29,7 +29,7 @@ const createSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  return withAuth(async (session) => {
+  return withRoles(INVOICE_ROLES)(async (session) => {
     try {
       const params = req.nextUrl.searchParams;
       const status = params.get("status") as

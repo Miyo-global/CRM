@@ -2,17 +2,19 @@
 import * as dotenv from "dotenv";
 import { hash } from "bcryptjs";
 import { nanoid } from "nanoid";
-import { requireEmailEnv } from "./_guard";
+import { assertLocalDatabase, assertNotProduction, requireEmailEnv, requireSecretEnv } from "./_guard";
 dotenv.config({ path: ".env" });
 
 async function main() {
+  assertNotProduction("seed.ts");
+  assertLocalDatabase("seed.ts");
+  const password = requireSecretEnv("SEED_ADMIN_PASSWORD");
   const { db } = await import("../lib/db");
   const { users, organizations, organizationMembers, departments, roles, leaveTypes } = await import("../lib/db/schema");
   const { ROLE_DEFAULT_PERMISSIONS } = await import("../lib/rbac/permissions");
   const { DEFAULT_LEAVE_TYPES } = await import("../lib/leave-policy");
   const { eq, and } = await import("drizzle-orm");
 
-  const password = "Tarun@1234";
   const passwordHash = await hash(password, 12);
 
   // ─── Organization ───

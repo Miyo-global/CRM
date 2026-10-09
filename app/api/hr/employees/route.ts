@@ -1,4 +1,5 @@
 import { withAuth, ok } from "@/lib/api/helpers";
+import { redactSalary } from "@/lib/hr/redact-salary";
 import { getEmployees, getEmployeesPaginated } from "@/server/queries/hr";
 import { clampPageSize, DEFAULT_PAGE_SIZE } from "@/lib/pagination-constants";
 import type { EmployeeListFilters } from "@/server/queries/hr/employees";
@@ -52,10 +53,10 @@ export async function GET(req: NextRequest) {
         listFilters,
         branchCtx,
       );
-      return ok(data);
+      return ok({ ...data, data: data.data.map((row) => redactSalary(row, session.user)) });
     }
 
     const data = await getEmployees(session.orgId, branchCtx);
-    return ok(data);
+    return ok(data.map((row) => redactSalary(row, session.user)));
   });
 }

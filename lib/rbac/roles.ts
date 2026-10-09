@@ -6,6 +6,7 @@ export { SYSTEM_ROLES, type SystemRole };
 export const ROLE_LABELS: Record<SystemRole, string> = {
   CEO: "CEO",
   HR: "HR",
+  ADMIN: "Admin",
   SALES: "Sales",
   CUSTOMER_SUPPORT: "Customer Support",
   ENGINEERING: "Engineering",

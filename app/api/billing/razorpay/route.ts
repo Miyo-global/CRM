@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withRoles, ok, err, parseBody } from "@/lib/api/helpers";
+import { BILLING_MANAGE_ROLES, BILLING_VIEW_ROLES } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { subscriptions, subscriptionPayments } from "@/lib/db/schema/shared";
 import { eq } from "drizzle-orm";
@@ -16,7 +17,7 @@ function isRazorpayConfigured(): boolean {
 }
 
 export async function GET(_req: NextRequest) {
-  return withAuth(async (session) => {
+  return withRoles(BILLING_VIEW_ROLES)(async (session) => {
     const sub = await db.query.subscriptions.findFirst({
       where: eq(subscriptions.orgId, session.orgId),
       with: { payments: { limit: 5, orderBy: (p, { desc }) => [desc(p.createdAt)] } },
@@ -41,7 +42,7 @@ const PLAN_PRICES = {
 } as const;
 
 export async function POST(req: NextRequest) {
-  return withAuth(async (session) => {
+  return withRoles(BILLING_MANAGE_ROLES)(async (session) => {
     if (!isRazorpayConfigured()) {
       return err("Payment gateway not configured. Contact support.", 503);
     }
@@ -97,7 +98,7 @@ function isPlan(value: unknown): value is RazorpayPlan {
 }
 
 export async function PATCH(req: NextRequest) {
-  return withAuth(async (session) => {
+  return withRoles(BILLING_MANAGE_ROLES)(async (session) => {
     const input = await parseBody(req, verifySchema);
 
     const generated = crypto

@@ -50,6 +50,15 @@ export function requireEmailEnv(varName: string, hint?: string): string {
   return value;
 }
 
+export function requireSecretEnv(varName: string, minLength = 12): string {
+  const value = process.env[varName];
+  if (!value || value.trim().length < minLength) {
+    console.error(`FATAL: ${varName} must be set to at least ${minLength} characters.`);
+    process.exit(1);
+  }
+  return value;
+}
+
 export async function confirmDestructive(phrase: string): Promise<void> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const answer = await new Promise<string>((resolve) =>
