@@ -4,6 +4,7 @@ import {
   PUBLIC_DIR,
   LOGO_PNG_PATH,
   LOGO_SVG_PATH,
+  LOGO_WORDMARK_PATH,
   PAYSLIP_OUTPUT_DIR,
   resolvePublicPath,
 } from "./paths";
@@ -12,6 +13,7 @@ describe("asset paths", () => {
   it("points the logo constants inside the public directory", () => {
     expect(LOGO_PNG_PATH).toBe(path.join(PUBLIC_DIR, "logo.png"));
     expect(LOGO_SVG_PATH).toBe(path.join(PUBLIC_DIR, "logo.svg"));
+    expect(LOGO_WORDMARK_PATH).toBe(path.join(PUBLIC_DIR, "logo-wordmark.png"));
   });
 
   it("nests payslip output under the generated directory", () => {

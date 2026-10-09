@@ -1,8 +1,4 @@
 
-
-import { Ratelimit } from "@upstash/ratelimit";
-import { redis } from "./redis";
-
 export interface RateLimitTier {
   maxRequests: number;
   windowMs: number;
@@ -72,28 +68,6 @@ export const RATE_LIMIT_TIERS: Record<string, RateLimitTier> = {
     maxBlockMs: 5 * 60_000,
   },
 };
-
-const upstashLimiters = new Map<string, Ratelimit>();
-
-function getUpstashLimiter(tierName: string): Ratelimit | null {
-  if (!redis) return null;
-
-  const cached = upstashLimiters.get(tierName);
-  if (cached) return cached;
-
-  const tier = RATE_LIMIT_TIERS[tierName];
-  if (!tier) return null;
-
-  const windowSeconds = Math.ceil(tier.windowMs / 1000);
-  const limiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(tier.maxRequests, `${windowSeconds} s`),
-    prefix: `rl:${tierName}`,
-  });
-
-  upstashLimiters.set(tierName, limiter);
-  return limiter;
-}
 
 const globalStore = globalThis as unknown as {
   __rateLimitStore?: Map<string, BucketEntry>;
@@ -200,16 +174,6 @@ export async function checkRateLimit(
   tierName: string,
   ip: string,
 ): Promise<RateLimitResult> {
-  const limiter = getUpstashLimiter(tierName);
-  if (limiter) {
-    try {
-      const { success, reset } = await limiter.limit(`${tierName}:${ip}`);
-      const retryAfterSecs = success ? 0 : Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-      return { allowed: success, retryAfterSecs };
-    } catch {
-
-    }
-  }
   return checkRateLimitInMemory(tierName, ip);
 }
 

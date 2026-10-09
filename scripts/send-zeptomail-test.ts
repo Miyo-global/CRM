@@ -1,8 +1,7 @@
 /**
  * End-to-end smoke test for the outbound mail transport.
  *
- * Prints the resolved configuration, then sends one real email through
- * whichever provider EMAIL_PROVIDER selects (ZeptoMail by default).
+ * Prints the resolved configuration, then sends one real email through ZeptoMail.
  *
  *   pnpm send:mail-test              # print config and send
  *   pnpm send:mail-test -- --check   # print config only, send nothing
@@ -37,21 +36,17 @@ function mask(secret: string | undefined): string {
 function printConfig(): void {
   const provider = getEmailProvider();
   const rows: [string, string][] = [
-    ["EMAIL_PROVIDER", provider],
+    ["Provider", provider],
     ["From", getFromName() ? `${getFromName()} <${getFromAddress()}>` : getFromAddress()],
     ["Reply-To", getReplyToAddress() ?? "(not set)"],
     ["To", TO],
   ];
 
-  if (provider === "zeptomail") {
-    rows.push(
-      ["ZEPTOMAIL_TOKEN", mask(getZeptoMailToken())],
-      ["API URL", getZeptoMailApiUrl()],
-      ["Bounce address", getZeptoMailBounceAddress() ?? "(not set)"],
-    );
-  } else {
-    rows.push(["SENDGRID_API_KEY", mask(process.env.SENDGRID_API_KEY?.trim())]);
-  }
+  rows.push(
+    ["ZEPTOMAIL_API_TOKEN", mask(getZeptoMailToken())],
+    ["API URL", getZeptoMailApiUrl()],
+    ["Bounce address", getZeptoMailBounceAddress() ?? "(not set)"],
+  );
 
   const width = Math.max(...rows.map(([k]) => k.length));
   console.log("Mail configuration");

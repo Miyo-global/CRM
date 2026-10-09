@@ -1,9 +1,9 @@
 /**
  * Read-only payslip generator — SELECTs from DB only, writes PDFs to disk.
  *
- * Leave rule (MONTHLY_FREE_LEAVE_DAYS = 1):
- *   1 approved leave day  → 1 casual (paid) leave, 0 LOP from leave
- *   2 approved leave days → 1 casual + 1 LOP
+ * Leave rule (1 casual/month + 1-month carry, max 2):
+ *   Unused prior-month casual carries into the current month only.
+ *   Auto-paid absence budget is 1, or 2 when prior month was unused.
  *
  * Usage:
  *   npx tsx --env-file=.env scripts/generate-payslips-from-db.ts [YYYY-MM] [employeeId ...]
@@ -102,7 +102,7 @@ function eachDateInclusive(start: string, end: string): string[] {
   return out;
 }
 
-/** Read-only attendance + leave split (1 free casual leave / month; extra → LOP). */
+/** Read-only attendance + leave split (1–2 free casual days / month with carry; extra → LOP). */
 async function fetchStrictAttendance(
   orgId: string,
   userId: string,

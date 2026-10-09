@@ -8,7 +8,6 @@ import {
   isEmailConfigured,
 } from "./config";
 import { sendViaZeptoMail } from "./providers/zeptomail";
-import { sendViaSendGrid } from "./providers/sendgrid";
 import { EmailSendError, type EmailOptions, type NormalizedEmail } from "./types";
 
 export type { EmailAttachment, EmailOptions } from "./types";
@@ -79,16 +78,12 @@ function delay(ms: number): Promise<void> {
 }
 
 async function dispatch(email: NormalizedEmail): Promise<{ requestId?: string }> {
-  if (getEmailProvider() === "sendgrid") {
-    await sendViaSendGrid(email);
-    return {};
-  }
   return sendViaZeptoMail(email);
 }
 
 /**
- * Sends a transactional email through the configured provider (ZeptoMail by
- * default), retrying transient failures with exponential backoff.
+ * Sends a transactional email through ZeptoMail (Zoho), retrying transient
+ * failures with exponential backoff.
  *
  * No-ops with a warning when mail is not configured, so a deployment without
  * credentials degrades instead of breaking the request that triggered it.

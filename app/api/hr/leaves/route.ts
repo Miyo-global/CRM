@@ -6,7 +6,11 @@ import { formatDateOnly } from "@/lib/date-utils";
 import { ALLOWED_LEAVE_TYPE_NAMES, LEAVE_POLICY, isUnpaidLeaveType } from "@/lib/leave-policy";
 import { ROLES } from "@/lib/constants/roles";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
-import { ensureLeaveTypes, ensureUserBalances } from "@/server/actions/leave-actions/leave-balance";
+import {
+  ensureLeaveTypes,
+  ensureUserBalances,
+  getCasualMonthlyCapError,
+} from "@/server/actions/leave-actions/leave-balance";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
@@ -164,6 +168,18 @@ export async function POST(req: NextRequest) {
             400
           );
         }
+      }
+
+      if (leaveType?.name === LEAVE_POLICY.CASUAL.name) {
+        const capError = await getCasualMonthlyCapError({
+          orgId: session.orgId,
+          userId: session.user.id,
+          casualTypeId: body.leaveTypeId,
+          startDate: normalizedStart,
+          endDate: normalizedEnd,
+          isHalfDay: body.isHalfDay ?? false,
+        });
+        if (capError) return err(capError, 400);
       }
 
       const inserted = await db.transaction(async (tx) => {

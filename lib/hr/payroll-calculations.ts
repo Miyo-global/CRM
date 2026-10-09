@@ -329,6 +329,10 @@ export function buildPayslipPreviewFromEmployee(input: PayslipPreviewInput) {
   };
 }
 
+/**
+ * Base casual accrual per month (no carry). Payroll may pass a higher
+ * `freeLeaveDays` (up to 2) when the prior month's accrual was unused.
+ */
 export const MONTHLY_FREE_LEAVE_DAYS = 1;
 /** Daily hours above which check-out asks the employee for an overtime worklog. */
 export const OVERTIME_PROMPT_MIN_HOURS = 9;

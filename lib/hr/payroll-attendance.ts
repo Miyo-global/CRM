@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
-import { attendance, holidays, leaveRequests } from "@/lib/db/schema";
+import { attendance, holidays, leaveRequests, leaveTypes } from "@/lib/db/schema";
 import { and, eq, gte, lte, inArray, isNotNull, ne } from "drizzle-orm";
 import {
   calendarDaysInMonth,
@@ -11,6 +11,13 @@ import {
   type StrictAttendanceResult,
 } from "./payroll-calculations";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { LEAVE_POLICY } from "@/lib/leave-policy";
+import {
+  casualMaxUsableInMonth,
+  monthBoundsYyyyMm,
+  previousCalendarMonth,
+} from "@/lib/hr/casual-leave-monthly";
+import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 
 function monthBounds(month: string): { start: string; end: string } {
   const calDays = calendarDaysInMonth(month);
@@ -54,7 +61,11 @@ export async function getStrictPayrollAttendanceBatch(
         : today
       : today;
 
-  const [attendanceRows, holidayRows, leaveRows] = await Promise.all([
+  const [yearStr, monthStr] = month.split("-");
+  const prev = previousCalendarMonth(Number(yearStr), Number(monthStr) - 1);
+  const prevBounds = monthBoundsYyyyMm(prev.yyyyMm);
+
+  const [attendanceRows, holidayRows, leaveRows, casualType, prevCasualRows] = await Promise.all([
     db
       .select({
         userId: attendance.userId,
@@ -92,7 +103,50 @@ export async function getStrictPayrollAttendanceBatch(
           gte(leaveRequests.endDate, start),
         ),
       ),
+    db.query.leaveTypes.findFirst({
+      where: and(eq(leaveTypes.orgId, orgId), eq(leaveTypes.name, LEAVE_POLICY.CASUAL.name)),
+      columns: { id: true },
+    }),
+    db
+      .select({
+        userId: leaveRequests.userId,
+        startDate: leaveRequests.startDate,
+        endDate: leaveRequests.endDate,
+        isHalfDay: leaveRequests.isHalfDay,
+        leaveTypeId: leaveRequests.leaveTypeId,
+      })
+      .from(leaveRequests)
+      .where(
+        and(
+          eq(leaveRequests.orgId, orgId),
+          inArray(leaveRequests.userId, userIds),
+          eq(leaveRequests.status, "APPROVED"),
+          lte(leaveRequests.startDate, prevBounds.end),
+          gte(leaveRequests.endDate, prevBounds.start),
+        ),
+      ),
   ]);
+
+  const prevCasualUsed = new Map<string, number>();
+  if (casualType) {
+    for (const row of prevCasualRows) {
+      if (row.leaveTypeId !== casualType.id) continue;
+      const clipStart =
+        row.startDate.slice(0, 10) > prevBounds.start
+          ? row.startDate.slice(0, 10)
+          : prevBounds.start;
+      const clipEnd =
+        row.endDate.slice(0, 10) < prevBounds.end ? row.endDate.slice(0, 10) : prevBounds.end;
+      if (clipStart > clipEnd) continue;
+      const days = calculateLeaveWorkingDays({
+        startDate: clipStart,
+        endDate: clipEnd,
+        isHalfDay: row.isHalfDay ?? false,
+      });
+      if (days <= 0) continue;
+      prevCasualUsed.set(row.userId, (prevCasualUsed.get(row.userId) ?? 0) + days);
+    }
+  }
 
   const holidayDates = new Set(holidayRows.map((h) => h.date));
 
@@ -124,6 +178,7 @@ export async function getStrictPayrollAttendanceBatch(
   }
 
   for (const userId of userIds) {
+    const freeLeaveDays = casualMaxUsableInMonth(prevCasualUsed.get(userId) ?? 0);
     result.set(
       userId,
       computeStrictAttendance({
@@ -131,6 +186,7 @@ export async function getStrictPayrollAttendanceBatch(
         workHoursByDate: hoursByUser.get(userId) ?? new Map(),
         holidayDates,
         leaveByDate: leaveByUser.get(userId) ?? new Map(),
+        freeLeaveDays,
         evaluateThroughDate: through,
       }),
     );

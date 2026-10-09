@@ -20,6 +20,7 @@ import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { LEAVE_POLICY } from "@/lib/leave-policy";
 import { formatDateOnly } from "@/lib/date-utils";
 import { hasLeaveApproverRole } from "@/lib/auth/leave-approval-roles";
+import { getCasualMonthlyCapError } from "@/server/actions/leave-actions/leave-balance";
 
 export async function getApprovers() {
   const session = await auth();
@@ -104,6 +105,18 @@ export async function submitLeaveRequest(data: {
     }
 
     const leaveType = await db.query.leaveTypes.findFirst({ where: eq(leaveTypes.id, data.leaveTypeId) });
+
+    if (leaveType?.name === LEAVE_POLICY.CASUAL.name) {
+      const capError = await getCasualMonthlyCapError({
+        orgId: member.orgId,
+        userId: session.user.id,
+        casualTypeId: data.leaveTypeId,
+        startDate: startDateOnly,
+        endDate: endDateOnly,
+        isHalfDay: data.isHalfDay ?? false,
+      });
+      if (capError) return { error: capError };
+    }
 
     let ceoDeduction: { balanceId: number; newBalance: number } | null = null;
     if (isCeo && leaveType?.name !== "Unpaid Leave") {

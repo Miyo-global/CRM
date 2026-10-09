@@ -18,15 +18,11 @@ const serverSchema = z.object({
   CRON_SECRET: z.string().optional(),
   WEBHOOK_SECRET: z.string().optional(),
 
-  // Outbound mail. ZeptoMail (Zoho) is the default transport; SendGrid is kept
-  // as a fallback so an existing deployment can switch back with one env var.
-  EMAIL_PROVIDER: z.enum(["zeptomail", "sendgrid"]).default("zeptomail"),
-
+  // Outbound mail — ZeptoMail (Zoho) only. Prefer ZEPTOMAIL_API_TOKEN (Miyo naming).
+  ZEPTOMAIL_API_TOKEN: z.string().optional(),
   ZEPTOMAIL_TOKEN: z.string().optional(),
   ZEPTOMAIL_API_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
   ZEPTOMAIL_BOUNCE_ADDRESS: z.string().optional(),
-
-  SENDGRID_API_KEY: z.string().optional(),
 
   EMAIL_FROM_ADDRESS: z.string().email().optional().or(z.literal("").transform(() => undefined)),
   EMAIL_FROM_NAME: z.string().optional(),
@@ -43,9 +39,6 @@ const serverSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_ENDPOINT: z.string().optional(),
-
-  UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   INNGEST_EVENT_KEY: z.string().optional(),
   INNGEST_SIGNING_KEY: z.string().optional(),

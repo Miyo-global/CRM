@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import React, { type ReactNode } from "react";
-import { LOGO_PNG_PATH, LOGO_SVG_PATH } from "@/lib/constants/paths";
+import { LOGO_PNG_PATH, LOGO_SVG_PATH, LOGO_WORDMARK_PATH } from "@/lib/constants/paths";
 import { Document, Image, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { PayslipViewModel } from "@/lib/hr/payslip-view-model";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -10,10 +10,10 @@ function fmtPdfInr(amount: number): string {
   return `Rs.${s}`;
 }
 
-const NAVY = "#0f2b7f";
+const INK = "#1a1a1a";
 const GOLD = "#bd882c";
-const LIGHT_HEADER = "#f5f7ff";
-const BORDER = "#dde3f0";
+const LIGHT_HEADER = "#f6f1e4";
+const BORDER = "#e6dfd2";
 const DED_RED = "#b91c1c";
 const PAID_GREEN = "#15803d";
 const MUTED = "#555555";
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 3,
-    borderBottomColor: NAVY,
+    borderBottomColor: INK,
     paddingBottom: 12,
     marginBottom: 0,
   },
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   logoLetter: { fontSize: 20, fontWeight: 700, color: GOLD },
   headerCenter: { flex: 1, alignItems: "center" },
-  title: { fontSize: 11, fontWeight: 700, color: NAVY, textDecoration: "underline", textAlign: "center" },
+  title: { fontSize: 11, fontWeight: 700, color: INK, textDecoration: "underline", textAlign: "center" },
   orgName: { fontSize: 10, color: MUTED, marginTop: 4, textAlign: "center" },
   orgAddr: { fontSize: 9, color: "#666666", marginTop: 2, textAlign: "center" },
   paidWrap: { minWidth: 56, alignItems: "flex-end" },
@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 9,
     fontWeight: 700,
-    color: NAVY,
+    color: INK,
     letterSpacing: 0.6,
     paddingTop: 10,
     paddingBottom: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e8ff",
+    borderBottomColor: "#efe6d6",
     marginHorizontal: 14,
   },
   table: { marginHorizontal: 14, marginBottom: 12 },
@@ -77,14 +77,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 8,
     fontWeight: 700,
-    color: NAVY,
+    color: INK,
     paddingVertical: 6,
     paddingHorizontal: 8,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   thRight: { textAlign: "right" },
-  tr: { flexDirection: "row", borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: "#eef0f6" },
+  tr: { flexDirection: "row", borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: "#f0ebe3" },
   td: { flex: 1, fontSize: 10, paddingVertical: 5, paddingHorizontal: 8 },
   tdRight: { textAlign: "right" },
   tdDed: { color: DED_RED },
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: NAVY,
+    backgroundColor: INK,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#333333",
     borderBottomWidth: 2,
-    borderBottomColor: NAVY,
+    borderBottomColor: INK,
   },
   bottomRow: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#dddddd" },
   bottomCol: { flex: 1, paddingVertical: 12, paddingHorizontal: 14 },
@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
   h3: {
     fontSize: 9,
     fontWeight: 700,
-    color: NAVY,
+    color: INK,
     letterSpacing: 0.6,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e8ff",
+    borderBottomColor: "#efe6d6",
     paddingBottom: 5,
     marginBottom: 8,
   },
@@ -146,11 +146,14 @@ const styles = StyleSheet.create({
 });
 
 async function loadLogoPngBase64(): Promise<string | null> {
-  try {
-    const buf = await fs.readFile(LOGO_PNG_PATH);
-    return `data:image/png;base64,${buf.toString("base64")}`;
-  } catch {
-    /* fall back to rasterising the SVG */
+  const pngCandidates = [LOGO_WORDMARK_PATH, LOGO_PNG_PATH];
+  for (const pngPath of pngCandidates) {
+    try {
+      const buf = await fs.readFile(pngPath);
+      return `data:image/png;base64,${buf.toString("base64")}`;
+    } catch {
+      /* try next */
+    }
   }
   try {
     const sharp = (await import("sharp")).default;

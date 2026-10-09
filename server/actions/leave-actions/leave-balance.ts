@@ -18,6 +18,13 @@ import {
   resolveInitialBalance,
 } from "@/lib/leave-policy";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
+import {
+  casualDaysExpiringFromEarnMonth,
+  casualMaxUsableInMonth,
+  monthBoundsYyyyMm,
+  monthsSpannedByDateRange,
+  previousCalendarMonth,
+} from "@/lib/hr/casual-leave-monthly";
 
 export async function ensureLeaveTypes(orgId: string) {
   let types = await db.query.leaveTypes.findMany({
@@ -138,19 +145,47 @@ export async function initializeLeaveBalances(
   }
 }
 
+function addUsedDaysForMonthClip(
+  usedDaysMap: Map<string, number>,
+  rows: {
+    userId: string;
+    leaveTypeId: number | null;
+    startDate: string;
+    endDate: string;
+    isHalfDay: boolean | null;
+  }[],
+  monthStartStr: string,
+  monthEndStr: string,
+) {
+  for (const r of rows) {
+    if (r.leaveTypeId == null) continue;
+    const reqStart = r.startDate.slice(0, 10);
+    const reqEnd = r.endDate.slice(0, 10);
+    const clipStart = reqStart > monthStartStr ? reqStart : monthStartStr;
+    const clipEnd = reqEnd < monthEndStr ? reqEnd : monthEndStr;
+    if (clipStart > clipEnd) continue;
+    const days = calculateLeaveWorkingDays({
+      startDate: clipStart,
+      endDate: clipEnd,
+      isHalfDay: r.isHalfDay ?? false,
+    });
+    if (days <= 0) continue;
+    const key = `${r.userId}:${r.leaveTypeId}`;
+    usedDaysMap.set(key, (usedDaysMap.get(key) ?? 0) + days);
+  }
+}
+
+/**
+ * On the 1st of month M, expire casual accrual earned in month M-2 that was still
+ * unused after the one-month carry window (month M-1). Unused M-1 accrual remains
+ * available during M (max usable = 2).
+ */
 export async function expireUnusedMonthlyCasualLeaves() {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-  const prevMonthYear = now.getMonth() === 0 ? currentYear - 1 : currentYear;
-  const monthNum = String(prevMonth + 1).padStart(2, "0");
-  const lastDay = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
-  const monthStartStr = `${prevMonthYear}-${monthNum}-01`;
-  const monthEndStr = `${prevMonthYear}-${monthNum}-${String(lastDay).padStart(2, "0")}`;
-  const orgs = await db
-    .selectDistinct({ orgId: leaveBalances.orgId })
-    .from(leaveBalances)
-    .where(eq(leaveBalances.year, prevMonthYear));
+  const carry = previousCalendarMonth(now.getFullYear(), now.getMonth());
+  const earn = previousCalendarMonth(carry.year, carry.monthIndex0);
+  const earnBounds = monthBoundsYyyyMm(earn.yyyyMm);
+  const carryBounds = monthBoundsYyyyMm(carry.yyyyMm);
 
   let expiredCount = 0;
 
@@ -166,12 +201,15 @@ export async function expireUnusedMonthlyCasualLeaves() {
   const allBalances = await db.query.leaveBalances.findMany({
     where: and(
       inArray(leaveBalances.leaveTypeId, casualTypeIds),
-      eq(leaveBalances.year, prevMonthYear),
+      eq(leaveBalances.year, earn.year),
     ),
   });
 
   const positiveBalances = allBalances.filter((b) => Number(b.balance) > 0);
   if (positiveBalances.length === 0) return { expiredCount: 0 };
+
+  const rangeStart = earnBounds.start < carryBounds.start ? earnBounds.start : carryBounds.start;
+  const rangeEnd = earnBounds.end > carryBounds.end ? earnBounds.end : carryBounds.end;
 
   const usedRequests = await db
     .select({
@@ -186,32 +224,25 @@ export async function expireUnusedMonthlyCasualLeaves() {
       and(
         inArray(leaveRequests.leaveTypeId, casualTypeIds),
         eq(leaveRequests.status, "APPROVED"),
-        lte(leaveRequests.startDate, monthEndStr!),
-        gte(leaveRequests.endDate, monthStartStr!),
+        lte(leaveRequests.startDate, rangeEnd),
+        gte(leaveRequests.endDate, rangeStart),
       ),
     );
 
-  const usedDaysMap = new Map<string, number>();
-  for (const r of usedRequests) {
-    const reqStart = r.startDate.slice(0, 10);
-    const reqEnd = r.endDate.slice(0, 10);
-    const clipStart = reqStart > monthStartStr! ? reqStart : monthStartStr!;
-    const clipEnd = reqEnd < monthEndStr! ? reqEnd : monthEndStr!;
-    const days = calculateLeaveWorkingDays({
-      startDate: clipStart,
-      endDate: clipEnd,
-      isHalfDay: r.isHalfDay ?? false,
-    });
-    const key = `${r.userId}:${r.leaveTypeId}`;
-    usedDaysMap.set(key, (usedDaysMap.get(key) ?? 0) + days);
-  }
+  const usedInEarn = new Map<string, number>();
+  const usedInCarry = new Map<string, number>();
+  addUsedDaysForMonthClip(usedInEarn, usedRequests, earnBounds.start, earnBounds.end);
+  addUsedDaysForMonthClip(usedInCarry, usedRequests, carryBounds.start, carryBounds.end);
 
   for (const bal of positiveBalances) {
     const casualType = orgCasualMap.get(bal.orgId);
     if (!casualType || bal.leaveTypeId !== casualType.id) continue;
 
-    const usedDays = usedDaysMap.get(`${bal.userId}:${bal.leaveTypeId}`) ?? 0;
-    const expiring = Math.max(0, LEAVE_POLICY.CASUAL.perMonth - usedDays);
+    const key = `${bal.userId}:${bal.leaveTypeId}`;
+    const expiring = casualDaysExpiringFromEarnMonth(
+      usedInEarn.get(key) ?? 0,
+      usedInCarry.get(key) ?? 0,
+    );
     if (expiring <= 0) continue;
 
     const newBalance = Math.max(0, Number(bal.balance) - expiring);
@@ -223,6 +254,113 @@ export async function expireUnusedMonthlyCasualLeaves() {
   }
 
   return { expiredCount };
+}
+
+/** Sum approved/pending casual working days for a user clipped to a YYYY-MM month. */
+export async function countCasualLeaveDaysInMonth(params: {
+  orgId: string;
+  userId: string;
+  casualTypeId: number;
+  yyyyMm: string;
+  statuses?: Array<"PENDING" | "APPROVED">;
+}): Promise<number> {
+  const { start, end } = monthBoundsYyyyMm(params.yyyyMm);
+  const statuses = params.statuses ?? ["PENDING", "APPROVED"];
+  const rows = await db
+    .select({
+      startDate: leaveRequests.startDate,
+      endDate: leaveRequests.endDate,
+      isHalfDay: leaveRequests.isHalfDay,
+    })
+    .from(leaveRequests)
+    .where(
+      and(
+        eq(leaveRequests.orgId, params.orgId),
+        eq(leaveRequests.userId, params.userId),
+        eq(leaveRequests.leaveTypeId, params.casualTypeId),
+        inArray(leaveRequests.status, statuses),
+        lte(leaveRequests.startDate, end),
+        gte(leaveRequests.endDate, start),
+      ),
+    );
+
+  let total = 0;
+  for (const r of rows) {
+    const reqStart = r.startDate.slice(0, 10);
+    const reqEnd = r.endDate.slice(0, 10);
+    const clipStart = reqStart > start ? reqStart : start;
+    const clipEnd = reqEnd < end ? reqEnd : end;
+    if (clipStart > clipEnd) continue;
+    total += calculateLeaveWorkingDays({
+      startDate: clipStart,
+      endDate: clipEnd,
+      isHalfDay: r.isHalfDay ?? false,
+    });
+  }
+  return total;
+}
+
+/**
+ * Enforces casual leave monthly cap: accrual + at most 1 month carry (max 2 days).
+ * Returns an error message when the request would exceed the cap.
+ */
+export async function getCasualMonthlyCapError(params: {
+  orgId: string;
+  userId: string;
+  casualTypeId: number;
+  startDate: string;
+  endDate: string;
+  isHalfDay: boolean;
+}): Promise<string | null> {
+  const start = params.startDate.slice(0, 10);
+  const end = params.endDate.slice(0, 10);
+  const months = monthsSpannedByDateRange(start, end);
+
+  for (const yyyyMm of months) {
+    const [yStr, mStr] = yyyyMm.split("-");
+    const year = Number(yStr);
+    const monthIndex0 = Number(mStr) - 1;
+    const prev = previousCalendarMonth(year, monthIndex0);
+
+    const [usedInMonth, usedInPrev, bounds] = await Promise.all([
+      countCasualLeaveDaysInMonth({
+        orgId: params.orgId,
+        userId: params.userId,
+        casualTypeId: params.casualTypeId,
+        yyyyMm,
+      }),
+      countCasualLeaveDaysInMonth({
+        orgId: params.orgId,
+        userId: params.userId,
+        casualTypeId: params.casualTypeId,
+        yyyyMm: prev.yyyyMm,
+      }),
+      Promise.resolve(monthBoundsYyyyMm(yyyyMm)),
+    ]);
+
+    const clipStart = start > bounds.start ? start : bounds.start;
+    const clipEnd = end < bounds.end ? end : bounds.end;
+    const requestedInMonth = calculateLeaveWorkingDays({
+      startDate: clipStart,
+      endDate: clipEnd,
+      isHalfDay: params.isHalfDay && start === end,
+    });
+    if (requestedInMonth <= 0) continue;
+
+    const maxUsable = casualMaxUsableInMonth(usedInPrev);
+    if (usedInMonth + requestedInMonth > maxUsable + 1e-9) {
+      return (
+        `Casual leave is limited to ${maxUsable} day(s) in ${yyyyMm} ` +
+        `(1 earned this month` +
+        (maxUsable > LEAVE_POLICY.CASUAL.perMonth
+          ? " + 1 carried from last month"
+          : ", no carry from last month") +
+        `). Already used/requested: ${usedInMonth}, this request adds: ${requestedInMonth}.`
+      );
+    }
+  }
+
+  return null;
 }
 
 export async function resetYearlyLeaveBalances() {

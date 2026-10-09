@@ -21,8 +21,14 @@ export const LEAVE_POLICY = {
   CASUAL: {
     name: "Casual Leave",
     daysPerYear: CASUAL_DAYS_PER_YEAR,
+    /** Accrual rate; with the default 12/year this is 1 day per month. */
     perMonth: CASUAL_DAYS_PER_YEAR / 12,
-    carryForward: false,
+    /**
+     * Unused monthly accrual carries into the next month only (not further).
+     * Usable next month = this month's accrual + at most one carried day (max 2).
+     */
+    carryForward: true,
+    carryForwardMonths: 1,
     expiresMonthly: true,
   },
   SICK: {
