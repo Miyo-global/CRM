@@ -10,6 +10,7 @@ import { createAuditLog } from "@/lib/audit-log";
 import { sendVerificationEmail } from "@/lib/email";
 import { hashToken } from "@/lib/secret-crypto";
 import { addDays } from "date-fns";
+import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -28,6 +29,9 @@ const signupSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  if (!isSignupEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const body = await req.json();
     const input = signupSchema.parse(body);

@@ -189,6 +189,7 @@ const ROUTE_RULES: RouteRule[] = [
   { prefix: "/api/trpc/auth.verifyEmail", tier: "auth-write" },
   { prefix: "/api/trpc/auth.acceptInvitation", tier: "auth-write" },
   { prefix: "/api/trpc/auth.resendVerificationEmail", tier: "auth-write" },
+  { prefix: "/api/auth/signup", tier: "account-create" },
   { prefix: "/api/trpc/organization.createOrganization", tier: "account-create" },
   { prefix: "/api/trpc/organization.inviteUser", tier: "account-create" },
   { prefix: "/api/trpc/hr.employee.onboardEmployee", tier: "account-create" },
@@ -224,16 +225,6 @@ export function resolveTier(pathname: string): string | null {
 
 const BOT_UA_PATTERNS = [
   /scrapy/i,
-  /python-requests/i,
-  /python-urllib/i,
-  /go-http-client/i,
-  /java/i,
-  /libwww-perl/i,
-  /wget/i,
-  /curl/i,
-  /httpie/i,
-  /postmanruntime/i,
-  /insomnia/i,
   /nikto/i,
   /sqlmap/i,
   /nmap/i,
@@ -252,11 +243,12 @@ const BOT_UA_PATTERNS = [
   /bytespider/i,
   /gptbot/i,
   /claudebot/i,
-  /headlesschrome/i,
-  /phantomjs/i,
 ];
 
-export function isSuspiciousBot(userAgent: string | null): boolean {
-  if (!userAgent || userAgent.trim().length === 0) return true;
+export function isSuspiciousBot(
+  userAgent: string | null,
+  { allowEmpty = false }: { allowEmpty?: boolean } = {},
+): boolean {
+  if (!userAgent || userAgent.trim().length === 0) return !allowEmpty;
   return BOT_UA_PATTERNS.some((pattern) => pattern.test(userAgent));
 }

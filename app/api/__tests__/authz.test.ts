@@ -191,3 +191,23 @@ describe("deals list limit contract", () => {
     expect(await res.json()).toMatchObject({ limit: 100, offset: 200 });
   });
 });
+
+describe("public sign-up", () => {
+  it("returns 404 when sign-up is disabled", async () => {
+    delete process.env.NEXT_PUBLIC_SIGNUP_ENABLED;
+    const { POST } = await import("@/app/api/auth/signup/route");
+    const res = await POST(req("/api/auth/signup", { method: "POST", body: JSON.stringify({}) }));
+    expect(res.status).toBe(404);
+  });
+
+  it("validates input when sign-up is enabled", async () => {
+    process.env.NEXT_PUBLIC_SIGNUP_ENABLED = "true";
+    try {
+      const { POST } = await import("@/app/api/auth/signup/route");
+      const res = await POST(req("/api/auth/signup", { method: "POST", body: JSON.stringify({}) }));
+      expect(res.status).toBe(400);
+    } finally {
+      delete process.env.NEXT_PUBLIC_SIGNUP_ENABLED;
+    }
+  });
+});

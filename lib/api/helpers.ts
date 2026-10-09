@@ -61,14 +61,12 @@ export async function withAuth<T>(
     return NextResponse.json({ error: "Account deactivated" } as T, { status: 403 });
   }
 
-  let revocationConfirmed = false;
   if (redis && sessionId) {
     try {
       const revoked = await redis.get<boolean>(`revoked:session:${sessionId}`);
       if (revoked) {
         return NextResponse.json({ error: "Session revoked" } as T, { status: 401 });
       }
-      revocationConfirmed = true;
     } catch (e) {
       logger.error("withAuth: redis revocation check failed; falling back to Postgres", { sessionId, error: e });
     }
@@ -97,7 +95,7 @@ export async function withAuth<T>(
     }
   }
 
-  if (!revocationConfirmed && sessionId) {
+  if (sessionId) {
     try {
       const sessionRow = await db.query.userSessions.findFirst({
         where: eq(userSessions.id, sessionId),

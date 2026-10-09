@@ -8,6 +8,7 @@ import {
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { canAccessRoute } from "@/lib/auth/route-access";
+import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 
 function isLoopbackHostname(hostname: string): boolean {
   const h = hostname.toLowerCase();
@@ -104,7 +105,7 @@ export default async function middleware(req: NextRequest) {
 
   if (BOT_BLOCKED_PREFIXES.some((p) => pathname.startsWith(p))) {
     const ua = req.headers.get("user-agent");
-    if (isSuspiciousBot(ua)) {
+    if (isSuspiciousBot(ua, { allowEmpty: process.env.NODE_ENV !== "production" })) {
       logger.warn("Blocked suspicious bot", {
         ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown",
         path: pathname,
@@ -129,6 +130,13 @@ export default async function middleware(req: NextRequest) {
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
+  }
+
+  if ((pathname === "/signup" || pathname.startsWith("/signup/")) && !isSignupEnabled()) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/signin";
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
   const token = await getToken({
