@@ -11,7 +11,7 @@ const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
     "s",
   ]),
   allowedAttributes: {
-    "*": ["style", "class", "id", "align", "dir", "title"],
+    "*": ["style", "class", "align", "dir", "title"],
     a: ["href", "name", "target", "rel"],
     img: ["src", "alt", "width", "height"],
     td: ["colspan", "rowspan", "width", "height", "valign", "bgcolor"],

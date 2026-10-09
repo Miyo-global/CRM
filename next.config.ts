@@ -1,3 +1,4 @@
+import { buildCsp } from "./lib/security/csp";
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
@@ -85,18 +86,7 @@ const nextConfig: NextConfig = {
       ...hsts,
     ];
 
-    const fullCsp = [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://api.dicebear.com https://*.r2.cloudflarestorage.com https://lh3.googleusercontent.com https://crm.miyoglobal.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.r2.cloudflarestorage.com",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-    ].join("; ");
+    const fullCsp = buildCsp(process.env.NODE_ENV);
 
     return [
       { source: "/(.*)", headers: commonHeaders },
