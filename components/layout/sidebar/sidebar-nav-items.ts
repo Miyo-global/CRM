@@ -38,6 +38,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
 
   switch (role) {
     case "CEO":
+    case "ADMIN":
       return [
         {
           label: "Core",

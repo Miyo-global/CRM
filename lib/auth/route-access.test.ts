@@ -31,6 +31,13 @@ describe("canAccessRoute", () => {
     }
   });
 
+  it("keeps admin dashboards away from non-admin roles but leaves /dashboard open", () => {
+    expect(canAccessRoute("/dashboard/admin-health", "ENGINEERING")).toBe(false);
+    expect(canAccessRoute("/dashboard/branches", "SALES")).toBe(false);
+    expect(canAccessRoute("/dashboard/admin-health", "ADMIN")).toBe(true);
+    expect(canAccessRoute("/dashboard", "ENGINEERING")).toBe(true);
+  });
+
   it("lets every role reach notifications", () => {
     for (const role of ["SALES", "ENGINEERING", "BRANCH_MANAGER", "BRANCH_HR"]) {
       expect(canAccessRoute("/notifications", role)).toBe(true);

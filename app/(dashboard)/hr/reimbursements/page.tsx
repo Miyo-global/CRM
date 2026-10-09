@@ -21,6 +21,7 @@ import { Plus, CheckCircle2, XCircle, DollarSign } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 function statusBadge(s: string | null): "default" | "secondary" | "outline" | "destructive" {
   if (s === "APPROVED" || s === "PAID") return "default";
@@ -33,7 +34,7 @@ export default function ReimbursementsPage() {
   const { data: items, isLoading } = useReimbursements();
   const create = useCreateReimbursement();
   const process = useProcessReimbursement();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [rejectId, setRejectId] = useState<number | null>(null);

@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Plus, GraduationCap, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface LearningPath {
   id: number; title: string; description: string | null; level: string | null;
@@ -29,7 +30,7 @@ const lpKeys = { all: [...queryKeys.hr.all, "learning-paths"] as const, list: ()
 export default function LearningPathsPage() {
   const { data: session } = useSession();
   const qc = useQueryClient();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const { data: paths, isLoading } = useQuery({
     queryKey: lpKeys.list(),

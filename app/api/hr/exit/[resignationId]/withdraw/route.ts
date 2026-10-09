@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { resignations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,7 +19,7 @@ export async function PATCH(
     });
     if (!record) return err("Resignation not found.", 404);
 
-    const isAdmin = session.user.role === "CEO" || session.user.role === "HR";
+    const isAdmin = isAdminOrOwner(session.user.role);
     if (!isAdmin && record.userId !== session.user.id) {
       return err("You can only withdraw your own resignation.", 403);
     }

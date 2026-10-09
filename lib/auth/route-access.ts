@@ -15,8 +15,9 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/leaves": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
   "/hr/expenses": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
   "/hr/attendance": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
+  "/hr/exit": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
   "/hr/helpdesk": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
-  "/crm/leads": ["CEO", "HR", "SALES", "BRANCH_MANAGER"],
+  "/crm/leads": ["CEO", "HR", "SALES", "BRANCH_MANAGER", "DIGITAL_MARKETING"],
   "/crm/deals": ["CEO", "HR", "SALES", "BRANCH_MANAGER"],
   "/crm/targets": ["CEO", "HR", "SALES", "BRANCH_MANAGER"],
   "/crm/reports": ["CEO", "HR"],
@@ -39,6 +40,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/ceo": ["CEO", "HR"],
 
   "/ai": ["CEO", "HR"],
+  "/dashboard/admin-health": ["CEO", "HR"],
+  "/dashboard/branches": ["CEO", "HR"],
 
   "/calendar": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
 };

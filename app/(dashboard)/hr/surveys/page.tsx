@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyActivityIllustration } from "@/components/illustrations";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 function statusBadge(s: string | null): "default" | "secondary" | "outline" {
   if (s === "ACTIVE") return "default";
@@ -74,7 +75,7 @@ export default function SurveysPage() {
   const { data: surveys, isLoading } = usePulseSurveys();
   const create = useCreateSurvey();
   const update = useUpdateSurvey();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [closeId, setCloseId] = useState<number | null>(null);

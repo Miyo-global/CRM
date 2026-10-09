@@ -19,6 +19,7 @@ import { Plus, ClipboardCheck, Clock, Users, PlayCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface Assessment {
   id: number; title: string; description: string | null; category: string | null;
@@ -37,7 +38,7 @@ function statusBadge(s: string | null): "default" | "secondary" | "outline" {
 export default function AssessmentsPage() {
   const { data: session } = useSession();
   const qc = useQueryClient();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const { data: items, isLoading } = useQuery({
     queryKey: assessKeys.list(),

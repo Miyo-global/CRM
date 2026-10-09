@@ -15,6 +15,7 @@ import { ArrowLeft } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import type { TeamDetail } from "@/app/api/hr/teams/[teamId]/route";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 
 function useTeamDetail(teamId: string) {
   return useQuery({
@@ -26,7 +27,7 @@ function useTeamDetail(teamId: string) {
 
 export default function TeamPage({ params }: { params: Promise<{ teamId: string }> }) {
   const { teamId } = use(params);
-  const { data: team, isLoading } = useTeamDetail(teamId);
+  const { data: team, isLoading, isError, error, refetch } = useTeamDetail(teamId);
 
   return (
     <PageWrapper
@@ -53,6 +54,8 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
             <Skeleton key={i} className="h-20 w-full rounded-lg" />
           ))}
         </div>
+      ) : isError ? (
+        <QueryErrorState title="Couldn't load this team" error={error} onRetry={() => refetch()} />
       ) : !team || team.members.length === 0 ? (
         <EmptyState
           illustration={<EmptyTeamIllustration className="h-40 w-40" />}

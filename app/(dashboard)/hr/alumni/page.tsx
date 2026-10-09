@@ -18,6 +18,7 @@ import { Plus, Briefcase, Calendar, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyTeamIllustration } from "@/components/illustrations";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface Alumni {
   id: number; name: string; email: string | null; phone: string | null;
@@ -31,7 +32,7 @@ const alumniKeys = { all: [...queryKeys.hr.all, "alumni"] as const, list: () => 
 export default function AlumniPage() {
   const { data: session } = useSession();
   const qc = useQueryClient();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const { data: alumni, isLoading } = useQuery({
     queryKey: alumniKeys.list(),

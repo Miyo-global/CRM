@@ -41,6 +41,7 @@ import { isCEO as checkIsCEO } from "@/lib/constants/roles";
 import { downloadResignationLetterTemplate } from "@/lib/hr/resignation-letter-template";
 import { ResignationCard } from "@/features/hr/exit/resignation-card";
 import { RESIGNATION_REASONS } from "@/lib/constants/hr-separation";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 const NOTICE_PERIOD_DAYS = 60;
 
@@ -69,7 +70,7 @@ export default function ExitManagementPage() {
 
   const role = session?.user?.role;
   const userId = session?.user?.id;
-  const isAdmin = role === "CEO" || role === "HR";
+  const isAdmin = isAdminOrOwner(role);
   const isHR = role === "HR";
   const isCEO = checkIsCEO(role);
 

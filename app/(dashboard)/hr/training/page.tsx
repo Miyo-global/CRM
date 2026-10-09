@@ -27,6 +27,7 @@ import {
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 function statusBadge(status: string | null): "default" | "secondary" | "outline" {
   if (status === "PUBLISHED") return "default";
@@ -52,7 +53,7 @@ export default function TrainingPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const handleCreate = useCallback(() => {
     if (!title.trim()) { toast.error("Title is required"); return; }

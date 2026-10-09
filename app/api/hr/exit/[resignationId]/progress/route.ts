@@ -4,6 +4,7 @@ import { resignations, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { format } from "date-fns";
 import type { NextRequest } from "next/server";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 export async function GET(
   _req: NextRequest,
@@ -19,7 +20,7 @@ export async function GET(
     });
     if (!record) return err("Not found.", 404);
 
-    const isAdmin = session.user.role === "CEO" || session.user.role === "HR";
+    const isAdmin = isAdminOrOwner(session.user.role);
     if (!isAdmin && record.userId !== session.user.id) {
       return err("Access denied.", 403);
     }

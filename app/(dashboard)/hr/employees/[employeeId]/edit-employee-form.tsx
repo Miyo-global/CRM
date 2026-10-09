@@ -66,7 +66,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const canManageActiveStatus =
     isAdminOrOwner(session?.user?.role) && session?.user?.id !== employee.id;
   const canManagePortalAccess =
-    (session?.user?.role === "CEO" || session?.user?.role === "HR") &&
+    (isAdminOrOwner(session?.user?.role)) &&
     session?.user?.id !== employee.id;
   const updateProfileMutation = useUpdateProfile();
   const { data: orgRoles } = useRolesList();

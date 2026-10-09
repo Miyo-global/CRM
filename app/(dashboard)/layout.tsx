@@ -2,6 +2,7 @@ import { auth } from "../../lib/auth";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { DashboardShell } from "../../components/layout/dashboard-shell";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 export default async function DashboardLayout({
   children,
@@ -15,7 +16,7 @@ export default async function DashboardLayout({
   }
 
   const role = session.user.role;
-  const isAdminRole = role === "CEO" || role === "HR";
+  const isAdminRole = isAdminOrOwner(role);
   const hasDashboardAccess = isAdminRole || session.user.hasDashboardAccess !== false;
 
   const cookieStore = await cookies();

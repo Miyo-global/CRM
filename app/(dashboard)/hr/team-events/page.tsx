@@ -19,6 +19,7 @@ import { Plus, PartyPopper, Calendar, MapPin, Users, UserPlus } from "lucide-rea
 import { useSession } from "next-auth/react";
 import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface TeamEvent {
   id: number; title: string; description: string | null; location: string | null;
@@ -31,7 +32,7 @@ const eventKeys = { all: [...queryKeys.hr.all, "team-events"] as const, list: ()
 export default function TeamEventsPage() {
   const { data: session } = useSession();
   const qc = useQueryClient();
-  const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "HR";
+  const isAdmin = isAdminOrOwner(session?.user?.role);
 
   const { data: events, isLoading } = useQuery({
     queryKey: eventKeys.list(),
