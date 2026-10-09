@@ -16,11 +16,12 @@ import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DealTableView } from "@/features/crm/deals/deal-table-view";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import {
-  useDeals,
+  useAllDeals,
   useUpdateDealStage,
   useDeleteDeal,
 } from "@/lib/api/hooks/crm";
@@ -138,8 +139,8 @@ export default function DealsPage() {
   );
 
   const { page, pageSize, setPage, setPageSize, resetPage } = usePaginationParams();
-  const { data: dealsResult, isLoading } = useDeals({ limit: 500 });
-  const allDeals = useMemo(() => dealsResult?.data ?? [], [dealsResult]);
+  const { data: dealsData, isLoading, isError, error: dealsError, refetch: refetchDeals } = useAllDeals();
+  const allDeals = useMemo(() => dealsData ?? [], [dealsData]);
   const { data: rawEmployees } = useHrEmployees();
   const employees = Array.isArray(rawEmployees)
     ? rawEmployees
@@ -460,6 +461,14 @@ export default function DealsPage() {
   const tableTotalPages = Math.max(1, Math.ceil(filteredDeals.length / pageSize));
 
   if (isLoading) return <DealsLoadingSkeleton />;
+
+  if (isError) {
+    return (
+      <PageWrapper title="Deals Pipeline" subtitle="Track and manage your deals across stages">
+        <QueryErrorState title="Couldn't load deals" error={dealsError} onRetry={() => refetchDeals()} />
+      </PageWrapper>
+    );
+  }
 
   return (
     <>

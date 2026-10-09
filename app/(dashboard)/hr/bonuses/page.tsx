@@ -72,7 +72,7 @@ function BonusContent() {
   const filters = useMemo(() => parseBonusFiltersFromParams(searchParams), [searchParams]);
   const { page, pageSize, setPage, setPageSize } = usePaginationParams();
 
-  const { data: employeesRaw } = useHrEmployees({ limit: 500 });
+  const { data: employeesRaw } = useHrEmployees();
   const employees = useMemo(
     () => (Array.isArray(employeesRaw) ? employeesRaw : (employeesRaw as { data?: Employee[] })?.data ?? []) as Employee[],
     [employeesRaw],

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { fetchAllPages } from "@/lib/api/fetch-all-pages";
 import type {
   Deal,
   DealActivity,
@@ -29,6 +30,23 @@ export function useDeals(filters?: DealFilters) {
     queryKey: queryKeys.deals.list(filters as Record<string, unknown>),
     queryFn: () =>
       apiClient.get<DealsListResult>("/deals", filters as Record<string, unknown>),
+  });
+}
+
+export const DEALS_PAGE_SIZE = 100;
+
+export function useAllDeals(filters?: Omit<DealFilters, "limit" | "offset">) {
+  return useQuery({
+    queryKey: [...queryKeys.deals.list(filters as Record<string, unknown>), "all"],
+    queryFn: () =>
+      fetchAllPages<Deal>(async (pageIndex) => {
+        const res = await apiClient.get<DealsListResult>("/deals", {
+          ...filters,
+          limit: DEALS_PAGE_SIZE,
+          offset: pageIndex * DEALS_PAGE_SIZE,
+        });
+        return { items: res.data, total: res.total };
+      }),
   });
 }
 
@@ -76,18 +94,17 @@ export function useUpdateDealStage() {
       apiClient.patch<Deal>(`/deals/${id}`, { stage, lostReason, version }),
     onMutate: async ({ id, stage }) => {
       await qc.cancelQueries({ queryKey: queryKeys.deals.all });
-      const previous = qc.getQueryData<Deal[]>(queryKeys.deals.all);
-      if (previous) {
-        qc.setQueryData<Deal[]>(
-          queryKeys.deals.all,
-          previous.map((d) => (d.id === id ? { ...d, stage: stage as Deal["stage"] } : d))
-        );
-      }
+      const previous = qc.getQueriesData<unknown>({ queryKey: queryKeys.deals.all });
+      qc.setQueriesData<unknown>({ queryKey: queryKeys.deals.all }, (old: unknown) =>
+        Array.isArray(old)
+          ? (old as Deal[]).map((d) => (d.id === id ? { ...d, stage: stage as Deal["stage"] } : d))
+          : old
+      );
       return { previous };
     },
     onError: (_err, _vars, context) => {
-      if (context?.previous) {
-        qc.setQueryData(queryKeys.deals.all, context.previous);
+      for (const [key, data] of context?.previous ?? []) {
+        qc.setQueryData(key, data);
       }
     },
     onSettled: (_data, _err, vars) => {

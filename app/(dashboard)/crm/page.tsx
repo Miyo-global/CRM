@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
 import { fadeUp, staggerContainer } from "@/lib/motion-variants";
 import { formatINRCompact } from "@/lib/format-utils";
 import { useLeadStats } from "@/lib/api/hooks/leads";
-import { useDeals } from "@/lib/api/hooks/crm";
+import { useAllDeals } from "@/lib/api/hooks/crm";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useContacts, useCrmOrganizations } from "@/lib/api/hooks/crm";
 import { CrmPipelineMini } from "@/features/crm/shared/crm-pipeline-mini";
 import { CrmRecentActivity } from "@/features/crm/shared/crm-recent-activity";
@@ -33,8 +34,7 @@ const NAV_CARDS = [
 
 export default function CrmHubPage() {
   const { data: leadStats, isLoading: statsLoading } = useLeadStats();
-  const { data: dealsResult, isLoading: dealsLoading } = useDeals({ limit: 500 });
-  const allDeals = dealsResult?.data ?? [];
+  const { data: allDeals = [], isLoading: dealsLoading, isError: dealsError, error: dealsErr, refetch: refetchDeals } = useAllDeals();
   const { data: contactsData, isLoading: contactsLoading } = useContacts({ limit: 1 });
   const { data: orgsData, isLoading: orgsLoading } = useCrmOrganizations({ limit: 1 });
 
@@ -49,6 +49,14 @@ export default function CrmHubPage() {
       wonValue: allDeals.filter(d => d.stage === "WON").reduce((s, d) => s + Number(d.value || 0), 0),
     };
   }, [allDeals]);
+
+  if (!isLoading && dealsError) {
+    return (
+      <PageWrapper title="CRM" subtitle="Command center">
+        <QueryErrorState title="Couldn't load deals" error={dealsErr} onRetry={() => refetchDeals()} />
+      </PageWrapper>
+    );
+  }
 
   if (isLoading) {
     return (

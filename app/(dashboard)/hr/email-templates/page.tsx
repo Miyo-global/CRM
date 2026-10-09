@@ -160,10 +160,7 @@ function EmailTemplatesContent() {
     queryFn: () => apiClient.get<EmailTemplate[]>("/hr/email-templates"),
   });
 
-  const { data: rawEmployees, isLoading: employeesLoading } = useHrEmployees({
-    page: 1,
-    limit: 500,
-  });
+  const { data: rawEmployees, isLoading: employeesLoading } = useHrEmployees();
 
   const { data: customFieldsResp } = useQuery({
     queryKey: ["custom-fields", "all"] as const,

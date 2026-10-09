@@ -95,7 +95,7 @@ export default function AssetReturnsPage() {
     queryFn: () => apiClient.get<AssetReturn[]>("/hr/asset-returns"),
   });
 
-  const { data: employeesRaw } = useHrEmployees({ limit: 200 });
+  const { data: employeesRaw } = useHrEmployees();
   const { data: assetsRaw } = useHrAssets();
 
   const employeesResolved: Employee[] =

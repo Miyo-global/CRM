@@ -676,10 +676,7 @@ function AssignDocumentSheet({
   doc: Document | null;
   onClose: () => void;
 }) {
-  const { data: employeeData, isLoading } = useHrEmployees(
-    { limit: 200, status: "ACTIVE" },
-    { enabled: !!doc },
-  );
+  const { data: employeeData, isLoading } = useHrEmployees(undefined, { enabled: !!doc });
   const { data: currentAssignments, isLoading: isLoadingAssignments } =
     useDocumentAssignments(doc?.id ?? null);
   const setAssignmentsMutation = useSetDocumentAssignments();

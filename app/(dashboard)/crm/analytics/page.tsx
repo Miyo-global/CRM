@@ -14,7 +14,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useLeadStats, useLeads, useLeadAnalyticsSummary, useSalesLeaderboard } from "@/lib/api/hooks/leads";
-import { useDeals } from "@/lib/api/hooks/crm";
+import { useAllDeals } from "@/lib/api/hooks/crm";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useTaskAnalytics } from "@/lib/api/hooks/tasks";
 import { useSlaReport } from "@/lib/api/hooks/crm-settings";
 import { CHART_TOOLTIP_STYLE, AXIS_TICK, CHART_COLORS } from "@/features/crm/shared/constants";
@@ -40,8 +41,7 @@ export default function CrmAnalyticsPage() {
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
   });
-  const { data: dealsResult, isLoading: dealsLoading } = useDeals({ limit: 500 });
-  const allDeals = dealsResult?.data ?? [];
+  const { data: allDeals = [], isLoading: dealsLoading, isError: dealsError, error: dealsErr, refetch: refetchDeals } = useAllDeals();
   const { data: leaderboard, isLoading: leaderLoading } = useSalesLeaderboard();
   const { data: slaReport, isLoading: slaLoading } = useSlaReport();
   const { data: allLeadsResult, isLoading: leadsLoading } = useLeads({ limit: 100 });
@@ -124,6 +124,14 @@ export default function CrmAnalyticsPage() {
     });
     return Object.entries(buckets).map(([range, count]) => ({ range, count }));
   }, [allLeads]);
+
+  if (!isLoading && dealsError) {
+    return (
+      <PageWrapper title="CRM Analytics" subtitle="Pipeline insights and performance metrics">
+        <QueryErrorState title="Couldn't load deals" error={dealsErr} onRetry={() => refetchDeals()} />
+      </PageWrapper>
+    );
+  }
 
   if (isLoading) {
     return (

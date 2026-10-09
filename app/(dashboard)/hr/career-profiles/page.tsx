@@ -48,7 +48,7 @@ export default function CareerProfilesPage() {
     queryFn: () => apiClient.get<CareerLadder[]>("/hr/career-ladders"),
   });
 
-  const { data: employeesRaw } = useHrEmployees({ limit: 200 });
+  const { data: employeesRaw } = useHrEmployees();
 
   const employees = useMemo(() => {
     const raw = employeesRaw as { data?: Employee[]; items?: Employee[] } | Employee[] | undefined;

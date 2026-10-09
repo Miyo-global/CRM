@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 const ROLE_LABELS: Record<SystemRole, string> = {
   CEO: "CEO",
   HR: "HR",
+  ADMIN: "Admin",
   SALES: "Sales",
   CUSTOMER_SUPPORT: "Support",
   ENGINEERING: "Engineering",

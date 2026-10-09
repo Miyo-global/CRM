@@ -193,7 +193,7 @@ export default function HrAssetsPage() {
   const [reassignmentReason, setReassignmentReason] = useState("");
 
   const { data, isLoading } = useHrAssets();
-  const { data: employeesData } = useHrEmployees({ limit: 200 });
+  const { data: employeesData } = useHrEmployees();
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
   const deleteAsset = useDeleteAsset();

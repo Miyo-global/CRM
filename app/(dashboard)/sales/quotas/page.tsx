@@ -54,7 +54,7 @@ export default function SalesQuotasPage() {
   const [notes, setNotes] = useState("");
 
   const { data: quotas, isLoading } = useSalesQuotas();
-  const { data: employeesData } = useHrEmployees({ limit: 100 });
+  const { data: employeesData } = useHrEmployees();
   const createQuota = useCreateSalesQuota();
 
   const items: SalesQuota[] = Array.isArray(quotas) ? quotas : [];

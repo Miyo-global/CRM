@@ -20,6 +20,15 @@ vi.mock("@/server/queries/invoice", () => ({
   getInvoices: vi.fn(async () => ({ invoices: [], total: 0 })),
   getInvoiceStats: vi.fn(async () => ({})),
 }));
+vi.mock("@/server/queries/crm", () => ({
+  getDeals: vi.fn(async (_org: string, f: { limit?: number; offset?: number }) => ({
+    data: [],
+    total: 0,
+    limit: f.limit ?? 50,
+    offset: f.offset ?? 0,
+    totalPages: 0,
+  })),
+}));
 vi.mock("@/server/queries/hr", () => ({
   getEmployees: vi.fn(async () => [
     { id: "self", monthlySalary: "50000" },
@@ -156,5 +165,29 @@ describe("employee salary exposure", () => {
     const { GET } = await import("@/app/api/hr/employees/route");
     const rows = (await (await GET(req("/api/hr/employees"))).json()) as { id: string; monthlySalary: string | null }[];
     expect(rows.find((r) => r.id === "ceo")?.monthlySalary).toBe("250000");
+  });
+});
+
+describe("deals list limit contract", () => {
+  it.each(["101", "500", "0", "-1", "abc"])("rejects limit=%s with 400", async (limit) => {
+    signIn("SALES");
+    const { GET } = await import("@/app/api/deals/route");
+    const res = await GET(req(`/api/deals?limit=${limit}`));
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toMatch(/limit/);
+  });
+
+  it("rejects a negative offset", async () => {
+    signIn("SALES");
+    const { GET } = await import("@/app/api/deals/route");
+    expect((await GET(req("/api/deals?offset=-5"))).status).toBe(400);
+  });
+
+  it("accepts the maximum page size with an offset", async () => {
+    signIn("SALES");
+    const { GET } = await import("@/app/api/deals/route");
+    const res = await GET(req("/api/deals?limit=100&offset=200"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ limit: 100, offset: 200 });
   });
 });

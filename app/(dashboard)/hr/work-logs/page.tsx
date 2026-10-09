@@ -41,7 +41,7 @@ export default function WorkLogsPage() {
   const userRole = session?.user?.role;
   const isAdminOrCeo = userRole === "CEO" || userRole === "HR" || userRole === "ADMIN";
 
-  const { data: employeesRaw } = useHrEmployees(isAdminOrCeo ? { limit: 500 } : undefined);
+  const { data: employeesRaw } = useHrEmployees();
   const { data: departments } = useHrDepartments();
 
   const employees = useMemo(

@@ -79,7 +79,7 @@ export default function TerminationPage() {
   const isCEO = role === "CEO";
 
   const { data: terminations, isLoading } = useTerminations();
-  const { data: employeesData } = useHrEmployees({ limit: 500 });
+  const { data: employeesData } = useHrEmployees();
   const { data: reasonsData } = useTerminationReasons();
   const createTermination = useCreateTermination();
   const submitTermination = useSubmitTermination();
