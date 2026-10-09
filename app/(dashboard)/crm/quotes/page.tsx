@@ -21,6 +21,7 @@ import { Plus, Search, FileText, Download, Trash2 } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { format } from "date-fns";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
@@ -287,16 +288,14 @@ export default function QuotesPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search quotes… (min 3 chars)"
+            placeholder="Search quotes"
             value={search}
             onChange={handleSearchChange}
             className="pl-9"
+            aria-label="Search quotes"
+            aria-describedby="quotes-search-hint"
           />
-          {search.length > 0 && search.length < 3 && (
-            <p className="absolute left-0 top-full mt-1 text-xs text-muted-foreground">
-              Type at least 3 characters to search
-            </p>
-          )}
+          <MinLengthHint id="quotes-search-hint" value={search} />
         </div>
         <Select value={statusFilter} onValueChange={handleStatusFilter}>
           <SelectTrigger className="w-[150px]">

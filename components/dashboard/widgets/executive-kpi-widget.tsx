@@ -79,14 +79,16 @@ export function ExecutiveKpiWidget() {
         index={5}
         href="/projects"
       />
-      <StatCard
-        label="Conversion Rate"
-        value={`${data.conversionRate}%`}
-        icon={Target}
-        color="green"
-        index={6}
-        href="/crm/leads"
-      />
+      <div className="col-span-2">
+        <StatCard
+          label="Conversion Rate"
+          value={`${data.conversionRate}%`}
+          icon={Target}
+          color="green"
+          index={6}
+          href="/crm/leads"
+        />
+      </div>
     </div>
   );
 }

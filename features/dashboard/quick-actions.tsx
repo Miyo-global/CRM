@@ -80,7 +80,7 @@ export const QuickActions = memo(function QuickActions() {
   if (actions.length === 0) return null;
 
   return (
-    <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${actions.length >= 5 ? "md:grid-cols-5" : actions.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+    <div className={`grid ${actions.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-3 sm:grid-cols-3 ${actions.length >= 5 ? "md:grid-cols-5" : actions.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
       {actions.map((action) => {
         const ActionIcon = action.icon;
         return (

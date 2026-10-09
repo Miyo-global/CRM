@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { STATUSES, LEAD_PRIORITIES, LEAD_SOURCES } from "./leads-constants";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 interface LeadsToolbarProps {
   searchQuery: string;
@@ -43,11 +44,14 @@ export function LeadsToolbar({
       <div className="relative w-[140px] sm:w-[180px] sm:max-w-xs">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder="Search leads… (min 3 chars)"
+          placeholder="Search leads"
           value={searchQuery}
           onChange={handleSearchChange}
           className="pl-8 h-8 text-xs"
+          aria-label="Search leads"
+          aria-describedby="leads-search-hint"
         />
+        <MinLengthHint id="leads-search-hint" value={searchQuery} />
       </div>
 
       <div className="flex items-center border border-border rounded-md">

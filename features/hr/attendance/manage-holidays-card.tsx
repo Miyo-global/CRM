@@ -363,12 +363,12 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
         <CardContent className="space-y-4 pb-6">
           {/* ── Add form ── */}
           <form onSubmit={handleSubmitCreate} className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="holiday-name">Name</Label>
                 <Input
                   id="holiday-name"
-                  placeholder="e.g. Republic Day"
+                  placeholder="e.g. Diwali"
                   value={name}
                   onChange={(e) => setName(sanitizeSimpleName(e.target.value))}
                   className="bg-background"
@@ -383,7 +383,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
               <Label htmlFor="holiday-message">Message (optional)</Label>
               <Input
                 id="holiday-message"
-                placeholder="Optional note for notification"
+                placeholder="Optional note"
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, HOLIDAY_MESSAGE_MAX))}
                 className="bg-background"

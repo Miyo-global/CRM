@@ -31,6 +31,12 @@ describe("canAccessRoute", () => {
     }
   });
 
+  it("lets every role reach notifications", () => {
+    for (const role of ["SALES", "ENGINEERING", "BRANCH_MANAGER", "BRANCH_HR"]) {
+      expect(canAccessRoute("/notifications", role)).toBe(true);
+    }
+  });
+
   it("lets CEO and HR into HR pages", () => {
     expect(canAccessRoute("/hr/payroll", "CEO")).toBe(true);
     expect(canAccessRoute("/hr/payroll", "HR")).toBe(true);

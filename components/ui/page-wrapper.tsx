@@ -31,7 +31,7 @@ export function PageWrapper({
 }: PageWrapperProps) {
   const titleBlock = (
     <div className="px-4 sm:px-6 pt-4 pb-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-lg font-semibold tracking-tight text-foreground leading-tight">
@@ -51,7 +51,7 @@ export function PageWrapper({
         </div>
 
         {actions && (
-          <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
+          <div className="flex min-w-0 max-w-full items-center gap-2 flex-wrap lg:shrink-0 lg:justify-end [&>div]:flex-wrap [&>div]:max-w-full">
             {actions}
           </div>
         )}

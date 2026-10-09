@@ -88,8 +88,9 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search roles (min. 3 characters)…"
+                placeholder="Search roles"
                 aria-label="Search jobs"
+                aria-describedby="careers-search-hint"
                 className={cn(
                   "h-10 w-full rounded-xl border border-border/80 bg-background/80 pl-9 pr-3 text-sm shadow-sm outline-none transition",
                   "focus:border-primary/50 focus:ring-2 focus:ring-primary/15",
@@ -140,7 +141,7 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
           </div>
 
           {searchTooShort && (
-            <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+            <p id="careers-search-hint" className="mt-3 text-xs text-amber-600 dark:text-amber-400">
               Type at least {MIN_SEARCH_LEN} characters to search.
             </p>
           )}

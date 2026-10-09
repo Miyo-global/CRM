@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 interface HrEmployeeSearchProps {
   value: string;
@@ -16,12 +17,14 @@ export function HrEmployeeSearch({ value, onChange }: HrEmployeeSearchProps) {
         aria-hidden
       />
       <Input
-        placeholder="Search name, email, or employee ID (min 3 chars)…"
+        placeholder="Search employees"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pl-8 h-9 w-full text-sm"
-        aria-label="Search employees"
+        aria-label="Search employees by name, email or employee ID"
+        aria-describedby="employees-search-hint"
       />
+      <MinLengthHint id="employees-search-hint" value={value} />
     </div>
   );
 }

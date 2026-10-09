@@ -30,6 +30,11 @@ describe("buildCsp", () => {
     }
   });
 
+  it("keeps same-origin frames working for resume and offer-letter previews", () => {
+    const frame = directive(buildCsp("production"), "frame-src");
+    expect(frame.split(" ")).toContain("'self'");
+  });
+
   it("lets the landing form load and frame Turnstile", () => {
     const csp = buildCsp("production");
     expect(directive(csp, "script-src")).toContain("https://challenges.cloudflare.com");

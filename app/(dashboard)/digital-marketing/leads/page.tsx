@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/use-debounce";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 const PLATFORMS = [
   "linkedin", "instagram", "facebook", "google_ads", "seo", "website", "whatsapp", "email_campaign",
@@ -145,7 +146,8 @@ export default function DmLeadsPage() {
         <>
           <div className="relative flex-1 max-w-sm min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search… (min 3 chars)" value={search} onChange={(e) => updateParams({ q: e.target.value || null, page: null })} className="pl-9" />
+            <Input placeholder="Search leads" aria-label="Search leads" aria-describedby="dm-leads-search-hint" value={search} onChange={(e) => updateParams({ q: e.target.value || null, page: null })} className="pl-9" />
+            <MinLengthHint id="dm-leads-search-hint" value={search} />
           </div>
           <Select value={statusFilter} onValueChange={(v) => updateParams({ status: v === "all" ? null : v, page: null })}>
             <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue /></SelectTrigger>

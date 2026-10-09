@@ -457,7 +457,7 @@ export default function PayrollPage() {
               onChange={(e) => {
                 if (e.target.value) setSelectedMonth(e.target.value);
               }}
-              className="w-[150px] sm:w-[170px]"
+              className="w-[11.5rem] min-w-[11.5rem]"
               aria-label="Payroll period (month)"
               title="Pick any month — payroll is calculated per calendar month"
             />

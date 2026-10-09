@@ -45,6 +45,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 const ALL_ROLES = [
   { value: "CEO", label: "CEO" },
@@ -283,11 +284,14 @@ function MembersSettingsContent() {
                   <div className="relative w-full sm:w-72">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <Input
-                      placeholder="Search members… (min 3 chars)"
+                      placeholder="Search members"
                       value={memberSearch}
                       onChange={handleSearchChange}
                       className="h-9 pl-8 text-sm"
+                      aria-label="Search members"
+                      aria-describedby="members-search-hint"
                     />
+                    <MinLengthHint id="members-search-hint" value={memberSearch} />
                   </div>
                 </div>
               </CardHeader>

@@ -102,7 +102,7 @@ export function LeadTableView({
         </span>
         <div className="flex items-center gap-1.5">
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-            <SelectTrigger className="h-6 w-[70px] text-[10px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-6 w-auto min-w-[5.5rem] gap-1 text-[10px]" aria-label="Rows per page"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PAGE_SIZES.map((s) => (
                 <SelectItem key={s} value={String(s)} className="text-[11px]">{s}/pg</SelectItem>

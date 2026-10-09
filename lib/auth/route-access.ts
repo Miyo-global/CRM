@@ -35,7 +35,7 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/settings/branches": ["CEO", "HR"],
   "/billing": ["CEO", "HR"],
   "/billing/invoices": ["CEO", "HR"],
-  "/notifications": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
+  "/notifications": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "BRANCH_MANAGER", "BRANCH_HR"],
   "/ceo": ["CEO", "HR"],
 
   "/ai": ["CEO", "HR"],

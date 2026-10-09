@@ -17,6 +17,7 @@ const ChatUnreadNotifications = dynamic(
   { ssr: false }
 );
 
+const DESKTOP_SIDEBAR_MIN_WIDTH = 1024;
 const SIDEBAR_COOKIE = "sidebar-collapsed";
 const SIDEBAR_COLLAPSED_W = "3.5rem";
 const SIDEBAR_EXPANDED_W = "17rem";
@@ -40,7 +41,7 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(defaultCollapsed);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(DESKTOP_SIDEBAR_MIN_WIDTH);
   usePushSubscription(userId);
 
   const handleToggleSidebar = useCallback(() => {
@@ -69,7 +70,7 @@ export function DashboardShell({
         <aside
           aria-label="Sidebar"
           style={{ width: sidebarW }}
-          className="hidden md:flex flex-col h-full min-h-0 border-r border-sidebar-border bg-sidebar shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden relative z-30"
+          className="hidden lg:flex flex-col h-full min-h-0 border-r border-sidebar-border bg-sidebar shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden relative z-30"
         >
           <AppSidebar
             isCollapsed={isSidebarCollapsed}
@@ -87,7 +88,7 @@ export function DashboardShell({
             <CommandPalette />
 
             {isMobile && (
-              <header className="md:hidden sticky top-0 z-40 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur-sm px-3">
+              <header className="lg:hidden sticky top-0 z-40 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur-sm px-3">
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} modal>
                   <button
                     type="button"

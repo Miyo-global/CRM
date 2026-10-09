@@ -429,7 +429,7 @@ export default function HolidaysPage() {
                 Holiday Name <span className="text-destructive">*</span>
               </label>
               <Input
-                placeholder="e.g. Republic Day"
+                placeholder="e.g. Diwali"
                 value={name}
                 onChange={(e) => setName(sanitizeSimpleName(e.target.value))}
                 maxLength={100}

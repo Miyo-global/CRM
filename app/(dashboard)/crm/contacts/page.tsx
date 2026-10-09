@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { apiClient } from "@/lib/api-client";
 import type { LeadEnrichmentResult } from "@/lib/ai/schemas";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 const PAGE_SIZE = 20;
 
@@ -161,11 +162,14 @@ export default function ContactsPage() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search contacts (min 3 chars)..."
+              placeholder="Search contacts"
               value={searchInput}
               onChange={(e) => updateParams({ q: e.target.value || null, page: null })}
               className="pl-8 h-8 text-xs"
+              aria-label="Search contacts"
+              aria-describedby="contacts-search-hint"
             />
+            <MinLengthHint id="contacts-search-hint" value={searchInput} />
           </div>
         }
       >

@@ -5,7 +5,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval } f
 import { toast } from "sonner";
 import ExcelJS from "exceljs";
 import { useSession } from "next-auth/react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -74,15 +74,14 @@ function LeaveBalanceDonut({ balances }: { balances: LeaveBalance[] }) {
   ]);
 
   return (
-    <Card className="border-border">
+    <Card className="border-border h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold">Balance Overview</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-4">
+      <CardContent className="flex-1 flex items-center">
+        <div className="flex w-full items-center gap-6">
           <div className="h-[120px] w-[120px] shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart width={120} height={120}>
                 <Pie
                   data={chartData}
                   cx="50%"
@@ -105,7 +104,6 @@ function LeaveBalanceDonut({ balances }: { balances: LeaveBalance[] }) {
                   formatter={(value, name) => [`${value} days`, String(name)]}
                 />
               </PieChart>
-            </ResponsiveContainer>
           </div>
           <div className="space-y-2.5 flex-1 min-w-0">
             {data.map((item, i) => (

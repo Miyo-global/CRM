@@ -88,6 +88,9 @@ cd miyo-global-crm
 pnpm install
 ```
 
+pnpm 10 skips dependency build scripts until you approve them. If `esbuild` or `sharp`
+fail to load, run `pnpm approve-builds`, select both, then `pnpm rebuild esbuild sharp`.
+
 ### 3. Configure environment variables
 
 The project validates environment variables via `lib/env.ts`. Use `env.example` as the source of truth:
@@ -113,6 +116,12 @@ Then update at least:
   - `R2_REGION`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `NEXT_PUBLIC_R2_PUBLIC_URL`.
 - **AI**
   - `GOOGLE_GENERATIVE_AI_API_KEY`.
+- **Sign-up**
+  - `NEXT_PUBLIC_SIGNUP_ENABLED` — leave unset or `false` for the internal deployment. Only
+    `true` enables public self-serve sign-up, which creates a new organization.
+- **Seeding**
+  - `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` — required by `scripts/seed.ts`. The password
+    must be at least 12 characters. Seed scripts refuse to run against cloud databases.
 - **App URLs**
   - `NEXT_PUBLIC_APP_URL` — typically `http://localhost:3000`.
   - `NEXT_PUBLIC_QR_REDIRECT_BASE_URL`.

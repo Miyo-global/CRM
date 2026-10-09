@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 type ViewMode = "grid" | "list";
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
@@ -37,12 +38,14 @@ export function ProjectFilterBar({
       <div className="relative w-full sm:w-48">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder="Search… (min 3 chars)"
+          placeholder="Search projects"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="h-8 pl-8 pr-7 text-sm"
           aria-label="Search projects"
+          aria-describedby="projects-search-hint"
         />
+        <MinLengthHint id="projects-search-hint" value={search} />
         {search && (
           <button
             onClick={() => onSearchChange("")}

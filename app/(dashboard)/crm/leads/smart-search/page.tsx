@@ -236,7 +236,7 @@ export default function SmartLeadSearchPage() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder='Try: "hot leads from Mumbai with value above 5 lakhs"'
+                placeholder="Describe the leads you want"
                 className="pl-9 pr-9 h-11 text-sm"
                 aria-label="Natural language lead search"
               />

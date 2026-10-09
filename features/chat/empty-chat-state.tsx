@@ -46,19 +46,19 @@ export function EmptyChatState({
           <div className="h-10 w-10 rounded-xl bg-muted/40 flex items-center justify-center group-hover:bg-gold/10 group-hover:text-gold text-muted-foreground transition-colors">
             <PlusIcon className="h-5 w-5" />
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">New DM</span>
+          <span className="whitespace-nowrap text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">New DM</span>
         </button>
         <button onClick={onNewChannel} className="flex flex-col items-center gap-1.5 group">
           <div className="h-10 w-10 rounded-xl bg-muted/40 flex items-center justify-center group-hover:bg-gold/10 group-hover:text-gold text-muted-foreground transition-colors">
             <HashIcon className="h-5 w-5" />
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">Channel</span>
+          <span className="whitespace-nowrap text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">Channel</span>
         </button>
         <button onClick={onSearch} className="flex flex-col items-center gap-1.5 group">
           <div className="h-10 w-10 rounded-xl bg-muted/40 flex items-center justify-center group-hover:bg-gold/10 group-hover:text-gold text-muted-foreground transition-colors">
             <SearchIcon className="h-5 w-5" />
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">Search</span>
+          <span className="whitespace-nowrap text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">Search</span>
         </button>
       </div>
     </div>

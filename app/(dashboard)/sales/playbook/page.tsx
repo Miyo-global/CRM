@@ -254,7 +254,7 @@ export default function SalesPlaybookPage() {
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by title, content, or tag..."
+              placeholder="Search playbook"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8 h-8 text-xs"

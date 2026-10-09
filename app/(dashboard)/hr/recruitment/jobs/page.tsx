@@ -53,6 +53,7 @@ import type { JobPosting, JobPostingStatus } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyJobPostingsIllustration } from "@/components/illustrations";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
+import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 type PendingJobAction =
   | { kind: "delete"; jobId: number; jobTitle: string }
@@ -344,10 +345,12 @@ export default function JobPostingsPage() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search title, location… (min ${JOB_SEARCH_MIN_LENGTH} chars)`}
+              placeholder="Search jobs"
               className="h-9 pl-8"
               aria-label="Search job postings"
+              aria-describedby="jobs-search-hint"
             />
+            <MinLengthHint id="jobs-search-hint" value={searchQuery} min={JOB_SEARCH_MIN_LENGTH} />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-[140px] h-9">

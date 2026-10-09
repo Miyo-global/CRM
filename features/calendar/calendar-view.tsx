@@ -304,7 +304,7 @@ export function CalendarView() {
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Button
             variant="outline"
             size="icon"
@@ -383,7 +383,7 @@ export function CalendarView() {
             Today
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex rounded-md border border-border overflow-hidden h-8">
             {VIEWS.map((v) => (
               <ViewButton key={v} v={v} current={view} onSelect={setView} />

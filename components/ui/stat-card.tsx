@@ -45,7 +45,7 @@ export function StatCard({
   const c = colorMap[color];
 
   const valueNode = (
-    <p className={cn(
+    <p title={String(value)} className={cn(
       "font-semibold text-foreground mt-1 truncate leading-none",
       typeof value === "string" && value.length > 8 ? "text-xl" : "text-2xl",
       valueTooltip && "cursor-help"
@@ -68,7 +68,7 @@ export function StatCard({
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
+          <p className="text-xs font-medium leading-snug text-muted-foreground line-clamp-2 break-words">{label}</p>
           {valueTooltip ? (
             <TooltipProvider delayDuration={150}>
               <Tooltip>
