@@ -18,7 +18,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import { format, formatDistanceToNow } from "date-fns";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CHART_VARS, toneBar, type Tone } from "@/lib/design/tones";
-import { CHART_TOOLTIP_STYLE } from "@/features/crm/shared/constants";
+import { CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
 import { cn } from "@/lib/utils";
 
 const PIE_COLORS = CHART_VARS;

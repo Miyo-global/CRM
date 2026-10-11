@@ -22,10 +22,7 @@ import {
   Briefcase,
   CalendarCheck,
   Building2,
-  Contact2,
   Ticket,
-  Target,
-  TrendingUp,
   CheckCircle2,
   ListChecks,
   Zap,
@@ -148,10 +145,8 @@ export default function DashboardPage() {
         ];
       case "SALES":
         return [
-          { id: "leads", label: "My Leads", value: rs?.myLeads ?? 0, icon: Contact2, tone: "info" as const, href: "/crm/leads" },
-          { id: "converted", label: "Converted", value: rs?.myConverted ?? 0, icon: TrendingUp, tone: "success" as const, href: "/crm/leads" },
-          { id: "deals", label: "My Deals", value: rs?.myDeals ?? 0, icon: Zap, tone: "brand" as const, href: "/crm/deals" },
-          { id: "target", label: "Target Progress", value: `${rs?.targetProgress ?? 0}%`, icon: Target, tone: "plum" as const, href: "/crm/targets" },
+          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "info" as const, href: "/projects" },
+          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
         ];
       case "CUSTOMER_SUPPORT":
         return [

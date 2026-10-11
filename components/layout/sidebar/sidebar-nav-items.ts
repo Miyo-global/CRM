@@ -147,46 +147,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-          label: "CRM",
-          routes: [
-            { label: "CRM Hub", icon: Contact2, href: "/crm" },
-            { label: "Lead Pipeline", icon: Contact2, href: "/crm/leads" },
-            { label: "Smart Search", icon: Search, href: "/crm/leads/smart-search", isSubItem: true },
-            { label: "Distribute Leads", icon: Share2, href: "/crm/leads/distribute", isSubItem: true },
-            { label: "Source Report", icon: BarChart2, href: "/crm/leads/source-report", isSubItem: true },
-            { label: "Duplicate Detection", icon: Copy, href: "/crm/leads/duplicates", isSubItem: true },
-            { label: "Deals", icon: Handshake, href: "/crm/deals" },
-            { label: "Deal Approvals", icon: Briefcase, href: "/crm/deals/approvals", isSubItem: true },
-            { label: "Deal Aging", icon: Clock, href: "/crm/deals/aging", isSubItem: true },
-            { label: "Win/Loss Analysis", icon: TrendingUp, href: "/crm/deals/win-loss", isSubItem: true },
-            { label: "Organizations", icon: Network, href: "/crm/organizations" },
-            { label: "Clients", icon: UserCheck, href: "/crm/clients" },
-            { label: "Territories", icon: Map, href: "/crm/territories", isSubItem: true },
-            { label: "Targets", icon: Trophy, href: "/crm/targets" },
-            { label: "Analytics", icon: BarChart3, href: "/crm/analytics" },
-            { label: "CRM Reports", icon: BarChart2, href: "/crm/reports" },
-            { label: "Quotes", icon: FileText, href: "/crm/quotes" },
-            { label: "Web Forms", icon: FormInput, href: "/crm/web-forms", isSubItem: true },
-          ],
-        },
-        {
-          label: "CRM Settings",
-          defaultCollapsed: true,
-          routes: [
-            { label: "Assignment Rules", icon: SlidersHorizontal, href: "/crm/settings/assignment-rules" },
-            { label: "Email Templates", icon: MailOpen, href: "/crm/settings/email-templates" },
-            { label: "Scoring Rules", icon: Star, href: "/crm/settings/scoring-rules" },
-            { label: "SLA Rules", icon: Clock, href: "/crm/settings/sla" },
-          ],
-        },
-        {
-          label: "Finance",
-          routes: [
-            { label: "Billing", icon: CreditCard, href: "/billing" },
-            { label: "Invoices", icon: FileText, href: "/billing/invoices", isSubItem: true },
-          ],
-        },
-        {
           label: "Projects & Time",
           routes: [
             { label: "All Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
@@ -201,6 +161,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Settings", icon: Settings, href: "/settings" },
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
+            { label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true },
             { label: "Roles & Permissions", icon: Shield, href: "/settings/roles" },
             { label: "Permission Matrix", icon: ShieldAlert, href: "/settings/permissions", isSubItem: true },
             { label: "Audit Log", icon: ShieldCheck, href: "/settings/audit-log" },
@@ -327,30 +288,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-          label: "CRM",
-          routes: [
-            { label: "CRM Hub", icon: Contact2, href: "/crm" },
-            { label: "Lead Pipeline", icon: Contact2, href: "/crm/leads" },
-            { label: "Smart Search", icon: Search, href: "/crm/leads/smart-search", isSubItem: true },
-            { label: "Distribute Leads", icon: Share2, href: "/crm/leads/distribute", isSubItem: true },
-            { label: "Duplicate Detection", icon: Copy, href: "/crm/leads/duplicates", isSubItem: true },
-            { label: "Deals", icon: Handshake, href: "/crm/deals" },
-            { label: "Organizations", icon: Network, href: "/crm/organizations" },
-            { label: "Analytics", icon: BarChart3, href: "/crm/analytics" },
-            { label: "Targets", icon: Trophy, href: "/crm/targets" },
-            { label: "Clients", icon: UserCheck, href: "/crm/clients" },
-            { label: "Quotes", icon: FileText, href: "/crm/quotes" },
-            { label: "Territories", icon: Map, href: "/crm/territories", isSubItem: true },
-          ],
-        },
-        {
-          label: "Finance",
-          routes: [
-            { label: "Billing", icon: CreditCard, href: "/billing" },
-            { label: "Invoices", icon: FileText, href: "/billing/invoices", isSubItem: true },
-          ],
-        },
-        {
           label: "Projects & Time",
           routes: [
             { label: "All Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
@@ -364,7 +301,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Settings", icon: Settings, href: "/settings" },
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
-            { label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true },
             { label: "Data Hub", icon: FileText, href: "/settings/data-hub", isSubItem: true },
             { label: "Recruitment Integrations", icon: Globe, href: "/settings/integrations/recruitment", isSubItem: true },
             { label: "Job office locations", icon: MapPin, href: "/settings/job-office-locations", isSubItem: true },
@@ -384,23 +320,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
-          ],
-        },
-        {
-          label: "My Pipeline",
-          routes: [
-            { label: "My Leads", icon: Contact2, href: "/crm/leads" },
-            { label: "Smart Search", icon: Search, href: "/crm/leads/smart-search", isSubItem: true },
-            { label: "Distribute Leads", icon: Share2, href: "/crm/leads/distribute", isSubItem: true },
-            { label: "My Deals", icon: Handshake, href: "/crm/deals" },
-            { label: "Deal Aging", icon: Clock, href: "/crm/deals/aging", isSubItem: true },
-            { label: "My Clients", icon: UserCheck, href: "/crm/clients" },
-          ],
-        },
-        {
-          label: "My Revenue",
-          routes: [
-            { label: "My Targets", icon: Trophy, href: "/crm/targets" },
           ],
         },
         {
@@ -443,13 +362,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "All Tickets", icon: LifeBuoy, href: "/support" },
             { label: "Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
-            { label: "Ticket Analytics", icon: BarChart2, href: "/crm/analytics" },
-          ],
-        },
-        {
-          label: "Customers",
-          routes: [
-            { label: "Clients", icon: Users, href: "/crm/clients" },
           ],
         },
         {
@@ -485,14 +397,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
-          ],
-        },
-        {
-          label: "CRM (Leads)",
-          routes: [
-            { label: "CRM Hub", icon: Contact2, href: "/crm" },
-            { label: "Lead Pipeline", icon: TrendingUp, href: "/crm/leads" },
-            { label: "Lead Analytics", icon: BarChart2, href: "/crm/analytics" },
           ],
         },
         {

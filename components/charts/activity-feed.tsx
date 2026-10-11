@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Phone,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
-import { useCrmPeopleSlugs } from "@/lib/hooks/trpc-hooks";
 
 type ActivityType = "deal_won" | "meeting" | "proposal" | "call" | "email" | "ticket" | "escalation";
 
@@ -40,13 +38,10 @@ const typeConfig: Record<ActivityType, { icon: LucideIcon; tone: Tone }> = {
 };
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
-  const { data: slugMap } = useCrmPeopleSlugs();
-
   return (
     <ol className="relative">
       {items.map((item, i) => {
         const config = typeConfig[item.type];
-        const personSlug = item.person && slugMap ? slugMap[item.person] ?? null : null;
 
         return (
           <motion.li
@@ -66,16 +61,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
               <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                 {item.person && (
                   <>
-                    {personSlug ? (
-                      <Link
-                        href={`/sales/person/${personSlug}`}
-                        className="font-semibold text-brand-text hover:underline"
-                      >
-                        {item.person}
-                      </Link>
-                    ) : (
-                      <span className="font-semibold text-foreground">{item.person}</span>
-                    )}
+                    <span className="font-semibold text-foreground">{item.person}</span>
                     <span aria-hidden="true">·</span>
                   </>
                 )}

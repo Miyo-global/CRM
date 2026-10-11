@@ -11,8 +11,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { EmptyLeaderboardIllustration } from "@/components/illustrations";
-import { AnalyticsChartCard } from "@/features/crm/analytics/analytics-chart-card";
-import { CHART_AXIS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/features/crm/shared/constants";
+import { AnalyticsChartCard } from "@/components/charts/analytics-chart-card";
+import { CHART_AXIS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
 import { toneVar, type Tone } from "@/lib/design/tones";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,

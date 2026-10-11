@@ -3,8 +3,8 @@
 import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  Upload, Download, FileSpreadsheet, Users, Handshake, Contact2,
-  Building2, CreditCard, Package, CheckCircle2, AlertCircle, Loader2,
+  Upload, Download, FileSpreadsheet, Users,
+  CreditCard, Package, CheckCircle2, AlertCircle, Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,36 +30,6 @@ interface ImportEntity {
 
 const ENTITIES: ImportEntity[] = [
   {
-    id: "leads",
-    label: "Leads",
-    icon: Contact2,
-    description: "Import leads from CSV/XLSX. Auto-detect columns, assign to reps.",
-    templateUrl: "/templates/leads-template.xlsx",
-    importEndpoint: "/leads/import",
-    exportEndpoint: "/leads/export",
-    color: "text-info-strong",
-    supported: { import: true, export: true },
-  },
-  {
-    id: "contacts",
-    label: "Contacts",
-    icon: Users,
-    description: "Bulk import CRM contacts with phone, email, and organization.",
-    importEndpoint: "/contacts/import",
-    exportEndpoint: "/contacts/export",
-    color: "text-success-strong",
-    supported: { import: false, export: true },
-  },
-  {
-    id: "deals",
-    label: "Deals",
-    icon: Handshake,
-    description: "Export deal pipeline with stage, value, probability, and close dates.",
-    exportEndpoint: "/deals/export",
-    color: "text-warning-strong",
-    supported: { import: false, export: true },
-  },
-  {
     id: "employees",
     label: "Employees",
     icon: Users,
@@ -84,15 +54,6 @@ const ENTITIES: ImportEntity[] = [
     description: "Export expense claims with status, category, and amounts.",
     exportEndpoint: "/hr/expenses/export",
     color: "text-teal-strong",
-    supported: { import: false, export: true },
-  },
-  {
-    id: "clients",
-    label: "Clients",
-    icon: Building2,
-    description: "Export client accounts with health score and activity data.",
-    exportEndpoint: "/clients/export",
-    color: "text-danger-strong",
     supported: { import: false, export: true },
   },
   {

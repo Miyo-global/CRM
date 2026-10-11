@@ -10,7 +10,7 @@ import {
   UserPlus,
   BarChart3,
   CalendarDays,
-  Contact2,
+  CalendarCheck,
   Clock,
   Briefcase,
   CheckSquare,
@@ -30,7 +30,7 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
     case "CEO":
       return [
         { label: "Add Employee", icon: UserPlus, href: "/hr/onboarding?tab=wizard" },
-        { label: "View Reports", icon: BarChart3, href: "/crm/reports" },
+        { label: "View Reports", icon: BarChart3, href: "/reports" },
         { label: "Team Schedule", icon: CalendarDays, href: "/hr/attendance" },
       ];
     case "HR":
@@ -38,20 +38,20 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
     case "BRANCH_HR":
       return [
         { label: "Add Employee", icon: UserPlus, href: "/hr/onboarding?tab=wizard" },
-        { label: "View Reports", icon: BarChart3, href: "/crm/reports" },
+        { label: "View Reports", icon: BarChart3, href: "/reports" },
         { label: "Team Schedule", icon: CalendarDays, href: "/hr/attendance" },
         { label: "Org Chart", icon: Network, href: "/hr/org-chart" },
       ];
     case "BRANCH_MANAGER":
       return [
-        { label: "View Reports", icon: BarChart3, href: "/crm/reports" },
+        { label: "View Reports", icon: BarChart3, href: "/reports" },
         { label: "Team Schedule", icon: CalendarDays, href: "/hr/attendance" },
         { label: "Org Chart", icon: Network, href: "/hr/org-chart" },
         { label: "Check In", icon: Clock, href: "/hr/attendance" },
       ];
     case "SALES":
       return [
-        { label: "View My Leads", icon: Contact2, href: "/crm/leads" },
+        { label: "Request Leave", icon: CalendarCheck, href: "/hr/leaves" },
         { label: "Check In", icon: Clock, href: "/hr/attendance" },
       ];
     case "CUSTOMER_SUPPORT":

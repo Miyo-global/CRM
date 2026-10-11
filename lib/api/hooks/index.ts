@@ -1,7 +1,5 @@
 export * from "./hr";
-export * from "./leads";
 export * from "./crm";
-export * from "./crm-settings";
 export * from "./projects";
 export * from "./dashboard";
 export * from "./notifications";
@@ -10,7 +8,6 @@ export * from "./organization";
 export * from "./rbac";
 export * from "./roles";
 export * from "./branches";
-export * from "./invoice";
 export * from "./support";
 export * from "./audit-log";
 export * from "./mfa";

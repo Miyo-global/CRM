@@ -5,8 +5,8 @@ import { ROLE_LABELS } from "@/lib/rbac/roles";
 import { ALL_ROLES } from "@/lib/constants/roles";
 
 describe("canAccessRoute", () => {
-  it("denies ENGINEERING on HR, settings, billing and CRM leads", () => {
-    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings", "/billing", "/crm/leads"]) {
+  it("denies ENGINEERING on HR and settings", () => {
+    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings"]) {
       expect(canAccessRoute(path, "ENGINEERING")).toBe(false);
     }
   });
@@ -26,7 +26,7 @@ describe("canAccessRoute", () => {
   });
 
   it("lets ADMIN into admin areas", () => {
-    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings", "/settings/roles", "/billing", "/billing/invoices", "/crm/leads"]) {
+    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings", "/settings/roles"]) {
       expect(canAccessRoute(path, "ADMIN")).toBe(true);
     }
   });

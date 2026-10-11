@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip, type StatsStripItem } from "@/components/shared/stats-strip";
-import { AnalyticsChartCard } from "@/features/crm/analytics/analytics-chart-card";
+import { AnalyticsChartCard } from "@/components/charts/analytics-chart-card";
 import { motion } from "framer-motion";
 import { staggerContainer } from "@/lib/motion-variants";
 import type { Sprint, SprintBurndownPoint } from "@/types/projects";
@@ -30,7 +30,7 @@ import {
   Scatter,
 } from "recharts";
 import { toneVar, type Tone } from "@/lib/design/tones";
-import { CHART_AXIS, CHART_COLORS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/features/crm/shared/constants";
+import { CHART_AXIS, CHART_COLORS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
 
 const STATE_COLORS: Record<string, string> = {
   backlog: toneVar.neutral,

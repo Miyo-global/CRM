@@ -26,9 +26,9 @@ describe("sidebar navigation", () => {
     expect(denied).toEqual([]);
   });
 
-  it("gives ADMIN the HR, settings and billing areas", () => {
+  it("gives ADMIN the HR and settings areas", () => {
     const links = hrefs("ADMIN");
-    for (const path of ["/hr", "/hr/payroll", "/billing"]) expect(links).toContain(path);
+    for (const path of ["/hr", "/hr/payroll", "/settings"]) expect(links).toContain(path);
     expect(links.some((l) => l.startsWith("/settings"))).toBe(true);
   });
 });

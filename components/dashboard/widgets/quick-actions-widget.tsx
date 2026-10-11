@@ -36,7 +36,7 @@ function getActionsForRole(role: string | undefined): QuickAction[] {
       return [
         { label: "Log Time", icon: Clock, href: "/timesheets" },
         { label: "Request Leave", icon: CalendarCheck, href: "/hr/leaves" },
-        { label: "Log Activity", icon: ListChecks, href: "/crm/activities" },
+        { label: "Overdue Tasks", icon: ListChecks, href: "/tasks/overdue" },
       ];
   }
 }
