@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useForgotPassword } from "@/lib/hooks/auth-hooks";
-import { ArrowLeft, CheckCircle2, KeyRound, Loader2, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
 import { getErrorMessage } from "@/lib/get-error-message";
 
 const forgotPasswordSchema = z.object({
@@ -84,113 +85,107 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="w-full max-w-md animate-fade-up">
-        <div className="text-center mb-5 sm:mb-8">
-          <div className="mx-auto h-10 w-10 rounded-xl bg-muted flex items-center justify-center mb-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Check Your Email</h1>
-          <p className="text-muted-foreground mt-2">Password reset instructions sent</p>
-        </div>
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+        <IconChip icon={CheckCircle2} tone="success" size="lg" />
+        <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-foreground">
+          Check Your Email
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">Password reset instructions sent</p>
 
-        <div className="rounded-xl border bg-card shadow-soft p-4 sm:p-6 space-y-4">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">We have sent a password reset link to</p>
-            <p className="font-medium text-foreground mt-1">{form.getValues("email")}</p>
-          </div>
+        <p className="mt-6 text-sm text-muted-foreground">We have sent a password reset link to</p>
+        <p className="mt-1 font-medium text-foreground">{form.getValues("email")}</p>
 
-          <div role="status" className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-            <p className="text-sm text-blue-600">
+        <div className="mt-6 w-full space-y-3 text-left">
+          <div role="status" className="rounded-lg bg-info-soft p-4">
+            <p className="text-sm text-info-strong">
               Click the link in the email to reset your password. The link will expire in 1 hour.
             </p>
           </div>
 
-          <aside aria-label="Email delivery help" className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
-            <p className="text-xs text-amber-600">
+          <aside aria-label="Email delivery help" className="flex items-start gap-2 rounded-lg bg-warning-soft p-3">
+            <AlertCircle className="mt-0.5 size-4 shrink-0 text-warning-strong" aria-hidden="true" />
+            <p className="text-xs text-warning-strong">
               Can&apos;t find the email? Check your spam or junk folder. The email is sent from noreply@miyoglobal.com.
             </p>
           </aside>
+        </div>
 
+        <div className="mt-6 flex w-full flex-col gap-2">
+          <Button size="lg" className="w-full" asChild>
+            <Link href="/signin">
+              <ArrowLeft aria-hidden="true" />
+              Back to Sign In
+            </Link>
+          </Button>
           <Button
             variant="ghost"
             className="w-full"
             onClick={handleResend}
-            disabled={forgotPassword.isPending || cooldown > 0}
+            loading={forgotPassword.isPending}
+            disabled={cooldown > 0}
             aria-label={cooldown > 0 ? `Resend available in ${cooldown} seconds` : "Resend reset email"}
           >
-            {forgotPassword.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
+            <RefreshCw aria-hidden="true" />
             {cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend Reset Email"}
           </Button>
-
-          <Link href="/signin" className="block">
-            <Button variant="outline" className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Sign In
-            </Button>
-          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md animate-fade-up">
-      <div className="text-center mb-5 sm:mb-8">
-        <div className="mx-auto h-10 w-10 rounded-xl bg-muted flex items-center justify-center mb-3">
-          <KeyRound className="h-5 w-5 text-primary" />
-        </div>
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Forgot Password</h1>
-        <p className="text-sm text-muted-foreground mt-2">
+    <div className="w-full max-w-[400px] animate-fade-up">
+      <div className="mb-8">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Forgot Password</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           Enter your registered email address and we&apos;ll send you instructions to reset your password.
         </p>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-soft p-4 sm:p-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...form.register("email")}
-              disabled={forgotPassword.isPending}
-              className="h-9 text-sm focus-visible:ring-primary"
-              aria-invalid={!!form.formState.errors.email}
-              aria-describedby={form.formState.errors.email ? "email-error" : undefined}
-            />
-            {form.formState.errors.email && (
-              <p id="email-error" role="alert" className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-            )}
-          </div>
-
-          <Button type="submit" className="w-full" disabled={forgotPassword.isPending}>
-            {forgotPassword.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                Send Reset Link
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <Link href="/signin" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sign In
-          </Link>
+      {forgotPassword.isError && (
+        <div role="alert" className="mb-6 flex items-start gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-danger-strong">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p className="text-sm">{getErrorMessage(forgotPassword.error)}</p>
         </div>
-      </div>
+      )}
+
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email Address</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            {...form.register("email")}
+            disabled={forgotPassword.isPending}
+            className="h-10"
+            aria-invalid={!!form.formState.errors.email}
+            aria-describedby={form.formState.errors.email ? "email-error" : undefined}
+          />
+          {form.formState.errors.email && (
+            <p id="email-error" role="alert" className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+          )}
+        </div>
+
+        <Button type="submit" size="lg" className="mt-2 w-full" loading={forgotPassword.isPending}>
+          {forgotPassword.isPending ? (
+            "Sending..."
+          ) : (
+            <>
+              Send Reset Link
+              <ArrowRight aria-hidden="true" />
+            </>
+          )}
+        </Button>
+      </form>
+
+      <Link
+        href="/signin"
+        className="mt-8 inline-flex items-center gap-1 rounded-sm text-sm font-medium text-brand-text outline-none hover:underline focus-visible:focus-ring"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to Sign In
+      </Link>
     </div>
   );
 }

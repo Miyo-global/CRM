@@ -2,20 +2,21 @@
 
 import { motion, type Variants } from "framer-motion";
 import { Users, LayoutGrid, TrendingUp, Calendar, MessageSquare, BarChart3 } from "lucide-react";
+import type { Tone } from "@/lib/design/tones";
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export const stagger: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.04, delayChildren: 0.04 } },
 };
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.94 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  hidden: { opacity: 0, scale: 0.98 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export function SectionReveal({
@@ -67,8 +68,7 @@ export const features = [
     title: "HR Management",
     description:
       "Automate payroll, attendance, leave management, and recruitment. Complete employee lifecycle from hire to retire.",
-    color: "from-amber-500/15 to-amber-600/5 border-amber-500/20",
-    iconColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    tone: "brand" as Tone,
     tags: ["Payroll", "Attendance", "Leaves", "Recruitment"],
   },
   {
@@ -76,8 +76,7 @@ export const features = [
     title: "Project Tracking",
     description:
       "Kanban boards, sprint planning, backlog management and velocity analytics. Keep every team aligned.",
-    color: "from-blue-500/15 to-blue-600/5 border-blue-500/20",
-    iconColor: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    tone: "info" as Tone,
     tags: ["Kanban", "Sprints", "Analytics", "Epics"],
   },
   {
@@ -85,8 +84,7 @@ export const features = [
     title: "CRM & Sales",
     description:
       "Lead conversion tracking, deal pipeline, customer relationships and sales forecasting in one place.",
-    color: "from-emerald-500/15 to-emerald-600/5 border-emerald-500/20",
-    iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    tone: "success" as Tone,
     tags: ["Leads", "Deals", "Pipeline", "Targets"],
   },
   {
@@ -94,8 +92,7 @@ export const features = [
     title: "Calendar & Scheduling",
     description:
       "Unified calendar for interviews, meetings, sprints, and events with Google Calendar integration.",
-    color: "from-purple-500/15 to-purple-600/5 border-purple-500/20",
-    iconColor: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    tone: "plum" as Tone,
     tags: ["Events", "Interviews", "Meetings"],
   },
   {
@@ -103,8 +100,7 @@ export const features = [
     title: "Real-time Chat",
     description:
       "Secure team messaging with DMs, group channels, file attachments, and mentions. Powered by Ably.",
-    color: "from-rose-500/15 to-rose-600/5 border-rose-500/20",
-    iconColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+    tone: "neutral" as Tone,
     tags: ["DMs", "Channels", "Files"],
   },
   {
@@ -112,8 +108,7 @@ export const features = [
     title: "Analytics & Reports",
     description:
       "Role-based dashboards, audit logs, and deep analytics across HR, CRM, and project performance.",
-    color: "from-cyan-500/15 to-cyan-600/5 border-cyan-500/20",
-    iconColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    tone: "teal" as Tone,
     tags: ["Dashboards", "Reports", "Audit"],
   },
 ];

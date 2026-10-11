@@ -20,23 +20,13 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PASSWORD_REGEX } from "@/lib/password-utils";
 import { cn } from "@/lib/utils";
+import { toneBar } from "@/lib/design/tones";
 import { apiClient } from "@/lib/api-client";
 
 function Loader2({ className }: { className?: string }) {
   return (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
-
-function Rocket({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
     </svg>
   );
 }
@@ -82,10 +72,10 @@ function getPasswordStrength(password: string): {
   if (/\d/.test(password)) score++;
   if (/[@$!%*?&]/.test(password)) score++;
 
-  if (score <= 2) return { score: 1, label: "Weak", color: "bg-red-500" };
-  if (score <= 4) return { score: 2, label: "Medium", color: "bg-yellow-500" };
-  if (score <= 5) return { score: 3, label: "Strong", color: "bg-green-500" };
-  return { score: 4, label: "Very Strong", color: "bg-emerald-500" };
+  if (score <= 2) return { score: 1, label: "Weak", color: toneBar.danger };
+  if (score <= 4) return { score: 2, label: "Medium", color: toneBar.warning };
+  if (score <= 5) return { score: 3, label: "Strong", color: toneBar.info };
+  return { score: 4, label: "Very Strong", color: toneBar.success };
 }
 
 function ResetPasswordContent() {
@@ -138,44 +128,41 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="w-full max-w-sm animate-fade-up">
-      <div className="mb-5 sm:mb-8">
-        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-          <Rocket className="h-5 w-5 text-primary" />
-        </div>
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+    <div className="w-full max-w-[400px] animate-fade-up">
+      <div className="mb-8">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
           Reset your password
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
+        <p className="mt-2 text-base text-muted-foreground">
           Create a new secure password to regain access to your account.
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-6">
+      <div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium">New Password</FormLabel>
+                  <FormLabel>New Password</FormLabel>
                   <FormControl>
                     <PasswordInput
                       autoComplete="new-password"
                       placeholder="8+ characters"
-                      className="h-9 text-sm"
+                      className="h-10"
                       {...field}
                     />
                   </FormControl>
                   {strength && (
-                    <div className="space-y-1 mt-1">
-                      <div className="flex gap-1">
+                    <div className="mt-1 space-y-1">
+                      <div className="flex gap-1" aria-hidden="true">
                         {[1, 2, 3, 4].map((level) => (
                           <div
                             key={level}
                             className={cn(
-                              "h-1 flex-1 rounded-full transition-colors",
+                              "h-1.5 flex-1 rounded-full transition-colors",
                               level <= strength.score ? strength.color : "bg-muted"
                             )}
                           />
@@ -183,19 +170,21 @@ function ResetPasswordContent() {
                       </div>
                       <p
                         className={cn(
-                          "text-[11px]",
+                          "text-xs font-medium",
                           strength.score <= 1
-                            ? "text-red-500"
+                            ? "text-danger-strong"
                             : strength.score <= 2
-                              ? "text-yellow-500"
-                              : "text-green-500"
+                              ? "text-warning-strong"
+                              : strength.score <= 3
+                                ? "text-info-strong"
+                                : "text-success-strong"
                         )}
                       >
                         {strength.label}
                       </p>
                     </div>
                   )}
-                  <FormMessage className="text-[12px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -205,34 +194,27 @@ function ResetPasswordContent() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-medium">Confirm Password</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <PasswordInput
                       autoComplete="new-password"
                       placeholder="Confirm your password"
-                      className="h-9 text-sm"
+                      className="h-10"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage className="text-[12px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-9 text-sm font-medium gap-2 mt-1"
-            >
+            <Button type="submit" size="lg" loading={loading} className="mt-2 w-full">
               {loading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Setting up...
-                </>
+                "Setting up..."
               ) : (
                 <>
                   Complete Setup
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="size-4" />
                 </>
               )}
             </Button>
@@ -247,8 +229,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full max-w-sm text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-gold mx-auto" />
+        <div role="status" className="w-full max-w-[400px] text-center">
+          <Loader2 className="mx-auto size-8 animate-spin text-brand-text" />
         </div>
       }
     >

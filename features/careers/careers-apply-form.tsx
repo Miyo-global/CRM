@@ -20,6 +20,8 @@ import { resolveFieldVisibility, type ApplicationFieldConfig } from "@/lib/hr/ap
 import { getTodayIST } from "@/lib/careers/application-deadline";
 import { sanitizeDecimalString } from "@/lib/numeric-input";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
 
 interface EducationEntry {
   qualification: string;
@@ -73,19 +75,19 @@ const MAX_ADDITIONAL_SKILLS = CAREERS_APPLY_LIMITS.maxAdditionalSkills;
 const MAX_CUSTOM_LINKS = CAREERS_APPLY_LIMITS.maxCustomLinks;
 
 const INPUT_BASE =
-  "flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1";
+  "flex h-9 w-full min-w-0 rounded-md border bg-card px-3 py-1 text-sm text-foreground shadow-xs outline-none transition-[color,border-color,box-shadow] placeholder:text-subtle-foreground focus-visible:focus-ring";
 
 function inputClass(invalid?: boolean) {
   return cn(
     INPUT_BASE,
-    invalid ? "border-destructive focus-visible:ring-destructive/40" : "border-input focus-visible:ring-ring",
+    invalid ? "border-destructive" : "border-input focus-visible:border-ring",
   );
 }
 
 function textareaClass(invalid?: boolean) {
   return cn(
-    "flex min-h-[96px] w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 resize-none",
-    invalid ? "border-destructive focus-visible:ring-destructive/40" : "border-input focus-visible:ring-ring",
+    "flex min-h-24 w-full rounded-md border bg-card px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-[color,border-color,box-shadow] placeholder:text-subtle-foreground focus-visible:focus-ring resize-none",
+    invalid ? "border-destructive" : "border-input focus-visible:border-ring",
   );
 }
 
@@ -538,22 +540,19 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col noir-mesh">
+      <div className="min-h-screen flex flex-col bg-background">
         <CareersHeader backHref={backHref} backLabel="Back to job" />
         <main className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-10">
-          <div className="text-center py-16 rounded-2xl border bg-card/80 shadow-soft px-6">
-            <CheckCircleIcon className="h-14 w-14 text-emerald-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Application submitted</h2>
-            <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+          <div className="rounded-xl border border-border bg-card px-6 py-16 text-center shadow-sm">
+            <IconChip icon={CheckCircleIcon} tone="success" size="lg" className="mx-auto mb-4" />
+            <h2 className="mb-2 font-display text-xl font-bold">Application submitted</h2>
+            <p className="text-muted-foreground text-base max-w-sm mx-auto">
               Thank you for applying. We&apos;ll review your profile within 3 working days and reach
               out if there&apos;s a match. A confirmation email is on its way.
             </p>
-            <Link
-              href="/careers"
-              className="mt-6 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Browse other openings
-            </Link>
+            <Button asChild className="mt-6">
+              <Link href="/careers">Browse other openings</Link>
+            </Button>
           </div>
         </main>
         <CareersFooter />
@@ -562,14 +561,14 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
   }
 
   return (
-    <div className="min-h-screen flex flex-col noir-mesh">
+    <div className="min-h-screen flex flex-col bg-background">
       <CareersHeader backHref={backHref} backLabel="Back to job" />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
-        <div className="rounded-2xl border bg-card/90 p-6 sm:p-8 shadow-soft">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight">Apply for this Position</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="mb-8 border-b border-border pb-6">
+            <h1 className="font-display text-2xl font-bold tracking-tight">Apply for this Position</h1>
+            <p className="mt-2 text-base text-muted-foreground">
               {jobTitle} · Fill out the form below to submit your application.
             </p>
           </div>
@@ -578,11 +577,11 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
             {fv("resume") !== "hidden" && <div
               id="resume-section"
               className={cn(
-                "rounded-xl border border-dashed bg-muted/20 p-5 text-center",
-                fieldErrors.resume ? "border-destructive ring-1 ring-destructive/30" : "border-input",
+                "rounded-lg border border-dashed bg-surface-sunken p-5 text-center",
+                fieldErrors.resume ? "border-destructive" : "border-input",
               )}
             >
-              <UploadIcon className="mx-auto h-7 w-7 text-primary/70" />
+              <IconChip icon={UploadIcon} className="mx-auto" />
               <p className="mt-2 text-sm font-semibold">
                 Upload your résumé <span className="text-destructive">*</span>
               </p>
@@ -595,13 +594,13 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                 className="sr-only"
               />
               {resumeFile ? (
-                <div className="mx-auto mt-3 flex max-w-md items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-left">
-                  <FileTextIcon className="h-4 w-4 text-primary shrink-0" />
+                <div className="mx-auto mt-3 flex max-w-md items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-left shadow-xs">
+                  <FileTextIcon className="size-4 shrink-0 text-brand-text" />
                   <span className="min-w-0 flex-1 truncate text-xs font-medium">
                     {resumeFile.name}
                   </span>
                   {resumeParsing && (
-                    <span className="shrink-0 text-[11px] text-muted-foreground animate-pulse">
+                    <span className="shrink-0 text-2xs text-muted-foreground motion-safe:animate-pulse">
                       Parsing…
                     </span>
                   )}
@@ -609,10 +608,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     type="button"
                     onClick={clearResume}
                     disabled={isBusy}
-                    className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+                    className="rounded-sm p-0.5 text-muted-foreground outline-none hover:text-foreground focus-visible:focus-ring"
                     aria-label="Remove résumé"
                   >
-                    <XIcon className="h-3.5 w-3.5" />
+                    <XIcon className="size-3.5" />
                   </button>
                 </div>
               ) : (
@@ -620,13 +619,13 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                   type="button"
                   onClick={() => resumeInputRef.current?.click()}
                   disabled={isBusy}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-medium hover:bg-muted/40 transition-colors"
+                  className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-3 text-xs font-medium outline-none transition-colors hover:bg-accent focus-visible:focus-ring"
                 >
-                  <FileTextIcon className="h-3.5 w-3.5" />
+                  <FileTextIcon className="size-3.5" />
                   Choose Resume File
                 </button>
               )}
-              <p className="mt-2 text-[11px] text-muted-foreground">
+              <p className="mt-2 text-2xs text-muted-foreground">
                 {RESUME_FILE_HINT} · max {maxMb}MB
               </p>
               {fieldErrors.resume && (
@@ -635,8 +634,8 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
             </div>}
 
             {autoFilled && (
-              <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
-                <CheckCircleIcon className="h-3.5 w-3.5 shrink-0" />
+              <div className="flex items-center gap-2 rounded-md bg-success-soft px-3 py-2 text-xs text-success-strong">
+                <CheckCircleIcon className="size-3.5 shrink-0" />
                 Fields auto-filled from your résumé — review and edit before submitting.
               </div>
             )}
@@ -770,10 +769,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
             </div>
 
             {fv("education") !== "hidden" && <section className="space-y-3">
-              <h2 className="text-sm font-semibold">Education Qualification{fv("education") === "required" && <span className="text-destructive"> *</span>}</h2>
+              <h2 className="font-display text-base font-bold">Education Qualification{fv("education") === "required" && <span className="text-destructive"> *</span>}</h2>
               <FieldError message={sectionError(fieldErrors, "education")} />
               {education.map((entry, i) => (
-                <div key={i} className="rounded-lg border border-input bg-muted/10 p-4 space-y-3">
+                <div key={i} className="rounded-lg border border-border bg-surface-sunken p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
                       Education {i + 1}
@@ -781,10 +780,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     <button
                       type="button"
                       onClick={() => setEducation((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                      className="rounded-sm p-0.5 text-muted-foreground outline-none hover:text-destructive focus-visible:focus-ring"
                       aria-label="Remove education"
                     >
-                      <XIcon className="h-4 w-4" />
+                      <XIcon className="size-4" />
                     </button>
                   </div>
                   <input
@@ -853,18 +852,18 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                 onClick={() =>
                   setEducation((prev) => [...prev, { qualification: "", institution: "", year: "" }])
                 }
-                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-input px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-dashed border-input px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:border-ring hover:text-foreground focus-visible:focus-ring"
               >
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="size-4" />
                 Add Education
               </button>
             </section>}
 
             {fv("workExperience") !== "hidden" && <section className="space-y-3">
-              <h2 className="text-sm font-semibold">Work Experience{fv("workExperience") === "required" && <span className="text-destructive"> *</span>}</h2>
+              <h2 className="font-display text-base font-bold">Work Experience{fv("workExperience") === "required" && <span className="text-destructive"> *</span>}</h2>
               <FieldError message={sectionError(fieldErrors, "workExperience")} />
               {experience.map((entry, i) => (
-                <div key={i} className="rounded-lg border border-input bg-muted/10 p-4 space-y-3">
+                <div key={i} className="rounded-lg border border-border bg-surface-sunken p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
                       Experience {i + 1}
@@ -872,10 +871,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     <button
                       type="button"
                       onClick={() => setExperience((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                      className="rounded-sm p-0.5 text-muted-foreground outline-none hover:text-destructive focus-visible:focus-ring"
                       aria-label="Remove experience"
                     >
-                      <XIcon className="h-4 w-4" />
+                      <XIcon className="size-4" />
                     </button>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -986,7 +985,7 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     }
                     rows={2}
                     placeholder="What did you work on?"
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                    className={textareaClass(false)}
                   />
                 </div>
               ))}
@@ -998,9 +997,9 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     { company: "", title: "", startDate: "", endDate: "", description: "" },
                   ])
                 }
-                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-input px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-dashed border-input px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:border-ring hover:text-foreground focus-visible:focus-ring"
               >
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="size-4" />
                 Add Experience
               </button>
             </section>}
@@ -1045,10 +1044,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                   <button
                     type="button"
                     onClick={() => setAdditionalSkills((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="rounded p-1 text-muted-foreground hover:text-destructive"
+                    className="rounded-sm p-1 text-muted-foreground outline-none hover:text-destructive focus-visible:focus-ring"
                     aria-label="Remove skill"
                   >
-                    <XIcon className="h-4 w-4" />
+                    <XIcon className="size-4" />
                   </button>
                 </div>
               ))}
@@ -1056,16 +1055,16 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                 type="button"
                 disabled={additionalSkills.length >= MAX_ADDITIONAL_SKILLS}
                 onClick={() => setAdditionalSkills((prev) => [...prev, ""])}
-                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-input px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-input disabled:hover:text-muted-foreground"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-dashed border-input px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:border-ring hover:text-foreground focus-visible:focus-ring disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-input disabled:hover:text-muted-foreground"
               >
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="size-4" />
                 Additional Skill
               </button>
               </>}
             </section>}
 
             {fv("customLinks") !== "hidden" && <section className="space-y-3">
-              <h2 className="text-sm font-semibold">Portfolio / Custom Links{fv("customLinks") === "required" && <span className="text-destructive"> *</span>}</h2>
+              <h2 className="font-display text-base font-bold">Portfolio / Custom Links{fv("customLinks") === "required" && <span className="text-destructive"> *</span>}</h2>
               <FieldError message={sectionError(fieldErrors, "customLinks")} />
               {customLinks.map((link, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -1101,10 +1100,10 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                   <button
                     type="button"
                     onClick={() => setCustomLinks((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="rounded p-1 text-muted-foreground hover:text-destructive"
+                    className="rounded-sm p-1 text-muted-foreground outline-none hover:text-destructive focus-visible:focus-ring"
                     aria-label="Remove link"
                   >
-                    <XIcon className="h-4 w-4" />
+                    <XIcon className="size-4" />
                   </button>
                 </div>
               ))}
@@ -1112,9 +1111,9 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                 type="button"
                 disabled={customLinks.length >= MAX_CUSTOM_LINKS}
                 onClick={() => setCustomLinks((prev) => [...prev, { label: "", url: "" }])}
-                className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-input px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-input disabled:hover:text-muted-foreground"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-dashed border-input px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:border-ring hover:text-foreground focus-visible:focus-ring disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-input disabled:hover:text-muted-foreground"
               >
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="size-4" />
                 Add Custom Link
               </button>
             </section>}
@@ -1135,24 +1134,17 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
             </div>}
 
             {error && (
-              <p className="text-sm text-destructive rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2">
+              <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger-strong" role="alert">
                 {error}
               </p>
             )}
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Link
-                href={backHref}
-                className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-5 py-2.5 text-sm font-semibold hover:bg-muted/50 transition-colors"
-              >
-                Cancel
-              </Link>
-              <button
-                type="submit"
-                disabled={isBusy}
-                className="press-scale inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                <CheckCircleIcon className="h-4 w-4" />
+            <div className="sticky bottom-0 z-sticky -mx-6 -mb-6 flex items-center justify-end gap-2 rounded-b-xl border-t border-border bg-card/90 px-6 py-3 backdrop-blur sm:-mx-8 sm:-mb-8 sm:px-8">
+              <Button asChild variant="ghost">
+                <Link href={backHref}>Cancel</Link>
+              </Button>
+              <Button type="submit" loading={isBusy}>
+                <CheckCircleIcon className="size-4" />
                 {resumeParsing
                   ? "Reading résumé…"
                   : resumeUploading
@@ -1160,7 +1152,7 @@ export function CareersApplyForm({ jobId, jobTitle, applicationFields }: Careers
                     : submitting
                       ? "Submitting…"
                       : "Submit Application"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
