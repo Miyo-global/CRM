@@ -149,7 +149,7 @@ function InvoicesContent() {
       title="Invoices"
       subtitle="Manage and track all invoices"
       actions={
-        <Button onClick={handleOpenCreate} className="gap-2 bg-gold hover:bg-gold/90 text-white">
+        <Button onClick={handleOpenCreate} className="gap-2 bg-primary hover:bg-brand-soft text-primary-foreground">
           <Plus className="h-4 w-4" /> New Invoice
         </Button>
       }
@@ -160,7 +160,7 @@ function InvoicesContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-            <IndianRupee className="h-4 w-4 text-amber-500" />
+            <IndianRupee className="h-4 w-4 text-warning-strong" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats?.totalOutstanding ?? 0)}</div>
@@ -170,7 +170,7 @@ function InvoicesContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Paid</CardTitle>
-            <Check className="h-4 w-4 text-emerald-500" />
+            <Check className="h-4 w-4 text-success-strong" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats?.totalPaid ?? 0)}</div>
@@ -180,10 +180,10 @@ function InvoicesContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <Clock className="h-4 w-4 text-red-500" />
+            <Clock className="h-4 w-4 text-danger-strong" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats?.overdue ?? 0}</div>
+            <div className="text-2xl font-bold text-danger-strong">{stats?.overdue ?? 0}</div>
             <p className="text-xs text-muted-foreground">Need attention</p>
           </CardContent>
         </Card>
@@ -461,13 +461,13 @@ function CreateInvoiceDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <div className="border-t pt-3 space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{formatCurrency(taxAmount)}</span></div>
-            {discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-red-500">-{formatCurrency(discount)}</span></div>}
+            {discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-danger-strong">-{formatCurrency(discount)}</span></div>}
             <div className="flex justify-between font-bold text-base pt-1 border-t"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={createInvoice.isPending} className="bg-gold hover:bg-gold/90 text-white">
+            <Button onClick={handleSubmit} disabled={createInvoice.isPending} className="bg-primary hover:bg-brand-soft text-primary-foreground">
               {createInvoice.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <FileText className="h-4 w-4 mr-1" />}
               Create Invoice
             </Button>

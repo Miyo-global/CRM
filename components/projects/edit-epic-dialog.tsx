@@ -114,7 +114,7 @@ export function EditEpicDialog({ epic, projectId, trigger }: EditEpicDialogProps
       <SheetContent className="sm:max-w-[500px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-purple-500" />
+            <Zap className="h-5 w-5 text-plum-strong" />
             Edit Epic
           </SheetTitle>
         </SheetHeader>

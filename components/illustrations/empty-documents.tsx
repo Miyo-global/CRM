@@ -9,9 +9,9 @@ export function EmptyDocumentsIllustration({ className }: IllustrationProps) {
 
       <rect x="62" y="28" width="85" height="110" rx="6" fill={BLUE} opacity="0.06" stroke={BLUE} strokeWidth="1" />
 
-      <rect x="52" y="38" width="85" height="110" rx="6" fill="white" stroke={BLUE} strokeWidth="1.5" opacity="0.4" />
+      <rect x="52" y="38" width="85" height="110" rx="6" fill="var(--card)" stroke={BLUE} strokeWidth="1.5" opacity="0.4" />
 
-      <rect x="42" y="48" width="85" height="110" rx="6" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="42" y="48" width="85" height="110" rx="6" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
 
       <path d="M107 48l20 20h-14a6 6 0 01-6-6V48z" fill={GOLD} opacity="0.1" stroke={BLUE} strokeWidth="1.5" />
 

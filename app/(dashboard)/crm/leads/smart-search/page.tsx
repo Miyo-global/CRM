@@ -31,18 +31,18 @@ const EXAMPLE_QUERIES = [
 ];
 
 const STATUS_STYLES: Record<string, string> = {
-  NEW: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  CONTACTED: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  INTERESTED: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  QUALIFIED: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  CONVERTED: "bg-green-500/10 text-green-400 border-green-500/20",
-  LOST: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  NEW: "bg-info-soft text-info-strong border-info-strong/20",
+  CONTACTED: "bg-warning-soft text-warning-strong border-warning-strong/20",
+  INTERESTED: "bg-plum-soft text-plum-strong border-plum-strong/20",
+  QUALIFIED: "bg-success-soft text-success-strong border-success-strong/20",
+  CONVERTED: "bg-success-soft text-success-strong border-success-strong/20",
+  LOST: "bg-danger-soft text-danger-strong border-danger-strong/20",
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
-  HOT: "bg-red-500/10 text-red-400 border-red-500/20",
-  WARM: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  COLD: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  HOT: "bg-danger-soft text-danger-strong border-danger-strong/20",
+  WARM: "bg-warning-soft text-warning-strong border-warning-strong/20",
+  COLD: "bg-teal-soft text-teal-strong border-teal-strong/20",
 };
 
 function formatValue(val: number | null) {
@@ -129,7 +129,7 @@ function ResultsTable({ leads }: { leads: NLSearchLead[] }) {
                 <TableCell>
                   <Link
                     href={`/crm/leads/${lead.id}`}
-                    className="font-medium hover:text-primary transition-colors"
+                    className="font-medium hover:text-brand-text transition-colors"
                   >
                     {lead.name}
                   </Link>
@@ -221,7 +221,7 @@ export default function SmartLeadSearchPage() {
       subtitle='Search leads using natural language — "hot leads from Mumbai above 5L"'
       badge={
         <Badge variant="outline" className="gap-1.5 text-xs">
-          <Sparkles className="h-3 w-3 text-primary" />
+          <Sparkles className="h-3 w-3 text-brand-text" />
           AI-Powered
         </Badge>
       }
@@ -258,7 +258,7 @@ export default function SmartLeadSearchPage() {
             >
               {isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
                   Searching...
                 </span>
               ) : (
@@ -278,8 +278,8 @@ export default function SmartLeadSearchPage() {
                 onClick={() => handleChipClick(q)}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
-                  "border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5",
-                  inputValue === q && "border-primary text-primary bg-primary/5",
+                  "border-border text-muted-foreground hover:border-primary hover:text-brand-text hover:bg-brand-soft",
+                  inputValue === q && "border-primary text-brand-text bg-brand-soft",
                 )}
               >
                 <ArrowRight className="h-3 w-3" />
@@ -307,8 +307,8 @@ export default function SmartLeadSearchPage() {
         ) : (
           
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-            <div className="rounded-full bg-primary/10 p-5">
-              <Sparkles className="h-10 w-10 text-primary" />
+            <div className="rounded-full bg-brand-soft p-5">
+              <Sparkles className="h-10 w-10 text-brand-text" />
             </div>
             <div className="space-y-1">
               <h3 className="font-semibold text-lg">Ask anything about your leads</h3>
@@ -322,7 +322,7 @@ export default function SmartLeadSearchPage() {
                   key={q}
                   type="button"
                   onClick={() => handleChipClick(q)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-text transition-colors group"
                 >
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
                   {q}

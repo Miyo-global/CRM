@@ -35,6 +35,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
+// QR codes must stay ink-on-white in every theme for scannability (spec §5.4).
+// These are the only hex literals allowed in-app.
+const QR_FG = "#201E1F";
+const QR_BG = "#FFFFFF";
+
 type QRCodeData = {
   id: number;
   slug: string;
@@ -109,42 +114,42 @@ function QRCard({
   const handleDownloadSvg = useCallback(() => onDownload(qr.slug, "svg"), [qr.slug, onDownload]);
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden border border-border/40 bg-card flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-[0_8px_40px_rgba(189,136,44,0.18)]">
+    <div className="group relative rounded-2xl overflow-hidden border border-border/40 bg-card flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md">
 
-      <div
-        className="relative flex items-center justify-center p-6 h-48 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0a0c18 0%, #0f1420 50%, #0d0f1c 100%)" }}
-      >
+      <div className="relative flex items-center justify-center p-6 h-48 overflow-hidden bg-surface-sunken">
 
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-60"
           style={{
-            backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+            backgroundImage: "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         />
 
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(189,136,44,0.12) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse at 50% 50%, color-mix(in oklab, var(--gold-400) 16%, transparent) 0%, transparent 70%)" }}
         />
 
-        <span className="absolute top-3 left-3 h-5 w-5 border-t-2 border-l-2 border-gold/50 rounded-tl-sm" />
-        <span className="absolute top-3 right-3 h-5 w-5 border-t-2 border-r-2 border-gold/50 rounded-tr-sm" />
-        <span className="absolute bottom-3 left-3 h-5 w-5 border-b-2 border-l-2 border-gold/50 rounded-bl-sm" />
-        <span className="absolute bottom-3 right-3 h-5 w-5 border-b-2 border-r-2 border-gold/50 rounded-br-sm" />
+        <span className="absolute top-3 left-3 h-5 w-5 border-t-2 border-l-2 border-primary/40 rounded-tl-sm" />
+        <span className="absolute top-3 right-3 h-5 w-5 border-t-2 border-r-2 border-primary/40 rounded-tr-sm" />
+        <span className="absolute bottom-3 left-3 h-5 w-5 border-b-2 border-l-2 border-primary/40 rounded-bl-sm" />
+        <span className="absolute bottom-3 right-3 h-5 w-5 border-b-2 border-r-2 border-primary/40 rounded-br-sm" />
 
-        <span className="absolute left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent opacity-0 group-hover:opacity-100 animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
+        <span className="absolute left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold-400 to-transparent opacity-0 group-hover:opacity-100 animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
 
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/60 border border-emerald-500/30 backdrop-blur-sm rounded-full px-2.5 py-1">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-success-soft border border-success-strong/30 rounded-full px-2.5 py-1">
           {qr.scanCount > 0 && (
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="h-1.5 w-1.5 rounded-full bg-success-500 animate-pulse shrink-0" />
           )}
-          <ScanLine className="h-3 w-3 text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-bold text-emerald-400 tabular-nums">{qr.scanCount}</span>
-          <span className="text-[9px] text-emerald-400/70">scans</span>
+          <ScanLine className="h-3 w-3 text-success-strong shrink-0" />
+          <span className="text-2xs font-bold text-success-strong tabular-nums">{qr.scanCount}</span>
+          <span className="text-3xs text-success-strong">scans</span>
         </div>
 
-        <div className="relative h-28 w-28 bg-white rounded-2xl p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_32px_rgba(0,0,0,0.6)] group-hover:shadow-[0_0_0_1px_rgba(189,136,44,0.3),0_8px_40px_rgba(0,0,0,0.8)] transition-shadow duration-300">
+        <div
+          className="relative h-28 w-28 rounded-2xl p-2 shadow-md ring-1 ring-border group-hover:ring-primary/40 group-hover:shadow-lg transition-shadow duration-300"
+          style={{ backgroundColor: QR_BG, color: QR_FG }}
+        >
           <QRCodeImage imageUrl={qr.imageUrl} size={120} />
         </div>
       </div>
@@ -158,20 +163,20 @@ function QRCard({
             rel="noopener noreferrer"
             className="group/link flex items-center gap-1.5 w-fit max-w-full"
           >
-            <span className="text-sm font-semibold truncate leading-tight group-hover/link:text-gold transition-colors">
+            <span className="text-sm font-semibold truncate leading-tight group-hover/link:text-brand-text transition-colors">
               {domain}
             </span>
-            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/40 group-hover/link:text-gold transition-colors" />
+            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/40 group-hover/link:text-brand-text transition-colors" />
           </Link>
-          <p className="text-[10px] text-muted-foreground/50 truncate mt-0.5">{qr.targetUrl}</p>
+          <p className="text-2xs text-muted-foreground/50 truncate mt-0.5">{qr.targetUrl}</p>
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-[10px] text-muted-foreground font-mono">
+          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-2xs text-muted-foreground font-mono">
             <Link2 className="h-2.5 w-2.5 shrink-0" />
-            <span className="truncate max-w-[72px]">/qr/{qr.slug}</span>
+            <span className="truncate max-w-18">/qr/{qr.slug}</span>
           </span>
-          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-2xs text-muted-foreground">
             <CalendarDays className="h-2.5 w-2.5 shrink-0" />
             {qr.createdAt
               ? new Date(qr.createdAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
@@ -186,24 +191,24 @@ function QRCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-full bg-black/60 border border-white/10 backdrop-blur-sm text-white/70 hover:text-white hover:bg-black/80"
+              className="h-7 w-7 rounded-full bg-background/80 border border-border backdrop-blur-sm text-muted-foreground hover:text-foreground hover:bg-muted"
               aria-label="QR code options"
             >
               <MoreVertical className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal truncate">/qr/{qr.slug}</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-2xs text-muted-foreground font-normal normal-case truncate">/qr/{qr.slug}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold px-2 py-1">Download</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-2xs text-muted-foreground/60 uppercase tracking-wider font-semibold px-2 py-1">Download</DropdownMenuLabel>
             <DropdownMenuItem onClick={handleDownloadPng}>
-              <FileImage className="mr-2 h-3.5 w-3.5 text-blue-400" /> PNG
+              <FileImage className="mr-2 h-3.5 w-3.5 text-info-strong" /> PNG
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDownloadJpeg}>
-              <FileImage className="mr-2 h-3.5 w-3.5 text-purple-400" /> JPEG
+              <FileImage className="mr-2 h-3.5 w-3.5 text-plum-strong" /> JPEG
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDownloadSvg}>
-              <FileType className="mr-2 h-3.5 w-3.5 text-emerald-400" /> SVG
+              <FileType className="mr-2 h-3.5 w-3.5 text-success-strong" /> SVG
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:text-destructive focus:bg-destructive/10">
@@ -363,8 +368,8 @@ export default function CEOQRCodePage() {
 
         <div className="rounded-xl border bg-card p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-9 w-9 rounded-xl bg-gold/10 ring-1 ring-gold/20 flex items-center justify-center shrink-0">
-              <QrCodeIcon className="h-4 w-4 text-gold" />
+            <div className="h-9 w-9 rounded-xl bg-brand-soft ring-1 ring-ring flex items-center justify-center shrink-0">
+              <QrCodeIcon className="h-4 w-4 text-brand-text" />
             </div>
             <div>
               <p className="text-sm font-semibold">Generate New QR Code</p>

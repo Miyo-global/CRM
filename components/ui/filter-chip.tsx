@@ -16,7 +16,7 @@ interface FilterChipProps extends Omit<React.ComponentProps<"button">, "type"> {
 function FilterChip({ active = false, count, onRemove, className, children, ...props }: FilterChipProps) {
   return (
     <span
-      data-slot="filter-chip"
+      data-slot="filter-pill"
       data-active={active || undefined}
       className={cn(
         "inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors",

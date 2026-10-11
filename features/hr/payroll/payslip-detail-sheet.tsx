@@ -93,7 +93,7 @@ export function PayslipDetailSheet({
               <Badge variant="outline">
                 {format(new Date(selectedMonth + "-01"), "MMMM yyyy")}
               </Badge>
-              <p className="text-[10px] text-muted-foreground tabular-nums">
+              <p className="text-2xs text-muted-foreground tabular-nums">
                 {(() => {
                   const start = new Date(selectedMonth + "-01");
                   const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
@@ -105,7 +105,7 @@ export function PayslipDetailSheet({
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <h4 className="font-semibold text-xs mb-3 text-emerald-600 uppercase tracking-wider">Earnings</h4>
+            <h4 className="font-semibold text-xs mb-3 text-success-strong uppercase tracking-wider">Earnings</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Basic Pay</span>
@@ -122,13 +122,13 @@ export function PayslipDetailSheet({
                 </div>
               )}
               {(payslipPreview?.bonus || 0) > 0 && (
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-success-strong">
                   <span>Bonus / Incentive</span>
                   <span className="tabular-nums">+₹{payslipPreview?.bonus.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {(payslipPreview?.overtimeAmount || 0) > 0 && (
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-success-strong">
                   <span>
                     Overtime Pay
                     {payslipPreview?.overtimeType === "days"
@@ -149,18 +149,18 @@ export function PayslipDetailSheet({
           </div>
 
           <div>
-            <h4 className="font-semibold text-xs mb-3 text-red-600 uppercase tracking-wider">Deductions</h4>
+            <h4 className="font-semibold text-xs mb-3 text-danger-strong uppercase tracking-wider">Deductions</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Professional Tax</span>
-                <span className="text-red-600 tabular-nums">
+                <span className="text-danger-strong tabular-nums">
                   -₹{payslipPreview?.professionalTax.toLocaleString(DEFAULT_LOCALE)}
                 </span>
               </div>
               {(payslipPreview?.salaryStructureDeductions || 0) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>
-                  <span className="text-red-600 tabular-nums">
+                  <span className="text-danger-strong tabular-nums">
                     -₹{Math.round(payslipPreview?.salaryStructureDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
@@ -170,7 +170,7 @@ export function PayslipDetailSheet({
                   <span className="text-muted-foreground">
                     LOP Deduction ({payslipPreview?.lopDays} {payslipPreview?.lopDays === 1 ? "day" : "days"})
                   </span>
-                  <span className="text-red-600 tabular-nums">
+                  <span className="text-danger-strong tabular-nums">
                     -₹{Math.round(payslipPreview?.lopDeduction || 0).toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
@@ -178,7 +178,7 @@ export function PayslipDetailSheet({
               {(payslipPreview?.otherDeductions || 0) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Other Deductions</span>
-                  <span className="text-red-600 tabular-nums">
+                  <span className="text-danger-strong tabular-nums">
                     -₹{payslipPreview?.otherDeductions.toLocaleString(DEFAULT_LOCALE)}
                   </span>
                 </div>
@@ -186,7 +186,7 @@ export function PayslipDetailSheet({
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Total Deductions</span>
-                <span className="text-red-600 tabular-nums">
+                <span className="text-danger-strong tabular-nums">
                   -₹{Math.round(payslipPreview?.totalDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
                 </span>
               </div>
@@ -197,7 +197,7 @@ export function PayslipDetailSheet({
 
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
-            <span className="text-2xl font-bold text-emerald-600 tabular-nums">
+            <span className="text-2xl font-bold text-success-strong tabular-nums">
               ₹{Math.round(payslipPreview?.netSalary || 0).toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>

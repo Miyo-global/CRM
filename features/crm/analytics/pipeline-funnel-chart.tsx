@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { CHART_TOOLTIP_STYLE, AXIS_TICK } from "@/features/crm/shared/constants";
+import { CHART_TOOLTIP_STYLE, CHART_AXIS } from "@/features/crm/shared/constants";
 import { AnalyticsChartCard } from "./analytics-chart-card";
 
 interface PipelineFunnelChartProps {
@@ -13,11 +13,11 @@ export function PipelineFunnelChart({ data }: PipelineFunnelChartProps) {
     <AnalyticsChartCard title="Pipeline Funnel" data={data} filename="pipeline-funnel">
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} layout="vertical">
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis type="number" tick={AXIS_TICK} />
-          <YAxis dataKey="name" type="category" tick={AXIS_TICK} width={80} />
+          <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" {...CHART_AXIS} />
+          <YAxis dataKey="name" type="category" {...CHART_AXIS} width={80} />
           <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={28}>
             {data.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
           </Bar>
         </BarChart>

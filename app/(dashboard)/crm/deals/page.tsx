@@ -1,5 +1,6 @@
 "use client";
 
+import { CHART_VARS } from "@/lib/design/tones";
 import {
   useState,
   useMemo,
@@ -41,15 +42,7 @@ import { StageSkipDialog } from "@/features/crm/deals/stage-skip-dialog";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 
-const CONFETTI_COLORS = [
-  "#bd882c",
-  "#0f2b7f",
-  "#10B981",
-  "#F59E0B",
-  "#3B82F6",
-  "#EF4444",
-  "#8B5CF6",
-];
+const CONFETTI_COLORS = CHART_VARS;
 
 function seededFraction(seed: number): number {
   const x = Math.sin(seed * 99991) * 43758.5453;
@@ -484,7 +477,7 @@ export default function DealsPage() {
                 size="sm"
                 className={cn(
                   "rounded-r-none",
-                  view === "table" && "bg-gold hover:bg-gold/90 text-white",
+                  view === "table" && "bg-primary hover:bg-brand-soft text-primary-foreground",
                 )}
                 onClick={handleViewTable}
               >
@@ -495,7 +488,7 @@ export default function DealsPage() {
                 size="sm"
                 className={cn(
                   "rounded-l-none",
-                  view === "kanban" && "bg-gold hover:bg-gold/90 text-white",
+                  view === "kanban" && "bg-primary hover:bg-brand-soft text-primary-foreground",
                 )}
                 onClick={handleViewKanban}
               >
@@ -507,7 +500,7 @@ export default function DealsPage() {
               Export
             </Button>
             <Button
-              className="bg-gold hover:bg-gold/90 text-white"
+              className="bg-primary hover:bg-brand-soft text-primary-foreground"
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />

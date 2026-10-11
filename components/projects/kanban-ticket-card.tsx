@@ -75,7 +75,7 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
 
       <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono text-muted-foreground">
+          <span className="text-2xs font-mono text-muted-foreground">
             {ticketKey}
           </span>
           <PriorityBadge priority={ticket.priority} />
@@ -87,13 +87,13 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
                   <span
                     key={label.id}
                     className="h-2 w-2 rounded-full shrink-0"
-                    style={{ backgroundColor: label.color || "#3b82f6" }}
+                    style={{ backgroundColor: label.color || "var(--info-500)" }}
                     title={label.name}
                   />
                 ) : null
               )}
               {ticket.labels.length > 3 && (
-                <span className="text-[9px] text-muted-foreground ml-0.5">
+                <span className="text-3xs text-muted-foreground ml-0.5">
                   +{ticket.labels.length - 3}
                 </span>
               )}
@@ -104,7 +104,7 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
             (ticket.points ?? ticket.storyPoints)! > 0 && (
               <Badge
                 variant="secondary"
-                className="text-[9px] px-1 py-0 h-4 font-mono"
+                className="text-3xs px-1 py-0 h-4 font-mono"
               >
                 {ticket.points ?? ticket.storyPoints}
               </Badge>
@@ -114,14 +114,14 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
         {primaryAssignee ? (
           <Avatar className="h-6 w-6 border border-background shrink-0">
             <AvatarImage src={resolveImageUrl(primaryAssignee.image)} />
-            <AvatarFallback className="text-[8px] bg-primary/10 text-primary font-medium">
+            <AvatarFallback className="text-3xs bg-primary/10 text-primary font-medium">
               {primaryAssignee.firstName?.[0]}
               {primaryAssignee.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
         ) : (
           <div className="h-6 w-6 rounded-full bg-muted border border-dashed border-muted-foreground/30 flex items-center justify-center shrink-0">
-            <span className="text-[8px] text-muted-foreground">?</span>
+            <span className="text-3xs text-muted-foreground">?</span>
           </div>
         )}
       </div>

@@ -81,7 +81,7 @@ export function ImportValidationPreview({
   return (
     <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-full bg-gold/10 flex items-center justify-center text-xs font-bold text-gold">
+        <div className="h-6 w-6 rounded-full bg-brand-soft flex items-center justify-center text-xs font-bold text-brand-text">
           3
         </div>
         <Label className="text-sm font-semibold">Validation Preview</Label>
@@ -99,7 +99,7 @@ export function ImportValidationPreview({
               <FileSpreadsheet className="h-3 w-3" />
               {parsedRows.length} rows
             </Badge>
-            <Badge className="gap-1 bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800">
+            <Badge className="gap-1 bg-success-soft text-success-strong border-success-strong/25">
               <CheckCircle2 className="h-3 w-3" />
               {validCount} valid
             </Badge>
@@ -155,7 +155,7 @@ export function ImportValidationPreview({
                       </td>
                       <td className="px-2 py-1">
                         {row.valid ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-success-strong" />
                         ) : (
                           <span className="text-destructive" title={row.error}>
                             <AlertCircle className="h-3.5 w-3.5 inline mr-1" />

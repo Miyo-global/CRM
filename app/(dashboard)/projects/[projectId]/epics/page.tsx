@@ -110,7 +110,7 @@ export default function EpicsPage({ params }: PageProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-purple-500" />
+              <Layers className="h-5 w-5 text-plum-strong" />
               <div>
                 <p className="text-2xl font-bold">{epics.length}</p>
                 <p className="text-sm text-muted-foreground">Epics</p>
@@ -121,7 +121,7 @@ export default function EpicsPage({ params }: PageProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-blue-500" />
+              <BookOpen className="h-5 w-5 text-info-strong" />
               <div>
                 <p className="text-2xl font-bold">{stories.length}</p>
                 <p className="text-sm text-muted-foreground">Stories</p>
@@ -132,7 +132,7 @@ export default function EpicsPage({ params }: PageProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-gray-500" />
+              <Wrench className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-2xl font-bold">{tasks.length}</p>
                 <p className="text-sm text-muted-foreground">Tasks</p>
@@ -143,7 +143,7 @@ export default function EpicsPage({ params }: PageProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success-strong" />
               <div>
                 <p className="text-2xl font-bold">
                   {tickets.filter(t => t.status === "DONE").length}
@@ -195,7 +195,7 @@ export default function EpicsPage({ params }: PageProps) {
       {stories.filter(s => !s.epicId).length > 0 && (
         <section className="mt-8 pt-2 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-500" />
+            <AlertCircle className="h-5 w-5 text-warning-strong" />
             Stories without Epic
           </h2>
           <Card>
@@ -207,7 +207,7 @@ export default function EpicsPage({ params }: PageProps) {
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <BookOpen className="h-4 w-4 text-blue-500" />
+                      <BookOpen className="h-4 w-4 text-info-strong" />
                       <span className="font-medium">{story.title}</span>
                       <Badge variant="outline" className="text-xs">{story.status}</Badge>
                     </div>
@@ -292,7 +292,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             </Button>
             <div className="space-y-1">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Layers className="h-5 w-5 text-purple-500" />
+                <Layers className="h-5 w-5 text-plum-strong" />
                 {epic.title}
               </CardTitle>
               {epic.description && (
@@ -349,25 +349,25 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             {totalItems > 0 && (
               <>
                 <div
-                  className="bg-green-500 h-full transition-all"
+                  className="bg-success-500 h-full transition-all"
                   style={{ width: `${(completedItems / totalItems) * 100}%` }}
                 />
                 <div
-                  className="bg-blue-500 h-full transition-all"
+                  className="bg-info-500 h-full transition-all"
                   style={{ width: `${(inProgressItems / totalItems) * 100}%` }}
                 />
                 <div
-                  className="bg-gray-300 dark:bg-gray-600 h-full transition-all"
+                  className="bg-ink-200 h-full transition-all"
                   style={{ width: `${(todoItems / totalItems) * 100}%` }}
                 />
               </>
             )}
           </div>
           {totalItems > 0 && (
-            <div className="flex gap-3 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" /> Done ({completedItems})</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-full" /> In Progress ({inProgressItems})</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full" /> To Do ({todoItems})</span>
+            <div className="flex gap-3 text-2xs text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-success-500 rounded-full" /> Done ({completedItems})</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-info-500 rounded-full" /> In Progress ({inProgressItems})</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-ink-200 rounded-full" /> To Do ({todoItems})</span>
             </div>
           )}
         </div>
@@ -382,7 +382,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
                 className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <BookOpen className="h-4 w-4 text-blue-500" />
+                  <BookOpen className="h-4 w-4 text-info-strong" />
                   <span className="font-medium">{story.title}</span>
                   {story.points != null && story.points > 0 && (
                     <Badge variant="secondary" className="text-xs">{story.points} pts</Badge>
@@ -391,7 +391,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className={cn("text-xs", story.status === "DONE" && "border-green-500 text-green-500")}
+                    className={cn("text-xs", story.status === "DONE" && "border-success-500 text-success-strong")}
                   >
                     {story.status || "TODO"}
                   </Badge>

@@ -86,9 +86,9 @@ export const QuickActions = memo(function QuickActions() {
         return (
           <motion.div key={action.label} variants={fadeUp}>
             <Link href={action.href} aria-label={action.label}>
-              <div className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-noir transition-all duration-200 hover:border-gold/40 hover:shadow-md hover:bg-gold/5 cursor-pointer">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 transition-colors group-hover:bg-gold/20">
-                  <ActionIcon className="h-5 w-5 text-gold" aria-hidden="true" />
+              <div className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:bg-brand-soft cursor-pointer">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft transition-colors group-hover:bg-brand-soft">
+                  <ActionIcon className="h-5 w-5 text-brand-text" aria-hidden="true" />
                 </div>
                 <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   {action.label}

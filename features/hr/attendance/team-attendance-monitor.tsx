@@ -48,27 +48,27 @@ const STATUS_META: Record<
 > = {
   PRESENT: {
     label: "Present",
-    badge: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
+    badge: "bg-success-soft text-success-strong border-success-strong/25",
     icon: UserCheck,
   },
   ON_BREAK: {
     label: "On Break",
-    badge: "bg-amber-500/10 text-amber-600 border-amber-200",
+    badge: "bg-warning-soft text-warning-strong border-warning-strong/25",
     icon: Coffee,
   },
   CHECKED_OUT: {
     label: "Checked Out",
-    badge: "bg-blue-500/10 text-blue-600 border-blue-200",
+    badge: "bg-info-soft text-info-strong border-info-strong/25",
     icon: LogOut,
   },
   ON_LEAVE: {
     label: "On Leave",
-    badge: "bg-purple-500/10 text-purple-600 border-purple-200",
+    badge: "bg-plum-soft text-plum-strong border-plum-strong/25",
     icon: Palmtree,
   },
   ABSENT: {
     label: "Absent",
-    badge: "bg-red-500/10 text-red-600 border-red-200",
+    badge: "bg-danger-soft text-danger-strong border-danger-strong/25",
     icon: UserX,
   },
 };
@@ -89,11 +89,11 @@ const SUMMARY_STATS: {
   icon: LucideIcon;
 }[] = [
   { key: "total", label: "Total", color: "text-foreground", icon: Users },
-  { key: "present", label: "Present", color: "text-emerald-600", icon: UserCheck },
-  { key: "onBreak", label: "On Break", color: "text-amber-600", icon: Coffee },
-  { key: "checkedOut", label: "Checked Out", color: "text-blue-600", icon: LogOut },
-  { key: "onLeave", label: "On Leave", color: "text-purple-600", icon: Palmtree },
-  { key: "absent", label: "Absent", color: "text-red-600", icon: UserX },
+  { key: "present", label: "Present", color: "text-success-strong", icon: UserCheck },
+  { key: "onBreak", label: "On Break", color: "text-warning-strong", icon: Coffee },
+  { key: "checkedOut", label: "Checked Out", color: "text-info-strong", icon: LogOut },
+  { key: "onLeave", label: "On Leave", color: "text-plum-strong", icon: Palmtree },
+  { key: "absent", label: "Absent", color: "text-danger-strong", icon: UserX },
 ];
 
 function buildCounts(all: AttendanceMonitorEntry[]) {
@@ -204,7 +204,7 @@ export function TeamAttendanceMonitor() {
                     <span className={cn("text-xl font-bold tabular-nums", s.color)}>{counts[s.key]}</span>
                   </div>
                 )}
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">
+                <span className="text-2xs text-muted-foreground uppercase tracking-wide mt-0.5">
                   {s.label}
                 </span>
               </div>
@@ -287,25 +287,25 @@ export function TeamAttendanceMonitor() {
                 <Table>
                   <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-sm">
                     <TableRow className="bg-muted/60 hover:bg-muted/60">
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold pl-4 py-3 w-36">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold pl-4 py-3 w-36">
                         <TableHeadLabel icon={Building2}>Department</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-56">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-56">
                         <TableHeadLabel icon={User}>Employee</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-32">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-32">
                         <TableHeadLabel icon={Briefcase}>Role</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={Activity}>Status</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={LogIn}>Check In</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={LogOut}>Check Out</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 pr-4 w-24">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 pr-4 w-24">
                         <TableHeadLabel icon={Clock}>Hours</TableHeadLabel>
                       </TableHead>
                     </TableRow>
@@ -380,7 +380,7 @@ export function TeamAttendanceMonitor() {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8 shrink-0">
                                   {emp.image && <AvatarImage src={emp.image} alt={emp.name} />}
-                                  <AvatarFallback className="text-[10px] font-medium">{initials}</AvatarFallback>
+                                  <AvatarFallback className="text-2xs font-medium">{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0">
                                   <Link
@@ -390,7 +390,7 @@ export function TeamAttendanceMonitor() {
                                   >
                                     {emp.name}
                                   </Link>
-                                  <p className="text-[11px] text-muted-foreground truncate">{emp.email}</p>
+                                  <p className="text-2xs text-muted-foreground truncate">{emp.email}</p>
                                 </div>
                               </div>
                             </TableCell>
@@ -403,7 +403,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3">
                               <Badge
                                 variant="outline"
-                                className={cn("text-[11px] font-medium border gap-1", meta.badge)}
+                                className={cn("text-2xs font-medium border gap-1", meta.badge)}
                               >
                                 <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
                                 {meta.label}
@@ -412,7 +412,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3 text-sm tabular-nums">
                               {checkIn ? (
                                 <span className="inline-flex items-center gap-1.5">
-                                  <LogIn className="h-3 w-3 text-emerald-600 shrink-0" aria-hidden="true" />
+                                  <LogIn className="h-3 w-3 text-success-strong shrink-0" aria-hidden="true" />
                                   {checkIn}
                                 </span>
                               ) : (
@@ -422,7 +422,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3 text-sm tabular-nums">
                               {checkOut ? (
                                 <span className="inline-flex items-center gap-1.5">
-                                  <LogOut className="h-3 w-3 text-blue-600 shrink-0" aria-hidden="true" />
+                                  <LogOut className="h-3 w-3 text-info-strong shrink-0" aria-hidden="true" />
                                   {checkOut}
                                 </span>
                               ) : (

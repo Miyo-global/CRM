@@ -73,7 +73,7 @@ const JobRoleOption = memo(function JobRoleOption({ role, isSelected, onSelect }
       <Check className={cn("h-4 w-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
       <span className="truncate">{role.title}</span>
       {role.departmentId == null && (
-        <span className="ml-auto shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
+        <span className="ml-auto shrink-0 text-2xs uppercase tracking-wide text-muted-foreground">
           Org-wide
         </span>
       )}

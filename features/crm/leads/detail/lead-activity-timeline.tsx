@@ -34,7 +34,7 @@ export function LeadActivityTimeline({
   isLoading,
 }: LeadActivityTimelineProps) {
   return (
-    <Card className="shadow-noir">
+    <Card className="shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">
           Activity Timeline
@@ -91,7 +91,7 @@ export function LeadActivityTimeline({
                             {TYPE_LABELS[item.type] ?? item.type}
                           </span>
                           <span
-                            className="text-[10px] text-muted-foreground tabular-nums shrink-0"
+                            className="text-2xs text-muted-foreground tabular-nums shrink-0"
                             title={
                               item.timestamp
                                 ? new Date(item.timestamp).toLocaleString()
@@ -116,7 +116,7 @@ export function LeadActivityTimeline({
                             {typeof data.status === "string" && data.status && (
                               <Badge
                                 variant="secondary"
-                                className="text-[10px] px-1.5 py-0"
+                                className="text-2xs px-1.5 py-0"
                               >
                                 {data.status}
                               </Badge>
@@ -129,7 +129,7 @@ export function LeadActivityTimeline({
                             <p className="text-xs font-medium text-foreground/80">
                               {String(data.subject ?? "(No subject)")}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               {String(data.direction ?? "sent")} ·{" "}
                               {String(data.toEmail ?? "")}
                             </p>
@@ -144,7 +144,7 @@ export function LeadActivityTimeline({
                               </p>
                             ) : null}
                             {data.notes ? (
-                              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                              <p className="text-2xs text-muted-foreground leading-relaxed">
                                 {String(data.notes)}
                               </p>
                             ) : null}
@@ -152,7 +152,7 @@ export function LeadActivityTimeline({
                         )}
 
                         {data.author ? (
-                          <p className="text-[10px] text-muted-foreground/70 mt-1.5 flex items-center gap-1">
+                          <p className="text-2xs text-muted-foreground/70 mt-1.5 flex items-center gap-1">
                             <User className="h-2.5 w-2.5" />
                             {String(
                               (data.author as Record<string, unknown>).name ??

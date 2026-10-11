@@ -159,7 +159,7 @@ function JobOfficeLocationsContent() {
                       value={form.name}
                       onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setFormErrors((fe) => ({ ...fe, name: undefined })); }}
                     />
-                    {formErrors.name && <p className="text-[11px] text-destructive">{formErrors.name}</p>}
+                    {formErrors.name && <p className="text-2xs text-destructive">{formErrors.name}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="loc-country">Country *</Label>
@@ -176,7 +176,7 @@ function JobOfficeLocationsContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {formErrors.country && <p className="text-[11px] text-destructive">{formErrors.country}</p>}
+                    {formErrors.country && <p className="text-2xs text-destructive">{formErrors.country}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="loc-state">State / Region *</Label>
@@ -187,7 +187,7 @@ function JobOfficeLocationsContent() {
                       value={form.state}
                       onChange={(e) => { setForm((f) => ({ ...f, state: e.target.value })); setFormErrors((fe) => ({ ...fe, state: undefined })); }}
                     />
-                    {formErrors.state && <p className="text-[11px] text-destructive">{formErrors.state}</p>}
+                    {formErrors.state && <p className="text-2xs text-destructive">{formErrors.state}</p>}
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="loc-city">City *</Label>
@@ -198,7 +198,7 @@ function JobOfficeLocationsContent() {
                       value={form.city}
                       onChange={(e) => { setForm((f) => ({ ...f, city: e.target.value })); setFormErrors((fe) => ({ ...fe, city: undefined })); }}
                     />
-                    {formErrors.city && <p className="text-[11px] text-destructive">{formErrors.city}</p>}
+                    {formErrors.city && <p className="text-2xs text-destructive">{formErrors.city}</p>}
                   </div>
                 </div>
                 <Button type="button" variant="secondary" onClick={addLocation}>
@@ -220,7 +220,7 @@ function JobOfficeLocationsContent() {
                   <li key={loc.name} className="flex items-center justify-between gap-2 px-4 py-3 text-sm">
                     <div className="min-w-0">
                       <p className="font-medium truncate">{loc.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">
+                      <p className="text-2xs text-muted-foreground truncate">
                         {[loc.city, loc.state, loc.country].filter(Boolean).join(", ")}
                       </p>
                     </div>

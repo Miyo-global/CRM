@@ -81,7 +81,7 @@ export function ActiveStatusSection({
             <p className="text-sm font-medium text-foreground">
               {isActive ? "Active" : "Inactive"}
             </p>
-            <Badge variant={isActive ? "secondary" : "outline"} className="text-[10px]">
+            <Badge variant={isActive ? "secondary" : "outline"} className="text-2xs">
               {isActive ? "Working" : "Suspended"}
             </Badge>
           </div>

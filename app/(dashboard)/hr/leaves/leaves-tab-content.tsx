@@ -30,7 +30,7 @@ import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared"
 import { BalanceCard, LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 
-const DONUT_COLORS = ["#bd882c", "#3b82f6", "#ef4444", "#10b981", "#8b5cf6"];
+const DONUT_COLORS = ["var(--chart-1)", "var(--chart-3)", "var(--chart-8)", "var(--chart-7)", "var(--chart-5)"];
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
   { value: "ALL", label: "All status" },
@@ -193,19 +193,19 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                 className={cn(
                   "rounded-lg p-1.5 min-h-[64px] flex flex-col",
                   isToday
-                    ? "bg-gold/10 border border-gold/30"
+                    ? "bg-brand-soft border border-primary/40"
                     : "bg-muted/30 border border-transparent",
                 )}
               >
                 <div
                   className={cn(
-                    "text-[10px] font-medium text-center leading-tight mb-1",
-                    isToday ? "text-gold" : "text-muted-foreground",
+                    "text-2xs font-medium text-center leading-tight mb-1",
+                    isToday ? "text-brand-text" : "text-muted-foreground",
                   )}
                 >
                   {format(day, "EEE")}
                   <br />
-                  <span className={cn("text-[11px]", isToday && "font-bold")}>
+                  <span className={cn("text-2xs", isToday && "font-bold")}>
                     {format(day, "d")}
                   </span>
                 </div>
@@ -213,14 +213,14 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                   {leaves.slice(0, 3).map((l) => (
                     <Avatar key={l.id} className="h-5 w-5" title={`${l.user?.firstName} ${l.user?.lastName}`}>
                       <AvatarImage src={resolveImageUrl(l.user?.image)} />
-                      <AvatarFallback className="text-[8px] bg-amber-100 text-amber-700">
+                      <AvatarFallback className="text-3xs bg-warning-soft text-warning-strong">
                         {l.user?.firstName?.[0]}
                         {l.user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                   {leaves.length > 3 && (
-                    <span className="text-[9px] text-muted-foreground self-end">
+                    <span className="text-3xs text-muted-foreground self-end">
                       +{leaves.length - 3}
                     </span>
                   )}
@@ -253,7 +253,7 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                   >
                     <Avatar className="h-8 w-8 shrink-0 mt-0.5">
                       <AvatarImage src={resolveImageUrl(leave.user?.image)} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      <AvatarFallback className="text-2xs bg-primary/10 text-primary">
                         {leave.user?.firstName?.[0]}
                         {leave.user?.lastName?.[0]}
                       </AvatarFallback>
@@ -263,7 +263,7 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                         {name}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{range}</p>
-                      <p className="text-[11px] text-primary/90 font-medium mt-1">{typeName}</p>
+                      <p className="text-2xs text-primary/90 font-medium mt-1">{typeName}</p>
                     </div>
                   </li>
                 );
@@ -463,7 +463,7 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
                     <Filter className="h-3.5 w-3.5" />
                     Filter
                     {hasActiveFilters ? (
-                      <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">
+                      <Badge variant="secondary" className="h-4 min-w-4 px-1 text-2xs">
                         !
                       </Badge>
                     ) : null}

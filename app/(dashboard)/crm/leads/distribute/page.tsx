@@ -33,7 +33,7 @@ interface DistributeLeadRowProps {
 function DistributeLeadRow({ lead, isSelected, onToggle }: DistributeLeadRowProps) {
   const handleToggle = useCallback(() => onToggle(lead.id), [lead.id, onToggle]);
   return (
-    <TableRow className={isSelected ? "bg-gold/5" : ""}>
+    <TableRow className={isSelected ? "bg-brand-soft" : ""}>
       <TableCell className="px-3">
         <Checkbox checked={isSelected} onCheckedChange={handleToggle} />
       </TableCell>
@@ -41,10 +41,10 @@ function DistributeLeadRow({ lead, isSelected, onToggle }: DistributeLeadRowProp
       <TableCell className="text-xs text-muted-foreground">{lead.email || ""}</TableCell>
       <TableCell className="text-xs text-muted-foreground font-mono">{lead.phone || ""}</TableCell>
       <TableCell>
-        <Badge variant="outline" className="text-[10px]">{lead.source || ""}</Badge>
+        <Badge variant="outline" className="text-2xs">{lead.source || ""}</Badge>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
+        <Badge variant="outline" className="text-2xs">{lead.status}</Badge>
       </TableCell>
       <TableCell className="text-xs">
         {lead.assignedTo?.name || <span className="text-muted-foreground">Unassigned</span>}
@@ -167,7 +167,7 @@ export default function LeadDistributionPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <Users className="h-5 w-5 text-amber-400" />
+              <Users className="h-5 w-5 text-warning-strong" />
               <span className="text-2xl font-bold tabular-nums">{unassignedCount}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Unassigned</p>
@@ -176,7 +176,7 @@ export default function LeadDistributionPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <ArrowRight className="h-5 w-5 text-blue-400" />
+              <ArrowRight className="h-5 w-5 text-info-strong" />
               <span className="text-2xl font-bold tabular-nums">{selectedIds.size}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Selected</p>

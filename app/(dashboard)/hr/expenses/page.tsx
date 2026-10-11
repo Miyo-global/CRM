@@ -372,7 +372,7 @@ export default function ExpensesPage() {
       subtitle="Track, manage, and submit your expense claims for reimbursement."
       actions={
         <Button
-          className="bg-gold hover:bg-gold/90 text-white font-bold shadow-sm gap-2 rounded-full px-6"
+          className="bg-primary hover:bg-brand-soft text-primary-foreground font-bold shadow-sm gap-2 rounded-full px-6"
           onClick={() => setIsCreateOpen(true)}
         >
           <Plus className="h-4 w-4" />

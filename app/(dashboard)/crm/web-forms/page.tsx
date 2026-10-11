@@ -85,7 +85,7 @@ function EmbedDialog({ form, open, onClose }: { form: WebLeadForm; open: boolean
                 className="absolute top-2 right-2"
                 onClick={() => copy(iframeSnippet, setCopiedIframe)}
               >
-                {copiedIframe ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                {copiedIframe ? <Check className="h-4 w-4 text-success-strong" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -102,7 +102,7 @@ function EmbedDialog({ form, open, onClose }: { form: WebLeadForm; open: boolean
                 className="absolute top-2 right-2"
                 onClick={() => copy(jsSnippet, setCopiedJs)}
               >
-                {copiedJs ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                {copiedJs ? <Check className="h-4 w-4 text-success-strong" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>

@@ -43,11 +43,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const CATEGORIES = [
-  { value: "KUDOS", label: "Kudos", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", bar: "bg-pink-500" },
-  { value: "TEAMWORK", label: "Teamwork", icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", bar: "bg-blue-500" },
-  { value: "INNOVATION", label: "Innovation", icon: Lightbulb, color: "text-amber-500", bg: "bg-amber-500/10", bar: "bg-amber-500" },
-  { value: "LEADERSHIP", label: "Leadership", icon: Award, color: "text-purple-500", bg: "bg-purple-500/10", bar: "bg-purple-500" },
-  { value: "ABOVE_AND_BEYOND", label: "Above & Beyond", icon: Zap, color: "text-green-500", bg: "bg-green-500/10", bar: "bg-green-500" },
+  { value: "KUDOS", label: "Kudos", icon: Heart, color: "text-plum-strong", bg: "bg-plum-soft", bar: "bg-plum-500" },
+  { value: "TEAMWORK", label: "Teamwork", icon: Users, color: "text-info-strong", bg: "bg-info-soft", bar: "bg-info-500" },
+  { value: "INNOVATION", label: "Innovation", icon: Lightbulb, color: "text-warning-strong", bg: "bg-warning-soft", bar: "bg-warning-500" },
+  { value: "LEADERSHIP", label: "Leadership", icon: Award, color: "text-plum-strong", bg: "bg-plum-soft", bar: "bg-plum-500" },
+  { value: "ABOVE_AND_BEYOND", label: "Above & Beyond", icon: Zap, color: "text-success-strong", bg: "bg-success-soft", bar: "bg-success-500" },
 ];
 
 function getCategoryMeta(category: string | null) {
@@ -113,10 +113,10 @@ function HistoryCard({ r, currentUserId }: { r: Recognition; currentUserId: stri
     <Card className="hover:shadow-sm transition-shadow">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
-          <Badge variant="outline" className={`text-[10px] gap-1 ${catMeta.color} ${catMeta.bg} border-0`}>
+          <Badge variant="outline" className={`text-2xs gap-1 ${catMeta.color} ${catMeta.bg} border-0`}>
             <Icon className="h-3 w-3" />{catMeta.label}
           </Badge>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
+          <span className="text-2xs text-muted-foreground whitespace-nowrap shrink-0">
             {r.createdAt ? format(new Date(r.createdAt), "dd MMM yyyy, hh:mm a") : "—"}
           </span>
         </div>
@@ -125,28 +125,28 @@ function HistoryCard({ r, currentUserId }: { r: Recognition; currentUserId: stri
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage src={resolveImageUrl(r.fromUser?.image ?? null)} />
-              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{r.fromUser?.name?.[0] ?? "?"}</AvatarFallback>
+              <AvatarFallback className="text-3xs bg-primary/10 text-primary">{r.fromUser?.name?.[0] ?? "?"}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-sm font-medium truncate">{r.fromUser?.name ?? "—"}</span>
-                {isSent && <Badge variant="outline" className="text-[10px] text-blue-600 border-blue-300 gap-0.5 py-0"><ArrowUpRight className="h-2.5 w-2.5" />Sent</Badge>}
+                {isSent && <Badge variant="outline" className="text-2xs text-info-strong border-info-strong/25 gap-0.5 py-0"><ArrowUpRight className="h-2.5 w-2.5" />Sent</Badge>}
               </div>
-              {r.fromUserDept && <p className="text-[10px] text-muted-foreground">{r.fromUserDept}</p>}
+              {r.fromUserDept && <p className="text-2xs text-muted-foreground">{r.fromUserDept}</p>}
             </div>
           </div>
           <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 rotate-45" />
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
             <div className="min-w-0 text-right">
               <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                {isReceived && <Badge variant="outline" className="text-[10px] text-green-600 border-green-300 gap-0.5 py-0"><ArrowDownLeft className="h-2.5 w-2.5" />Received</Badge>}
+                {isReceived && <Badge variant="outline" className="text-2xs text-success-strong border-success-strong/25 gap-0.5 py-0"><ArrowDownLeft className="h-2.5 w-2.5" />Received</Badge>}
                 <span className="text-sm font-medium truncate">{r.toUser?.name ?? "—"}</span>
               </div>
-              {r.toUserDept && <p className="text-[10px] text-muted-foreground">{r.toUserDept}</p>}
+              {r.toUserDept && <p className="text-2xs text-muted-foreground">{r.toUserDept}</p>}
             </div>
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage src={resolveImageUrl(r.toUser?.image ?? null)} />
-              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{r.toUser?.name?.[0] ?? "?"}</AvatarFallback>
+              <AvatarFallback className="text-3xs bg-primary/10 text-primary">{r.toUser?.name?.[0] ?? "?"}</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -437,14 +437,14 @@ export default function RecognitionPage() {
   }
 
   const summaryCards = [
-    { label: "Total Kudos", value: stats.total, icon: Heart, color: "text-pink-500" },
-    { label: "This Month", value: stats.thisMonth, icon: TrendingUp, color: "text-emerald-500" },
-    { label: "People Recognized", value: stats.topRecognized.length, icon: Users, color: "text-blue-500" },
+    { label: "Total Kudos", value: stats.total, icon: Heart, color: "text-plum-strong" },
+    { label: "This Month", value: stats.thisMonth, icon: TrendingUp, color: "text-success-strong" },
+    { label: "People Recognized", value: stats.topRecognized.length, icon: Users, color: "text-info-strong" },
     {
       label: "Top Category",
       value: stats.byCategory[0]?.count ? stats.byCategory[0].label : "—",
       icon: Sparkles,
-      color: "text-purple-500",
+      color: "text-plum-strong",
     },
   ];
 
@@ -500,7 +500,7 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Trophy className="h-4 w-4 text-amber-500" />
+                        <Trophy className="h-4 w-4 text-warning-strong" />
                         <p className="text-sm font-semibold">Top Recognized</p>
                       </div>
                       {stats.topRecognized.length === 0 ? (
@@ -512,11 +512,11 @@ export default function RecognitionPage() {
                               <span className="text-xs font-bold text-muted-foreground w-4 tabular-nums">{idx + 1}</span>
                               <Avatar className="h-7 w-7">
                                 <AvatarImage src={resolveImageUrl(person.image ?? null)} />
-                                <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{person.name?.[0] ?? "?"}</AvatarFallback>
+                                <AvatarFallback className="text-3xs bg-primary/10 text-primary">{person.name?.[0] ?? "?"}</AvatarFallback>
                               </Avatar>
                               <span className="text-sm flex-1 truncate">{person.name ?? "Teammate"}</span>
-                              <Badge variant="secondary" className="text-[10px] gap-1 shrink-0">
-                                <Heart className="h-2.5 w-2.5 fill-current text-pink-500" />
+                              <Badge variant="secondary" className="text-2xs gap-1 shrink-0">
+                                <Heart className="h-2.5 w-2.5 fill-current text-plum-strong" />
                                 {person.count}
                               </Badge>
                             </div>
@@ -529,7 +529,7 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <Sparkles className="h-4 w-4 text-purple-500" />
+                        <Sparkles className="h-4 w-4 text-plum-strong" />
                         <p className="text-sm font-semibold">By Category</p>
                       </div>
                       <div className="space-y-2.5">
@@ -568,7 +568,7 @@ export default function RecognitionPage() {
 
                 <div className="lg:col-span-2">
                   <div className="flex items-center gap-2 mb-3">
-                    <Heart className="h-4 w-4 text-pink-500" />
+                    <Heart className="h-4 w-4 text-plum-strong" />
                     <p className="text-sm font-semibold">Recent Recognition</p>
                   </div>
                   <div className="space-y-3">
@@ -588,13 +588,13 @@ export default function RecognitionPage() {
                                   <span className="text-sm font-semibold">{r.fromUser?.name}</span>
                                   <span className="text-xs text-muted-foreground">recognized</span>
                                   <span className="text-sm font-semibold">{r.toUser?.name}</span>
-                                  <Badge variant="outline" className={`text-[10px] gap-1 ${catMeta.color}`}>
+                                  <Badge variant="outline" className={`text-2xs gap-1 ${catMeta.color}`}>
                                     <Icon className="h-3 w-3" />
                                     {catMeta.label}
                                   </Badge>
                                 </div>
                                 <p className="text-sm mt-1.5 text-foreground/90">{r.message}</p>
-                                <p className="text-[10px] text-muted-foreground mt-1.5">
+                                <p className="text-2xs text-muted-foreground mt-1.5">
                                   {r.createdAt ? formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }) : ""}
                                 </p>
                               </div>
@@ -805,7 +805,7 @@ export default function RecognitionPage() {
             selectedLabel={(count) => `${count} teammates selected`}
             emptyText="No teammate found."
           />
-          <p className="text-[10px] text-muted-foreground">Select one or more teammates to recognize.</p>
+          <p className="text-2xs text-muted-foreground">Select one or more teammates to recognize.</p>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Category</label>
@@ -827,7 +827,7 @@ export default function RecognitionPage() {
             rows={4}
             maxLength={500}
           />
-          <p className="text-[10px] text-muted-foreground text-right">{message.length}/500</p>
+          <p className="text-2xs text-muted-foreground text-right">{message.length}/500</p>
         </div>
       </HrSheet>
 
@@ -849,8 +849,8 @@ export default function RecognitionPage() {
                     })}
                   </ul>
                 ) : null}
-                <div className="flex gap-2.5 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-950 dark:text-amber-100">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+                <div className="flex gap-2.5 rounded-md border border-warning-strong/30 bg-warning-soft p-3 text-warning-strong">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-strong" aria-hidden />
                   <p className="text-xs leading-relaxed">
                     This will notify the recipient and send a team shoutout. Once sent, the message and notification{" "}
                     <strong>cannot be edited or recalled</strong>.

@@ -85,7 +85,7 @@ export function DealEditForm({ deal, isPending, onSubmit, onCancel }: DealEditFo
   );
 
   return (
-    <Card className="shadow-noir">
+    <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">Edit Deal</CardTitle>
       </CardHeader>
@@ -188,7 +188,7 @@ export function DealEditForm({ deal, isPending, onSubmit, onCancel }: DealEditFo
             </div>
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-              <Button type="submit" className="bg-gold hover:bg-gold/90 text-white" disabled={isPending}>
+              <Button type="submit" className="bg-primary hover:bg-brand-soft text-primary-foreground" disabled={isPending}>
                 {isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>

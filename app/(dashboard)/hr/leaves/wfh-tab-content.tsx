@@ -47,14 +47,14 @@ export function WfhTabContent() {
           value={wfhStats.thisMonth}
           subtitle="This month (approved)"
           icon={TrendingUp}
-          accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          accent="bg-success-soft text-success-strong"
         />
         <StatsCard
           title="Pending"
           value={wfhStats.pending}
           subtitle="Awaiting approval"
           icon={AlertCircle}
-          accent="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+          accent="bg-warning-soft text-warning-strong"
         />
       </div>
 

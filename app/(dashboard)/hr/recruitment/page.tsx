@@ -15,7 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { EmptyState } from "@/components/ui/empty-state";
 
 
-const PIE_COLORS = ["#0f2b7f", "#bd882c", "#10b981", "#8b5cf6", "#f43f5e", "#06b6d4"];
+const PIE_COLORS = ["var(--chart-2)", "var(--chart-1)", "var(--chart-7)", "var(--chart-5)", "var(--chart-8)", "var(--chart-4)"];
 
 function SourcePieChart({ sources }: { sources: { source: string; count: number }[] }) {
   const data = sources.map((s) => ({ name: s.source, value: s.count }));
@@ -131,10 +131,10 @@ export default function RecruitmentDashboardPage() {
                     const max = Math.max(...Object.values(stats.funnel), 1);
                     return (
                       <div key={stage} className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground w-16 shrink-0">{stage}</span>
+                        <span className="text-2xs text-muted-foreground w-16 shrink-0">{stage}</span>
                         <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${stage === "HIRED" ? "bg-green-500" : stage === "REJECTED" ? "bg-red-400" : "bg-primary"}`}
+                            className={`h-full rounded-full ${stage === "HIRED" ? "bg-success-500" : stage === "REJECTED" ? "bg-danger-400" : "bg-primary"}`}
                             style={{ width: `${Math.max(2, (cnt / max) * 100)}%` }}
                           />
                         </div>
@@ -258,9 +258,9 @@ export default function RecruitmentDashboardPage() {
                     <div key={stage.stage} className="flex flex-col items-center gap-1 flex-1 min-w-[60px]">
                       <span className="text-xs font-semibold tabular-nums">{stage.count}</span>
                       <div className="w-full rounded-t-sm bg-primary/80" style={{ height: `${heightPct * 0.6}px`, minHeight: 4 }} />
-                      <span className="text-[10px] text-muted-foreground text-center leading-tight">{stage.stage}</span>
+                      <span className="text-2xs text-muted-foreground text-center leading-tight">{stage.stage}</span>
                       {stage.avgDaysInStage !== null && (
-                        <span className="text-[10px] text-muted-foreground">{stage.avgDaysInStage}d avg</span>
+                        <span className="text-2xs text-muted-foreground">{stage.avgDaysInStage}d avg</span>
                       )}
                     </div>
                   );

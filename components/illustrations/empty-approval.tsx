@@ -6,7 +6,7 @@ export function EmptyApprovalIllustration({ className }: IllustrationProps) {
     <Wrapper className={className}>
       <circle cx="100" cy="100" r="78" fill={BLUE} opacity="0.03" />
 
-      <rect x="55" y="28" width="80" height="120" rx="8" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="55" y="28" width="80" height="120" rx="8" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <rect x="75" y="20" width="40" height="16" rx="5" fill={BLUE} opacity="0.12" stroke={BLUE} strokeWidth="1.5" />
       <circle cx="95" cy="28" r="3" fill={BLUE} opacity="0.15" />
 

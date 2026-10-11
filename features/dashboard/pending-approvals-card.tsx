@@ -24,7 +24,7 @@ export function PendingApprovalsCard() {
           </div>
         ) : !counts || counts.total === 0 ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
+            <CheckCircle2 className="h-4 w-4 text-success-strong shrink-0" aria-hidden="true" />
             All caught up!
           </div>
         ) : (

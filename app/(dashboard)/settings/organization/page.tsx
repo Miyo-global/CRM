@@ -132,7 +132,7 @@ export default function OrganizationSettingsPage() {
     const fiscalNum = fiscalYearStart ? parseInt(fiscalYearStart, 10) : undefined;
     const colorVal = primaryColor.trim();
     if (colorVal && !/^#[0-9a-fA-F]{6}$/.test(colorVal)) {
-      toast.error("Primary color must be a valid hex color (e.g. #bd882c)");
+      toast.error("Primary color must be a valid hex color (e.g. #D4AF37)");
       return;
     }
     updateOrg(
@@ -329,7 +329,7 @@ export default function OrganizationSettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-gold" />
+                  <Globe className="h-4 w-4 text-brand-text" />
                   App Configuration
                 </CardTitle>
                 {!isEditingConfig && (
@@ -530,7 +530,7 @@ export default function OrganizationSettingsPage() {
                           id="primary-color"
                           value={primaryColor}
                           onChange={(e) => setPrimaryColor(e.target.value)}
-                          placeholder="#bd882c"
+                          placeholder="#D4AF37"
                           className="flex-1 font-mono text-sm"
                           aria-label="Primary brand color"
                         />
@@ -589,7 +589,7 @@ export default function OrganizationSettingsPage() {
           <Card className="rounded-xl border shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4 text-gold" />
+                <Shield className="h-4 w-4 text-brand-text" />
                 Security Policies
               </CardTitle>
               <CardDescription>
@@ -700,7 +700,7 @@ export default function OrganizationSettingsPage() {
           <Card className="rounded-xl border shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Network className="h-4 w-4 text-gold" />
+                <Network className="h-4 w-4 text-brand-text" />
                 IP Allowlist
               </CardTitle>
               <CardDescription>

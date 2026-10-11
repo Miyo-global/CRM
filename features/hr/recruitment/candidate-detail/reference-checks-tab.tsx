@@ -206,7 +206,7 @@ function ReferenceCheckCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium">{check.referenceName}</p>
-            <Badge variant={cfg.variant} className="text-[10px] gap-1">
+            <Badge variant={cfg.variant} className="text-2xs gap-1">
               <Icon className="h-2.5 w-2.5" />
               {cfg.label}
             </Badge>

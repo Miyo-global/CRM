@@ -14,6 +14,7 @@ export const BRAND = {
   canvas: "#FBFAF6",
   sunken: "#F5F3EF",
   white: "#FFFFFF",
+  inkDeep: "#100F0D",
   success: "#137736",
   successSoft: "#E9FDEC",
   warning: "#974C00",
@@ -22,6 +23,20 @@ export const BRAND = {
   dangerSoft: "#FFF4F2",
   info: "#2C5CC1",
   infoSoft: "#F3F7FF",
+  plum: "#6A48BA",
+  plumSoft: "#F7F5FF",
 } as const;
 
 export type BrandColor = keyof typeof BRAND;
+
+/** Hex values of the 8 chart tokens (light mode) — for color-picker presets only. */
+export const CHART_PRESET_HEX = [
+  "#BF9A15",
+  "#43423F",
+  "#3E78F2",
+  "#2B9287",
+  "#8861E9",
+  "#EC7C11",
+  "#25984A",
+  "#FF6459",
+] as const;

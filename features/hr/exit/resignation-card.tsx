@@ -91,16 +91,16 @@ export function ResignationCard({
             <p className="text-sm font-semibold truncate">
               {r.user?.name ?? "Employee"}
             </p>
-            <Badge variant={statusBadge(r.status)} className="text-[10px]">
+            <Badge variant={statusBadge(r.status)} className="text-2xs">
               {r.status}
             </Badge>
             {r.reasonCategory && (
-              <Badge variant="outline" className="text-[9px] hidden sm:inline-flex">
+              <Badge variant="outline" className="text-3xs hidden sm:inline-flex">
                 {r.reasonCategory}
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+          <div className="flex items-center gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
             {r.user?.designation && <span>{r.user.designation}</span>}
             {r.lastWorkingDate && (
               <span className="flex items-center gap-1">

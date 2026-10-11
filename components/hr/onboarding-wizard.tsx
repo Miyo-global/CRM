@@ -199,7 +199,7 @@ export function OnboardingWizard() {
                 )}
               >
                 <span className={cn(
-                  "flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold shrink-0",
+                  "flex items-center justify-center h-5 w-5 rounded-full text-2xs font-bold shrink-0",
                   isCompleted && "bg-primary text-primary-foreground",
                   isActive && "bg-primary-foreground text-primary",
                   !isCompleted && !isActive && "bg-muted-foreground/20 text-muted-foreground"

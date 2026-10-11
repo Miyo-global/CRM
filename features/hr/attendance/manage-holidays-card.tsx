@@ -130,7 +130,7 @@ function EditRow({
         type="button"
         size="icon"
         variant="ghost"
-        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+        className="h-8 w-8 text-success-strong hover:text-success-strong hover:bg-success-soft"
         onClick={handleSave}
         disabled={isSaving}
         aria-label="Save changes"
@@ -177,7 +177,7 @@ const HolidayRow = memo(function HolidayRow({
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{holiday.message}</p>
         )}
         {isPast && (
-          <span className="ml-2 text-[10px] text-muted-foreground/60 italic">(past)</span>
+          <span className="ml-2 text-2xs text-muted-foreground/60 italic">(past)</span>
         )}
       </div>
       <div className="flex items-center gap-1 shrink-0">
@@ -354,8 +354,8 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
       <Card className="overflow-hidden border-border shadow-sm">
         <CardHeader className="pb-3 pt-5">
           <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/10">
-              <PartyPopper className="h-4 w-4 text-gold" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft">
+              <PartyPopper className="h-4 w-4 text-brand-text" />
             </div>
             Company Holidays
           </CardTitle>
@@ -389,7 +389,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
                 className="bg-background"
                 maxLength={HOLIDAY_MESSAGE_MAX}
               />
-              <p className="text-[10px] text-muted-foreground text-right tabular-nums">
+              <p className="text-2xs text-muted-foreground text-right tabular-nums">
                 {message.length}/{HOLIDAY_MESSAGE_MAX}
               </p>
             </div>

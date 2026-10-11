@@ -32,8 +32,10 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     <Button
       type="button"
       variant="ghost"
-      size="icon"
-      className={`h-8 w-8 ${isActive ? "bg-muted text-foreground" : "text-muted-foreground"}`}
+      size="icon-sm"
+      data-active={isActive ? "true" : undefined}
+      aria-pressed={isActive ?? undefined}
+      className="text-muted-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
       onClick={onClick}
       title={title}
     >
@@ -42,7 +44,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b p-1">
+    <div className="flex min-h-10 flex-wrap items-center gap-0.5 border-b border-border bg-surface-sunken/60 px-2 py-1">
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         title="Undo"

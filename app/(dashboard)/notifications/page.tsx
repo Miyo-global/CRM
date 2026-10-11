@@ -37,10 +37,10 @@ const TYPE_CONFIG: Record<
   NotificationType,
   { icon: typeof Info; color: string; bg: string; label: string }
 > = {
-  INFO: { icon: Info, color: "text-blue-400", bg: "bg-blue-500/10", label: "Info" },
-  SUCCESS: { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10", label: "Success" },
-  WARNING: { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10", label: "Warning" },
-  ERROR: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", label: "Error" },
+  INFO: { icon: Info, color: "text-info-strong", bg: "bg-info-soft", label: "Info" },
+  SUCCESS: { icon: CheckCircle2, color: "text-success-strong", bg: "bg-success-soft", label: "Success" },
+  WARNING: { icon: AlertTriangle, color: "text-warning-strong", bg: "bg-warning-soft", label: "Warning" },
+  ERROR: { icon: XCircle, color: "text-danger-strong", bg: "bg-danger-soft", label: "Error" },
 };
 
 function isSafeInAppPath(link: string): boolean {
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
         <TabsTrigger value="UNREAD">
           Unread
           {unreadCount > 0 && (
-            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[10px] font-semibold text-white">
+            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-semibold text-primary-foreground">
               {unreadCount}
             </span>
           )}
@@ -176,7 +176,7 @@ export default function NotificationsPage() {
           size="sm"
           disabled={unreadCount === 0 || markAllRead.isPending}
           onClick={handleMarkAllRead}
-          className="border-gold/30 text-gold hover:bg-gold/10 hover:text-gold"
+          className="border-primary/40 text-brand-text hover:bg-brand-soft hover:text-brand-text"
         >
           {markAllRead.isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -185,7 +185,7 @@ export default function NotificationsPage() {
           )}
           Mark all as read
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="ml-2 bg-gold/20 text-gold text-xs">
+            <Badge variant="secondary" className="ml-2 bg-brand-soft text-brand-text text-xs">
               {unreadCount}
             </Badge>
           )}
@@ -289,8 +289,8 @@ export default function NotificationsPage() {
                 <Card
                   className={cn(
                     "group relative cursor-pointer transition-all duration-200 hover:shadow-md flex-1",
-                    isUnread ? "border-l-2 border-l-gold bg-gold/[0.03]" : "opacity-75 hover:opacity-100",
-                    isChecked && "ring-1 ring-gold/40"
+                    isUnread ? "border-l-2 border-l-primary/40 bg-brand-soft/40" : "opacity-75 hover:opacity-100",
+                    isChecked && "ring-1 ring-ring"
                   )}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -309,7 +309,7 @@ export default function NotificationsPage() {
                         </h4>
                         <Badge
                           variant="outline"
-                          className={cn("shrink-0 text-[10px] px-1.5 py-0", config.color, "border-current/20")}
+                          className={cn("shrink-0 text-2xs px-1.5 py-0", config.color, "border-current/20")}
                         >
                           {config.label}
                         </Badge>
@@ -323,8 +323,8 @@ export default function NotificationsPage() {
                     <div className="flex shrink-0 items-center gap-2">
                       {isUnread && (
                         <span className="flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-gold opacity-40" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gold" />
+                          <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-primary opacity-40" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
                         </span>
                       )}
                     </div>

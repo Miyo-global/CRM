@@ -25,9 +25,9 @@ import { formatDisplayDate } from "@/lib/date-utils";
 
 
 function scoreColor(score: number): string {
-  if (score >= 80) return "bg-red-500/10 text-red-500 border-red-500/20";
-  if (score >= 60) return "bg-amber-500/10 text-amber-500 border-amber-500/20";
-  return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+  if (score >= 80) return "bg-danger-soft text-danger-strong border-danger-strong/20";
+  if (score >= 60) return "bg-warning-soft text-warning-strong border-warning-strong/20";
+  return "bg-warning-soft text-warning-strong border-warning-strong/20";
 }
 
 function formatDate(val: string | null): string {
@@ -37,12 +37,12 @@ function formatDate(val: string | null): string {
 
 function statusBadgeClass(status: string): string {
   const map: Record<string, string> = {
-    NEW: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    CONTACTED: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-    INTERESTED: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    QUALIFIED: "bg-green-500/10 text-green-500 border-green-500/20",
-    CONVERTED: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    LOST: "bg-red-500/10 text-red-400 border-red-500/20",
+    NEW: "bg-info-soft text-info-strong border-info-strong/20",
+    CONTACTED: "bg-teal-soft text-teal-strong border-teal-strong/20",
+    INTERESTED: "bg-plum-soft text-plum-strong border-plum-strong/20",
+    QUALIFIED: "bg-success-soft text-success-strong border-success-strong/20",
+    CONVERTED: "bg-success-soft text-success-strong border-success-strong/20",
+    LOST: "bg-danger-soft text-danger-strong border-danger-strong/20",
   };
   return map[status] ?? "bg-muted text-muted-foreground border-border";
 }
@@ -123,7 +123,7 @@ function DuplicateGroupCard({
                     </TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(leadA.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+                      <Badge variant="outline" className="text-xs bg-success-soft text-success-strong border-success-strong/20">
                         Keep
                       </Badge>
                     </TableCell>

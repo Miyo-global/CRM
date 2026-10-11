@@ -176,7 +176,7 @@ export function OrgVariablesPanel({
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 className="font-mono text-sm"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Letters, numbers, underscores. Used as {"{{Token}}"}.
               </p>
             </div>
@@ -258,7 +258,7 @@ function OrgVariablesPanelListItem({
         <p className="font-medium text-foreground">{variable.label}</p>
         <button
           type="button"
-          className="font-mono text-[10px] text-blue hover:underline"
+          className="font-mono text-2xs text-secondary hover:underline"
           onClick={() => onInsertToken?.(variable.slug)}
           title="Insert into editor"
         >

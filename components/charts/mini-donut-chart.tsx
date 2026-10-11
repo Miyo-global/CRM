@@ -35,15 +35,14 @@ export function MiniDonutChart({
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={data.map((d) => `${d.label}: ${d.value}`).join(", ")}>
 
           <circle
             cx={center}
             cy={center}
             r={radius}
             fill="none"
-            stroke="currentColor"
-            strokeOpacity={0.06}
+            stroke="var(--muted)"
             strokeWidth={strokeWidth}
           />
 

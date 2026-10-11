@@ -29,7 +29,7 @@ const ApplicationRow = memo(function ApplicationRow({ app }: ApplicationRowProps
           {app.appliedAt ? format(new Date(app.appliedAt), "PPP") : ""}
         </p>
       </div>
-      <Badge variant="outline" className="text-[10px]">
+      <Badge variant="outline" className="text-2xs">
         {app.status ?? ""}
       </Badge>
     </div>

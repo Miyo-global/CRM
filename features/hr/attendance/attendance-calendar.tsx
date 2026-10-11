@@ -91,8 +91,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
       <CardHeader className="sticky top-0 z-10 bg-card pb-3 pt-5 border-b border-border/60">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/10">
-              <CalendarDays className="h-4 w-4 text-gold" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft">
+              <CalendarDays className="h-4 w-4 text-brand-text" />
             </div>
             Attendance Calendar
           </CardTitle>
@@ -170,7 +170,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
                         isFutureOrNone
                           ? "text-muted-foreground/40"
                           : `${config.bg} ${config.text}`
-                      } ${isTodayDate ? "ring-2 ring-gold ring-offset-1 ring-offset-background" : ""}`}
+                      } ${isTodayDate ? "ring-2 ring-ring ring-offset-1 ring-offset-background" : ""}`}
                       title={title}
                     >
                       {dayNum}

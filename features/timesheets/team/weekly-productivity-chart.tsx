@@ -63,8 +63,8 @@ export const WeeklyProductivityChart = memo(function WeeklyProductivityChart({
                   variant="secondary"
                   className={`text-xs font-semibold ${
                     parseFloat(percentChange) >= 0
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
-                      : "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400"
+                      ? "bg-success-soft text-success-strong"
+                      : "bg-danger-soft text-danger-strong"
                   }`}
                 >
                   {parseFloat(percentChange) >= 0 ? "+" : ""}
@@ -85,7 +85,7 @@ export const WeeklyProductivityChart = memo(function WeeklyProductivityChart({
                   style={{ height: `${Math.max(day.percent, 2)}%` }}
                 />
               </div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              <span className="text-2xs font-bold text-muted-foreground uppercase tracking-widest">
                 {day.label}
               </span>
             </div>

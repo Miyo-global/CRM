@@ -49,6 +49,8 @@ import {
 } from "@/lib/validations/calendar-event";
 import { isAllowedNameChar } from "@/lib/validations/text-rules";
 import { toast } from "sonner";
+import { toneVar } from "@/lib/design/tones";
+import { EVENT_COLOR_TONES } from "./event-tones";
 
 function Check({ className }: { className?: string }) {
   return (
@@ -84,14 +86,9 @@ function Search({ className }: { className?: string }) {
   );
 }
 
-const EVENT_COLORS: Record<string, string> = {
-  blue: "#3b82f6",
-  green: "#22c55e",
-  red: "#ef4444",
-  yellow: "#f59e0b",
-  purple: "#a855f7",
-  gold: "#bd882c",
-};
+const EVENT_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(EVENT_COLOR_TONES).map(([key, tone]) => [key, toneVar[tone]]),
+);
 
 const EVENT_CATEGORIES = [
   "general",
@@ -457,15 +454,15 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 aria-describedby={displayedTitleError ? "ev-title-error" : "ev-title-hint"}
               />
               {displayedTitleError ? (
-                <p id="ev-title-error" role="alert" className="text-[11px] text-destructive">
+                <p id="ev-title-error" role="alert" className="text-2xs text-destructive">
                   {displayedTitleError}
                 </p>
               ) : (
-                <p id="ev-title-hint" className="text-[11px] text-muted-foreground">
+                <p id="ev-title-hint" className="text-2xs text-muted-foreground">
                   Use letters in the title; numbers-only titles are not allowed.
                 </p>
               )}
-              <p className="text-[10px] text-muted-foreground text-right">
+              <p className="text-2xs text-muted-foreground text-right">
                 {form.title.length}/{CALENDAR_TITLE_MAX}
               </p>
             </div>
@@ -482,11 +479,11 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 aria-describedby={descError ? "ev-desc-error" : undefined}
               />
               {descError && (
-                <p id="ev-desc-error" className="text-[11px] text-destructive">
+                <p id="ev-desc-error" className="text-2xs text-destructive">
                   {descError}
                 </p>
               )}
-              <p className="text-[10px] text-muted-foreground text-right">
+              <p className="text-2xs text-muted-foreground text-right">
                 {form.description.length}/{CALENDAR_DESC_MAX}
               </p>
             </div>
@@ -540,7 +537,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 )}
               </div>
               {meetStatus?.connected && meetStatus.googleEmail && (
-                <p className="text-[11px] text-muted-foreground">Google: {meetStatus.googleEmail}</p>
+                <p className="text-2xs text-muted-foreground">Google: {meetStatus.googleEmail}</p>
               )}
             </div>
 
@@ -611,7 +608,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
               )}
             </div>
             {scheduleError ? (
-              <p id="ev-schedule-error" role="alert" className="text-[11px] text-destructive -mt-3">
+              <p id="ev-schedule-error" role="alert" className="text-2xs text-destructive -mt-3">
                 {scheduleError}
               </p>
             ) : null}
@@ -646,7 +643,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                     <SelectValue placeholder="Color">
                       <span className="flex min-w-0 items-center gap-2">
                         <span
-                          className="size-3 shrink-0 rounded-full border border-black/10 dark:border-white/15"
+                          className="size-3 shrink-0 rounded-full border border-border"
                           style={{
                             backgroundColor: EVENT_COLORS[form.color] ?? EVENT_COLORS.blue,
                           }}
@@ -678,7 +675,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 <div className="flex items-center justify-between gap-2">
                   <Label className="text-xs font-medium">Attendees</Label>
                   {form.attendeeIds.length > 0 && (
-                    <Badge variant="secondary" className="text-[11px] shrink-0">
+                    <Badge variant="secondary" className="text-2xs shrink-0">
                       {form.attendeeIds.length} selected
                     </Badge>
                   )}
@@ -758,24 +755,24 @@ function AttendeeRow({ memberId, name, email, image, selected, onToggle }: Atten
       onClick={handleClick}
       className={cn(
         "w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors text-left",
-        selected ? "bg-gold/10 ring-1 ring-gold/30" : "hover:bg-muted"
+        selected ? "bg-brand-soft ring-1 ring-ring" : "hover:bg-muted"
       )}
     >
       <Avatar className="h-7 w-7 shrink-0">
         <AvatarImage src={resolveImageUrl(image)} />
-        <AvatarFallback className="text-[10px]">{getInitials(name)}</AvatarFallback>
+        <AvatarFallback className="text-2xs">{getInitials(name)}</AvatarFallback>
       </Avatar>
       <span className="flex-1 min-w-0 text-left">
         <span className={cn("block truncate text-sm", selected && "font-medium")}>{name}</span>
         {email ? (
-          <span className="block truncate text-[10px] text-muted-foreground">{email}</span>
+          <span className="block truncate text-2xs text-muted-foreground">{email}</span>
         ) : null}
       </span>
       <div className={cn(
         "h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0",
-        selected ? "border-gold bg-gold" : "border-muted-foreground/30"
+        selected ? "border-primary/40 bg-primary" : "border-muted-foreground/30"
       )}>
-        {selected && <Check className="h-2.5 w-2.5 text-white" />}
+        {selected && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
       </div>
     </button>
   );

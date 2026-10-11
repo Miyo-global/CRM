@@ -191,12 +191,12 @@ function TerminationReasonsContent() {
                           {reason.label}
                         </span>
                         {!reason.isActive && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-2xs">
                             Inactive
                           </Badge>
                         )}
                         {reason.label === OTHER_TERMINATION_REASON && (
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-2xs">
                             System
                           </Badge>
                         )}

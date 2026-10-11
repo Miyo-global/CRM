@@ -375,8 +375,8 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                                       className="h-12 w-12 object-cover rounded"
                                     />
                                   ) : file.type === "application/pdf" ? (
-                                    <div className="h-12 w-12 rounded bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                                      <FileText className="h-6 w-6 text-red-500" />
+                                    <div className="h-12 w-12 rounded bg-danger-soft flex items-center justify-center">
+                                      <FileText className="h-6 w-6 text-danger-strong" />
                                     </div>
                                   ) : (
                                     <div className="h-12 w-12 rounded bg-muted flex items-center justify-center">

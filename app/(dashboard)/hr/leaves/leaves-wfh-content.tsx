@@ -111,7 +111,7 @@ export function LeavesWfhContent() {
             <Button
               size="sm"
               onClick={handleOpenLeaveSheet}
-              className="gap-1.5 bg-gold hover:bg-gold/80 text-white"
+              className="gap-1.5 bg-primary hover:bg-brand-soft text-primary-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
               Request Leave
@@ -143,9 +143,9 @@ export function LeavesWfhContent() {
           </div>
 
           {approvedLeavesThisWeek.length > 0 && (
-            <Card className="border-amber-200/50 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-950/10">
+            <Card className="border-warning-200/50 bg-warning-500/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2 text-amber-800 dark:text-amber-400">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-warning-strong">
                   <Users className="h-4 w-4" />
                   Who&apos;s Out This Week
                   <Badge variant="secondary" className="ml-1 text-xs">
@@ -158,11 +158,11 @@ export function LeavesWfhContent() {
                   {approvedLeavesThisWeek.map((leave) => (
                     <div
                       key={leave.id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-card border border-amber-200/50 dark:border-amber-800/20"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-warning-200/50"
                     >
                       <Avatar className="h-7 w-7">
                         <AvatarImage src={resolveImageUrl(leave.user?.image)} />
-                        <AvatarFallback className="text-[10px] bg-amber-100 text-amber-700">
+                        <AvatarFallback className="text-2xs bg-warning-soft text-warning-strong">
                           {leave.user?.firstName?.[0]}
                           {leave.user?.lastName?.[0]}
                         </AvatarFallback>
@@ -171,11 +171,11 @@ export function LeavesWfhContent() {
                         <p className="text-xs font-medium text-foreground truncate">
                           {leave.user?.firstName} {leave.user?.lastName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-2xs text-muted-foreground">
                           {format(new Date(leave.startDate), "MMM dd")} –{" "}
                           {format(new Date(leave.endDate), "MMM dd")}
                           {leave.leaveType && (
-                            <span className="ml-1 text-amber-600 dark:text-amber-400">
+                            <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}
                             </span>
                           )}
@@ -192,24 +192,24 @@ export function LeavesWfhContent() {
             <TabsList className="bg-muted/50 border border-border p-1 rounded-lg h-auto gap-1">
               <TabsTrigger
                 value="my-leaves"
-                className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
               >
                 My Leaves
               </TabsTrigger>
               <TabsTrigger
                 value="wfh"
-                className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
               >
                 Work From Home
               </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger
                   value="approvals"
-                  className="relative data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  className="relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
                 >
                   Approvals
                   {totalPendingApprovals > 0 && (
-                    <Badge className="ml-2 h-5 min-w-5 px-1.5 bg-red-500 text-white text-[10px] font-bold border-0">
+                    <Badge className="ml-2 h-5 min-w-5 px-1.5 bg-destructive text-destructive-foreground text-2xs font-bold border-0">
                       {totalPendingApprovals}
                     </Badge>
                   )}

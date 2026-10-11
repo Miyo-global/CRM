@@ -23,9 +23,9 @@ const PAGE_SIZE = 20;
 
 function getHealthBadge(score: number | null) {
   if (score === null || score === undefined) return { label: "N/A", color: "text-muted-foreground", bg: "bg-muted/50" };
-  if (score >= 70) return { label: "Healthy", color: "text-emerald-400", bg: "bg-emerald-500/15" };
-  if (score >= 40) return { label: "At Risk", color: "text-amber-400", bg: "bg-amber-500/15" };
-  return { label: "Critical", color: "text-red-400", bg: "bg-red-500/15" };
+  if (score >= 70) return { label: "Healthy", color: "text-success-strong", bg: "bg-success-soft" };
+  if (score >= 40) return { label: "At Risk", color: "text-warning-strong", bg: "bg-warning-soft" };
+  return { label: "Critical", color: "text-danger-strong", bg: "bg-danger-soft" };
 }
 
 export default function OrganizationsPage() {
@@ -95,12 +95,12 @@ export default function OrganizationsPage() {
           {data?.organizations.map(org => {
             const health = getHealthBadge(org.healthScore);
             return (
-              <Card key={org.id} className="shadow-sm hover:shadow-md transition-all hover:border-gold/40 cursor-pointer group">
+              <Card key={org.id} className="shadow-sm hover:shadow-md transition-all hover:border-primary/40 cursor-pointer group">
                 <Link href={`/crm/organizations/${org.id}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-gold/10 flex items-center justify-center text-sm font-semibold text-gold shrink-0">
+                      <div className="h-10 w-10 rounded-lg bg-brand-soft flex items-center justify-center text-sm font-semibold text-brand-text shrink-0">
                         {org.name[0]?.toUpperCase() ?? "?"}
                       </div>
                       <div className="min-w-0">
@@ -108,7 +108,7 @@ export default function OrganizationsPage() {
                         {org.industry && <p className="text-xs text-muted-foreground">{org.industry}</p>}
                       </div>
                     </div>
-                    <Badge className={cn("text-[10px] shrink-0", health.bg, health.color)}>
+                    <Badge className={cn("text-2xs shrink-0", health.bg, health.color)}>
                       <Heart className="h-2.5 w-2.5 mr-0.5" />
                       {org.healthScore !== null ? `${org.healthScore}%` : "N/A"}
                     </Badge>
@@ -130,7 +130,7 @@ export default function OrganizationsPage() {
                     {org.website && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Building2 className="h-3 w-3 shrink-0" />
-                        <a href={org.website} target="_blank" rel="noopener noreferrer" className="truncate hover:text-gold">
+                        <a href={org.website} target="_blank" rel="noopener noreferrer" className="truncate hover:text-brand-text">
                           {org.website}
                         </a>
                       </div>
@@ -141,7 +141,7 @@ export default function OrganizationsPage() {
                     <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{org.description}</p>
                   )}
                   <div className="mt-3 flex justify-end">
-                    <span className="text-xs text-gold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs text-brand-text flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       View details <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>

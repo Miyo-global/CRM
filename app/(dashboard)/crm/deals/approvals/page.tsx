@@ -121,13 +121,13 @@ export default function DealApprovalsPage() {
                       <TableCell className="font-medium text-sm">{a.dealName ?? `Deal #${a.dealId}`}</TableCell>
                       <TableCell className="text-right text-sm">{a.dealValue ? fmt(a.dealValue) : ""}</TableCell>
                       <TableCell className="text-sm">{a.requesterName ?? ""}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-[11px]">{a.requestedStage}</Badge></TableCell>
-                      <TableCell><Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-2xs">{a.requestedStage}</Badge></TableCell>
+                      <TableCell><Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge></TableCell>
                       <TableCell className="text-xs text-muted-foreground">{a.createdAt ? format(new Date(a.createdAt), "dd MMM yyyy") : ""}</TableCell>
                       <TableCell className="text-right">
                         {a.status === "pending" && (
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-green-600 hover:text-green-700" onClick={() => setConfirmAction({ id: a.id, action: "approve" })}>
+                            <Button size="sm" variant="ghost" className="h-7 text-xs text-success-strong hover:text-success-strong" onClick={() => setConfirmAction({ id: a.id, action: "approve" })}>
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Approve
                             </Button>
                             <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setConfirmAction({ id: a.id, action: "reject" })}>

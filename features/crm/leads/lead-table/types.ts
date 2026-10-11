@@ -1,4 +1,5 @@
 import { formatDisplayDate } from "@/lib/date-utils";
+import { toneSoft } from "@/lib/design/tones";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 export { timeAgo } from "@/lib/date-utils";
 
@@ -82,32 +83,34 @@ export const LOST_REASONS = [
   "Other",
 ] as const;
 
-// Categorical pipeline hues kept; light-mode text fixed to -600 (AA on white) with
-// dark:-400; CONVERTED/LOST use the semantic success/destructive tokens. Mirrors
-// the kanban's leads-constants.ts so both lead views read identically.
+// Pills: soft fill, no border. Mirrors leads-constants.ts / detail/lead-types.ts
+// so every lead view reads identically (pipeline: info → teal → plum → brand →
+// success, LOST danger; source tags follow TAG_TONE_CYCLE).
+const PILL = "border-transparent";
+
 export const STATUS_COLORS: Record<string, string> = {
-  NEW: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  CONTACTED: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
-  INTERESTED: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  QUALIFIED: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-  CONVERTED: "bg-success/10 text-success border-success/20",
-  LOST: "bg-destructive/10 text-destructive border-destructive/20",
+  NEW: `${toneSoft.info} ${PILL}`,
+  CONTACTED: `${toneSoft.teal} ${PILL}`,
+  INTERESTED: `${toneSoft.plum} ${PILL}`,
+  QUALIFIED: `${toneSoft.brand} ${PILL}`,
+  CONVERTED: `${toneSoft.success} ${PILL}`,
+  LOST: `${toneSoft.danger} ${PILL}`,
 };
 
 export const PRIORITY_COLORS: Record<string, string> = {
-  HOT: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20",
-  WARM: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20",
-  COLD: "bg-blue-400/15 text-blue-700 dark:text-blue-400 border-blue-400/20",
+  HOT: `${toneSoft.danger} ${PILL}`,
+  WARM: `${toneSoft.warning} ${PILL}`,
+  COLD: `${toneSoft.info} ${PILL}`,
 };
 
 export const SOURCE_COLORS: Record<string, string> = {
-  referral: "bg-green-500/10 text-green-700 dark:text-green-400",
-  campaign: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400",
-  cold_call: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
-  website: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  social_media: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  walk_in: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
-  other: "bg-muted text-muted-foreground",
+  referral: toneSoft.info,
+  campaign: toneSoft.teal,
+  cold_call: toneSoft.plum,
+  website: toneSoft.brand,
+  social_media: toneSoft.warning,
+  walk_in: toneSoft.success,
+  other: toneSoft.neutral,
 };
 
 export const ALL_COLUMNS = [

@@ -124,14 +124,14 @@ export function GeneratePayrollSheet({
             <button
               type="button"
               onClick={() => onPeriodModeChange("month")}
-              className={`px-2.5 py-1 rounded-[5px] transition-colors ${periodMode === "month" ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+              className={`px-2.5 py-1 rounded-xs transition-colors ${periodMode === "month" ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
             >
               Full month
             </button>
             <button
               type="button"
               onClick={() => onPeriodModeChange("custom")}
-              className={`px-2.5 py-1 rounded-[5px] transition-colors ${periodMode === "custom" ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+              className={`px-2.5 py-1 rounded-xs transition-colors ${periodMode === "custom" ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
             >
               Custom range
             </button>
@@ -144,7 +144,7 @@ export function GeneratePayrollSheet({
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-muted-foreground">From</label>
+                <label className="text-2xs text-muted-foreground">From</label>
                 <Input
                   type="date"
                   value={periodStart}
@@ -155,7 +155,7 @@ export function GeneratePayrollSheet({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] text-muted-foreground">To</label>
+                <label className="text-2xs text-muted-foreground">To</label>
                 <Input
                   type="date"
                   value={periodEnd}
@@ -166,11 +166,11 @@ export function GeneratePayrollSheet({
                 />
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Custom periods must stay within {format(new Date(monthFirstDay), "MMMM yyyy")}. Attendance is counted only through the end date; days after it are not docked as loss of pay.
             </p>
             {!customRangeValid && (
-              <p className="text-[11px] text-destructive">
+              <p className="text-2xs text-destructive">
                 Pick a start and end date inside this month, with the end on or after the start.
               </p>
             )}
@@ -205,7 +205,7 @@ export function GeneratePayrollSheet({
           <Separator />
 
           <div className="space-y-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
               Attendance (auto-calculated)
             </p>
             {overtimePreview ? (
@@ -234,11 +234,11 @@ export function GeneratePayrollSheet({
             ) : (
               <p className="text-xs text-muted-foreground">Calculating attendance from check-ins…</p>
             )}
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               LOP and leave are computed from attendance check-ins for {selectedMonth}. A working day is paid when the employee checked in; weekends and declared holidays are also paid.
             </p>
             {!overtimePreview && selectedEmployeeData && (
-              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              <p className="text-xs text-warning-strong bg-warning-soft border border-warning-strong/25 rounded px-2 py-1.5">
                 No attendance records found for this period. Preview shows full salary — LOP deductions will be ₹0.
               </p>
             )}
@@ -247,7 +247,7 @@ export function GeneratePayrollSheet({
           <Separator />
 
           <div className="space-y-3">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
               Additional Adjustments
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -276,7 +276,7 @@ export function GeneratePayrollSheet({
             <>
               <Separator />
               <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1 text-sm">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                   Auto-Detected Overtime
                 </p>
                 {overtimePreview.overtimeDays > 0 ? (
@@ -291,9 +291,9 @@ export function GeneratePayrollSheet({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">OT amount</span>
-                      <span className="font-semibold text-green-700">+₹{overtimePreview.overtimeAmount.toLocaleString(DEFAULT_LOCALE)}</span>
+                      <span className="font-semibold text-success-strong">+₹{overtimePreview.overtimeAmount.toLocaleString(DEFAULT_LOCALE)}</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground pt-1">
+                    <p className="text-2xs text-muted-foreground pt-1">
                       Dates: {overtimePreview.eligibleDates.join(", ")}
                     </p>
                   </>

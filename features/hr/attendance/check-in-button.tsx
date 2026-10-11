@@ -176,7 +176,7 @@ export const TimerCard = memo(function TimerCard() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-gold" />
+          <Clock className="h-5 w-5 text-brand-text" />
           Time Tracker
         </CardTitle>
       </CardHeader>
@@ -191,12 +191,12 @@ export const TimerCard = memo(function TimerCard() {
                 {formatTimerSegment(sessionTimer.hours)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               HRS
             </span>
           </div>
 
-          <span className="text-2xl font-bold text-gold animate-pulse mb-5">:</span>
+          <span className="text-2xl font-bold text-brand-text animate-pulse mb-5">:</span>
 
           <div className="flex flex-col items-center">
             <div className="bg-muted rounded-lg px-3 py-3 min-w-[56px] text-center">
@@ -204,12 +204,12 @@ export const TimerCard = memo(function TimerCard() {
                 {formatTimerSegment(sessionTimer.minutes)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               MIN
             </span>
           </div>
 
-          <span className="text-2xl font-bold text-gold animate-pulse mb-5">:</span>
+          <span className="text-2xl font-bold text-brand-text animate-pulse mb-5">:</span>
 
           <div className="flex flex-col items-center">
             <div className="bg-muted rounded-lg px-3 py-3 min-w-[56px] text-center">
@@ -217,7 +217,7 @@ export const TimerCard = memo(function TimerCard() {
                 {formatTimerSegment(sessionTimer.seconds)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               SEC
             </span>
           </div>
@@ -232,7 +232,7 @@ export const TimerCard = memo(function TimerCard() {
 
         {isOnBreak && (
           <div className="flex justify-center">
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-800">
+            <Badge variant="outline" className="bg-warning-soft text-warning-strong border-warning-strong/25">
               <Coffee className="h-3 w-3 mr-1" /> On Break
             </Badge>
           </div>
@@ -245,7 +245,7 @@ export const TimerCard = memo(function TimerCard() {
             variant={isActive ? "secondary" : "default"}
             className={`font-semibold ${
               !isActive && !isInCooldown
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                ? "bg-success hover:bg-success-700 text-success-foreground"
                 : ""
             }`}
           >
@@ -265,7 +265,7 @@ export const TimerCard = memo(function TimerCard() {
             variant={isActive ? "default" : "secondary"}
             className={`font-semibold ${
               isActive
-                ? "bg-rose-600 hover:bg-rose-700 text-white"
+                ? "bg-destructive hover:bg-danger-700 text-destructive-foreground"
                 : ""
             }`}
           >

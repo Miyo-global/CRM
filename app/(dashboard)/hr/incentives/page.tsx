@@ -50,10 +50,10 @@ import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 const BLOCKED_RATE_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-amber-500/10 text-amber-400",
-  APPROVED: "bg-emerald-500/10 text-emerald-400",
-  REJECTED: "bg-red-500/10 text-red-400",
-  ADDED_TO_PAYROLL: "bg-blue-500/10 text-blue-400",
+  PENDING: "bg-warning-soft text-warning-strong",
+  APPROVED: "bg-success-soft text-success-strong",
+  REJECTED: "bg-danger-soft text-danger-strong",
+  ADDED_TO_PAYROLL: "bg-info-soft text-info-strong",
 };
 
 export default function IncentivesPage() {
@@ -213,11 +213,11 @@ export default function IncentivesPage() {
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
           {[
-            { label: "This Month", value: formatINR(stats?.thisMonth), icon: IndianRupee, color: "text-emerald-400" },
-            { label: "Total Revenue", value: formatINR(stats?.totalRevenue), icon: TrendingUp, color: "text-blue-400" },
-            { label: "Avg / Conversion", value: formatINR(stats?.avgPerConversion), icon: Users, color: "text-purple-400" },
-            { label: "Pending", value: stats?.pending ?? 0, icon: Clock, color: "text-amber-400" },
-            { label: "Approved", value: stats?.approved ?? 0, icon: CheckCircle2, color: "text-emerald-400" },
+            { label: "This Month", value: formatINR(stats?.thisMonth), icon: IndianRupee, color: "text-success-strong" },
+            { label: "Total Revenue", value: formatINR(stats?.totalRevenue), icon: TrendingUp, color: "text-info-strong" },
+            { label: "Avg / Conversion", value: formatINR(stats?.avgPerConversion), icon: Users, color: "text-plum-strong" },
+            { label: "Pending", value: stats?.pending ?? 0, icon: Clock, color: "text-warning-strong" },
+            { label: "Approved", value: stats?.approved ?? 0, icon: CheckCircle2, color: "text-success-strong" },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-4">
@@ -232,11 +232,11 @@ export default function IncentivesPage() {
         </div>
 
         {currentConfig && (
-          <Card className="bg-gold/5 border-gold/20">
+          <Card className="bg-brand-soft border-primary/40">
             <CardContent className="p-4 flex items-center gap-3">
-              <Percent className="h-5 w-5 text-gold" />
+              <Percent className="h-5 w-5 text-brand-text" />
               <div>
-                <p className="text-sm font-medium">Current Incentive Rate: <span className="text-gold font-bold">{currentConfig.incentiveRate}%</span></p>
+                <p className="text-sm font-medium">Current Incentive Rate: <span className="text-brand-text font-bold">{currentConfig.incentiveRate}%</span></p>
                 <p className="text-xs text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE)}</p>
               </div>
             </CardContent>
@@ -277,7 +277,7 @@ export default function IncentivesPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
                             <AvatarImage src={inc.salesRep?.image || ""} />
-                            <AvatarFallback className="text-[9px]">{inc.salesRep?.name?.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="text-3xs">{inc.salesRep?.name?.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <span className="text-sm">{inc.salesRep?.name || ""}</span>
                         </div>
@@ -286,9 +286,9 @@ export default function IncentivesPage() {
                       <TableCell className="text-xs font-mono">{formatINR(inc.investmentAmount)}</TableCell>
                       <TableCell className="text-xs">{inc.incentiveRate}%</TableCell>
                       <TableCell className="text-xs font-mono font-medium">{formatINR(inc.calculatedAmount)}</TableCell>
-                      <TableCell className="text-xs font-mono text-emerald-400">{inc.approvedAmount ? formatINR(inc.approvedAmount) : ""}</TableCell>
+                      <TableCell className="text-xs font-mono text-success-strong">{inc.approvedAmount ? formatINR(inc.approvedAmount) : ""}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn("text-[10px] border-0", STATUS_COLORS[inc.status])}>
+                        <Badge variant="outline" className={cn("text-2xs border-0", STATUS_COLORS[inc.status])}>
                           {inc.status}
                         </Badge>
                       </TableCell>
@@ -298,7 +298,7 @@ export default function IncentivesPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs text-emerald-400 hover:text-emerald-300"
+                              className="h-7 text-xs text-success-strong hover:text-success-strong"
                               onClick={() => handleApproveOpen(inc.id, inc.calculatedAmount)}
                             >
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve
@@ -306,7 +306,7 @@ export default function IncentivesPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs text-red-400 hover:text-red-300"
+                              className="h-7 text-xs text-danger-strong hover:text-danger-strong"
                               onClick={() => handleReject(inc.id)}
                             >
                               <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
@@ -368,7 +368,7 @@ export default function IncentivesPage() {
             <Button variant="outline" onClick={handleApproveClose}>Cancel</Button>
             <Button
               onClick={handleApproveConfirm}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-success-600 hover:bg-success-700"
             >
               Approve
             </Button>
@@ -471,16 +471,16 @@ export default function IncentivesPage() {
                       <>
                         <span className="text-muted-foreground tabular-nums">{entry.previousRate}%</span>
                         <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-gold font-bold tabular-nums">{entry.incentiveRate}%</span>
+                        <span className="text-brand-text font-bold tabular-nums">{entry.incentiveRate}%</span>
                       </>
                     ) : (
                       <>
-                        <Badge variant="outline" className="text-[10px]">Initial</Badge>
-                        <span className="text-gold font-bold tabular-nums">{entry.incentiveRate}%</span>
+                        <Badge variant="outline" className="text-2xs">Initial</Badge>
+                        <span className="text-brand-text font-bold tabular-nums">{entry.incentiveRate}%</span>
                       </>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground">
                     <span>
                       Effective {new Date(entry.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE, {
                         day: "numeric", month: "short", year: "numeric",
@@ -500,7 +500,7 @@ export default function IncentivesPage() {
                         <>
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={entry.createdBy.image || ""} />
-                            <AvatarFallback className="text-[8px]">{entry.createdBy.name?.charAt(0) ?? "?"}</AvatarFallback>
+                            <AvatarFallback className="text-3xs">{entry.createdBy.name?.charAt(0) ?? "?"}</AvatarFallback>
                           </Avatar>
                           <span>{entry.createdBy.name ?? "Unknown"}</span>
                         </>

@@ -107,7 +107,7 @@ export default function ReportsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                  <report.icon className="h-5 w-5 text-gold" />
+                  <report.icon className="h-5 w-5 text-brand-text" />
                 </div>
                 <div>
                   <CardTitle className="text-sm">{report.title}</CardTitle>

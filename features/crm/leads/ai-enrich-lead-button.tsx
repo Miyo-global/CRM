@@ -47,14 +47,14 @@ export function AIEnrichLeadButton({ leadName, company, email, designation, city
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-          <Sparkles className="h-3 w-3 text-gold" />
+          <Sparkles className="h-3 w-3 text-brand-text" />
           Enrich
         </Button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-lg flex flex-col p-0 gap-0">
         <SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b">
           <SheetTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-gold" />
+            <Sparkles className="h-4 w-4 text-brand-text" />
             AI Lead Enrichment
           </SheetTitle>
           <SheetDescription className="text-xs">
@@ -81,24 +81,24 @@ export function AIEnrichLeadButton({ leadName, company, email, designation, city
             {result && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
                     <Building2 className="h-3 w-3" />
                     Company Insight
                   </p>
                   <p className="text-sm leading-snug">{result.companyInsight}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-[10px]">{result.industry}</Badge>
-                    <Badge variant="outline" className="text-[10px]">{result.estimatedCompanySize}</Badge>
+                    <Badge variant="secondary" className="text-2xs">{result.industry}</Badge>
+                    <Badge variant="outline" className="text-2xs">{result.estimatedCompanySize}</Badge>
                   </div>
                 </div>
 
                 {result.talkingPoints.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Talking Points</p>
+                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Talking Points</p>
                     <ul className="space-y-1.5">
                       {result.talkingPoints.map((p, i) => (
                         <li key={i} className="flex items-start gap-1.5 text-xs">
-                          <span className="text-gold mt-0.5">•</span>
+                          <span className="text-brand-text mt-0.5">•</span>
                           <span>{p}</span>
                         </li>
                       ))}
@@ -108,14 +108,14 @@ export function AIEnrichLeadButton({ leadName, company, email, designation, city
 
                 {result.potentialNeeds.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
                       <Target className="h-3 w-3" />
                       Potential Needs
                     </p>
                     <ul className="space-y-1.5">
                       {result.potentialNeeds.map((n, i) => (
                         <li key={i} className="flex items-start gap-1.5 text-xs">
-                          <span className="text-blue-400 mt-0.5">•</span>
+                          <span className="text-info-strong mt-0.5">•</span>
                           <span>{n}</span>
                         </li>
                       ))}
@@ -124,7 +124,7 @@ export function AIEnrichLeadButton({ leadName, company, email, designation, city
                 )}
 
                 <div className="rounded-md border border-border bg-muted/40 p-3">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     <Lightbulb className="h-3 w-3" />
                     Recommended Approach
                   </p>

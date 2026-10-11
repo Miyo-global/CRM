@@ -95,7 +95,7 @@ function CopyChip({
       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/20 border border-border/30 opacity-40 select-none">
         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+          <p className="text-2xs text-muted-foreground leading-none mb-0.5">
             {label}
           </p>
         </div>
@@ -105,9 +105,9 @@ function CopyChip({
 
   const content = (
     <>
-      <Icon className="h-3.5 w-3.5 text-gold shrink-0" />
+      <Icon className="h-3.5 w-3.5 text-brand-text shrink-0" />
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+        <p className="text-2xs text-muted-foreground leading-none mb-0.5">
           {label}
         </p>
         <p className="text-xs font-medium truncate">{value}</p>
@@ -118,7 +118,7 @@ function CopyChip({
         title={`Copy ${label}`}
       >
         {copied ? (
-          <CheckCheck className="h-3 w-3 text-emerald-400" />
+          <CheckCheck className="h-3 w-3 text-success-strong" />
         ) : (
           <Copy className="h-3 w-3" />
         )}
@@ -129,12 +129,12 @@ function CopyChip({
   return href ? (
     <a
       href={href}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-gold/40 hover:bg-gold/5 transition-all group"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/40 hover:bg-brand-soft transition-all group"
     >
       {content}
     </a>
   ) : (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-gold/40 hover:bg-gold/5 transition-all">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/40 hover:bg-brand-soft transition-all">
       {content}
     </div>
   );
@@ -150,7 +150,7 @@ export function LeadInfoCard({
 }: LeadInfoCardProps) {
   if (isEditing) {
     return (
-      <Card className="shadow-noir">
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Edit Lead</CardTitle>
         </CardHeader>
@@ -304,7 +304,7 @@ export function LeadInfoCard({
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-gold hover:bg-gold/80 text-white"
+                  className="bg-primary hover:bg-brand-soft text-primary-foreground"
                   disabled={isUpdatePending}
                 >
                   {isUpdatePending ? "Saving..." : "Save Changes"}
@@ -348,7 +348,7 @@ export function LeadInfoCard({
   ];
 
   return (
-    <Card className="shadow-noir">
+    <Card className="shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Lead Information</CardTitle>
       </CardHeader>
@@ -372,15 +372,15 @@ export function LeadInfoCard({
               lead.potentialValue && lead.investmentInterest
                 ? "grid-cols-2"
                 : "grid-cols-1",
-              "bg-gradient-to-r from-emerald-500/5 via-transparent to-gold/5"
+              "bg-gradient-to-r from-success-500/5 via-transparent to-gold-400"
             )}
           >
             {lead.potentialValue && (
               <div className="space-y-0.5">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                <p className="text-2xs uppercase tracking-wide text-muted-foreground font-medium">
                   Potential Value
                 </p>
-                <p className="text-2xl font-bold text-emerald-400 tabular-nums">
+                <p className="text-2xl font-bold text-success-strong tabular-nums">
                   ₹
                   {Number.isFinite(Number(lead.potentialValue))
                     ? Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)
@@ -390,10 +390,10 @@ export function LeadInfoCard({
             )}
             {lead.investmentInterest && (
               <div className="space-y-0.5">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                <p className="text-2xs uppercase tracking-wide text-muted-foreground font-medium">
                   Investment Interest
                 </p>
-                <p className="text-2xl font-bold text-gold tabular-nums">
+                <p className="text-2xl font-bold text-brand-text tabular-nums">
                   ₹
                   {Number.isFinite(Number(lead.investmentInterest))
                     ? Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)
@@ -407,7 +407,7 @@ export function LeadInfoCard({
         {lead.notes && (
           <div className="rounded-lg bg-muted/20 border border-border/30 overflow-hidden">
             <div className="px-3 py-1.5 bg-muted/30 border-b border-border/20">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+              <p className="text-2xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Notes
               </p>
             </div>

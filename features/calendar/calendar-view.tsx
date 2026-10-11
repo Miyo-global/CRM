@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect, memo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, memo, type CSSProperties } from "react";
+import { toneVar } from "@/lib/design/tones";
+import { RSVP_TONES, eventColorTone, eventToneStyle } from "./event-tones";
 import dynamic from "next/dynamic";
 import {
   format,
@@ -98,20 +100,6 @@ const BigCalendarWrapper = dynamic(
   { ssr: false },
 );
 
-const EVENT_COLORS: Record<string, string> = {
-  blue: "#3b82f6",
-  green: "#22c55e",
-  red: "#ef4444",
-  yellow: "#f59e0b",
-  purple: "#a855f7",
-  gold: "#bd882c",
-};
-
-const RSVP_BORDER_COLORS: Record<string, string> = {
-  accepted: "#22c55e",
-  declined: "#ef4444",
-  tentative: "#f59e0b",
-};
 
 const VIEWS: View[] = ["month", "week", "day"];
 
@@ -221,18 +209,12 @@ export function CalendarView() {
 
   const eventPropGetter = useCallback((event: BigCalEvent) => {
     const rsvp = event.resource?.myRsvpStatus as string | null | undefined;
-    const rsvpBorderColor = rsvp ? (RSVP_BORDER_COLORS[rsvp] ?? null) : null;
+    const rsvpTone = rsvp ? RSVP_TONES[rsvp] : undefined;
     return {
       style: {
-        backgroundColor:
-          EVENT_COLORS[event.resource?.color ?? "blue"] ?? EVENT_COLORS.blue,
-        border: "none",
-        borderLeft: rsvpBorderColor ? `4px solid ${rsvpBorderColor}` : "none",
-        borderRadius: "4px",
-        color: "#fff",
-        fontSize: "12px",
-        padding: rsvpBorderColor ? "1px 6px 1px 4px" : "1px 6px",
-      },
+        ...eventToneStyle(eventColorTone(event.resource?.color)),
+        ...(rsvpTone ? { "--event-tone": toneVar[rsvpTone], borderLeftWidth: 4 } : {}),
+      } as CSSProperties,
     };
   }, []);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { toneVar } from "@/lib/design/tones";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -78,10 +79,10 @@ interface GanttViewProps {
 }
 
 const statusColors: Record<string, string> = {
-  TODO: "#9ca3af",
-  IN_PROGRESS: "#3b82f6",
-  IN_REVIEW: "#8b5cf6",
-  DONE: "#22c55e",
+  TODO: toneVar.neutral,
+  IN_PROGRESS: toneVar.info,
+  IN_REVIEW: toneVar.plum,
+  DONE: toneVar.success,
 };
 
 export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
@@ -328,7 +329,7 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
                     width={barWidth}
                     height={rowHeight - 12}
                     rx={4}
-                    fill={statusColors[ticket.status] ?? "#9ca3af"}
+                    fill={statusColors[ticket.status] ?? toneVar.neutral}
                     opacity={0.8}
                   />
                 )}

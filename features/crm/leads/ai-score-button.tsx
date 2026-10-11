@@ -29,10 +29,10 @@ export function AIScoreButton({ leadId, currentScore, compact }: AIScoreButtonPr
   };
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-500";
-    if (score >= 60) return "text-amber-500";
-    if (score >= 40) return "text-orange-500";
-    return "text-red-500";
+    if (score >= 80) return "text-success-strong";
+    if (score >= 60) return "text-warning-strong";
+    if (score >= 40) return "text-warning-strong";
+    return "text-danger-strong";
   };
 
   if (compact) {
@@ -52,7 +52,7 @@ export function AIScoreButton({ leadId, currentScore, compact }: AIScoreButtonPr
             {scoreMutation.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Sparkles className="h-3 w-3 text-gold" />
+              <Sparkles className="h-3 w-3 text-brand-text" />
             )}
             {result ? (
               <span className={cn("font-bold", scoreColor(result.score))}>{result.score}</span>
@@ -88,7 +88,7 @@ export function AIScoreButton({ leadId, currentScore, compact }: AIScoreButtonPr
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4 mr-2 text-gold" />
+            <Sparkles className="h-4 w-4 mr-2 text-brand-text" />
             AI Score Lead
           </>
         )}
@@ -100,8 +100,8 @@ export function AIScoreButton({ leadId, currentScore, compact }: AIScoreButtonPr
 }
 
 function AIScoreDetails({ result }: { result: { score: number; reasoning: string; strengths: string[]; weaknesses: string[]; suggestedActions: string[] } }) {
-  const scoreColor = result.score >= 80 ? "text-emerald-500" : result.score >= 60 ? "text-amber-500" : result.score >= 40 ? "text-orange-500" : "text-red-500";
-  const scoreBg = result.score >= 80 ? "bg-emerald-500/10" : result.score >= 60 ? "bg-amber-500/10" : result.score >= 40 ? "bg-orange-500/10" : "bg-red-500/10";
+  const scoreColor = result.score >= 80 ? "text-success-strong" : result.score >= 60 ? "text-warning-strong" : result.score >= 40 ? "text-warning-strong" : "text-danger-strong";
+  const scoreBg = result.score >= 80 ? "bg-success-soft" : result.score >= 60 ? "bg-warning-soft" : result.score >= 40 ? "bg-warning-soft" : "bg-danger-soft";
 
   return (
     <div className="space-y-2.5">
@@ -111,16 +111,16 @@ function AIScoreDetails({ result }: { result: { score: number; reasoning: string
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium">AI Score</p>
-          <p className="text-[11px] text-muted-foreground leading-snug">{result.reasoning}</p>
+          <p className="text-2xs text-muted-foreground leading-snug">{result.reasoning}</p>
         </div>
       </div>
 
       {result.strengths.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Strengths</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Strengths</p>
           {result.strengths.map((s, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <TrendingUp className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <TrendingUp className="h-3 w-3 text-success-strong mt-0.5 shrink-0" />
               <span>{s}</span>
             </div>
           ))}
@@ -129,10 +129,10 @@ function AIScoreDetails({ result }: { result: { score: number; reasoning: string
 
       {result.weaknesses.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Weaknesses</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Weaknesses</p>
           {result.weaknesses.map((w, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <TrendingDown className="h-3 w-3 text-red-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <TrendingDown className="h-3 w-3 text-danger-strong mt-0.5 shrink-0" />
               <span>{w}</span>
             </div>
           ))}
@@ -141,10 +141,10 @@ function AIScoreDetails({ result }: { result: { score: number; reasoning: string
 
       {result.suggestedActions.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Suggested Actions</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Suggested Actions</p>
           {result.suggestedActions.map((a, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <AlertCircle className="h-3 w-3 text-blue-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <AlertCircle className="h-3 w-3 text-info-strong mt-0.5 shrink-0" />
               <span>{a}</span>
             </div>
           ))}

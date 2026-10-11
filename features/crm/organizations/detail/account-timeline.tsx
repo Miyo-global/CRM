@@ -10,10 +10,10 @@ const eventConfig: Record<
   OrgTimelineEventType,
   { icon: ElementType; color: string; bg: string }
 > = {
-  contact_created: { icon: UserPlus, color: "text-blue-400", bg: "bg-blue-500/15" },
-  deal_created: { icon: TrendingUp, color: "text-gold", bg: "bg-gold/10" },
-  lead_linked: { icon: Link2, color: "text-purple-400", bg: "bg-purple-500/15" },
-  note_added: { icon: FileText, color: "text-emerald-400", bg: "bg-emerald-500/15" },
+  contact_created: { icon: UserPlus, color: "text-info-strong", bg: "bg-info-soft" },
+  deal_created: { icon: TrendingUp, color: "text-brand-text", bg: "bg-brand-soft" },
+  lead_linked: { icon: Link2, color: "text-plum-strong", bg: "bg-plum-soft" },
+  note_added: { icon: FileText, color: "text-success-strong", bg: "bg-success-soft" },
 };
 
 interface AccountTimelineProps {

@@ -130,7 +130,7 @@ export function ClockInWidget() {
             ? "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
             : isInCooldown
             ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "bg-red-600 hover:bg-red-700 text-white shadow-red-900/20"
+            : "bg-destructive hover:bg-danger-700 text-destructive-foreground shadow-danger-900/20"
         }`}
       >
         {isPending ? (

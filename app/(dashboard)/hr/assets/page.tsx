@@ -602,9 +602,9 @@ export default function HrAssetsPage() {
                     return (
                       <TableRow key={a.id}>
                         <TableCell className="font-medium text-sm">{a.name}</TableCell>
-                        <TableCell className="text-sm"><Badge variant="outline" className="text-[11px]">{a.type}</Badge></TableCell>
+                        <TableCell className="text-sm"><Badge variant="outline" className="text-2xs">{a.type}</Badge></TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground">{a.serialNumber ?? ""}</TableCell>
-                        <TableCell><Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge></TableCell>
+                        <TableCell><Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge></TableCell>
                         <TableCell className="text-sm">
                           {a.assignedTo ? employeeList.find((e) => e.id === a.assignedTo)?.name ?? a.assignedTo : ""}
                         </TableCell>

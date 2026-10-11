@@ -209,7 +209,7 @@ export default function PipelinePage() {
             </SelectContent>
           </Select>
           {showDynamic && (
-            <Badge variant="outline" className="text-[10px] h-7">Flow</Badge>
+            <Badge variant="outline" className="text-2xs h-7">Flow</Badge>
           )}
           <PageBackButton fallback="/hr/recruitment" showIcon />
           <Button size="sm" asChild>
@@ -251,8 +251,8 @@ export default function PipelinePage() {
             <div className="py-4 space-y-4">
               <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
                 <p className="text-xs font-medium">{schedulingTarget.candidate.name}</p>
-                <p className="text-[10px] text-muted-foreground">{schedulingTarget.candidate.email}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">{schedulingTarget.candidate.email}</p>
+                <p className="text-2xs text-muted-foreground">
                   {schedulingTarget.roundLabel} · {schedulingTarget.durationMinutes} min · {schedulingTarget.mode}
                 </p>
               </div>
@@ -280,7 +280,7 @@ export default function PipelinePage() {
                 <Label className="text-xs">
                   Interviewer
                   {schedulingTarget.roundType === "HR_SCREENING" && (
-                    <span className="ml-1 text-[10px] text-muted-foreground">(HR only)</span>
+                    <span className="ml-1 text-2xs text-muted-foreground">(HR only)</span>
                   )}
                 </Label>
                 {(() => {
@@ -321,7 +321,7 @@ export default function PipelinePage() {
                                   className="text-sm"
                                 >
                                   {e.firstName} {e.lastName}
-                                  <span className="ml-1 text-[10px] text-muted-foreground">({e.role})</span>
+                                  <span className="ml-1 text-2xs text-muted-foreground">({e.role})</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>

@@ -90,11 +90,11 @@ function PipelineStep({
             "flex items-center justify-center rounded-full transition-all duration-200",
             isActive
               ? cn(
-                  "h-5 w-5 border-2 border-gold bg-gold/20",
-                  isLost && "border-red-400 bg-red-500/20"
+                  "h-5 w-5 border-2 border-primary/40 bg-brand-soft",
+                  isLost && "border-danger-400 bg-danger-soft"
                 )
               : isPast
-                ? cn("h-3 w-3", isLost ? "bg-red-400" : "bg-gold")
+                ? cn("h-3 w-3", isLost ? "bg-danger-400" : "bg-primary")
                 : "h-3 w-3 rounded-full border border-border bg-background group-hover:border-muted-foreground"
           )}
         >
@@ -102,18 +102,18 @@ function PipelineStep({
             <div
               className={cn(
                 "h-2 w-2 rounded-full",
-                isLost ? "bg-red-400" : "bg-gold"
+                isLost ? "bg-danger-400" : "bg-primary"
               )}
             />
           )}
         </div>
         <span
           className={cn(
-            "text-[10px] font-medium whitespace-nowrap leading-none",
+            "text-2xs font-medium whitespace-nowrap leading-none",
             isActive
               ? isLost
-                ? "text-red-400"
-                : "text-gold"
+                ? "text-danger-strong"
+                : "text-brand-text"
               : isPast
                 ? "text-muted-foreground"
                 : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
@@ -127,7 +127,7 @@ function PipelineStep({
         <div
           className={cn(
             "flex-1 h-px mx-2 mb-3.5",
-            isPast ? "bg-gold/50" : "bg-border/50"
+            isPast ? "bg-brand-soft" : "bg-border/50"
           )}
         />
       )}
@@ -169,10 +169,10 @@ export function LeadDetailHeader({
     .join("");
 
   return (
-    <Card className="shadow-noir border-t-2 border-t-gold overflow-hidden">
+    <Card className="shadow-sm border-t-2 border-t-primary/40 overflow-hidden">
       <CardContent className="p-0">
         <div className="flex items-start gap-4 p-4 pb-3">
-          <div className="shrink-0 h-12 w-12 rounded-full ring-2 ring-gold/50 bg-gold/10 flex items-center justify-center text-gold font-bold text-lg select-none">
+          <div className="shrink-0 h-12 w-12 rounded-full ring-2 ring-ring bg-brand-soft flex items-center justify-center text-brand-text font-bold text-lg select-none">
             {initials || "?"}
           </div>
 
@@ -299,7 +299,7 @@ export function LeadDetailHeader({
               {lead.status !== "CONVERTED" && lead.status !== "LOST" && (
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-success hover:bg-success-700 text-success-foreground"
                   onClick={handleConvert}
                   disabled={isStatusPending}
                 >

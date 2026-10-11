@@ -15,14 +15,14 @@ import { useWinLossAnalysis } from "@/lib/api/hooks/crm";
 import { formatINRCompact as formatCurrency } from "@/lib/format-utils";
 
 const REASON_COLORS = [
-  "bg-red-500/20 text-red-400 border-red-500/30",
-  "bg-orange-500/20 text-orange-400 border-orange-500/30",
-  "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  "bg-pink-500/20 text-pink-400 border-pink-500/30",
-  "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  "bg-danger-soft text-danger-strong border-danger-strong/30",
+  "bg-warning-soft text-warning-strong border-warning-strong/30",
+  "bg-warning-soft text-warning-strong border-warning-strong/30",
+  "bg-warning-soft text-warning-strong border-warning-strong/30",
+  "bg-danger-soft text-danger-strong border-danger-strong/30",
+  "bg-plum-soft text-plum-strong border-plum-strong/30",
+  "bg-plum-soft text-plum-strong border-plum-strong/30",
+  "bg-neutral-soft text-subtle-foreground border-ink-500",
 ];
 
 
@@ -93,23 +93,23 @@ export default function WinLossAnalysisPage() {
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid gap-6 md:grid-cols-2">
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-gold" />
+                <TrendingUp className="h-4 w-4 text-brand-text" />
                 Outcome Split
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-center gap-8 py-4">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-emerald-400">{s.won}</div>
+                  <div className="text-4xl font-bold text-success-strong">{s.won}</div>
                   <div className="text-sm text-muted-foreground mt-1">Won</div>
                   <div className="text-xs text-muted-foreground">{formatCurrency(s.wonValue)}</div>
                 </div>
                 <div className="h-16 w-px bg-border" />
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-red-400">{s.lost}</div>
+                  <div className="text-4xl font-bold text-danger-strong">{s.lost}</div>
                   <div className="text-sm text-muted-foreground mt-1">Lost</div>
                   <div className="text-xs text-muted-foreground">{formatCurrency(s.lostValue)}</div>
                 </div>
@@ -121,13 +121,13 @@ export default function WinLossAnalysisPage() {
                 </div>
                 <div className="h-4 w-full rounded-full bg-muted overflow-hidden flex">
                   <motion.div
-                    className="h-full bg-emerald-500 rounded-l-full"
+                    className="h-full bg-success-500 rounded-l-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${wonPct}%` }}
                     transition={{ duration: 0.8 }}
                   />
                   <motion.div
-                    className="h-full bg-red-500 rounded-r-full"
+                    className="h-full bg-danger-500 rounded-r-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${lostPct}%` }}
                     transition={{ duration: 0.8, delay: 0.1 }}
@@ -141,7 +141,7 @@ export default function WinLossAnalysisPage() {
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span className="text-muted-foreground">Revenue captured</span>
-                  <span className="font-semibold text-emerald-400">
+                  <span className="font-semibold text-success-strong">
                     {s.wonValue + s.lostValue > 0
                       ? `${Math.round((s.wonValue / (s.wonValue + s.lostValue)) * 100)}%`
                       : ""}
@@ -151,10 +151,10 @@ export default function WinLossAnalysisPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-red-400" />
+                <BarChart3 className="h-4 w-4 text-danger-strong" />
                 Lost Reason Breakdown
               </CardTitle>
             </CardHeader>
@@ -175,7 +175,7 @@ export default function WinLossAnalysisPage() {
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className={cn("text-[10px] border", colorClass)}
+                                className={cn("text-2xs border", colorClass)}
                               >
                                 {r.reason}
                               </Badge>
@@ -189,7 +189,7 @@ export default function WinLossAnalysisPage() {
                           </div>
                           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                             <motion.div
-                              className="h-full rounded-full bg-red-500/60"
+                              className="h-full rounded-full bg-danger-500/60"
                               initial={{ width: 0 }}
                               animate={{ width: `${barPct}%` }}
                               transition={{ duration: 0.6, delay: i * 0.05 }}

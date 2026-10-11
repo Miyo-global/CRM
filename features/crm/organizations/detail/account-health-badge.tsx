@@ -22,9 +22,9 @@ export function computeHealthScore(rollup: OrgRollup): number {
 }
 
 export function getHealthLabel(score: number): { label: string; color: string; dot: string } {
-  if (score >= 70) return { label: "Healthy", color: "text-emerald-400", dot: "bg-emerald-400" };
-  if (score >= 40) return { label: "At Risk", color: "text-amber-400", dot: "bg-amber-400" };
-  return { label: "Critical", color: "text-red-400", dot: "bg-red-400" };
+  if (score >= 70) return { label: "Healthy", color: "text-success-strong", dot: "bg-success-400" };
+  if (score >= 40) return { label: "At Risk", color: "text-warning-strong", dot: "bg-warning-400" };
+  return { label: "Critical", color: "text-danger-strong", dot: "bg-danger-400" };
 }
 
 export function AccountHealthBadge({ healthScore, rollup, showComputed = false, className }: AccountHealthBadgeProps) {
@@ -49,7 +49,7 @@ export function AccountHealthBadge({ healthScore, rollup, showComputed = false, 
     <Badge
       className={cn(
         "text-xs border-0 flex items-center gap-1.5 px-2 py-0.5",
-        score >= 70 ? "bg-emerald-500/15" : score >= 40 ? "bg-amber-500/15" : "bg-red-500/15",
+        score >= 70 ? "bg-success-soft" : score >= 40 ? "bg-warning-soft" : "bg-danger-soft",
         color,
         className,
       )}

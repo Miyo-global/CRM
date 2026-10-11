@@ -32,9 +32,9 @@ function DealHealthBadge({ expectedCloseDate }: { expectedCloseDate: string | nu
 
   if (!status) return null;
   if (status === "overdue") {
-    return <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">Overdue</Badge>;
+    return <Badge variant="destructive" className="text-2xs px-1.5 py-0 h-4">Overdue</Badge>;
   }
-  return <Badge className="text-[10px] px-1.5 py-0 h-4 bg-amber-500 hover:bg-amber-500 text-white">Due soon</Badge>;
+  return <Badge className="text-2xs px-1.5 py-0 h-4 bg-warning hover:bg-warning-500 text-warning-foreground">Due soon</Badge>;
 }
 
 interface DealKanbanCardProps {
@@ -77,7 +77,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
           <div className="flex-1 min-w-0 mr-1">
             <h4 className="text-sm font-medium line-clamp-1">{deal.name}</h4>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="font-mono text-[10px] text-muted-foreground/70 select-all">{formatDealId(deal.id)}</span>
+              <span className="font-mono text-2xs text-muted-foreground/70 select-all">{formatDealId(deal.id)}</span>
               <DealHealthBadge expectedCloseDate={deal.expectedCloseDate} />
             </div>
           </div>
@@ -106,7 +106,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
           </DropdownMenu>
         </div>
 
-        <p className="text-lg font-bold text-gold mt-1">
+        <p className="text-lg font-bold text-brand-text mt-1">
           {formatINRCompact(deal.value || 0)}
         </p>
 
@@ -122,7 +122,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
             <div className="flex items-center gap-1.5">
               <Avatar className="h-5 w-5">
                 <AvatarImage src={resolveImageUrl(deal.assignedTo.image)} />
-                <AvatarFallback className="text-[8px]">
+                <AvatarFallback className="text-3xs">
                   {deal.assignedTo.name?.[0]}
                 </AvatarFallback>
               </Avatar>
@@ -131,7 +131,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
           ) : <span />}
 
           {deal.expectedCloseDate && (
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <span className="text-2xs text-muted-foreground flex items-center gap-0.5">
               <Calendar className="h-2.5 w-2.5" />
               {new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE, { month: "short", day: "numeric" })}
             </span>
@@ -141,9 +141,9 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
         {deal.probability !== null && deal.probability !== undefined && deal.probability > 0 && (
           <div className="mt-2">
             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div className="h-full rounded-full bg-gold" style={{ width: `${deal.probability}%` }} />
+              <div className="h-full rounded-full bg-primary" style={{ width: `${deal.probability}%` }} />
             </div>
-            <span className="text-[10px] text-muted-foreground">{deal.probability}% probability</span>
+            <span className="text-2xs text-muted-foreground">{deal.probability}% probability</span>
           </div>
         )}
 

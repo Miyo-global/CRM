@@ -220,7 +220,7 @@ export function TicketSubtasks({
                     onClick={() => saveEdit(sub.id)}
                     disabled={updateTicketMutation.isPending}
                   >
-                    <Check className="h-4 w-4 text-emerald-600" />
+                    <Check className="h-4 w-4 text-success-strong" />
                   </Button>
                   <Button
                     type="button"
@@ -248,7 +248,7 @@ export function TicketSubtasks({
                   {sub.assignee && (
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarImage src={resolveImageUrl(sub.assignee.image)} />
-                      <AvatarFallback className="text-[10px]">
+                      <AvatarFallback className="text-2xs">
                         {sub.assignee.firstName?.[0]}
                         {sub.assignee.lastName?.[0]}
                       </AvatarFallback>

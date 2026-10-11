@@ -200,7 +200,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
                 ) : (
                   <div className="h-16 w-40 flex items-center gap-2 rounded border bg-background px-3">
                     <AttachmentIcon mimeType={att.mimeType} className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span className="text-[11px] truncate text-foreground/80">{att.fileName}</span>
+                    <span className="text-2xs truncate text-foreground/80">{att.fileName}</span>
                   </div>
                 )}
                 <button
@@ -241,7 +241,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
               )}
             </Button>
             {uploadingCount > 0 && (
-              <span className="text-[11px] text-muted-foreground">Uploading…</span>
+              <span className="text-2xs text-muted-foreground">Uploading…</span>
             )}
           </div>
           <Button
@@ -374,7 +374,7 @@ function CommentItem({
       <div className="flex gap-2.5 group">
         <Avatar className="h-7 w-7 shrink-0 mt-0.5">
           <AvatarImage src={resolveImageUrl(user?.image)} />
-          <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+          <AvatarFallback className="text-3xs bg-brand-soft text-brand-text">
             {user?.firstName?.[0]}
             {user?.lastName?.[0]}
           </AvatarFallback>
@@ -384,7 +384,7 @@ function CommentItem({
             <span className="text-xs font-medium">
               {user?.firstName} {user?.lastName}
             </span>
-            <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
+            <span className="text-2xs text-muted-foreground">{timeAgo}</span>
             {showActions && !editing && (
               <span className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <Button
@@ -477,7 +477,7 @@ function CommentItem({
                         href={resolveAttachmentUrl(att)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded border bg-muted/40 hover:bg-muted/70 transition-colors px-3 py-2 text-[12px] text-foreground/80 max-w-[220px]"
+                        className="flex items-center gap-2 rounded border bg-muted/40 hover:bg-muted/70 transition-colors px-3 py-2 text-xs text-foreground/80 max-w-[220px]"
                         title={att.fileName}
                       >
                         <AttachmentIcon mimeType={att.mimeType} className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -494,12 +494,12 @@ function CommentItem({
 
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm"
           onClick={() => setLightboxSrc(null)}
         >
           <button
             type="button"
-            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-card hover:bg-accent flex items-center justify-center text-foreground"
             onClick={() => setLightboxSrc(null)}
           >
             <X className="h-4 w-4" />

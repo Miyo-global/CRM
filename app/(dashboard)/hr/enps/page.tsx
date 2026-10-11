@@ -31,9 +31,9 @@ const enpsKeys = { all: [...queryKeys.hr.all, "enps"] as const, list: () => [...
 
 function scoreColor(score: number | null): string {
   if (score === null) return "text-muted-foreground";
-  if (score >= 50) return "text-green-600";
-  if (score >= 0) return "text-amber-600";
-  return "text-red-600";
+  if (score >= 50) return "text-success-strong";
+  if (score >= 0) return "text-warning-strong";
+  return "text-danger-strong";
 }
 
 function statusBadge(s: string | null): "default" | "secondary" | "outline" {
@@ -126,18 +126,18 @@ export default function EnpsPage() {
             <Card key={s.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
-                  <Badge variant={statusBadge(s.status)} className="text-[10px]">{s.status ?? "DRAFT"}</Badge>
+                  <Badge variant={statusBadge(s.status)} className="text-2xs">{s.status ?? "DRAFT"}</Badge>
                   {s.score !== null && (
                     <span className={`text-lg font-bold ${scoreColor(s.score)}`}>{s.score}</span>
                   )}
                 </div>
                 <h3 className="text-sm font-semibold leading-tight">{s.title}</h3>
-                <div className="flex gap-3 text-[10px]">
-                  <span className="text-green-600">Promoters: {s.promoters}</span>
-                  <span className="text-amber-600">Passives: {s.passives}</span>
-                  <span className="text-red-600">Detractors: {s.detractors}</span>
+                <div className="flex gap-3 text-2xs">
+                  <span className="text-success-strong">Promoters: {s.promoters}</span>
+                  <span className="text-warning-strong">Passives: {s.passives}</span>
+                  <span className="text-danger-strong">Detractors: {s.detractors}</span>
                 </div>
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                   <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{s.totalResponses} responses</span>
                   {s.closesAt && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}
                 </div>

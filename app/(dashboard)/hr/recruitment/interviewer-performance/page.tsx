@@ -20,15 +20,15 @@ import { cn } from "@/lib/utils";
 
 function getSpeedLabel(hours: number | null): { label: string; color: string } {
   if (hours === null) return { label: "", color: "text-muted-foreground" };
-  if (hours <= 24) return { label: "< 24h", color: "text-emerald-600 dark:text-emerald-400" };
-  if (hours <= 48) return { label: `${Math.round(hours)}h`, color: "text-amber-600 dark:text-amber-400" };
+  if (hours <= 24) return { label: "< 24h", color: "text-success-strong" };
+  if (hours <= 48) return { label: `${Math.round(hours)}h`, color: "text-warning-strong" };
   return { label: `${Math.round(hours)}h`, color: "text-destructive" };
 }
 
 function SpeedBar({ hours }: { hours: number | null }) {
   if (hours === null) return null;
   const pct = Math.min((hours / 72) * 100, 100);
-  const color = hours <= 24 ? "bg-emerald-500" : hours <= 48 ? "bg-amber-500" : "bg-destructive";
+  const color = hours <= 24 ? "bg-success-500" : hours <= 48 ? "bg-warning-500" : "bg-destructive";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -146,7 +146,7 @@ export default function InterviewerPerformancePage() {
             {isLoading ? (
               <Skeleton className="h-7 w-12" />
             ) : (
-              <p className={cn("text-2xl font-bold", totalPending > 0 ? "text-amber-600" : "")}>
+              <p className={cn("text-2xl font-bold", totalPending > 0 ? "text-warning-strong" : "")}>
                 {totalPending}
               </p>
             )}
@@ -201,12 +201,12 @@ export default function InterviewerPerformancePage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center tabular-nums">{stat.totalAssigned}</TableCell>
-                      <TableCell className="text-center tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">
+                      <TableCell className="text-center tabular-nums text-success-strong font-medium">
                         {stat.submitted}
                       </TableCell>
                       <TableCell className="text-center tabular-nums">
                         {stat.pending > 0 ? (
-                          <Badge variant="outline" className="text-amber-600 border-amber-300 dark:border-amber-700">
+                          <Badge variant="outline" className="text-warning-strong border-warning-strong/25">
                             {stat.pending}
                           </Badge>
                         ) : (
@@ -219,12 +219,12 @@ export default function InterviewerPerformancePage() {
                       <TableCell>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {hireCount > 0 && (
-                            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0 text-xs">
+                            <Badge className="bg-success-soft text-success-strong border-0 text-xs">
                               HIRE ×{hireCount}
                             </Badge>
                           )}
                           {maybeCount > 0 && (
-                            <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">
+                            <Badge variant="outline" className="text-warning-strong border-warning-strong/25 text-xs">
                               MAYBE ×{maybeCount}
                             </Badge>
                           )}

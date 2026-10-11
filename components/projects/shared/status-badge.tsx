@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 const statusMap: Record<string, { label: string; dotColor: string }> = {
   TODO: { label: "To Do", dotColor: "bg-muted-foreground" },
-  IN_PROGRESS: { label: "In Progress", dotColor: "bg-blue-500" },
-  IN_REVIEW: { label: "In Review", dotColor: "bg-amber-500" },
-  DONE: { label: "Done", dotColor: "bg-green-500" },
-  CANCELLED: { label: "Cancelled", dotColor: "bg-red-400" },
+  IN_PROGRESS: { label: "In Progress", dotColor: "bg-info-500" },
+  IN_REVIEW: { label: "In Review", dotColor: "bg-warning-500" },
+  DONE: { label: "Done", dotColor: "bg-success-500" },
+  CANCELLED: { label: "Cancelled", dotColor: "bg-danger-400" },
 };
 
 interface StatusBadgeProps {

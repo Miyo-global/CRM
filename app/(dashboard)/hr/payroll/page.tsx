@@ -510,9 +510,9 @@ export default function PayrollPage() {
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Automatic payroll</p>
                 <span
-                  className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                  className={`text-2xs font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
                     payrollSchedule?.isEnabled
-                      ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
+                      ? "bg-success-soft text-success-strong"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >

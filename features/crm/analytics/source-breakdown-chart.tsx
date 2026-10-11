@@ -14,7 +14,7 @@ export function SourceBreakdownChart({ data }: SourceBreakdownChartProps) {
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
-            data={data} cx="50%" cy="50%" outerRadius={100} dataKey="value"
+            data={data} cx="50%" cy="50%" outerRadius={100} dataKey="value" stroke="var(--card)"
             label={({ name, percent }: { name?: string; percent?: number }) =>
               `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`
             }

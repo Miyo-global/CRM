@@ -24,11 +24,11 @@ import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-  SENT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  ACCEPTED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  REJECTED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-  EXPIRED: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  DRAFT: "bg-muted text-foreground",
+  SENT: "bg-info-soft text-info-strong",
+  ACCEPTED: "bg-success-soft text-success-strong",
+  REJECTED: "bg-danger-soft text-danger-strong",
+  EXPIRED: "bg-warning-soft text-warning-strong",
 };
 
 
@@ -346,7 +346,7 @@ export default function QuotesPage() {
               {data.quotes.map((q) => (
                 <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell>
-                    <Link href={`/crm/quotes/${q.id}`} className="font-mono text-sm text-gold hover:underline">
+                    <Link href={`/crm/quotes/${q.id}`} className="font-mono text-sm text-brand-text hover:underline">
                       {q.quoteNumber}
                     </Link>
                   </TableCell>

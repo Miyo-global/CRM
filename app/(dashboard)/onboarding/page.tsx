@@ -141,15 +141,15 @@ export default function OnboardingPage() {
                   >
                     <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
                       isCompleted
-                        ? "bg-emerald-500 border-emerald-500 text-white"
+                        ? "bg-success border-success-500 text-success-foreground"
                         : isCurrent
                         ? "bg-primary border-primary text-primary-foreground"
                         : "bg-muted border-border text-muted-foreground group-hover:border-primary/50"
                     }`}>
                       {isCompleted ? <Check className="h-3.5 w-3.5" /> : <StepIcon className="h-3.5 w-3.5" />}
                     </div>
-                    <span className={`text-[10px] font-medium text-center leading-tight hidden sm:block ${
-                      isCurrent ? "text-primary" : isCompleted ? "text-emerald-600" : "text-muted-foreground"
+                    <span className={`text-2xs font-medium text-center leading-tight hidden sm:block ${
+                      isCurrent ? "text-primary" : isCompleted ? "text-success-strong" : "text-muted-foreground"
                     }`}>
                       {step.label}
                     </span>
@@ -157,7 +157,7 @@ export default function OnboardingPage() {
                   {index < ONBOARDING_STEPS.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-1 mt-[-0.75rem] hidden sm:block transition-colors ${
-                        isPast || (isCompleted && index < currentStepIndex) ? "bg-emerald-500" : "bg-border"
+                        isPast || (isCompleted && index < currentStepIndex) ? "bg-success-500" : "bg-border"
                       }`}
                       aria-hidden="true"
                     />

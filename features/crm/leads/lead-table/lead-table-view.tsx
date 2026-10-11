@@ -97,21 +97,21 @@ export function LeadTableView({
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="shrink-0 flex items-center justify-between px-1 pb-0.5">
-        <span className="text-[11px] text-muted-foreground tabular-nums">
+        <span className="text-2xs text-muted-foreground tabular-nums">
           {totalCount > 0 ? `${fromRow}–${toRow} of ${totalCount}` : "0 leads"}
         </span>
         <div className="flex items-center gap-1.5">
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-            <SelectTrigger className="h-6 w-auto min-w-[5.5rem] gap-1 text-[10px]" aria-label="Rows per page"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-6 w-auto min-w-[5.5rem] gap-1 text-2xs" aria-label="Rows per page"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PAGE_SIZES.map((s) => (
-                <SelectItem key={s} value={String(s)} className="text-[11px]">{s}/pg</SelectItem>
+                <SelectItem key={s} value={String(s)} className="text-2xs">{s}/pg</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2">
+              <Button variant="ghost" size="sm" className="h-6 text-2xs px-2">
                 <Columns3 className="h-3 w-3 mr-1" />Cols
               </Button>
             </DropdownMenuTrigger>
@@ -121,7 +121,7 @@ export function LeadTableView({
                   key={col.key}
                   checked={visibleColumns.has(col.key)}
                   onCheckedChange={() => toggleColumn(col.key)}
-                  className="text-[11px]"
+                  className="text-2xs"
                 >
                   {col.label}
                 </DropdownMenuCheckboxItem>
@@ -133,7 +133,7 @@ export function LeadTableView({
 
       <div className="flex-1 min-h-0 border border-border rounded-md overflow-auto">
         <div className="min-w-max">
-          <table className="w-full caption-bottom text-[11px]">
+          <table className="w-full caption-bottom text-2xs">
             <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
               <TableRow className="hover:bg-muted/80 border-b-2 border-border">
                 <TableHead className="w-8 px-2 py-1.5">
@@ -143,7 +143,7 @@ export function LeadTableView({
                   <TableHead
                     key={col.key}
                     className={cn(
-                      "text-[10px] uppercase tracking-wider font-bold px-2 py-1.5 whitespace-nowrap",
+                      "text-2xs uppercase tracking-wider font-bold px-2 py-1.5 whitespace-nowrap",
                       col.sortable && "cursor-pointer select-none hover:text-foreground",
                     )}
                     onClick={() => col.sortable && onSort(col.key)}
@@ -180,7 +180,7 @@ export function LeadTableView({
                     className={cn(
                       "h-8",
                       idx % 2 === 1 && "bg-muted/10",
-                      selectedIds.has(lead.id) && "bg-gold/5 hover:bg-gold/10",
+                      selectedIds.has(lead.id) && "bg-brand-soft hover:bg-brand-soft",
                       "hover:bg-muted/30 transition-colors",
                     )}
                   >
@@ -206,7 +206,7 @@ export function LeadTableView({
 
       {totalPages > 1 && (
         <div className="shrink-0 flex items-center justify-between pt-0.5 px-1">
-          <span className="text-[10px] text-muted-foreground tabular-nums">
+          <span className="text-2xs text-muted-foreground tabular-nums">
             Page {page}/{totalPages}
           </span>
           <div className="flex items-center gap-0.5">

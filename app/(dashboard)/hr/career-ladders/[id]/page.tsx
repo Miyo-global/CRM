@@ -35,21 +35,21 @@ import type {
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const LEVEL_COLORS = [
-  { bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700", strip: "bg-slate-400" },
-  { bg: "bg-blue-50",   border: "border-blue-300",  text: "text-blue-700",  strip: "bg-blue-500" },
-  { bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", strip: "bg-indigo-500" },
-  { bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", strip: "bg-violet-500" },
-  { bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", strip: "bg-purple-500" },
-  { bg: "bg-fuchsia-50",border: "border-fuchsia-300",text: "text-fuchsia-700",strip: "bg-fuchsia-500" },
+  { bg: "bg-muted", border: "border-border-strong", text: "text-neutral-strong", strip: "bg-ink-400" },
+  { bg: "bg-info-soft",   border: "border-info-strong/25",  text: "text-info-strong",  strip: "bg-info-500" },
+  { bg: "bg-info-soft", border: "border-info-strong/25", text: "text-info-strong", strip: "bg-info-500" },
+  { bg: "bg-plum-soft", border: "border-plum-strong/25", text: "text-plum-strong", strip: "bg-plum-500" },
+  { bg: "bg-plum-soft", border: "border-plum-strong/25", text: "text-plum-strong", strip: "bg-plum-500" },
+  { bg: "bg-plum-soft",border: "border-plum-strong/25",text: "text-plum-strong",strip: "bg-plum-500" },
 ];
 
 const STATUS_LABELS: Record<CareerLadderStatus, string> = {
   draft: "Draft", active: "Active", archived: "Archived",
 };
 const STATUS_CLASS: Record<CareerLadderStatus, string> = {
-  draft:    "bg-amber-50 text-amber-700 border-amber-200",
-  active:   "bg-emerald-50 text-emerald-700 border-emerald-200",
-  archived: "bg-slate-100 text-slate-500 border-slate-200",
+  draft:    "bg-warning-soft text-warning-strong border-warning-strong/25",
+  active:   "bg-success-soft text-success-strong border-success-strong/25",
+  archived: "bg-muted text-muted-foreground border-border",
 };
 const TRACK_LABELS: Record<CareerLadderTrackType, string> = {
   individual_contributor: "Individual Contributor",
@@ -311,15 +311,15 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
             {statusLbl}
           </span>
           {ladder.trackType && (
-            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700 border-indigo-200">
+            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-info-soft text-info-strong border-info-strong/25">
               {TRACK_LABELS[ladder.trackType as CareerLadderTrackType] ?? ladder.trackType}
             </span>
           )}
-          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-slate-50 text-slate-600 border-slate-200">
+          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground border-border">
             {VISIBILITY_LABELS[ladder.visibility as CareerLadderVisibility] ?? ladder.visibility}
           </span>
           {levels.length > 0 && (
-            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-slate-50 text-slate-600 border-slate-200">
+            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground border-border">
               <Layers className="h-3 w-3 mr-1" />{levels.length} level{levels.length !== 1 ? "s" : ""}
             </span>
           )}
@@ -401,23 +401,23 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
                       {lvl.scope && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Scope</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Scope</p>
                           <p className="text-xs text-foreground/80 line-clamp-2">{lvl.scope}</p>
                         </div>
                       )}
 
                       {(lvl.responsibilities ?? []).length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Responsibilities</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Responsibilities</p>
                           <ul className="space-y-0.5">
                             {(lvl.responsibilities ?? []).slice(0, 3).map((r, i) => (
                               <li key={i} className="flex items-start gap-1.5 text-xs text-foreground/80">
-                                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
+                                <CheckCircle2 className="h-3 w-3 text-success-strong shrink-0 mt-0.5" />
                                 <span className="line-clamp-1">{r}</span>
                               </li>
                             ))}
                             {(lvl.responsibilities ?? []).length > 3 && (
-                              <li className="text-[10px] text-muted-foreground pl-4.5">+{(lvl.responsibilities ?? []).length - 3} more</li>
+                              <li className="text-2xs text-muted-foreground pl-4.5">+{(lvl.responsibilities ?? []).length - 3} more</li>
                             )}
                           </ul>
                         </div>
@@ -425,13 +425,13 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
                       {(lvl.competencies ?? []).length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Competencies</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Competencies</p>
                           <div className="flex flex-wrap gap-1">
                             {(lvl.competencies ?? []).slice(0, 4).map((c) => (
-                              <Badge key={c} variant="outline" className="text-[10px] py-0">{c}</Badge>
+                              <Badge key={c} variant="outline" className="text-2xs py-0">{c}</Badge>
                             ))}
                             {(lvl.competencies ?? []).length > 4 && (
-                              <Badge variant="outline" className="text-[10px] py-0">+{(lvl.competencies ?? []).length - 4}</Badge>
+                              <Badge variant="outline" className="text-2xs py-0">+{(lvl.competencies ?? []).length - 4}</Badge>
                             )}
                           </div>
                         </div>
@@ -440,10 +440,10 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                       {(lvl.skills ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {(lvl.skills ?? []).slice(0, 5).map((s) => (
-                            <Badge key={s} variant="secondary" className="text-[10px] py-0">{s}</Badge>
+                            <Badge key={s} variant="secondary" className="text-2xs py-0">{s}</Badge>
                           ))}
                           {(lvl.skills ?? []).length > 5 && (
-                            <Badge variant="outline" className="text-[10px] py-0">+{(lvl.skills ?? []).length - 5}</Badge>
+                            <Badge variant="outline" className="text-2xs py-0">+{(lvl.skills ?? []).length - 5}</Badge>
                           )}
                         </div>
                       )}
@@ -475,7 +475,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 maxLength={120}
                 placeholder="e.g., Engineering Career Path"
               />
-              <p className="text-[10px] text-muted-foreground text-right">{metaForm.title.length}/120</p>
+              <p className="text-2xs text-muted-foreground text-right">{metaForm.title.length}/120</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -532,7 +532,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 rows={3}
                 maxLength={500}
               />
-              <p className="text-[10px] text-muted-foreground text-right">{metaForm.description.length}/500</p>
+              <p className="text-2xs text-muted-foreground text-right">{metaForm.description.length}/500</p>
             </div>
           </div>
         </HrSheet>
@@ -560,7 +560,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 className={cn(form.title.length > 0 && getCareerLadderTitleError(form.title) && "border-destructive")}
               />
               {form.title.length > 0 && getCareerLadderTitleError(form.title) && (
-                <p className="text-[11px] text-destructive">{getCareerLadderTitleError(form.title)}</p>
+                <p className="text-2xs text-destructive">{getCareerLadderTitleError(form.title)}</p>
               )}
             </div>
 
@@ -622,7 +622,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 />
               </div>
               {form.salaryBandMin != null && form.salaryBandMax != null && form.salaryBandMin > form.salaryBandMax && (
-                <p className="text-[11px] text-destructive">Min cannot exceed max</p>
+                <p className="text-2xs text-destructive">Min cannot exceed max</p>
               )}
             </div>
 

@@ -144,7 +144,7 @@ export default function TrainingPage() {
               <Card key={program.id} className="hover:shadow-sm transition-shadow">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
-                    <Badge variant={statusBadge(program.status)} className="text-[10px]">{program.status}</Badge>
+                    <Badge variant={statusBadge(program.status)} className="text-2xs">{program.status}</Badge>
                     {isAdmin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
@@ -162,7 +162,7 @@ export default function TrainingPage() {
                     {program.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{program.description}</p>}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                     {program.category && <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{program.category}</span>}
                     {program.duration && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{program.duration}</span>}
                     {program.startDate && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{format(new Date(program.startDate), "MMM d")}</span>}
@@ -175,7 +175,7 @@ export default function TrainingPage() {
                     </Button>
                   )}
                   {isUserEnrolled && (
-                    <Badge variant="default" className="text-[10px] w-full justify-center">Enrolled</Badge>
+                    <Badge variant="default" className="text-2xs w-full justify-center">Enrolled</Badge>
                   )}
                 </CardContent>
               </Card>

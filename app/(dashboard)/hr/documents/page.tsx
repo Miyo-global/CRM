@@ -357,18 +357,18 @@ function RichDocumentsSection() {
                   <p className="truncate text-sm font-medium">{doc.title}</p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2">
                     {doc.templateType && (
-                      <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                      <Badge variant="outline" className="px-1.5 py-0 text-2xs">
                         {doc.templateType}
                       </Badge>
                     )}
                     {doc.isPublished && (
-                      <Badge variant="default" className="gap-0.5 px-1.5 py-0 text-[10px]">
+                      <Badge variant="default" className="gap-0.5 px-1.5 py-0 text-2xs">
                         <Globe className="h-2.5 w-2.5" aria-hidden />
                         Published
                       </Badge>
                     )}
                     {doc.updatedAt && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                       </span>
                     )}

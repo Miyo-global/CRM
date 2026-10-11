@@ -70,22 +70,22 @@ export function VelocityChart({ sprints }: VelocityChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-end gap-3 h-40">
+        <div className="flex items-end gap-3 h-40" role="img" aria-label="Sprint velocity: committed vs completed points">
           {data.map((item, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div className="w-full flex gap-0.5 items-end" style={{ height: '120px' }}>
                 <div
-                  className="flex-1 bg-blue-200 dark:bg-blue-900/50 rounded-t transition-all"
+                  className="flex-1 bg-chart-2 rounded-t-sm transition-all"
                   style={{ height: `${(item.committed / maxPoints) * 100}%` }}
                   title={`Committed: ${item.committed} pts`}
                 />
                 <div
-                  className="flex-1 bg-green-500 rounded-t transition-all"
+                  className="flex-1 bg-chart-1 rounded-t-sm transition-all"
                   style={{ height: `${(item.completed / maxPoints) * 100}%` }}
                   title={`Completed: ${item.completed} pts`}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground truncate max-w-full text-center">
+              <span className="text-2xs text-muted-foreground truncate max-w-full text-center">
                 {item.name.length > 8 ? item.name.slice(0, 8) + "…" : item.name}
               </span>
             </div>
@@ -93,11 +93,11 @@ export function VelocityChart({ sprints }: VelocityChartProps) {
         </div>
         <div className="flex items-center gap-4 mt-4 justify-center">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-200 dark:bg-blue-900/50 rounded" />
+            <div className="w-3 h-3 bg-chart-2 rounded" />
             <span className="text-xs text-muted-foreground">Committed</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded" />
+            <div className="w-3 h-3 bg-chart-1 rounded" />
             <span className="text-xs text-muted-foreground">Completed</span>
           </div>
         </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { CHART_PRESET_HEX } from "@/lib/design/brand-hex";
+import { toneVar } from "@/lib/design/tones";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +29,12 @@ interface LabelPickerProps {
   currentLabels: Array<{ label: { id: number; name: string; color: string | null } }>;
 }
 
-const PRESET_COLORS = ["#3B82F6", "#EF4444", "#22C55E", "#EAB308", "#8B5CF6", "#EC4899", "#F97316", "#06B6D4"];
+const PRESET_COLORS: readonly string[] = CHART_PRESET_HEX;
 
 export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerProps) {
   const [open, setOpen] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
-  const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
+  const [selectedColor, setSelectedColor] = useState<string>(PRESET_COLORS[0]);
   const queryClient = useQueryClient();
 
   const { data: allLabels } = useLabels();
@@ -75,7 +77,7 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
             key={label.id}
             variant="secondary"
             className="gap-1 pl-1.5 pr-1 py-0.5 text-xs cursor-default"
-            style={{ borderLeft: `3px solid ${label.color || "#3b82f6"}` }}
+            style={{ borderLeft: `3px solid ${label.color || toneVar.neutral}` }}
           >
             {label.name}
             <button
@@ -106,7 +108,7 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
                     >
                       <span
                         className="w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: label.color || "#3b82f6" }}
+                        style={{ backgroundColor: label.color || toneVar.neutral }}
                       />
                       {label.name}
                     </button>

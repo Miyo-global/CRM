@@ -110,8 +110,8 @@ function PortalCard({
             variant="outline"
             className={
               connected
-                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[11px]"
-                : "bg-muted text-muted-foreground border-border text-[11px]"
+                ? "bg-success-soft text-success-strong border-success-strong/20 text-2xs"
+                : "bg-muted text-muted-foreground border-border text-2xs"
             }
           >
             {connected ? (
@@ -191,7 +191,7 @@ export default function RecruitmentIntegrationsPage() {
       }
     >
       <div className="space-y-6 max-w-3xl">
-        <div className="rounded-lg border bg-blue/5 border-blue/20 p-4 text-sm text-blue">
+        <div className="rounded-lg border bg-secondary border-secondary p-4 text-sm text-secondary">
           <strong>How it works:</strong> Each platform sends a webhook to the URL shown below
           whenever a candidate applies. The CRM automatically creates a candidate record and
           deduplicates by email/phone.

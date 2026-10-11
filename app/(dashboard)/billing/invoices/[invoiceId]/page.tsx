@@ -278,7 +278,7 @@ export default function InvoiceDetailPage({
             </Button>
           )}
           {invoice.status === "PAID" && outstanding <= 0 && (
-            <div className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+            <div className="flex items-center gap-1.5 text-sm text-success-strong font-medium">
               <Check className="h-4 w-4" /> Fully Paid
             </div>
           )}
@@ -369,7 +369,7 @@ export default function InvoiceDetailPage({
             </div>
             {totalPaid > 0 && (
               <>
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-success-strong">
                   <span>Paid</span><span>{fmt(totalPaid)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
@@ -418,7 +418,7 @@ export default function InvoiceDetailPage({
                     <TableCell className="text-sm text-muted-foreground font-mono">
                       {p.referenceNumber ?? ""}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-medium text-emerald-600">
+                    <TableCell className="text-right text-sm font-medium text-success-strong">
                       {fmt(p.amount)}
                     </TableCell>
                   </TableRow>

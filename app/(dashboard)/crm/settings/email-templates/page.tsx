@@ -161,7 +161,7 @@ export default function EmailTemplatesPage() {
       actions={
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gold hover:bg-gold/90 text-white">
+            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
               <Plus className="h-4 w-4 mr-2" />
               New Template
             </Button>
@@ -201,7 +201,7 @@ export default function EmailTemplatesPage() {
                     ))}
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-gold hover:bg-gold/90 text-white" disabled={createTemplate.isPending}>
+                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createTemplate.isPending}>
                   {createTemplate.isPending ? "Creating..." : "Create Template"}
                 </Button>
               </form>
@@ -241,7 +241,7 @@ export default function EmailTemplatesPage() {
 
         {editingId !== null && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-gold/30">
+            <Card className="shadow-sm border-primary/40">
               <CardHeader>
                 <CardTitle className="text-base">Edit Template</CardTitle>
               </CardHeader>
@@ -279,7 +279,7 @@ export default function EmailTemplatesPage() {
                     </div>
                     <div className="flex justify-end gap-3">
                       <Button type="button" variant="outline" onClick={handleCloseEdit}>Cancel</Button>
-                      <Button type="submit" className="bg-gold hover:bg-gold/90 text-white" disabled={updateTemplate.isPending}>
+                      <Button type="submit" className="bg-primary hover:bg-brand-soft text-primary-foreground" disabled={updateTemplate.isPending}>
                         {updateTemplate.isPending ? "Saving..." : "Save Changes"}
                       </Button>
                     </div>
@@ -292,11 +292,11 @@ export default function EmailTemplatesPage() {
 
         {previewTemplate && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-emerald-500/30">
+            <Card className="shadow-sm border-success-strong/30">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-emerald-400" />
+                    <Eye className="h-4 w-4 text-success-strong" />
                     Preview: {previewTemplate.name}
                   </CardTitle>
                   <Button variant="ghost" size="sm" onClick={handleClosePreview}>Close</Button>
@@ -313,7 +313,7 @@ export default function EmailTemplatesPage() {
                     <p className="text-sm whitespace-pre-wrap">{interpolate(previewTemplate.body, SAMPLE_DATA)}</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-2">Preview uses sample data for variable interpolation</p>
+                <p className="text-2xs text-muted-foreground mt-2">Preview uses sample data for variable interpolation</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -386,7 +386,7 @@ interface VariableButtonProps {
 function VariableButton({ variable, formType, onInsert }: VariableButtonProps) {
   const handleClick = useCallback(() => onInsert(variable, formType), [variable, formType, onInsert]);
   return (
-    <Button type="button" variant="outline" size="sm" className="text-[10px] h-6 px-2" onClick={handleClick}>
+    <Button type="button" variant="outline" size="sm" className="text-2xs h-6 px-2" onClick={handleClick}>
       {variable}
     </Button>
   );

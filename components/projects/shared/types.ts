@@ -54,10 +54,10 @@ export const priorityConfig: Record<
   string,
   { label: string; color: string; icon: string }
 > = {
-  URGENT: { label: "Urgent", color: "text-red-500", icon: "AlertTriangle" },
-  HIGH: { label: "High", color: "text-orange-500", icon: "ArrowUp" },
-  MEDIUM: { label: "Medium", color: "text-yellow-500", icon: "Minus" },
-  LOW: { label: "Low", color: "text-blue-500", icon: "ArrowDown" },
+  URGENT: { label: "Urgent", color: "text-danger-strong", icon: "AlertTriangle" },
+  HIGH: { label: "High", color: "text-warning-strong", icon: "ArrowUp" },
+  MEDIUM: { label: "Medium", color: "text-warning-strong", icon: "Minus" },
+  LOW: { label: "Low", color: "text-info-strong", icon: "ArrowDown" },
 };
 
 export const statusConfig: Record<
@@ -65,19 +65,19 @@ export const statusConfig: Record<
   { label: string; dotColor: string }
 > = {
   TODO: { label: "To Do", dotColor: "bg-muted-foreground" },
-  IN_PROGRESS: { label: "In Progress", dotColor: "bg-blue-500" },
-  IN_REVIEW: { label: "In Review", dotColor: "bg-amber-500" },
-  DONE: { label: "Done", dotColor: "bg-green-500" },
+  IN_PROGRESS: { label: "In Progress", dotColor: "bg-info-500" },
+  IN_REVIEW: { label: "In Review", dotColor: "bg-warning-500" },
+  DONE: { label: "Done", dotColor: "bg-success-500" },
 };
 
 export const typeConfig: Record<
   string,
   { label: string; color: string }
 > = {
-  TASK: { label: "Task", color: "text-blue-500" },
-  BUG: { label: "Bug", color: "text-red-500" },
-  STORY: { label: "Story", color: "text-green-500" },
-  EPIC: { label: "Epic", color: "text-purple-500" },
+  TASK: { label: "Task", color: "text-info-strong" },
+  BUG: { label: "Bug", color: "text-danger-strong" },
+  STORY: { label: "Story", color: "text-success-strong" },
+  EPIC: { label: "Epic", color: "text-plum-strong" },
   SUBTASK: { label: "Subtask", color: "text-muted-foreground" },
 };
 

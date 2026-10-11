@@ -65,7 +65,7 @@ export function PayPolicyCard({ minMonthlySalary: initialMin }: PayPolicyCardPro
     <Card className="rounded-xl border shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <IndianRupee className="h-4 w-4 text-gold" />
+          <IndianRupee className="h-4 w-4 text-brand-text" />
           Pay Policy
         </CardTitle>
         <CardDescription>

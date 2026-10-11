@@ -41,12 +41,12 @@ interface DealTableViewProps {
 const STAGES = ["LEAD", "CONTACTED", "PROPOSAL", "NEGOTIATION", "WON", "LOST"];
 
 const STAGE_COLORS: Record<string, string> = {
-  LEAD: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  CONTACTED: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-  PROPOSAL: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  NEGOTIATION: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  WON: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  LOST: "bg-red-500/10 text-red-400 border-red-500/20",
+  LEAD: "bg-info-soft text-info-strong border-info-strong/20",
+  CONTACTED: "bg-info-soft text-info-strong border-info-strong/20",
+  PROPOSAL: "bg-warning-soft text-warning-strong border-warning-strong/20",
+  NEGOTIATION: "bg-plum-soft text-plum-strong border-plum-strong/20",
+  WON: "bg-success-soft text-success-strong border-success-strong/20",
+  LOST: "bg-danger-soft text-danger-strong border-danger-strong/20",
 };
 
 function formatINR(val: string | number | null | undefined): string {
@@ -80,26 +80,26 @@ export function DealTableView({
   function SortIcon({ column }: { column: string }) {
     if (sortColumn !== column) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
     return sortDirection === "asc"
-      ? <ArrowUp className="h-3 w-3 ml-1 text-gold" />
-      : <ArrowDown className="h-3 w-3 ml-1 text-gold" />;
+      ? <ArrowUp className="h-3 w-3 ml-1 text-brand-text" />
+      : <ArrowDown className="h-3 w-3 ml-1 text-brand-text" />;
   }
 
   return (
     <div className="flex flex-col h-[calc(100dvh-18rem)] min-h-[320px]">
       <div className="shrink-0 flex items-center px-1 pb-1.5">
-        <span className="text-[11px] text-muted-foreground tabular-nums">{deals.length} deals</span>
+        <span className="text-2xs text-muted-foreground tabular-nums">{deals.length} deals</span>
       </div>
 
       <div className="flex-1 min-h-0 border border-border rounded-md overflow-auto">
         <div className="min-w-max">
-          <table className="w-full caption-bottom text-[11px]">
+          <table className="w-full caption-bottom text-2xs">
             <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
               <TableRow className="hover:bg-muted/80 border-b-2 border-border">
                 {columns.map(col => (
                   <TableHead
                     key={col.key}
                     className={cn(
-                      "text-[10px] uppercase tracking-wider font-bold px-2 py-1.5 whitespace-nowrap",
+                      "text-2xs uppercase tracking-wider font-bold px-2 py-1.5 whitespace-nowrap",
                       col.sortable && "cursor-pointer select-none hover:text-foreground",
                     )}
                     onClick={() => col.sortable && onSort(col.key)}
@@ -136,33 +136,33 @@ export function DealTableView({
                       className={cn("h-8", idx % 2 === 1 && "bg-muted/10", "hover:bg-muted/30 transition-colors")}
                     >
                       <TableCell className="px-2 py-1">
-                        <span className="font-mono text-[10px] text-muted-foreground select-all">
+                        <span className="font-mono text-2xs text-muted-foreground select-all">
                           {formatDealId(deal.id)}
                         </span>
                       </TableCell>
                       <TableCell className="px-2 py-1">
                         <button
-                          className="font-medium text-[12px] hover:text-gold hover:underline text-left truncate max-w-[160px] block"
+                          className="font-medium text-xs hover:text-brand-text hover:underline text-left truncate max-w-[160px] block"
                           onClick={() => router.push(`/crm/deals/${deal.id}`)}
                         >
                           {deal.name}
                         </button>
                       </TableCell>
-                      <TableCell className="px-2 py-1 font-mono tabular-nums text-gold font-medium">
+                      <TableCell className="px-2 py-1 font-mono tabular-nums text-brand-text font-medium">
                         {formatINR(deal.value)}
                       </TableCell>
                       <TableCell className="px-2 py-1">
                         {isEditingStage ? (
                           <Select defaultValue={deal.stage} onValueChange={(v) => { onStageChange(deal.id, v); setEditingCell(null); }}>
-                            <SelectTrigger className="h-6 text-[10px] w-[100px]"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-6 text-2xs w-[100px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {STAGES.map(s => <SelectItem key={s} value={s} className="text-[11px]">{s}</SelectItem>)}
+                              {STAGES.map(s => <SelectItem key={s} value={s} className="text-2xs">{s}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         ) : (
                           <Badge
                             variant="outline"
-                            className={cn("text-[9px] px-1.5 py-0 h-5 cursor-pointer border font-medium", STAGE_COLORS[deal.stage])}
+                            className={cn("text-3xs px-1.5 py-0 h-5 cursor-pointer border font-medium", STAGE_COLORS[deal.stage])}
                             onClick={() => setEditingCell({ dealId: deal.id, column: "stage" })}
                           >
                             {deal.stage}
@@ -183,7 +183,7 @@ export function DealTableView({
                           <div className="flex items-center gap-1">
                             <Avatar className="h-4 w-4">
                               <AvatarImage src={deal.assignedTo.image || ""} />
-                              <AvatarFallback className="text-[7px]">{deal.assignedTo.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback className="text-3xs">{deal.assignedTo.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <span className="truncate max-w-[70px]">{deal.assignedTo.name}</span>
                           </div>

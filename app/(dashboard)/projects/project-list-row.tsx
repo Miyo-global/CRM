@@ -45,7 +45,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
         role="listitem"
       >
 
-        <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0 w-14 text-center">
+        <span className="text-2xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0 w-14 text-center">
           {project.key}
         </span>
 
@@ -56,7 +56,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
         {project.progress.total > 0 && (
           <div className="hidden sm:flex items-center gap-2 shrink-0 w-28">
             <Progress value={project.progress.percentage} className="h-1 flex-1" />
-            <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">
+            <span className="text-2xs text-muted-foreground tabular-nums w-8 text-right">
               {Math.round(project.progress.percentage)}%
             </span>
           </div>
@@ -64,7 +64,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
 
         <Badge
           variant="secondary"
-          className={`text-[10px] font-medium shrink-0 hidden md:inline-flex ${statusColor}`}
+          className={`text-2xs font-medium shrink-0 hidden md:inline-flex ${statusColor}`}
         >
           {displayLabel}
         </Badge>
@@ -78,7 +78,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
         </div>
 
         {dateStr && (
-          <div className="hidden lg:flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
+          <div className="hidden lg:flex items-center gap-1 text-2xs text-muted-foreground shrink-0">
             <Calendar className="h-3 w-3" />
             {dateStr}
           </div>

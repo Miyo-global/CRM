@@ -169,10 +169,10 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
           <Badge
             variant="outline"
             className={cn(
-              "text-[10px] shrink-0",
+              "text-2xs shrink-0",
               t.isActive
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-slate-100 text-slate-500 border-slate-200"
+                ? "bg-success-soft text-success-strong border-success-strong/25"
+                : "bg-muted text-muted-foreground border-border"
             )}
           >
             {t.isActive ? "Active" : "Inactive"}
@@ -194,12 +194,12 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
             <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex flex-wrap gap-1">
               {visibleCities.map((city) => (
-                <Badge key={city} variant="outline" className="text-[10px] h-4 px-1.5">
+                <Badge key={city} variant="outline" className="text-2xs h-4 px-1.5">
                   {city}
                 </Badge>
               ))}
               {extraCities > 0 && (
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">
+                <Badge variant="outline" className="text-2xs h-4 px-1.5 text-muted-foreground">
                   +{extraCities} more
                 </Badge>
               )}

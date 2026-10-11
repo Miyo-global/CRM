@@ -222,10 +222,10 @@ export function PayrollTable({
                             <p className="text-xs text-muted-foreground">
                               {payroll.user?.designation}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               Created: {fmtDateTime(payroll.createdAt)}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               Approved: {fmtDateTime(payroll.approvedAt)} | Paid: {fmtDateTime(payroll.paidAt)}
                             </p>
                           </div>
@@ -236,7 +236,7 @@ export function PayrollTable({
                         <TableCell className="text-destructive whitespace-nowrap">
                           -₹{fmtInr(Math.min(num(payroll.deductions), num(payroll.grossSalary)))}
                         </TableCell>
-                        <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        <TableCell className="font-semibold text-success-strong whitespace-nowrap">
                           ₹{fmtInr(Math.max(0, num(payroll.netSalary)))}
                         </TableCell>
                         <TableCell>
@@ -284,7 +284,7 @@ export function PayrollTable({
                                 </Button>
                               ) : (
                                 <span
-                                  className="inline-flex items-center gap-1 rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1 text-[11px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-400"
+                                  className="inline-flex items-center gap-1 rounded-md border border-warning-300/60 bg-warning-soft px-2 py-1 text-2xs text-warning-strong"
                                   title="Only the CEO can approve payrolls. This payroll stays in DRAFT until the CEO approves it."
                                 >
                                   Awaiting CEO approval

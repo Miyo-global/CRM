@@ -31,10 +31,10 @@ export function AINextActionButton({ leadId, compact }: AINextActionButtonProps)
   };
 
   const urgencyColor = (u: string) => {
-    if (u === "critical") return "text-red-500";
-    if (u === "high") return "text-orange-500";
-    if (u === "medium") return "text-amber-500";
-    return "text-emerald-500";
+    if (u === "critical") return "text-danger-strong";
+    if (u === "high") return "text-warning-strong";
+    if (u === "medium") return "text-warning-strong";
+    return "text-success-strong";
   };
 
   if (compact) {
@@ -51,7 +51,7 @@ export function AINextActionButton({ leadId, compact }: AINextActionButtonProps)
             {actionMutation.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Zap className="h-3 w-3 text-gold" />
+              <Zap className="h-3 w-3 text-brand-text" />
             )}
             Next Action
           </Button>
@@ -77,7 +77,7 @@ export function AINextActionButton({ leadId, compact }: AINextActionButtonProps)
         {actionMutation.isPending ? (
           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Thinking...</>
         ) : (
-          <><Sparkles className="h-4 w-4 mr-2 text-gold" />Suggest Next Action</>
+          <><Sparkles className="h-4 w-4 mr-2 text-brand-text" />Suggest Next Action</>
         )}
       </Button>
       {result && <ActionDetails result={result} urgencyColor={urgencyColor} />}
@@ -106,17 +106,17 @@ function ActionDetails({
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium leading-snug">{result.action}</p>
           <div className="flex items-center gap-1.5 mt-1">
-            <Badge variant="secondary" className={cn("text-[9px] h-4 px-1 capitalize", urgencyColor(result.urgency))}>
+            <Badge variant="secondary" className={cn("text-3xs h-4 px-1 capitalize", urgencyColor(result.urgency))}>
               {result.urgency}
             </Badge>
           </div>
         </div>
       </div>
-      <p className="text-[11px] text-muted-foreground leading-snug">{result.reasoning}</p>
+      <p className="text-2xs text-muted-foreground leading-snug">{result.reasoning}</p>
       {result.template && (
         <div className="rounded-md border border-border bg-muted/40 p-2">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Template</p>
-          <p className="text-[11px] leading-snug whitespace-pre-wrap">{result.template}</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Template</p>
+          <p className="text-2xs leading-snug whitespace-pre-wrap">{result.template}</p>
         </div>
       )}
     </div>

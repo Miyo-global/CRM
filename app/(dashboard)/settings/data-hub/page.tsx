@@ -37,7 +37,7 @@ const ENTITIES: ImportEntity[] = [
     templateUrl: "/templates/leads-template.xlsx",
     importEndpoint: "/leads/import",
     exportEndpoint: "/leads/export",
-    color: "text-blue-400",
+    color: "text-info-strong",
     supported: { import: true, export: true },
   },
   {
@@ -47,7 +47,7 @@ const ENTITIES: ImportEntity[] = [
     description: "Bulk import CRM contacts with phone, email, and organization.",
     importEndpoint: "/contacts/import",
     exportEndpoint: "/contacts/export",
-    color: "text-emerald-400",
+    color: "text-success-strong",
     supported: { import: false, export: true },
   },
   {
@@ -56,7 +56,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Handshake,
     description: "Export deal pipeline with stage, value, probability, and close dates.",
     exportEndpoint: "/deals/export",
-    color: "text-amber-400",
+    color: "text-warning-strong",
     supported: { import: false, export: true },
   },
   {
@@ -65,7 +65,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Users,
     description: "Export employee directory with roles, departments, and contact info.",
     exportEndpoint: "/hr/employees/export",
-    color: "text-purple-400",
+    color: "text-plum-strong",
     supported: { import: false, export: true },
   },
   {
@@ -74,7 +74,7 @@ const ENTITIES: ImportEntity[] = [
     icon: CreditCard,
     description: "Export payroll records with breakdown, deductions, and net pay.",
     exportEndpoint: "/hr/payroll/export",
-    color: "text-gold",
+    color: "text-brand-text",
     supported: { import: false, export: true },
   },
   {
@@ -83,7 +83,7 @@ const ENTITIES: ImportEntity[] = [
     icon: FileSpreadsheet,
     description: "Export expense claims with status, category, and amounts.",
     exportEndpoint: "/hr/expenses/export",
-    color: "text-cyan-400",
+    color: "text-teal-strong",
     supported: { import: false, export: true },
   },
   {
@@ -92,7 +92,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Building2,
     description: "Export client accounts with health score and activity data.",
     exportEndpoint: "/clients/export",
-    color: "text-rose-400",
+    color: "text-danger-strong",
     supported: { import: false, export: true },
   },
   {
@@ -101,7 +101,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Package,
     description: "Export asset inventory with assigned employees and status.",
     exportEndpoint: "/hr/assets/export",
-    color: "text-slate-400",
+    color: "text-subtle-foreground",
     supported: { import: false, export: true },
   },
 ];
@@ -200,7 +200,7 @@ function DataHubContent() {
 
           return (
             <motion.div key={entity.id} variants={fadeUp}>
-              <Card className="shadow-noir h-full flex flex-col">
+              <Card className="shadow-sm h-full flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -209,10 +209,10 @@ function DataHubContent() {
                     </div>
                     <div className="flex gap-1">
                       {entity.supported.import && (
-                        <Badge variant="secondary" className="text-[9px] px-1">Import</Badge>
+                        <Badge variant="secondary" className="text-3xs px-1">Import</Badge>
                       )}
                       {entity.supported.export && (
-                        <Badge variant="outline" className="text-[9px] px-1">Export</Badge>
+                        <Badge variant="outline" className="text-3xs px-1">Export</Badge>
                       )}
                     </div>
                   </div>
@@ -226,8 +226,8 @@ function DataHubContent() {
                         <Progress value={upload.progress} className="h-1.5" />
                       )}
                       <div className={`flex items-center gap-1.5 text-xs ${
-                        upload.status === "success" ? "text-emerald-400" :
-                        upload.status === "error" ? "text-red-400" : "text-muted-foreground"
+                        upload.status === "success" ? "text-success-strong" :
+                        upload.status === "error" ? "text-danger-strong" : "text-muted-foreground"
                       }`}>
                         {upload.status === "uploading" && <Loader2 className="h-3 w-3 animate-spin" />}
                         {upload.status === "success" && <CheckCircle2 className="h-3 w-3" />}
@@ -288,7 +288,7 @@ function DataHubContent() {
                     <a
                       href={entity.templateUrl}
                       download
-                      className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1"
+                      className="text-2xs text-muted-foreground hover:text-brand-text transition-colors flex items-center gap-1"
                     >
                       <FileSpreadsheet className="h-3 w-3" />
                       Download template

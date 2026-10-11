@@ -22,9 +22,9 @@ interface TreeNode {
 }
 
 const ROLE_DOT: Record<string, string> = {
-  CEO: "bg-amber-500",
-  HR: "bg-purple-500",
-  ADMIN: "bg-blue-500",
+  CEO: "bg-warning-500",
+  HR: "bg-plum-500",
+  ADMIN: "bg-info-500",
 };
 
 function canonicalRole(role: string | null | undefined): string {
@@ -158,13 +158,13 @@ function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" })
         >
           {displayName(emp)}
         </p>
-        <p className="text-[10px] text-muted-foreground truncate">
+        <p className="text-2xs text-muted-foreground truncate">
           {emp.designation ?? roleDisplay(emp.role)}
           {emp.employeeId ? ` · ${emp.employeeId}` : ""}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+        <Badge variant="outline" className="text-2xs h-5 px-1.5">
           {roleDisplay(emp.role)}
         </Badge>
         <span className={cn("h-2 w-2 rounded-full", ROLE_DOT[canonicalRole(emp.role)] ?? "bg-muted-foreground/40")} />
@@ -200,7 +200,7 @@ function TreeBranch({ node, depth = 0, isLast = false }: { node: TreeNode; depth
         <div className="flex items-center gap-2">
           <PersonCard emp={node.employee} size={depth > 1 ? "sm" : "md"} />
           {hasChildren && (
-            <Badge variant="secondary" className="h-5 text-[10px]">
+            <Badge variant="secondary" className="h-5 text-2xs">
               {countSubtree(node) - 1} in team
             </Badge>
           )}
@@ -234,7 +234,7 @@ function TreeLegend() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {items.map((item) => (
-        <Badge key={item.label} variant="outline" className="text-[10px] h-6 gap-1.5">
+        <Badge key={item.label} variant="outline" className="text-2xs h-6 gap-1.5">
           <span className={cn("h-2 w-2 rounded-full", item.cls)} />
           {item.label}
         </Badge>
@@ -345,7 +345,7 @@ export default function OrgChartPage() {
                 <TreeLegend />
               </div>
               {!hasHierarchy && employees.length > 0 && (
-                <div className="rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-300">
+                <div className="rounded-lg border border-warning-300/60 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
                   No reporting managers are assigned yet, so everyone appears at the top level.
                   Set each person&apos;s manager in{" "}
                   <span className="font-medium">Employees → Edit → Reporting Manager</span>{" "}
@@ -381,7 +381,7 @@ export default function OrgChartPage() {
                 <CardContent className="p-4 flex flex-col min-h-0 flex-1">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold">{dept.name}</h3>
-                    <Badge variant="secondary" className="text-[10px] gap-1">
+                    <Badge variant="secondary" className="text-2xs gap-1">
                       <Users className="h-3 w-3" />
                       {dept.members.length}
                     </Badge>
@@ -391,10 +391,10 @@ export default function OrgChartPage() {
                     {dept.roleGroups.map((rg) => (
                       <div key={rg.role} className="space-y-1.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          <span className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                             {rg.role}
                           </span>
-                          <Badge variant="outline" className="h-4 text-[9px] px-1.5">
+                          <Badge variant="outline" className="h-4 text-3xs px-1.5">
                             {rg.people.length}
                           </Badge>
                         </div>
@@ -402,20 +402,20 @@ export default function OrgChartPage() {
                           <div key={emp.id} className="flex items-center gap-2 pl-1">
                             <Avatar className="h-6 w-6">
                               <AvatarImage src={resolveImageUrl(emp.image)} />
-                              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                              <AvatarFallback className="text-3xs bg-primary/10 text-primary">
                                 {initials(emp)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-medium truncate">{displayName(emp)}</p>
                               {emp.designation && (
-                                <p className="text-[10px] text-muted-foreground truncate">
+                                <p className="text-2xs text-muted-foreground truncate">
                                   {emp.designation}
                                 </p>
                               )}
                             </div>
                             {emp.employeeId && (
-                              <span className="text-[10px] text-muted-foreground shrink-0">
+                              <span className="text-2xs text-muted-foreground shrink-0">
                                 {emp.employeeId}
                               </span>
                             )}

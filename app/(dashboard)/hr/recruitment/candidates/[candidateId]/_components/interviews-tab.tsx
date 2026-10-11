@@ -39,7 +39,7 @@ const InterviewRow = memo(function InterviewRow({ interview }: InterviewRowProps
                 ? "destructive"
                 : "outline"
           }
-          className="text-[10px]"
+          className="text-2xs"
         >
           {interview.result ?? "PENDING"}
         </Badge>

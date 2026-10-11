@@ -327,7 +327,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                   onChange={(e) => setTitle(e.target.value)}
                   autoFocus={isEdit}
                 />
-                <p className="text-[10px] text-muted-foreground text-right">{title.trim().length}/200</p>
+                <p className="text-2xs text-muted-foreground text-right">{title.trim().length}/200</p>
               </div>
             </CardContent>
           </Card>
@@ -346,7 +346,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                     key={token}
                     type="button"
                     onClick={() => insertToken(token)}
-                    className="inline-flex items-center px-2 py-1 rounded text-[11px] font-mono bg-muted hover:bg-muted/80 border border-border/60 text-foreground transition-colors cursor-pointer"
+                    className="inline-flex items-center px-2 py-1 rounded text-2xs font-mono bg-muted hover:bg-muted/80 border border-border/60 text-foreground transition-colors cursor-pointer"
                     title={`Insert {{${token}}}`}
                   >
                     {`{{${token}}}`}
@@ -358,7 +358,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                 <>
                   <Separator className="my-3" />
                   <div>
-                    <p className="text-[11px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
+                    <p className="text-2xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
                       Detected in content
                     </p>
                     <div className="flex flex-wrap gap-1">
@@ -366,7 +366,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                         <Badge
                           key={v}
                           variant="outline"
-                          className="text-[10px] font-mono px-1.5 bg-blue/5 border-blue/20 text-blue"
+                          className="text-2xs font-mono px-1.5 bg-secondary border-secondary text-secondary"
                         >
                           {`{{${v}}}`}
                         </Badge>
@@ -384,7 +384,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">HTML Content</CardTitle>
               <CardDescription>
-                Write raw HTML. Use <code className="text-[11px]">{"{{Variable_Name}}"}</code> tokens
+                Write raw HTML. Use <code className="text-2xs">{"{{Variable_Name}}"}</code> tokens
                 as placeholders.
               </CardDescription>
             </CardHeader>
@@ -445,7 +445,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
               </CardHeader>
               <CardContent className="pb-6">
                 <div
-                  className="max-h-[600px] overflow-y-auto rounded-md border bg-white dark:bg-neutral-950 p-5 text-sm prose prose-sm dark:prose-invert max-w-none"
+                  className="max-h-[600px] overflow-y-auto rounded-md border bg-card p-5 tiptap"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml) }}
                 />
               </CardContent>

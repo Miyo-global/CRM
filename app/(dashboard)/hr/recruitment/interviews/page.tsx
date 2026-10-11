@@ -42,6 +42,8 @@ import { format } from "date-fns";
 import type { InterviewResult } from "@/types/hr";
 import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
+import { eventToneStyle } from "@/features/calendar/event-tones";
 
 function resultBadgeVariant(result: string | null): "default" | "secondary" | "outline" | "destructive" {
   switch (result) {
@@ -555,7 +557,7 @@ export default function InterviewsPage() {
 
       {pageView === "calendar" ? (
         <Card>
-          <CardContent className="p-4" style={{ height: 520 }}>
+          <CardContent className="p-4 calendar-container" style={{ height: 520 }}>
             <BigCalendarWrapper
               events={(interviews ?? []).map((iv): BigCalEvent => ({
                 id: iv.id,
@@ -563,7 +565,7 @@ export default function InterviewsPage() {
                 start: new Date(iv.scheduledAt),
                 end: new Date(new Date(iv.scheduledAt).getTime() + (iv.duration ?? 60) * 60_000),
                 resource: {
-                  color: iv.result === "PASSED" ? "#10b981" : iv.result === "FAILED" ? "#ef4444" : "#0f2b7f",
+                  color: iv.result === "PASSED" ? "success" : iv.result === "FAILED" ? "danger" : "brand",
                 },
               }))}
               date={calDate}
@@ -575,7 +577,7 @@ export default function InterviewsPage() {
                 if (iv) setFeedbackInterview(iv as Interview);
               }}
               eventPropGetter={(e) => ({
-                style: { backgroundColor: (e as BigCalEvent).resource?.color ?? "#0f2b7f", color: "#fff", borderRadius: 4, border: "none", fontSize: 11 },
+                style: eventToneStyle(((e as BigCalEvent).resource?.color as Tone | undefined) ?? "brand"),
               })}
             />
           </CardContent>
@@ -628,7 +630,7 @@ export default function InterviewsPage() {
                             <Badge variant="outline">{interview.type}</Badge>
                             {(interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds &&
                               (interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds!.length > 1 && (
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-2xs">
                                 Panel ({(interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds!.length})
                               </Badge>
                             )}

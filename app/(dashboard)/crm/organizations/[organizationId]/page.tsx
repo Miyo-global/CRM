@@ -37,10 +37,10 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, color = "gold" }: StatCardProps) {
   const colorMap = {
-    gold: "text-gold bg-gold/10",
-    blue: "text-blue-500 bg-blue-500/10",
-    green: "text-emerald-400 bg-emerald-500/10",
-    red: "text-red-400 bg-red-500/10",
+    gold: "text-brand-text bg-brand-soft",
+    blue: "text-info-strong bg-info-soft",
+    green: "text-success-strong bg-success-soft",
+    red: "text-danger-strong bg-danger-soft",
   };
   return (
     <Card className="shadow-sm">
@@ -137,7 +137,7 @@ export default function OrganizationDetailPage({
         <Card className="shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-wrap gap-4 items-start">
-              <div className="h-12 w-12 rounded-xl bg-gold/10 flex items-center justify-center text-xl font-bold text-gold shrink-0">
+              <div className="h-12 w-12 rounded-xl bg-brand-soft flex items-center justify-center text-xl font-bold text-brand-text shrink-0">
                 {org.name[0]?.toUpperCase()}
               </div>
               <div className="flex-1 min-w-0 space-y-1.5">
@@ -153,12 +153,12 @@ export default function OrganizationDetailPage({
                     </span>
                   )}
                   {org.website && (
-                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-gold">
+                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-text">
                       <Link2 className="h-3 w-3" />Website
                     </a>
                   )}
                   {org.linkedinUrl && (
-                    <a href={org.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-gold">
+                    <a href={org.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-text">
                       <Building2 className="h-3 w-3" />LinkedIn
                     </a>
                   )}
@@ -266,12 +266,12 @@ export default function OrganizationDetailPage({
                         </div>
                         <div className="flex gap-2 shrink-0">
                           {contact.email && (
-                            <a href={`mailto:${contact.email}`} className="text-muted-foreground hover:text-gold">
+                            <a href={`mailto:${contact.email}`} className="text-muted-foreground hover:text-brand-text">
                               <Mail className="h-3.5 w-3.5" />
                             </a>
                           )}
                           {contact.phone && (
-                            <a href={`tel:${contact.phone}`} className="text-muted-foreground hover:text-gold">
+                            <a href={`tel:${contact.phone}`} className="text-muted-foreground hover:text-brand-text">
                               <Phone className="h-3.5 w-3.5" />
                             </a>
                           )}
@@ -316,10 +316,10 @@ export default function OrganizationDetailPage({
                           <Badge
                             variant="secondary"
                             className={cn(
-                              "text-[10px]",
-                              lead.status === "WON" ? "bg-emerald-500/15 text-emerald-400" :
-                                lead.status === "LOST" ? "bg-red-500/15 text-red-400" :
-                                  "bg-gold/10 text-gold",
+                              "text-2xs",
+                              lead.status === "WON" ? "bg-success-soft text-success-strong" :
+                                lead.status === "LOST" ? "bg-danger-soft text-danger-strong" :
+                                  "bg-brand-soft text-brand-text",
                             )}
                           >
                             {lead.status}

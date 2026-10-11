@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
         <section>
           <div className="mb-4">
-            <h2 className="text-[0.9375rem] font-semibold text-foreground">Profile</h2>
+            <h2 className="text-base font-semibold text-foreground">Profile</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Update your display name and profile photo.
             </p>
@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
         <section>
           <div className="mb-4">
-            <h2 className="text-[0.9375rem] font-semibold text-foreground">Preferences</h2>
+            <h2 className="text-base font-semibold text-foreground">Preferences</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Customise how the application looks and behaves.
             </p>
@@ -41,7 +41,7 @@ export default function SettingsPage() {
 
         <section>
           <div className="mb-4">
-            <h2 className="text-[0.9375rem] font-semibold text-foreground">Security</h2>
+            <h2 className="text-base font-semibold text-foreground">Security</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Change your password and manage account security.
             </p>

@@ -288,7 +288,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Sprints</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Agile cycles</div>
+                                        <div className="text-2xs text-muted-foreground">Agile cycles</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -306,7 +306,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Epics</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Large initiatives</div>
+                                        <div className="text-2xs text-muted-foreground">Large initiatives</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -324,7 +324,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Time Tracking</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Log work hours</div>
+                                        <div className="text-2xs text-muted-foreground">Log work hours</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -342,7 +342,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Wiki</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Docs & Pages</div>
+                                        <div className="text-2xs text-muted-foreground">Docs & Pages</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox

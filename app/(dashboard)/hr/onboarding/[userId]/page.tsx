@@ -63,7 +63,7 @@ function ProgressRing({
           cy="50"
           r={r}
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="var(--muted)"
           strokeWidth="10"
         />
         <circle
@@ -71,7 +71,7 @@ function ProgressRing({
           cy="50"
           r={r}
           fill="none"
-          stroke={percent === 100 ? "hsl(142 71% 45%)" : "hsl(var(--primary))"}
+          stroke={percent === 100 ? "var(--success-500)" : "var(--primary)"}
           strokeWidth="10"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -162,11 +162,11 @@ export default function UserOnboardingPage({
           </div>
 
           {allDone && (
-            <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 px-4 py-3 text-center">
-              <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+            <div className="rounded-lg border border-success-strong/25 bg-success-soft px-4 py-3 text-center">
+              <p className="text-lg font-semibold text-success-strong">
                 All done!
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400 mt-0.5">
+              <p className="text-sm text-success-strong mt-0.5">
                 Onboarding complete. Welcome to the team!
               </p>
             </div>
@@ -191,7 +191,7 @@ export default function UserOnboardingPage({
                         className="mt-0.5 shrink-0 transition-opacity hover:opacity-75 disabled:opacity-50"
                       >
                         {done ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <CheckCircle2 className="h-5 w-5 text-success-strong" />
                         ) : (
                           <Circle className="h-5 w-5 text-muted-foreground" />
                         )}
@@ -204,24 +204,24 @@ export default function UserOnboardingPage({
                           </p>
                           <Badge
                             variant={ownerRoleVariant(task.ownerRole)}
-                            className="text-[9px] py-0 h-4 shrink-0"
+                            className="text-3xs py-0 h-4 shrink-0"
                           >
                             {task.ownerRole.replace("_", " ")}
                           </Badge>
                           {overdue && (
-                            <Badge variant="destructive" className="text-[9px] py-0 h-4 shrink-0">
+                            <Badge variant="destructive" className="text-3xs py-0 h-4 shrink-0">
                               Overdue
                             </Badge>
                           )}
                         </div>
 
                         {task.description && (
-                          <p className="text-[12px] text-muted-foreground">{task.description}</p>
+                          <p className="text-xs text-muted-foreground">{task.description}</p>
                         )}
 
                         <div className="flex items-center gap-3 mt-1">
                           {task.dueDate && (
-                            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-1 text-2xs text-muted-foreground">
                               {overdue ? (
                                 <AlertCircle className="h-3 w-3 text-destructive" />
                               ) : (
@@ -231,7 +231,7 @@ export default function UserOnboardingPage({
                             </span>
                           )}
                           {done && task.completedAt && (
-                            <span className="text-[11px] text-green-600 dark:text-green-400">
+                            <span className="text-2xs text-success-strong">
                               Completed {formatDate(task.completedAt)}
                             </span>
                           )}

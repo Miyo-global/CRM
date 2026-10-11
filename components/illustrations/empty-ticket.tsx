@@ -7,7 +7,7 @@ export function EmptyTicketIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="80" fill={BLUE} opacity="0.04" />
 
-      <rect x="55" y="65" width="70" height="50" rx="6" fill="white" stroke={GOLD} strokeWidth="2" />
+      <rect x="55" y="65" width="70" height="50" rx="6" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
       <path d="M55 71 L90 95 L125 71" stroke={GOLD} strokeWidth="2" fill="none" />
       <rect x="70" y="80" width="30" height="3" rx="1.5" fill={BLUE} opacity="0.15" />
       <rect x="75" y="87" width="20" height="3" rx="1.5" fill={BLUE} opacity="0.1" />

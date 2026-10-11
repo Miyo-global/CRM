@@ -53,12 +53,12 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
       >
 
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+          <span className="text-2xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
             {project.key}
           </span>
           <Badge
             variant="secondary"
-            className={`text-[10px] font-medium ${statusColor}`}
+            className={`text-2xs font-medium ${statusColor}`}
           >
             {displayLabel}
           </Badge>
@@ -75,7 +75,7 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
         <div className="flex-1" />
 
         <div className="mb-3 min-h-[1.7rem]">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+          <div className="flex items-center justify-between text-2xs text-muted-foreground mb-1">
             <span>Progress</span>
             <span className="tabular-nums">
               {project.progress.total > 0 ? `${project.progress.done}/${project.progress.total}` : "0/0"}
@@ -91,7 +91,7 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
             className="[&>div]:h-6 [&>div]:w-6"
           />
           {dateStr && (
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-2xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
               {dateStr}
             </div>

@@ -33,17 +33,17 @@ const typeIcons: Record<string, typeof CheckSquare> = {
 };
 
 const priorityColors: Record<string, string> = {
-  URGENT: "text-red-500",
-  HIGH: "text-orange-500",
-  MEDIUM: "text-yellow-500",
-  LOW: "text-blue-400",
+  URGENT: "text-danger-strong",
+  HIGH: "text-warning-strong",
+  MEDIUM: "text-warning-strong",
+  LOW: "text-info-strong",
 };
 
 const statusColors: Record<string, string> = {
-  TODO: "bg-gray-400",
-  IN_PROGRESS: "bg-blue-500",
-  IN_REVIEW: "bg-purple-500",
-  DONE: "bg-green-500",
+  TODO: "bg-ink-400",
+  IN_PROGRESS: "bg-info-500",
+  IN_REVIEW: "bg-plum-500",
+  DONE: "bg-success-500",
 };
 
 export function ListView({ tickets, onTicketClick, groupBy }: ListViewProps) {
@@ -74,8 +74,8 @@ export function ListView({ tickets, onTicketClick, groupBy }: ListViewProps) {
                   onClick={() => onTicketClick(ticket.id)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left"
                 >
-                  <div className={cn("h-2 w-2 rounded-full flex-shrink-0", statusColors[ticket.status] ?? "bg-gray-400")} />
-                  <TypeIcon className={cn("h-4 w-4 flex-shrink-0", ticket.type === "BUG" ? "text-red-500" : "text-muted-foreground")} />
+                  <div className={cn("h-2 w-2 rounded-full flex-shrink-0", statusColors[ticket.status] ?? "bg-ink-400")} />
+                  <TypeIcon className={cn("h-4 w-4 flex-shrink-0", ticket.type === "BUG" ? "text-danger-strong" : "text-muted-foreground")} />
                   <span className="text-xs text-muted-foreground font-mono flex-shrink-0">
                     {ticket.sequenceId ?? `#${ticket.ticketNumber}`}
                   </span>
@@ -91,7 +91,7 @@ export function ListView({ tickets, onTicketClick, groupBy }: ListViewProps) {
                   {ticket.assignee && (
                     <Avatar className="h-6 w-6 flex-shrink-0">
                       <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
-                      <AvatarFallback className="text-[8px]">
+                      <AvatarFallback className="text-3xs">
                         {ticket.assignee.firstName?.[0]}{ticket.assignee.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>

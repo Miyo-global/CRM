@@ -110,10 +110,10 @@ export default function NotificationPreferencesPage() {
       <motion.div className="space-y-6 max-w-2xl" variants={staggerContainer} initial="hidden" animate="visible">
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4 text-gold" />
+                <Bell className="h-4 w-4 text-brand-text" />
                 Notification Channels
               </CardTitle>
             </CardHeader>
@@ -143,10 +143,10 @@ export default function NotificationPreferencesPage() {
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Moon className="h-4 w-4 text-purple-400" />
+                <Moon className="h-4 w-4 text-plum-strong" />
                 Quiet Hours
               </CardTitle>
             </CardHeader>
@@ -184,10 +184,10 @@ export default function NotificationPreferencesPage() {
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4 text-blue" />
+                <Bell className="h-4 w-4 text-secondary" />
                 Notification Categories
               </CardTitle>
             </CardHeader>

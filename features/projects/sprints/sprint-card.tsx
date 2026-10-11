@@ -202,7 +202,7 @@ export function SprintCard({ sprint, projectId, onStart, onComplete, onPlan, isU
               </svg>
               {sprint.status === "COMPLETED" ? "Completed" : "Remaining"}
             </p>
-            <p className={cn("font-medium", sprint.status !== "COMPLETED" && daysRemaining < 0 && "text-red-500")}>
+            <p className={cn("font-medium", sprint.status !== "COMPLETED" && daysRemaining < 0 && "text-danger-strong")}>
               {sprint.status === "COMPLETED"
                 ? "Done"
                 : daysRemaining < 0

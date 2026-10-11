@@ -26,7 +26,7 @@ export function EmptyLeaderboardIllustration({ className }: IllustrationProps) {
         <path d="M8 -11 Q14 -10 14 -4 Q14 2 8 2" stroke={GOLD} strokeWidth="1.5" fill="none" />
         <rect x="-3" y="8" width="6" height="4" fill={GOLD} />
         <rect x="-5" y="12" width="10" height="2" rx="1" fill={GOLD} />
-        <path d="M0 -10 L1.2 -6.5 L4.5 -6.5 L2 -4 L3 -0.5 L0 -2.5 L-3 -0.5 L-2 -4 L-4.5 -6.5 L-1.2 -6.5 Z" fill="white" opacity="0.6" />
+        <path d="M0 -10 L1.2 -6.5 L4.5 -6.5 L2 -4 L3 -0.5 L0 -2.5 L-3 -0.5 L-2 -4 L-4.5 -6.5 L-1.2 -6.5 Z" fill="var(--card)" opacity="0.6" />
       </g>
 
       <circle cx="58" cy="96" r="8" stroke={BLUE} strokeWidth="1.5" strokeDasharray="3 2" fill="none" opacity="0.2" />

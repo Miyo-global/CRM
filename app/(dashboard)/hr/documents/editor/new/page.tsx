@@ -261,7 +261,7 @@ export default function NewDocumentPage() {
                   autoFocus
                 />
                 {titleError && <p className="text-xs text-destructive">{titleError}</p>}
-                <p className="text-[10px] text-muted-foreground text-right">{title.trim().length}/200</p>
+                <p className="text-2xs text-muted-foreground text-right">{title.trim().length}/200</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Template</label>

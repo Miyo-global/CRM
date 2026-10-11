@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 
 import "../globals.css";
+import { BRAND } from "@/lib/design/brand-hex";
 import { Toaster } from "../components/ui/sonner";
 import { SessionProvider } from "../components/providers/session-provider";
 import { ThemeProvider } from "../components/theme-provider";
@@ -66,8 +67,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBFAF6" },
-    { media: "(prefers-color-scheme: dark)", color: "#100F0D" },
+    { media: "(prefers-color-scheme: light)", color: BRAND.canvas },
+    { media: "(prefers-color-scheme: dark)", color: BRAND.inkDeep },
   ],
 };
 

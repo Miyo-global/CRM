@@ -150,7 +150,7 @@ export default function JobRolesSettingsPage() {
             <Card key={group.key} className="rounded-xl border shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-gold" />
+                  <Briefcase className="h-4 w-4 text-brand-text" />
                   {group.label}
                   <Badge variant="secondary" className="ml-1 font-normal">
                     {group.roles.length}

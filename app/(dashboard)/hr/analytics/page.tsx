@@ -83,11 +83,11 @@ function OverviewHBar({ data }: { data: { label: string; value: number; color?: 
     <div className="space-y-1.5">
       {data.map((item) => (
         <div key={item.label} className="flex items-center gap-2.5">
-          <span className="text-[11px] text-muted-foreground w-24 shrink-0 truncate">{item.label}</span>
+          <span className="text-2xs text-muted-foreground w-24 shrink-0 truncate">{item.label}</span>
           <div className="flex-1 h-4 bg-muted/60 rounded-full overflow-hidden">
             <div className={`h-full rounded-full ${item.color ?? "bg-primary"}`} style={{ width: `${Math.max(2, (item.value / max) * 100)}%` }} />
           </div>
-          <span className="text-[11px] font-semibold tabular-nums w-8 text-right">{item.value}</span>
+          <span className="text-2xs font-semibold tabular-nums w-8 text-right">{item.value}</span>
         </div>
       ))}
     </div>
@@ -186,9 +186,9 @@ function AnalyticsContent() {
             ) : data ? (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-[11px] font-medium text-muted-foreground">Attendance (month)</span><IcoCalendar className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{data.attendance.totalLogsThisMonth}</p></CardContent></Card>
-                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-[11px] font-medium text-muted-foreground">Leaves (YTD)</span><IcoClock className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{totalLeaves}</p></CardContent></Card>
-                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-[11px] font-medium text-muted-foreground">Departments</span><IcoGrid className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{data.departments.length}</p></CardContent></Card>
+                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-2xs font-medium text-muted-foreground">Attendance (month)</span><IcoCalendar className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{data.attendance.totalLogsThisMonth}</p></CardContent></Card>
+                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-2xs font-medium text-muted-foreground">Leaves (YTD)</span><IcoClock className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{totalLeaves}</p></CardContent></Card>
+                  <Card><CardContent className="p-4"><div className="flex items-center justify-between mb-2.5"><span className="text-2xs font-medium text-muted-foreground">Departments</span><IcoGrid className="h-4 w-4 text-muted-foreground" /></div><p className="text-2xl font-bold tabular-nums tracking-tight">{data.departments.length}</p></CardContent></Card>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -229,7 +229,7 @@ function AnalyticsContent() {
                           data={Object.entries(data.leaves.byStatus).map(([status, cnt]) => ({
                             label: status,
                             value: cnt,
-                            color: status === "APPROVED" ? "bg-emerald-500" : status === "REJECTED" ? "bg-red-500" : "bg-amber-500",
+                            color: status === "APPROVED" ? "bg-success-500" : status === "REJECTED" ? "bg-danger-500" : "bg-warning-500",
                           }))}
                         />
                       ) : <p className="text-xs text-muted-foreground text-center py-6">No leave data</p>}
@@ -249,9 +249,9 @@ function AnalyticsContent() {
                                 const h = Math.max(6, (m.count / max) * 100);
                                 return (
                                   <div key={m.month} className="flex-1 flex flex-col items-center gap-0.5">
-                                    {m.count > 0 && <span className="text-[8px] font-medium tabular-nums text-muted-foreground">{m.count}</span>}
+                                    {m.count > 0 && <span className="text-3xs font-medium tabular-nums text-muted-foreground">{m.count}</span>}
                                     <div className="w-full rounded-t-sm bg-gradient-to-t from-primary/90 to-primary/40" style={{ height: `${h}%` }} />
-                                    <span className="text-[8px] text-muted-foreground">{m.month.slice(5)}</span>
+                                    <span className="text-3xs text-muted-foreground">{m.month.slice(5)}</span>
                                   </div>
                                 );
                               })}

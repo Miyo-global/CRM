@@ -87,7 +87,7 @@ export function AIEmailDialog({
       <SheetTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="sm">
-            <Sparkles className="h-4 w-4 mr-2 text-gold" />
+            <Sparkles className="h-4 w-4 mr-2 text-brand-text" />
             AI Email
           </Button>
         )}
@@ -95,7 +95,7 @@ export function AIEmailDialog({
       <SheetContent className="sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-gold" />
+            <Sparkles className="h-5 w-5 text-brand-text" />
             Generate Follow-up Email
           </SheetTitle>
         </SheetHeader>
@@ -137,7 +137,7 @@ export function AIEmailDialog({
           <Button
             onClick={handleGenerate}
             disabled={generateMutation.isPending}
-            className="w-full bg-gold hover:bg-gold/90 text-white"
+            className="w-full bg-primary hover:bg-brand-soft text-primary-foreground"
           >
             {generateMutation.isPending ? (
               <>
@@ -156,11 +156,11 @@ export function AIEmailDialog({
             <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Subject</Label>
+                  <Label className="text-2xs text-muted-foreground uppercase tracking-wider">Subject</Label>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-[10px]"
+                    className="h-6 px-2 text-2xs"
                     onClick={handleCopySubject}
                   >
                     {copied === "subject" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -170,11 +170,11 @@ export function AIEmailDialog({
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Body</Label>
+                  <Label className="text-2xs text-muted-foreground uppercase tracking-wider">Body</Label>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-[10px]"
+                    className="h-6 px-2 text-2xs"
                     onClick={handleCopyBody}
                   >
                     {copied === "body" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}

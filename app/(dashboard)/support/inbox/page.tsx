@@ -56,10 +56,10 @@ import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
 
 const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "bg-slate-100 text-slate-700",
-  MEDIUM: "bg-blue-100 text-blue-700",
-  HIGH: "bg-amber-100 text-amber-700",
-  URGENT: "bg-red-100 text-red-700",
+  LOW: "bg-muted text-neutral-strong",
+  MEDIUM: "bg-info-soft text-info-strong",
+  HIGH: "bg-warning-soft text-warning-strong",
+  URGENT: "bg-danger-soft text-danger-strong",
 };
 
 const STATUS_ICONS: Record<string, typeof Clock> = {
@@ -130,7 +130,7 @@ function InboxContent() {
             : `${(stats?.open ?? 0) + (stats?.in_progress ?? 0)} active tickets${(stats?.sla_breached ?? 0) > 0 ? ` · ${stats?.sla_breached} SLA breached` : ""}`
         }
         actions={
-          <Button onClick={handleOpenCreate} size="sm" className="gap-1.5 bg-gold hover:bg-gold/80 text-white">
+          <Button onClick={handleOpenCreate} size="sm" className="gap-1.5 bg-primary hover:bg-brand-soft text-primary-foreground">
             <Plus className="h-3.5 w-3.5" /> New Ticket
           </Button>
         }
@@ -227,29 +227,29 @@ function TicketListItem({ ticket, isSelected, onSelect }: TicketListItemProps) {
       onClick={handleClick}
       className={cn(
         "w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors",
-        isSelected && "bg-muted/50 border-l-2 border-gold"
+        isSelected && "bg-muted/50 border-l-2 border-primary/40"
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold truncate">{toTitleCase(ticket.title)}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-sm font-semibold truncate">{toTitleCase(ticket.title)}</p>
+          <p className="text-2xs text-muted-foreground mt-0.5">
             #{ticket.id} {ticket.client?.name ? `- ${ticket.client.name}` : ""}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0", PRIORITY_COLORS[ticket.priority])}>
+          <Badge variant="outline" className={cn("text-3xs px-1.5 py-0", PRIORITY_COLORS[ticket.priority])}>
             {ticket.priority}
           </Badge>
           {isBreached && (
-            <Badge variant="destructive" className="text-[9px] px-1 py-0">SLA</Badge>
+            <Badge variant="destructive" className="text-3xs px-1 py-0">SLA</Badge>
           )}
         </div>
       </div>
       <div className="flex items-center gap-2 mt-1.5">
         <StatusIcon className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] text-muted-foreground">{ticket.status.replace("_", " ")}</span>
-        <span className="text-[10px] text-muted-foreground ml-auto">
+        <span className="text-2xs text-muted-foreground">{ticket.status.replace("_", " ")}</span>
+        <span className="text-2xs text-muted-foreground ml-auto">
           {ticket.createdAt ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true }) : ""}
         </span>
       </div>
@@ -332,7 +332,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
             <Button variant="ghost" size="sm" onClick={onBack} className="md:hidden h-7 px-2">Back</Button>
             <div>
               <h3 className="text-sm font-bold">{toTitleCase(ticket.title)}</h3>
-              <p className="text-[11px] text-muted-foreground">#{ticket.id} {ticket.client?.name ? `- ${ticket.client.name}` : ""}</p>
+              <p className="text-2xs text-muted-foreground">#{ticket.id} {ticket.client?.name ? `- ${ticket.client.name}` : ""}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -361,26 +361,26 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
             <div key={msg.id} className="flex gap-2.5">
               <Avatar className="h-7 w-7 shrink-0 mt-0.5">
                 <AvatarImage src={resolveImageUrl(msg.author?.image)} />
-                <AvatarFallback className="text-[9px]">{getInitials(msg.author?.name)}</AvatarFallback>
+                <AvatarFallback className="text-3xs">{getInitials(msg.author?.name)}</AvatarFallback>
               </Avatar>
               <div className={cn(
                 "flex-1 min-w-0 rounded-lg px-3 py-2",
                 msg.isInternal
-                  ? "bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
+                  ? "bg-warning-soft border border-warning-strong/25"
                   : "bg-muted/20"
               )}>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">{msg.author?.name}</span>
                   {msg.isInternal && (
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 gap-0.5 border-amber-400 text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-700">
+                    <Badge variant="outline" className="text-3xs px-1 py-0 gap-0.5 border-warning-400 text-warning-strong bg-warning-soft">
                       <Lock className="h-2.5 w-2.5" /> Internal
                     </Badge>
                   )}
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     {msg.createdAt ? formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true }) : ""}
                   </span>
                 </div>
-                <p className="text-[13px] mt-0.5 whitespace-pre-wrap">{msg.body}</p>
+                <p className="text-sm mt-0.5 whitespace-pre-wrap">{msg.body}</p>
               </div>
             </div>
           ))}
@@ -391,7 +391,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
             <Switch checked={isInternal} onCheckedChange={setIsInternal} className="h-4 w-7" />
-            <Label className="text-[11px] text-muted-foreground cursor-pointer" onClick={handleToggleInternal}>
+            <Label className="text-2xs text-muted-foreground cursor-pointer" onClick={handleToggleInternal}>
               {isInternal ? "Internal note (not visible to client)" : "Public reply"}
             </Label>
           </div>
@@ -400,7 +400,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
             size="sm"
             onClick={handleAiReply}
             disabled={aiReply.isPending}
-            className="h-6 text-[11px] text-muted-foreground gap-1 px-2"
+            className="h-6 text-2xs text-muted-foreground gap-1 px-2"
             aria-label="Generate AI reply suggestion"
           >
             {aiReply.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
@@ -419,7 +419,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
             onClick={handleReply}
             disabled={!replyText.trim() || addMessage.isPending}
             size="icon"
-            className="h-[60px] w-10 shrink-0 bg-gold hover:bg-gold/80 text-white"
+            className="h-[60px] w-10 shrink-0 bg-primary hover:bg-brand-soft text-primary-foreground"
             aria-label="Send reply"
           >
             {addMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -521,7 +521,7 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               className={`mt-1 ${titleError ? "border-destructive" : ""}`}
               maxLength={200}
             />
-            {titleError && <p className="text-[11px] text-destructive mt-1">{titleError}</p>}
+            {titleError && <p className="text-2xs text-destructive mt-1">{titleError}</p>}
           </div>
           <div>
             <Label className="text-xs">Category <span className="text-destructive">*</span></Label>
@@ -533,7 +533,7 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                 ))}
               </SelectContent>
             </Select>
-            {categoryError && <p className="text-[11px] text-destructive mt-1">{categoryError}</p>}
+            {categoryError && <p className="text-2xs text-destructive mt-1">{categoryError}</p>}
           </div>
           <div>
             <Label className="text-xs">Description</Label>
@@ -553,7 +553,7 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!title.trim() || !category || create.isPending} className="bg-gold hover:bg-gold/80 text-white">
+            <Button onClick={handleCreate} disabled={!title.trim() || !category || create.isPending} className="bg-primary hover:bg-brand-soft text-primary-foreground">
               {create.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
               Create Ticket
             </Button>

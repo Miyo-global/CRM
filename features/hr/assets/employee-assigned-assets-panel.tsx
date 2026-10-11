@@ -37,7 +37,7 @@ export function EmployeeAssignedAssetsPanel({
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium">Assigned assets</p>
-        <Badge variant="secondary" className="text-[10px] tabular-nums">
+        <Badge variant="secondary" className="text-2xs tabular-nums">
           {assets.length}
         </Badge>
       </div>
@@ -65,7 +65,7 @@ export function EmployeeAssignedAssetsPanel({
               <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="font-medium leading-tight">{asset.name}</p>
-                <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
                   {asset.type ? <span>{asset.type}</span> : null}
                   {asset.serialNumber ? (
                     <span className="font-mono">S/N {asset.serialNumber}</span>
@@ -78,7 +78,7 @@ export function EmployeeAssignedAssetsPanel({
                 </div>
               </div>
               {selected ? (
-                <Badge className="shrink-0 text-[10px]">Selected</Badge>
+                <Badge className="shrink-0 text-2xs">Selected</Badge>
               ) : null}
             </button>
           );

@@ -1,12 +1,13 @@
 import type { CandidateStatus, JobPostingStatus } from "@/types/hr";
+import { toneDot, toneSoft } from "@/lib/design/tones";
 
 export const STATUSES: { value: CandidateStatus; label: string; color: string }[] = [
-  { value: "NEW", label: "New", color: "bg-blue-500" },
-  { value: "SCREENING", label: "Screening", color: "bg-yellow-500" },
-  { value: "INTERVIEW", label: "Interview", color: "bg-purple-500" },
-  { value: "OFFER", label: "Offer", color: "bg-orange-500" },
-  { value: "HIRED", label: "Hired", color: "bg-green-500" },
-  { value: "REJECTED", label: "Rejected", color: "bg-red-500" },
+  { value: "NEW", label: "New", color: toneDot.info },
+  { value: "SCREENING", label: "Screening", color: toneDot.teal },
+  { value: "INTERVIEW", label: "Interview", color: toneDot.plum },
+  { value: "OFFER", label: "Offer", color: toneDot.brand },
+  { value: "HIRED", label: "Hired", color: toneDot.success },
+  { value: "REJECTED", label: "Rejected", color: toneDot.danger },
 ];
 
 export const SOURCE_LABELS: Record<string, string> = {
@@ -20,14 +21,15 @@ export const SOURCE_LABELS: Record<string, string> = {
   INDEED: "Indeed",
 };
 
+// Free categorical (rendered on outline Badges) → tag cycle, soft fill, no border.
 export const SOURCE_BADGE_CLASSES: Record<string, string> = {
-  LINKEDIN: "border-blue-300 text-blue-700 dark:text-blue-400",
-  NAUKRI: "border-orange-300 text-orange-700 dark:text-orange-400",
-  REFERRAL: "border-green-300 text-green-700 dark:text-green-400",
-  CAMPUS: "border-purple-300 text-purple-700 dark:text-purple-400",
-  JOB_PORTAL: "border-cyan-300 text-cyan-700 dark:text-cyan-400",
-  CAREERS_PAGE: "border-primary/40 text-primary",
-  DIRECT: "text-muted-foreground",
+  LINKEDIN: `${toneSoft.info} border-transparent`,
+  NAUKRI: `${toneSoft.teal} border-transparent`,
+  REFERRAL: `${toneSoft.plum} border-transparent`,
+  CAMPUS: `${toneSoft.brand} border-transparent`,
+  JOB_PORTAL: `${toneSoft.warning} border-transparent`,
+  CAREERS_PAGE: `${toneSoft.success} border-transparent`,
+  DIRECT: `${toneSoft.neutral} border-transparent`,
 };
 
 export const JOB_STATUS_LABELS: Record<JobPostingStatus, string> = {
@@ -55,14 +57,11 @@ export function statusBadgeVariant(status: string | null): "default" | "secondar
 export function jobStatusClass(status: JobPostingStatus | null): string {
   switch (status) {
     case "OPEN":
-      return "border-emerald-300 text-emerald-700 dark:text-emerald-400";
+      return `${toneSoft.success} border-transparent`;
     case "PAUSED":
-      return "border-amber-300 text-amber-700 dark:text-amber-400";
-    case "CLOSED":
-    case "FILLED":
-      return "border-muted-foreground/40 text-muted-foreground";
+      return `${toneSoft.warning} border-transparent`;
     default:
-      return "border-border text-muted-foreground";
+      return `${toneSoft.neutral} border-transparent`;
   }
 }
 

@@ -99,7 +99,7 @@ export function WatcherList({
               >
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={resolveImageUrl(w.user?.image)} />
-                  <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                  <AvatarFallback className="text-3xs bg-primary/10 text-primary">
                     {w.user?.firstName?.[0]}
                     {w.user?.lastName?.[0]}
                   </AvatarFallback>

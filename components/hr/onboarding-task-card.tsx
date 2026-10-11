@@ -19,13 +19,13 @@ export interface OnboardingTaskCardProps {
 function ownerBadgeClass(ownerRole: string): string {
   switch (ownerRole.toUpperCase()) {
     case "NEW_HIRE":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300";
+      return "bg-info-soft text-info-strong";
     case "IT":
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300";
+      return "bg-plum-soft text-plum-strong";
     case "HR":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300";
+      return "bg-warning-soft text-warning-strong";
     case "MANAGER":
-      return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300";
+      return "bg-success-soft text-success-strong";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -111,7 +111,7 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
 
               <span
                 className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0",
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-medium shrink-0",
                   ownerBadgeClass(task.ownerRole)
                 )}
               >
@@ -122,7 +122,7 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
             {dueInfo && (
               <p
                 className={cn(
-                  "text-[11px] mt-0.5",
+                  "text-2xs mt-0.5",
                   dueInfo.overdue && !isCompleted
                     ? "text-destructive font-medium"
                     : "text-muted-foreground"
@@ -142,7 +142,7 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
                     <button
                       type="button"
                       onClick={() => setExpanded(false)}
-                      className="inline-flex items-center gap-0.5 text-[11px] text-primary mt-1 hover:underline"
+                      className="inline-flex items-center gap-0.5 text-2xs text-primary mt-1 hover:underline"
                       aria-label="Collapse description"
                     >
                       <ChevronUp className="h-3 w-3" />
@@ -153,7 +153,7 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
                   <button
                     type="button"
                     onClick={() => setExpanded(true)}
-                    className="inline-flex items-center gap-0.5 text-[11px] text-primary mt-0.5 hover:underline"
+                    className="inline-flex items-center gap-0.5 text-2xs text-primary mt-0.5 hover:underline"
                     aria-label="Expand description"
                   >
                     <ChevronDown className="h-3 w-3" />
@@ -165,7 +165,7 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
           </div>
 
           {isCompleted && (
-            <Badge variant="secondary" className="text-[10px] shrink-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="secondary" className="text-2xs shrink-0 bg-success-soft text-success-strong">
               Done
             </Badge>
           )}

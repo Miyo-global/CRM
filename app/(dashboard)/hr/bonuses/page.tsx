@@ -342,7 +342,7 @@ function BonusContent() {
               <label className="text-sm font-medium" htmlFor="bonus-reason">
                 Reason / Notes <span className="text-destructive">*</span>
               </label>
-              <span className="text-[10px] text-muted-foreground">{reason.length}/{BONUS_OTHER_REASON_MAX}</span>
+              <span className="text-2xs text-muted-foreground">{reason.length}/{BONUS_OTHER_REASON_MAX}</span>
             </div>
             <Input
               id="bonus-reason"

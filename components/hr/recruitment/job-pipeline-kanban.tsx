@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { TAG_TONE_CYCLE, toneSoft, type Tone } from "@/lib/design/tones";
 import type { JobPipelineCandidate, JobPipelineStage } from "@/types/hr";
 import {
   PipelineStageMoveDialog,
@@ -10,21 +11,19 @@ import {
 } from "@/features/hr/recruitment/pipeline-stage-move-dialog";
 import { getCandidateEmailKindForJobStage } from "@/lib/hr/pipeline-stage-email";
 
+// Columns stay neutral (§8.4); the stage tone lives on the count pill.
+const stageTone = (t: Tone) => ({ bg: "bg-muted/60", border: "border-transparent", badge: toneSoft[t] });
+
 const STAGE_COLORS: Record<string, { bg: string; border: string; badge: string }> = {
-  APPLIED:    { bg: "bg-slate-100 dark:bg-slate-800/40",  border: "border-slate-300 dark:border-slate-600",  badge: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200" },
-  SHORTLISTED:{ bg: "bg-blue-50 dark:bg-blue-950/30",     border: "border-blue-300 dark:border-blue-700",    badge: "bg-blue-200 text-blue-700 dark:bg-blue-800 dark:text-blue-200" },
-  OFFER:      { bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-300 dark:border-purple-700",badge: "bg-purple-200 text-purple-700 dark:bg-purple-800 dark:text-purple-200" },
-  HIRED:      { bg: "bg-green-50 dark:bg-green-950/30",   border: "border-green-300 dark:border-green-700",  badge: "bg-green-200 text-green-700 dark:bg-green-800 dark:text-green-200" },
-  REJECTED:   { bg: "bg-red-50 dark:bg-red-950/30",       border: "border-red-300 dark:border-red-700",      badge: "bg-red-200 text-red-700 dark:bg-red-800 dark:text-red-200" },
+  APPLIED: stageTone("info"),
+  SHORTLISTED: stageTone("teal"),
+  OFFER: stageTone("brand"),
+  HIRED: stageTone("success"),
+  REJECTED: stageTone("danger"),
 };
 
-const ROUND_COLORS = [
-  { bg: "bg-amber-50 dark:bg-amber-950/30",   border: "border-amber-300 dark:border-amber-700",    badge: "bg-amber-200 text-amber-700 dark:bg-amber-800 dark:text-amber-200" },
-  { bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-300 dark:border-orange-700",  badge: "bg-orange-200 text-orange-700 dark:bg-orange-800 dark:text-orange-200" },
-  { bg: "bg-teal-50 dark:bg-teal-950/30",     border: "border-teal-300 dark:border-teal-700",      badge: "bg-teal-200 text-teal-700 dark:bg-teal-800 dark:text-teal-200" },
-  { bg: "bg-indigo-50 dark:bg-indigo-950/30", border: "border-indigo-300 dark:border-indigo-700",  badge: "bg-indigo-200 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-200" },
-  { bg: "bg-pink-50 dark:bg-pink-950/30",     border: "border-pink-300 dark:border-pink-700",      badge: "bg-pink-200 text-pink-700 dark:bg-pink-800 dark:text-pink-200" },
-];
+// Interview rounds are categorical → tag cycle.
+const ROUND_COLORS = TAG_TONE_CYCLE.map(stageTone);
 
 function getStageColor(stageId: string, roundIndex: number) {
   if (STAGE_COLORS[stageId]) return STAGE_COLORS[stageId];
@@ -49,24 +48,24 @@ function CandidateCard({ candidate, index }: CandidateCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "bg-background rounded-lg border px-3 py-2.5 shadow-sm cursor-grab select-none transition-shadow",
+            "bg-card rounded-lg border px-3 py-2.5 shadow-xs cursor-grab select-none transition-shadow",
             snapshot.isDragging && "shadow-md rotate-1",
           )}
         >
           <div className="flex items-start gap-2">
-            <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
+            <div className="h-7 w-7 rounded-full bg-brand-soft text-brand-soft-foreground text-2xs font-semibold flex items-center justify-center shrink-0">
               {getInitials(candidate.name)}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium truncate">{candidate.name}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{candidate.email}</p>
+              <p className="text-2xs text-muted-foreground truncate">{candidate.email}</p>
             </div>
             {candidate.rating !== null && (
-              <span className="text-[10px] text-amber-500 font-semibold shrink-0">★ {candidate.rating}</span>
+              <span className="text-2xs text-warning-strong font-semibold shrink-0">★ {candidate.rating}</span>
             )}
           </div>
           {candidate.source && (
-            <p className="text-[10px] text-muted-foreground mt-1.5 pl-9">{candidate.source}</p>
+            <p className="text-2xs text-muted-foreground mt-1.5 pl-9">{candidate.source}</p>
           )}
         </div>
       )}
@@ -164,7 +163,7 @@ export function JobPipelineKanban({
             >
               <div className="flex items-center gap-2 mb-2 px-0.5">
                 <span className="text-xs font-semibold tracking-wide truncate">{stage.label}</span>
-                <span className={cn("ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold min-w-[22px]", colors.badge)}>
+                <span className={cn("ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-2xs font-semibold min-w-[22px]", colors.badge)}>
                   {stage.candidates.length}
                 </span>
               </div>

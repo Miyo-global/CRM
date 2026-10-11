@@ -83,9 +83,9 @@ export function LeadDistributionDialog({ open, onOpenChange, leadIds, onSuccess 
               </div>
 
               {!skipAbsent && (
-                <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-amber-400">
+                <div className="flex items-start gap-2 p-3 bg-warning-soft border border-warning-strong/20 rounded-lg">
+                  <AlertTriangle className="h-4 w-4 text-warning-strong mt-0.5 shrink-0" />
+                  <p className="text-xs text-warning-strong">
                     Leads assigned to absent members will be queued until they return.
                   </p>
                 </div>
@@ -103,10 +103,10 @@ export function LeadDistributionDialog({ open, onOpenChange, leadIds, onSuccess 
         ) : (
           <>
             <div className="space-y-4 py-2">
-              <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              <div className="flex items-center gap-2 p-3 bg-success-soft border border-success-strong/20 rounded-lg">
+                <CheckCircle2 className="h-5 w-5 text-success-strong" />
                 <div>
-                  <p className="text-sm font-medium text-emerald-400">Distribution Complete</p>
+                  <p className="text-sm font-medium text-success-strong">Distribution Complete</p>
                   <p className="text-xs text-muted-foreground">
                     {result.distributed} leads assigned to {result.salesPeople} of {result.totalSalesPeople} sales reps
                   </p>
@@ -114,10 +114,10 @@ export function LeadDistributionDialog({ open, onOpenChange, leadIds, onSuccess 
               </div>
 
               {result.absentCount > 0 && (
-                <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-2 p-3 bg-warning-soft border border-warning-strong/20 rounded-lg">
+                  <AlertTriangle className="h-4 w-4 text-warning-strong mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-amber-400 font-medium">{result.absentCount} member{result.absentCount > 1 ? "s" : ""} on leave today</p>
+                    <p className="text-xs text-warning-strong font-medium">{result.absentCount} member{result.absentCount > 1 ? "s" : ""} on leave today</p>
                     <p className="text-xs text-muted-foreground">{result.absentNames.join(", ")}</p>
                   </div>
                 </div>

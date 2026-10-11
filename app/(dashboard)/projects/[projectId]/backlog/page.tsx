@@ -104,7 +104,7 @@ const TicketRow = memo(function TicketRow({
           <div className="flex items-center gap-1.5">
             <Avatar className="h-6 w-6">
               <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
-              <AvatarFallback className="text-[8px]">
+              <AvatarFallback className="text-3xs">
                 {ticket.assignee.firstName?.[0]}
                 {ticket.assignee.lastName?.[0]}
               </AvatarFallback>

@@ -101,12 +101,12 @@ export default function AssessmentsPage() {
             <Card key={a.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
-                  <Badge variant={statusBadge(a.status)} className="text-[10px]">{a.status ?? "DRAFT"}</Badge>
-                  {a.category && <span className="text-[10px] text-muted-foreground">{a.category}</span>}
+                  <Badge variant={statusBadge(a.status)} className="text-2xs">{a.status ?? "DRAFT"}</Badge>
+                  {a.category && <span className="text-2xs text-muted-foreground">{a.category}</span>}
                 </div>
                 <h3 className="text-sm font-semibold leading-tight">{a.title}</h3>
                 {a.description && <p className="text-xs text-muted-foreground line-clamp-2">{a.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                   {a.durationMinutes && <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{a.durationMinutes} min</span>}
                   <span className="flex items-center gap-0.5"><ClipboardCheck className="h-3 w-3" />{a.questionCount} questions</span>
                   <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{a.completedCount} completed</span>

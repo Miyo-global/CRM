@@ -77,7 +77,7 @@ export function AccountNotes({ organizationId, initialNotes }: AccountNotesProps
       <div className="flex gap-2">
         <Button
           size="sm"
-          className="gap-1.5 bg-gold hover:bg-gold/90 text-white"
+          className="gap-1.5 bg-primary hover:bg-brand-soft text-primary-foreground"
           onClick={handleSave}
           disabled={updateMutation.isPending}
         >

@@ -108,9 +108,9 @@ export default function LoansPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">{formatINR(loan.amount)}</p>
-                    <Badge variant={statusBadge(loan.status)} className="text-[10px]">{loan.status}</Badge>
+                    <Badge variant={statusBadge(loan.status)} className="text-2xs">{loan.status}</Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5">
                     {loan.user?.name && <span>{loan.user.name}</span>}
                     {loan.totalEmis && <span>{loan.paidEmis ?? 0}/{loan.totalEmis} EMIs</span>}
                     {loan.emiAmount && <span>{formatINR(loan.emiAmount)}/mo</span>}

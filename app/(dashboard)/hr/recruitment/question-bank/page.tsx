@@ -234,7 +234,7 @@ function QuestionFormFields({
           value={form.tags}
           onChange={(e) => onChange({ tags: e.target.value })}
         />
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Letters, numbers, spaces, and hyphens only. Separate with commas.
         </p>
       </div>
@@ -258,7 +258,7 @@ function QuestionFormFields({
           value={form.keywords}
           onChange={(e) => onChange({ keywords: e.target.value })}
         />
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Letters, numbers, spaces, and hyphens only. Separate with commas.
         </p>
       </div>
@@ -817,7 +817,7 @@ export default function QuestionBankPage() {
                       <TableCell className="max-w-[400px]">
                         <p className="text-sm line-clamp-2">{q.question}</p>
                         {(q.keywords ?? []).length > 0 && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                          <p className="text-2xs text-muted-foreground mt-0.5">
                             Keywords: {(q.keywords ?? []).slice(0, 3).join(", ")}{(q.keywords ?? []).length > 3 ? "…" : ""}
                           </p>
                         )}
@@ -837,10 +837,10 @@ export default function QuestionBankPage() {
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {(q.tags ?? []).slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0">{tag}</Badge>
+                            <Badge key={tag} variant="secondary" className="text-2xs px-1 py-0">{tag}</Badge>
                           ))}
                           {(q.tags ?? []).length > 3 && (
-                            <Badge variant="secondary" className="text-[10px] px-1 py-0">+{(q.tags ?? []).length - 3}</Badge>
+                            <Badge variant="secondary" className="text-2xs px-1 py-0">+{(q.tags ?? []).length - 3}</Badge>
                           )}
                         </div>
                       </TableCell>

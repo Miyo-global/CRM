@@ -470,7 +470,7 @@ export function LeaveApprovalsContent({
           </CardHeader>
           <CardContent className="space-y-4">
             {ownPendingRequests.length > 0 && (
-              <div className="rounded-lg border border-dashed border-amber-300/50 bg-amber-50/50 dark:bg-amber-950/10 px-4 py-3">
+              <div className="rounded-lg border border-dashed border-warning-300/50 bg-warning-500/50 px-4 py-3">
                 <p className="text-sm font-medium text-foreground">
                   You have {ownPendingRequests.length} pending leave request{ownPendingRequests.length === 1 ? "" : "s"} awaiting another approver.
                 </p>
@@ -488,42 +488,42 @@ export function LeaveApprovalsContent({
               <TabsList className="bg-muted/50 border border-border p-1 rounded-lg h-auto gap-1">
                 <TabsTrigger
                   value="all"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   All
-                  <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                  <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-2xs">
                     {allIncomingLeaveRequests.length}
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger
                   value="pending"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Pending
                   {actionablePendingRequests.length > 0 && (
-                    <Badge className="ml-1.5 h-5 min-w-5 px-1.5 bg-amber-500 text-white text-[10px] font-bold border-0">
+                    <Badge className="ml-1.5 h-5 min-w-5 px-1.5 bg-warning text-warning-foreground text-2xs font-bold border-0">
                       {actionablePendingRequests.length}
                     </Badge>
                   )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="approved"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Approved
                   {approvedCount > 0 && (
-                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-2xs">
                       {approvedCount}
                     </Badge>
                   )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="rejected"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Rejected
                   {rejectedCount > 0 && (
-                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-2xs">
                       {rejectedCount}
                     </Badge>
                   )}

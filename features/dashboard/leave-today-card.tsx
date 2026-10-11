@@ -36,7 +36,7 @@ export function LeaveTodayCard({ isAdmin }: LeaveTodayCardProps) {
           </div>
         ) : leaves.length === 0 ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="inline-block h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden="true" />
+            <span className="inline-block h-2 w-2 rounded-full bg-success-500 shrink-0" aria-hidden="true" />
             Everyone is in today
           </div>
         ) : (

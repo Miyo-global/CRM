@@ -11,9 +11,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const statusDot: Record<string, string> = {
-  present: "bg-emerald-500",
-  absent: "bg-red-500",
-  leave: "bg-amber-500",
+  present: "bg-success-500",
+  absent: "bg-danger-500",
+  leave: "bg-warning-500",
 };
 
 export function TeamAttendanceWidget() {
@@ -62,11 +62,11 @@ export function TeamAttendanceWidget() {
           <>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                <span className="inline-block h-2 w-2 rounded-full bg-success-500" aria-hidden="true" />
                 {presentCount} present
               </span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+                <span className="inline-block h-2 w-2 rounded-full bg-danger-500" aria-hidden="true" />
                 {absentCount} absent
               </span>
             </div>
@@ -74,7 +74,7 @@ export function TeamAttendanceWidget() {
               {members.slice(0, 15).map((m) => (
                 <li key={m.userId} className="flex items-center gap-3">
                   <Avatar className="h-7 w-7 shrink-0">
-                    <AvatarFallback className="text-[10px]">
+                    <AvatarFallback className="text-2xs">
                       {m.name[0]?.toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>

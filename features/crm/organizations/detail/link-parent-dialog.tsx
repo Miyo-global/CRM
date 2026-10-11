@@ -79,7 +79,7 @@ export function LinkParentDialog({
                 className={cn(
                   "w-full flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-left transition-colors",
                   selectedId === null
-                    ? "bg-gold/10 text-gold"
+                    ? "bg-brand-soft text-brand-text"
                     : "hover:bg-accent text-muted-foreground",
                 )}
               >
@@ -96,11 +96,11 @@ export function LinkParentDialog({
                   className={cn(
                     "w-full flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-left transition-colors",
                     selectedId === org.id
-                      ? "bg-gold/10 text-gold"
+                      ? "bg-brand-soft text-brand-text"
                       : "hover:bg-accent text-foreground",
                   )}
                 >
-                  <span className="h-5 w-5 rounded bg-muted flex items-center justify-center text-[10px] font-semibold shrink-0">
+                  <span className="h-5 w-5 rounded bg-muted flex items-center justify-center text-2xs font-semibold shrink-0">
                     {org.name[0]?.toUpperCase()}
                   </span>
                   <span className="truncate">{org.name}</span>
@@ -123,7 +123,7 @@ export function LinkParentDialog({
             <X className="h-4 w-4 mr-1" /> Cancel
           </Button>
           <Button
-            className="flex-1 bg-gold hover:bg-gold/90 text-white"
+            className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground"
             onClick={handleConfirm}
             disabled={updateMutation.isPending}
           >

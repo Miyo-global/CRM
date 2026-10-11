@@ -43,7 +43,7 @@ export function TicketHeader({
       <SheetHeader className="space-y-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
-            <Badge variant="outline" className="font-mono text-[11px] shrink-0 h-5 px-1.5">
+            <Badge variant="outline" className="font-mono text-2xs shrink-0 h-5 px-1.5">
               #{ticketNumber ?? ticketId}
             </Badge>
             {!isLoading && (
@@ -51,7 +51,7 @@ export function TicketHeader({
                 <StatusBadge status={status} />
                 <PriorityBadge priority={priority} showLabel size="sm" />
                 {saving && (
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <span className="text-2xs text-muted-foreground flex items-center gap-1">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     Saving
                   </span>

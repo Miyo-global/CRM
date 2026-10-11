@@ -38,7 +38,7 @@ export const StageSkipDialog = memo(function StageSkipDialog({
             Cancel
           </Button>
           <Button
-            className="flex-1 bg-gold hover:bg-gold/90 text-white"
+            className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground"
             disabled={isPending}
             onClick={onConfirm}
           >

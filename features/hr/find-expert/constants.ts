@@ -1,3 +1,5 @@
+import { toneSoft } from "@/lib/design/tones";
+
 export const LEVEL_LABELS: Record<number, string> = {
   1: "L1",
   2: "L2",
@@ -14,12 +16,13 @@ export const LEVEL_NAMES: Record<number, string> = {
   5: "Expert",
 };
 
+// Ordinal skill level: neutral → info → teal → success, Expert = brand (top).
 export const LEVEL_COLORS: Record<number, string> = {
-  1: "bg-muted text-muted-foreground border border-border/60",
-  2: "bg-gold/10 text-gold border border-gold/20",
-  3: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
-  4: "bg-gold/20 text-gold border border-gold/30",
-  5: "bg-gold/30 text-gold font-semibold border border-gold/40 ring-1 ring-gold/20",
+  1: `${toneSoft.neutral} border border-transparent`,
+  2: `${toneSoft.info} border border-transparent`,
+  3: `${toneSoft.teal} border border-transparent`,
+  4: `${toneSoft.success} border border-transparent`,
+  5: `${toneSoft.brand} font-semibold border border-transparent ring-1 ring-gold-400/40`,
 };
 
 export type SortOption = "relevance" | "name" | "experience" | "level";

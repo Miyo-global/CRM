@@ -179,7 +179,7 @@ export default function ScoringRulesPage() {
       actions={
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gold hover:bg-gold/90 text-white">
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Rule
             </Button>
@@ -232,7 +232,7 @@ export default function ScoringRulesPage() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full bg-gold hover:bg-gold/90 text-white" disabled={createRule.isPending}>
+                <Button type="submit" className="w-full" disabled={createRule.isPending}>
                   {createRule.isPending ? "Creating..." : "Create Rule"}
                 </Button>
               </form>
@@ -295,7 +295,7 @@ export default function ScoringRulesPage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="h-4 w-4 text-gold" />
+                <Zap className="h-4 w-4 text-brand-text" />
                 Live Preview - Sample Lead
               </CardTitle>
             </CardHeader>
@@ -308,13 +308,13 @@ export default function ScoringRulesPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-gold/5 to-emerald-500/5 border border-border/50 flex items-center justify-between">
+              <div className="mt-4 p-4 rounded-xl bg-surface-sunken border border-border flex items-center justify-between">
                 <span className="text-sm font-medium">Calculated Score</span>
                 <Badge className={cn(
                   "text-lg px-4 py-1 font-bold",
-                  sampleScore <= 30 ? "bg-red-500/15 text-red-700 dark:text-red-400" :
-                  sampleScore <= 60 ? "bg-amber-500/15 text-amber-700 dark:text-amber-400" :
-                  "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                  sampleScore <= 30 ? "bg-danger-soft text-danger-strong" :
+                  sampleScore <= 60 ? "bg-warning-soft text-warning-strong" :
+                  "bg-success-soft text-success-strong"
                 )}>
                   {sampleScore} pts
                 </Badge>
@@ -369,7 +369,7 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
                 <FormField control={editForm.control} name="points" render={({ field }) => (
                   <Input type="number" {...field} className="h-8 w-16 text-xs" />
                 )} />
-                <Button type="submit" size="sm" className="h-8 bg-gold hover:bg-gold/90 text-white text-xs" disabled={updatePending}>Save</Button>
+                <Button type="submit" size="sm" className="h-8 text-xs" disabled={updatePending}>Save</Button>
                 <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={onCancelEdit}>Cancel</Button>
               </form>
             </Form>
@@ -382,7 +382,7 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
           <TableCell className="text-xs">{OPERATORS.find(o => o.value === rule.operator)?.label ?? rule.operator}</TableCell>
           <TableCell className="text-xs">{rule.value}</TableCell>
           <TableCell className="text-xs text-right">
-            <Badge variant={rule.points >= 0 ? "default" : "destructive"} className="text-[10px]">
+            <Badge variant={rule.points >= 0 ? "default" : "destructive"} className="text-2xs">
               {rule.points > 0 ? "+" : ""}{rule.points}
             </Badge>
           </TableCell>
@@ -407,7 +407,7 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-destructive text-white hover:bg-destructive/90"
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       onClick={handleDelete}
                     >
                       Delete

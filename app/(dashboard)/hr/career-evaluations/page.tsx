@@ -182,7 +182,7 @@ export default function CareerEvaluationsPage() {
                           ) : "—"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge>
+                          <Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground max-w-[180px]">
                           <p className="line-clamp-2">{ev.strengths ?? "—"}</p>

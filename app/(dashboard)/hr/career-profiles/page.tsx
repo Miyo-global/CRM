@@ -272,14 +272,14 @@ export default function CareerProfilesPage() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {p.ladderTitle ? (
-                          <Badge variant="outline" className="text-[11px]">{p.ladderTitle}</Badge>
+                          <Badge variant="outline" className="text-2xs">{p.ladderTitle}</Badge>
                         ) : (
                           <span className="text-muted-foreground text-xs">Unassigned</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {p.currentLevel ? (
-                          <Badge variant="secondary" className="text-[11px]">L{p.currentLevel}</Badge>
+                          <Badge variant="secondary" className="text-2xs">L{p.currentLevel}</Badge>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}

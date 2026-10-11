@@ -175,7 +175,7 @@ export function StepReview({
         <ReviewField label="PF / UAN" value={bank?.pfUanNumber?.trim()} />
       </ReviewSection>
 
-      <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 p-4 rounded-lg flex gap-3 text-sm text-amber-900 dark:text-amber-100">
+      <div className="bg-warning-soft border border-warning-strong/25 p-4 rounded-lg flex gap-3 text-sm text-warning-strong">
         <Lightbulb className="w-5 h-5 shrink-0 mt-0.5" />
         <p>
           Submitting will create the employee account and automatically add them to the onboarding workflow.

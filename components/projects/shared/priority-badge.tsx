@@ -13,26 +13,26 @@ const config = {
   URGENT: {
     label: "Urgent",
     icon: AlertTriangle,
-    color: "text-red-500",
-    bg: "bg-red-500/10",
+    color: "text-danger-strong",
+    bg: "bg-danger-soft",
   },
   HIGH: {
     label: "High",
     icon: ArrowUp,
-    color: "text-orange-500",
-    bg: "bg-orange-500/10",
+    color: "text-warning-strong",
+    bg: "bg-warning-soft",
   },
   MEDIUM: {
     label: "Medium",
     icon: Minus,
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
+    color: "text-warning-strong",
+    bg: "bg-warning-soft",
   },
   LOW: {
     label: "Low",
     icon: ArrowDown,
-    color: "text-blue-400",
-    bg: "bg-blue-400/10",
+    color: "text-info-strong",
+    bg: "bg-info-soft",
   },
 } as const;
 

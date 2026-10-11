@@ -292,9 +292,9 @@ export default function HelpdeskPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Total", value: stats.total, icon: Ticket, color: "" },
-            { label: "Open", value: stats.open, icon: AlertCircle, color: "text-orange-500" },
-            { label: "In Progress", value: stats.inProgress, icon: Clock, color: "text-blue-500" },
-            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, color: "text-green-500" },
+            { label: "Open", value: stats.open, icon: AlertCircle, color: "text-warning-strong" },
+            { label: "In Progress", value: stats.inProgress, icon: Clock, color: "text-info-strong" },
+            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, color: "text-success-strong" },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4">
@@ -372,7 +372,7 @@ export default function HelpdeskPage() {
                                   <div className="flex items-center gap-2">
                                     <Avatar className="h-6 w-6">
                                       {a?.image && <AvatarImage src={a.image} alt={a.name ?? ""} />}
-                                      <AvatarFallback className="text-[10px]">
+                                      <AvatarFallback className="text-2xs">
                                         {(a?.name ?? a?.email ?? "?")
                                           .split(" ")
                                           .map((p) => p[0])

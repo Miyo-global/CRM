@@ -114,7 +114,7 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
           name="monthlySalary"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Monthly Salary (CTC) <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Monthly Salary (CTC) <span className="text-danger-strong">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
@@ -160,9 +160,9 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
               <span className="text-muted-foreground">Special Allowance:</span>
               <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.25).toLocaleString()}</span>
               <span className="text-muted-foreground">Professional Tax:</span>
-              <span className="font-medium text-red-600">-&#8377;200</span>
+              <span className="font-medium text-danger-strong">-&#8377;200</span>
               <span className="text-muted-foreground font-semibold border-t pt-2">Net Salary:</span>
-              <span className="font-bold text-green-600 border-t pt-2">&#8377;{(Number(form.watch("monthlySalary")) - 200).toLocaleString()}</span>
+              <span className="font-bold text-success-strong border-t pt-2">&#8377;{(Number(form.watch("monthlySalary")) - 200).toLocaleString()}</span>
             </div>
           </div>
         )}

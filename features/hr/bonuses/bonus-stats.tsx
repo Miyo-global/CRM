@@ -12,9 +12,9 @@ interface BonusStatsCardsProps {
 export function BonusStatsCards({ stats }: BonusStatsCardsProps) {
   const cards = [
     { label: "Total bonuses", value: String(stats.total), sub: formatINR(stats.totalAmount), icon: Gift },
-    { label: "Pending", value: String(stats.pending), sub: formatINR(stats.pendingAmount), icon: Clock, color: "text-amber-600" },
-    { label: "Approved", value: String(stats.approved), sub: "Awaiting payment", icon: DollarSign, color: "text-blue-600" },
-    { label: "Paid", value: String(stats.paid), sub: formatINR(stats.paidAmount), icon: CheckCircle2, color: "text-emerald-600" },
+    { label: "Pending", value: String(stats.pending), sub: formatINR(stats.pendingAmount), icon: Clock, color: "text-warning-strong" },
+    { label: "Approved", value: String(stats.approved), sub: "Awaiting payment", icon: DollarSign, color: "text-info-strong" },
+    { label: "Paid", value: String(stats.paid), sub: formatINR(stats.paidAmount), icon: CheckCircle2, color: "text-success-strong" },
   ];
 
   return (
@@ -27,7 +27,7 @@ export function BonusStatsCards({ stats }: BonusStatsCardsProps) {
               <span className="text-xs">{label}</span>
             </div>
             <p className="text-xl font-bold tabular-nums">{value}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>
+            <p className="mt-0.5 text-2xs text-muted-foreground">{sub}</p>
           </CardContent>
         </Card>
       ))}

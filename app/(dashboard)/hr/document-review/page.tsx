@@ -291,11 +291,11 @@ function ProgressBar({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
+        <span className="text-2xs text-muted-foreground tabular-nums shrink-0">
           {approved}/{total}
         </span>
       </div>
-      <span className="text-[10px] text-muted-foreground">
+      <span className="text-2xs text-muted-foreground">
         {total === 0 ? "No docs required" : "Required docs approved"}
       </span>
     </div>
@@ -649,10 +649,10 @@ export default function DocumentReviewPage() {
                     {groupBy !== "none" && (
                       <TableRow className="bg-muted/40 hover:bg-muted/40">
                         <TableCell colSpan={4} className="py-1.5">
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <span className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {group.label}
                           </span>
-                          <span className="ml-2 text-[11px] text-muted-foreground">
+                          <span className="ml-2 text-2xs text-muted-foreground">
                             {group.items.length}
                           </span>
                         </TableCell>
@@ -680,7 +680,7 @@ export default function DocumentReviewPage() {
                             <TooltipContent>
                               <p>{toTitleCase(emp.userName)}</p>
                               {emp.employeeId ? (
-                                <p className="text-[11px] opacity-80">ID: {emp.employeeId}</p>
+                                <p className="text-2xs opacity-80">ID: {emp.employeeId}</p>
                               ) : null}
                             </TooltipContent>
                           </Tooltip>
@@ -689,7 +689,7 @@ export default function DocumentReviewPage() {
                           <p className="text-sm font-medium truncate">
                             {toTitleCase(emp.userName)}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
+                          <p className="text-2xs text-muted-foreground truncate">
                             {getRoleLabel(emp.role)}
                             {emp.departmentName ? ` · ${emp.departmentName}` : ""}
                             {emp.designation ? ` · ${emp.designation}` : ""}
@@ -719,7 +719,7 @@ export default function DocumentReviewPage() {
                                 {emp.totalApproved} of {emp.totalRequired} approved
                               </p>
                               {emp.requiredDocNames.length > 0 && (
-                                <p className="text-[11px] opacity-80">
+                                <p className="text-2xs opacity-80">
                                   Required for {getRoleLabel(emp.role)}:{" "}
                                   {emp.requiredDocNames.join(", ")}
                                 </p>
@@ -733,12 +733,12 @@ export default function DocumentReviewPage() {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant={overallStatusVariant(emp.onboardingDocStatus)}
-                          className="text-[10px]"
+                          className="text-2xs"
                         >
                           {overallStatusLabel(emp.onboardingDocStatus)}
                         </Badge>
                         {emp.totalPendingReview > 0 && (
-                          <span className="text-[10px] font-medium text-amber-600">
+                          <span className="text-2xs font-medium text-warning-strong">
                             {emp.totalPendingReview} to review
                           </span>
                         )}
@@ -837,19 +837,19 @@ export default function DocumentReviewPage() {
                           {item.isMandatory && (
                             <Badge
                               variant="default"
-                              className="text-[9px] py-0 h-4 shrink-0"
+                              className="text-3xs py-0 h-4 shrink-0"
                             >
                               Required
                             </Badge>
                           )}
                         </div>
                         {item.description ? (
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                          <p className="text-2xs text-muted-foreground mt-0.5">
                             {item.description}
                           </p>
                         ) : null}
                         {doc ? (
-                        <div className="flex items-center gap-3 mt-0.5 flex-wrap text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-0.5 flex-wrap text-2xs text-muted-foreground">
                           <Button
                             type="button"
                             variant="link"
@@ -869,27 +869,27 @@ export default function DocumentReviewPage() {
                           )}
                         </div>
                         ) : (
-                          <p className="text-[11px] text-muted-foreground mt-1 italic">
+                          <p className="text-2xs text-muted-foreground mt-1 italic">
                             Not uploaded yet — employee must submit from their onboarding page.
                           </p>
                         )}
                       </div>
                       <Badge
                         variant={doc ? docStatusVariant(doc.status) : "outline"}
-                        className="text-[10px] shrink-0"
+                        className="text-2xs shrink-0"
                       >
                         {doc ? docStatusLabel(doc.status) : "Missing"}
                       </Badge>
                     </div>
 
                     {doc?.reviewedAt && (
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-2xs text-muted-foreground">
                         Reviewed {format(new Date(doc.reviewedAt), "MMM d, yyyy")}
                         {doc.reviewerName ? ` by ${doc.reviewerName}` : ""}
                       </p>
                     )}
                     {doc?.remarks && (
-                      <p className="text-[11px] text-muted-foreground italic">
+                      <p className="text-2xs text-muted-foreground italic">
                         Remarks: {doc.remarks}
                       </p>
                     )}
@@ -1051,7 +1051,7 @@ export default function DocumentReviewPage() {
               </SelectContent>
             </Select>
             {uploadDocTypeOptions.length === 0 && (
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 No document types apply to this employee&apos;s role.
               </p>
             )}
@@ -1068,7 +1068,7 @@ export default function DocumentReviewPage() {
               setHrUploadFileName("");
             }}
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Use a clear file name with a single extension, e.g.{" "}
             <span className="font-medium">aadhaar-card.pdf</span> or{" "}
             <span className="font-medium">passport-photo.jpg</span>. Accepted: PDF,

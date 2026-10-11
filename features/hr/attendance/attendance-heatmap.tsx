@@ -31,11 +31,11 @@ const MONTH_LABELS = [
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const intensityClasses: Record<number, string> = {
-  0: "bg-muted/40 dark:bg-muted/20",
-  1: "bg-blue-200 dark:bg-blue-900/60",
-  2: "bg-blue-400 dark:bg-blue-700",
-  3: "bg-blue-600 dark:bg-blue-500",
-  4: "bg-blue-800 dark:bg-blue-300",
+  0: "bg-muted/40",
+  1: "bg-info-200",
+  2: "bg-info-400",
+  3: "bg-info-600",
+  4: "bg-info-800",
 };
 
 export function AttendanceHeatmap({ userId }: { userId: string }) {
@@ -95,8 +95,8 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
       <CardHeader className="pb-3 pt-5">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-              <Activity className="h-4 w-4 text-blue-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-info-soft">
+              <Activity className="h-4 w-4 text-info-strong" />
             </div>
             Attendance Heatmap
           </CardTitle>
@@ -160,7 +160,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex gap-1">
                 {Array.from({ length: 53 }).map((__, j) => (
-                  <Skeleton key={j} className="h-3 w-3 rounded-[2px]" />
+                  <Skeleton key={j} className="h-3 w-3 rounded-xs" />
                 ))}
               </div>
             ))}
@@ -179,7 +179,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                       className="relative h-4 w-3 shrink-0 overflow-visible"
                     >
                       {monthStart ? (
-                        <span className="absolute left-0 top-0 z-10 whitespace-nowrap text-[10px] leading-none text-muted-foreground">
+                        <span className="absolute left-0 top-0 z-10 whitespace-nowrap text-2xs leading-none text-muted-foreground">
                           {MONTH_LABELS[monthStart.month]}
                         </span>
                       ) : null}
@@ -193,7 +193,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                     {DAY_LABELS.map((d, i) => (
                       <div
                         key={d}
-                        className={`h-3 text-[10px] leading-3 text-muted-foreground ${i % 2 === 0 ? "invisible" : ""}`}
+                        className={`h-3 text-2xs leading-3 text-muted-foreground ${i % 2 === 0 ? "invisible" : ""}`}
                       >
                         {d}
                       </div>
@@ -215,7 +215,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                         return (
                           <div
                             key={rowIdx}
-                            className={`h-3 w-3 rounded-[2px] cursor-default transition-opacity hover:opacity-70 ${cls}`}
+                            className={`h-3 w-3 rounded-xs cursor-default transition-opacity hover:opacity-70 ${cls}`}
                             title={title}
                             role="gridcell"
                             aria-label={title}
@@ -227,14 +227,14 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 mt-3">
-                <span className="text-[10px] text-muted-foreground">Less</span>
+                <span className="text-2xs text-muted-foreground">Less</span>
                 {[0, 1, 2, 3, 4].map((level) => (
                   <div
                     key={level}
-                    className={`h-3 w-3 rounded-[2px] ${intensityClasses[level]}`}
+                    className={`h-3 w-3 rounded-xs ${intensityClasses[level]}`}
                   />
                 ))}
-                <span className="text-[10px] text-muted-foreground">More</span>
+                <span className="text-2xs text-muted-foreground">More</span>
               </div>
             </div>
           </div>

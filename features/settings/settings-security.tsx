@@ -24,7 +24,7 @@ function getStrength(pw: string) {
   if (/\d/.test(pw)) s++;
   if (/[@$!%*?&]/.test(pw)) s++;
   const level = s <= 2 ? 1 : s <= 4 ? 2 : s <= 5 ? 3 : 4;
-  const colors = ["bg-red-500", "bg-amber-400", "bg-emerald-400", "bg-emerald-500"];
+  const colors = ["bg-danger-500", "bg-warning-400", "bg-success-400", "bg-success-500"];
   const labels = ["Weak", "Fair", "Good", "Strong"];
   return { level, color: colors[level - 1], label: labels[level - 1] };
 }
@@ -65,7 +65,7 @@ function PasswordInput({
   const handleToggleShow = useCallback(() => setShow((v) => !v), []);
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-[13px] font-medium">{label}</Label>
+      <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
       <div className="relative">
         <Input
           id={id}
@@ -87,7 +87,7 @@ function PasswordInput({
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
-      {error && <p className="text-[11px] text-destructive">{error}</p>}
+      {error && <p className="text-2xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -202,8 +202,8 @@ function SessionsSection() {
             <Monitor className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-foreground">Active sessions</p>
-            <p className="text-[11px] text-muted-foreground">Manage where you are signed in.</p>
+            <p className="text-sm font-semibold text-foreground">Active sessions</p>
+            <p className="text-2xs text-muted-foreground">Manage where you are signed in.</p>
           </div>
         </div>
         {otherSessions.length > 0 && (
@@ -267,7 +267,7 @@ function SessionsSection() {
           ))}
         </div>
       ) : !sessions?.length ? (
-        <p className="text-[12px] text-muted-foreground text-center py-4">No active sessions found.</p>
+        <p className="text-xs text-muted-foreground text-center py-4">No active sessions found.</p>
       ) : (
         <div className="space-y-2">
           {otherSessions.length > 0 && (
@@ -277,7 +277,7 @@ function SessionsSection() {
                 onCheckedChange={(checked) => toggleSelectAll(checked === true)}
                 aria-label="Select all other sessions"
               />
-              <span className="text-[12px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 Select all other sessions ({otherSessions.length})
               </span>
             </label>
@@ -336,8 +336,8 @@ export function SettingsSecurity() {
             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-foreground">Change password</p>
-            <p className="text-[11px] text-muted-foreground">Use a unique, strong password.</p>
+            <p className="text-sm font-semibold text-foreground">Change password</p>
+            <p className="text-2xs text-muted-foreground">Use a unique, strong password.</p>
           </div>
         </div>
 
@@ -382,8 +382,8 @@ export function SettingsSecurity() {
                     <p
                       key={r.label}
                       className={cn(
-                        "text-[11px] leading-snug",
-                        r.test(next) ? "text-emerald-500" : "text-muted-foreground"
+                        "text-2xs leading-snug",
+                        r.test(next) ? "text-success-strong" : "text-muted-foreground"
                       )}
                     >
                       {r.test(next) ? "✓" : "○"} {r.label}
@@ -392,10 +392,10 @@ export function SettingsSecurity() {
                 </div>
                 <span
                   className={cn(
-                    "text-[11px] font-semibold self-start",
-                    strength.level === 1 && "text-red-500",
-                    strength.level === 2 && "text-amber-500",
-                    strength.level >= 3 && "text-emerald-500"
+                    "text-2xs font-semibold self-start",
+                    strength.level === 1 && "text-danger-strong",
+                    strength.level === 2 && "text-warning-strong",
+                    strength.level >= 3 && "text-success-strong"
                   )}
                 >
                   {strength.label}
@@ -485,14 +485,14 @@ function SessionRow({
       <span className="text-muted-foreground flex-shrink-0">{getDeviceIcon(s.userAgent)}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[13px] font-medium truncate">{parseDeviceName(s.userAgent)}</p>
+          <p className="text-sm font-medium truncate">{parseDeviceName(s.userAgent)}</p>
           {s.isCurrent && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-emerald-300 text-emerald-600 bg-emerald-50">
+            <Badge variant="outline" className="text-2xs h-4 px-1.5 border-success-strong/25 text-success-strong bg-success-soft">
               Current
             </Badge>
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           {s.ipAddress ? `${s.ipAddress} · ` : ""}
           Active {formatDistanceToNow(new Date(s.lastActive), { addSuffix: true })}
         </p>

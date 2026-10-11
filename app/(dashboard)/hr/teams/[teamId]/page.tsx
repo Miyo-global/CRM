@@ -84,7 +84,7 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
                     {member.designation && (
                       <p className="text-xs text-muted-foreground truncate">{member.designation}</p>
                     )}
-                    <Badge variant="outline" className="text-[10px] mt-0.5">
+                    <Badge variant="outline" className="text-2xs mt-0.5">
                       {member.role}
                     </Badge>
                   </div>

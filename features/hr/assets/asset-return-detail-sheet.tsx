@@ -77,7 +77,7 @@ function DetailBlock({
 }) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <div className="text-sm leading-snug text-foreground">{children}</div>
@@ -106,7 +106,7 @@ export function AssetReturnDetailSheet(props: {
             <SheetHeader className="shrink-0 space-y-3 border-b bg-muted/20 px-6 py-5 text-left">
               <div className="flex items-start justify-between gap-3 pr-2">
                 <div className="min-w-0 flex-1 space-y-1">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                     Asset return
                   </p>
                   <SheetTitle className="text-left text-lg font-semibold leading-snug tracking-tight">
@@ -119,12 +119,12 @@ export function AssetReturnDetailSheet(props: {
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
                   <Badge
                     variant={statusBadgeVariant(record.status)}
-                    className="text-[10px] font-medium tabular-nums"
+                    className="text-2xs font-medium tabular-nums"
                   >
                     {record.status ?? "PENDING"}
                   </Badge>
                   {record.assetType ? (
-                    <Badge variant="outline" className="text-[10px] font-normal">
+                    <Badge variant="outline" className="text-2xs font-normal">
                       {record.assetType}
                     </Badge>
                   ) : null}
@@ -144,7 +144,7 @@ export function AssetReturnDetailSheet(props: {
                       {record.employeeName ?? record.userId}
                     </p>
                     {record.employeeName ? (
-                      <p className="break-all font-mono text-[11px] leading-relaxed text-muted-foreground">
+                      <p className="break-all font-mono text-2xs leading-relaxed text-muted-foreground">
                         {record.userId}
                       </p>
                     ) : null}
@@ -163,7 +163,7 @@ export function AssetReturnDetailSheet(props: {
                     </DetailBlock>
                     {record.serialNumber ? (
                       <DetailBlock label="Serial number" className="sm:col-span-2">
-                        <span className="font-mono text-[13px]">{record.serialNumber}</span>
+                        <span className="font-mono text-sm">{record.serialNumber}</span>
                       </DetailBlock>
                     ) : null}
                   </div>
@@ -225,7 +225,7 @@ export function AssetReturnDetailSheet(props: {
                       const { date, time } = formatDetailDateTime(raw);
                       return (
                         <div key={key} className="rounded-lg border bg-muted/20 px-3 py-3">
-                          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                          <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                             {label}
                           </p>
                           <p className="mt-1 text-sm font-semibold tabular-nums">{date}</p>

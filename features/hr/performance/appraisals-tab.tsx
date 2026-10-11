@@ -81,11 +81,11 @@ const STAGE_COMPLETE_LABELS: Record<AppraisalStage, string> = {
 };
 
 const RATING_SCALE = [
-  { value: 5, label: "Exceptional", color: "text-green-600" },
-  { value: 4, label: "Exceeds Expectations", color: "text-teal-600" },
-  { value: 3, label: "Meets Expectations", color: "text-blue-600" },
-  { value: 2, label: "Needs Improvement", color: "text-amber-600" },
-  { value: 1, label: "Unsatisfactory", color: "text-red-600" },
+  { value: 5, label: "Exceptional", color: "text-success-strong" },
+  { value: 4, label: "Exceeds Expectations", color: "text-teal-strong" },
+  { value: 3, label: "Meets Expectations", color: "text-info-strong" },
+  { value: 2, label: "Needs Improvement", color: "text-warning-strong" },
+  { value: 1, label: "Unsatisfactory", color: "text-danger-strong" },
 ];
 
 type AppraisalRow = {
@@ -142,24 +142,24 @@ function AppraisalStepper({ currentStage, stages }: {
               <div className="flex flex-col items-center gap-1">
                 <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
                   isCompleted
-                    ? "border-green-500 bg-green-500 text-white"
+                    ? "border-success-500 bg-success text-success-foreground"
                     : isCurrent
-                    ? "border-blue-600 bg-blue-600 text-white animate-pulse"
-                    : "border-gray-200 bg-background text-muted-foreground"
+                    ? "border-info-600 bg-info text-info-foreground animate-pulse"
+                    : "border-border bg-background text-muted-foreground"
                 }`}>
                   {isCompleted
                     ? <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    : <span className="text-[9px] font-bold">{i + 1}</span>
+                    : <span className="text-3xs font-bold">{i + 1}</span>
                   }
                 </div>
-                <span className={`text-[9px] font-medium text-center leading-tight max-w-[52px] ${
-                  isCurrent ? "text-blue-600" : isCompleted ? "text-green-600" : "text-muted-foreground"
+                <span className={`text-3xs font-medium text-center leading-tight max-w-[52px] ${
+                  isCurrent ? "text-info-strong" : isCompleted ? "text-success-strong" : "text-muted-foreground"
                 }`}>
                   {STAGE_LABELS[stage]}
                 </span>
               </div>
               {i < STAGE_ORDER.length - 1 && (
-                <div className={`h-0.5 w-5 mt-3 shrink-0 ${isCompleted ? "bg-green-500" : "bg-gray-200"}`} />
+                <div className={`h-0.5 w-5 mt-3 shrink-0 ${isCompleted ? "bg-success-500" : "bg-ink-200"}`} />
               )}
             </div>
           );
@@ -172,7 +172,7 @@ function AppraisalStepper({ currentStage, stages }: {
 function RatingScaleLegend() {
   return (
     <div className="rounded-md border bg-muted/20 p-3 space-y-1">
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Rating Scale</p>
+      <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Rating Scale</p>
       <div className="grid grid-cols-5 gap-1">
         {RATING_SCALE.map((r) => (
           <div key={r.value} className="flex flex-col items-center gap-0.5">
@@ -181,7 +181,7 @@ function RatingScaleLegend() {
                 <StarIcon key={i} className="h-2.5 w-2.5" filled />
               ))}
             </div>
-            <span className="text-[9px] text-center text-muted-foreground leading-tight">{r.label}</span>
+            <span className="text-3xs text-center text-muted-foreground leading-tight">{r.label}</span>
           </div>
         ))}
       </div>
@@ -383,7 +383,7 @@ export function AppraisalsTab() {
       </div>
 
       {admin && catList.length === 0 && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-3 py-2.5 text-xs text-amber-800 dark:text-amber-300">
+        <div className="rounded-md border border-warning-strong/25 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
           No rating categories configured. Set up appraisal categories before creating appraisals.
         </div>
       )}
@@ -406,23 +406,23 @@ export function AppraisalsTab() {
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div>
                       <p className="text-sm font-medium">{a.user?.name ?? a.userId}</p>
-                      <p className="text-[10px] text-muted-foreground">Appraisal #{a.id}</p>
+                      <p className="text-2xs text-muted-foreground">Appraisal #{a.id}</p>
                     </div>
                     <div className="text-right">
-                      <Badge variant="secondary" className="text-[10px] font-normal">
+                      <Badge variant="secondary" className="text-2xs font-normal">
                         {STAGE_LABELS[(a.currentStage ?? "CYCLE_INITIATION") as AppraisalStage]}
                       </Badge>
                       {a.overallRating && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center justify-end gap-0.5">
-                          <StarIcon className="h-2.5 w-2.5 text-amber-500" filled /> {Number(a.overallRating).toFixed(1)}
+                        <p className="text-2xs text-muted-foreground mt-0.5 flex items-center justify-end gap-0.5">
+                          <StarIcon className="h-2.5 w-2.5 text-warning-strong" filled /> {Number(a.overallRating).toFixed(1)}
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="w-full bg-muted rounded-full h-1">
-                    <div className="bg-blue-600 h-1 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    <div className="bg-info-600 h-1 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <p className="text-[9px] text-muted-foreground mt-1">{pct}% complete</p>
+                  <p className="text-3xs text-muted-foreground mt-1">{pct}% complete</p>
                 </CardContent>
               </Card>
             );
@@ -496,9 +496,9 @@ export function AppraisalsTab() {
                 {/* Summary chips */}
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="font-normal">{STAGE_LABELS[(d.currentStage ?? "CYCLE_INITIATION") as AppraisalStage]}</Badge>
-                  {d.overallRating && <Badge variant="outline" className="gap-1"><StarIcon className="h-3 w-3 text-amber-500" filled />Rating {d.overallRating}</Badge>}
-                  {d.calibratedRating && <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20">Calibrated {d.calibratedRating}</Badge>}
-                  {d.promotionRecommended && <Badge variant="outline" className="text-green-700 border-green-200 bg-green-50 dark:bg-green-950/20"><CheckCircleIcon className="h-3 w-3 mr-1" />Promotion recommended</Badge>}
+                  {d.overallRating && <Badge variant="outline" className="gap-1"><StarIcon className="h-3 w-3 text-warning-strong" filled />Rating {d.overallRating}</Badge>}
+                  {d.calibratedRating && <Badge variant="outline" className="gap-1 text-info-strong border-info-strong/25 bg-info-soft">Calibrated {d.calibratedRating}</Badge>}
+                  {d.promotionRecommended && <Badge variant="outline" className="text-success-strong border-success-strong/25 bg-success-soft"><CheckCircleIcon className="h-3 w-3 mr-1" />Promotion recommended</Badge>}
                 </div>
 
                 <Separator />
@@ -523,12 +523,12 @@ export function AppraisalsTab() {
                           {(rt === "NUMERIC" || rt === "BOTH") && (
                             <div className={`grid gap-2 ${hideManagerInputs ? "grid-cols-1" : "grid-cols-2"}`}>
                               <div>
-                                <Label className="text-[10px]">Self score (1–5)</Label>
+                                <Label className="text-2xs">Self score (1–5)</Label>
                                 <Input value={loc.selfScore ?? ""} onChange={(e) => updateLocal(r.categoryId, "selfScore", clampRatingInput(e.target.value))} type="number" min={1} max={5} />
                               </div>
                               {!hideManagerInputs && (
                                 <div>
-                                  <Label className="text-[10px]">Manager score (1–5)</Label>
+                                  <Label className="text-2xs">Manager score (1–5)</Label>
                                   <Input value={loc.managerScore ?? ""} onChange={(e) => updateLocal(r.categoryId, "managerScore", clampRatingInput(e.target.value))} type="number" min={1} max={5} />
                                 </div>
                               )}
@@ -536,11 +536,11 @@ export function AppraisalsTab() {
                           )}
                           {(rt === "TEXT" || rt === "BOTH") && (
                             <div className="space-y-1.5">
-                              <Label className="text-[10px]">Self comment</Label>
+                              <Label className="text-2xs">Self comment</Label>
                               <Textarea rows={2} className="text-xs" value={loc.selfText ?? ""} onChange={(e) => updateLocal(r.categoryId, "selfText", e.target.value)} />
                               {!hideManagerInputs && (
                                 <>
-                                  <Label className="text-[10px]">Manager comment</Label>
+                                  <Label className="text-2xs">Manager comment</Label>
                                   <Textarea rows={2} className="text-xs" value={loc.managerComment ?? ""} onChange={(e) => updateLocal(r.categoryId, "managerComment", e.target.value)} />
                                 </>
                               )}
@@ -556,8 +556,8 @@ export function AppraisalsTab() {
                 {canCompleteCurrentStage && d.currentStage === "CALIBRATION" && (
                   <>
                     <Separator />
-                    <div className="space-y-3 rounded-md border border-blue-200 bg-blue-50/50 dark:bg-blue-950/10 p-4">
-                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">HR Calibration</p>
+                    <div className="space-y-3 rounded-md border border-info-strong/25 bg-info-500/50 p-4">
+                      <p className="text-xs font-semibold text-info-strong uppercase tracking-wider">HR Calibration</p>
                       <p className="text-xs text-muted-foreground">Review all manager scores for consistency and internal equity, then set the calibrated rating.</p>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Calibrated Rating (1–5) *</Label>
@@ -566,7 +566,7 @@ export function AppraisalsTab() {
                           <div className="flex gap-1">
                             {[1,2,3,4,5].map((v) => (
                               <button key={v} onClick={() => setCalibratedRatingDraft(String(v))} className="focus:outline-none">
-                                <StarIcon className={`h-5 w-5 ${Number(calibratedRatingDraft) >= v ? "text-amber-500" : "text-muted-foreground/30"}`} filled={Number(calibratedRatingDraft) >= v} />
+                                <StarIcon className={`h-5 w-5 ${Number(calibratedRatingDraft) >= v ? "text-warning-strong" : "text-muted-foreground/30"}`} filled={Number(calibratedRatingDraft) >= v} />
                               </button>
                             ))}
                           </div>
@@ -584,20 +584,20 @@ export function AppraisalsTab() {
                 {canCompleteCurrentStage && d.currentStage === "RATING_APPROVED" && (
                   <>
                     <Separator />
-                    <div className="space-y-3 rounded-md border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-950/10 p-4">
-                      <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Rating Approval</p>
+                    <div className="space-y-3 rounded-md border border-info-strong/25 bg-info-500/50 p-4">
+                      <p className="text-xs font-semibold text-info-strong uppercase tracking-wider">Rating Approval</p>
                       <p className="text-xs text-muted-foreground">Review the calibrated rating set by HR and approve it before compensation and promotion decisions are made.</p>
                       {d.calibratedRating && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">Calibrated Rating:</span>
-                          <Badge variant="outline" className="gap-1 text-amber-700 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                            <StarIcon className="h-3 w-3 text-amber-500" filled />{d.calibratedRating} / 5
+                          <Badge variant="outline" className="gap-1 text-warning-strong border-warning-strong/25 bg-warning-soft">
+                            <StarIcon className="h-3 w-3 text-warning-strong" filled />{d.calibratedRating} / 5
                           </Badge>
                         </div>
                       )}
                       {d.hrCalibrationNotes && (
                         <div className="space-y-1">
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">HR Calibration Notes</p>
+                          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">HR Calibration Notes</p>
                           <p className="text-xs rounded-md bg-muted/40 border px-3 py-2">{d.hrCalibrationNotes}</p>
                         </div>
                       )}
@@ -609,8 +609,8 @@ export function AppraisalsTab() {
                 {canCompleteCurrentStage && d.currentStage === "COMPENSATION_REVIEW" && (
                   <>
                     <Separator />
-                    <div className="space-y-3 rounded-md border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/10 p-4">
-                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Compensation Review</p>
+                    <div className="space-y-3 rounded-md border border-success-strong/25 bg-success-500/50 p-4">
+                      <p className="text-xs font-semibold text-success-strong uppercase tracking-wider">Compensation Review</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs">Proposed Salary (₹)</Label>
@@ -629,10 +629,10 @@ export function AppraisalsTab() {
                 {canCompleteCurrentStage && d.currentStage === "PROMOTION_REVIEW" && (
                   <>
                     <Separator />
-                    <div className="space-y-3 rounded-md border border-purple-200 bg-purple-50/50 dark:bg-purple-950/10 p-4">
-                      <p className="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Promotion Eligibility Review</p>
+                    <div className="space-y-3 rounded-md border border-plum-strong/25 bg-plum-500/50 p-4">
+                      <p className="text-xs font-semibold text-plum-strong uppercase tracking-wider">Promotion Eligibility Review</p>
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={promotionRecommendedDraft} onChange={(e) => setPromotionRecommendedDraft(e.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+                        <input type="checkbox" checked={promotionRecommendedDraft} onChange={(e) => setPromotionRecommendedDraft(e.target.checked)} className="h-4 w-4 rounded border-border-strong" />
                         <span className="text-sm">Recommend for promotion</span>
                       </label>
                       {promotionRecommendedDraft && (
@@ -649,8 +649,8 @@ export function AppraisalsTab() {
                 {canCompleteCurrentStage && d.currentStage === "DISCUSSION" && (
                   <>
                     <Separator />
-                    <div className="space-y-3 rounded-md border border-orange-200 bg-orange-50/50 dark:bg-orange-950/10 p-4">
-                      <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Appraisal Discussion Meeting</p>
+                    <div className="space-y-3 rounded-md border border-warning-strong/25 bg-warning-500/50 p-4">
+                      <p className="text-xs font-semibold text-warning-strong uppercase tracking-wider">Appraisal Discussion Meeting</p>
                       <p className="text-xs text-muted-foreground">Schedule and record the face-to-face discussion with the employee.</p>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Discussion Date &amp; Time</Label>
@@ -680,7 +680,7 @@ export function AppraisalsTab() {
                         <div className="flex justify-between text-xs"><span className="text-muted-foreground">Increment</span><span className="font-semibold">{d.salaryIncrementPct}%</span></div>
                       )}
                       {d.promotionRecommended && (
-                        <div className="flex justify-between text-xs"><span className="text-muted-foreground">Promotion</span><span className="font-semibold text-green-600">{d.proposedDesignation ? `→ ${d.proposedDesignation}` : "Recommended"}</span></div>
+                        <div className="flex justify-between text-xs"><span className="text-muted-foreground">Promotion</span><span className="font-semibold text-success-strong">{d.proposedDesignation ? `→ ${d.proposedDesignation}` : "Recommended"}</span></div>
                       )}
                       {d.discussionScheduledAt && (
                         <div className="flex justify-between text-xs"><span className="text-muted-foreground">Discussion</span><span className="font-semibold">{format(new Date(d.discussionScheduledAt), "PPp")}</span></div>

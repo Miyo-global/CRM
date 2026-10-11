@@ -120,10 +120,10 @@ function useSubmitOnboardingDoc() {
 
 function docStatusIcon(status: OnboardingDoc["status"]) {
   const icons = {
-    "APPROVED": <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    "SUBMITTED": <Clock className="h-4 w-4 text-amber-500" />,
+    "APPROVED": <CheckCircle2 className="h-4 w-4 text-success-strong" />,
+    "SUBMITTED": <Clock className="h-4 w-4 text-warning-strong" />,
     "REJECTED": <AlertCircle className="h-4 w-4 text-destructive" />,
-    "RE_UPLOAD_REQUESTED": <RefreshCw className="h-4 w-4 text-orange-500" />,
+    "RE_UPLOAD_REQUESTED": <RefreshCw className="h-4 w-4 text-warning-strong" />,
     default: <FileText className="h-4 w-4 text-muted-foreground" />,
   };
   return icons[status as keyof typeof icons] || icons.default;
@@ -226,7 +226,7 @@ function UploadSheet({
       isPending={isPending}
     >
       {existingDoc?.status === "RE_UPLOAD_REQUESTED" && existingDoc.remarks && (
-        <div className="rounded-md border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900 px-3 py-2.5 text-[12px] text-orange-800 dark:text-orange-300">
+        <div className="rounded-md border border-warning-strong/25 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
           <p className="font-medium mb-0.5">Reviewer remarks</p>
           <p>{existingDoc.remarks}</p>
         </div>
@@ -342,7 +342,7 @@ function EmployeeDocumentsTab() {
   return (
     <>
       <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 mb-3">
-        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+        <CheckCircle2 className="h-4 w-4 text-success-strong shrink-0" />
         <p className="text-sm">
           <span className="font-semibold">{approvedCount}</span> of{" "}
           <span className="font-semibold">{requiredChecklist.length || checklist.length}</span>{" "}
@@ -365,7 +365,7 @@ function EmployeeDocumentsTab() {
                     {docType.isMandatory && (
                       <Badge
                         variant="default"
-                        className="text-[9px] py-0 h-4 shrink-0"
+                        className="text-3xs py-0 h-4 shrink-0"
                       >
                         Required
                       </Badge>
@@ -373,7 +373,7 @@ function EmployeeDocumentsTab() {
                     {submission && (
                       <Badge
                         variant={docStatusVariant(submission.status)}
-                        className="text-[10px] shrink-0"
+                        className="text-2xs shrink-0"
                       >
                         {docStatusLabel(submission.status)}
                       </Badge>
@@ -381,7 +381,7 @@ function EmployeeDocumentsTab() {
                   </div>
 
                   {docType.description && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       {docType.description}
                     </p>
                   )}
@@ -391,7 +391,7 @@ function EmployeeDocumentsTab() {
                       href={submission.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-0.5"
+                      className="inline-flex items-center gap-1 text-2xs text-primary hover:underline mt-0.5"
                       aria-label={`View ${submission.fileName}`}
                     >
                       {submission.fileName}
@@ -401,7 +401,7 @@ function EmployeeDocumentsTab() {
 
                   {submission?.status === "RE_UPLOAD_REQUESTED" &&
                     submission.remarks && (
-                      <p className="text-[11px] text-orange-600 dark:text-orange-400 mt-0.5">
+                      <p className="text-2xs text-warning-strong mt-0.5">
                         Remarks: {submission.remarks}
                       </p>
                     )}
@@ -512,7 +512,7 @@ function InitiateSheet({
             )}
           </SelectContent>
         </Select>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Only active employees without an existing onboarding checklist are listed.
         </p>
       </div>
@@ -587,19 +587,19 @@ function HrWorkflowTab() {
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
                       <p className="text-sm font-medium truncate">{row.userName}</p>
                       {row.percentComplete === 100 && (
-                        <Badge className="text-[10px] shrink-0" variant="default">
+                        <Badge className="text-2xs shrink-0" variant="default">
                           Complete
                         </Badge>
                       )}
                       {stalledBadge(row) && (
-                        <Badge className="text-[10px] shrink-0" variant="destructive">
+                        <Badge className="text-2xs shrink-0" variant="destructive">
                           Stalled
                         </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress value={row.percentComplete} className="h-1.5 flex-1" />
-                      <span className="text-[11px] text-muted-foreground shrink-0">
+                      <span className="text-2xs text-muted-foreground shrink-0">
                         {row.completedTasks}/{row.totalTasks}
                       </span>
                     </div>

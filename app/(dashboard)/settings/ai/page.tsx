@@ -165,7 +165,7 @@ export default function AiSettingsPage() {
                             <span className="text-sm font-medium capitalize">
                               {row.feature.replace(/_/g, " ")}
                             </span>
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-2xs">
                               {row.model}
                             </Badge>
                           </div>

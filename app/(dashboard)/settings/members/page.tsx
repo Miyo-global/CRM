@@ -61,14 +61,14 @@ const ALL_ROLES = [
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  CEO: "bg-amber-500/15 text-amber-500 border-amber-500/20",
-  HR: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-  SALES: "bg-green-500/15 text-green-400 border-green-500/20",
-  CUSTOMER_SUPPORT: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-  ENGINEERING: "bg-sky-500/15 text-sky-400 border-sky-500/20",
-  DESIGN: "bg-pink-500/15 text-pink-400 border-pink-500/20",
-  VIDEO_EDITOR: "bg-orange-500/15 text-orange-400 border-orange-500/20",
-  DIGITAL_MARKETING: "bg-teal-500/15 text-teal-400 border-teal-500/20",
+  CEO: "bg-warning-soft text-warning-strong border-warning-strong/20",
+  HR: "bg-info-soft text-info-strong border-info-strong/20",
+  SALES: "bg-success-soft text-success-strong border-success-strong/20",
+  CUSTOMER_SUPPORT: "bg-plum-soft text-plum-strong border-plum-strong/20",
+  ENGINEERING: "bg-info-soft text-info-strong border-info-strong/20",
+  DESIGN: "bg-plum-soft text-plum-strong border-plum-strong/20",
+  VIDEO_EDITOR: "bg-warning-soft text-warning-strong border-warning-strong/20",
+  DIGITAL_MARKETING: "bg-teal-soft text-teal-strong border-teal-strong/20",
 };
 
 export default function MembersSettingsPage() {
@@ -204,7 +204,7 @@ function MembersSettingsContent() {
       subtitle="Manage organization members, roles, and invitations"
       badge={membersData ? String(membersData.pagination.total) : undefined}
       actions={
-        <Button onClick={handleToggleInviteForm} className="bg-gold hover:bg-gold/80 text-white">
+        <Button onClick={handleToggleInviteForm} className="bg-primary hover:bg-brand-soft text-primary-foreground">
           <UserPlus className="h-4 w-4 mr-2" />
           {showInviteForm ? "Cancel" : "Invite Member"}
         </Button>
@@ -215,7 +215,7 @@ function MembersSettingsContent() {
             <TabsTrigger value="members">
               Members
               {membersData && (
-                <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                <Badge variant="secondary" className="ml-1.5 text-2xs">
                   {membersData.pagination.total}
                 </Badge>
               )}
@@ -223,7 +223,7 @@ function MembersSettingsContent() {
             <TabsTrigger value="invitations">
               Invitations
               {invitations && invitations.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                <Badge variant="secondary" className="ml-1.5 text-2xs">
                   {invitations.length}
                 </Badge>
               )}
@@ -276,7 +276,7 @@ function MembersSettingsContent() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-gold" />
+                      <Shield className="h-4 w-4 text-brand-text" />
                       Organization Members
                       {membersData && <Badge variant="secondary" className="ml-2 text-xs">{membersData.pagination.total}</Badge>}
                     </CardTitle>
@@ -459,19 +459,19 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarImage src={resolveImageUrl(member.image)} />
-            <AvatarFallback className="text-xs bg-gold/10 text-gold">{member.name?.charAt(0) || "?"}</AvatarFallback>
+            <AvatarFallback className="text-xs bg-brand-soft text-brand-text">{member.name?.charAt(0) || "?"}</AvatarFallback>
           </Avatar>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium">{member.name || "Unknown"}</span>
             {member.totpEnabled && (
-              <Shield className="h-3 w-3 text-green-500" aria-label="MFA enabled" />
+              <Shield className="h-3 w-3 text-success-strong" aria-label="MFA enabled" />
             )}
           </div>
         </div>
       </TableCell>
       <TableCell className="px-5 py-3.5 text-sm text-muted-foreground">{member.email}</TableCell>
       <TableCell className="px-5 py-3.5">
-        <Badge variant="outline" className={`text-[11px] border ${ROLE_COLORS[member.role] || ""}`}>{member.role}</Badge>
+        <Badge variant="outline" className={`text-2xs border ${ROLE_COLORS[member.role] || ""}`}>{member.role}</Badge>
       </TableCell>
       <TableCell className="px-5 py-3.5 text-sm text-muted-foreground">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
@@ -539,7 +539,7 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
     <div className="flex items-center justify-between p-3 border rounded-lg">
       <div>
         <p className="text-sm font-medium">{inv.email}</p>
-        <Badge variant="outline" className={`text-[10px] mt-1 ${ROLE_COLORS[inv.role] || ""}`}>{inv.role}</Badge>
+        <Badge variant="outline" className={`text-2xs mt-1 ${ROLE_COLORS[inv.role] || ""}`}>{inv.role}</Badge>
       </div>
       <div className="flex gap-1.5">
         <Button

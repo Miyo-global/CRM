@@ -69,22 +69,22 @@ const TYPE_CONFIG: Record<
 > = {
   OFFER_LETTER: {
     label: "Offer Letter",
-    className: "bg-gold/10 text-gold border-gold/20",
+    className: "bg-brand-soft text-brand-text border-primary/40",
     icon: FileCheck,
   },
   NDA: {
     label: "NDA",
-    className: "bg-red-500/10 text-red-500 border-red-500/20",
+    className: "bg-danger-soft text-danger-strong border-danger-strong/20",
     icon: FileLock,
   },
   POLICY: {
     label: "Policy",
-    className: "bg-blue/10 text-blue border-blue/20",
+    className: "bg-secondary text-secondary border-secondary",
     icon: FileKey,
   },
   WELCOME: {
     label: "Welcome",
-    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    className: "bg-success-soft text-success-strong border-success-strong/20",
     icon: Smile,
   },
   OTHER: {
@@ -110,13 +110,13 @@ function VariableChips({ variables }: { variables: string[] }) {
       {visible.map((v) => (
         <span
           key={v}
-          className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground border border-border/60"
+          className="inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-mono bg-muted text-muted-foreground border border-border/60"
         >
           {`{{${v}}}`}
         </span>
       ))}
       {rest > 0 && (
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted/50 text-muted-foreground border border-border/40">
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-2xs bg-muted/50 text-muted-foreground border border-border/40">
           +{rest} more
         </span>
       )}
@@ -149,7 +149,7 @@ function PreviewDialog({ template }: { template: DocumentTemplate }) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div
-              className="max-h-[60vh] overflow-y-auto rounded-md border bg-white dark:bg-neutral-950 p-4 text-sm prose prose-sm dark:prose-invert max-w-none"
+              className="max-h-[60vh] overflow-y-auto rounded-md border bg-card p-4 tiptap"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(template.htmlContent) }}
             />
             <AlertDialogFooter>
@@ -347,7 +347,7 @@ export default function DocumentTemplatesPage() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`text-[11px] px-2 py-0.5 ${cfg.className}`}
+                              className={`text-2xs px-2 py-0.5 ${cfg.className}`}
                             >
                               {cfg.label}
                             </Badge>
@@ -363,8 +363,8 @@ export default function DocumentTemplatesPage() {
                               variant="outline"
                               className={
                                 template.isActive
-                                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[11px]"
-                                  : "bg-muted text-muted-foreground border-border text-[11px]"
+                                  ? "bg-success-soft text-success-strong border-success-strong/20 text-2xs"
+                                  : "bg-muted text-muted-foreground border-border text-2xs"
                               }
                             >
                               {template.isActive ? "Active" : "Inactive"}

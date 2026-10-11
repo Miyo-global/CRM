@@ -174,7 +174,7 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
                       href={entry.workLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                      className="inline-flex items-center gap-2 text-sm text-info-strong hover:underline"
                     >
                       <ExternalLink className="h-4 w-4" />
                       {entry.workLink}
@@ -219,7 +219,7 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
                               href={normalizedUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                              className="inline-flex items-center gap-2 text-sm text-info-strong hover:underline"
                             >
                               <ExternalLink className="h-4 w-4" />
                               Open file
@@ -242,7 +242,7 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
               {entry.status === "REJECTED" && entry.rejectionReason && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Rejection Reason</label>
-                  <p className="mt-1 text-sm text-red-600 whitespace-pre-wrap">{entry.rejectionReason}</p>
+                  <p className="mt-1 text-sm text-danger-strong whitespace-pre-wrap">{entry.rejectionReason}</p>
                 </div>
               )}
             </div>

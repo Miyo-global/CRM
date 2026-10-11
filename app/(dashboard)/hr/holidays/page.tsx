@@ -39,9 +39,9 @@ interface FullHoliday extends Holiday {
 }
 
 const TYPE_CONFIG: Record<HolidayType, { label: string; className: string; icon: React.ElementType }> = {
-  NATIONAL: { label: "National",  className: "bg-red-50 text-red-700 border-red-200",    icon: Star },
-  PUBLIC:   { label: "Public",    className: "bg-blue-50 text-blue-700 border-blue-200",  icon: Sun },
-  OPTIONAL: { label: "Optional",  className: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
+  NATIONAL: { label: "National",  className: "bg-danger-soft text-danger-strong border-danger-strong/25",    icon: Star },
+  PUBLIC:   { label: "Public",    className: "bg-info-soft text-info-strong border-info-strong/25",  icon: Sun },
+  OPTIONAL: { label: "Optional",  className: "bg-warning-soft text-warning-strong border-warning-strong/25", icon: Clock },
 };
 
 const MONTHS = [
@@ -102,10 +102,10 @@ const HolidayRow = memo(function HolidayRow({
               {holiday.name}
             </span>
             {isToday && (
-              <Badge className="text-[10px] py-0 px-1.5 bg-primary text-primary-foreground">Today</Badge>
+              <Badge className="text-2xs py-0 px-1.5 bg-primary text-primary-foreground">Today</Badge>
             )}
             {holiday.isHalfDay && (
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5">Half Day</Badge>
+              <Badge variant="outline" className="text-2xs py-0 px-1.5">Half Day</Badge>
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -121,7 +121,7 @@ const HolidayRow = memo(function HolidayRow({
 
       <div className="flex items-center gap-2 shrink-0">
         <span className={cn(
-          "hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+          "hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium",
           typeCfg.className,
         )}>
           {typeCfg.label}
@@ -365,7 +365,7 @@ export default function HolidaysPage() {
             {Object.entries(TYPE_CONFIG).map(([t, cfg]) => {
               const Icon = cfg.icon;
               return (
-                <span key={t} className={cn("hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", cfg.className)}>
+                <span key={t} className={cn("hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium", cfg.className)}>
                   <Icon className="h-2.5 w-2.5" />
                   {cfg.label}
                 </span>
@@ -483,12 +483,12 @@ export default function HolidaysPage() {
                 maxLength={HOLIDAY_MESSAGE_MAX}
               />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Employees receive a reminder email one day before. This message is included.
                 </p>
                 <p
                   className={cn(
-                    "text-[10px] tabular-nums shrink-0",
+                    "text-2xs tabular-nums shrink-0",
                     message.length >= HOLIDAY_MESSAGE_MAX
                       ? "text-destructive"
                       : "text-muted-foreground",

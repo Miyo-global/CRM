@@ -181,7 +181,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
             />
             <Label
               htmlFor="hide-done"
-              className="text-[11px] font-normal cursor-pointer flex items-center gap-1 whitespace-nowrap"
+              className="text-2xs font-normal cursor-pointer flex items-center gap-1 whitespace-nowrap"
             >
               <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
               Done

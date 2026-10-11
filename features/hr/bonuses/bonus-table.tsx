@@ -83,13 +83,13 @@ export function BonusTable({
                     <TableRow key={bonus.id}>
                       <TableCell className="font-medium">{bonus.employeeName ?? "Employee"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-2xs">
                           {bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "Bonus"}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium tabular-nums">{formatINR(bonus.amount)}</TableCell>
                       <TableCell>
-                        <Badge variant={statusBadgeVariant(bonus.status)} className="text-[10px]">
+                        <Badge variant={statusBadgeVariant(bonus.status)} className="text-2xs">
                           {bonus.status ?? "PENDING"}
                         </Badge>
                       </TableCell>

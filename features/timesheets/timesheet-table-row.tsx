@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatHoursMinutes } from "@/lib/format-utils";
+import { toneDot, toneForKey } from "@/lib/design/tones";
 
 function PencilIcon({ className }: { className?: string }) {
   return (
@@ -29,9 +30,9 @@ function TrashIcon({ className }: { className?: string }) {
 }
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
-  APPROVED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  REJECTED: "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-400",
+  APPROVED: "bg-success-soft text-success-strong",
+  PENDING: "bg-warning-soft text-warning-strong",
+  REJECTED: "bg-danger-soft text-danger-strong",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -40,23 +41,8 @@ const STATUS_LABELS: Record<string, string> = {
   REJECTED: "Rejected",
 };
 
-const PROJECT_DOT_COLORS = [
-  "bg-blue-500",
-  "bg-purple-500",
-  "bg-emerald-500",
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-cyan-500",
-  "bg-indigo-500",
-  "bg-pink-500",
-] as const;
-
 function getProjectDotColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return PROJECT_DOT_COLORS[Math.abs(hash) % PROJECT_DOT_COLORS.length];
+  return toneDot[toneForKey(name)];
 }
 
 export interface EditEntry {

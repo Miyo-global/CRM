@@ -311,11 +311,11 @@ export function UploadDocumentDialog({
   }, [files, uploadFileFn, createDocumentMutation, onSuccess]);
 
   const getFileIcon = (f: File) => {
-    if (f.type.startsWith("image/")) return <FileText className="h-5 w-5 text-amber-500" />;
-    if (f.type === "application/pdf") return <FileText className="h-5 w-5 text-red-500" />;
-    if (f.type.includes("word")) return <FileText className="h-5 w-5 text-blue-500" />;
-    if (f.type.includes("excel") || f.type.includes("spreadsheet")) return <FileText className="h-5 w-5 text-emerald-500" />;
-    return <FileText className="h-5 w-5 text-slate-400" />;
+    if (f.type.startsWith("image/")) return <FileText className="h-5 w-5 text-warning-strong" />;
+    if (f.type === "application/pdf") return <FileText className="h-5 w-5 text-danger-strong" />;
+    if (f.type.includes("word")) return <FileText className="h-5 w-5 text-info-strong" />;
+    if (f.type.includes("excel") || f.type.includes("spreadsheet")) return <FileText className="h-5 w-5 text-success-strong" />;
+    return <FileText className="h-5 w-5 text-subtle-foreground" />;
   };
 
   return (
@@ -341,7 +341,7 @@ export function UploadDocumentDialog({
             <span className="text-sm font-medium text-foreground">
               {files.length > 0 ? "Add more files" : "Click or drag to upload"}
             </span>
-            <span className="text-[11px] text-muted-foreground mt-0.5">
+            <span className="text-2xs text-muted-foreground mt-0.5">
               PDF, DOC, XLS, PNG, JPG up to 10MB {files.length === 0 && "• Multiple files supported"}
             </span>
             <input
@@ -356,10 +356,10 @@ export function UploadDocumentDialog({
           {files.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                   {files.length} file{files.length > 1 ? "s" : ""} selected
                 </span>
-                <Button type="button" variant="ghost" size="sm" className="h-6 text-[11px] text-muted-foreground" onClick={handleClearAllFiles}>
+                <Button type="button" variant="ghost" size="sm" className="h-6 text-2xs text-muted-foreground" onClick={handleClearAllFiles}>
                   Clear all
                 </Button>
               </div>
@@ -418,12 +418,12 @@ function UploadFileRow({
         <p className="text-xs font-medium text-foreground truncate" title={file.name}>
           {file.name}
         </p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           {file.size < 1024 * 1024
             ? `${(file.size / 1024).toFixed(0)} KB`
             : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
         </p>
-        {error ? <p className="text-[10px] text-destructive mt-0.5">{error}</p> : null}
+        {error ? <p className="text-2xs text-destructive mt-0.5">{error}</p> : null}
       </div>
       <Button
         type="button"

@@ -284,7 +284,7 @@ export default function SkillsMatrixPage() {
             filename={`skills-matrix-${new Date().toISOString().slice(0, 10)}.xlsx`}
             sheets={matrixExportSheets}
           />
-          <Button asChild size="sm" className="gap-2 bg-gold hover:bg-gold/90 text-white glow-gold">
+          <Button asChild size="sm" className="gap-2 bg-primary hover:bg-brand-soft text-primary-foreground hover:shadow-md hover:border-border-strong">
             <Link href="/hr/employees/find-expert">
               <Search className="h-3.5 w-3.5" />
               Find Expert
@@ -420,7 +420,7 @@ export default function SkillsMatrixPage() {
                                 <th
                                   key={cat}
                                   colSpan={catSkills.length}
-                                  className="border-b border-r px-2 py-1 text-center font-semibold text-[10px] uppercase tracking-wide text-muted-foreground bg-muted/40"
+                                  className="border-b border-r px-2 py-1 text-center font-semibold text-2xs uppercase tracking-wide text-muted-foreground bg-muted/40"
                                 >
                                   {cat}
                                 </th>
@@ -487,7 +487,7 @@ export default function SkillsMatrixPage() {
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-6 w-6 shrink-0">
                                     <AvatarImage src={emp.image ?? undefined} />
-                                    <AvatarFallback className="text-[9px]">{getInitials(emp.name)}</AvatarFallback>
+                                    <AvatarFallback className="text-3xs">{getInitials(emp.name)}</AvatarFallback>
                                   </Avatar>
                                   <span className="font-medium truncate max-w-[120px]">{emp.name}</span>
                                 </div>
@@ -512,7 +512,7 @@ export default function SkillsMatrixPage() {
                                     {level ? (
                                       <span className="relative inline-flex items-center justify-center" title={cellTitle}>
                                         <span
-                                          className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${LEVEL_COLORS[level] ?? LEVEL_COLORS[1]}`}
+                                          className={`inline-block rounded px-1.5 py-0.5 text-2xs font-semibold ${LEVEL_COLORS[level] ?? LEVEL_COLORS[1]}`}
                                         >
                                           {LEVEL_LABELS[level] ?? `L${level}`}
                                         </span>
@@ -572,12 +572,12 @@ export default function SkillsMatrixPage() {
                       const n = Number(lvl);
                       return (
                         <div key={lvl} className="flex items-start gap-2">
-                          <span className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${LEVEL_COLORS[n]}`}>
+                          <span className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-2xs font-semibold ${LEVEL_COLORS[n]}`}>
                             {lbl}
                           </span>
                           <div className="min-w-0">
                             <span className="text-xs font-medium">{LEVEL_NAMES[n]}</span>
-                            <p className="text-[10px] text-muted-foreground leading-snug">{LEVEL_DESCRIPTIONS[n]}</p>
+                            <p className="text-2xs text-muted-foreground leading-snug">{LEVEL_DESCRIPTIONS[n]}</p>
                           </div>
                         </div>
                       );
@@ -588,7 +588,7 @@ export default function SkillsMatrixPage() {
                   <p className="text-xs text-muted-foreground">
                     Score = Σ(L1×1 + L2×2 + L3×4 + L4×8 + L5×16) — weighted by proficiency
                   </p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <span className={cn("h-1.5 w-1.5 rounded-full", certDotClass("expired"))} />
                       Certification expired
@@ -606,22 +606,22 @@ export default function SkillsMatrixPage() {
                   <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="inline-flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-gold" />
+                        <Layers className="h-4 w-4 text-brand-text" />
                         Role Skill Gaps
                       </span>
                       <span className="text-xs font-normal text-muted-foreground">
                         Open roles vs. skills available across the team
                       </span>
                     </CardTitle>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground pt-1">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-emerald-500/30 bg-emerald-500/5 px-2 text-[10px] text-emerald-700 dark:text-emerald-400">
+                        <span className="inline-flex h-4 items-center rounded-full border border-success-strong/30 bg-success-soft px-2 text-2xs text-success-strong">
                           Skill
                         </span>
                         Covered in team
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-dashed border-amber-500/40 bg-amber-500/5 px-2 text-[10px] text-amber-700 dark:text-amber-400">
+                        <span className="inline-flex h-4 items-center rounded-full border border-dashed border-warning-strong/40 bg-warning-soft px-2 text-2xs text-warning-strong">
                           Skill
                         </span>
                         Missing from team
@@ -634,7 +634,7 @@ export default function SkillsMatrixPage() {
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex items-center gap-2">
                             <span className="font-medium text-sm truncate">{gap.title}</span>
-                            <Badge variant="outline" className="text-[9px] shrink-0">{gap.status}</Badge>
+                            <Badge variant="outline" className="text-3xs shrink-0">{gap.status}</Badge>
                           </div>
                           <Badge
                             variant={gap.missingCount === 0 ? "success" : "warning"}
@@ -650,22 +650,22 @@ export default function SkillsMatrixPage() {
                             <span
                               key={req.skill}
                               className={cn(
-                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]",
+                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs",
                                 req.covered
-                                  ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400"
-                                  : "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-400 border-dashed",
+                                  ? "border-success-strong/30 bg-success-soft text-success-strong"
+                                  : "border-warning-strong/40 bg-warning-soft text-warning-strong border-dashed",
                               )}
                               title={req.covered ? "Available in the team" : "Missing — no one in the team has this skill"}
                             >
                               <span
                                 className={cn(
                                   "h-1.5 w-1.5 rounded-full shrink-0",
-                                  req.covered ? "bg-emerald-500" : "bg-amber-500",
+                                  req.covered ? "bg-success-500" : "bg-warning-500",
                                 )}
                               />
                               <span>{req.skill}</span>
                               {!req.covered && (
-                                <span className="text-[9px] font-medium uppercase tracking-wide opacity-80">
+                                <span className="text-3xs font-medium uppercase tracking-wide opacity-80">
                                   missing
                                 </span>
                               )}
@@ -717,15 +717,15 @@ export default function SkillsMatrixPage() {
                       return (
                         <div
                           key={emp.userId}
-                          className="flex flex-col gap-3 p-4 rounded-xl border bg-card hover:border-gold/30 transition-colors sm:flex-row sm:items-center"
+                          className="flex flex-col gap-3 p-4 rounded-xl border bg-card hover:border-primary/40 transition-colors sm:flex-row sm:items-center"
                         >
                           <div className="flex items-center gap-3 min-w-0 sm:w-[230px] shrink-0">
                             <span className="text-sm font-bold text-muted-foreground w-5 text-right shrink-0">
                               {index + 1}
                             </span>
-                            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-gold/10">
+                            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-ring">
                               <AvatarImage src={emp.image ?? undefined} />
-                              <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+                              <AvatarFallback className="bg-brand-soft text-brand-text font-semibold text-sm">
                                 {getInitials(emp.name)}
                               </AvatarFallback>
                             </Avatar>
@@ -749,8 +749,8 @@ export default function SkillsMatrixPage() {
                                     <Badge
                                       variant={isMatch ? "default" : "secondary"}
                                       className={cn(
-                                        "text-[11px] font-normal",
-                                        isMatch && "bg-gold hover:bg-gold/90 text-white border-gold",
+                                        "text-2xs font-normal",
+                                        isMatch && "bg-primary hover:bg-brand-soft text-primary-foreground border-primary/40",
                                       )}
                                     >
                                       {showDot && (
@@ -763,7 +763,7 @@ export default function SkillsMatrixPage() {
                                     </Badge>
                                     <span
                                       className={cn(
-                                        "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold",
+                                        "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-semibold",
                                         LEVEL_COLORS[lvl] ?? LEVEL_COLORS[1],
                                       )}
                                       title={LEVEL_NAMES[lvl]}
@@ -774,7 +774,7 @@ export default function SkillsMatrixPage() {
                                 );
                               })}
                               {extra > 0 && (
-                                <Badge variant="outline" className="text-[11px]">
+                                <Badge variant="outline" className="text-2xs">
                                   +{extra}
                                 </Badge>
                               )}
@@ -789,7 +789,7 @@ export default function SkillsMatrixPage() {
                                   ? `Score ${emp.score} · ${expertSkillCount} L4+ skill${expertSkillCount !== 1 ? "s" : ""}`
                                   : `Score ${emp.score}`}
                             </Badge>
-                            <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-gold hover:text-gold">
+                            <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-brand-text hover:text-brand-text">
                               <Link href={`/hr/employees/${emp.userId}`}>View Profile</Link>
                             </Button>
                           </div>
@@ -811,7 +811,7 @@ export default function SkillsMatrixPage() {
                             key={skill}
                             type="button"
                             onClick={() => setExpertSkill(skill)}
-                            className="flex w-full items-center justify-between text-sm hover:text-gold transition-colors"
+                            className="flex w-full items-center justify-between text-sm hover:text-brand-text transition-colors"
                           >
                             <span className="truncate">{skill}</span>
                             <Badge variant="secondary" className="text-xs tabular-nums shrink-0 ml-2">
@@ -834,7 +834,7 @@ export default function SkillsMatrixPage() {
                                 key={skill}
                                 type="button"
                                 onClick={() => setExpertSkill(skill)}
-                                className="text-xs px-2.5 py-1 rounded-full border bg-muted/50 hover:border-gold/40 hover:bg-gold/5 transition-colors"
+                                className="text-xs px-2.5 py-1 rounded-full border bg-muted/50 hover:border-primary/40 hover:bg-brand-soft transition-colors"
                               >
                                 {skill}
                               </button>
@@ -844,12 +844,12 @@ export default function SkillsMatrixPage() {
                       </Card>
                     )}
 
-                    <Card className="bg-gold/5 border-gold/20">
+                    <Card className="bg-brand-soft border-primary/40">
                       <CardContent className="p-4 space-y-3">
                         <p className="text-sm text-muted-foreground leading-snug">
                           Need a deeper search across departments, locations and experience?
                         </p>
-                        <Button asChild className="w-full bg-gold hover:bg-gold/90 text-white">
+                        <Button asChild className="w-full bg-primary hover:bg-brand-soft text-primary-foreground">
                           <Link href="/hr/employees/find-expert">Open Find Expert</Link>
                         </Button>
                       </CardContent>

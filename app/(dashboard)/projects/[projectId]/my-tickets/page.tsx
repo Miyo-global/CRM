@@ -125,8 +125,8 @@ export default function MyTicketsPage({ params }: PageProps) {
       badge={
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">{todoCount} todo</span>
-          <span className="text-blue-500">{inProgressCount} active</span>
-          <span className="text-green-500">{doneCount} done</span>
+          <span className="text-info-strong">{inProgressCount} active</span>
+          <span className="text-success-strong">{doneCount} done</span>
         </div>
       }
       filters={

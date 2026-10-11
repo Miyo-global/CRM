@@ -47,7 +47,7 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="bg-gold hover:bg-gold/90 text-white shadow-lg">
+        <Button className="bg-primary hover:bg-brand-soft text-primary-foreground shadow-lg">
           <Plus className="h-4 w-4 mr-2" />
           New Lead
         </Button>
@@ -56,8 +56,8 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
 
         <SheetHeader className="px-6 pt-5 pb-3 border-b shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gold/10 flex items-center justify-center">
-              <UserPlus className="h-5 w-5 text-gold" />
+            <div className="h-10 w-10 rounded-xl bg-brand-soft flex items-center justify-center">
+              <UserPlus className="h-5 w-5 text-brand-text" />
             </div>
             <div>
               <SheetTitle className="text-lg font-semibold">Create New Lead</SheetTitle>
@@ -86,7 +86,7 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <Label htmlFor="name" className="text-xs font-medium mb-1.5 block">
-                    Full Name <span className="text-red-400">*</span>
+                    Full Name <span className="text-danger-strong">*</span>
                   </Label>
                   <Input id="name" name="name" required placeholder="Enter full name" className="h-9" />
                 </div>
@@ -134,25 +134,25 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
             </div>
 
             {hasDuplicates && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+              <div className="rounded-lg border border-warning-strong/30 bg-warning-soft p-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-                  <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="h-4 w-4 text-warning-strong shrink-0" />
+                  <span className="text-xs font-medium text-warning-strong">
                     Possible duplicate{dupCheck!.duplicates.length > 1 ? "s" : ""} found
                   </span>
                 </div>
                 <div className="space-y-1.5">
                   {dupCheck!.duplicates.map((dup) => (
-                    <div key={dup.id} className="flex items-center justify-between text-[11px]">
+                    <div key={dup.id} className="flex items-center justify-between text-2xs">
                       <span className="font-medium truncate">{dup.name}</span>
                       <div className="flex items-center gap-2 shrink-0">
                         {dup.email && <span className="text-muted-foreground">{dup.email}</span>}
-                        <Badge variant="outline" className="text-[9px] px-1 py-0">{dup.status}</Badge>
+                        <Badge variant="outline" className="text-3xs px-1 py-0">{dup.status}</Badge>
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-2">You can still create this lead if it&apos;s a different person.</p>
+                <p className="text-2xs text-muted-foreground mt-2">You can still create this lead if it&apos;s a different person.</p>
               </div>
             )}
 
@@ -171,17 +171,17 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
                     <SelectContent>
                       <SelectItem value="HOT">
                         <span className="flex items-center gap-2">
-                          <Flame className="h-3.5 w-3.5 text-red-400" /> Hot
+                          <Flame className="h-3.5 w-3.5 text-danger-strong" /> Hot
                         </span>
                       </SelectItem>
                       <SelectItem value="WARM">
                         <span className="flex items-center gap-2">
-                          <Sun className="h-3.5 w-3.5 text-amber-400" /> Warm
+                          <Sun className="h-3.5 w-3.5 text-warning-strong" /> Warm
                         </span>
                       </SelectItem>
                       <SelectItem value="COLD">
                         <span className="flex items-center gap-2">
-                          <Snowflake className="h-3.5 w-3.5 text-blue-400" /> Cold
+                          <Snowflake className="h-3.5 w-3.5 text-info-strong" /> Cold
                         </span>
                       </SelectItem>
                     </SelectContent>
@@ -222,7 +222,7 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
                 {source === "referral" && (
                   <div className="col-span-2">
                     <Label htmlFor="referredBy" className="text-xs font-medium mb-1.5 block">
-                      Referred By <span className="text-red-400">*</span>
+                      Referred By <span className="text-danger-strong">*</span>
                     </Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -300,7 +300,7 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
           <Button type="button" variant="outline" className="flex-1 h-9" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="create-lead-form" className="flex-1 bg-gold hover:bg-gold/90 text-white h-9" disabled={isPending}>
+          <Button type="submit" form="create-lead-form" className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground h-9" disabled={isPending}>
             {isPending ? "Creating..." : "Create Lead"}
           </Button>
         </SheetFooter>

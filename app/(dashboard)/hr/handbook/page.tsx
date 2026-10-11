@@ -126,7 +126,7 @@ function HandbookFormFields({
             <Label className="text-sm font-medium">
               Version <span className="text-destructive">*</span>
             </Label>
-            <span className="text-[10px] text-muted-foreground">{version.length}/20</span>
+            <span className="text-2xs text-muted-foreground">{version.length}/20</span>
           </div>
           <Input
             className={cn("max-w-full", (touched.has("version") && errors.version) && "border-destructive")}
@@ -137,9 +137,9 @@ function HandbookFormFields({
             maxLength={20}
           />
           {touched.has("version") && errors.version ? (
-            <p className="text-[10px] text-destructive">{errors.version}</p>
+            <p className="text-2xs text-destructive">{errors.version}</p>
           ) : (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               At least two segments separated by a dot (e.g. 1.0, 2.1.3)
             </p>
           )}
@@ -149,7 +149,7 @@ function HandbookFormFields({
             <Label className="text-sm font-medium">
               Title <span className="text-destructive">*</span>
             </Label>
-            <span className="text-[10px] text-muted-foreground">{title.length}/120</span>
+            <span className="text-2xs text-muted-foreground">{title.length}/120</span>
           </div>
           <Input
             className={cn("max-w-full", (touched.has("title") && errors.title) && "border-destructive")}
@@ -160,7 +160,7 @@ function HandbookFormFields({
             maxLength={120}
           />
           {touched.has("title") && errors.title && (
-            <p className="text-[10px] text-destructive">{errors.title}</p>
+            <p className="text-2xs text-destructive">{errors.title}</p>
           )}
         </div>
       </div>
@@ -198,7 +198,7 @@ function HandbookFormFields({
               onChange={(e) => setDocumentUrl(e.target.value)}
               type="url"
             />
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Paste a link to the handbook PDF or document hosted online.
             </p>
           </TabsContent>
@@ -226,7 +226,7 @@ function HandbookFormFields({
               )}
             </Button>
             {uploadStatus === "done" && (
-              <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+              <div className="flex items-center gap-1.5 text-xs text-success-strong">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 <span className="truncate max-w-xs">{uploadedFileName} uploaded</span>
               </div>
@@ -235,7 +235,7 @@ function HandbookFormFields({
               <p className="text-xs text-destructive">Upload failed — try again</p>
             )}
             {uploadStatus === "idle" && (
-              <p className="text-[10px] text-muted-foreground">PDF, Word, Excel, PowerPoint — max 10 MB</p>
+              <p className="text-2xs text-muted-foreground">PDF, Word, Excel, PowerPoint — max 10 MB</p>
             )}
           </TabsContent>
         </Tabs>
@@ -420,7 +420,7 @@ function HandbookAdminContent() {
       }
     >
       {versions?.some((v) => v.status === "PUBLISHED") && (
-        <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-3 py-2.5 text-xs text-blue-700 dark:text-blue-300">
+        <div className="flex items-start gap-2 rounded-lg border border-info-strong/25 bg-info-soft px-3 py-2.5 text-xs text-info-strong">
           <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           <span>Published versions are visible to all employees under <strong>HR → Handbook</strong>. Use ⋯ → Unpublish to hide a version from employees.</span>
         </div>
@@ -446,10 +446,10 @@ function HandbookAdminContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold truncate max-w-[200px] sm:max-w-none">{v.title}</p>
-                    <Badge variant="outline" className="text-[10px]">v{v.version}</Badge>
-                    <Badge variant={statusBadge(v.status)} className="text-[10px]">{v.status}</Badge>
+                    <Badge variant="outline" className="text-2xs">v{v.version}</Badge>
+                    <Badge variant={statusBadge(v.status)} className="text-2xs">{v.status}</Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
                     {v.description && <span className="line-clamp-1 max-w-full">{v.description}</span>}
                     {v.publishedAt && <span>Published {format(new Date(v.publishedAt), "MMM d, yyyy")}</span>}
                     {v.createdAt && <span>Created {format(new Date(v.createdAt), "MMM d, yyyy")}</span>}
@@ -602,15 +602,15 @@ function HandbookEmployeeView() {
           {published.map((v) => (
             <Card key={v.id}>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="h-4 w-4 text-gold" />
+                <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
+                  <BookOpen className="h-4 w-4 text-brand-text" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold truncate">{v.title}</p>
-                    <Badge variant="outline" className="text-[10px]">v{v.version}</Badge>
+                    <Badge variant="outline" className="text-2xs">v{v.version}</Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
                     {v.description && <span className="line-clamp-1">{v.description}</span>}
                     {v.publishedAt && <span>Published {format(new Date(v.publishedAt), "MMM d, yyyy")}</span>}
                   </div>

@@ -49,18 +49,18 @@ function AppliedRoleBlock({ candidate }: { candidate: CandidateListItem }) {
 
   if (!candidate.primaryJobTitle) {
     return (
-      <div className="rounded-md border border-dashed border-amber-300/60 bg-amber-50/50 px-2.5 py-2 dark:bg-amber-950/20">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+      <div className="rounded-md border border-dashed border-warning-300/60 bg-warning-500/50 px-2.5 py-2">
+        <p className="text-2xs font-medium uppercase tracking-wide text-warning-strong">
           Applied role
         </p>
-        <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">No job linked</p>
+        <p className="mt-0.5 text-xs text-warning-strong">No job linked</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-md border border-primary/15 bg-primary/5 px-2.5 py-2">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
         Applied for
       </p>
       <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -69,22 +69,22 @@ function AppliedRoleBlock({ candidate }: { candidate: CandidateListItem }) {
           <span className="truncate">{candidate.primaryJobTitle}</span>
         </Badge>
         {primary?.jobStatus && (
-          <Badge variant="outline" className={`text-[10px] ${jobStatusClass(primary.jobStatus)}`}>
+          <Badge variant="outline" className={`text-2xs ${jobStatusClass(primary.jobStatus)}`}>
             {JOB_STATUS_LABELS[primary.jobStatus]}
           </Badge>
         )}
         {extraCount > 0 && (
-          <span className="text-[11px] text-muted-foreground">+{extraCount} more role{extraCount > 1 ? "s" : ""}</span>
+          <span className="text-2xs text-muted-foreground">+{extraCount} more role{extraCount > 1 ? "s" : ""}</span>
         )}
       </div>
       {candidate.primaryAppliedAt && (
-        <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+        <p className="mt-1 flex items-center gap-1 text-2xs text-muted-foreground">
           <CalendarDays className="h-3 w-3" />
           Applied {format(new Date(candidate.primaryAppliedAt), "dd MMM yyyy")}
         </p>
       )}
       {primary?.pipelineStage && primary.pipelineStage !== "APPLIED" && (
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
+        <p className="mt-0.5 text-2xs text-muted-foreground">
           Pipeline: {primary.pipelineStage.replace(/_/g, " ")}
         </p>
       )}
@@ -470,7 +470,7 @@ export default function CandidatesPage() {
                   {candidate.rating && (
                     <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`h-3.5 w-3.5 ${i < candidate.rating! ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"}`} />
+                        <Star key={i} className={`h-3.5 w-3.5 ${i < candidate.rating! ? "text-warning-strong fill-warning-500" : "text-muted-foreground/30"}`} />
                       ))}
                     </div>
                   )}

@@ -51,7 +51,7 @@ export function ProgressTimeline({ id }: { id: number }) {
               />
               <span
                 className={cn(
-                  "text-[9px] text-center leading-tight max-w-[52px]",
+                  "text-3xs text-center leading-tight max-w-[52px]",
                   step.status === "completed"
                     ? "text-primary font-medium"
                     : step.status === "current" || step.status === "active"
@@ -62,7 +62,7 @@ export function ProgressTimeline({ id }: { id: number }) {
                 {step.label}
               </span>
               {step.status === "completed" && step.timestamp && (
-                <span className="text-[8px] text-muted-foreground">
+                <span className="text-3xs text-muted-foreground">
                   {format(new Date(step.timestamp), "MMM d")}
                 </span>
               )}

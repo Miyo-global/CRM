@@ -308,7 +308,7 @@ export function MemberExpenseList({
                 Show All Claims
               </Button>
             ) : (
-              <Button className="bg-gold hover:bg-gold/80 text-white" onClick={onCreateNew}>
+              <Button className="bg-primary hover:bg-brand-soft text-primary-foreground" onClick={onCreateNew}>
                 <Plus className="mr-2 h-4 w-4" />
                 Submit New Claim
               </Button>
@@ -322,13 +322,13 @@ export function MemberExpenseList({
                 <caption className="sr-only">Expense claims</caption>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Claim ID</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Category</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Description</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Amount</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
-                    <TableHead scope="col" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Action</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Claim ID</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Category</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Description</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Amount</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
+                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -87,12 +87,12 @@ export function DealSidePanel({ dealId, onClose }: DealSidePanelProps) {
                       {stage && (
                         <Badge
                           variant="secondary"
-                          className={`text-[11px] ${stage.bg}`}
+                          className={`text-2xs ${stage.bg}`}
                         >
                           {stage.label}
                         </Badge>
                       )}
-                      <span className="text-sm font-semibold text-gold">
+                      <span className="text-sm font-semibold text-brand-text">
                         {formatINRCompact(Number(deal.value ?? 0))}
                       </span>
                     </div>

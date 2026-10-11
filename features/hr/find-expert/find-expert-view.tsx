@@ -61,7 +61,7 @@ function SkillLevelBadge({ level }: { level: number | null }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
+        "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-semibold tabular-nums",
         LEVEL_COLORS[clamped],
       )}
       title={LEVEL_NAMES[clamped]}
@@ -75,13 +75,13 @@ function AvailabilityBadge({ available, status }: { available: boolean; status: 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-2xs font-medium",
         available
-          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+          ? "bg-success-soft text-success-strong"
+          : "bg-warning-soft text-warning-strong",
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", available ? "bg-emerald-500" : "bg-amber-500")} />
+      <span className={cn("h-1.5 w-1.5 rounded-full", available ? "bg-success-500" : "bg-warning-500")} />
       {status}
     </span>
   );
@@ -106,11 +106,11 @@ function ExpertRow({
     null;
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl border border-border bg-card shadow-noir hover:border-gold/30 transition-colors sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 p-4 rounded-xl border border-border bg-card shadow-sm hover:border-primary/40 transition-colors sm:flex-row sm:items-center">
       <div className="flex items-center gap-3 min-w-0 sm:w-[220px] shrink-0">
-        <Avatar className="h-10 w-10 shrink-0 ring-2 ring-gold/10">
+        <Avatar className="h-10 w-10 shrink-0 ring-2 ring-ring">
           <AvatarImage src={resolveImageUrl(expert.image)} />
-          <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+          <AvatarFallback className="bg-brand-soft text-brand-text font-semibold text-sm">
             {getInitials(expert.name)}
           </AvatarFallback>
         </Avatar>
@@ -118,7 +118,7 @@ function ExpertRow({
           <div className="flex items-center gap-2 min-w-0">
             <p className="font-medium text-sm truncate">{expert.name ?? "Unknown"}</p>
             {!expert.isActive && (
-              <Badge variant="destructive" className="shrink-0 text-[9px] px-1.5 py-0">
+              <Badge variant="destructive" className="shrink-0 text-3xs px-1.5 py-0">
                 Inactive
               </Badge>
             )}
@@ -152,8 +152,8 @@ function ExpertRow({
                 <Badge
                   variant={isMatch ? "default" : "secondary"}
                   className={cn(
-                    "text-[11px] font-normal",
-                    isMatch && "bg-gold hover:bg-gold/90 text-white border-gold",
+                    "text-2xs font-normal",
+                    isMatch && "bg-primary hover:bg-brand-soft text-primary-foreground border-primary/40",
                     !recognized && !isMatch && "border-dashed text-muted-foreground",
                   )}
                   title={recognized ? undefined : "Unrecognised skill — not in the skills catalog"}
@@ -166,7 +166,7 @@ function ExpertRow({
             );
           })}
           {expert.skillLevels.length > 6 && (
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-2xs">
               +{expert.skillLevels.length - 6}
             </Badge>
           )}
@@ -183,7 +183,7 @@ function ExpertRow({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 shrink-0 sm:ml-auto">
-        <Button asChild variant="default" size="sm" className="h-8 text-xs bg-gold hover:bg-gold/90 text-white">
+        <Button asChild variant="default" size="sm" className="h-8 text-xs bg-primary hover:bg-brand-soft text-primary-foreground">
           <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
         </Button>
         {expert.email ? (
@@ -211,12 +211,12 @@ function ExpertGridCard({
   const q = activeQuery.toLowerCase();
 
   return (
-    <Card className="shadow-noir border-border hover:border-gold/30 transition-colors">
+    <Card className="shadow-sm border-border hover:border-primary/40 transition-colors">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-gold/10">
+          <Avatar className="h-10 w-10 ring-2 ring-ring">
             <AvatarImage src={resolveImageUrl(expert.image)} />
-            <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+            <AvatarFallback className="bg-brand-soft text-brand-text font-semibold text-sm">
               {getInitials(expert.name)}
             </AvatarFallback>
           </Avatar>
@@ -224,7 +224,7 @@ function ExpertGridCard({
             <div className="flex items-center gap-2 min-w-0">
               <p className="font-medium text-sm truncate">{expert.name ?? "Unknown"}</p>
               {!expert.isActive && (
-                <Badge variant="destructive" className="shrink-0 text-[9px] px-1.5 py-0">
+                <Badge variant="destructive" className="shrink-0 text-3xs px-1.5 py-0">
                   Inactive
                 </Badge>
               )}
@@ -246,8 +246,8 @@ function ExpertGridCard({
                 key={name}
                 variant={isMatch ? "default" : "secondary"}
                 className={cn(
-                  "text-[10px]",
-                  isMatch && "bg-gold text-white border-gold",
+                  "text-2xs",
+                  isMatch && "bg-primary text-primary-foreground border-primary/40",
                   !recognized && !isMatch && "border-dashed text-muted-foreground",
                 )}
                 title={recognized ? undefined : "Unrecognised skill — not in the skills catalog"}
@@ -263,7 +263,7 @@ function ExpertGridCard({
           <AvailabilityBadge available={expert.available} status={expert.status} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="default" className="flex-1 h-8 text-xs bg-gold hover:bg-gold/90 text-white">
+          <Button asChild size="sm" variant="default" className="flex-1 h-8 text-xs bg-primary hover:bg-brand-soft text-primary-foreground">
             <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
           </Button>
           {expert.email ? (
@@ -528,7 +528,7 @@ export function FindExpertView() {
               if (e.key === "Escape") setShowSuggestions(false);
             }}
             placeholder="e.g. React, Financial Modelling, Python…"
-            className="pl-9 h-10 border-border shadow-noir"
+            className="pl-9 h-10 border-border shadow-sm"
             aria-label="Skill search"
             autoComplete="off"
           />
@@ -548,7 +548,7 @@ export function FindExpertView() {
                     <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
                     <span className="truncate">{s.skill}</span>
                     {s.category && (
-                      <Badge variant="outline" className="shrink-0 text-[9px]">
+                      <Badge variant="outline" className="shrink-0 text-3xs">
                         {s.category}
                       </Badge>
                     )}
@@ -564,7 +564,7 @@ export function FindExpertView() {
         <Button
           type="submit"
           disabled={!query.trim()}
-          className="h-10 px-6 bg-gold hover:bg-gold/90 text-white shadow-noir glow-gold"
+          className="h-10 px-6 bg-primary hover:bg-brand-soft text-primary-foreground shadow-sm hover:shadow-md hover:border-border-strong"
         >
           Search
         </Button>
@@ -693,7 +693,7 @@ export function FindExpertView() {
               )}
               </div>
               {sortBy === "relevance" && (
-                <p className="text-[11px] text-muted-foreground max-w-md leading-snug">
+                <p className="text-2xs text-muted-foreground max-w-md leading-snug">
                   Relevance: match quality, structured level (when rated), experience, skill breadth; ties break by level, tenure, skill count, then name.
                 </p>
               )}
@@ -715,7 +715,7 @@ export function FindExpertView() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className={cn("h-8 px-2.5 rounded-none", viewMode === "list" && "bg-gold/10 text-gold")}
+                  className={cn("h-8 px-2.5 rounded-none", viewMode === "list" && "bg-brand-soft text-brand-text")}
                   onClick={() => setViewMode("list")}
                   aria-label="List view"
                 >
@@ -725,7 +725,7 @@ export function FindExpertView() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className={cn("h-8 px-2.5 rounded-none border-l border-border", viewMode === "grid" && "bg-gold/10 text-gold")}
+                  className={cn("h-8 px-2.5 rounded-none border-l border-border", viewMode === "grid" && "bg-brand-soft text-brand-text")}
                   onClick={() => setViewMode("grid")}
                   aria-label="Grid view"
                 >
@@ -807,7 +807,7 @@ export function FindExpertView() {
 
         {activeQuery && !isLoading && filteredExperts.length > 0 && (
           <aside className="hidden lg:flex flex-col gap-4 mt-6 lg:mt-0">
-            <Card className="shadow-noir border-border">
+            <Card className="shadow-sm border-border">
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-medium">Top Skills</CardTitle>
               </CardHeader>
@@ -823,7 +823,7 @@ export function FindExpertView() {
                 <Button
                   variant="link"
                   size="sm"
-                  className="h-auto p-0 text-xs text-gold"
+                  className="h-auto p-0 text-xs text-brand-text"
                   onClick={() => router.push("/hr/employees/skills-matrix")}
                 >
                   View all skills
@@ -832,7 +832,7 @@ export function FindExpertView() {
             </Card>
 
             {relatedSkills.length > 0 && (
-              <Card className="shadow-noir border-border">
+              <Card className="shadow-sm border-border">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm font-medium">Related Skills</CardTitle>
                 </CardHeader>
@@ -842,7 +842,7 @@ export function FindExpertView() {
                       <button
                         key={skill}
                         type="button"
-                        className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/50 hover:border-gold/40 hover:bg-gold/5 transition-colors"
+                        className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/50 hover:border-primary/40 hover:bg-brand-soft transition-colors"
                         onClick={() => {
                           setQuery(skill);
                           setActiveQuery(skill);
@@ -857,14 +857,14 @@ export function FindExpertView() {
               </Card>
             )}
 
-            <Card className="shadow-noir border-border bg-gold/5 border-gold/20">
+            <Card className="shadow-sm border-border bg-brand-soft border-primary/40">
               <CardContent className="p-4 space-y-3">
                 <p className="text-sm text-muted-foreground leading-snug">
                   Can&apos;t find the right expert? Raise a request and we&apos;ll help you.
                 </p>
                 <Button
                   asChild
-                  className="w-full bg-gold hover:bg-gold/90 text-white glow-gold"
+                  className="w-full bg-primary hover:bg-brand-soft text-primary-foreground hover:shadow-md hover:border-border-strong"
                 >
                   <Link href="/hr/helpdesk">Request Expert</Link>
                 </Button>

@@ -106,9 +106,9 @@ export default function ReimbursementsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">{r.category}</p>
-                    <Badge variant={statusBadge(r.status)} className="text-[10px]">{r.status}</Badge>
+                    <Badge variant={statusBadge(r.status)} className="text-2xs">{r.status}</Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5">
                     <span className="font-medium text-foreground">${Number(r.amount).toLocaleString()}</span>
                     {r.user?.name && <span>{r.user.name}</span>}
                     {r.createdAt && <span>{format(new Date(r.createdAt), "MMM d, yyyy")}</span>}

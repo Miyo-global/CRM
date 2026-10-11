@@ -29,10 +29,10 @@ interface EmployeeTicketsListProps {
 }
 
 const priorityColors: Record<string, string> = {
-  URGENT: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900",
-  HIGH: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900",
-  MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-900",
-  LOW: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-800",
+  URGENT: "bg-danger-soft text-danger-strong border-danger-strong/25",
+  HIGH: "bg-warning-soft text-warning-strong border-warning-strong/25",
+  MEDIUM: "bg-warning-soft text-warning-strong border-warning-strong/25",
+  LOW: "bg-muted text-muted-foreground border-border",
 };
 
 function formatTicketKey(ticket: Ticket): string {
@@ -74,8 +74,8 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium leading-snug line-clamp-2">{ticket.title}</p>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-                  <span className="font-mono text-[10px] text-muted-foreground/90">{key}</span>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground">
+                  <span className="font-mono text-2xs text-muted-foreground/90">{key}</span>
                   {ticket.project && (
                     <span className="truncate max-w-[10rem]" title={ticket.project.name}>
                       {ticket.project.name}
@@ -90,12 +90,12 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                <Badge variant="outline" className="text-2xs px-1.5 py-0">
                   {ticket.status.replace(/_/g, " ")}
                 </Badge>
                 <span
                   className={cn(
-                    "text-[10px] font-semibold px-1.5 py-0.5 rounded border",
+                    "text-2xs font-semibold px-1.5 py-0.5 rounded border",
                     priorityColors[priority] ?? "bg-muted text-muted-foreground border-border",
                   )}
                 >

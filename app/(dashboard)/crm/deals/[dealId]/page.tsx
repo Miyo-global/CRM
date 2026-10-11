@@ -31,14 +31,15 @@ import Image from "next/image";
 import { MeetingsCard } from "@/features/crm/deals/detail/meetings-card";
 import { MeetingDialog, CreateProjectDialog } from "@/features/crm/deals/detail/deal-dialogs";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { toneSoft } from "@/lib/design/tones";
 
 const STAGES = [
-  { key: "LEAD", label: "Lead", color: "#3B82F6", bg: "bg-blue-500/10" },
-  { key: "CONTACTED", label: "Contacted", color: "#0EA5E9", bg: "bg-sky-500/10" },
-  { key: "PROPOSAL", label: "Proposal", color: "#F59E0B", bg: "bg-amber-500/10" },
-  { key: "NEGOTIATION", label: "Negotiation", color: "#8B5CF6", bg: "bg-purple-500/10" },
-  { key: "WON", label: "Won", color: "#10B981", bg: "bg-emerald-500/10" },
-  { key: "LOST", label: "Lost", color: "#EF4444", bg: "bg-red-500/10" },
+  { key: "LEAD", label: "Lead", bg: toneSoft.info },
+  { key: "CONTACTED", label: "Contacted", bg: toneSoft.teal },
+  { key: "PROPOSAL", label: "Proposal", bg: toneSoft.warning },
+  { key: "NEGOTIATION", label: "Negotiation", bg: toneSoft.plum },
+  { key: "WON", label: "Won", bg: toneSoft.success },
+  { key: "LOST", label: "Lost", bg: toneSoft.danger },
 ] as const;
 
 type DealStage = typeof STAGES[number]["key"];
@@ -233,10 +234,7 @@ export default function DealDetailPage({
         </span>
       }
       badge={
-        <Badge
-          className="text-sm px-3 py-1"
-          style={{ backgroundColor: `${stageConfig.color}20`, color: stageConfig.color }}
-        >
+        <Badge className={cn("text-sm px-3 py-1 border-transparent", stageConfig.bg)}>
           {stageConfig.label}
         </Badge>
       }
@@ -259,7 +257,7 @@ export default function DealDetailPage({
           </Button>
           {deal.stage !== "WON" && deal.stage !== "LOST" && (
             <>
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleMarkWon}>
+              <Button size="sm" className="bg-success hover:bg-success-700 text-success-foreground" onClick={handleMarkWon}>
                 <Trophy className="h-4 w-4 mr-1" />
                 Mark Won
               </Button>
@@ -294,7 +292,6 @@ export default function DealDetailPage({
                   isPast ? "bg-muted/50 text-muted-foreground" :
                   "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30",
                 )}
-                style={isActive ? { color: stage.color } : undefined}
               >
                 {stage.label}
                 {i < STAGES.length - 1 && <ChevronRight className="h-3 w-3 ml-1 text-muted-foreground/30" />}
@@ -313,7 +310,7 @@ export default function DealDetailPage({
                 onCancel={handleCancelEdit}
               />
             ) : (
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Deal Information</CardTitle>
                 </CardHeader>
@@ -332,7 +329,7 @@ export default function DealDetailPage({
                         <div>
                           <p className="text-xs text-muted-foreground">{item.label}</p>
                           {item.href ? (
-                            <a href={item.href} className="text-sm text-gold hover:underline">{item.value || ""}</a>
+                            <a href={item.href} className="text-sm text-brand-text hover:underline">{item.value || ""}</a>
                           ) : (
                             <p className="text-sm">{item.value || ""}</p>
                           )}
@@ -341,13 +338,13 @@ export default function DealDetailPage({
                     ))}
                   </div>
 
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/5 to-gold/5 border border-border/50">
+                  <div className="p-4 rounded-xl bg-brand-soft border border-border/50">
                     <p className="text-xs text-muted-foreground">Deal Value</p>
-                    <p className="text-3xl font-bold text-gold">{formatINR(dealValue)}</p>
+                    <p className="text-3xl font-bold text-brand-text">{formatINR(dealValue)}</p>
                     {deal.probability !== null && deal.probability > 0 && (
                       <div className="mt-2">
                         <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-gold" style={{ width: `${deal.probability}%` }} />
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${deal.probability}%` }} />
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           Weighted: {formatINR(Math.round(dealValue * (deal.probability / 100)))}
@@ -364,8 +361,8 @@ export default function DealDetailPage({
                   )}
 
                   {deal.lostReason && (
-                    <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
-                      <p className="text-xs text-red-400 mb-1">Lost Reason</p>
+                    <div className="p-3 rounded-lg bg-danger-soft border border-danger-strong/20">
+                      <p className="text-xs text-danger-strong mb-1">Lost Reason</p>
                       <p className="text-sm">{deal.lostReason}</p>
                     </div>
                   )}
@@ -376,13 +373,13 @@ export default function DealDetailPage({
 
           <motion.div variants={fadeUp} className="lg:col-span-2 space-y-6">
             {deal.assignedTo && (
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Assigned To</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center text-sm font-semibold text-gold">
+                    <div className="h-10 w-10 rounded-full bg-brand-soft flex items-center justify-center text-sm font-semibold text-brand-text">
                       {deal.assignedTo.name?.[0] ?? "?"}
                     </div>
                     <p className="text-sm font-medium">{deal.assignedTo.name}</p>
@@ -392,17 +389,17 @@ export default function DealDetailPage({
             )}
 
             {deal.lead && (
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Linked Lead</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Link href={`/crm/leads/${deal.lead.id}`} className="flex items-center gap-3 group">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-sm font-semibold text-blue-400">
+                    <div className="h-10 w-10 rounded-full bg-info-soft flex items-center justify-center text-sm font-semibold text-info-strong">
                       {deal.lead.name?.[0] ?? "?"}
                     </div>
                     <div>
-                      <p className="text-sm font-medium group-hover:text-gold transition-colors">{deal.lead.name}</p>
+                      <p className="text-sm font-medium group-hover:text-brand-text transition-colors">{deal.lead.name}</p>
                       {deal.lead.email && <p className="text-xs text-muted-foreground">{deal.lead.email}</p>}
                       {deal.lead.phone && <p className="text-xs text-muted-foreground">{deal.lead.phone}</p>}
                     </div>
@@ -412,13 +409,13 @@ export default function DealDetailPage({
             )}
 
             {deal.client && (
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Linked Client</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-sm font-semibold text-emerald-400">
+                    <div className="h-10 w-10 rounded-full bg-success-soft flex items-center justify-center text-sm font-semibold text-success-strong">
                       {deal.client.name?.[0] ?? "?"}
                     </div>
                     <p className="text-sm font-medium">{deal.client.name}</p>
@@ -427,7 +424,7 @@ export default function DealDetailPage({
               </Card>
             )}
 
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">Key Dates</CardTitle>
               </CardHeader>
@@ -448,7 +445,7 @@ export default function DealDetailPage({
               </CardContent>
             </Card>
 
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
@@ -483,7 +480,7 @@ export default function DealDetailPage({
               onDeleteMeeting={handleDeleteMeeting}
             />
 
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">Activity Timeline</CardTitle>
               </CardHeader>

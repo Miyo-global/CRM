@@ -357,7 +357,7 @@ export default function DocumentTypesPage() {
                       <div>
                         <p className="text-sm font-medium">{dt.name}</p>
                         {dt.description && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                          <p className="text-2xs text-muted-foreground mt-0.5 line-clamp-1">
                             {dt.description}
                           </p>
                         )}
@@ -365,22 +365,22 @@ export default function DocumentTypesPage() {
                     </TableCell>
                     <TableCell>
                       {dt.isMandatory ? (
-                        <Badge variant="default" className="text-[10px]">
+                        <Badge variant="default" className="text-2xs">
                           Required
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-2xs">
                           Optional
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>
                       {dt.isActive !== false ? (
-                        <Badge variant="default" className="text-[10px] bg-green-600">
+                        <Badge variant="default" className="text-2xs bg-success-600">
                           Active
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-2xs">
                           Inactive
                         </Badge>
                       )}
@@ -397,7 +397,7 @@ export default function DocumentTypesPage() {
                             <Badge
                               key={r}
                               variant="outline"
-                              className="text-[9px] py-0 h-4"
+                              className="text-3xs py-0 h-4"
                             >
                               {getRoleLabel(r)}
                             </Badge>
@@ -495,13 +495,13 @@ export default function DocumentTypesPage() {
             aria-invalid={!!formErrors.name}
           />
           {formErrors.name && (
-            <p className="text-[11px] text-destructive">{formErrors.name}</p>
+            <p className="text-2xs text-destructive">{formErrors.name}</p>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Allowed: {DOC_TYPE_NAME_HINT}. Max 120 characters.
           </p>
           {form.name && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Slug: {documentTypeNameToSlug(form.name) || "—"}
             </p>
           )}
@@ -579,9 +579,9 @@ export default function DocumentTypesPage() {
             aria-invalid={!!formErrors.sortOrder}
           />
           {formErrors.sortOrder && (
-            <p className="text-[11px] text-destructive">{formErrors.sortOrder}</p>
+            <p className="text-2xs text-destructive">{formErrors.sortOrder}</p>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Lower numbers appear first. Decimals are allowed (e.g. 1.5 to place between 1 and 2).
           </p>
         </div>

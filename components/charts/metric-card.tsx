@@ -19,12 +19,12 @@ function TrendBadge({ trend }: { trend: TrendValue }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded",
+        "inline-flex items-center gap-0.5 text-2xs font-medium px-1.5 py-0.5 rounded",
         trend.value === 0
           ? "bg-muted text-muted-foreground"
           : trend.isPositive
-          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          : "bg-red-500/10 text-red-600 dark:text-red-400"
+          ? "bg-success-soft text-success-strong"
+          : "bg-danger-soft text-danger-strong"
       )}
     >
       <Icon className="h-2.5 w-2.5" />
@@ -63,7 +63,7 @@ function SparkLine({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-export function MetricCard({ label, value, icon: Icon, trend, sparkData, sparkColor = "#bd882c" }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, trend, sparkData, sparkColor = "var(--chart-1)" }: MetricCardProps) {
   return (
     <Card>
       <CardContent className="p-4">

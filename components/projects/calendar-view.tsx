@@ -36,10 +36,10 @@ interface CalendarViewProps {
 }
 
 const statusColors: Record<string, string> = {
-  TODO: "bg-gray-400",
-  IN_PROGRESS: "bg-blue-500",
-  IN_REVIEW: "bg-purple-500",
-  DONE: "bg-green-500",
+  TODO: "bg-ink-400",
+  IN_PROGRESS: "bg-info-500",
+  IN_REVIEW: "bg-plum-500",
+  DONE: "bg-success-500",
 };
 
 export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
@@ -158,12 +158,12 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
                     onClick={() => onTicketClick(t.id)}
                     className="flex items-center gap-1 px-1.5 py-0.5 rounded text-left hover:bg-muted transition-colors"
                   >
-                    <div className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", statusColors[t.status] ?? "bg-gray-400")} />
-                    <span className="text-[10px] text-foreground truncate">{t.title}</span>
+                    <div className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", statusColors[t.status] ?? "bg-ink-400")} />
+                    <span className="text-2xs text-foreground truncate">{t.title}</span>
                   </button>
                 ))}
                 {dayTickets.length > 3 && (
-                  <span className="text-[10px] text-muted-foreground px-1.5">+{dayTickets.length - 3} more</span>
+                  <span className="text-2xs text-muted-foreground px-1.5">+{dayTickets.length - 3} more</span>
                 )}
               </div>
             </div>

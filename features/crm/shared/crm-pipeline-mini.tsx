@@ -24,7 +24,7 @@ export function CrmPipelineMini({ byStatus, total }: CrmPipelineMiniProps) {
           const pct = total > 0 ? ((count / total) * 100).toFixed(0) : "0";
           return (
             <div key={stage.key} className="space-y-0.5">
-              <div className="flex items-center justify-between text-[10px]">
+              <div className="flex items-center justify-between text-2xs">
                 <div className="flex items-center gap-1.5">
                   <div className={cn("w-1.5 h-1.5 rounded-full", stage.dot)} />
                   <span className="font-medium">{stage.label}</span>

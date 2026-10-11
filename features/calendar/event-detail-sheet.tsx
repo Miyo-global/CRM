@@ -24,6 +24,8 @@ import { EventCreateDialog } from "./event-create-dialog";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveImageUrl } from "@/lib/utils";
+import { toneVar } from "@/lib/design/tones";
+import { eventColorTone } from "./event-tones";
 
 function CalendarIcon({ className }: { className?: string }) {
   return (
@@ -113,14 +115,7 @@ function HelpCircle({ className }: { className?: string }) {
   );
 }
 
-const EVENT_COLORS: Record<string, string> = {
-  blue: "#3b82f6",
-  green: "#22c55e",
-  red: "#ef4444",
-  yellow: "#f59e0b",
-  purple: "#a855f7",
-  gold: "#bd882c",
-};
+
 
 function getSafeLocationUrl(location: string): string | null {
   try {
@@ -178,9 +173,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
     [event, numericEventId, rsvpMutation]
   );
 
-  const colorHex = event
-    ? (EVENT_COLORS[event.color ?? "blue"] ?? EVENT_COLORS.blue)
-    : EVENT_COLORS.blue;
+  const colorHex = toneVar[eventColorTone(event?.color)];
 
   return (
     <>
@@ -215,7 +208,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                           href={getSafeLocationUrl(event.location)!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline break-all"
+                          className="text-info-strong hover:underline break-all"
                         >
                           {event.location}
                         </a>
@@ -250,7 +243,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:border-green-900 dark:hover:bg-green-950"
+                            className="flex-1 h-8 text-xs gap-1.5 text-success-strong border-success-strong/25 hover:bg-success-soft hover:text-success-strong"
                             disabled={deleteEventIsPending || rsvpMutationIsPending}
                             onClick={() => handleRsvp("accepted")}
                             aria-label="Accept event"
@@ -261,7 +254,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-yellow-600 border-yellow-200 hover:bg-yellow-50 hover:text-yellow-700 dark:text-yellow-400 dark:border-yellow-900 dark:hover:bg-yellow-950"
+                            className="flex-1 h-8 text-xs gap-1.5 text-warning-strong border-warning-strong/25 hover:bg-warning-soft hover:text-warning-strong"
                             disabled={rsvpMutationIsPending}
                             onClick={() => handleRsvp("tentative")}
                             aria-label="Mark as tentative"
@@ -272,7 +265,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-900 dark:hover:bg-red-950"
+                            className="flex-1 h-8 text-xs gap-1.5 text-danger-strong border-danger-strong/25 hover:bg-danger-soft hover:text-danger-strong"
                             disabled={rsvpMutationIsPending}
                             onClick={() => handleRsvp("declined")}
                             aria-label="Decline event"
@@ -298,7 +291,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                             <div key={a.id} className="flex items-center gap-2 text-sm">
                               <Avatar className="h-6 w-6">
                                 <AvatarImage src={resolveImageUrl(a.user?.image ?? null)} />
-                                <AvatarFallback className="text-[10px]">
+                                <AvatarFallback className="text-2xs">
                                   {(a.user?.name ?? a.user?.email ?? "?").slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -307,13 +300,13 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] h-4 px-1.5 capitalize ${
+                                className={`text-2xs h-4 px-1.5 capitalize ${
                                   a.status === "accepted"
-                                    ? "border-green-200 text-green-600 dark:border-green-900 dark:text-green-400"
+                                    ? "border-success-strong/25 text-success-strong"
                                     : a.status === "declined"
-                                      ? "border-red-200 text-red-600 dark:border-red-900 dark:text-red-400"
+                                      ? "border-danger-strong/25 text-danger-strong"
                                       : a.status === "tentative"
-                                        ? "border-yellow-200 text-yellow-600 dark:border-yellow-900 dark:text-yellow-400"
+                                        ? "border-warning-strong/25 text-warning-strong"
                                         : "border-border text-muted-foreground"
                                 }`}
                               >

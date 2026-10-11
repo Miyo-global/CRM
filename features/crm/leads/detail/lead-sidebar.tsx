@@ -57,7 +57,7 @@ export function LeadSidebar({
   return (
     <div className="space-y-4">
       {lead.assignedTo && (
-        <Card className="shadow-noir">
+        <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">
               Assigned To
@@ -68,9 +68,9 @@ export function LeadSidebar({
               <div
                 className={cn(
                   "h-11 w-11 rounded-full shrink-0",
-                  "ring-2 ring-gold/50 ring-offset-2 ring-offset-background",
-                  "bg-gold/10 flex items-center justify-center",
-                  "text-gold font-bold text-base select-none"
+                  "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                  "bg-brand-soft flex items-center justify-center",
+                  "text-brand-text font-bold text-base select-none"
                 )}
               >
                 {avatarInitials}
@@ -89,7 +89,7 @@ export function LeadSidebar({
       )}
 
       {keyDates.length > 0 && (
-        <Card className="shadow-noir">
+        <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">
               Key Dates
@@ -105,7 +105,7 @@ export function LeadSidebar({
                       className={cn(
                         "absolute left-0 h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center",
                         idx === 0
-                          ? "border-gold bg-gold/20"
+                          ? "border-primary/40 bg-brand-soft"
                           : "border-border bg-background"
                       )}
                     />

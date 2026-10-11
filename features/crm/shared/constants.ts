@@ -3,23 +3,24 @@ import {
   Share2, Megaphone, Globe, Footprints, Users, Flame, Sun, Snowflake,
 } from "lucide-react";
 import type React from "react";
+import { CHART_VARS, toneVar } from "@/lib/design/tones";
 
 export const PIPELINE_STAGES = [
-  { key: "NEW", label: "New", dot: "bg-blue-500", bg: "bg-blue-500/10", color: "#3B82F6", icon: Zap },
-  { key: "CONTACTED", label: "Contacted", dot: "bg-sky-500", bg: "bg-sky-500/10", color: "#0EA5E9", icon: Phone },
-  { key: "INTERESTED", label: "Interested", dot: "bg-amber-500", bg: "bg-amber-500/10", color: "#F59E0B", icon: Eye },
-  { key: "QUALIFIED", label: "Qualified", dot: "bg-purple-500", bg: "bg-purple-500/10", color: "#8B5CF6", icon: Target },
-  { key: "CONVERTED", label: "Converted", dot: "bg-emerald-500", bg: "bg-emerald-500/10", color: "#10B981", icon: UserCheck },
-  { key: "LOST", label: "Lost", dot: "bg-red-500", bg: "bg-red-500/10", color: "#EF4444", icon: X },
+  { key: "NEW", label: "New", dot: "bg-info-500", bg: "bg-info-soft", color: toneVar.info, icon: Zap },
+  { key: "CONTACTED", label: "Contacted", dot: "bg-info-500", bg: "bg-info-soft", color: toneVar.teal, icon: Phone },
+  { key: "INTERESTED", label: "Interested", dot: "bg-warning-500", bg: "bg-warning-soft", color: toneVar.warning, icon: Eye },
+  { key: "QUALIFIED", label: "Qualified", dot: "bg-plum-500", bg: "bg-plum-soft", color: toneVar.plum, icon: Target },
+  { key: "CONVERTED", label: "Converted", dot: "bg-success-500", bg: "bg-success-soft", color: toneVar.success, icon: UserCheck },
+  { key: "LOST", label: "Lost", dot: "bg-danger-500", bg: "bg-danger-soft", color: toneVar.danger, icon: X },
 ] as const;
 
 export const DEAL_STAGES = [
-  { key: "LEAD", label: "Lead", dot: "bg-blue-500", bg: "bg-blue-500/10" },
-  { key: "CONTACTED", label: "Contacted", dot: "bg-sky-500", bg: "bg-sky-500/10" },
-  { key: "PROPOSAL", label: "Proposal", dot: "bg-amber-500", bg: "bg-amber-500/10" },
-  { key: "NEGOTIATION", label: "Negotiation", dot: "bg-purple-500", bg: "bg-purple-500/10" },
-  { key: "WON", label: "Won", dot: "bg-emerald-500", bg: "bg-emerald-500/10" },
-  { key: "LOST", label: "Lost", dot: "bg-red-500", bg: "bg-red-500/10" },
+  { key: "LEAD", label: "Lead", dot: "bg-info-500", bg: "bg-info-soft" },
+  { key: "CONTACTED", label: "Contacted", dot: "bg-info-500", bg: "bg-info-soft" },
+  { key: "PROPOSAL", label: "Proposal", dot: "bg-warning-500", bg: "bg-warning-soft" },
+  { key: "NEGOTIATION", label: "Negotiation", dot: "bg-plum-500", bg: "bg-plum-soft" },
+  { key: "WON", label: "Won", dot: "bg-success-500", bg: "bg-success-soft" },
+  { key: "LOST", label: "Lost", dot: "bg-danger-500", bg: "bg-danger-soft" },
 ] as const;
 
 export type DealStage = (typeof DEAL_STAGES)[number]["key"];
@@ -35,9 +36,9 @@ export const LEAD_SOURCES = [
 ] as const;
 
 export const LEAD_PRIORITIES = [
-  { value: "HOT", label: "Hot", color: "text-red-700 dark:text-red-400", bg: "bg-red-500/15", border: "border-red-500/30", icon: Flame },
-  { value: "WARM", label: "Warm", color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-500/15", border: "border-amber-500/30", icon: Sun },
-  { value: "COLD", label: "Cold", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-400/15", border: "border-blue-400/30", icon: Snowflake },
+  { value: "HOT", label: "Hot", color: "text-danger-strong", bg: "bg-danger-soft", border: "border-danger-strong/30", icon: Flame },
+  { value: "WARM", label: "Warm", color: "text-warning-strong", bg: "bg-warning-soft", border: "border-warning-strong/30", icon: Sun },
+  { value: "COLD", label: "Cold", color: "text-info-strong", bg: "bg-info-soft", border: "border-info-strong/30", icon: Snowflake },
 ] as const;
 
 export const ACTIVITY_TYPES = [
@@ -48,12 +49,22 @@ export const ACTIVITY_TYPES = [
   { value: "site_visit", label: "Site Visit", icon: Eye },
 ] as const;
 
-export const CHART_COLORS = ["#3B82F6", "#8B5CF6", "#F59E0B", "#10B981", "#EF4444", "#0EA5E9", "#EC4899", "#6366F1"];
+export const CHART_COLORS: readonly string[] = CHART_VARS;
 
+/** Recharts tooltip styled as a popover card (Gold & Ink §8.8). */
 export const CHART_TOOLTIP_STYLE = {
-  background: "hsl(var(--card))",
-  border: "1px solid hsl(var(--border))",
-  borderRadius: 8,
+  background: "var(--popover)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius-md)",
+  color: "var(--popover-foreground)",
+  fontSize: 12,
+  boxShadow: "var(--shadow-md)",
 } as const;
 
-export const AXIS_TICK = { fill: "hsl(var(--muted-foreground))", fontSize: 11 } as const;
+export const AXIS_TICK = { fill: "var(--chart-axis)", fontSize: 11 } as const;
+
+/** Spread onto <CartesianGrid />. */
+export const CHART_GRID = { stroke: "var(--chart-grid)", strokeDasharray: "3 3", vertical: false } as const;
+
+/** Spread onto <XAxis /> / <YAxis />. */
+export const CHART_AXIS = { tick: AXIS_TICK, tickLine: false, axisLine: false } as const;

@@ -46,8 +46,8 @@ import { format, isPast, isToday, differenceInDays } from "date-fns";
 
 const STATUS_CONFIG = {
   PENDING: { label: "Pending", variant: "secondary" as const, color: "text-muted-foreground" },
-  ACHIEVED: { label: "Achieved", variant: "default" as const, color: "text-green-600" },
-  MISSED: { label: "Missed", variant: "destructive" as const, color: "text-red-600" },
+  ACHIEVED: { label: "Achieved", variant: "default" as const, color: "text-success-strong" },
+  MISSED: { label: "Missed", variant: "destructive" as const, color: "text-danger-strong" },
 } as const;
 
 function MilestoneDialog({
@@ -164,7 +164,7 @@ function MilestoneCard({
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Badge variant={cfg.variant} className="text-[10px]">{cfg.label}</Badge>
+                <Badge variant={cfg.variant} className="text-2xs">{cfg.label}</Badge>
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">

@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const priorityColors: Record<string, string> = {
-  URGENT: "bg-red-100 text-red-700 border-red-200",
-  HIGH: "bg-orange-100 text-orange-700 border-orange-200",
-  MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  LOW: "bg-slate-100 text-slate-600 border-slate-200",
+  URGENT: "bg-danger-soft text-danger-strong border-danger-strong/25",
+  HIGH: "bg-warning-soft text-warning-strong border-warning-strong/25",
+  MEDIUM: "bg-warning-soft text-warning-strong border-warning-strong/25",
+  LOW: "bg-muted text-muted-foreground border-border",
 };
 
 export function MyTasksWidget() {
@@ -75,7 +75,7 @@ export function MyTasksWidget() {
                       {task.priority && (
                         <span
                           className={cn(
-                            "text-[10px] font-semibold px-1.5 py-0.5 rounded border",
+                            "text-2xs font-semibold px-1.5 py-0.5 rounded border",
                             priorityColors[task.priority] ?? "bg-muted text-muted-foreground border-border"
                           )}
                         >
@@ -85,7 +85,7 @@ export function MyTasksWidget() {
                       {task.dueDate && (
                         <span
                           className={cn(
-                            "text-[10px] font-medium",
+                            "text-2xs font-medium",
                             isOverdue ? "text-destructive" : "text-muted-foreground"
                           )}
                         >
@@ -95,7 +95,7 @@ export function MyTasksWidget() {
                       )}
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] shrink-0">
+                  <Badge variant="outline" className="text-2xs shrink-0">
                     {task.status.replace(/_/g, " ")}
                   </Badge>
                 </li>

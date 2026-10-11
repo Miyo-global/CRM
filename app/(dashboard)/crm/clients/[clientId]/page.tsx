@@ -35,10 +35,10 @@ import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as const;
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; step: number }> = {
-  ACCOUNT_OPENING: { label: "Account Opening", color: "text-blue-400", bg: "bg-blue-500", step: 0 },
-  QUERIES: { label: "Queries", color: "text-amber-400", bg: "bg-amber-500", step: 1 },
-  PLAN_SELECTED: { label: "Plan Selected", color: "text-purple-400", bg: "bg-purple-500", step: 2 },
-  INVESTED: { label: "Invested", color: "text-emerald-400", bg: "bg-emerald-500", step: 3 },
+  ACCOUNT_OPENING: { label: "Account Opening", color: "text-info-strong", bg: "bg-info-500", step: 0 },
+  QUERIES: { label: "Queries", color: "text-warning-strong", bg: "bg-warning-500", step: 1 },
+  PLAN_SELECTED: { label: "Plan Selected", color: "text-plum-strong", bg: "bg-plum-500", step: 2 },
+  INVESTED: { label: "Invested", color: "text-success-strong", bg: "bg-success-500", step: 3 },
 };
 
 const ACTIVITY_TYPES = [
@@ -216,8 +216,8 @@ export default function ClientAccountDetailPage() {
             )}
 
             {account.status === "INVESTED" && (
-              <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg space-y-2">
-                <h4 className="text-sm font-medium text-emerald-400 flex items-center gap-1.5">
+              <div className="p-4 bg-success-soft border border-success-strong/20 rounded-lg space-y-2">
+                <h4 className="text-sm font-medium text-success-strong flex items-center gap-1.5">
                   <IndianRupee className="h-4 w-4" /> Investment Details
                 </h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -242,11 +242,11 @@ export default function ClientAccountDetailPage() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={account.salesRep.image || ""} />
-                    <AvatarFallback className="text-[9px]">{account.salesRep.name?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{account.salesRep.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{account.salesRep.email}</p>
+                    <p className="text-2xs text-muted-foreground">{account.salesRep.email}</p>
                   </div>
                 </div>
               ) : null}
@@ -257,11 +257,11 @@ export default function ClientAccountDetailPage() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={account.assignedCrm.image || ""} />
-                    <AvatarFallback className="text-[9px]">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{account.assignedCrm.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{account.assignedCrm.email}</p>
+                    <p className="text-2xs text-muted-foreground">{account.assignedCrm.email}</p>
                   </div>
                 </div>
               ) : (
@@ -304,12 +304,12 @@ export default function ClientAccountDetailPage() {
                   <div className="pb-4 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">{activity.title}</p>
-                      <Badge variant="outline" className="text-[9px]">{activity.activityType}</Badge>
+                      <Badge variant="outline" className="text-3xs">{activity.activityType}</Badge>
                     </div>
                     {activity.description && (
                       <p className="text-xs text-muted-foreground mt-0.5">{activity.description}</p>
                     )}
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-2xs text-muted-foreground mt-1">
                       {activity.user?.name || "Unknown"} • {new Date(activity.createdAt).toLocaleString(DEFAULT_LOCALE)}
                     </p>
                   </div>
@@ -389,7 +389,7 @@ export default function ClientAccountDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowInvestmentModal(false)}>Cancel</Button>
-            <Button onClick={handleInvestmentSubmit} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={handleInvestmentSubmit} className="bg-success-600 hover:bg-success-700">
               Record Investment
             </Button>
           </DialogFooter>

@@ -18,10 +18,10 @@ export function OnboardingProgressRing({
 
   const strokeColor =
     clampedPct === 100
-      ? "#22c55e"
+      ? "var(--success-500)"
       : clampedPct >= 50
-      ? "#f59e0b"
-      : "#ef4444";
+      ? "var(--warning-500)"
+      : "var(--danger-500)";
 
   const center = size / 2;
 
@@ -66,7 +66,7 @@ export function OnboardingProgressRing({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
           className="font-bold leading-none tabular-nums"
-          style={{ fontSize: size * 0.2, color: strokeColor }}
+          style={{ fontSize: size * 0.2 }}
         >
           {clampedPct}%
         </span>

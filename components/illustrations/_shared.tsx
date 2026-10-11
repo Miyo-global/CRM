@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
 
-export const GOLD = "#bd882c";
-export const BLUE = "#0f2b7f";
-export const GOLD_LIGHT = "#d4a84a";
-export const BLUE_LIGHT = "#1a3fa0";
-export const SKIN = "#ffb8b8";
-export const SKIN_SHADOW = "#e6a0a0";
-export const HAIR = "#2f2e41";
+// Theme-aware tokens (Gold & Ink §3.7). Names kept for backward compatibility.
+export const GOLD = "var(--gold-400)";
+export const BLUE = "var(--muted-foreground)";
+export const GOLD_LIGHT = "var(--gold-300)";
+export const BLUE_LIGHT = "var(--border-strong)";
+export const SKIN = "var(--gold-200)";
+export const SKIN_SHADOW = "var(--gold-300)";
+export const HAIR = "var(--ink-700)";
 
 export interface IllustrationProps {
   className?: string;

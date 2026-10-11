@@ -50,7 +50,7 @@ export function AIBulkScoreButton({ leadIds, onComplete }: AIBulkScoreButtonProp
         {batchMutation.isPending ? (
           <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Scoring...</>
         ) : (
-          <><Sparkles className="h-3.5 w-3.5 mr-1.5 text-gold" />AI Score {leadIds.length}</>
+          <><Sparkles className="h-3.5 w-3.5 mr-1.5 text-brand-text" />AI Score {leadIds.length}</>
         )}
       </Button>
 

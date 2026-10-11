@@ -118,11 +118,11 @@ export function ConversionModal({ leadName, open, onClose, onSubmit }: Conversio
               type="checkbox"
               checked={createDeal}
               onChange={(e) => setCreateDeal(e.target.checked)}
-              className="h-4 w-4 rounded border-input accent-gold"
+              className="h-4 w-4 rounded border-input accent-gold-400"
             />
             <div>
               <p className="text-sm font-medium leading-none">Auto-create Deal</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Create a new deal pre-filled with lead data</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">Create a new deal pre-filled with lead data</p>
             </div>
           </label>
 
@@ -140,7 +140,7 @@ export function ConversionModal({ leadName, open, onClose, onSubmit }: Conversio
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button onClick={handleSubmit} className="bg-success hover:bg-success-700 text-success-foreground">
             {createDeal ? "Convert & Create Deal" : "Convert Lead"}
           </Button>
         </DialogFooter>
@@ -342,7 +342,7 @@ export function BulkActionsBar({
         <div className="flex items-center gap-1.5">
           <AIBulkScoreButton leadIds={selectedArray.slice(0, 50)} onComplete={onClearSelection} />
           {selectedArray.length > 50 && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-2xs text-muted-foreground">
               First 50 only
             </span>
           )}

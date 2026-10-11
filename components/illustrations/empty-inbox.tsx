@@ -7,7 +7,7 @@ export function EmptyInboxIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="80" fill={BLUE} opacity="0.04" />
 
-      <rect x="40" y="80" width="120" height="70" rx="8" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="40" y="80" width="120" height="70" rx="8" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <path d="M40 105h35l8-15h34l8 15h35" stroke={BLUE} strokeWidth="2" strokeLinejoin="round" fill="none" />
       <rect x="40" y="80" width="120" height="25" rx="8" fill={BLUE} opacity="0.06" />
 

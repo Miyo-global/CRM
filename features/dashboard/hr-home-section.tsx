@@ -22,10 +22,10 @@ export function HrHomeSection() {
         animate="visible"
         className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
       >
-        <Card className="h-full flex flex-col border-gold/20 bg-gold/5">
+        <Card className="h-full flex flex-col border-primary/40 bg-brand-soft">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <LayoutDashboard className="h-4 w-4 text-gold" aria-hidden="true" />
+              <LayoutDashboard className="h-4 w-4 text-brand-text" aria-hidden="true" />
               HR Dashboard
             </CardTitle>
           </CardHeader>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { motion } from "framer-motion";
 
 interface DataPoint {
@@ -16,10 +17,11 @@ interface MiniAreaChartProps {
 
 export function MiniAreaChart({
   data,
-  color = "#3B82F6",
+  color = "var(--chart-1)",
   height = 240,
   formatValue = (v) => v.toLocaleString(),
 }: MiniAreaChartProps) {
+  const gradientId = `area-grad-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return null;
 
   const paddingLeft = 50;
@@ -42,18 +44,17 @@ export function MiniAreaChart({
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${paddingTop + plotHeight} L ${points[0].x} ${paddingTop + plotHeight} Z`;
 
-  const gradientId = `area-grad-${color.replace("#", "")}`;
   const yTicks = Array.from({ length: 4 }, (_, i) => {
     const val = minVal + (range * i) / 3;
     return { val, y: paddingTop + ((maxVal - val) / range) * plotHeight };
   });
 
   return (
-    <svg width="100%" height={height} viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="overflow-visible">
+    <svg width="100%" height={height} viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="overflow-visible" role="img" aria-label="Area chart">
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+          <stop offset="0%" stopColor={color} stopOpacity={0.24} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
 
@@ -64,9 +65,8 @@ export function MiniAreaChart({
             y1={tick.y}
             x2={100 - paddingRight}
             y2={tick.y}
-            stroke="currentColor"
-            strokeOpacity={0.07}
-            strokeDasharray="2 2"
+            stroke="var(--chart-grid)"
+            strokeDasharray="3 3"
             vectorEffect="non-scaling-stroke"
           />
           <text
@@ -110,7 +110,7 @@ export function MiniAreaChart({
           cy={p.y}
           r="1.2"
           fill={color}
-          stroke="white"
+          stroke="var(--card)"
           strokeWidth="0.4"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}

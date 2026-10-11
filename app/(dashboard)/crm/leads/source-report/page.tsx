@@ -10,6 +10,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { TAG_TONE_CYCLE, toneBar, toneSoft } from "@/lib/design/tones";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useLeadSourceReport } from "@/lib/api/hooks/crm";
 import { formatINRCompact } from "@/lib/format-utils";
@@ -24,15 +25,10 @@ const SOURCE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-const SOURCE_COLORS = [
-  { bar: "bg-blue-500", badge: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  { bar: "bg-amber-500", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  { bar: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  { bar: "bg-purple-500", badge: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
-  { bar: "bg-rose-500", badge: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
-  { bar: "bg-cyan-500", badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
-  { bar: "bg-slate-500", badge: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
-];
+const SOURCE_COLORS = TAG_TONE_CYCLE.map((t) => ({
+  bar: toneBar[t],
+  badge: `${toneSoft[t]} border-transparent`,
+}));
 
 export default function LeadSourceReportPage() {
   const { data, isLoading } = useLeadSourceReport();
@@ -109,10 +105,10 @@ export default function LeadSourceReportPage() {
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-gold" />
+                <BarChart3 className="h-4 w-4 text-brand-text" />
                 Source Attribution
               </CardTitle>
             </CardHeader>
@@ -144,34 +140,34 @@ export default function LeadSourceReportPage() {
                               {label}
                             </Badge>
                             {topSource?.source === s.source && (
-                              <Badge variant="secondary" className="text-[10px]">Top</Badge>
+                              <Badge variant="secondary" className="text-2xs">Top</Badge>
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <div className="text-center">
                               <div className="font-semibold tabular-nums">{s.count}</div>
-                              <div className="text-[10px] text-muted-foreground">leads</div>
+                              <div className="text-2xs text-muted-foreground">leads</div>
                             </div>
                             <div className="text-center">
-                              <div className="font-semibold tabular-nums text-emerald-400">{s.converted}</div>
-                              <div className="text-[10px] text-muted-foreground">converted</div>
+                              <div className="font-semibold tabular-nums text-success-strong">{s.converted}</div>
+                              <div className="text-2xs text-muted-foreground">converted</div>
                             </div>
                             <div className="text-center">
                               <div className={cn(
                                 "font-semibold tabular-nums",
-                                s.conversionRate >= 30 ? "text-emerald-400" :
-                                s.conversionRate >= 15 ? "text-amber-400" : "text-muted-foreground"
+                                s.conversionRate >= 30 ? "text-success-strong" :
+                                s.conversionRate >= 15 ? "text-warning-strong" : "text-muted-foreground"
                               )}>
                                 {s.conversionRate}%
                               </div>
-                              <div className="text-[10px] text-muted-foreground">rate</div>
+                              <div className="text-2xs text-muted-foreground">rate</div>
                             </div>
                             <div className="text-center hidden sm:block">
                               <div className="font-semibold tabular-nums text-xs">
-                                <DollarSign className="h-3 w-3 inline mr-0.5 text-gold" />
+                                <DollarSign className="h-3 w-3 inline mr-0.5 text-brand-text" />
                                 {formatINRCompact(s.totalValue)}
                               </div>
-                              <div className="text-[10px] text-muted-foreground">value</div>
+                              <div className="text-2xs text-muted-foreground">value</div>
                             </div>
                           </div>
                         </div>
@@ -194,10 +190,10 @@ export default function LeadSourceReportPage() {
 
         {data && data.sources.length > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-400" />
+                  <TrendingUp className="h-4 w-4 text-success-strong" />
                   Conversion Rate by Source
                 </CardTitle>
               </CardHeader>
@@ -225,7 +221,7 @@ export default function LeadSourceReportPage() {
                                 animate={{ height: `${barH}px` }}
                                 transition={{ duration: 0.6, delay: i * 0.08 }}
                               />
-                              <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                              <span className="text-2xs text-muted-foreground text-center leading-tight">
                                 {label}
                               </span>
                             </div>

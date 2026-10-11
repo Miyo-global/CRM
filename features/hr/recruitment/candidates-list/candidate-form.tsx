@@ -174,7 +174,7 @@ function Field({
         {required && <span className="text-destructive"> *</span>}
       </label>
       {children}
-      {error ? <p className="text-[11px] text-destructive">{error}</p> : null}
+      {error ? <p className="text-2xs text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -188,10 +188,10 @@ function inputClass(invalid: boolean) {
 }
 
 const SKILL_TYPE_COLOR: Record<string, string> = {
-  PRIMARY: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  SECONDARY: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
-  TECHNICAL: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-  SOFT: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+  PRIMARY: "bg-info-soft text-info-strong",
+  SECONDARY: "bg-plum-soft text-plum-strong",
+  TECHNICAL: "bg-warning-soft text-warning-strong",
+  SOFT: "bg-success-soft text-success-strong",
 };
 
 const SKILL_TYPE_LABEL: Record<string, string> = {
@@ -274,7 +274,7 @@ function SkillsInput({
         <div className="space-y-2">
           {grouped.map((g) => (
             <div key={g.type}>
-              <p className="mb-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{g.label} Skills</p>
+              <p className="mb-1 text-2xs font-medium text-muted-foreground uppercase tracking-wide">{g.label} Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {g.skills.map((s) => (
                   <span
@@ -303,7 +303,7 @@ function SkillsInput({
         </div>
       )}
       {value.length === 0 && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Type a skill, choose its type (Primary/Secondary/Technical/Soft) and proficiency level, then press Enter or click Add.
         </p>
       )}
@@ -369,7 +369,7 @@ function EducationInput({
               onChange={(e) => update(i, { qualification: e.target.value })}
             />
             {(errors?.[`education.${i}.qualification`] || (i === 0 && errors?.["education.0.qualification"])) && (
-              <p className="mt-1 text-[11px] text-destructive">
+              <p className="mt-1 text-2xs text-destructive">
                 {errors[`education.${i}.qualification`] ?? errors["education.0.qualification"]}
               </p>
             )}
@@ -727,7 +727,7 @@ export const CandidateForm = memo(function CandidateForm({
           errors={errors}
         />
         {err("education") && (
-          <p className="text-[11px] text-destructive">{err("education")}</p>
+          <p className="text-2xs text-destructive">{err("education")}</p>
         )}
       </Section>
 
@@ -741,7 +741,7 @@ export const CandidateForm = memo(function CandidateForm({
           onChange={(v) => setField("skillEntries", v)}
         />
         {err("skillEntries") && (
-          <p className="text-[11px] text-destructive">{err("skillEntries")}</p>
+          <p className="text-2xs text-destructive">{err("skillEntries")}</p>
         )}
       </Section>
 

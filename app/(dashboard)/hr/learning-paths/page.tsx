@@ -104,17 +104,17 @@ export default function LearningPathsPage() {
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
                   <GraduationCap className="h-4 w-4 text-primary" />
-                  {lp.level && <Badge variant="outline" className="text-[10px]">{lp.level}</Badge>}
+                  {lp.level && <Badge variant="outline" className="text-2xs">{lp.level}</Badge>}
                 </div>
                 <h3 className="text-sm font-semibold leading-tight">{lp.title}</h3>
                 {lp.description && <p className="text-xs text-muted-foreground line-clamp-2">{lp.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                   <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{lp.courseCount} courses</span>
                   {lp.estimatedHours && <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{lp.estimatedHours}h</span>}
                   <span className="flex items-center gap-0.5"><BarChart3 className="h-3 w-3" />{lp.enrolledCount} enrolled</span>
                 </div>
                 {lp.isEnrolled ? (
-                  <Badge variant="default" className="text-[10px] w-full justify-center">Enrolled</Badge>
+                  <Badge variant="default" className="text-2xs w-full justify-center">Enrolled</Badge>
                 ) : (
                   <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => handleEnroll(lp.id)}>Enroll</Button>
                 )}

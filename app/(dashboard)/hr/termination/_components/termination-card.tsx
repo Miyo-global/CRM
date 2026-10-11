@@ -69,17 +69,17 @@ export function TerminationCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-semibold truncate">{employee?.name ?? "Employee"}</p>
-              <Badge variant={statusVariant(status)} className="text-[10px] shrink-0">
+              <Badge variant={statusVariant(status)} className="text-2xs shrink-0">
                 {statusLabel(status)}
               </Badge>
               {emailStatus === "failed" && (
-                <Badge variant="destructive" className="text-[10px] shrink-0">
+                <Badge variant="destructive" className="text-2xs shrink-0">
                   Email Failed
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+            <div className="flex items-center gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
               {employee?.designation && (
                 <span className="flex items-center gap-1">
                   <User className="h-3 w-3" />
@@ -100,7 +100,7 @@ export function TerminationCard({
                 </span>
               )}
               {noticePeriodWaived && (
-                <span className="text-amber-600 dark:text-amber-400">Notice waived</span>
+                <span className="text-warning-strong">Notice waived</span>
               )}
               {evidenceCount > 0 && (
                 <span className="flex items-center gap-1">
@@ -111,7 +111,7 @@ export function TerminationCard({
             </div>
 
             {status === "REJECTED" && record.ceoRemarks && (
-              <p className="text-[11px] text-destructive mt-1 line-clamp-2">
+              <p className="text-2xs text-destructive mt-1 line-clamp-2">
                 CEO: {record.ceoRemarks}
               </p>
             )}
@@ -119,12 +119,12 @@ export function TerminationCard({
             {reasonsList.length > 0 && (
               <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                 {visibleReasons.map((r) => (
-                  <Badge key={r} variant="outline" className="text-[9px] py-0 h-4">
+                  <Badge key={r} variant="outline" className="text-3xs py-0 h-4">
                     {r}
                   </Badge>
                 ))}
                 {extraCount > 0 && (
-                  <Badge variant="outline" className="text-[9px] py-0 h-4">
+                  <Badge variant="outline" className="text-3xs py-0 h-4">
                     +{extraCount} more
                   </Badge>
                 )}
@@ -214,14 +214,14 @@ export function TerminationCard({
             )}
 
             {status === "COMPLETED" && (
-              <span className="text-[11px] text-muted-foreground italic">Completed</span>
+              <span className="text-2xs text-muted-foreground italic">Completed</span>
             )}
           </div>
         </div>
 
         <Separator className="my-3" />
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
           {record.initiator?.name && record.createdAt && (
             <span className="flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

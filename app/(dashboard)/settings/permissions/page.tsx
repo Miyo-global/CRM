@@ -76,7 +76,7 @@ function PermissionsContent() {
       subtitle="Read-only overview of built-in permissions per system role"
     >
       <div className="space-y-4">
-        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+        <div className="flex items-start gap-3 rounded-lg border border-info-strong/25 bg-info-soft p-3 text-sm text-info-strong">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
             Permissions are defined by system role. To assign custom permissions to a specific
@@ -94,7 +94,7 @@ function PermissionsContent() {
               key={r}
               variant={r === role ? "default" : "outline"}
               className={cn(
-                "text-[11px]",
+                "text-2xs",
                 r === role && "bg-primary text-primary-foreground"
               )}
             >
@@ -106,7 +106,7 @@ function PermissionsContent() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Lock className="h-4 w-4 text-gold" />
+              <Lock className="h-4 w-4 text-brand-text" />
               System Role Permissions ({PERMISSIONS.length} total)
             </CardTitle>
           </CardHeader>
@@ -123,7 +123,7 @@ function PermissionsContent() {
                     <div
                       key={r}
                       className={cn(
-                        "px-2 py-2.5 text-center text-[11px] font-semibold leading-tight text-muted-foreground",
+                        "px-2 py-2.5 text-center text-2xs font-semibold leading-tight text-muted-foreground",
                         r === role && "text-primary"
                       )}
                     >
@@ -138,7 +138,7 @@ function PermissionsContent() {
                       className="grid bg-muted/20 border-b border-border/30"
                       style={{ gridTemplateColumns: `260px repeat(${SYSTEM_ROLES.length}, minmax(72px, 1fr))` }}
                     >
-                      <div className="px-4 py-1.5 col-span-full text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <div className="px-4 py-1.5 col-span-full text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
                         {formatResource(resource)}
                       </div>
                     </div>
@@ -177,8 +177,8 @@ function PermissionRow({ perm, roleCount, rolePermSets, currentRole }: Permissio
       style={{ gridTemplateColumns: `260px repeat(${roleCount}, minmax(72px, 1fr))` }}
     >
       <div className="px-4 py-2 flex flex-col justify-center">
-        <p className="text-[12px] font-medium leading-snug">{perm.description}</p>
-        <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+        <p className="text-xs font-medium leading-snug">{perm.description}</p>
+        <p className="text-2xs text-muted-foreground font-mono mt-0.5">
           {formatAction(perm.action)}
         </p>
       </div>
@@ -194,7 +194,7 @@ function PermissionRow({ perm, roleCount, rolePermSets, currentRole }: Permissio
             )}
           >
             {hasPermission ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-label="Allowed" />
+              <CheckCircle2 className="h-4 w-4 text-success-strong" aria-label="Allowed" />
             ) : (
               <XCircle className="h-3.5 w-3.5 text-muted-foreground/30" aria-label="Not allowed" />
             )}

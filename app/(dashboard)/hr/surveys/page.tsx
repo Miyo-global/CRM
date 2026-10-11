@@ -45,11 +45,11 @@ const SurveyCard = memo(function SurveyCard({ s, isAdmin, onPublish, onClose }: 
     <Card className="hover:shadow-sm transition-shadow">
       <CardContent className="p-4 space-y-2">
         <div className="flex items-start justify-between">
-          <Badge variant={statusBadge(s.status)} className="text-[10px]">{s.status ?? "DRAFT"}</Badge>
-          {s.isAnonymous && <Badge variant="outline" className="text-[10px]">Anonymous</Badge>}
+          <Badge variant={statusBadge(s.status)} className="text-2xs">{s.status ?? "DRAFT"}</Badge>
+          {s.isAnonymous && <Badge variant="outline" className="text-2xs">Anonymous</Badge>}
         </div>
         <h3 className="text-sm font-semibold leading-tight">{s.title}</h3>
-        <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
           <span className="flex items-center gap-0.5"><ClipboardList className="h-3 w-3" />{s.questions?.length ?? 0} questions</span>
           <span className="flex items-center gap-0.5"><BarChart3 className="h-3 w-3" />{s.responses?.length ?? 0} responses</span>
           {s.closesAt && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}

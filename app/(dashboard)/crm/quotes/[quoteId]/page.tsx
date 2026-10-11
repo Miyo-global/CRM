@@ -16,11 +16,11 @@ import { format } from "date-fns";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-  SENT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  ACCEPTED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  REJECTED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-  EXPIRED: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  DRAFT: "bg-muted text-foreground",
+  SENT: "bg-info-soft text-info-strong",
+  ACCEPTED: "bg-success-soft text-success-strong",
+  REJECTED: "bg-danger-soft text-danger-strong",
+  EXPIRED: "bg-warning-soft text-warning-strong",
 };
 
 export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId: string }> }) {
@@ -255,7 +255,7 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
                 <p className="text-sm text-muted-foreground">
                   Tax: {quote.currency} {Number(quote.taxAmount).toLocaleString(DEFAULT_LOCALE)}
                 </p>
-                <p className="text-lg font-bold text-gold">
+                <p className="text-lg font-bold text-brand-text">
                   Net Total: {quote.currency} {Number(quote.netAmount).toLocaleString(DEFAULT_LOCALE)}
                 </p>
               </div>

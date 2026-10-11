@@ -98,7 +98,7 @@ function StatBlock({ label, value, color }: { label: string; value: string | num
   return (
     <div className="text-center">
       <p className={`text-lg font-bold tabular-nums ${color ?? ""}`}>{value}</p>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-2xs text-muted-foreground uppercase tracking-wider">{label}</p>
     </div>
   );
 }
@@ -175,10 +175,10 @@ function AvailabilityDot({ userId }: { userId: string }) {
 
   const dotClass =
     entry.status === "ON_LEAVE"
-      ? "bg-red-500"
+      ? "bg-danger-500"
       : entry.status === "HALF_DAY"
-        ? "bg-amber-400"
-        : "bg-green-500";
+        ? "bg-warning-400"
+        : "bg-success-500";
 
   const label =
     entry.status === "ON_LEAVE"
@@ -259,7 +259,7 @@ function DirectReportsSection({ employeeId }: { employeeId: string }) {
               </Avatar>
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{r.name ?? r.email}</p>
-                {r.designation && <p className="text-[11px] text-muted-foreground truncate">{r.designation}</p>}
+                {r.designation && <p className="text-2xs text-muted-foreground truncate">{r.designation}</p>}
               </div>
             </Link>
           ))}
@@ -298,7 +298,7 @@ function ManagerScorecardSection({ employeeId }: { employeeId: string }) {
           />
         </div>
         {scorecard.pendingLeaveRequests > 0 && (
-          <p className="text-xs text-amber-600 mt-2">
+          <p className="text-xs text-warning-strong mt-2">
             {scorecard.pendingLeaveRequests} pending leave request{scorecard.pendingLeaveRequests !== 1 ? "s" : ""} awaiting approval
           </p>
         )}
@@ -472,8 +472,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               <div className="flex-1 min-w-0 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-semibold">{employeeName}</h2>
-                  {employee.role && <Badge variant="secondary" className="text-[10px]">{employee.role}</Badge>}
-                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="text-[10px]">ID: {employee.employeeId}</Badge>}
+                  {employee.role && <Badge variant="secondary" className="text-2xs">{employee.role}</Badge>}
+                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="text-2xs">ID: {employee.employeeId}</Badge>}
                 </div>
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
@@ -491,12 +491,12 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
 
                 {isSelf && completeness < 100 && (
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center justify-between text-2xs">
                       <span className="text-muted-foreground">Profile completeness</span>
                       <span className="font-medium">{completeness}%</span>
                     </div>
                     <Progress value={completeness} className="h-1.5" />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Missing: {missingFields.slice(0, 3).join(", ")}{missingFields.length > 3 ? ` +${missingFields.length - 3} more` : ""}
                     </p>
                   </div>
@@ -507,7 +507,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                 <div className="flex items-center gap-4 sm:gap-6 shrink-0 border-l pl-4 sm:pl-6">
                   <StatBlock label="Present" value={stats.attendance?.daysPresent ?? 0} />
                   <StatBlock label="Leaves" value={stats.leaves.total} />
-                  <StatBlock label="Pending" value={stats.leaves.pending} color="text-amber-500" />
+                  <StatBlock label="Pending" value={stats.leaves.pending} color="text-warning-strong" />
                 </div>
               )}
               {statsLoading && (
@@ -584,7 +584,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                       employee.isActive === false || e.terminatedAt ? (
                         <span className="text-destructive">Terminated</span>
                       ) : (
-                        <span className="text-emerald-600 dark:text-emerald-400">Active</span>
+                        <span className="text-success-strong">Active</span>
                       )
                     }
                   />
@@ -636,7 +636,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   <DetailCard
                     icon={Wallet}
                     title="Compensation"
-                    action={<Badge variant="outline" className="text-[9px] gap-1"><ShieldAlert className="h-2.5 w-2.5" />You &amp; HR only</Badge>}
+                    action={<Badge variant="outline" className="text-3xs gap-1"><ShieldAlert className="h-2.5 w-2.5" />You &amp; HR only</Badge>}
                   >
                     <DetailRow label="Monthly" value={monthly} />
                     <DetailRow label="Annual (est.)" value={annual} />
@@ -652,7 +652,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   <DetailCard
                     icon={User}
                     title="Personal"
-                    action={<Badge variant="outline" className="text-[9px] gap-1"><ShieldAlert className="h-2.5 w-2.5" />You &amp; HR only</Badge>}
+                    action={<Badge variant="outline" className="text-3xs gap-1"><ShieldAlert className="h-2.5 w-2.5" />You &amp; HR only</Badge>}
                   >
                     <DetailRow label="Date of birth" value={dob ? <span className="inline-flex items-center gap-1"><Cake className="h-3 w-3 text-muted-foreground" />{dob}</span> : null} />
                     <DetailRow label="Gender" value={genderLabel} />
@@ -706,7 +706,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                         Assigned Tickets
                       </h3>
                       {(ticketsResult?.data?.length ?? 0) > 0 && (
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-2xs">
                           {ticketsResult?.data?.length}
                         </Badge>
                       )}
@@ -765,7 +765,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
           <div className="py-4 space-y-4">
             <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
               <p className="text-xs font-medium">{employee.firstName} {employee.lastName}</p>
-              <p className="text-[10px] text-muted-foreground">{employee.designation ?? employee.role ?? ""}{employee.employeeId ? ` · ${employee.employeeId}` : ""}</p>
+              <p className="text-2xs text-muted-foreground">{employee.designation ?? employee.role ?? ""}{employee.employeeId ? ` · ${employee.employeeId}` : ""}</p>
             </div>
 
             <div className="space-y-1.5">
@@ -786,7 +786,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                       if (!group.length) return null;
                       return group.map((t) => (
                         <SelectItem key={t.id} value={String(t.id)} className="text-sm">
-                          <span className="text-[10px] text-muted-foreground mr-1">[{docType.label}]</span>
+                          <span className="text-2xs text-muted-foreground mr-1">[{docType.label}]</span>
                           {t.name}
                         </SelectItem>
                       ));
@@ -813,7 +813,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             )}
 
             {selectedTemplate && (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Employee name, ID, and designation will be filled automatically from their profile.
               </p>
             )}

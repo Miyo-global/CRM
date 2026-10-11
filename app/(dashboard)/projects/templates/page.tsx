@@ -144,10 +144,10 @@ function ApplyDialog({
             <p className="font-medium">{template.tickets.length} tasks will be created:</p>
             {template.tickets.slice(0, 5).map((t) => (
               <div key={t.id} className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant="outline" className="text-[10px]">{t.type}</Badge>
+                <Badge variant="outline" className="text-2xs">{t.type}</Badge>
                 <span className="truncate">{t.title}</span>
                 {t.phase && (
-                  <span className="text-[10px] bg-muted rounded px-1 shrink-0">{t.phase}</span>
+                  <span className="text-2xs bg-muted rounded px-1 shrink-0">{t.phase}</span>
                 )}
               </div>
             ))}
@@ -373,7 +373,7 @@ function TemplateCard({
             )}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <Badge variant="secondary" className="text-[10px]">{template.category}</Badge>
+            <Badge variant="secondary" className="text-2xs">{template.category}</Badge>
             <Badge variant="outline">{template.tickets.length} tasks</Badge>
           </div>
         </div>
@@ -382,10 +382,10 @@ function TemplateCard({
         <div className="space-y-1">
           {template.tickets.slice(0, 4).map((t) => (
             <div key={t.id} className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="text-[10px] shrink-0">{t.type}</Badge>
+              <Badge variant="outline" className="text-2xs shrink-0">{t.type}</Badge>
               <span className="flex-1 truncate text-sm">{t.title}</span>
               {t.phase && (
-                <span className="text-[10px] bg-muted rounded px-1 text-muted-foreground shrink-0">
+                <span className="text-2xs bg-muted rounded px-1 text-muted-foreground shrink-0">
                   {t.phase}
                 </span>
               )}

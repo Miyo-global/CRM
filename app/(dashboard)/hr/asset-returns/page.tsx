@@ -603,15 +603,15 @@ export default function AssetReturnsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold">{ar.assetName}</p>
                     {ar.assetType && (
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-2xs">
                         {ar.assetType}
                       </Badge>
                     )}
-                    <Badge variant={statusBadge(ar.status)} className="text-[10px]">
+                    <Badge variant={statusBadge(ar.status)} className="text-2xs">
                       {ar.status ?? "PENDING"}
                     </Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
                     {(ar.employeeName || ar.userId) && (
                       <span>{ar.employeeName ?? ar.userId}</span>
                     )}

@@ -26,7 +26,7 @@ export function PendingApprovalsWidget() {
           <p className="text-sm text-destructive">Failed to load.</p>
         ) : !data || (data.pendingLeaveApprovals === 0 && data.pendingExpenseApprovals === 0) ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" aria-hidden="true" />
+            <CheckCircle2 className="h-4 w-4 text-success-strong shrink-0" aria-hidden="true" />
             All caught up!
           </div>
         ) : (

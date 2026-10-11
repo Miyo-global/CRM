@@ -7,8 +7,8 @@ export function EmptyPublicDocsIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="80" fill={BLUE} opacity="0.04" />
 
-      <rect x="55" y="55" width="55" height="70" rx="5" fill="white" stroke={BLUE} strokeWidth="1.5" opacity="0.5" transform="rotate(-5 82.5 90)" />
-      <rect x="60" y="52" width="55" height="70" rx="5" fill="white" stroke={GOLD} strokeWidth="2" />
+      <rect x="55" y="55" width="55" height="70" rx="5" fill="var(--card)" stroke={BLUE} strokeWidth="1.5" opacity="0.5" transform="rotate(-5 82.5 90)" />
+      <rect x="60" y="52" width="55" height="70" rx="5" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
 
       <rect x="70" y="65" width="35" height="3" rx="1.5" fill={BLUE} opacity="0.2" />
       <rect x="70" y="73" width="28" height="3" rx="1.5" fill={BLUE} opacity="0.15" />

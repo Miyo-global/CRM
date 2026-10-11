@@ -74,7 +74,7 @@ export default function OverdueTasksPage() {
       ) : tasks.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 dark:bg-green-950">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-soft">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -83,7 +83,7 @@ export default function OverdueTasksPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-6 w-6 text-green-600"
+                className="h-6 w-6 text-success-strong"
               >
                 <path d="M20 6 9 17l-5-5" />
               </svg>
@@ -122,7 +122,7 @@ export default function OverdueTasksPage() {
                             <div className="flex items-center gap-2">
                               <Avatar className="h-6 w-6">
                                 <AvatarImage src={task.assignee.image ?? undefined} />
-                                <AvatarFallback className="text-[10px]">
+                                <AvatarFallback className="text-2xs">
                                   {task.assignee.name?.charAt(0) ?? "?"}
                                 </AvatarFallback>
                               </Avatar>
@@ -134,7 +134,7 @@ export default function OverdueTasksPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{formatDate(task.dueDate)}</TableCell>
                         <TableCell className="text-right">
-                          <span className="font-medium text-amber-600">
+                          <span className="font-medium text-warning-strong">
                             {days} {days === 1 ? "day" : "days"}
                           </span>
                         </TableCell>

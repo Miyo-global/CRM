@@ -42,7 +42,7 @@ const RELATION_LABELS: Record<WorkItemRelationType, { label: string; icon: React
   duplicate_of: {
     label: "Duplicate of",
     icon: <Copy className="h-3 w-3" />,
-    color: "text-yellow-600",
+    color: "text-warning-strong",
   },
   relates_to: {
     label: "Relates to",
@@ -157,7 +157,7 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
             if (!rels?.length) return null;
             return (
               <div key={type}>
-                <p className={cn("text-[10px] font-medium flex items-center gap-1 mb-0.5", meta.color)}>
+                <p className={cn("text-2xs font-medium flex items-center gap-1 mb-0.5", meta.color)}>
                   {meta.icon}
                   {meta.label}
                 </p>
@@ -167,12 +167,12 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
                   return (
                     <div key={r.id} className="flex items-center justify-between gap-2 py-0.5 pl-4 group">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                        <span className="font-mono text-2xs text-muted-foreground shrink-0">
                           #{t.ticketNumber}
                         </span>
                         <span className="text-xs truncate">{t.title}</span>
                         {t.status && (
-                          <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">
+                          <Badge variant="outline" className="text-3xs h-4 px-1 shrink-0">
                             {t.status}
                           </Badge>
                         )}

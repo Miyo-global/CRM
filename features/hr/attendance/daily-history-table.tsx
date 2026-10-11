@@ -119,7 +119,7 @@ export const DailyHistoryTable = memo(function DailyHistoryTable({
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-lg">Daily History</CardTitle>
           <button
-            className="text-sm text-gold hover:text-gold/80 font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:pointer-events-none shrink-0"
+            className="text-sm text-brand-text hover:text-brand-text font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:pointer-events-none shrink-0"
             disabled={rangeInvalid || logs.length === 0}
             onClick={async () => {
               try {
@@ -232,19 +232,19 @@ export const DailyHistoryTable = memo(function DailyHistoryTable({
                 <caption className="sr-only">Recent attendance history</caption>
                 <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-sm">
                   <TableRow className="bg-muted/60 hover:bg-muted/60">
-                    <TableHead className="text-[11px] uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
+                    <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Date
                     </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
+                    <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Check In
                     </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
+                    <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Check Out
                     </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
+                    <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Total Hours
                     </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
+                    <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Status
                     </TableHead>
                   </TableRow>

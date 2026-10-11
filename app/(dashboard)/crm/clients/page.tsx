@@ -36,10 +36,10 @@ const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as 
 type ClientStatus = typeof STATUSES[number];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; textColor: string; icon: React.ElementType }> = {
-  ACCOUNT_OPENING: { label: "Account Opening", color: "border-blue-500", bg: "bg-blue-500/10", textColor: "text-blue-500", icon: ClipboardList },
-  QUERIES: { label: "Queries", color: "border-amber-500", bg: "bg-amber-500/10", textColor: "text-amber-500", icon: MessageSquare },
-  PLAN_SELECTED: { label: "Plan Selected", color: "border-purple-500", bg: "bg-purple-500/10", textColor: "text-purple-500", icon: FileCheck },
-  INVESTED: { label: "Invested", color: "border-emerald-500", bg: "bg-emerald-500/10", textColor: "text-emerald-500", icon: IndianRupee },
+  ACCOUNT_OPENING: { label: "Account Opening", color: "border-info-500", bg: "bg-info-soft", textColor: "text-info-strong", icon: ClipboardList },
+  QUERIES: { label: "Queries", color: "border-warning-500", bg: "bg-warning-soft", textColor: "text-warning-strong", icon: MessageSquare },
+  PLAN_SELECTED: { label: "Plan Selected", color: "border-plum-500", bg: "bg-plum-soft", textColor: "text-plum-strong", icon: FileCheck },
+  INVESTED: { label: "Invested", color: "border-success-500", bg: "bg-success-soft", textColor: "text-success-strong", icon: IndianRupee },
 };
 
 function formatINR(val: string | number | null | undefined): string {
@@ -71,7 +71,7 @@ function KanbanCard({ account }: { account: ClientAccount }) {
           <div>
             <p className="text-sm font-semibold truncate">{account.clientName}</p>
             {account.clientEmail && (
-              <p className="text-[10px] text-muted-foreground truncate">{account.clientEmail}</p>
+              <p className="text-2xs text-muted-foreground truncate">{account.clientEmail}</p>
             )}
           </div>
 
@@ -82,7 +82,7 @@ function KanbanCard({ account }: { account: ClientAccount }) {
           )}
 
           {account.status === "INVESTED" && account.investmentAmount && (
-            <p className="text-xs font-mono font-semibold text-emerald-500">
+            <p className="text-xs font-mono font-semibold text-success-strong">
               {formatINR(account.investmentAmount)}
             </p>
           )}
@@ -92,9 +92,9 @@ function KanbanCard({ account }: { account: ClientAccount }) {
               <div className="flex items-center gap-1">
                 <Avatar className="h-4 w-4">
                   <AvatarImage src={account.salesRep.image || ""} />
-                  <AvatarFallback className="text-[7px]">{account.salesRep.name?.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-[10px] text-muted-foreground truncate max-w-[60px]">{account.salesRep.name}</span>
+                <span className="text-2xs text-muted-foreground truncate max-w-[60px]">{account.salesRep.name}</span>
               </div>
             ) : <span />}
 
@@ -102,17 +102,17 @@ function KanbanCard({ account }: { account: ClientAccount }) {
               <div className="flex items-center gap-1">
                 <Avatar className="h-4 w-4">
                   <AvatarImage src={account.assignedCrm.image || ""} />
-                  <AvatarFallback className="text-[7px]">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-[10px] text-muted-foreground truncate max-w-[60px]">{account.assignedCrm.name}</span>
+                <span className="text-2xs text-muted-foreground truncate max-w-[60px]">{account.assignedCrm.name}</span>
               </div>
             ) : (
-              <span className="text-[10px] text-muted-foreground">No CRM</span>
+              <span className="text-2xs text-muted-foreground">No CRM</span>
             )}
           </div>
 
           {account.convertedAt && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })}
             </p>
           )}
@@ -140,7 +140,7 @@ function KanbanColumn({
       <div className={cn("flex items-center gap-2 px-3 py-2 rounded-t-lg border-t-2", config.color, config.bg)}>
         <Icon className={cn("h-4 w-4", config.textColor)} />
         <span className="text-sm font-semibold">{config.label}</span>
-        <Badge variant="secondary" className="ml-auto text-[10px] h-5 min-w-5 px-1.5">
+        <Badge variant="secondary" className="ml-auto text-2xs h-5 min-w-5 px-1.5">
           {count}
         </Badge>
       </div>
@@ -285,10 +285,10 @@ export default function ClientAccountsPage() {
       <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-5">
         {[
           { label: "Total", value: stats?.total ?? 0, icon: Users, color: "text-foreground" },
-          { label: "Account Opening", value: stats?.accountOpening ?? 0, icon: ClipboardList, color: "text-blue-400" },
-          { label: "Queries", value: stats?.queries ?? 0, icon: MessageSquare, color: "text-amber-400" },
-          { label: "Plan Selected", value: stats?.planSelected ?? 0, icon: FileCheck, color: "text-purple-400" },
-          { label: "Invested", value: stats?.invested ?? 0, icon: IndianRupee, color: "text-emerald-400" },
+          { label: "Account Opening", value: stats?.accountOpening ?? 0, icon: ClipboardList, color: "text-info-strong" },
+          { label: "Queries", value: stats?.queries ?? 0, icon: MessageSquare, color: "text-warning-strong" },
+          { label: "Plan Selected", value: stats?.planSelected ?? 0, icon: FileCheck, color: "text-plum-strong" },
+          { label: "Invested", value: stats?.invested ?? 0, icon: IndianRupee, color: "text-success-strong" },
         ].map(s => (
           <Card key={s.label}>
             <CardContent className="p-4">
@@ -338,19 +338,19 @@ export default function ClientAccountsPage() {
           <div className="border border-border rounded-md flex flex-col h-[calc(100dvh-18rem)] min-h-[320px]">
             <div className="flex-1 min-h-0 overflow-auto">
               <div className="min-w-max">
-              <table className="w-full caption-bottom text-[11px]">
+              <table className="w-full caption-bottom text-2xs">
                 <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
                   <TableRow className="border-b-2 border-border">
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Client</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Phone</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Stage</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Sales Rep</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">CRM Rep</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Est. Inv.</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Investment</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Converted</TableHead>
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">AI</TableHead>
-                    <TableHead className="text-[10px] w-8 px-2"></TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Client</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Phone</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Stage</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Sales Rep</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">CRM Rep</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Est. Inv.</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Investment</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Converted</TableHead>
+                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">AI</TableHead>
+                    <TableHead className="text-2xs w-8 px-2"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -377,15 +377,15 @@ export default function ClientAccountsPage() {
                         <TableRow key={account.id} className="h-8 hover:bg-muted/30 transition-colors">
                           <TableCell className="px-2 py-1">
                             <div>
-                              <p className="text-[12px] font-medium truncate max-w-[140px]">{account.clientName}</p>
-                              <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">{account.clientEmail || ""}</p>
+                              <p className="text-xs font-medium truncate max-w-[140px]">{account.clientName}</p>
+                              <p className="text-2xs text-muted-foreground truncate max-w-[140px]">{account.clientEmail || ""}</p>
                             </div>
                           </TableCell>
-                          <TableCell className="text-[11px] text-muted-foreground font-mono px-2 py-1">
+                          <TableCell className="text-2xs text-muted-foreground font-mono px-2 py-1">
                             {account.clientPhone || ""}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={cn("text-[10px] border-0", config.bg, config.textColor)}>
+                            <Badge variant="outline" className={cn("text-2xs border-0", config.bg, config.textColor)}>
                               {config.label}
                             </Badge>
                           </TableCell>
@@ -394,7 +394,7 @@ export default function ClientAccountsPage() {
                               <div className="flex items-center gap-1.5">
                                 <Avatar className="h-5 w-5">
                                   <AvatarImage src={account.salesRep.image || ""} />
-                                  <AvatarFallback className="text-[8px]">{account.salesRep.name?.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="text-xs truncate max-w-[80px]">{account.salesRep.name}</span>
                               </div>
@@ -405,7 +405,7 @@ export default function ClientAccountsPage() {
                               <div className="flex items-center gap-1.5">
                                 <Avatar className="h-5 w-5">
                                   <AvatarImage src={account.assignedCrm.image || ""} />
-                                  <AvatarFallback className="text-[8px]">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="text-xs truncate max-w-[80px]">{account.assignedCrm.name}</span>
                               </div>
@@ -414,7 +414,7 @@ export default function ClientAccountsPage() {
                           <TableCell className="text-xs font-mono">
                             {formatINR(account.estimatedInvestment)}
                           </TableCell>
-                          <TableCell className="text-xs font-mono text-emerald-400">
+                          <TableCell className="text-xs font-mono text-success-strong">
                             {account.status === "INVESTED" ? formatINR(account.investmentAmount) : ""}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">

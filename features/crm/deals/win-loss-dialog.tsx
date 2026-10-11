@@ -114,8 +114,8 @@ export const WinLossDialog = memo(function WinLossDialog({
             className={cn(
               "flex-1",
               dialog?.stage === "WON"
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-destructive hover:bg-destructive/90 text-white",
+                ? "bg-success hover:bg-success/90 text-success-foreground"
+                : "bg-destructive hover:bg-destructive/90 text-destructive-foreground",
             )}
             onClick={onConfirm}
             disabled={isPending}

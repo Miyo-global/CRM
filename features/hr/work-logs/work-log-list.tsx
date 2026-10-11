@@ -73,7 +73,7 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">{group.label}</h3>
-              <Badge variant="secondary" className="text-[10px] tabular-nums">
+              <Badge variant="secondary" className="text-2xs tabular-nums">
                 {group.entries.length} {group.entries.length === 1 ? "entry" : "entries"}
               </Badge>
             </div>

@@ -28,14 +28,14 @@ interface RecentProjectsCardProps {
 
 export const RecentProjectsCard = memo(function RecentProjectsCard({ projects, isLoading, error, onCreateProject }: RecentProjectsCardProps) {
   return (
-    <Card className="bg-card border-border shadow-noir flex flex-col h-full w-full">
+    <Card className="bg-card border-border shadow-sm flex flex-col h-full w-full">
       <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between px-4 py-3">
         <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Folder className="h-4 w-4 text-gold" aria-hidden="true" />
+          <Folder className="h-4 w-4 text-brand-text" aria-hidden="true" />
           Recent Projects
         </CardTitle>
         <Link href="/projects">
-          <Button variant="ghost" size="sm" className="hover:bg-gold/10 hover:text-gold" aria-label="View all projects">View All</Button>
+          <Button variant="ghost" size="sm" className="hover:bg-brand-soft hover:text-brand-text" aria-label="View all projects">View All</Button>
         </Link>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden px-4 pt-0 pb-4" aria-live="polite">
@@ -52,10 +52,10 @@ export const RecentProjectsCard = memo(function RecentProjectsCard({ projects, i
           <div className="space-y-1.5">
             {projects.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
-                <div className="flex items-center justify-between p-2 rounded-lg border border-border hover:bg-muted/50 hover:border-gold/30 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between p-2 rounded-lg border border-border hover:bg-muted/50 hover:border-primary/40 transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
-                      <Folder className="h-4 w-4 text-gold" aria-hidden="true" />
+                    <div className="h-8 w-8 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
+                      <Folder className="h-4 w-4 text-brand-text" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="font-medium text-sm text-foreground">{project.name}</p>

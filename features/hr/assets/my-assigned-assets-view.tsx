@@ -59,7 +59,7 @@ export function MyAssignedAssetsView() {
                       <h3 className="font-semibold leading-tight">{asset.name}</h3>
                       <p className="text-sm text-muted-foreground">{asset.type}</p>
                     </div>
-                    <Badge variant="secondary" className="shrink-0 text-[10px]">
+                    <Badge variant="secondary" className="shrink-0 text-2xs">
                       Assigned
                     </Badge>
                   </div>

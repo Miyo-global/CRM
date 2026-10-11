@@ -188,11 +188,11 @@ function WebhooksContent() {
         ) : (
           webhooks.map((wh) => (
             <motion.div key={wh.id} variants={fadeUp}>
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${wh.isActive ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${wh.isActive ? "bg-success-500" : "bg-muted-foreground/40"}`} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <CardTitle className="text-sm truncate">{wh.url}</CardTitle>
@@ -217,7 +217,7 @@ function WebhooksContent() {
                         aria-label={wh.isActive ? "Disable webhook" : "Enable webhook"}
                       >
                         {wh.isActive
-                          ? <ToggleRight className="h-4 w-4 text-emerald-500" />
+                          ? <ToggleRight className="h-4 w-4 text-success-strong" />
                           : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
                       </Button>
                       <Button
@@ -238,7 +238,7 @@ function WebhooksContent() {
                       <span className="text-xs text-muted-foreground">No events selected</span>
                     ) : (
                       (wh.events ?? []).map(ev => (
-                        <Badge key={ev} variant="secondary" className="text-[10px]">{ev}</Badge>
+                        <Badge key={ev} variant="secondary" className="text-2xs">{ev}</Badge>
                       ))
                     )}
                   </div>

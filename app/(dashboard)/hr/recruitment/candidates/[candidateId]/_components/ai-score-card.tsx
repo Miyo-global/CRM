@@ -17,8 +17,8 @@ const AI_SCORE_DIMENSIONS: Array<{ key: keyof AiScoreResult["breakdown"]; label:
 ];
 
 function scoreColor(score: number): string {
-  if (score >= 70) return "text-green-600";
-  if (score >= 40) return "text-yellow-600";
+  if (score >= 70) return "text-success-strong";
+  if (score >= 40) return "text-warning-strong";
   return "text-destructive";
 }
 
@@ -97,7 +97,7 @@ export const AiScoreCard = memo(function AiScoreCard({
               </p>
             )}
             {aiScoreGeneratedAt && !isLatestScore && (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Scored {format(new Date(aiScoreGeneratedAt), "PPp")}
               </p>
             )}

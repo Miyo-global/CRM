@@ -122,23 +122,23 @@ export function UpcomingLeavesWidget() {
                         <p className="text-sm font-semibold leading-snug">{leave.userName ?? ""}</p>
                         <div className="flex flex-wrap items-center justify-end gap-1">
                           {leave.leaveType ? (
-                            <Badge variant="secondary" className="max-w-[10rem] truncate text-[10px] font-normal">
+                            <Badge variant="secondary" className="max-w-[10rem] truncate text-2xs font-normal">
                               {leave.leaveType}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] font-normal">
+                            <Badge variant="outline" className="text-2xs font-normal">
                               Leave
                             </Badge>
                           )}
                           {halfLabel ? (
-                            <Badge variant="outline" className="text-[10px] font-normal">
+                            <Badge variant="outline" className="text-2xs font-normal">
                               {halfLabel}
                             </Badge>
                           ) : null}
                         </div>
                       </div>
                       {leave.userDesignation ? (
-                        <p className="text-[11px] text-muted-foreground">{leave.userDesignation}</p>
+                        <p className="text-2xs text-muted-foreground">{leave.userDesignation}</p>
                       ) : null}
                       <p className="text-xs leading-relaxed text-muted-foreground">
                         <span className="font-medium text-foreground/90">{formatRange(leave.startDate, leave.endDate)}</span>
@@ -154,7 +154,7 @@ export function UpcomingLeavesWidget() {
                         ) : null}
                       </p>
                       {reason ? (
-                        <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground" title={reason}>
+                        <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground" title={reason}>
                           <span className="font-medium text-foreground/80">Note: </span>
                           {reason}
                         </p>

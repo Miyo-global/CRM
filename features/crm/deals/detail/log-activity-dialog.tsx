@@ -69,7 +69,7 @@ export function LogActivityDialog({
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button
               type="submit"
-              className="bg-gold hover:bg-gold/90 text-white"
+              className="bg-primary hover:bg-brand-soft text-primary-foreground"
               disabled={isPending || !notes.trim()}
             >
               {isPending ? "Logging..." : "Log Activity"}

@@ -53,7 +53,7 @@ function CandidateColumn({ candidate }: { candidate: Candidate }) {
             candidate.status === "HIRED" ? "default" :
             candidate.status === "REJECTED" ? "destructive" : "secondary"
           }
-          className="text-[10px]"
+          className="text-2xs"
         >
           {candidate.status ?? "NEW"}
         </Badge>
@@ -78,7 +78,7 @@ function CandidateColumn({ candidate }: { candidate: Candidate }) {
             ))}
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground text-center py-1">No AI score yet</p>
+          <p className="text-2xs text-muted-foreground text-center py-1">No AI score yet</p>
         )}
       </div>
 
@@ -128,7 +128,7 @@ function CandidateColumn({ candidate }: { candidate: Candidate }) {
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
-              className={`h-3.5 w-3.5 ${i < (candidate.rating ?? 0) ? "text-yellow-400 fill-yellow-400" : "text-muted"}`}
+              className={`h-3.5 w-3.5 ${i < (candidate.rating ?? 0) ? "text-warning-strong fill-warning-400" : "text-muted"}`}
             />
           ))}
         </div>
@@ -136,10 +136,10 @@ function CandidateColumn({ candidate }: { candidate: Candidate }) {
 
       {candidate.skills && candidate.skills.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Skills</p>
+          <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Skills</p>
           <div className="flex flex-wrap gap-1">
             {candidate.skills.slice(0, 8).map((s) => (
-              <Badge key={s} variant="outline" className="text-[10px] px-1.5 py-0">{s}</Badge>
+              <Badge key={s} variant="outline" className="text-2xs px-1.5 py-0">{s}</Badge>
             ))}
           </div>
         </div>
@@ -147,8 +147,8 @@ function CandidateColumn({ candidate }: { candidate: Candidate }) {
 
       {candidate.source && (
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-1">Source</p>
-          <Badge variant="secondary" className="text-[10px]">{candidate.source}</Badge>
+          <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Source</p>
+          <Badge variant="secondary" className="text-2xs">{candidate.source}</Badge>
         </div>
       )}
     </div>

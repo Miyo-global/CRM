@@ -19,26 +19,26 @@ export function LeadsStatsBar({ stats }: LeadsStatsBarProps) {
   return (
     <div className="space-y-2">
 
-      <div className="flex items-center gap-3 flex-wrap text-[11px] px-1">
+      <div className="flex items-center gap-3 flex-wrap text-2xs px-1">
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">Total</span>
           <span className="font-bold tabular-nums text-foreground">{stats.total}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">New/Mo</span>
-          <span className="font-bold tabular-nums text-emerald-400">{stats.thisMonth}</span>
+          <span className="font-bold tabular-nums text-success-strong">{stats.thisMonth}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">Conv%</span>
-          <span className="font-bold tabular-nums text-amber-400">{stats.conversionRate}%</span>
+          <span className="font-bold tabular-nums text-warning-strong">{stats.conversionRate}%</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">Pipeline</span>
-          <span className="font-bold tabular-nums text-gold">{formatINRCompact(stats.totalPotentialValue)}</span>
+          <span className="font-bold tabular-nums text-brand-text">{formatINRCompact(stats.totalPotentialValue)}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">Unassigned</span>
-          <span className={cn("font-bold tabular-nums", stats.unassigned > 0 ? "text-red-400" : "text-muted-foreground")}>{stats.unassigned}</span>
+          <span className={cn("font-bold tabular-nums", stats.unassigned > 0 ? "text-danger-strong" : "text-muted-foreground")}>{stats.unassigned}</span>
         </div>
         <div className="border-l border-border/50 h-3" />
 

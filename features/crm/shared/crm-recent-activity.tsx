@@ -30,7 +30,7 @@ export function CrmRecentActivity({ deals }: CrmRecentActivityProps) {
       </CardHeader>
       <CardContent className="px-3 pb-3">
         {recentDeals.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground text-center py-4">No recent activity</p>
+          <p className="text-2xs text-muted-foreground text-center py-4">No recent activity</p>
         ) : (
           <div className="space-y-2">
             {recentDeals.map((deal) => {
@@ -40,20 +40,20 @@ export function CrmRecentActivity({ deals }: CrmRecentActivityProps) {
                 <div key={deal.id} className="flex items-start gap-2">
                   <div className={cn(
                     "h-6 w-6 rounded flex items-center justify-center shrink-0 mt-0.5",
-                    isWon ? "bg-emerald-500/15 text-emerald-400" :
-                    isLost ? "bg-red-500/15 text-red-400" :
-                    "bg-gold/10 text-gold",
+                    isWon ? "bg-success-soft text-success-strong" :
+                    isLost ? "bg-danger-soft text-danger-strong" :
+                    "bg-brand-soft text-brand-text",
                   )}>
                     {isWon ? <TrendingUp className="h-3 w-3" /> : <DollarSign className="h-3 w-3" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium truncate">{deal.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-2xs font-medium truncate">{deal.name}</p>
+                    <p className="text-2xs text-muted-foreground">
                       {STAGE_LABELS[deal.stage] ?? deal.stage}
                       {deal.assignedTo?.name && ` · ${deal.assignedTo.name}`}
                     </p>
                   </div>
-                  <span className="text-[9px] text-muted-foreground shrink-0 tabular-nums">
+                  <span className="text-3xs text-muted-foreground shrink-0 tabular-nums">
                     {deal.updatedAt ?? deal.createdAt
                       ? timeAgo((deal.updatedAt ?? deal.createdAt) as string)
                       : ""}

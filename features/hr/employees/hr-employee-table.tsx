@@ -38,7 +38,7 @@ function formatJoiningDate(value: string | null | undefined): string {
 function DepartmentCell({ department }: { department: Employee["department"] }) {
   if (department?.name) {
     return (
-      <Badge variant="secondary" className="text-[10px] font-normal whitespace-nowrap">
+      <Badge variant="secondary" className="text-2xs font-normal whitespace-nowrap">
         {department.name}
       </Badge>
     );
@@ -47,7 +47,7 @@ function DepartmentCell({ department }: { department: Employee["department"] }) 
   return (
     <Badge
       variant="outline"
-      className="border-amber-300/60 bg-amber-500/10 text-[10px] font-normal text-amber-800 dark:text-amber-300"
+      className="border-warning-300/60 bg-warning-soft text-2xs font-normal text-warning-strong"
     >
       Unassigned
     </Badge>
@@ -194,7 +194,7 @@ export function HrEmployeeTable({
                               {displayName}
                             </span>
                             {user.designation ? (
-                              <span className="block text-[11px] text-muted-foreground truncate max-w-[180px]">
+                              <span className="block text-2xs text-muted-foreground truncate max-w-[180px]">
                                 {user.designation}
                               </span>
                             ) : null}
@@ -206,7 +206,7 @@ export function HrEmployeeTable({
                         {user.employeeId?.trim() ? (
                           user.employeeId
                         ) : (
-                          <span className="text-amber-700 dark:text-amber-300">Pending</span>
+                          <span className="text-warning-strong">Pending</span>
                         )}
                       </TableCell>
 
@@ -233,13 +233,13 @@ export function HrEmployeeTable({
                           variant="outline"
                           className={`text-xs gap-1.5 ${
                             isActive
-                              ? "text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-500/10"
-                              : "text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 bg-slate-500/10"
+                              ? "text-success-strong border-success-strong/25 bg-success-soft"
+                              : "text-muted-foreground border-border bg-neutral-soft"
                           }`}
                         >
                           <span
                             className={`h-1.5 w-1.5 rounded-full ${
-                              isActive ? "bg-emerald-500" : "bg-slate-400"
+                              isActive ? "bg-success-500" : "bg-ink-400"
                             }`}
                           />
                           {isActive ? "Active" : "Inactive"}
@@ -295,7 +295,7 @@ export function HrEmployeeTable({
 
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 border-t border-border shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-muted-foreground">Rows per page</span>
+            <span className="text-xs text-muted-foreground">Rows per page</span>
             <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
               <SelectTrigger className="h-7 w-[64px] text-xs">
                 <SelectValue />
@@ -355,7 +355,7 @@ export function HrEmployeeTable({
               <ChevronsRight className="h-3.5 w-3.5" />
             </Button>
             <div className="flex items-center gap-1.5 ml-1">
-              <span className="text-[12px] text-muted-foreground">Go to</span>
+              <span className="text-xs text-muted-foreground">Go to</span>
               <Input
                 type="number"
                 min={1}

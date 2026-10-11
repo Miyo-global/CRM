@@ -1,3 +1,5 @@
+import { toneDot, toneSoft, toneText } from "@/lib/design/tones";
+
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 export interface CalendarDay {
@@ -6,22 +8,23 @@ export interface CalendarDay {
   holidayName?: string;
 }
 
+// Calendar day cells: soft tone fill + strong text; legend dots use toneDot.
 export const statusConfig = {
-  present: { label: "Present", bg: "bg-emerald-500", text: "text-white", dot: "bg-emerald-500" },
-  wfh: { label: "WFH", bg: "bg-blue-500", text: "text-white", dot: "bg-blue-500" },
-  leave: { label: "Leave", bg: "bg-amber-600", text: "text-white", dot: "bg-amber-600" },
-  absent: { label: "Absent", bg: "bg-rose-500", text: "text-white", dot: "bg-rose-500" },
-  weekend: { label: "Weekend", bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40" },
-  holiday: { label: "Holiday", bg: "bg-gold", text: "text-white", dot: "bg-gold" },
+  present: { label: "Present", bg: "bg-success-soft", text: toneText.success, dot: toneDot.success },
+  wfh: { label: "WFH", bg: "bg-info-soft", text: toneText.info, dot: toneDot.info },
+  leave: { label: "Leave", bg: "bg-warning-soft", text: toneText.warning, dot: toneDot.warning },
+  absent: { label: "Absent", bg: "bg-danger-soft", text: toneText.danger, dot: toneDot.danger },
+  weekend: { label: "Weekend", bg: "bg-muted", text: "text-muted-foreground", dot: toneDot.neutral },
+  holiday: { label: "Holiday", bg: "bg-brand-soft", text: toneText.brand, dot: toneDot.brand },
   future: { label: "", bg: "", text: "", dot: "" },
   none: { label: "", bg: "", text: "", dot: "" },
 } as const;
 
 export const tableStatusBadge: Record<string, string> = {
-  PRESENT: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-  ABSENT: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400",
-  ON_BREAK: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  CHECKED_OUT: "bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-400",
+  PRESENT: toneSoft.success,
+  ABSENT: toneSoft.danger,
+  ON_BREAK: toneSoft.warning,
+  CHECKED_OUT: toneSoft.neutral,
 };
 
 export function formatDuration(hours: string | number | null | undefined): string {

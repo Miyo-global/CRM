@@ -59,14 +59,14 @@ ${result.ratings.map((r) => `- ${r.category}: ${r.score}/5 — ${r.comment}`).jo
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-gold" />
+          <Sparkles className="h-3.5 w-3.5 text-brand-text" />
           AI Draft Review
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
         <SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b">
           <SheetTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-gold" />
+            <Sparkles className="h-4 w-4 text-brand-text" />
             AI Performance Review Draft
           </SheetTitle>
           <SheetDescription className="text-xs">
@@ -94,8 +94,8 @@ ${result.ratings.map((r) => `- ${r.category}: ${r.score}/5 — ${r.comment}`).jo
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Overall Rating</p>
-                    <p className="text-2xl font-bold text-gold">{result.overallRating}/5</p>
+                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">Overall Rating</p>
+                    <p className="text-2xl font-bold text-brand-text">{result.overallRating}/5</p>
                   </div>
                   <Button size="sm" variant="outline" onClick={copyAll}>
                     <Copy className="h-3.5 w-3.5 mr-1.5" />
@@ -104,30 +104,30 @@ ${result.ratings.map((r) => `- ${r.category}: ${r.score}/5 — ${r.comment}`).jo
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Strengths</p>
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Strengths</p>
                   <p className="text-sm leading-snug">{result.strengths}</p>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Areas for Improvement</p>
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Areas for Improvement</p>
                   <p className="text-sm leading-snug">{result.improvements}</p>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Overall Comments</p>
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Overall Comments</p>
                   <p className="text-sm leading-snug">{result.comments}</p>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Category Ratings</p>
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Category Ratings</p>
                   <div className="space-y-2">
                     {result.ratings.map((r, i) => (
                       <div key={i} className="rounded-md border border-border bg-muted/20 p-2.5">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-medium">{r.category}</span>
-                          <Badge variant="secondary" className="text-[10px] h-5">{r.score}/5</Badge>
+                          <Badge variant="secondary" className="text-2xs h-5">{r.score}/5</Badge>
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-snug">{r.comment}</p>
+                        <p className="text-2xs text-muted-foreground leading-snug">{r.comment}</p>
                       </div>
                     ))}
                   </div>

@@ -136,15 +136,3 @@ export function toneForKey(key: string): Tone {
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
   return TAG_TONE_CYCLE[Math.abs(h) % TAG_TONE_CYCLE.length];
 }
-
-/** Hex values of the 8 chart tokens (light mode) — for color-picker presets only. */
-export const CHART_PRESET_HEX = [
-  "#BF9A15",
-  "#43423F",
-  "#3E78F2",
-  "#2B9287",
-  "#8861E9",
-  "#EC7C11",
-  "#25984A",
-  "#FF6459",
-] as const;

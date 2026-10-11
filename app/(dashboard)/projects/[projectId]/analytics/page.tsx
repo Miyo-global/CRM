@@ -25,36 +25,25 @@ import {
   ScatterChart,
   Scatter,
 } from "recharts";
+import { toneVar } from "@/lib/design/tones";
+import { CHART_AXIS, CHART_COLORS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/features/crm/shared/constants";
 
 const STATE_COLORS: Record<string, string> = {
-  backlog: "#94a3b8",
-  todo: "#60a5fa",
-  in_progress: "#facc15",
-  in_review: "#a78bfa",
-  done: "#4ade80",
-  cancelled: "#f87171",
+  backlog: toneVar.neutral,
+  todo: toneVar.info,
+  in_progress: toneVar.warning,
+  in_review: toneVar.plum,
+  done: toneVar.success,
+  cancelled: toneVar.danger,
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  urgent: "#ef4444",
-  high: "#f97316",
-  medium: "#eab308",
-  low: "#22c55e",
-  none: "#94a3b8",
+  urgent: toneVar.danger,
+  high: toneVar.warning,
+  medium: toneVar.brand,
+  low: toneVar.success,
+  none: toneVar.neutral,
 };
-
-const CHART_COLORS = [
-  "#6366f1",
-  "#8b5cf6",
-  "#ec4899",
-  "#f43f5e",
-  "#f97316",
-  "#eab308",
-  "#22c55e",
-  "#14b8a6",
-  "#06b6d4",
-  "#3b82f6",
-];
 
 export default function AnalyticsPage({
   params,
@@ -85,7 +74,7 @@ export default function AnalyticsPage({
       return {
         state: state.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
         count: row.count,
-        fill: STATE_COLORS[state.toLowerCase()] ?? "#94a3b8",
+        fill: STATE_COLORS[state.toLowerCase()] ?? toneVar.neutral,
       };
     });
   }, [analytics?.stateDistribution]);
@@ -97,7 +86,7 @@ export default function AnalyticsPage({
       return {
         name: priority.charAt(0).toUpperCase() + priority.slice(1),
         value: row.count,
-        fill: PRIORITY_COLORS[priority.toLowerCase()] ?? "#94a3b8",
+        fill: PRIORITY_COLORS[priority.toLowerCase()] ?? toneVar.neutral,
       };
     });
   }, [analytics?.priorityBreakdown]);
@@ -192,9 +181,9 @@ export default function AnalyticsPage({
   const healthBreakdown = (analytics as { healthBreakdown?: { completionPct: number; onTimePct: number; velocityScore: number; overdueTickets: number; totalTickets: number } } | undefined)?.healthBreakdown;
 
   const healthColor =
-    healthStatus === "EXCELLENT" ? "text-emerald-500"
-    : healthStatus === "GOOD" ? "text-blue-500"
-    : healthStatus === "AT_RISK" ? "text-amber-500"
+    healthStatus === "EXCELLENT" ? "text-success-strong"
+    : healthStatus === "GOOD" ? "text-info-strong"
+    : healthStatus === "AT_RISK" ? "text-warning-strong"
     : "text-destructive";
 
   return (
@@ -244,24 +233,18 @@ export default function AnalyticsPage({
               {stateData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={stateData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       dataKey="state"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <YAxis
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={28}>
                       {stateData.map((entry: { fill: string }, index: number) => (
                         <Cell key={index} fill={entry.fill} />
                       ))}
@@ -291,6 +274,7 @@ export default function AnalyticsPage({
                       innerRadius={60}
                       outerRadius={100}
                       paddingAngle={3}
+                      stroke="var(--card)"
                       dataKey="value"
                     >
                       {priorityData.map((entry: { fill: string }, index: number) => (
@@ -298,11 +282,7 @@ export default function AnalyticsPage({
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Legend />
                   </PieChart>
@@ -323,30 +303,31 @@ export default function AnalyticsPage({
               {volumeData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={volumeData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <YAxis
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
+                    <defs>
+                      <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.24} />
+                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <Area
                       type="monotone"
                       dataKey="created"
-                      stroke="#6366f1"
-                      fill="#6366f1"
-                      fillOpacity={0.15}
+                      stroke="var(--chart-1)"
+                      fill="url(#volumeGrad)"
                       strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
                       name="Created"
                     />
                   </AreaChart>
@@ -367,30 +348,24 @@ export default function AnalyticsPage({
               {assigneeData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={assigneeData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       type="number"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                       domain={[0, 100]}
                       unit="%"
                     />
                     <YAxis
                       type="category"
                       dataKey="name"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                       width={100}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                       formatter={((value: string | number) => [`${value}%`, "Completion Rate"]) as never}
                     />
-                    <Bar dataKey="rate" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="rate" radius={[0, 4, 4, 0]} maxBarSize={28}>
                       {assigneeData.map((_: unknown, index: number) => (
                         <Cell
                           key={index}
@@ -416,27 +391,22 @@ export default function AnalyticsPage({
               {velocityData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={velocityData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       dataKey="cycle"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <YAxis
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Bar
                       dataKey="points"
-                      fill="#8b5cf6"
+                      fill="var(--chart-1)"
                       radius={[4, 4, 0, 0]}
+                      maxBarSize={28}
                       name="Completed Points"
                     />
                   </BarChart>
@@ -473,41 +443,42 @@ export default function AnalyticsPage({
               {burndownChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={burndownChartData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       dataKey="date"
-                      tick={{ fontSize: 11 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <YAxis
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Legend />
                     <Area
                       type="monotone"
                       dataKey="ideal"
-                      stroke="#94a3b8"
-                      fill="#94a3b8"
-                      fillOpacity={0.08}
+                      stroke="var(--chart-2)"
+                      fill="transparent"
                       strokeWidth={2}
+                      dot={false}
                       strokeDasharray="5 5"
                       name="Ideal"
                     />
+                    <defs>
+                      <linearGradient id="remainingGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.24} />
+                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <Area
                       type="monotone"
                       dataKey="remaining"
-                      stroke="#6366f1"
-                      fill="#6366f1"
-                      fillOpacity={0.15}
+                      stroke="var(--chart-1)"
+                      fill="url(#remainingGrad)"
                       strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
                       name="Remaining"
                     />
                   </AreaChart>
@@ -530,43 +501,37 @@ export default function AnalyticsPage({
               {estimateData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <ScatterChart>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <CartesianGrid {...CHART_GRID} />
                     <XAxis
                       dataKey="estimate"
                       name="Estimate"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                       label={{
                         value: "Estimate",
                         position: "bottom",
-                        className: "fill-muted-foreground",
+                        fill: "var(--chart-axis)",
                         fontSize: 12,
                       }}
                     />
                     <YAxis
                       dataKey="actual"
                       name="Actual"
-                      tick={{ fontSize: 12 }}
-                      className="fill-muted-foreground"
+                      {...CHART_AXIS}
                       label={{
                         value: "Actual",
                         angle: -90,
                         position: "insideLeft",
-                        className: "fill-muted-foreground",
+                        fill: "var(--chart-axis)",
                         fontSize: 12,
                       }}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                       formatter={((value: string | number, name: string) => [value, name]) as never}
                     />
                     <Scatter
                       data={estimateData}
-                      fill="#f43f5e"
+                      fill="var(--chart-1)"
                       shape="circle"
                     >
                       {estimateData.map((_: unknown, index: number) => (

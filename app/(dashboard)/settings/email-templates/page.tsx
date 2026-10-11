@@ -711,7 +711,7 @@ function EmailTemplatesContent() {
         </div>
 
         {preview ? (
-          <Card className="shadow-noir overflow-hidden">
+          <Card className="shadow-sm overflow-hidden">
             <CardContent className="p-0">
               <div className="border-b px-4 py-2.5 bg-muted/40 flex items-center gap-2">
                 <Label className="text-xs text-muted-foreground shrink-0">Subject</Label>
@@ -721,14 +721,14 @@ function EmailTemplatesContent() {
               </div>
 
               <div
-                className="bg-white rounded-b-lg"
+                className="bg-card rounded-b-lg"
                 style={{ minHeight: "500px" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview.html) }}
               />
             </CardContent>
           </Card>
         ) : (
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-20 gap-3 text-center">
               <Mail className="h-10 w-10 text-muted-foreground/30" />
               <p className="text-sm text-muted-foreground">

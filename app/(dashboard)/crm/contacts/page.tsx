@@ -145,12 +145,12 @@ export default function ContactsPage() {
           <>
             <div className="flex items-center border border-border rounded-md">
               <Button variant={view === "table" ? "default" : "ghost"} size="sm"
-                className={cn("rounded-r-none", view === "table" && "bg-gold hover:bg-gold/90 text-white")}
+                className={cn("rounded-r-none", view === "table" && "bg-primary hover:bg-brand-soft text-primary-foreground")}
                 onClick={handleViewTable}>
                 <TableIcon className="h-4 w-4" />
               </Button>
               <Button variant={view === "card" ? "default" : "ghost"} size="sm"
-                className={cn("rounded-l-none", view === "card" && "bg-gold hover:bg-gold/90 text-white")}
+                className={cn("rounded-l-none", view === "card" && "bg-primary hover:bg-brand-soft text-primary-foreground")}
                 onClick={handleViewCard}>
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -180,18 +180,18 @@ export default function ContactsPage() {
               <div className="border border-border rounded-md flex flex-col h-[calc(100dvh-16rem)] min-h-[320px]">
                 <div className="flex-1 min-h-0 overflow-auto">
                   <div className="min-w-max">
-                    <table className="w-full caption-bottom text-[11px]">
+                    <table className="w-full caption-bottom text-2xs">
                       <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
                         <TableRow className="border-b-2 border-border">
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Name</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Email</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Phone</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Company</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Title</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Tags</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Social</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-bold px-2 py-1.5">Linked To</TableHead>
-                          <TableHead className="text-[10px] w-8 px-2"></TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Name</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Email</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Phone</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Company</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Title</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Tags</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Social</TableHead>
+                          <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Linked To</TableHead>
+                          <TableHead className="text-2xs w-8 px-2"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -207,21 +207,21 @@ export default function ContactsPage() {
                           <TableRow key={contact.id} className="h-8 hover:bg-muted/30 transition-colors">
                             <TableCell className="px-2 py-1">
                               <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-full bg-gold/10 flex items-center justify-center text-[9px] font-bold text-gold shrink-0">
+                                <div className="h-6 w-6 rounded-full bg-brand-soft flex items-center justify-center text-3xs font-bold text-brand-text shrink-0">
                                   {contact.name[0]?.toUpperCase() ?? "?"}
                                 </div>
-                                <span className="text-[12px] font-medium truncate max-w-[120px]">{contact.name}</span>
+                                <span className="text-xs font-medium truncate max-w-[120px]">{contact.name}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-[11px] text-muted-foreground px-2 py-1 truncate max-w-[140px]">{contact.email || ""}</TableCell>
-                            <TableCell className="text-[11px] text-muted-foreground font-mono px-2 py-1">{contact.phone || ""}</TableCell>
-                            <TableCell className="text-[11px] text-muted-foreground px-2 py-1 truncate max-w-[100px]">{contact.company || ""}</TableCell>
-                            <TableCell className="text-[11px] text-muted-foreground px-2 py-1 truncate max-w-[100px]">{contact.title || ""}</TableCell>
+                            <TableCell className="text-2xs text-muted-foreground px-2 py-1 truncate max-w-[140px]">{contact.email || ""}</TableCell>
+                            <TableCell className="text-2xs text-muted-foreground font-mono px-2 py-1">{contact.phone || ""}</TableCell>
+                            <TableCell className="text-2xs text-muted-foreground px-2 py-1 truncate max-w-[100px]">{contact.company || ""}</TableCell>
+                            <TableCell className="text-2xs text-muted-foreground px-2 py-1 truncate max-w-[100px]">{contact.title || ""}</TableCell>
                             <TableCell className="px-2 py-1">
                               {contact.tags && (contact.tags as string[]).length > 0 && (
                                 <div className="flex flex-wrap gap-0.5">
                                   {(contact.tags as string[]).slice(0, 2).map(tag => (
-                                    <Badge key={tag} variant="secondary" className="text-[8px] px-1 py-0 h-4">{tag}</Badge>
+                                    <Badge key={tag} variant="secondary" className="text-3xs px-1 py-0 h-4">{tag}</Badge>
                                   ))}
                                 </div>
                               )}
@@ -230,13 +230,13 @@ export default function ContactsPage() {
                               <div className="flex items-center gap-1.5">
                                 {contact.linkedinUrl && (
                                   <a href={contact.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                                    aria-label="LinkedIn profile" className="text-muted-foreground hover:text-blue-500 transition-colors">
+                                    aria-label="LinkedIn profile" className="text-muted-foreground hover:text-info-strong transition-colors">
                                     <Linkedin className="h-3 w-3" />
                                   </a>
                                 )}
                                 {contact.twitterUrl && (
                                   <a href={contact.twitterUrl} target="_blank" rel="noopener noreferrer"
-                                    aria-label="Twitter profile" className="text-muted-foreground hover:text-sky-500 transition-colors">
+                                    aria-label="Twitter profile" className="text-muted-foreground hover:text-info-strong transition-colors">
                                     <Twitter className="h-3 w-3" />
                                   </a>
                                 )}
@@ -254,12 +254,12 @@ export default function ContactsPage() {
                             <TableCell className="px-2 py-1">
                               <div className="flex flex-col gap-0.5">
                                 {contact.lead && (
-                                  <Link href={`/crm/leads/${contact.lead.id}`} className="inline-flex items-center gap-1 text-[9px] font-medium text-blue-600 hover:text-blue-700 hover:underline truncate max-w-[90px]">
+                                  <Link href={`/crm/leads/${contact.lead.id}`} className="inline-flex items-center gap-1 text-3xs font-medium text-info-strong hover:text-info-strong hover:underline truncate max-w-[90px]">
                                     <Link2 className="h-2.5 w-2.5 shrink-0" />Lead: {contact.lead.name}
                                   </Link>
                                 )}
                                 {contact.deal && (
-                                  <Link href={`/crm/deals/${contact.deal.id}`} className="inline-flex items-center gap-1 text-[9px] font-medium text-gold hover:text-gold/80 hover:underline truncate max-w-[90px]">
+                                  <Link href={`/crm/deals/${contact.deal.id}`} className="inline-flex items-center gap-1 text-3xs font-medium text-brand-text hover:text-brand-text hover:underline truncate max-w-[90px]">
                                     <Link2 className="h-2.5 w-2.5 shrink-0" />Deal: {contact.deal.name}
                                   </Link>
                                 )}
@@ -286,11 +286,11 @@ export default function ContactsPage() {
                                     disabled={enrichContact.isPending}
                                     onClick={() => handleEnrich(contact)}
                                   >
-                                    <Sparkles className="h-3.5 w-3.5 mr-2 text-gold" />Enrich with AI
+                                    <Sparkles className="h-3.5 w-3.5 mr-2 text-brand-text" />Enrich with AI
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
-                                    className="text-red-600"
+                                    className="text-danger-strong"
                                     onClick={() => setDeleteId(contact.id)}
                                   >
                                     <Trash2 className="h-3.5 w-3.5 mr-2" />Delete
@@ -327,14 +327,14 @@ export default function ContactsPage() {
             <>
               <motion.div variants={fadeUp} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {data?.items.map(contact => (
-                  <Card key={contact.id} className="shadow-sm hover:shadow-md transition-all hover:border-gold/40 group">
+                  <Card key={contact.id} className="shadow-sm hover:shadow-md transition-all hover:border-primary/40 group">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center text-sm font-semibold text-gold shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-brand-soft flex items-center justify-center text-sm font-semibold text-brand-text shrink-0">
                           {contact.name[0]?.toUpperCase() ?? "?"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate group-hover:text-gold transition-colors">{contact.name}</p>
+                          <p className="text-sm font-medium truncate group-hover:text-brand-text transition-colors">{contact.name}</p>
                           {contact.title && <p className="text-xs text-muted-foreground truncate">{contact.title}</p>}
                         </div>
                         <DropdownMenu>
@@ -356,11 +356,11 @@ export default function ContactsPage() {
                               disabled={enrichContact.isPending}
                               onClick={() => handleEnrich(contact)}
                             >
-                              <Sparkles className="h-3.5 w-3.5 mr-2 text-gold" />Enrich with AI
+                              <Sparkles className="h-3.5 w-3.5 mr-2 text-brand-text" />Enrich with AI
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-red-600"
+                              className="text-danger-strong"
                               onClick={() => setDeleteId(contact.id)}
                             >
                               <Trash2 className="h-3.5 w-3.5 mr-2" />Delete
@@ -392,13 +392,13 @@ export default function ContactsPage() {
                         <div className="mt-3 flex items-center gap-2">
                           {contact.linkedinUrl && (
                             <a href={contact.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                              aria-label="LinkedIn profile" className="text-muted-foreground hover:text-blue-500 transition-colors">
+                              aria-label="LinkedIn profile" className="text-muted-foreground hover:text-info-strong transition-colors">
                               <Linkedin className="h-3.5 w-3.5" />
                             </a>
                           )}
                           {contact.twitterUrl && (
                             <a href={contact.twitterUrl} target="_blank" rel="noopener noreferrer"
-                              aria-label="Twitter profile" className="text-muted-foreground hover:text-sky-500 transition-colors">
+                              aria-label="Twitter profile" className="text-muted-foreground hover:text-info-strong transition-colors">
                               <Twitter className="h-3.5 w-3.5" />
                             </a>
                           )}
@@ -413,7 +413,7 @@ export default function ContactsPage() {
                       {(contact.tags as string[]).length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {(contact.tags as string[]).slice(0, 3).map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">{tag}</Badge>
+                            <Badge key={tag} variant="secondary" className="text-3xs px-1.5 py-0 h-4">{tag}</Badge>
                           ))}
                         </div>
                       )}
@@ -421,14 +421,14 @@ export default function ContactsPage() {
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {contact.lead && (
                             <Link href={`/crm/leads/${contact.lead.id}`}>
-                              <Badge variant="secondary" className="text-[10px] text-blue-600 border-blue-200 hover:border-blue-400 gap-1 cursor-pointer">
+                              <Badge variant="secondary" className="text-2xs text-info-strong border-info-strong/25 hover:border-info-400 gap-1 cursor-pointer">
                                 <Link2 className="h-2.5 w-2.5" />Lead: {contact.lead.name}
                               </Badge>
                             </Link>
                           )}
                           {contact.deal && (
                             <Link href={`/crm/deals/${contact.deal.id}`}>
-                              <Badge variant="secondary" className="text-[10px] text-amber-700 border-amber-200 hover:border-amber-400 gap-1 cursor-pointer">
+                              <Badge variant="secondary" className="text-2xs text-warning-strong border-warning-strong/25 hover:border-warning-400 gap-1 cursor-pointer">
                                 <Link2 className="h-2.5 w-2.5" />Deal: {contact.deal.name}
                               </Badge>
                             </Link>

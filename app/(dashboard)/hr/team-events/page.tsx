@@ -109,13 +109,13 @@ export default function TeamEventsPage() {
               <CardContent className="p-4 space-y-2">
                 <h3 className="text-sm font-semibold leading-tight">{ev.title}</h3>
                 {ev.description && <p className="text-xs text-muted-foreground line-clamp-2">{ev.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                   {ev.startDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />{format(new Date(ev.startDate), "MMM d, h:mm a")}</span>}
                   {ev.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{ev.location}</span>}
                   <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{ev.rsvpCount} going</span>
                 </div>
                 {ev.isRsvped ? (
-                  <Badge variant="default" className="text-[10px] w-full justify-center">Going</Badge>
+                  <Badge variant="default" className="text-2xs w-full justify-center">Going</Badge>
                 ) : (
                   <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => handleRsvp(ev.id)}>
                     <UserPlus className="h-3 w-3 mr-1" />RSVP

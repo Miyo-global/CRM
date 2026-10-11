@@ -52,11 +52,11 @@ export function TerminatedEmployeeTable({ employees }: TerminatedEmployeeTablePr
                   </TableCell>
                   <TableCell className="text-sm">
                     {employee.department?.name ? (
-                      <Badge variant="secondary" className="text-[10px] h-5 px-2">
+                      <Badge variant="secondary" className="text-2xs h-5 px-2">
                         {employee.department.name}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] h-5 px-2 border-amber-300/60 bg-amber-500/10 text-amber-800 dark:text-amber-300">
+                      <Badge variant="outline" className="text-2xs h-5 px-2 border-warning-300/60 bg-warning-soft text-warning-strong">
                         Unassigned
                       </Badge>
                     )}

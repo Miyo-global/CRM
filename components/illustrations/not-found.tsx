@@ -27,7 +27,7 @@ export function NotFoundIllustration({ className }: IllustrationProps) {
         404
       </text>
 
-      <circle cx="200" cy="175" r="65" fill="white" stroke={BLUE} strokeWidth="3" />
+      <circle cx="200" cy="175" r="65" fill="var(--card)" stroke={BLUE} strokeWidth="3" />
       <circle cx="200" cy="175" r="55" fill={BLUE} opacity="0.03" />
       {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => {
         const rad = (angle * Math.PI) / 180;
@@ -49,7 +49,7 @@ export function NotFoundIllustration({ className }: IllustrationProps) {
       <line x1="200" y1="175" x2="185" y2="135" stroke={GOLD} strokeWidth="4" strokeLinecap="round" />
       <line x1="200" y1="175" x2="220" y2="210" stroke={BLUE} strokeWidth="3" strokeLinecap="round" opacity="0.3" />
       <circle cx="200" cy="175" r="6" fill={GOLD} />
-      <circle cx="200" cy="175" r="3" fill="white" />
+      <circle cx="200" cy="175" r="3" fill="var(--card)" />
       <g opacity="0.15">
         <line x1="165" y1="140" x2="235" y2="210" stroke={BLUE} strokeWidth="5" strokeLinecap="round" />
         <line x1="235" y1="140" x2="165" y2="210" stroke={BLUE} strokeWidth="5" strokeLinecap="round" />

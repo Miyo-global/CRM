@@ -42,10 +42,10 @@ interface RecentActivityCardProps {
 
 export const RecentActivityCard = memo(function RecentActivityCard({ items, isLoading, error }: RecentActivityCardProps) {
   return (
-    <Card className="bg-card border-border shadow-noir flex flex-col h-full w-full">
+    <Card className="bg-card border-border shadow-sm flex flex-col h-full w-full">
       <CardHeader className="flex-shrink-0 px-4 py-3">
         <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Activity className="h-4 w-4 text-gold" aria-hidden="true" />
+          <Activity className="h-4 w-4 text-brand-text" aria-hidden="true" />
           Recent Activity
         </CardTitle>
       </CardHeader>
@@ -66,10 +66,10 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
                   return (
                     <Link key={item.id} href="/dashboard/branches">
                       <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                        <GitBranch className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                        <GitBranch className="h-4 w-4 text-info-strong mt-0.5 flex-shrink-0" aria-hidden="true" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-blue-600 border-blue-200">
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0 text-info-strong border-info-strong/25">
                               Branch
                             </Badge>
                           </div>
@@ -102,7 +102,7 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
                               {item.projectKey}-{item.ticketNumber}
                             </span>
                           )}
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          <Badge variant="outline" className="text-2xs px-1.5 py-0">
                             {item.status?.replaceAll("_", " ")}
                           </Badge>
                         </div>
@@ -119,7 +119,7 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
                       {item.assignee && (
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={resolveImageUrl(item.assignee.image)} />
-                          <AvatarFallback className="text-[10px]">
+                          <AvatarFallback className="text-2xs">
                             {getInitials(null, item.assignee.firstName, item.assignee.lastName)}
                           </AvatarFallback>
                         </Avatar>

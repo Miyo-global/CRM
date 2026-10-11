@@ -55,9 +55,9 @@ function useDealAging() {
 
 const STAGE_BADGE: Record<string, { label: string; className: string }> = {
   LEAD:        { label: "Lead",        className: "bg-muted text-muted-foreground border-border" },
-  CONTACTED:   { label: "Contacted",   className: "bg-blue/10 text-blue border-blue/20" },
-  PROPOSAL:    { label: "Proposal",    className: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20" },
-  NEGOTIATION: { label: "Negotiation", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
+  CONTACTED:   { label: "Contacted",   className: "bg-secondary text-secondary border-secondary" },
+  PROPOSAL:    { label: "Proposal",    className: "bg-plum-soft text-plum-strong border-plum-strong/20" },
+  NEGOTIATION: { label: "Negotiation", className: "bg-warning-soft text-warning-strong border-warning-strong/20" },
 };
 
 function getStageBadge(stage: string) {
@@ -66,28 +66,28 @@ function getStageBadge(stage: string) {
 
 function getDayColor(days: number) {
   if (days > 30) return "text-destructive font-semibold";
-  if (days >= 15) return "text-amber-600 dark:text-amber-400 font-medium";
+  if (days >= 15) return "text-warning-strong font-medium";
   return "text-muted-foreground";
 }
 
 function getSeverityChip(days: number) {
   if (days > 30)
     return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20">
-        <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
+      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-danger-soft text-danger-strong border border-danger-strong/20">
+        <span className="h-1.5 w-1.5 rounded-full bg-danger-500 inline-block" />
         Critical
       </span>
     );
   if (days >= 15)
     return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block" />
+      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-warning-soft text-warning-strong border border-warning-strong/20">
+        <span className="h-1.5 w-1.5 rounded-full bg-warning-500 inline-block" />
         Warning
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-success-soft text-success-strong border border-success-strong/20">
+      <span className="h-1.5 w-1.5 rounded-full bg-success-500 inline-block" />
       Healthy
     </span>
   );
@@ -212,7 +212,7 @@ export default function DealAgingPage() {
                             <TableCell className="font-medium">
                               <Link
                                 href={`/crm/deals/${deal.id}`}
-                                className="hover:underline hover:text-gold transition-colors truncate block max-w-[200px]"
+                                className="hover:underline hover:text-brand-text transition-colors truncate block max-w-[200px]"
                               >
                                 {deal.name}
                               </Link>

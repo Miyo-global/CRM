@@ -120,7 +120,7 @@ export function HelpdeskCreateTicketForm({
                   onBlur={field.onBlur}
                 />
               </FormControl>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Letters, numbers, spaces, and basic punctuation only
               </p>
               <FormMessage />

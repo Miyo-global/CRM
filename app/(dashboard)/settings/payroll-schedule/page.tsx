@@ -120,10 +120,10 @@ export default function PayrollSchedulePage() {
         animate="visible"
       >
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <CalendarClock className="h-4 w-4 text-gold" />
+                <CalendarClock className="h-4 w-4 text-brand-text" />
                 Automatic Generation
               </CardTitle>
               <CardDescription>
@@ -208,10 +208,10 @@ export default function PayrollSchedulePage() {
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <History className="h-4 w-4 text-blue" />
+                <History className="h-4 w-4 text-secondary" />
                 Last Run
               </CardTitle>
             </CardHeader>
@@ -227,7 +227,7 @@ export default function PayrollSchedulePage() {
               </div>
               {isEnabled && (
                 <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-success-strong mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground">
                     Active — payroll will be generated automatically on the {ordinal(dayOfMonth)} of
                     each month{autoApprove ? " and approved automatically" : ""}.

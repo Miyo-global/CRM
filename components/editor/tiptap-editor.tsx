@@ -29,7 +29,7 @@ export function TiptapEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder }),
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: "text-primary underline" } }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { class: "text-brand-text underline" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Underline,
     ],
@@ -40,7 +40,7 @@ export function TiptapEditor({
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm dark:prose-invert max-w-none min-h-[300px] p-4 focus:outline-none",
+        class: "tiptap min-h-[300px] p-4 focus:outline-none",
       },
     },
   });
@@ -53,7 +53,7 @@ export function TiptapEditor({
   }, [editor, content]);
 
   return (
-    <div className="rounded-md border bg-background">
+    <div className="overflow-hidden rounded-md border border-border bg-card">
       {editable && <TiptapToolbar editor={editor} />}
       <EditorContent editor={editor} />
     </div>

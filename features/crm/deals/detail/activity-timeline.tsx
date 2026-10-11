@@ -37,9 +37,9 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
             <div key={activity.id} className="flex gap-3">
               <div className={cn(
                 "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                isStageChange ? "bg-purple-500/10" : "bg-gold/10",
+                isStageChange ? "bg-plum-soft" : "bg-brand-soft",
               )}>
-                <Icon className={cn("h-3.5 w-3.5", isStageChange ? "text-purple-400" : "text-gold")} />
+                <Icon className={cn("h-3.5 w-3.5", isStageChange ? "text-plum-strong" : "text-brand-text")} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
@@ -50,7 +50,7 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                 {activity.notes && (
                   <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{activity.notes}</p>
                 )}
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-2xs text-muted-foreground mt-1">
                   {activity.user?.name ?? "System"} • {activity.createdAt ? new Date(activity.createdAt).toLocaleString(DEFAULT_LOCALE) : ""}
                 </p>
               </div>

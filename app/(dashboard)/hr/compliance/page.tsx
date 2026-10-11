@@ -86,7 +86,7 @@ export default function CompliancePage() {
         {pending.length > 0 && (
           <div className="space-y-2">
             <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-500" />
+              <Clock className="h-4 w-4 text-warning-strong" />
               Pending Acknowledgments
             </h3>
             {pending.map((ack: PolicyAcknowledgment) => (
@@ -97,7 +97,7 @@ export default function CompliancePage() {
                     <p className="text-sm font-medium">
                       {ack.document?.name ?? "Document"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Type: {ack.document?.type} &middot; Sent{" "}
                       {ack.createdAt
                         ? formatDistanceToNow(new Date(ack.createdAt), {
@@ -156,11 +156,11 @@ export default function CompliancePage() {
                     <p className="text-xs font-medium truncate">
                       {ack.document?.name ?? "Document"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       {ack.user?.name ?? ack.user?.email}
                     </p>
                   </div>
-                  <Badge variant={ackBadge(ack.status)} className="text-[10px]">
+                  <Badge variant={ackBadge(ack.status)} className="text-2xs">
                     {ack.status}
                   </Badge>
                 </CardContent>

@@ -114,9 +114,9 @@ function FnfContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">{f.employeeName ?? "Employee"}</p>
-                    <Badge variant={statusBadge(f.status)} className="text-[10px]">{f.status ?? "PENDING"}</Badge>
+                    <Badge variant={statusBadge(f.status)} className="text-2xs">{f.status ?? "PENDING"}</Badge>
                   </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5">
                     {f.netPay && <span className="font-medium text-foreground">Net: ${Number(f.netPay).toLocaleString()}</span>}
                     {f.grossPay && <span>Gross: ${Number(f.grossPay).toLocaleString()}</span>}
                     {f.deductions && <span>Ded: ${Number(f.deductions).toLocaleString()}</span>}

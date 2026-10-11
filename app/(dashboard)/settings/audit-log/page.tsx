@@ -41,21 +41,21 @@ import {
 } from "@/lib/pagination-constants";
 
 const ACTION_COLORS: Record<string, string> = {
-  "user.login": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "user.logout": "bg-slate-500/10 text-slate-600 border-slate-200",
-  "user.password_reset": "bg-amber-500/10 text-amber-700 border-amber-200",
-  "user.deactivated": "bg-red-500/10 text-red-600 border-red-200",
-  "org.member_invited": "bg-blue-500/10 text-blue-600 border-blue-200",
-  "org.member_removed": "bg-red-500/10 text-red-600 border-red-200",
-  "org.member_role_changed": "bg-purple-500/10 text-purple-600 border-purple-200",
-  "expense.approved": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "expense.rejected": "bg-red-500/10 text-red-600 border-red-200",
-  "hr.leave_approved": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "hr.leave_rejected": "bg-red-500/10 text-red-600 border-red-200",
-  "hr.payroll_generated": "bg-blue-500/10 text-blue-600 border-blue-200",
-  "hr.payroll_deleted": "bg-red-500/10 text-red-600 border-red-200",
-  "settings.updated": "bg-amber-500/10 text-amber-700 border-amber-200",
-  "file.upload": "bg-sky-500/10 text-sky-600 border-sky-200",
+  "user.login": "bg-success-soft text-success-strong border-success-strong/25",
+  "user.logout": "bg-neutral-soft text-muted-foreground border-border",
+  "user.password_reset": "bg-warning-soft text-warning-strong border-warning-strong/25",
+  "user.deactivated": "bg-danger-soft text-danger-strong border-danger-strong/25",
+  "org.member_invited": "bg-info-soft text-info-strong border-info-strong/25",
+  "org.member_removed": "bg-danger-soft text-danger-strong border-danger-strong/25",
+  "org.member_role_changed": "bg-plum-soft text-plum-strong border-plum-strong/25",
+  "expense.approved": "bg-success-soft text-success-strong border-success-strong/25",
+  "expense.rejected": "bg-danger-soft text-danger-strong border-danger-strong/25",
+  "hr.leave_approved": "bg-success-soft text-success-strong border-success-strong/25",
+  "hr.leave_rejected": "bg-danger-soft text-danger-strong border-danger-strong/25",
+  "hr.payroll_generated": "bg-info-soft text-info-strong border-info-strong/25",
+  "hr.payroll_deleted": "bg-danger-soft text-danger-strong border-danger-strong/25",
+  "settings.updated": "bg-warning-soft text-warning-strong border-warning-strong/25",
+  "file.upload": "bg-info-soft text-info-strong border-info-strong/25",
 };
 
 function actionBadgeClass(action: string) {
@@ -74,32 +74,32 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
   const handleClick = useCallback(() => onSelect(log), [log, onSelect]);
   return (
     <TableRow className="cursor-pointer" onClick={handleClick}>
-      <TableCell className="text-[12px] text-muted-foreground font-mono whitespace-nowrap">
+      <TableCell className="text-xs text-muted-foreground font-mono whitespace-nowrap">
         {format(new Date(log.createdAt), "dd MMM, HH:mm:ss")}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2 min-w-[140px]">
           <Avatar className="h-6 w-6 shrink-0">
             <AvatarImage src={resolveImageUrl(log.userImage)} />
-            <AvatarFallback className="text-[9px]">{getInitials(log.userName)}</AvatarFallback>
+            <AvatarFallback className="text-3xs">{getInitials(log.userName)}</AvatarFallback>
           </Avatar>
-          <span className="text-[13px] font-medium truncate max-w-[120px]">
+          <span className="text-sm font-medium truncate max-w-[120px]">
             {log.userName ?? log.userEmail ?? log.userId}
           </span>
         </div>
       </TableCell>
       <TableCell className="whitespace-nowrap">
-        <Badge variant="outline" className={`text-[11px] ${actionBadgeClass(log.action)}`}>
+        <Badge variant="outline" className={`text-2xs ${actionBadgeClass(log.action)}`}>
           {log.action}
         </Badge>
       </TableCell>
-      <TableCell className="text-[12px] text-muted-foreground capitalize whitespace-nowrap">
+      <TableCell className="text-xs text-muted-foreground capitalize whitespace-nowrap">
         {log.targetType ?? ""}
         {log.targetId && (
-          <span className="text-[11px] opacity-60"> #{log.targetId}</span>
+          <span className="text-2xs opacity-60"> #{log.targetId}</span>
         )}
       </TableCell>
-      <TableCell className="text-[12px] font-mono text-muted-foreground whitespace-nowrap">
+      <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
         {log.ipAddress ?? ""}
       </TableCell>
       <TableCell>
@@ -114,7 +114,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
 function DetailField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
       {children}
     </div>
   );
@@ -140,7 +140,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
             <div className="flex items-center gap-2.5">
               <Avatar className="h-7 w-7">
                 <AvatarImage src={resolveImageUrl(log.userImage)} />
-                <AvatarFallback className="text-[10px]">{getInitials(log.userName)}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{getInitials(log.userName)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="text-sm font-medium leading-tight truncate">{log.userName ?? "Unknown"}</p>
@@ -166,7 +166,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
           )}
           {log.metadata && Object.keys(log.metadata).length > 0 && (
             <DetailField label="Metadata">
-              <pre className="text-[11px] bg-muted/60 rounded-md p-3 border text-foreground overflow-y-auto overflow-x-hidden whitespace-pre-wrap wrap-break-word max-h-none h-[calc(100vh-360px)] min-h-[120px]">
+              <pre className="text-2xs bg-muted/60 rounded-md p-3 border text-foreground overflow-y-auto overflow-x-hidden whitespace-pre-wrap wrap-break-word max-h-none h-[calc(100vh-360px)] min-h-[120px]">
                 {JSON.stringify(log.metadata, null, 2)}
               </pre>
             </DetailField>
@@ -275,7 +275,7 @@ function AuditLogContent() {
   const filtersBar = (
     <div className="flex flex-wrap gap-2 items-end">
       <div className="flex flex-col gap-1 min-w-[160px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">Action</p>
+        <p className="text-2xs font-medium text-muted-foreground">Action</p>
         <Select value={actionFilter} onValueChange={handleActionFilter}>
           <SelectTrigger className="h-8 text-sm w-full">
             <SelectValue placeholder="All actions" />
@@ -289,7 +289,7 @@ function AuditLogContent() {
         </Select>
       </div>
       <div className="flex flex-col gap-1 min-w-[130px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">Entity Type</p>
+        <p className="text-2xs font-medium text-muted-foreground">Entity Type</p>
         <Select value={targetTypeFilter} onValueChange={handleTargetTypeFilter}>
           <SelectTrigger className="h-8 text-sm w-full">
             <SelectValue placeholder="All types" />
@@ -303,11 +303,11 @@ function AuditLogContent() {
         </Select>
       </div>
       <div className="flex flex-col gap-1 min-w-[140px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">From</p>
+        <p className="text-2xs font-medium text-muted-foreground">From</p>
         <DatePicker value={dateFrom} onChange={handleDateFrom} placeholder="From date" className="w-full" />
       </div>
       <div className="flex flex-col gap-1 min-w-[140px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">To</p>
+        <p className="text-2xs font-medium text-muted-foreground">To</p>
         <DatePicker value={dateTo} onChange={handleDateTo} placeholder="To date" className="w-full" />
       </div>
       {hasActiveFilters && (
@@ -383,7 +383,7 @@ function AuditLogContent() {
               <div className="shrink-0 border-t border-border/60 bg-card">
                 <div className="p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[12px]">Rows per page</span>
+                    <span className="text-xs">Rows per page</span>
                     <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
                       <SelectTrigger className="h-7 w-[64px] text-xs">
                         <SelectValue />
@@ -394,7 +394,7 @@ function AuditLogContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <span className="text-[12px] tabular-nums">
+                    <span className="text-xs tabular-nums">
                       {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, total)} of {total.toLocaleString()}
                     </span>
                   </div>
@@ -443,7 +443,7 @@ function AuditLogContent() {
                         <ChevronsRight className="h-3.5 w-3.5" />
                       </Button>
                       <div className="flex items-center gap-1.5 ml-1">
-                        <span className="text-[12px]">Go to</span>
+                        <span className="text-xs">Go to</span>
                         <Input
                           type="number"
                           min={1}

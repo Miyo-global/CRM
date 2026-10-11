@@ -62,14 +62,14 @@ export const PublicDocumentsCard = memo(function PublicDocumentsCard({
   }
 
   return (
-    <Card className="bg-card border-border shadow-noir">
+    <Card className="bg-card border-border shadow-sm">
       <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between px-4 py-3">
         <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <FileText className="h-4 w-4 text-gold" aria-hidden="true" />
+          <FileText className="h-4 w-4 text-brand-text" aria-hidden="true" />
           Public Documents
         </CardTitle>
         <Link href="/hr/documents">
-          <Button variant="ghost" size="sm" className="hover:bg-gold/10 hover:text-gold" aria-label="View all documents">
+          <Button variant="ghost" size="sm" className="hover:bg-brand-soft hover:text-brand-text" aria-label="View all documents">
             View All
           </Button>
         </Link>
@@ -126,10 +126,10 @@ export const PublicDocumentsCard = memo(function PublicDocumentsCard({
                     {doc.name}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    <Badge variant="outline" className="text-2xs px-1.5 py-0">
                       {DOC_TYPE_LABELS[doc.type] || doc.type}
                     </Badge>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       {doc.createdAt ? format(new Date(doc.createdAt), "MMM dd, yyyy") : ""}
                     </span>
                   </div>

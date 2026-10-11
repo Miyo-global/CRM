@@ -37,7 +37,7 @@ function StatCard({
                 highlight === "danger"
                   ? "text-destructive"
                   : highlight === "success"
-                  ? "text-green-600"
+                  ? "text-success-strong"
                   : ""
               }`}
             >

@@ -419,7 +419,7 @@ export default function TerminationPage() {
             {statusCounts[value] > 0 && (
               <Badge
                 variant={statusFilter === value ? "secondary" : "outline"}
-                className="ml-1.5 text-[9px] px-1.5 py-0 h-4"
+                className="ml-1.5 text-3xs px-1.5 py-0 h-4"
               >
                 {statusCounts[value]}
               </Badge>
@@ -500,7 +500,7 @@ export default function TerminationPage() {
             </Label>
             <Link
               href="/settings/termination-reasons"
-              className="text-[11px] text-primary underline-offset-2 hover:underline shrink-0"
+              className="text-2xs text-primary underline-offset-2 hover:underline shrink-0"
             >
               Manage reasons
             </Link>
@@ -532,7 +532,7 @@ export default function TerminationPage() {
                     {reason.label}
                   </Label>
                   {reason.description ? (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       {reason.description}
                     </p>
                   ) : null}
@@ -550,7 +550,7 @@ export default function TerminationPage() {
             Detailed Explanation <span className="text-destructive">*</span>
           </Label>
           {isOtherSelected && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+            <p className="text-2xs text-warning-strong">
               You selected &quot;Other&quot; — a detailed explanation is required.
             </p>
           )}
@@ -561,7 +561,7 @@ export default function TerminationPage() {
             rows={4}
             aria-label="Detailed explanation"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             {explanation.length} / 50 min characters
           </p>
         </div>
@@ -637,7 +637,7 @@ export default function TerminationPage() {
             Supporting Evidence{" "}
             <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Attach warning letters, performance reviews, incident reports or other
             documents supporting this termination.
           </p>
@@ -687,10 +687,10 @@ export default function TerminationPage() {
             readOnly
             value={letterPreview}
             rows={12}
-            className="font-mono text-[11px] bg-muted/40 resize-none"
+            className="font-mono text-2xs bg-muted/40 resize-none"
             aria-label="Termination letter preview"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Auto-generated preview based on the fields above. The final letter will be
             generated upon email send.
           </p>
@@ -832,7 +832,7 @@ export default function TerminationPage() {
                     </span>
                   )}
                 {reviewRecord.noticePeriodWaived && (
-                  <span className="text-amber-600 dark:text-amber-400">
+                  <span className="text-warning-strong">
                     Notice period waived
                   </span>
                 )}

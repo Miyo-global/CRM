@@ -101,13 +101,13 @@ export function MfaSettings() {
         <CardHeader className="px-4 py-3">
           <div className="flex items-center gap-2">
             {isEnabled ? (
-              <ShieldCheck className="h-4 w-4 text-green-500" />
+              <ShieldCheck className="h-4 w-4 text-success-strong" />
             ) : (
               <Shield className="h-4 w-4 text-muted-foreground" />
             )}
             <CardTitle className="text-sm font-semibold">Two-Factor Authentication</CardTitle>
             {isEnabled && (
-              <Badge variant="secondary" className="ml-auto text-xs bg-green-500/10 text-green-600 border-green-500/20">
+              <Badge variant="secondary" className="ml-auto text-xs bg-success-soft text-success-strong border-success-strong/20">
                 Enabled
               </Badge>
             )}
@@ -144,7 +144,7 @@ export function MfaSettings() {
                 <p className="text-xs text-muted-foreground mb-3">
                   1. Scan this QR code with Google Authenticator or any TOTP app.
                 </p>
-                <div className="inline-block p-2 bg-white rounded-lg border border-border">
+                <div className="inline-block p-2 bg-card rounded-lg border border-border">
                   <Image src={qrData.qrDataUrl} alt="MFA QR Code" width={160} height={160} />
                 </div>
               </div>
@@ -223,7 +223,7 @@ export function MfaSettings() {
           <SheetFooter className="flex-row gap-2 border-t pt-4">
             <Button variant="outline" className="flex-1" onClick={handleCopyAll}>
               {copied ? (
-                <><Check className="h-3.5 w-3.5 mr-1.5 text-green-500" />Copied</>
+                <><Check className="h-3.5 w-3.5 mr-1.5 text-success-strong" />Copied</>
               ) : (
                 <><Copy className="h-3.5 w-3.5 mr-1.5" />Copy All</>
               )}

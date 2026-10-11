@@ -71,12 +71,12 @@ const createModuleSchema = z.object({
 type CreateModuleForm = z.infer<typeof createModuleSchema>;
 
 const statusColors: Record<string, string> = {
-  backlog: "bg-gray-100 text-gray-700",
-  planned: "bg-blue-100 text-blue-700",
-  "in-progress": "bg-yellow-100 text-yellow-700",
-  paused: "bg-orange-100 text-orange-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+  backlog: "bg-muted text-neutral-strong",
+  planned: "bg-info-soft text-info-strong",
+  "in-progress": "bg-warning-soft text-warning-strong",
+  paused: "bg-warning-soft text-warning-strong",
+  completed: "bg-success-soft text-success-strong",
+  cancelled: "bg-danger-soft text-danger-strong",
 };
 
 function ProgressRing({ value, size = 40 }: { value: number; size?: number }) {

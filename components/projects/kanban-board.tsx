@@ -1,5 +1,6 @@
 "use client";
 
+import { toneVar } from "@/lib/design/tones";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
@@ -20,10 +21,10 @@ import type { KanbanTicket, KanbanColumn } from "./shared/types";
 import { AnimatePresence, motion } from "framer-motion";
 
 const DEFAULT_COLUMNS: KanbanColumn[] = [
-  { id: "TODO", name: "To Do", color: "#94a3b8", order: 0 },
-  { id: "IN_PROGRESS", name: "In Progress", color: "#3b82f6", order: 1 },
-  { id: "IN_REVIEW", name: "In Review", color: "#eab308", order: 2 },
-  { id: "DONE", name: "Done", color: "#22c55e", order: 3 },
+  { id: "TODO", name: "To Do", color: toneVar.neutral, order: 0 },
+  { id: "IN_PROGRESS", name: "In Progress", color: toneVar.info, order: 1 },
+  { id: "IN_REVIEW", name: "In Review", color: toneVar.warning, order: 2 },
+  { id: "DONE", name: "Done", color: toneVar.success, order: 3 },
 ];
 
 interface KanbanBoardProps {
@@ -200,7 +201,7 @@ export function KanbanBoard({
               key={col.id}
               className={cn(
                 "rounded-lg border bg-muted/20 min-w-[272px] w-[272px] flex flex-col flex-shrink-0 h-full",
-                overWip && "border-red-400/60"
+                overWip && "border-danger-400/60"
               )}
             >
 
@@ -208,9 +209,9 @@ export function KanbanBoard({
                 <div className="flex items-center gap-2">
                   <span
                     className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: col.color || "#94a3b8" }}
+                    style={{ backgroundColor: col.color || toneVar.neutral }}
                   />
-                  <h3 className="font-medium text-[13px] text-foreground truncate">
+                  <h3 className="font-medium text-sm text-foreground truncate">
                     {col.name}
                   </h3>
                   <span className="text-xs text-muted-foreground tabular-nums">
@@ -243,7 +244,7 @@ export function KanbanBoard({
                             <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center mb-2">
                               <Plus className="h-4 w-4 text-muted-foreground/50" />
                             </div>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               Drop tickets here
                             </p>
                           </motion.div>

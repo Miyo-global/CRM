@@ -207,7 +207,7 @@ function InvoiceTable({
                 {inv.client?.name ?? null}
               </TableCell>
               <TableCell>
-                <Badge variant={badge.variant} className="text-[11px]">
+                <Badge variant={badge.variant} className="text-2xs">
                   {badge.label}
                 </Badge>
               </TableCell>

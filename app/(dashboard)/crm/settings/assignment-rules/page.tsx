@@ -104,14 +104,14 @@ function RuleCard({ rule, index, totalRules, onMove, onToggle, onDelete }: RuleC
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-medium truncate">{rule.name}</h3>
-              <Badge variant="secondary" className="text-[10px]">Priority {rule.priority}</Badge>
-              <Badge variant={rule.assignmentType === "round_robin" ? "default" : "secondary"} className="text-[10px]">
+              <Badge variant="secondary" className="text-2xs">Priority {rule.priority}</Badge>
+              <Badge variant={rule.assignmentType === "round_robin" ? "default" : "secondary"} className="text-2xs">
                 {rule.assignmentType === "round_robin" ? "Round Robin" : "Direct Assign"}
               </Badge>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {conditions.map((c, ci) => (
-                <Badge key={ci} variant="outline" className="text-[10px]">
+                <Badge key={ci} variant="outline" className="text-2xs">
                   {FIELDS.find(f => f.value === c.field)?.label ?? c.field} {c.operator} {c.value}
                 </Badge>
               ))}
@@ -261,7 +261,7 @@ export default function AssignmentRulesPage() {
       actions={
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gold hover:bg-gold/90 text-white">
+            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
               <Plus className="h-4 w-4 mr-2" />
               New Rule
             </Button>
@@ -344,7 +344,7 @@ export default function AssignmentRulesPage() {
                   )} />
                 )}
 
-                <Button type="submit" className="w-full bg-gold hover:bg-gold/90 text-white" disabled={createRule.isPending}>
+                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createRule.isPending}>
                   {createRule.isPending ? "Creating..." : "Create Rule"}
                 </Button>
               </form>

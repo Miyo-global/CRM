@@ -33,10 +33,10 @@ const statusBadge: Record<string, { variant: "default" | "secondary" | "outline"
 };
 
 const priorityColors: Record<string, string> = {
-  URGENT: "text-red-500",
-  HIGH: "text-orange-500",
-  MEDIUM: "text-yellow-500",
-  LOW: "text-blue-400",
+  URGENT: "text-danger-strong",
+  HIGH: "text-warning-strong",
+  MEDIUM: "text-warning-strong",
+  LOW: "text-info-strong",
 };
 
 export function TableView({ tickets, onTicketClick }: TableViewProps) {
@@ -89,7 +89,7 @@ export function TableView({ tickets, onTicketClick }: TableViewProps) {
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-5 w-5">
                           <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
-                          <AvatarFallback className="text-[7px]">
+                          <AvatarFallback className="text-3xs">
                             {ticket.assignee.firstName?.[0]}{ticket.assignee.lastName?.[0]}
                           </AvatarFallback>
                         </Avatar>

@@ -93,11 +93,11 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
   };
 
   const STAGE_COLORS: Partial<Record<DealStage, string>> = {
-    LEAD: "bg-blue-500",
-    CONTACTED: "bg-sky-500",
-    PROPOSAL: "bg-amber-500",
-    NEGOTIATION: "bg-purple-500",
-    WON: "bg-emerald-500",
+    LEAD: "bg-info-500",
+    CONTACTED: "bg-info-500",
+    PROPOSAL: "bg-warning-500",
+    NEGOTIATION: "bg-plum-500",
+    WON: "bg-success-500",
   };
 
   return (
@@ -122,7 +122,7 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${STAGE_COLORS[s.stage] ?? "bg-muted"}`} />
                     <span className="font-medium">{STAGE_LABELS[s.stage] ?? s.stage}</span>
-                    <Badge variant="outline" className="text-[9px] h-4 px-1">{s.probability}%</Badge>
+                    <Badge variant="outline" className="text-3xs h-4 px-1">{s.probability}%</Badge>
                     <span className="text-muted-foreground">{s.count} deal{s.count !== 1 ? "s" : ""}</span>
                   </div>
                   <span className="font-medium tabular-nums">{formatINRCompact(s.weighted)}</span>
@@ -178,7 +178,7 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
           </div>
 
           <div className="mt-4 p-3 rounded-lg bg-muted/40 border">
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Weighted values use deal probability if set, otherwise stage defaults:
               Lead 10% · Contacted 25% · Proposal 50% · Negotiation 75% · Won 100%
             </p>

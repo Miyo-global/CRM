@@ -115,10 +115,10 @@ export default function SupportDashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-12">
         <motion.div className="lg:col-span-5" variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4 text-gold" />
+                <Shield className="h-4 w-4 text-brand-text" />
                 Ticket Status Breakdown
               </CardTitle>
             </CardHeader>
@@ -142,10 +142,10 @@ export default function SupportDashboardPage() {
         </motion.div>
 
         <motion.div className="lg:col-span-7" variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-gold" />
+                <Ticket className="h-4 w-4 text-brand-text" />
                 Ticket Volume Trend
               </CardTitle>
             </CardHeader>
@@ -173,10 +173,10 @@ export default function SupportDashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-12">
         <motion.div className="lg:col-span-5" variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Gauge className="h-4 w-4 text-gold" />
+                <Gauge className="h-4 w-4 text-brand-text" />
                 SLA Compliance
               </CardTitle>
             </CardHeader>
@@ -186,8 +186,8 @@ export default function SupportDashboardPage() {
                   <div className="flex items-center justify-center py-2">
                     <MiniDonutChart
                       data={[
-                        { label: "Within SLA", value: slaCompliance.withinSla, color: "#10B981" },
-                        { label: "Breached", value: slaCompliance.breached, color: "#EF4444" },
+                        { label: "Within SLA", value: slaCompliance.withinSla, color: "var(--chart-7)" },
+                        { label: "Breached", value: slaCompliance.breached, color: "var(--chart-8)" },
                       ]}
                       centerValue={`${slaCompliance.compliancePct}%`}
                       centerLabel="On-time"
@@ -196,13 +196,13 @@ export default function SupportDashboardPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-border p-3">
                       <p className="text-xs text-muted-foreground">Within SLA</p>
-                      <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      <p className="text-lg font-semibold text-success-strong tabular-nums">
                         {slaCompliance.withinSla}
                       </p>
                     </div>
                     <div className="rounded-xl border border-border p-3">
                       <p className="text-xs text-muted-foreground">Breached</p>
-                      <p className="text-lg font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                      <p className="text-lg font-semibold text-danger-strong tabular-nums">
                         {slaCompliance.breached}
                       </p>
                     </div>
@@ -221,10 +221,10 @@ export default function SupportDashboardPage() {
         </motion.div>
 
         <motion.div className="lg:col-span-7" variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <MessageSquareReply className="h-4 w-4 text-gold" />
+                <MessageSquareReply className="h-4 w-4 text-brand-text" />
                 Response &amp; Resolution SLA by Priority
               </CardTitle>
             </CardHeader>
@@ -271,7 +271,7 @@ export default function SupportDashboardPage() {
                             <td
                               className={cn(
                                 "py-2.5 text-right tabular-nums font-medium",
-                                overTarget ? "text-red-600 dark:text-red-400" : "text-foreground",
+                                overTarget ? "text-danger-strong" : "text-foreground",
                               )}
                             >
                               {row.avgResolutionHours > 0 ? `${row.avgResolutionHours}h` : ""}
@@ -300,7 +300,7 @@ export default function SupportDashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <motion.div variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Recent Activity</CardTitle>
             </CardHeader>
@@ -322,7 +322,7 @@ export default function SupportDashboardPage() {
         </motion.div>
 
         <motion.div className="lg:col-span-2" variants={fadeUp}>
-          <Card className="h-full shadow-noir">
+          <Card className="h-full shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Team Access</CardTitle>
             </CardHeader>
@@ -356,8 +356,8 @@ export default function SupportDashboardPage() {
                       >
                         <td className="py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                              <span className="text-xs font-semibold text-gold">
+                            <div className="w-8 h-8 rounded-full bg-brand-soft flex items-center justify-center shrink-0">
+                              <span className="text-xs font-semibold text-brand-text">
                                 {member.avatar}
                               </span>
                             </div>
@@ -396,10 +396,10 @@ export default function SupportDashboardPage() {
       </div>
 
       <motion.div variants={fadeUp}>
-        <Card className="shadow-noir">
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4 text-gold" />
+              <Shield className="h-4 w-4 text-brand-text" />
               Tickets by Priority
             </CardTitle>
           </CardHeader>

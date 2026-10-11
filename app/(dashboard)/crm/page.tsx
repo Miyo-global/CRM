@@ -22,14 +22,14 @@ import { CrmPipelineMini } from "@/features/crm/shared/crm-pipeline-mini";
 import { CrmRecentActivity } from "@/features/crm/shared/crm-recent-activity";
 
 const NAV_CARDS = [
-  { title: "Leads", description: "Pipeline tracking", href: "/crm/leads", icon: UserPlus, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { title: "Deals", description: "Proposal to close", href: "/crm/deals", icon: Briefcase, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { title: "Contacts", description: "People directory", href: "/crm/contacts", icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
-  { title: "Clients", description: "Account management", href: "/crm/clients", icon: Building2, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { title: "Analytics", description: "Charts & metrics", href: "/crm/analytics", icon: BarChart3, color: "text-cyan-400", bg: "bg-cyan-500/10" },
-  { title: "Reports", description: "Export & SLA", href: "/crm/reports", icon: FileText, color: "text-rose-400", bg: "bg-rose-500/10" },
-  { title: "Targets", description: "Goals & leaderboard", href: "/crm/targets", icon: Target, color: "text-gold", bg: "bg-gold/10" },
-  { title: "Settings", description: "Rules & SLA", href: "/crm/settings/scoring-rules", icon: Settings, color: "text-slate-400", bg: "bg-slate-500/10" },
+  { title: "Leads", description: "Pipeline tracking", href: "/crm/leads", icon: UserPlus, color: "text-info-strong", bg: "bg-info-soft" },
+  { title: "Deals", description: "Proposal to close", href: "/crm/deals", icon: Briefcase, color: "text-success-strong", bg: "bg-success-soft" },
+  { title: "Contacts", description: "People directory", href: "/crm/contacts", icon: Users, color: "text-plum-strong", bg: "bg-plum-soft" },
+  { title: "Clients", description: "Account management", href: "/crm/clients", icon: Building2, color: "text-warning-strong", bg: "bg-warning-soft" },
+  { title: "Analytics", description: "Charts & metrics", href: "/crm/analytics", icon: BarChart3, color: "text-teal-strong", bg: "bg-teal-soft" },
+  { title: "Reports", description: "Export & SLA", href: "/crm/reports", icon: FileText, color: "text-danger-strong", bg: "bg-danger-soft" },
+  { title: "Targets", description: "Goals & leaderboard", href: "/crm/targets", icon: Target, color: "text-brand-text", bg: "bg-brand-soft" },
+  { title: "Settings", description: "Rules & SLA", href: "/crm/settings/scoring-rules", icon: Settings, color: "text-subtle-foreground", bg: "bg-neutral-soft" },
 ] as const;
 
 export default function CrmHubPage() {
@@ -122,14 +122,14 @@ export default function CrmHubPage() {
 
         <motion.div variants={fadeUp} className="grid gap-3 grid-cols-2 md:grid-cols-4">
           {[
-            { label: "Total Leads", value: leadStats?.total ?? 0, color: "text-blue-400" },
-            { label: "Active Deals", value: dealStats.active, color: "text-emerald-400" },
-            { label: "Pipeline Value", value: formatINRCompact(dealStats.pipelineValue), color: "text-gold" },
-            { label: "Conversion", value: `${leadStats?.conversionRate ?? 0}%`, color: "text-amber-400" },
+            { label: "Total Leads", value: leadStats?.total ?? 0, color: "text-info-strong" },
+            { label: "Active Deals", value: dealStats.active, color: "text-success-strong" },
+            { label: "Pipeline Value", value: formatINRCompact(dealStats.pipelineValue), color: "text-brand-text" },
+            { label: "Conversion", value: `${leadStats?.conversionRate ?? 0}%`, color: "text-warning-strong" },
           ].map((s) => (
             <Card key={s.label} className="shadow-sm">
               <CardContent className="p-3">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{s.label}</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">{s.label}</p>
                 <p className={cn("text-xl font-bold tabular-nums mt-0.5", s.color)}>{s.value}</p>
               </CardContent>
             </Card>
@@ -138,15 +138,15 @@ export default function CrmHubPage() {
 
         {leadStats && (
           <motion.div variants={fadeUp}>
-            <div className="flex items-center gap-4 flex-wrap text-[11px] px-1">
+            <div className="flex items-center gap-4 flex-wrap text-2xs px-1">
               <div className="flex items-center gap-1.5">
-                <AlertTriangle className="h-3 w-3 text-red-400" />
+                <AlertTriangle className="h-3 w-3 text-danger-strong" />
                 <span className="text-muted-foreground">Unassigned</span>
-                <span className="font-bold text-red-400">{leadStats.unassigned}</span>
+                <span className="font-bold text-danger-strong">{leadStats.unassigned}</span>
               </div>
               <div><span className="text-muted-foreground">New/Mo</span> <span className="font-bold ml-1">{leadStats.thisMonth}</span></div>
-              <div><span className="text-muted-foreground">Pipeline</span> <span className="font-bold text-gold ml-1">{formatINRCompact(leadStats.totalPotentialValue)}</span></div>
-              <div><span className="text-muted-foreground">Won</span> <span className="font-bold text-emerald-400 ml-1">{formatINRCompact(dealStats.wonValue)}</span></div>
+              <div><span className="text-muted-foreground">Pipeline</span> <span className="font-bold text-brand-text ml-1">{formatINRCompact(leadStats.totalPotentialValue)}</span></div>
+              <div><span className="text-muted-foreground">Won</span> <span className="font-bold text-success-strong ml-1">{formatINRCompact(dealStats.wonValue)}</span></div>
               <div><span className="text-muted-foreground">Contacts</span> <span className="font-bold ml-1">{contactsData?.total ?? 0}</span></div>
               <div><span className="text-muted-foreground">Orgs</span> <span className="font-bold ml-1">{orgsData?.totalCount ?? 0}</span></div>
             </div>
@@ -163,7 +163,7 @@ export default function CrmHubPage() {
         <motion.div variants={fadeUp} className="grid gap-2 grid-cols-2 md:grid-cols-4">
           {NAV_CARDS.map(card => (
             <Link key={card.href} href={card.href}>
-              <Card className="shadow-sm hover:shadow-md transition-all hover:border-gold/40 cursor-pointer group h-full">
+              <Card className="shadow-sm hover:shadow-md transition-all hover:border-primary/40 cursor-pointer group h-full">
                 <CardContent className="p-3 flex items-center gap-2.5">
                   <div className={cn("h-8 w-8 rounded-md flex items-center justify-center shrink-0", card.bg)}>
                     <card.icon className={cn("h-4 w-4", card.color)} />
@@ -171,9 +171,9 @@ export default function CrmHubPage() {
                   <div className="min-w-0">
                     <p className="text-xs font-semibold flex items-center gap-1">
                       {card.title}
-                      <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0 text-gold" />
+                      <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0 text-brand-text" />
                     </p>
-                    <CardDescription className="text-[10px] truncate">{card.description}</CardDescription>
+                    <CardDescription className="text-2xs truncate">{card.description}</CardDescription>
                   </div>
                 </CardContent>
               </Card>

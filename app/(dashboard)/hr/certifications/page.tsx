@@ -79,14 +79,14 @@ export default function CertificationsPage() {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-start justify-between">
                     <Award className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                    {expired && <Badge variant="destructive" className="text-[10px]">Expired</Badge>}
-                    {expiring && <Badge variant="outline" className="text-[10px] text-amber-600"><AlertTriangle className="h-3 w-3 mr-0.5" />Expiring</Badge>}
+                    {expired && <Badge variant="destructive" className="text-2xs">Expired</Badge>}
+                    {expiring && <Badge variant="outline" className="text-2xs text-warning-strong"><AlertTriangle className="h-3 w-3 mr-0.5" />Expiring</Badge>}
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold leading-tight">{cert.name}</h3>
                     {cert.issuingOrganization && <p className="text-xs text-muted-foreground mt-0.5">{cert.issuingOrganization}</p>}
                   </div>
-                  <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                     {cert.user?.name && <span>{cert.user.name}</span>}
                     {cert.issueDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />{format(new Date(cert.issueDate), "MMM yyyy")}</span>}
                     {cert.expiryDate && <span>Exp: {format(new Date(cert.expiryDate), "MMM yyyy")}</span>}

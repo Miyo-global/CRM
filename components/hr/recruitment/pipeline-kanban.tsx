@@ -46,7 +46,7 @@ const KanbanColumn = memo(function KanbanColumn({
         <span className="text-xs font-semibold tracking-wide">{col.label}</span>
         <span
           className={cn(
-            "ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold min-w-[22px]",
+            "ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-2xs font-semibold min-w-[22px]",
             col.badge,
           )}
         >
@@ -82,7 +82,7 @@ const KanbanColumn = memo(function KanbanColumn({
 
               {items.length === 0 && !snapshot.isDraggingOver && (
                 <div className="flex items-center justify-center h-16 rounded-lg border border-dashed border-border/50">
-                  <p className="text-[10px] text-muted-foreground">Drop here</p>
+                  <p className="text-2xs text-muted-foreground">Drop here</p>
                 </div>
               )}
             </div>

@@ -84,7 +84,7 @@ const SECTIONS = [
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="text-[11px] text-destructive mt-1">{message}</p>;
+  return <p className="text-2xs text-destructive mt-1">{message}</p>;
 }
 
 function FieldCharCount({
@@ -101,7 +101,7 @@ function FieldCharCount({
   return (
     <p
       className={cn(
-        "text-[11px] text-muted-foreground text-right mt-1",
+        "text-2xs text-muted-foreground text-right mt-1",
         (tooShort || atMax) && "text-destructive",
         atMax && "font-medium",
       )}
@@ -179,7 +179,7 @@ function SectionCard({ id, n, title, children }: { id: string; n: number; title:
     <Card id={id} className="scroll-mt-24">
       <CardContent className="p-5">
         <div className="flex items-center gap-2 mb-4">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary text-xs font-semibold">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-soft text-brand-text text-xs font-semibold">
             {n}
           </span>
           <h2 className="text-base font-semibold">{title}</h2>
@@ -496,12 +496,12 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
               href={`#${s.id}`}
               className="flex items-start gap-2 rounded-lg px-3 py-2 hover:bg-muted/60 transition-colors"
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-[10px] font-semibold">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-2xs font-semibold">
                 {s.n}
               </span>
               <span className="min-w-0">
                 <span className="block text-xs font-medium leading-tight">{s.title}</span>
-                <span className="block text-[10px] text-muted-foreground">{s.sub}</span>
+                <span className="block text-2xs text-muted-foreground">{s.sub}</span>
               </span>
             </a>
           ))}
@@ -570,7 +570,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                   aria-invalid={errors.openings ? true : undefined}
                 />
                 <FieldError message={errors.openings} />
-                <p className="text-[11px] text-muted-foreground mt-1">
+                <p className="text-2xs text-muted-foreground mt-1">
                   Maximum {JOB_OPENING_LIMITS.openingsMax} openings per posting.
                 </p>
               </div>
@@ -701,7 +701,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                     aria-invalid={errors.officeLocation ? true : undefined}
                   />
                 )}
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-2xs text-muted-foreground mt-1.5">
                   {officeLocationPresets.length > 0 ? (
                     <>
                       Choosing from your org list.{" "}
@@ -878,13 +878,13 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                       <SelectItem key={f.id} value={String(f.id)}>
                         {f.name}
                         {f.isDefault && (
-                          <span className="ml-2 text-[10px] text-muted-foreground">(default)</span>
+                          <span className="ml-2 text-2xs text-muted-foreground">(default)</span>
                         )}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-2xs text-muted-foreground mt-1.5">
                   Determines the interview rounds and pipeline stages for this job.{" "}
                   <Link href={hiringFlowsHref} className="underline underline-offset-2">
                     Manage hiring flows
@@ -899,7 +899,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                       {flow.rounds.map((r, i) => (
                         <span
                           key={r.id}
-                          className="inline-flex items-center gap-1 rounded-full border border-input bg-muted/40 px-2.5 py-0.5 text-[11px] font-medium"
+                          className="inline-flex items-center gap-1 rounded-full border border-input bg-muted/40 px-2.5 py-0.5 text-2xs font-medium"
                         >
                           <span className="text-muted-foreground">{i + 1}.</span>
                           {r.name}
@@ -940,7 +940,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                   />
                 )}
                 {!hiringManagersLoading && (
-                  <p className="text-[11px] text-muted-foreground mt-1.5">
+                  <p className="text-2xs text-muted-foreground mt-1.5">
                     {hiringManagerOptions.length > 0 ? (
                       "Lists organization members with CEO or HR role. Search by name or role."
                     ) : (
@@ -967,7 +967,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                     </label>
                   ))}
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-2xs text-muted-foreground mt-1.5">
                   Legacy fallback when no hiring flow template is selected.
                 </p>
                 <FieldError message={errors.interviewRounds} />
@@ -1007,12 +1007,12 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                           type="button"
                           onClick={() => setField("applicationFields", { ...form.applicationFields, [key]: v })}
                           className={cn(
-                            "flex-1 rounded px-2 py-1 text-[11px] font-medium capitalize transition-colors",
+                            "flex-1 rounded px-2 py-1 text-2xs font-medium capitalize transition-colors",
                             effective === v
                               ? v === "required"
                                 ? "bg-primary text-primary-foreground"
                                 : v === "hidden"
-                                  ? "bg-destructive/80 text-white"
+                                  ? "bg-destructive text-destructive-foreground"
                                   : "bg-muted-foreground/20 text-foreground"
                               : "text-muted-foreground hover:bg-muted/60"
                           )}
@@ -1052,7 +1052,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-2xs text-muted-foreground mt-1.5">
                   {isEdit
                     ? "Open status requires all mandatory fields when saving."
                     : "Draft saves incomplete jobs. Open publishes and requires all mandatory fields."}

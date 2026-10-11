@@ -51,8 +51,8 @@ function PermissionRow({ perm, enabled, isCEO, onToggle }: PermissionRowProps) {
   return (
     <div className="flex items-center justify-between px-4 pl-10 py-2 hover:bg-muted/20 transition-colors">
       <div>
-        <p className="text-[13px]">{perm.description}</p>
-        <p className="text-[10px] text-muted-foreground font-mono">{perm.name}</p>
+        <p className="text-sm">{perm.description}</p>
+        <p className="text-2xs text-muted-foreground font-mono">{perm.name}</p>
       </div>
       <Switch checked={enabled} onCheckedChange={handleToggle} disabled={isCEO} className="h-4 w-7" />
     </div>
@@ -84,7 +84,7 @@ function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO,
         <div className="flex items-center gap-2">
           {isExpanded ? <ChevronDownIcon className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />}
           <span className="text-sm font-medium">{groupName}</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{enabledCount}/{perms.length}</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">{enabledCount}/{perms.length}</Badge>
         </div>
         {!isCEO && (
           <Switch checked={allEnabled} onCheckedChange={handleToggleAll} onClick={handleStopPropagation} className="h-4 w-7" />
@@ -175,7 +175,7 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
           <div>
             <CardTitle className="text-base flex items-center gap-2">
               {role.name}
-              {role.isSystem && <Badge variant="outline" className="text-[10px]">System Role</Badge>}
+              {role.isSystem && <Badge variant="outline" className="text-2xs">System Role</Badge>}
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
               {rolePermissions.size} of {PERMISSIONS.length} permissions enabled

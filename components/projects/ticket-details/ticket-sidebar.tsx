@@ -162,7 +162,7 @@ export function TicketSidebar({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             Status
           </span>
           <Select
@@ -186,17 +186,17 @@ export function TicketSidebar({
                   </SelectItem>
                   <SelectItem value="IN_PROGRESS">
                     <span className="flex items-center gap-1.5">
-                      <Timer className="h-3 w-3 text-blue-500" /> In Progress
+                      <Timer className="h-3 w-3 text-info-strong" /> In Progress
                     </span>
                   </SelectItem>
                   <SelectItem value="IN_REVIEW">
                     <span className="flex items-center gap-1.5">
-                      <AlertCircle className="h-3 w-3 text-purple-500" /> In Review
+                      <AlertCircle className="h-3 w-3 text-plum-strong" /> In Review
                     </span>
                   </SelectItem>
                   <SelectItem value="DONE">
                     <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3 w-3 text-green-500" /> Done
+                      <CheckCircle2 className="h-3 w-3 text-success-strong" /> Done
                     </span>
                   </SelectItem>
                 </>
@@ -205,7 +205,7 @@ export function TicketSidebar({
           </Select>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             Priority
           </span>
           <Select
@@ -227,7 +227,7 @@ export function TicketSidebar({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             Type
           </span>
           <Select
@@ -247,7 +247,7 @@ export function TicketSidebar({
           </Select>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             Points
           </span>
           <Input
@@ -266,7 +266,7 @@ export function TicketSidebar({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             <Target className="h-3 w-3 inline mr-0.5" />
             Sprint
           </span>
@@ -291,7 +291,7 @@ export function TicketSidebar({
           </Select>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
             <Zap className="h-3 w-3 inline mr-0.5" />
             Epic
           </span>
@@ -317,7 +317,7 @@ export function TicketSidebar({
       </div>
 
       <div className="pt-1">
-        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
+        <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
           Assignees
         </span>
         {displayedAssignees.length > 0 && (
@@ -335,12 +335,12 @@ export function TicketSidebar({
                 >
                   <Avatar className="h-5 w-5">
                     <AvatarImage src={resolveImageUrl(person.image)} />
-                    <AvatarFallback className="text-[7px]">
+                    <AvatarFallback className="text-3xs">
                       {person.firstName?.[0]}
                       {person.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-[11px]">
+                  <span className="text-2xs">
                     {person.firstName}
                   </span>
                   <button
@@ -408,7 +408,7 @@ export function TicketSidebar({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Avatar className="h-6 w-6 shrink-0">
                           <AvatarImage src={resolveImageUrl(member.image)} />
-                          <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-semibold">
+                          <AvatarFallback className="text-3xs bg-primary/10 text-primary font-semibold">
                             {member.firstName?.[0]}{member.lastName?.[0]}
                           </AvatarFallback>
                         </Avatar>
@@ -416,7 +416,7 @@ export function TicketSidebar({
                           <span className="text-xs font-medium leading-tight truncate">
                             {member.firstName} {member.lastName}
                           </span>
-                          <span className="text-[10px] text-muted-foreground truncate leading-tight">
+                          <span className="text-2xs text-muted-foreground truncate leading-tight">
                             {member.email}
                           </span>
                         </div>
@@ -458,11 +458,11 @@ export function TicketSidebar({
       )}
 
       <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
           <Calendar className="h-3 w-3 shrink-0" />
           {ticket.createdAt ? format(new Date(ticket.createdAt), "MMM d, yyyy") : ""}
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
           <Clock className="h-3 w-3 shrink-0" />
           {ticket.updatedAt ? format(new Date(ticket.updatedAt), "MMM d, yyyy") : ""}
         </div>
@@ -470,13 +470,13 @@ export function TicketSidebar({
 
       {ticket.reporter && (
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide shrink-0">
+          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide shrink-0">
             <User className="h-3 w-3 inline mr-0.5" />Reporter
           </span>
           <div className="flex items-center gap-1.5 min-w-0">
             <Avatar className="h-5 w-5">
               <AvatarImage src={resolveImageUrl(ticket.reporter.image)} />
-              <AvatarFallback className="text-[7px] bg-primary/10 text-primary">
+              <AvatarFallback className="text-3xs bg-primary/10 text-primary">
                 {ticket.reporter.firstName?.[0]}{ticket.reporter.lastName?.[0]}
               </AvatarFallback>
             </Avatar>

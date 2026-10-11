@@ -56,49 +56,49 @@ export function LeadsToolbar({
 
       <div className="flex items-center border border-border rounded-md">
         <Button variant={view === "table" ? "default" : "ghost"} size="sm"
-          className={cn("rounded-r-none h-8 px-2.5", view === "table" && "bg-gold hover:bg-gold/80 text-white")}
+          className={cn("rounded-r-none h-8 px-2.5", view === "table" && "bg-primary hover:bg-brand-soft text-primary-foreground")}
           onClick={handleViewTable}>
           <TableIcon className="h-3.5 w-3.5" />
         </Button>
         <Button variant={view === "kanban" ? "default" : "ghost"} size="sm"
-          className={cn("rounded-l-none h-8 px-2.5", view === "kanban" && "bg-gold hover:bg-gold/80 text-white")}
+          className={cn("rounded-l-none h-8 px-2.5", view === "kanban" && "bg-primary hover:bg-brand-soft text-primary-foreground")}
           onClick={handleViewKanban}>
           <LayoutGrid className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       <Select value={statusFilter || "all"} onValueChange={handleStatusFilter}>
-        <SelectTrigger className="w-[110px] h-8 text-[11px]"><SelectValue placeholder="Status" /></SelectTrigger>
+        <SelectTrigger className="w-[110px] h-8 text-2xs"><SelectValue placeholder="Status" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="all" className="text-[11px]">All Status</SelectItem>
+          <SelectItem value="all" className="text-2xs">All Status</SelectItem>
           {STATUSES.map(s => (
-            <SelectItem key={s} value={s} className="text-[11px]">{s}</SelectItem>
+            <SelectItem key={s} value={s} className="text-2xs">{s}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       <Select value={priorityFilter || "all"} onValueChange={handlePriorityFilter}>
-        <SelectTrigger className="w-[100px] h-8 text-[11px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+        <SelectTrigger className="w-[100px] h-8 text-2xs"><SelectValue placeholder="Priority" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="all" className="text-[11px]">All Priority</SelectItem>
+          <SelectItem value="all" className="text-2xs">All Priority</SelectItem>
           {LEAD_PRIORITIES.map(p => (
-            <SelectItem key={p} value={p} className="text-[11px]">{p}</SelectItem>
+            <SelectItem key={p} value={p} className="text-2xs">{p}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       <Select value={sourceFilter || "all"} onValueChange={handleSourceFilter}>
-        <SelectTrigger className="w-[110px] h-8 text-[11px]"><SelectValue placeholder="Source" /></SelectTrigger>
+        <SelectTrigger className="w-[110px] h-8 text-2xs"><SelectValue placeholder="Source" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="all" className="text-[11px]">All Sources</SelectItem>
+          <SelectItem value="all" className="text-2xs">All Sources</SelectItem>
           {LEAD_SOURCES.map(s => (
-            <SelectItem key={s} value={s} className="text-[11px]">{s.replace("_", " ")}</SelectItem>
+            <SelectItem key={s} value={s} className="text-2xs">{s.replace("_", " ")}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       {hasFilters && (
-        <Button variant="ghost" size="sm" className="h-8 text-[11px] px-2" onClick={onClearFilters}>
+        <Button variant="ghost" size="sm" className="h-8 text-2xs px-2" onClick={onClearFilters}>
           <X className="h-3 w-3 mr-1" />Clear
         </Button>
       )}

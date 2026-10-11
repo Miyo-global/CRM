@@ -97,7 +97,7 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
       <SheetContent className="sm:max-w-[500px] overflow-y-auto p-6">
         <SheetHeader className="mb-6">
           <SheetTitle className="flex items-center gap-2 text-lg">
-            <Layers className="h-5 w-5 text-purple-500" />
+            <Layers className="h-5 w-5 text-plum-strong" />
             Create New Epic
           </SheetTitle>
         </SheetHeader>

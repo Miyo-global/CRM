@@ -57,10 +57,10 @@ function levelLabel(level: number | null): string {
 
 function levelColor(level: number | null): string {
   if (level === null) return "bg-muted";
-  if (level >= 5) return "bg-purple-500";
-  if (level >= 4) return "bg-green-500";
-  if (level >= 3) return "bg-blue-500";
-  if (level >= 2) return "bg-amber-500";
+  if (level >= 5) return "bg-plum-500";
+  if (level >= 4) return "bg-success-500";
+  if (level >= 3) return "bg-info-500";
+  if (level >= 2) return "bg-warning-500";
   return "bg-muted-foreground";
 }
 
@@ -134,7 +134,7 @@ function SkillCombobox({
                 <CommandItem value={`__add__${trimmed}`} onSelect={() => { onValueChange(canonical?.canonical ?? trimmed); setOpen(false); }}>
                   <Plus className="mr-2 h-4 w-4 shrink-0" />
                   <span className="truncate">Add &ldquo;{canonical?.canonical ?? trimmed}&rdquo;</span>
-                  {canonical && !canonical.recognized && <Badge variant="outline" className="ml-auto text-[9px]">custom</Badge>}
+                  {canonical && !canonical.recognized && <Badge variant="outline" className="ml-auto text-3xs">custom</Badge>}
                 </CommandItem>
               </CommandGroup>
             )}
@@ -143,7 +143,7 @@ function SkillCombobox({
                 <CommandItem key={opt.skill} value={opt.skill} onSelect={() => { onValueChange(opt.skill); setOpen(false); }}>
                   <Check className={cn("mr-2 h-4 w-4 shrink-0", value.toLowerCase() === opt.skill.toLowerCase() ? "opacity-100" : "opacity-0")} />
                   <span className="truncate">{opt.skill}</span>
-                  {!opt.recognized && <Badge variant="outline" className="ml-auto text-[9px]">custom</Badge>}
+                  {!opt.recognized && <Badge variant="outline" className="ml-auto text-3xs">custom</Badge>}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -395,7 +395,7 @@ export default function SkillsPage() {
               <div key={cat}>
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cat}</h3>
-                  <span className="text-[10px] text-muted-foreground/60">({groups.length})</span>
+                  <span className="text-2xs text-muted-foreground/60">({groups.length})</span>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {groups.map((g) => (
@@ -430,7 +430,7 @@ export default function SkillsPage() {
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Skill Name <span className="text-destructive">*</span></label>
             <SkillCombobox value={skillName} onValueChange={setSkillName} />
-            <p className="text-[11px] text-muted-foreground">Pick from the catalog to keep names consistent, or type to add a custom one.</p>
+            <p className="text-2xs text-muted-foreground">Pick from the catalog to keep names consistent, or type to add a custom one.</p>
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Proficiency Level</label>
@@ -449,7 +449,7 @@ export default function SkillsPage() {
               <DatePicker value={validUntil} onChange={setValidUntil} placeholder="Expiry date" fromDate={certifiedAt ? new Date(certifiedAt) : undefined} />
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground">Expired or soon-to-expire certifications are flagged automatically.</p>
+          <p className="text-2xs text-muted-foreground">Expired or soon-to-expire certifications are flagged automatically.</p>
         </div>
       </HrSheet>
 
@@ -520,15 +520,15 @@ function SkillCard({
           <h3 className="text-sm font-semibold truncate leading-snug">{canonicalName}</h3>
           <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
             {expiredCount > 0 && (
-              <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0", certBadgeClass("expired"))}>{expiredCount} expired</Badge>
+              <Badge variant="outline" className={cn("text-3xs px-1.5 py-0", certBadgeClass("expired"))}>{expiredCount} expired</Badge>
             )}
             {expiringCount > 0 && (
-              <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0", certBadgeClass("expiring"))}>{expiringCount} expiring</Badge>
+              <Badge variant="outline" className={cn("text-3xs px-1.5 py-0", certBadgeClass("expiring"))}>{expiringCount} expiring</Badge>
             )}
             {verifiedCount > 0 && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-green-500/5 text-green-700 border-green-200">{verifiedCount} verified</Badge>
+              <Badge variant="outline" className="text-3xs px-1.5 py-0 bg-success-soft text-success-strong border-success-strong/25">{verifiedCount} verified</Badge>
             )}
-            <Badge variant="outline" className="text-[10px]">{entries.length} {entries.length === 1 ? "person" : "people"}</Badge>
+            <Badge variant="outline" className="text-2xs">{entries.length} {entries.length === 1 ? "person" : "people"}</Badge>
           </div>
         </div>
         <div className="space-y-1">
@@ -545,19 +545,19 @@ function SkillCard({
                     className="shrink-0"
                     title={s.certifiedAt ? `Certified ${formatCertDate(typeof s.certifiedAt === "string" ? s.certifiedAt : new Date(s.certifiedAt).toISOString())}` : "Certified"}
                   >
-                    <Award className="h-3 w-3 text-amber-500" aria-label="Certified" />
+                    <Award className="h-3 w-3 text-warning-strong" aria-label="Certified" />
                   </span>
                 )}
                 {certStatus !== "none" && (
                   <Badge
                     variant="outline"
-                    className={cn("shrink-0 px-1.5 py-0 text-[9px] font-medium", certBadgeClass(certStatus))}
+                    className={cn("shrink-0 px-1.5 py-0 text-3xs font-medium", certBadgeClass(certStatus))}
                     title={`Valid until ${formatCertDate(s.validUntil)}`}
                   >
                     {certStatus === "valid" ? `Valid · ${formatCertDate(s.validUntil)}` : certStatusLabel(certStatus, s.validUntil)}
                   </Badge>
                 )}
-                <span className="text-[10px] text-muted-foreground shrink-0">{LEVELS.find(l => l.value === String(s.level))?.label ?? ""}</span>
+                <span className="text-2xs text-muted-foreground shrink-0">{LEVELS.find(l => l.value === String(s.level))?.label ?? ""}</span>
                 {canVerify && (
                   <button
                     type="button"
@@ -567,11 +567,11 @@ function SkillCard({
                     className="shrink-0 disabled:opacity-50"
                     aria-label={s.verifiedBy ? "Unverify" : "Verify"}
                   >
-                    <CheckCircle2 className={cn("h-3.5 w-3.5 transition-colors", s.verifiedBy ? "text-green-500" : "text-muted-foreground/30 hover:text-muted-foreground")} />
+                    <CheckCircle2 className={cn("h-3.5 w-3.5 transition-colors", s.verifiedBy ? "text-success-strong" : "text-muted-foreground/30 hover:text-muted-foreground")} />
                   </button>
                 )}
                 {!canVerify && s.verifiedBy && (
-                  <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 text-success-strong shrink-0" />
                 )}
                 {canEdit && (
                   <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
@@ -597,7 +597,7 @@ function SkillCard({
             );
           })}
           {entries.length > 5 && (
-            <p className="text-[10px] text-muted-foreground pl-3.5">+{entries.length - 5} more</p>
+            <p className="text-2xs text-muted-foreground pl-3.5">+{entries.length - 5} more</p>
           )}
         </div>
       </CardContent>

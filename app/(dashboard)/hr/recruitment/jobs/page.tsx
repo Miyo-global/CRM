@@ -444,7 +444,7 @@ export default function JobPostingsPage() {
                             {job.externalPostingIds && Object.keys(job.externalPostingIds as Record<string, string>).length > 0 && (
                               <div className="flex gap-1">
                                 {Object.keys(job.externalPostingIds as Record<string, string>).map((platform) => (
-                                  <Badge key={platform} variant="secondary" className="text-[9px] px-1 py-0 h-4 uppercase">{platform}</Badge>
+                                  <Badge key={platform} variant="secondary" className="text-3xs px-1 py-0 h-4 uppercase">{platform}</Badge>
                                 ))}
                               </div>
                             )}

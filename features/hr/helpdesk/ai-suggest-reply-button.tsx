@@ -61,7 +61,7 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
           {suggestMutation.isPending ? (
             <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
-            <Sparkles className="h-3 w-3 text-amber-500" />
+            <Sparkles className="h-3 w-3 text-warning-strong" />
           )}
           AI Reply
         </Button>
@@ -82,7 +82,7 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium">Suggested Reply</p>
-              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={copyReply}>
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-2xs" onClick={copyReply}>
                 <Copy className="h-3 w-3 mr-1" />
                 Copy
               </Button>
@@ -91,22 +91,22 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
               <p className="text-xs leading-relaxed whitespace-pre-wrap">{result.suggestedReply}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-[10px] gap-1">
+              <Badge variant="secondary" className="text-2xs gap-1">
                 <Tag className="h-2.5 w-2.5" />
                 {result.category}
               </Badge>
-              <Badge variant="outline" className="text-[10px] gap-1">
+              <Badge variant="outline" className="text-2xs gap-1">
                 <Clock className="h-2.5 w-2.5" />
                 {result.estimatedResolutionTime}
               </Badge>
             </div>
             {result.followUpActions.length > 0 && (
               <div>
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Follow-up Actions</p>
+                <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Follow-up Actions</p>
                 <ul className="space-y-0.5">
                   {result.followUpActions.map((a, i) => (
-                    <li key={i} className="text-[11px] flex items-start gap-1.5">
-                      <span className="text-blue-400 mt-0.5">→</span>
+                    <li key={i} className="text-2xs flex items-start gap-1.5">
+                      <span className="text-info-strong mt-0.5">→</span>
                       <span>{a}</span>
                     </li>
                   ))}

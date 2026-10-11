@@ -172,7 +172,7 @@ export function SettingsProfile() {
         <div className="relative group shrink-0">
           <Avatar className="h-16 w-16 ring-2 ring-border">
             <AvatarImage src={displayImage} />
-            <AvatarFallback className="text-xl font-bold bg-gold/10 text-gold">
+            <AvatarFallback className="text-xl font-bold bg-brand-soft text-brand-text">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -181,12 +181,12 @@ export function SettingsProfile() {
             disabled={isBusy}
             onClick={handleOpenFileInput}
             aria-label="Change profile photo"
-            className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+            className="absolute inset-0 flex items-center justify-center bg-overlay rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
           >
             {isBusy ? (
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
+              <Loader2 className="h-5 w-5 text-ink-50 animate-spin" />
             ) : (
-              <Camera className="h-5 w-5 text-white" />
+              <Camera className="h-5 w-5 text-ink-50" />
             )}
           </button>
           <input
@@ -200,7 +200,7 @@ export function SettingsProfile() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-foreground truncate">{name || ""}</p>
+          <p className="text-sm font-semibold text-foreground truncate">{name || ""}</p>
           <p className="text-xs text-muted-foreground truncate">{email}</p>
           <div className="flex items-center gap-2 mt-2">
             <Button
@@ -234,7 +234,7 @@ export function SettingsProfile() {
       <div className="grid gap-4 sm:grid-cols-2">
 
         <div className="space-y-1.5">
-          <Label htmlFor="display-name" className="text-[13px] font-medium">Display name</Label>
+          <Label htmlFor="display-name" className="text-sm font-medium">Display name</Label>
           {isEditingName ? (
             <div className="flex gap-1.5">
               <Input
@@ -284,7 +284,7 @@ export function SettingsProfile() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="email-display" className="text-[13px] font-medium">Email address</Label>
+          <Label htmlFor="email-display" className="text-sm font-medium">Email address</Label>
           <Input
             id="email-display"
             type="email"
@@ -292,7 +292,7 @@ export function SettingsProfile() {
             disabled
             className="h-9 text-sm bg-muted/40"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Contact your admin to change email.
           </p>
         </div>

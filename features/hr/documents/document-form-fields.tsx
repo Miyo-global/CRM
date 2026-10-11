@@ -197,7 +197,7 @@ export function DocumentFormFields({
                 {...field}
               />
             </FormControl>
-            <p className="text-[10px] text-muted-foreground text-right">
+            <p className="text-2xs text-muted-foreground text-right">
               {(field.value?.length ?? 0)}/{DOCUMENT_DESCRIPTION_MAX}
             </p>
             <FormMessage />
@@ -288,9 +288,9 @@ export function DocumentFormFields({
             <div className="space-y-0.5">
               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                 {field.value ? (
-                  <Globe className="h-4 w-4 text-emerald-600" />
+                  <Globe className="h-4 w-4 text-success-strong" />
                 ) : (
-                  <Shield className="h-4 w-4 text-amber-600" />
+                  <Shield className="h-4 w-4 text-warning-strong" />
                 )}
                 {field.value ? "Public Document" : "Private Document"}
               </FormLabel>

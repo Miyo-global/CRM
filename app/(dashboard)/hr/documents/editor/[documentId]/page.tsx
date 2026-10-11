@@ -119,7 +119,7 @@ export default function DocumentEditorPage() {
             <Link href="/hr/documents"><ArrowLeft className="mr-1 h-4 w-4" />Back</Link>
           </Button>
           {isDirty && (
-            <Badge variant="outline" className="text-amber-600">Unsaved</Badge>
+            <Badge variant="outline" className="text-warning-strong">Unsaved</Badge>
           )}
           <Button variant="outline" size="sm" onClick={handlePublish} disabled={publishDoc.isPending}>
             {doc.isPublished ? <GlobeLock className="mr-1 h-4 w-4" /> : <Globe className="mr-1 h-4 w-4" />}

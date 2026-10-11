@@ -200,12 +200,12 @@ function RoleListItem({ role, isSelected, onSelect, onDelete }: RoleListItemProp
     >
       <div>
         <p className="text-sm font-medium">{role.name}</p>
-        <p className="text-[11px] text-muted-foreground">{role.permissions?.length ?? 0} permissions</p>
+        <p className="text-2xs text-muted-foreground">{role.permissions?.length ?? 0} permissions</p>
       </div>
       <div className="flex items-center gap-2">
-        {role.isSystem && <Badge variant="outline" className="text-[9px] px-1.5">System</Badge>}
+        {role.isSystem && <Badge variant="outline" className="text-3xs px-1.5">System</Badge>}
         {!role.isSystem && (
-          <button onClick={handleDelete} className="p-1 hover:bg-red-50 rounded text-muted-foreground hover:text-red-500 transition-colors" aria-label="Delete">
+          <button onClick={handleDelete} className="p-1 hover:bg-danger-soft rounded text-muted-foreground hover:text-danger-strong transition-colors" aria-label="Delete">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         )}

@@ -9,10 +9,10 @@ interface ConversionChartProps {
 }
 
 const SLICE_COLORS: Record<string, string> = {
-  Won: "#10B981",
-  Lost: "#EF4444",
+  Won: "var(--chart-7)",
+  Lost: "var(--chart-8)",
 };
-const DEFAULT_SLICE_COLOR = "#9CA3AF";
+const DEFAULT_SLICE_COLOR = "var(--chart-2)";
 
 export function ConversionChart({ data }: ConversionChartProps) {
   return (
@@ -20,7 +20,7 @@ export function ConversionChart({ data }: ConversionChartProps) {
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
-            data={data} cx="50%" cy="50%" outerRadius={100} dataKey="value"
+            data={data} cx="50%" cy="50%" outerRadius={100} dataKey="value" stroke="var(--card)"
             label={({ name, value }: { name?: string; value?: number }) => `${name ?? ""}: ${value ?? 0}`}
           >
             {data.map((entry, i) => (

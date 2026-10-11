@@ -46,7 +46,7 @@ function EmployeeCard({ emp, dept }: { emp: Employee; dept: string | null }) {
             )}
           </div>
           {dept && (
-            <Badge variant="secondary" className="text-[10px] h-5 px-2 truncate max-w-full">
+            <Badge variant="secondary" className="text-2xs h-5 px-2 truncate max-w-full">
               <svg className="h-3 w-3 mr-1 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
                 <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
@@ -59,7 +59,7 @@ function EmployeeCard({ emp, dept }: { emp: Employee; dept: string | null }) {
               {dept}
             </Badge>
           )}
-          <div className="w-full space-y-1 text-[11px] text-muted-foreground">
+          <div className="w-full space-y-1 text-2xs text-muted-foreground">
             {emp.email && (
               <div className="flex items-center gap-1.5 truncate">
                 <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -72,7 +72,7 @@ function EmployeeCard({ emp, dept }: { emp: Employee; dept: string | null }) {
           </div>
           <Badge
             variant={emp.isActive ? "default" : "secondary"}
-            className={`text-[9px] h-4 px-1.5 ${emp.isActive ? "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 hover:bg-emerald-500/15" : ""}`}
+            className={`text-3xs h-4 px-1.5 ${emp.isActive ? "bg-success-soft text-success-strong border-success-strong/30 hover:bg-success-soft" : ""}`}
           >
             {emp.isActive ? "Active" : "Inactive"}
           </Badge>
@@ -108,7 +108,7 @@ function EmployeeRow({ emp, dept }: { emp: Employee; dept: string | null }) {
       <TableCell className="text-sm text-muted-foreground">{emp.designation ?? ""}</TableCell>
       <TableCell>
         {dept ? (
-          <Badge variant="secondary" className="text-[10px] h-5 px-2">{dept}</Badge>
+          <Badge variant="secondary" className="text-2xs h-5 px-2">{dept}</Badge>
         ) : (
           null
         )}
@@ -119,7 +119,7 @@ function EmployeeRow({ emp, dept }: { emp: Employee; dept: string | null }) {
       <TableCell>
         <Badge
           variant={emp.isActive ? "default" : "secondary"}
-          className={`text-[9px] h-4 px-1.5 ${emp.isActive ? "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 hover:bg-emerald-500/15" : ""}`}
+          className={`text-3xs h-4 px-1.5 ${emp.isActive ? "bg-success-soft text-success-strong border-success-strong/30 hover:bg-success-soft" : ""}`}
         >
           {emp.isActive ? "Active" : "Inactive"}
         </Badge>
@@ -202,7 +202,7 @@ export default function EmployeesPage() {
           <Button
             variant={view === "grid" ? "default" : "ghost"}
             size="sm"
-            className={`rounded-r-none ${view === "grid" ? "bg-gold hover:bg-gold/90 text-white" : ""}`}
+            className={`rounded-r-none ${view === "grid" ? "bg-primary hover:bg-brand-soft text-primary-foreground" : ""}`}
             onClick={() => setView("grid")}
             aria-label="Grid view"
           >
@@ -216,7 +216,7 @@ export default function EmployeesPage() {
           <Button
             variant={view === "list" ? "default" : "ghost"}
             size="sm"
-            className={`rounded-l-none ${view === "list" ? "bg-gold hover:bg-gold/90 text-white" : ""}`}
+            className={`rounded-l-none ${view === "list" ? "bg-primary hover:bg-brand-soft text-primary-foreground" : ""}`}
             onClick={() => setView("list")}
             aria-label="List view"
           >

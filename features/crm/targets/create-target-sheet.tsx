@@ -103,7 +103,7 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button className="bg-gold hover:bg-gold/90 text-white shadow-lg">
+        <Button className="shadow-lg">
           <Plus className="h-4 w-4 mr-2" />
           Set Target
         </Button>
@@ -112,8 +112,8 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
 
         <SheetHeader className="px-6 pt-5 pb-3 border-b shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gold/10 flex items-center justify-center">
-              <Target className="h-4.5 w-4.5 text-gold" />
+            <div className="h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
+              <Target className="h-4.5 w-4.5 text-brand-text" />
             </div>
             <div>
               <SheetTitle className="text-lg font-semibold">Set New Target</SheetTitle>
@@ -128,7 +128,7 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-medium">Assign To</Label>
                 {selectedUserIds.length > 0 && (
-                  <Badge variant="secondary" className="text-[10px] font-medium">
+                  <Badge variant="secondary" className="text-2xs font-medium">
                     {selectedUserIds.length} selected
                   </Badge>
                 )}
@@ -145,19 +145,19 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
                       onClick={handleToggleUser}
                       className={cn(
                         "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all text-left",
-                        selected ? "bg-gold/10 ring-1 ring-gold/30" : "hover:bg-muted",
+                        selected ? "bg-brand-soft ring-1 ring-ring" : "hover:bg-muted",
                       )}
                     >
                       <Avatar className="h-7 w-7 shrink-0">
                         <AvatarImage src={resolveImageUrl(emp.image)} />
-                        <AvatarFallback className="text-[10px] font-medium">{getInitials(empName)}</AvatarFallback>
+                        <AvatarFallback className="text-2xs font-medium">{getInitials(empName)}</AvatarFallback>
                       </Avatar>
                       <span className={cn("flex-1 truncate", selected && "font-medium")}>{empName}</span>
                       <div className={cn(
                         "h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                        selected ? "border-gold bg-gold" : "border-muted-foreground/30",
+                        selected ? "border-primary/40 bg-primary" : "border-muted-foreground/30",
                       )}>
-                        {selected && <Check className="h-3 w-3 text-white" />}
+                        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
                       </div>
                     </button>
                   );
@@ -236,7 +236,7 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
           <Button
             type="submit"
             form="create-target-form"
-            className="flex-1 bg-gold hover:bg-gold/90 text-white h-9"
+            className="flex-1 h-9"
             disabled={isPending || selectedUserIds.length === 0}
           >
             {isPending ? "Creating..." : `Create Target${selectedUserIds.length > 1 ? "s" : ""}`}

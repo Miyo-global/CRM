@@ -49,7 +49,7 @@ export const TeamSummary = memo(function TeamSummary({
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <Card key={card.title} className="transition-colors hover:border-gold/30">
+        <Card key={card.title} className="transition-colors hover:border-primary/40">
           <CardContent className="pt-4 pb-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

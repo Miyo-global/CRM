@@ -117,12 +117,12 @@ export interface WfhRequest {
 }
 
 export const balanceCardConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  "Casual Leave": { label: "CASUAL", color: "bg-gold", icon: CalendarDays },
-  "Sick Leave": { label: "SICK", color: "bg-red-400", icon: Heart },
-  "Unpaid Leave": { label: "UNPAID", color: "bg-slate-400", icon: Palmtree },
+  "Casual Leave": { label: "CASUAL", color: "bg-primary", icon: CalendarDays },
+  "Sick Leave": { label: "SICK", color: "bg-danger-400", icon: Heart },
+  "Unpaid Leave": { label: "UNPAID", color: "bg-ink-400", icon: Palmtree },
 };
 
-export const DEFAULT_CARD_CONFIG = { label: "LEAVE", color: "bg-slate-400", icon: CalendarDays };
+export const DEFAULT_CARD_CONFIG = { label: "LEAVE", color: "bg-ink-400", icon: CalendarDays };
 
 export function formatLeaveBalanceDisplay(balance: string | number): string {
   const n = typeof balance === "string" ? parseFloat(balance) || 0 : balance;
@@ -139,9 +139,9 @@ export const statusIconMap: Record<string, React.ElementType> = {
 };
 
 export const priorityConfig: Record<string, { label: string; dotColor: string; textColor: string }> = {
-  HIGH: { label: "High", dotColor: "bg-red-500", textColor: "text-red-600 dark:text-red-400" },
-  MEDIUM: { label: "Medium", dotColor: "bg-amber-500", textColor: "text-amber-600 dark:text-amber-400" },
-  LOW: { label: "Low", dotColor: "bg-emerald-500", textColor: "text-emerald-600 dark:text-emerald-400" },
+  HIGH: { label: "High", dotColor: "bg-danger-500", textColor: "text-danger-strong" },
+  MEDIUM: { label: "Medium", dotColor: "bg-warning-500", textColor: "text-warning-strong" },
+  LOW: { label: "Low", dotColor: "bg-success-500", textColor: "text-success-strong" },
 };
 
 export const BalanceCard = React.memo(function BalanceCard({
@@ -250,7 +250,7 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
               </p>
             )}
             {status === "REJECTED" && request.rejectionReason && (
-              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 line-clamp-2 max-w-full break-words [overflow-wrap:anywhere]">
+              <p className="text-xs text-danger-strong mt-0.5 line-clamp-2 max-w-full break-words [overflow-wrap:anywhere]">
                 Reason: {request.rejectionReason}
               </p>
             )}
@@ -366,12 +366,12 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
 
   const statusDotColor =
     status === "PENDING"
-      ? "bg-amber-500"
+      ? "bg-warning-500"
       : status === "APPROVED"
-      ? "bg-emerald-500"
+      ? "bg-success-500"
       : status === "CANCELLED"
-      ? "bg-slate-400"
-      : "bg-red-500";
+      ? "bg-ink-400"
+      : "bg-danger-500";
 
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
@@ -385,7 +385,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
           <div className="flex items-center gap-2.5 min-w-[140px]">
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage src={resolveImageUrl(request.user?.image)} />
-              <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+              <AvatarFallback className="text-2xs bg-primary/10 text-primary">
                 {request.user?.firstName?.[0]}
                 {request.user?.lastName?.[0]}
               </AvatarFallback>
@@ -399,10 +399,10 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       <td className="py-3.5 px-3">
         <div className="flex items-center gap-2.5">
           <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-            status === "PENDING" ? "bg-amber-500/10" : status === "APPROVED" ? "bg-emerald-500/10" : "bg-red-500/10"
+            status === "PENDING" ? "bg-warning-soft" : status === "APPROVED" ? "bg-success-soft" : "bg-danger-soft"
           }`}>
             <Icon className={`h-4 w-4 ${
-              status === "PENDING" ? "text-amber-600" : status === "APPROVED" ? "text-emerald-600" : "text-red-600"
+              status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : "text-danger-strong"
             }`} aria-hidden="true" />
           </div>
           <span className="text-sm font-medium text-foreground">{typeName.replace(" Leave", "")}<br /><span className="font-normal text-muted-foreground">Leave</span></span>
@@ -437,12 +437,12 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
             <span className={`h-2 w-2 rounded-full ${statusDotColor}`} />
             <span className={`text-xs font-medium ${
               status === "PENDING"
-                ? "text-amber-600 dark:text-amber-400"
+                ? "text-warning-strong"
                 : status === "APPROVED"
-                ? "text-emerald-600 dark:text-emerald-400"
+                ? "text-success-strong"
                 : status === "CANCELLED"
-                ? "text-slate-500 dark:text-slate-400"
-                : "text-red-600 dark:text-red-400"
+                ? "text-muted-foreground"
+                : "text-danger-strong"
             }`}>
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </span>
@@ -453,7 +453,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
             </span>
           )}
           {status === "REJECTED" && request.rejectionReason && (
-            <span className="text-xs text-red-500 dark:text-red-400 truncate max-w-[140px]" title={request.rejectionReason}>
+            <span className="text-xs text-danger-strong truncate max-w-[140px]" title={request.rejectionReason}>
               {request.rejectionReason}
             </span>
           )}
@@ -476,7 +476,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onCancel(request.id)}
-                  className="text-slate-600"
+                  className="text-muted-foreground"
                 >
                   <X className="mr-2 h-4 w-4" />
                   Cancel Request
@@ -489,7 +489,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
                 {status !== "APPROVED" && status !== "CANCELLED" && (
                   <DropdownMenuItem
                     onClick={() => onApprove?.(request.id)}
-                    className="text-emerald-600"
+                    className="text-success-strong"
                   >
                     <Check className="mr-2 h-4 w-4" />
                     Approve
@@ -498,7 +498,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
                 {status !== "REJECTED" && status !== "CANCELLED" && (
                   <DropdownMenuItem
                     onClick={onRequestReject}
-                    className="text-red-600"
+                    className="text-danger-strong"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Reject
@@ -549,12 +549,12 @@ export function LeaveRequestDetailsSheet({
     : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
   const statusDotColor =
     status === "PENDING"
-      ? "bg-amber-500"
+      ? "bg-warning-500"
       : status === "APPROVED"
-      ? "bg-emerald-500"
+      ? "bg-success-500"
       : status === "CANCELLED"
-      ? "bg-slate-400"
-      : "bg-red-500";
+      ? "bg-ink-400"
+      : "bg-danger-500";
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
   const employeeName = formatEmployeeName(request);
@@ -586,10 +586,10 @@ export function LeaveRequestDetailsSheet({
 
           <div className="flex items-center gap-3">
             <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-              status === "PENDING" ? "bg-amber-500/10" : status === "APPROVED" ? "bg-emerald-500/10" : "bg-red-500/10"
+              status === "PENDING" ? "bg-warning-soft" : status === "APPROVED" ? "bg-success-soft" : "bg-danger-soft"
             }`}>
               <Icon className={`h-5 w-5 ${
-                status === "PENDING" ? "text-amber-600" : status === "APPROVED" ? "text-emerald-600" : "text-red-600"
+                status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : "text-danger-strong"
               }`} />
             </div>
             <div>
@@ -597,7 +597,7 @@ export function LeaveRequestDetailsSheet({
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className={`h-2 w-2 rounded-full ${statusDotColor}`} />
                 <span className={`text-xs ${
-                  status === "PENDING" ? "text-amber-600" : status === "APPROVED" ? "text-emerald-600" : status === "CANCELLED" ? "text-slate-500" : "text-red-600"
+                  status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : status === "CANCELLED" ? "text-muted-foreground" : "text-danger-strong"
                 }`}>{status.charAt(0) + status.slice(1).toLowerCase()}</span>
               </div>
             </div>
@@ -645,7 +645,7 @@ export function LeaveRequestDetailsSheet({
           {status === "REJECTED" && request.rejectionReason && (
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rejection Reason</p>
-              <p className="max-w-full break-words rounded-lg bg-red-500/5 p-3 text-sm text-red-600 [overflow-wrap:anywhere] dark:text-red-400">
+              <p className="max-w-full break-words rounded-lg bg-danger-soft p-3 text-sm text-danger-strong [overflow-wrap:anywhere]">
                 {request.rejectionReason}
               </p>
             </div>

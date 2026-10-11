@@ -128,13 +128,13 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
         {from && (
           <>
             from{" "}
-            <Badge variant={statusBadgeVariant(from)} className="text-[10px]">
+            <Badge variant={statusBadgeVariant(from)} className="text-2xs">
               {STATUS_LABELS[from] ?? from}
             </Badge>
           </>
         )}
         to{" "}
-        <Badge variant={statusBadgeVariant(to)} className="text-[10px]">
+        <Badge variant={statusBadgeVariant(to)} className="text-2xs">
           {to ? STATUS_LABELS[to] ?? to : ""}
         </Badge>
         {comment.createdAt && (
@@ -153,7 +153,7 @@ function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
     <div className="flex gap-2.5">
       <Avatar className="h-7 w-7 shrink-0">
         {comment.authorImage && <AvatarImage src={comment.authorImage} alt={comment.authorName ?? ""} />}
-        <AvatarFallback className="text-[10px]">{initials(comment.authorName)}</AvatarFallback>
+        <AvatarFallback className="text-2xs">{initials(comment.authorName)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
@@ -161,7 +161,7 @@ function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
           {isInternal && (
             <Badge
               variant="outline"
-              className="gap-1 border-amber-300 bg-amber-50 text-[10px] text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+              className="gap-1 border-warning-strong/25 bg-warning-soft text-2xs text-warning-strong"
             >
               <Lock className="h-2.5 w-2.5" />
               Internal
@@ -176,14 +176,14 @@ function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
         <div
           className={
             isInternal
-              ? "mt-1 rounded-md border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-800 dark:bg-amber-900/20"
+              ? "mt-1 rounded-md border border-warning-strong/25 bg-warning-soft p-2.5"
               : "mt-1 rounded-md border bg-muted/30 p-2.5"
           }
         >
           <p
             className={
               isInternal
-                ? "whitespace-pre-wrap text-sm leading-relaxed text-amber-900 dark:text-amber-100"
+                ? "whitespace-pre-wrap text-sm leading-relaxed text-warning-strong"
                 : "whitespace-pre-wrap text-sm leading-relaxed"
             }
           >
@@ -377,15 +377,15 @@ export function TicketDetailSheet({
             )}
 
             {isResolved && ticket.resolution && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              <div className="rounded-md border border-success-strong/25 bg-success-soft p-3">
+                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-success-strong">
                   Resolution
                 </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-success-strong">
                   {ticket.resolution}
                 </p>
                 {ticket.resolvedAt && (
-                  <p className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-500">
+                  <p className="mt-1.5 text-xs text-success-strong">
                     Resolved {formatDistanceToNow(new Date(ticket.resolvedAt), { addSuffix: true })}
                   </p>
                 )}
@@ -445,7 +445,7 @@ export function TicketDetailSheet({
             rows={3}
             className={
               internal
-                ? "resize-none border-amber-300 focus-visible:ring-amber-400 dark:border-amber-700"
+                ? "resize-none border-warning-strong/25 focus-visible:ring-warning-400"
                 : "resize-none"
             }
           />

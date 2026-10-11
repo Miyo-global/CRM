@@ -24,6 +24,7 @@ import type {
   DiversityData,
 } from "@/lib/api/hooks/hr/analytics-extended";
 import { formatINRCompact } from "@/lib/format-utils";
+import { toneBar, toneVar } from "@/lib/design/tones";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 
@@ -82,35 +83,35 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 const STAGE_COLORS: Record<string, string> = {
-  NEW: "bg-slate-400",
-  SCREENING: "bg-blue-500",
-  INTERVIEW: "bg-amber-500",
-  OFFER: "bg-violet-500",
-  HIRED: "bg-emerald-500",
-  REJECTED: "bg-red-400",
+  NEW: "bg-ink-400",
+  SCREENING: "bg-info-500",
+  INTERVIEW: "bg-warning-500",
+  OFFER: "bg-plum-500",
+  HIRED: "bg-success-500",
+  REJECTED: "bg-danger-400",
 };
 
 const STAGE_BG: Record<string, string> = {
-  NEW: "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60",
-  SCREENING: "bg-blue-50 dark:bg-blue-950/30 border-blue-200/70 dark:border-blue-800/40",
-  INTERVIEW: "bg-amber-50 dark:bg-amber-950/30 border-amber-200/70 dark:border-amber-800/40",
-  OFFER: "bg-violet-50 dark:bg-violet-950/30 border-violet-200/70 dark:border-violet-800/40",
-  HIRED: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/70 dark:border-emerald-800/40",
+  NEW: "bg-muted border-border",
+  SCREENING: "bg-info-soft border-info-200/70",
+  INTERVIEW: "bg-warning-soft border-warning-200/70",
+  OFFER: "bg-plum-soft border-plum-200/70",
+  HIRED: "bg-success-soft border-success-200/70",
 };
 
 const STAGE_NUM_COLOR: Record<string, string> = {
-  NEW: "text-slate-700 dark:text-slate-200",
-  SCREENING: "text-blue-700 dark:text-blue-300",
-  INTERVIEW: "text-amber-700 dark:text-amber-300",
-  OFFER: "text-violet-700 dark:text-violet-300",
-  HIRED: "text-emerald-700 dark:text-emerald-300",
+  NEW: "text-neutral-strong",
+  SCREENING: "text-info-strong",
+  INTERVIEW: "text-warning-strong",
+  OFFER: "text-plum-strong",
+  HIRED: "text-success-strong",
 };
 
 const GENDER_COLOR: Record<string, string> = {
-  MALE: "bg-blue-500/70",
-  FEMALE: "bg-pink-500/70",
-  OTHER: "bg-slate-400/70",
-  "NOT SPECIFIED": "bg-slate-300/70",
+  MALE: "bg-info-500/70",
+  FEMALE: "bg-plum-500/70",
+  OTHER: "bg-neutral-soft",
+  "NOT SPECIFIED": "bg-neutral-soft",
 };
 
 // ── Primitives ────────────────────────────────────────────────────────────────
@@ -146,7 +147,7 @@ function HBar({
             <div className="flex items-center gap-1.5 shrink-0 w-[60px] justify-end">
               <span className="text-xs font-semibold tabular-nums">{item.value}</span>
               {showPct && (
-                <span className="text-[9px] text-muted-foreground">({pct}%)</span>
+                <span className="text-3xs text-muted-foreground">({pct}%)</span>
               )}
             </div>
           </div>
@@ -176,7 +177,7 @@ function VBars({
             className="flex-1 flex flex-col items-center gap-0.5 h-full justify-end"
           >
             {d.value > 0 && (
-              <span className="text-[7px] font-medium tabular-nums text-muted-foreground">
+              <span className="text-3xs font-medium tabular-nums text-muted-foreground">
                 {d.value}
               </span>
             )}
@@ -185,7 +186,7 @@ function VBars({
               style={{ height: `${pct}%` }}
               title={`${d.label}: ${d.value}`}
             />
-            <span className="text-[8px] text-muted-foreground mt-0.5 leading-none">
+            <span className="text-3xs text-muted-foreground mt-0.5 leading-none">
               {d.label}
             </span>
           </div>
@@ -221,7 +222,7 @@ function EmptyState({ message }: { message: string }) {
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 mb-3">
+    <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground/80 mb-3">
       {children}
     </p>
   );
@@ -239,11 +240,11 @@ function Mini({
   accent?: "green" | "red" | "amber" | "blue" | "violet";
 }) {
   const styles: Record<string, string> = {
-    green: "border-l-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20",
-    red: "border-l-red-500 bg-red-50/40 dark:bg-red-950/20",
-    amber: "border-l-amber-500 bg-amber-50/40 dark:bg-amber-950/20",
-    blue: "border-l-blue-500 bg-blue-50/40 dark:bg-blue-950/20",
-    violet: "border-l-violet-500 bg-violet-50/40 dark:bg-violet-950/20",
+    green: "border-l-success-500 bg-success-500/40",
+    red: "border-l-danger-500 bg-danger-500/40",
+    amber: "border-l-warning-500 bg-warning-500/40",
+    blue: "border-l-info-500 bg-info-500/40",
+    violet: "border-l-plum-500 bg-plum-500/40",
   };
   return (
     <div
@@ -251,10 +252,10 @@ function Mini({
         accent ? styles[accent] : "bg-muted/15"
       }`}
     >
-      <p className="text-[11px] text-muted-foreground mb-2 truncate">{label}</p>
+      <p className="text-2xs text-muted-foreground mb-2 truncate">{label}</p>
       <p className="text-2xl font-bold tabular-nums leading-tight">{value}</p>
       {sub && (
-        <p className="text-[10px] text-muted-foreground mt-1.5 truncate">{sub}</p>
+        <p className="text-2xs text-muted-foreground mt-1.5 truncate">{sub}</p>
       )}
     </div>
   );
@@ -264,7 +265,7 @@ function CompletionRing({ pct }: { pct: number }) {
   const r = 20;
   const circ = 2 * Math.PI * r;
   const dash = (pct / 100) * circ;
-  const color = pct >= 80 ? "#10b981" : pct >= 50 ? "#f59e0b" : "#ef4444";
+  const color = pct >= 80 ? toneVar.success : pct >= 50 ? toneVar.warning : toneVar.danger;
   return (
     <svg
       width="52"
@@ -327,7 +328,7 @@ function CompletionTile({
           <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           <span className="text-sm font-semibold">{label}</span>
         </div>
-        <p className="text-[11px] text-muted-foreground">{caption}</p>
+        <p className="text-2xs text-muted-foreground">{caption}</p>
       </div>
     </div>
   );
@@ -397,7 +398,7 @@ function PipelineFunnel({
                   STAGE_BG[s.stage] ?? "bg-muted/20 border-border/60"
                 }`}
               >
-                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                <span className="text-3xs font-bold uppercase tracking-widest text-muted-foreground">
                   {STAGE_LABELS[s.stage]}
                 </span>
                 <span
@@ -414,18 +415,18 @@ function PipelineFunnel({
                   />
                 </div>
                 {s.avgDaysInStage != null && s.avgDaysInStage > 0 && (
-                  <span className="text-[9px] text-muted-foreground">
+                  <span className="text-3xs text-muted-foreground">
                     {s.avgDaysInStage}d avg
                   </span>
                 )}
                 {!isLast && conversion != null && (
                   <span
-                    className={`text-[10px] font-semibold ${
+                    className={`text-2xs font-semibold ${
                       conversion >= 60
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-success-strong"
                         : conversion >= 30
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-red-600 dark:text-red-400"
+                          ? "text-warning-strong"
+                          : "text-danger-strong"
                     }`}
                   >
                     {conversion}% pass
@@ -454,7 +455,7 @@ function PipelineFunnel({
         })}
       </div>
       {rejected && rejected.count > 0 && (
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-red-50/50 dark:bg-red-950/20 rounded-lg px-3 py-2 border border-red-100 dark:border-red-900/30">
+        <div className="flex items-center gap-2 text-2xs text-danger-strong bg-danger-soft rounded-lg px-3 py-2">
           <svg
             width="12"
             height="12"
@@ -462,14 +463,14 @@ function PipelineFunnel({
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
-            className="text-red-400 shrink-0"
+            className="text-danger-strong shrink-0"
             aria-hidden="true"
           >
             <circle cx="12" cy="12" r="10" />
             <path d="m15 9-6 6M9 9l6 6" />
           </svg>
           <span>
-            <strong className="text-red-600 dark:text-red-400">
+            <strong className="text-danger-strong">
               {rejected.count}
             </strong>{" "}
             candidates rejected overall
@@ -500,7 +501,7 @@ export function AnalyticsFilterBar({
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div className="space-y-1.5">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           From
         </label>
         <Input
@@ -512,7 +513,7 @@ export function AnalyticsFilterBar({
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           To
         </label>
         <Input
@@ -524,7 +525,7 @@ export function AnalyticsFilterBar({
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Department
         </label>
         <Select
@@ -560,58 +561,58 @@ export function ExecutiveKpiStrip({
   const orgScore = data?.orgHealthScore ?? 0;
   const healthValCls =
     orgScore >= 70
-      ? "text-emerald-700 dark:text-emerald-400"
+      ? "text-success-strong"
       : orgScore >= 45
-        ? "text-amber-700 dark:text-amber-400"
-        : "text-red-700 dark:text-red-400";
+        ? "text-warning-strong"
+        : "text-danger-strong";
 
   const kpis = [
     {
       label: "Total Headcount",
       value: data?.headcount != null ? String(data.headcount) : "—",
       Icon: IcoUsers,
-      tile: "bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/60 dark:border-blue-800/40",
-      iconWrap: "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400",
+      tile: "bg-card",
+      iconWrap: "bg-info-soft text-info-strong",
       valCls: "",
     },
     {
       label: "Attrition Rate",
       value: data?.attritionRate != null ? `${data.attritionRate}%` : "—",
       Icon: IcoTrendDown,
-      tile: "bg-red-50/80 dark:bg-red-950/30 border-red-200/60 dark:border-red-800/40",
-      iconWrap: "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400",
-      valCls: "text-red-700 dark:text-red-400",
+      tile: "bg-card",
+      iconWrap: "bg-danger-soft text-danger-strong",
+      valCls: "text-danger-strong",
     },
     {
       label: "Hiring Rate",
       value: data?.hiringRate != null ? `${data.hiringRate}%` : "—",
       Icon: IcoUserPlus,
-      tile: "bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/40",
-      iconWrap: "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400",
-      valCls: "text-emerald-700 dark:text-emerald-400",
+      tile: "bg-card",
+      iconWrap: "bg-success-soft text-success-strong",
+      valCls: "text-success-strong",
     },
     {
       label: "Avg Tenure",
       value: data?.avgTenureMonths != null ? `${data.avgTenureMonths}mo` : "—",
       Icon: IcoTimer,
-      tile: "bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/40",
-      iconWrap: "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400",
+      tile: "bg-card",
+      iconWrap: "bg-warning-soft text-warning-strong",
       valCls: "",
     },
     {
       label: "Gender Diversity",
       value: data?.diversityRatio != null ? `${data.diversityRatio}%` : "—",
       Icon: IcoDiversity,
-      tile: "bg-violet-50/80 dark:bg-violet-950/30 border-violet-200/60 dark:border-violet-800/40",
-      iconWrap: "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400",
+      tile: "bg-card",
+      iconWrap: "bg-plum-soft text-plum-strong",
       valCls: "",
     },
     {
       label: "Org Health Score",
       value: data?.orgHealthScore != null ? String(data.orgHealthScore) : "—",
       Icon: IcoActivity,
-      tile: "bg-teal-50/80 dark:bg-teal-950/30 border-teal-200/60 dark:border-teal-800/40",
-      iconWrap: "bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400",
+      tile: "bg-card",
+      iconWrap: "bg-teal-soft text-teal-strong",
       valCls: healthValCls,
     },
   ];
@@ -624,7 +625,7 @@ export function ExecutiveKpiStrip({
           className={`rounded-xl border p-4 space-y-3 ${tile}`}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="text-[11px] font-medium text-muted-foreground leading-snug">
+            <span className="text-2xs font-medium text-muted-foreground leading-snug">
               {label}
             </span>
             <div
@@ -661,7 +662,7 @@ export function RecruitmentSection({
     <SectionCard
       icon={IcoBriefcase}
       title="Recruitment Analytics"
-      accentClass="bg-blue-100/70 dark:bg-blue-900/30"
+      accentClass="bg-info-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -715,7 +716,7 @@ export function RecruitmentSection({
                 data={data.sourceOfHire.map((s) => ({
                   label: s.source,
                   value: s.count,
-                  color: "bg-blue-500/70",
+                  color: "bg-info-500/70",
                 }))}
                 showPct
               />
@@ -748,7 +749,7 @@ export function RetentionSection({
     <SectionCard
       icon={IcoUserMinus}
       title="Attrition & Retention Analytics"
-      accentClass="bg-red-100/70 dark:bg-red-900/30"
+      accentClass="bg-danger-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -789,7 +790,7 @@ export function RetentionSection({
                           className="flex-1 flex flex-col items-center gap-0.5 h-full justify-end"
                         >
                           {total > 0 && (
-                            <span className="text-[8px] tabular-nums text-muted-foreground">
+                            <span className="text-3xs tabular-nums text-muted-foreground">
                               {total}
                             </span>
                           )}
@@ -798,25 +799,25 @@ export function RetentionSection({
                             style={{ height: `${h}%` }}
                           >
                             <div
-                              className="w-full bg-amber-500/80"
+                              className="w-full bg-warning-500/80"
                               style={{ height: `${volPct}%` }}
                             />
-                            <div className="w-full bg-red-500/70 flex-1" />
+                            <div className="w-full bg-danger-500/70 flex-1" />
                           </div>
-                          <span className="text-[8px] text-muted-foreground">
+                          <span className="text-3xs text-muted-foreground">
                             {t.month.slice(5)}
                           </span>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex items-center gap-5 mt-2.5 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-5 mt-2.5 text-2xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <span className="h-2 w-3 rounded-sm bg-amber-500/80 inline-block" />
+                      <span className="h-2 w-3 rounded-sm bg-warning-500/80 inline-block" />
                       Voluntary
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="h-2 w-3 rounded-sm bg-red-500/70 inline-block" />
+                      <span className="h-2 w-3 rounded-sm bg-danger-500/70 inline-block" />
                       Involuntary
                     </span>
                   </div>
@@ -834,7 +835,7 @@ export function RetentionSection({
                   data={data.attritionByDept.map((d) => ({
                     label: d.department,
                     value: d.count,
-                    color: "bg-red-500/60",
+                    color: "bg-danger-500/60",
                   }))}
                   showPct
                 />
@@ -870,7 +871,7 @@ export function PerformanceSection({
     <SectionCard
       icon={IcoClipboard}
       title="Performance & Training Analytics"
-      accentClass="bg-emerald-100/70 dark:bg-emerald-900/30"
+      accentClass="bg-success-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -911,7 +912,7 @@ export function PerformanceSection({
                 data={data.ratingDistribution.map((r) => ({
                   label: r.band,
                   value: r.count,
-                  color: "bg-emerald-500/70",
+                  color: "bg-success-500/70",
                 }))}
                 showPct
               />
@@ -939,10 +940,10 @@ export function WorkforceTrendsSection({
     <SectionCard
       icon={IcoTrendUp}
       title="Workforce Overview"
-      accentClass="bg-indigo-100/70 dark:bg-indigo-900/30"
+      accentClass="bg-info-500/70"
       badge={
         data ? (
-          <Badge variant="secondary" className="text-[11px]">
+          <Badge variant="secondary" className="text-2xs">
             {data.currentHeadcount} active
           </Badge>
         ) : undefined
@@ -968,30 +969,30 @@ export function WorkforceTrendsSection({
                     style={{ height: "calc(100% - 16px)" }}
                   >
                     <div
-                      className="flex-1 rounded-t-sm bg-emerald-500/70"
+                      className="flex-1 rounded-t-sm bg-success-500/70"
                       style={{ height: `${jH}%` }}
                       title={`Joiners: ${m.joiners}`}
                     />
                     <div
-                      className="flex-1 rounded-t-sm bg-red-400/70"
+                      className="flex-1 rounded-t-sm bg-danger-500/70"
                       style={{ height: `${eH}%` }}
                       title={`Exits: ${m.exits}`}
                     />
                   </div>
-                  <span className="text-[8px] text-muted-foreground">
+                  <span className="text-3xs text-muted-foreground">
                     {m.month.slice(5)}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="flex items-center gap-5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-5 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-3 rounded-sm bg-emerald-500/70 inline-block" />
+              <span className="h-2 w-3 rounded-sm bg-success-500/70 inline-block" />
               Joiners
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-3 rounded-sm bg-red-400/70 inline-block" />
+              <span className="h-2 w-3 rounded-sm bg-danger-500/70 inline-block" />
               Exits
             </span>
           </div>
@@ -1025,7 +1026,7 @@ export function AttendanceSection({
     <SectionCard
       icon={IcoCalendar}
       title="Attendance Analytics"
-      accentClass="bg-sky-100/70 dark:bg-sky-900/30"
+      accentClass="bg-info-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -1070,7 +1071,7 @@ export function AttendanceSection({
                   value: d.count,
                 }))}
                 height={100}
-                colorClass="bg-sky-500/60"
+                colorClass="bg-info-500/60"
               />
             </div>
           )}
@@ -1081,7 +1082,7 @@ export function AttendanceSection({
                 data={data.byDepartment.map((d) => ({
                   label: d.department,
                   value: d.count,
-                  color: "bg-sky-500/70",
+                  color: "bg-info-500/70",
                 }))}
                 showPct
               />
@@ -1114,7 +1115,7 @@ export function LeaveAnalyticsSection({
     <SectionCard
       icon={IcoClock}
       title="Leave Analytics"
-      accentClass="bg-amber-100/70 dark:bg-amber-900/30"
+      accentClass="bg-warning-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -1146,7 +1147,7 @@ export function LeaveAnalyticsSection({
                   value: m.count,
                 }))}
                 height={100}
-                colorClass="bg-amber-500/70"
+                colorClass="bg-warning-500/70"
               />
             </div>
           )}
@@ -1160,7 +1161,7 @@ export function LeaveAnalyticsSection({
                   .map((d) => ({
                     label: d.department,
                     value: d.approved,
-                    color: "bg-amber-500/70",
+                    color: "bg-warning-500/70",
                   }))}
                 showPct
               />
@@ -1185,7 +1186,7 @@ export function CompensationSection({
     <SectionCard
       icon={IcoCoin}
       title="Compensation & Payroll Analytics"
-      accentClass="bg-violet-100/70 dark:bg-violet-900/30"
+      accentClass="bg-plum-500/70"
     >
       {isLoading ? (
         <SectionSkeleton />
@@ -1224,7 +1225,7 @@ export function CompensationSection({
                     .map((d) => ({
                       label: d.department,
                       value: Math.round(Number(d.avgSalary) / 1000),
-                      color: "bg-violet-500/70",
+                      color: "bg-plum-500/70",
                     }))}
                 />
               </div>
@@ -1240,7 +1241,7 @@ export function CompensationSection({
                     .map((r) => ({
                       label: r.role,
                       value: Math.round(Number(r.avgSalary) / 1000),
-                      color: "bg-violet-400/60",
+                      color: "bg-plum-500/60",
                     }))}
                 />
               </div>
@@ -1265,10 +1266,10 @@ export function DiversitySection({
     <SectionCard
       icon={IcoDiversity}
       title="Diversity & Demographics"
-      accentClass="bg-pink-100/70 dark:bg-pink-900/30"
+      accentClass="bg-plum-500/70"
       badge={
         data ? (
-          <Badge variant="secondary" className="text-[11px]">
+          <Badge variant="secondary" className="text-2xs">
             {data.total} employees
           </Badge>
         ) : undefined
@@ -1290,7 +1291,7 @@ export function DiversitySection({
                   </span>
                   <div className="flex-1 h-5 bg-muted/60 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${GENDER_COLOR[g.label] ?? "bg-slate-400/70"}`}
+                      className={`h-full rounded-full ${GENDER_COLOR[g.label] ?? "bg-neutral-soft"}`}
                       style={{ width: `${g.pct}%` }}
                     />
                   </div>
@@ -1298,7 +1299,7 @@ export function DiversitySection({
                     <span className="text-xs font-semibold tabular-nums">
                       {g.count}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-3xs text-muted-foreground">
                       ({g.pct}%)
                     </span>
                   </div>
@@ -1312,7 +1313,7 @@ export function DiversitySection({
               data={data.ageBuckets.map((b) => ({
                 label: b.label,
                 value: b.count,
-                color: "bg-cyan-500/70",
+                color: toneBar.teal,
               }))}
               showPct
             />
@@ -1323,7 +1324,7 @@ export function DiversitySection({
               data={data.tenureBuckets.map((b) => ({
                 label: b.label,
                 value: b.count,
-                color: "bg-amber-500/70",
+                color: "bg-warning-500/70",
               }))}
               showPct
             />

@@ -234,7 +234,7 @@ export default function MyPayslipsPage() {
           {previewHtml && !previewLoading && (
             <iframe
               srcDoc={previewHtml}
-              className="w-full border-0 rounded-lg shadow-md bg-white"
+              className="w-full border-0 rounded-lg shadow-md bg-card"
               style={{ minHeight: "860px" }}
               title={`Payslip for ${format(parseISO(selectedPayslip.month + "-01"), "MMMM yyyy")}`}
             />
@@ -290,7 +290,7 @@ export default function MyPayslipsPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right hidden sm:block">
-                      <p className="font-semibold text-green-600">
+                      <p className="font-semibold text-success-strong">
                         ₹{parseFloat(payslip.netSalary || "0").toLocaleString()}
                       </p>
                       <p className="text-xs text-muted-foreground">Net Salary</p>

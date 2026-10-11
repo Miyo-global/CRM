@@ -359,7 +359,7 @@ export function CreateTicketDialog({
                             <div key={id} className="flex items-center gap-1.5 bg-muted rounded-full pl-1 pr-2 py-0.5">
                               <Avatar className="h-5 w-5">
                                 <AvatarImage src={resolveImageUrl(member.image)} />
-                                <AvatarFallback className="text-[8px]">{member.name?.[0] || "U"}</AvatarFallback>
+                                <AvatarFallback className="text-3xs">{member.name?.[0] || "U"}</AvatarFallback>
                               </Avatar>
                               <span className="text-xs truncate max-w-[100px]">{member.name || `${member.firstName || ''} ${member.lastName || ''}`}</span>
                               <button
@@ -432,7 +432,7 @@ export function CreateTicketDialog({
                                   />
                                   <Avatar className="h-7 w-7 mr-2">
                                     <AvatarImage src={resolveImageUrl(member.image)} />
-                                    <AvatarFallback className="text-[10px]">
+                                    <AvatarFallback className="text-2xs">
                                       {member.name?.[0] || "U"}
                                     </AvatarFallback>
                                   </Avatar>
@@ -442,7 +442,7 @@ export function CreateTicketDialog({
                                         `${member.firstName || ""} ${member.lastName || ""}`.trim()}
                                     </span>
                                     {member.email ? (
-                                      <span className="text-[10px] text-muted-foreground truncate">
+                                      <span className="text-2xs text-muted-foreground truncate">
                                         {member.email}
                                       </span>
                                     ) : null}
@@ -485,7 +485,7 @@ export function CreateTicketDialog({
                             <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{file.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                              <p className="text-2xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
                             </div>
                             <button
                               type="button"
@@ -504,7 +504,7 @@ export function CreateTicketDialog({
                       <span className="text-xs font-medium text-foreground">
                         {files.length > 0 ? "Add more files" : "Click to upload"}
                       </span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">Images, PDF, DOC, XLS up to 25MB each</span>
+                      <span className="text-2xs text-muted-foreground mt-0.5">Images, PDF, DOC, XLS up to 25MB each</span>
                       <input
                         type="file"
                         className="hidden"

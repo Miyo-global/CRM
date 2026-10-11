@@ -140,9 +140,9 @@ export function InterviewFeedbackForm({ interview, open, onOpenChange }: Intervi
                   className="h-7 text-xs font-medium flex-1"
                 />
                 <div className="flex items-center gap-1 shrink-0">
-                  <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                  <Star className="h-3.5 w-3.5 text-warning-strong fill-warning-500" />
                   <span className="text-sm font-bold w-6 text-center">{entry.score}</span>
-                  <span className="text-[10px] text-muted-foreground">/{entry.maxScore}</span>
+                  <span className="text-2xs text-muted-foreground">/{entry.maxScore}</span>
                 </div>
                 <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleRemoveCategory(index)}>
                   <X className="h-3 w-3" />

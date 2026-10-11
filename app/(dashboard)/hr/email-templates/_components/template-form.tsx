@@ -159,7 +159,7 @@ function VariableHelpPanel({
       </button>
       {open && (
         <div className="border-t border-border/40 px-3 pb-3 pt-2">
-          <p className="mb-2 text-[11px] text-muted-foreground">
+          <p className="mb-2 text-2xs text-muted-foreground">
             Click a variable to insert it at the cursor position in Subject or Body.
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -169,14 +169,14 @@ function VariableHelpPanel({
                 type="button"
                 title={description}
                 onClick={() => onInsert(`{{${key}}}`)}
-                className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-[11px] font-mono text-foreground hover:bg-muted/70 transition-colors"
+                className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-2xs font-mono text-foreground hover:bg-muted/70 transition-colors"
               >
                 {`{{${key}}}`}
               </button>
             ))}
           </div>
           {extraVars.length > 0 && (
-            <p className="mt-2 text-[10px] text-muted-foreground">
+            <p className="mt-2 text-2xs text-muted-foreground">
               Bold-bordered variables are specific to <span className="font-medium">{category}</span> templates.
             </p>
           )}
@@ -209,7 +209,7 @@ function InsertFieldPopover({
   const renderMergeItem = (f: HrEmailMergeField) => (
     <CommandItem key={f.key} value={`${f.label} ${f.key}`} onSelect={() => pick(f.key)}>
       <span className="flex-1 truncate">{f.label}</span>
-      <code className="text-[10px] text-muted-foreground">{`{{${f.key}}}`}</code>
+      <code className="text-2xs text-muted-foreground">{`{{${f.key}}}`}</code>
     </CommandItem>
   );
 
@@ -237,7 +237,7 @@ function InsertFieldPopover({
                     onSelect={() => pick(f.name)}
                   >
                     <span className="flex-1 truncate">{f.label}</span>
-                    <code className="text-[10px] text-muted-foreground">{`{{${f.name}}}`}</code>
+                    <code className="text-2xs text-muted-foreground">{`{{${f.name}}}`}</code>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -264,11 +264,11 @@ export function TemplateFieldInput({
   const label = customField?.label ?? fieldKey;
 
   const labelRow = (
-    <label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5" htmlFor={id}>
+    <label className="text-2xs font-medium text-muted-foreground flex items-center gap-1.5" htmlFor={id}>
       <span className="truncate">{label}</span>
-      <code className="text-[10px]">{`{{${fieldKey}}}`}</code>
+      <code className="text-2xs">{`{{${fieldKey}}}`}</code>
       {customField && (
-        <Badge variant="outline" className="text-[9px] px-1 py-0">
+        <Badge variant="outline" className="text-3xs px-1 py-0">
           Custom
         </Badge>
       )}
@@ -404,7 +404,7 @@ export function TemplateFormFields({
           <label className="text-sm font-medium" htmlFor="template-name">
             Template Name
           </label>
-          <span className="text-[11px] text-muted-foreground tabular-nums">
+          <span className="text-2xs text-muted-foreground tabular-nums">
             {name.length}/{TEMPLATE_NAME_MAX}
           </span>
         </div>
@@ -416,7 +416,7 @@ export function TemplateFormFields({
           aria-invalid={nameError ? true : undefined}
           onChange={(e) => setName(e.target.value)}
         />
-        {nameError && <p className="text-[11px] text-destructive">{nameError}</p>}
+        {nameError && <p className="text-2xs text-destructive">{nameError}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -436,7 +436,7 @@ export function TemplateFormFields({
       </div>
 
       <div className="flex items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2">
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Insert a merge or custom field into the last-edited field (Subject or Body).
         </p>
         <InsertFieldPopover customFields={customFields} onInsert={insertToken} />
@@ -449,7 +449,7 @@ export function TemplateFormFields({
           <label className="text-sm font-medium" htmlFor="template-subject">
             Subject Line
           </label>
-          <span className="text-[11px] text-muted-foreground tabular-nums">
+          <span className="text-2xs text-muted-foreground tabular-nums">
             {subject.length}/{TEMPLATE_SUBJECT_MAX}
           </span>
         </div>
@@ -465,7 +465,7 @@ export function TemplateFormFields({
           }}
           onChange={(e) => setSubject(e.target.value)}
         />
-        {errors.subject && <p className="text-[11px] text-destructive">{errors.subject}</p>}
+        {errors.subject && <p className="text-2xs text-destructive">{errors.subject}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -473,7 +473,7 @@ export function TemplateFormFields({
           <label className="text-sm font-medium" htmlFor="template-body">
             Body
           </label>
-          <span className="text-[11px] text-muted-foreground tabular-nums">
+          <span className="text-2xs text-muted-foreground tabular-nums">
             {body.length}/{TEMPLATE_BODY_MAX}
           </span>
         </div>
@@ -490,7 +490,7 @@ export function TemplateFormFields({
           }}
           onChange={(e) => setBody(e.target.value)}
         />
-        {errors.body && <p className="text-[11px] text-destructive">{errors.body}</p>}
+        {errors.body && <p className="text-2xs text-destructive">{errors.body}</p>}
       </div>
     </>
   );

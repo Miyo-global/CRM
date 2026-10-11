@@ -212,7 +212,7 @@ export default function DashboardPage() {
           {quickActionsList.length > 0 ? (
             <div className={quickActionsGridClass}>
               {quickActionsList.map((a) => (
-                <div key={a.label} className="rounded-xl border border-border bg-card p-4 shadow-noir">
+                <div key={a.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex flex-col items-center gap-2">
                     <Skeleton className="h-10 w-10 rounded-lg" />
                     <Skeleton className="h-3 w-20" />
@@ -223,7 +223,7 @@ export default function DashboardPage() {
           ) : null}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`kpi-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-noir">
+              <div key={`kpi-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <Skeleton className="h-3 w-24" />
@@ -243,7 +243,7 @@ export default function DashboardPage() {
 
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`mini-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-noir">
+              <div key={`mini-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-8 w-8 rounded-full shrink-0" />
                   <div className="flex-1 space-y-2">

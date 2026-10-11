@@ -102,7 +102,7 @@ export function CandidatesTableView({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusBadgeVariant(candidate.status)} className="text-[10px]">
+                  <Badge variant={statusBadgeVariant(candidate.status)} className="text-2xs">
                     {candidate.status}
                   </Badge>
                 </TableCell>
@@ -116,13 +116,13 @@ export function CandidatesTableView({
                       {primary?.jobStatus && (
                         <Badge
                           variant="outline"
-                          className={`mt-1 text-[10px] ${jobStatusClass(primary.jobStatus)}`}
+                          className={`mt-1 text-2xs ${jobStatusClass(primary.jobStatus)}`}
                         >
                           {JOB_STATUS_LABELS[primary.jobStatus]}
                         </Badge>
                       )}
                       {candidate.primaryAppliedAt && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="text-2xs text-muted-foreground mt-0.5">
                           {format(new Date(candidate.primaryAppliedAt), "dd MMM yyyy")}
                         </p>
                       )}
@@ -141,7 +141,7 @@ export function CandidatesTableView({
                   {candidate.source ? (
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${SOURCE_BADGE_CLASSES[candidate.source] ?? "text-muted-foreground"}`}
+                      className={`text-2xs ${SOURCE_BADGE_CLASSES[candidate.source] ?? "text-muted-foreground"}`}
                     >
                       {SOURCE_LABELS[candidate.source] ?? candidate.source}
                     </Badge>

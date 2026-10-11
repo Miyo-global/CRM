@@ -267,7 +267,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                       <div className="h-7 w-7 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
                         <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                       </div>
-                      <a href={`mailto:${lead.email}`} className="text-gold hover:underline truncate text-sm">
+                      <a href={`mailto:${lead.email}`} className="text-brand-text hover:underline truncate text-sm">
                         {lead.email}
                       </a>
                     </div>
@@ -304,17 +304,17 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Financials</p>
                   <div className="grid grid-cols-2 gap-3">
                     {lead.potentialValue && (
-                      <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
-                        <p className="text-[11px] text-muted-foreground mb-1">Potential Value</p>
-                        <p className="text-lg font-bold text-emerald-400">
+                      <div className="p-3.5 rounded-xl bg-success-soft border border-success-strong/15">
+                        <p className="text-2xs text-muted-foreground mb-1">Potential Value</p>
+                        <p className="text-lg font-bold text-success-strong">
                           ₹{Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
                     )}
                     {lead.investmentInterest && (
-                      <div className="p-3.5 rounded-xl bg-gold/5 border border-gold/15">
-                        <p className="text-[11px] text-muted-foreground mb-1">Investment Interest</p>
-                        <p className="text-lg font-bold text-gold">
+                      <div className="p-3.5 rounded-xl bg-brand-soft border border-primary/40">
+                        <p className="text-2xs text-muted-foreground mb-1">Investment Interest</p>
+                        <p className="text-lg font-bold text-brand-text">
                           ₹{Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
@@ -365,20 +365,20 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   <TabsContent value="details" className="mt-5">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                        <p className="text-[11px] text-muted-foreground mb-1">Created</p>
+                        <p className="text-2xs text-muted-foreground mb-1">Created</p>
                         <p className="text-sm font-medium">
                           {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : ""}
                         </p>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                        <p className="text-[11px] text-muted-foreground mb-1">Assigned</p>
+                        <p className="text-2xs text-muted-foreground mb-1">Assigned</p>
                         <p className="text-sm font-medium">
                           {lead.assignedAt ? new Date(lead.assignedAt).toLocaleDateString() : ""}
                         </p>
                       </div>
                       {lead.convertedAt && (
                         <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                          <p className="text-[11px] text-muted-foreground mb-1">Converted</p>
+                          <p className="text-2xs text-muted-foreground mb-1">Converted</p>
                           <p className="text-sm font-medium">
                             {new Date(lead.convertedAt).toLocaleDateString()}
                           </p>
@@ -386,7 +386,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                       )}
                       {lead.campaign && (
                         <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                          <p className="text-[11px] text-muted-foreground mb-1">Campaign</p>
+                          <p className="text-2xs text-muted-foreground mb-1">Campaign</p>
                           <p className="text-sm font-medium">{lead.campaign.name}</p>
                         </div>
                       )}
@@ -404,11 +404,11 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                             >
                               <div className={cn(
                                 "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                                activity.type === "call" ? "bg-blue-500/15 text-blue-400" :
-                                activity.type === "email" ? "bg-purple-500/15 text-purple-400" :
-                                activity.type === "whatsapp" ? "bg-green-500/15 text-green-400" :
-                                activity.type === "meeting" ? "bg-amber-500/15 text-amber-400" :
-                                "bg-cyan-500/15 text-cyan-400",
+                                activity.type === "call" ? "bg-info-soft text-info-strong" :
+                                activity.type === "email" ? "bg-plum-soft text-plum-strong" :
+                                activity.type === "whatsapp" ? "bg-success-soft text-success-strong" :
+                                activity.type === "meeting" ? "bg-warning-soft text-warning-strong" :
+                                "bg-teal-soft text-teal-strong",
                               )}>
                                 {activity.type === "call" ? <Phone className="h-4 w-4" /> :
                                  activity.type === "email" ? <Mail className="h-4 w-4" /> :
@@ -421,7 +421,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                                   <p className="text-sm font-medium capitalize">
                                     {activity.type.replace("_", " ")}
                                   </p>
-                                  <span className="text-[11px] text-muted-foreground">
+                                  <span className="text-2xs text-muted-foreground">
                                     {timeAgo(activity.date)}
                                   </span>
                                 </div>
@@ -432,10 +432,10 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                                   <p className="text-xs mt-1.5 leading-relaxed">{activity.notes}</p>
                                 )}
                                 {activity.outcome && (
-                                  <Badge variant="outline" className="text-[10px] mt-2">{activity.outcome}</Badge>
+                                  <Badge variant="outline" className="text-2xs mt-2">{activity.outcome}</Badge>
                                 )}
                                 {activity.user && (
-                                  <p className="text-[10px] text-muted-foreground mt-1.5">
+                                  <p className="text-2xs text-muted-foreground mt-1.5">
                                     by {activity.user.name}
                                   </p>
                                 )}
@@ -459,13 +459,13 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   <TabsContent value="follow-up" className="mt-4 space-y-5">
                     <div className="rounded-xl border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                        <Plus className="h-3.5 w-3.5 text-gold" />
+                        <Plus className="h-3.5 w-3.5 text-brand-text" />
                         Schedule Follow-up
                       </p>
 
                       <div className="grid grid-cols-2 gap-2">
                         <div className="col-span-2 space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Title *</Label>
+                          <Label className="text-2xs text-muted-foreground">Title *</Label>
                           <Input
                             placeholder="e.g. Call to discuss SIP plan"
                             value={fuTitle}
@@ -475,7 +475,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Type</Label>
+                          <Label className="text-2xs text-muted-foreground">Type</Label>
                           <Select value={fuType} onValueChange={(v) => setFuType(v as TaskType)}>
                             <SelectTrigger className="h-8 text-xs">
                               <SelectValue />
@@ -491,7 +491,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Time</Label>
+                          <Label className="text-2xs text-muted-foreground">Time</Label>
                           <Input
                             type="time"
                             value={fuTime}
@@ -501,7 +501,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                         </div>
 
                         <div className="col-span-2 space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Date *</Label>
+                          <Label className="text-2xs text-muted-foreground">Date *</Label>
                           <DatePicker
                             value={fuDate}
                             onChange={setFuDate}
@@ -512,7 +512,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                         </div>
 
                         <div className="col-span-2 space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Notes (optional)</Label>
+                          <Label className="text-2xs text-muted-foreground">Notes (optional)</Label>
                           <Textarea
                             placeholder="Any context for this follow-up..."
                             value={fuNotes}
@@ -525,7 +525,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
                       <Button
                         size="sm"
-                        className="w-full h-8 text-xs bg-gold hover:bg-gold/90 text-white gap-1.5"
+                        className="w-full h-8 text-xs bg-primary hover:bg-brand-soft text-primary-foreground gap-1.5"
                         onClick={handleScheduleFollowUp}
                         disabled={createTask.isPending}
                       >
@@ -539,7 +539,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
                     {pendingTasks.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Pending ({pendingTasks.length})
                         </p>
                         <div className="space-y-2">
@@ -552,9 +552,9 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                               >
                                 <div className={cn(
                                   "h-7 w-7 rounded-md flex items-center justify-center shrink-0 mt-0.5",
-                                  task.type === "CALL" ? "bg-blue-500/15 text-blue-400" :
-                                  task.type === "EMAIL" ? "bg-purple-500/15 text-purple-400" :
-                                  task.type === "MEETING" ? "bg-amber-500/15 text-amber-400" :
+                                  task.type === "CALL" ? "bg-info-soft text-info-strong" :
+                                  task.type === "EMAIL" ? "bg-plum-soft text-plum-strong" :
+                                  task.type === "MEETING" ? "bg-warning-soft text-warning-strong" :
                                   "bg-muted text-muted-foreground",
                                 )}>
                                   {task.type === "CALL" ? <Phone className="h-3.5 w-3.5" /> :
@@ -565,19 +565,19 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-medium leading-tight">{task.title}</p>
                                   <p className={cn(
-                                    "text-[10px] mt-0.5",
-                                    isOverdue ? "text-red-400 font-medium" : "text-muted-foreground",
+                                    "text-2xs mt-0.5",
+                                    isOverdue ? "text-danger-strong font-medium" : "text-muted-foreground",
                                   )}>
                                     {formatTaskDue(task.dueDate)}
                                   </p>
                                   {task.notes && (
-                                    <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">{task.notes}</p>
+                                    <p className="text-2xs text-muted-foreground/70 mt-1 truncate">{task.notes}</p>
                                   )}
                                 </div>
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-emerald-400"
+                                  className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-success-strong"
                                   onClick={() => handleCompleteTask(task.id)}
                                   disabled={completeTask.isPending}
                                   title="Mark as done"
@@ -593,7 +593,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
                     {doneTasks.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Completed ({doneTasks.length})
                         </p>
                         <div className="space-y-1.5">
@@ -602,11 +602,11 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                               key={task.id}
                               className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-muted/10 border border-border/20"
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                              <span className="text-[11px] text-muted-foreground/70 line-through truncate flex-1">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-success-strong shrink-0" />
+                              <span className="text-2xs text-muted-foreground/70 line-through truncate flex-1">
                                 {task.title}
                               </span>
-                              <span className="text-[10px] text-muted-foreground/50 shrink-0">
+                              <span className="text-2xs text-muted-foreground/50 shrink-0">
                                 {task.completedAt
                                   ? new Date(task.completedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
                                   : ""}
@@ -621,7 +621,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                       <div className="text-center py-8 text-muted-foreground/50">
                         <CalendarClock className="h-8 w-8 mx-auto mb-2 opacity-40" />
                         <p className="text-xs">No follow-ups yet</p>
-                        <p className="text-[11px] mt-0.5">Schedule one above to stay on track</p>
+                        <p className="text-2xs mt-0.5">Schedule one above to stay on track</p>
                       </div>
                     )}
                   </TabsContent>

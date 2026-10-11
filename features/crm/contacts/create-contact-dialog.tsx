@@ -74,7 +74,7 @@ export function CreateContactDialog({ open, onOpenChange }: CreateContactDialogP
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="bg-gold hover:bg-gold/90 text-white">
+        <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
           <Plus className="h-4 w-4 mr-2" />New Contact
         </Button>
       </SheetTrigger>
@@ -162,7 +162,7 @@ export function CreateContactDialog({ open, onOpenChange }: CreateContactDialogP
                     </FormItem>
                   )} />
                 </div>
-                <Button type="submit" className="w-full bg-gold hover:bg-gold/90 text-white" disabled={createContactMutation.isPending}>
+                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createContactMutation.isPending}>
                   {createContactMutation.isPending ? "Creating..." : "Create Contact"}
                 </Button>
               </form>

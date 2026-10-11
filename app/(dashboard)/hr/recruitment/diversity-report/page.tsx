@@ -27,11 +27,11 @@ function useDiversityReport() {
 }
 
 const GENDER_COLORS: Record<string, string> = {
-  MALE: "bg-blue-500",
-  FEMALE: "bg-pink-500",
-  OTHER: "bg-purple-500",
-  PREFER_NOT_TO_SAY: "bg-gray-400",
-  Unknown: "bg-gray-300",
+  MALE: "bg-info-500",
+  FEMALE: "bg-plum-500",
+  OTHER: "bg-plum-500",
+  PREFER_NOT_TO_SAY: "bg-ink-400",
+  Unknown: "bg-ink-200",
 };
 
 function HorizontalBar({
@@ -138,7 +138,7 @@ export default function DiversityReportPage() {
                   <HorizontalBar
                     items={data.genderBreakdown.map((g) => ({ label: g.gender, count: g.count }))}
                     total={data.total}
-                    colorFn={(label) => GENDER_COLORS[label] ?? "bg-gray-400"}
+                    colorFn={(label) => GENDER_COLORS[label] ?? "bg-ink-400"}
                   />
                 )}
               </CardContent>
@@ -164,7 +164,7 @@ export default function DiversityReportPage() {
                   <HorizontalBar
                     items={data.locationBreakdown.map((l) => ({ label: l.location, count: l.count }))}
                     total={data.total}
-                    colorFn={() => "bg-emerald-500"}
+                    colorFn={() => "bg-success-500"}
                   />
                 )}
               </CardContent>
@@ -181,7 +181,7 @@ export default function DiversityReportPage() {
                 <HorizontalBar
                   items={data.sourceBreakdown.map((s) => ({ label: s.source, count: s.count }))}
                   total={data.total}
-                  colorFn={() => "bg-blue-500"}
+                  colorFn={() => "bg-info-500"}
                 />
               </CardContent>
             </Card>
@@ -197,7 +197,7 @@ export default function DiversityReportPage() {
                 <HorizontalBar
                   items={data.stageBreakdown.map((s) => ({ label: s.stage, count: s.count }))}
                   total={data.total}
-                  colorFn={() => "bg-amber-500"}
+                  colorFn={() => "bg-warning-500"}
                 />
               </CardContent>
             </Card>

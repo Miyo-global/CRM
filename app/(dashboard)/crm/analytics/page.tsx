@@ -18,7 +18,7 @@ import { useAllDeals } from "@/lib/api/hooks/crm";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useTaskAnalytics } from "@/lib/api/hooks/tasks";
 import { useSlaReport } from "@/lib/api/hooks/crm-settings";
-import { CHART_TOOLTIP_STYLE, AXIS_TICK, CHART_COLORS } from "@/features/crm/shared/constants";
+import { CHART_TOOLTIP_STYLE, AXIS_TICK, CHART_AXIS, CHART_GRID, CHART_COLORS } from "@/features/crm/shared/constants";
 import { PipelineFunnelChart } from "@/features/crm/analytics/pipeline-funnel-chart";
 import { SourceBreakdownChart } from "@/features/crm/analytics/source-breakdown-chart";
 import { RepPerformanceTable } from "@/features/crm/analytics/rep-performance-table";
@@ -58,11 +58,11 @@ export default function CrmAnalyticsPage() {
   const funnelData = useMemo(() => {
     if (!leadStats) return [];
     return [
-      { name: "New", value: leadStats.byStatus.NEW, fill: "#3B82F6" },
-      { name: "Contacted", value: leadStats.byStatus.CONTACTED, fill: "#0EA5E9" },
-      { name: "Interested", value: leadStats.byStatus.INTERESTED, fill: "#F59E0B" },
-      { name: "Qualified", value: leadStats.byStatus.QUALIFIED, fill: "#8B5CF6" },
-      { name: "Converted", value: leadStats.byStatus.CONVERTED, fill: "#10B981" },
+      { name: "New", value: leadStats.byStatus.NEW, fill: "var(--chart-1)" },
+      { name: "Contacted", value: leadStats.byStatus.CONTACTED, fill: "var(--chart-2)" },
+      { name: "Interested", value: leadStats.byStatus.INTERESTED, fill: "var(--chart-3)" },
+      { name: "Qualified", value: leadStats.byStatus.QUALIFIED, fill: "var(--chart-4)" },
+      { name: "Converted", value: leadStats.byStatus.CONVERTED, fill: "var(--chart-5)" },
     ].filter((s) => s.value > 0);
   }, [leadStats]);
 
@@ -198,10 +198,10 @@ export default function CrmAnalyticsPage() {
               <div className="flex flex-col items-center justify-center h-[280px]">
                 <div className="relative h-40 w-40">
                   <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="var(--muted)" strokeWidth="8" />
                     <circle
                       cx="50" cy="50" r="42" fill="none"
-                      stroke={slaReport.complianceRate >= 80 ? "#10B981" : slaReport.complianceRate >= 50 ? "#F59E0B" : "#EF4444"}
+                      stroke={slaReport.complianceRate >= 80 ? "var(--success-500)" : slaReport.complianceRate >= 50 ? "var(--warning-500)" : "var(--danger-500)"}
                       strokeWidth="8"
                       strokeDasharray={`${slaReport.complianceRate * 2.64} 264`}
                       strokeLinecap="round"
@@ -214,8 +214,8 @@ export default function CrmAnalyticsPage() {
                 </div>
                 <div className="flex gap-4 mt-4 text-xs">
                   <span className="text-muted-foreground">Total: {slaReport.total}</span>
-                  <span className="text-emerald-400">Met: {slaReport.compliant}</span>
-                  <span className="text-red-400">Breached: {slaReport.breached}</span>
+                  <span className="text-success-strong">Met: {slaReport.compliant}</span>
+                  <span className="text-danger-strong">Breached: {slaReport.breached}</span>
                 </div>
               </div>
             )}
@@ -224,11 +224,11 @@ export default function CrmAnalyticsPage() {
           <AnalyticsChartCard title="Score Distribution" data={scoreDistribution} filename="score-distribution">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={scoreDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="range" tick={AXIS_TICK} />
-                <YAxis tick={AXIS_TICK} />
+                <CartesianGrid {...CHART_GRID} />
+                <XAxis dataKey="range" {...CHART_AXIS} />
+                <YAxis {...CHART_AXIS} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={28}>
                   {scoreDistribution.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                 </Bar>
               </BarChart>
@@ -239,11 +239,11 @@ export default function CrmAnalyticsPage() {
             <AnalyticsChartCard title="Lead Assignment Distribution" data={analyticsSummary.assignmentDistribution as unknown as Record<string, unknown>[]} filename="assignment-distribution">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={analyticsSummary.assignmentDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={AXIS_TICK} />
-                  <YAxis dataKey="name" type="category" tick={AXIS_TICK} width={100} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis type="number" {...CHART_AXIS} />
+                  <YAxis dataKey="name" type="category" {...CHART_AXIS} width={100} />
                   <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                  <Bar dataKey="count" fill="#3B82F6" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="var(--chart-1)" radius={[0, 4, 4, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             </AnalyticsChartCard>
@@ -253,12 +253,12 @@ export default function CrmAnalyticsPage() {
             <AnalyticsChartCard title="Conversion Rate by Source" data={analyticsSummary.conversionBySource as unknown as Record<string, unknown>[]} filename="conversion-by-source">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={analyticsSummary.conversionBySource}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="source" tick={{ ...AXIS_TICK, fontSize: 10 }} />
-                  <YAxis tick={AXIS_TICK} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="source" {...CHART_AXIS} tick={{ ...AXIS_TICK, fontSize: 10 }} />
+                  <YAxis {...CHART_AXIS} />
                   <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                  <Bar dataKey="total" name="Total" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="converted" name="Converted" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" name="Total" fill="var(--chart-2)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="converted" name="Converted" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   <Legend />
                 </BarChart>
               </ResponsiveContainer>
@@ -271,15 +271,15 @@ export default function CrmAnalyticsPage() {
                 <AreaChart data={analyticsSummary.monthlyRevenue}>
                   <defs>
                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#bd882c" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#bd882c" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.24} />
+                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={AXIS_TICK} />
-                  <YAxis tick={AXIS_TICK} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="month" {...CHART_AXIS} />
+                  <YAxis {...CHART_AXIS} />
                   <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(value) => [`${CURRENCY_SYMBOL}${(Number(value) / 100000).toFixed(1)}L`, "Revenue"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="#bd882c" strokeWidth={2} fill="url(#revenueGrad)" />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--chart-1)" strokeWidth={2} fill="url(#revenueGrad)" dot={false} activeDot={{ r: 4 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </AnalyticsChartCard>
@@ -325,7 +325,7 @@ export default function CrmAnalyticsPage() {
                         {rep.completed}/{rep.total}
                       </span>
                       {rep.overdue > 0 && (
-                        <span className="text-[10px] text-destructive shrink-0">{rep.overdue} late</span>
+                        <span className="text-2xs text-destructive shrink-0">{rep.overdue} late</span>
                       )}
                     </div>
                   ))}

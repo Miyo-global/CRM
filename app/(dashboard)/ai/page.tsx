@@ -39,20 +39,20 @@ interface AiFeature {
 }
 
 const AI_FEATURES: AiFeature[] = [
-  { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", color: "text-amber-500" },
-  { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", color: "text-blue-500" },
-  { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", color: "text-green-500" },
-  { id: "next-action", title: "Next Best Action", description: "AI suggests the optimal next step for any lead", icon: Zap, category: "sales", color: "text-purple-500" },
-  { id: "objection-handler", title: "Objection Handler", description: "Get counter-arguments and talking points for sales objections", icon: MessageSquare, category: "sales", color: "text-red-500" },
-  { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", color: "text-indigo-500" },
-  { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", color: "text-teal-500" },
-  { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", color: "text-pink-500" },
-  { id: "score-candidate", title: "Candidate Scoring", description: "Score job candidates against role requirements", icon: Users, category: "hr", color: "text-cyan-500" },
-  { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", color: "text-orange-500" },
-  { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", color: "text-emerald-500" },
-  { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", color: "text-red-500" },
-  { id: "generate-jd", title: "JD Generator", description: "Generate complete job descriptions from role title", icon: FileText, category: "hr", color: "text-violet-500" },
-  { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", color: "text-sky-500" },
+  { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", color: "text-warning-strong" },
+  { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", color: "text-info-strong" },
+  { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", color: "text-success-strong" },
+  { id: "next-action", title: "Next Best Action", description: "AI suggests the optimal next step for any lead", icon: Zap, category: "sales", color: "text-plum-strong" },
+  { id: "objection-handler", title: "Objection Handler", description: "Get counter-arguments and talking points for sales objections", icon: MessageSquare, category: "sales", color: "text-danger-strong" },
+  { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", color: "text-info-strong" },
+  { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", color: "text-teal-strong" },
+  { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", color: "text-plum-strong" },
+  { id: "score-candidate", title: "Candidate Scoring", description: "Score job candidates against role requirements", icon: Users, category: "hr", color: "text-teal-strong" },
+  { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", color: "text-warning-strong" },
+  { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", color: "text-success-strong" },
+  { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", color: "text-danger-strong" },
+  { id: "generate-jd", title: "JD Generator", description: "Generate complete job descriptions from role title", icon: FileText, category: "hr", color: "text-plum-strong" },
+  { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", color: "text-info-strong" },
 ];
 
 const CATEGORIES = [
@@ -103,7 +103,7 @@ export default function AIHubPage() {
                 <Card
                   key={feature.id}
                   className="h-full cursor-pointer border-l-4 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
-                  style={{ borderLeftColor: "var(--gold, #bd882c)" }}
+                  style={{ borderLeftColor: "var(--gold-400)" }}
                   onClick={() => setActiveFeature(feature)}
                 >
                   <CardHeader className="pb-2">
@@ -113,7 +113,7 @@ export default function AIHubPage() {
                       </div>
                       <div className="min-w-0">
                         <CardTitle className="text-sm leading-tight">{feature.title}</CardTitle>
-                        <Badge variant="outline" className="text-[10px] mt-1">{feature.category}</Badge>
+                        <Badge variant="outline" className="text-2xs mt-1">{feature.category}</Badge>
                       </div>
                     </div>
                   </CardHeader>

@@ -75,9 +75,9 @@ function ComplianceDashboard() {
             </div>
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span>Total: <span className="font-medium text-foreground">{row.total}</span></span>
-              <span className="text-green-600">Cleared: <span className="font-medium">{row.cleared}</span></span>
-              <span className="text-yellow-600">Pending: <span className="font-medium">{row.pending}</span></span>
-              <span className="text-blue-600">Initiated: <span className="font-medium">{row.initiated}</span></span>
+              <span className="text-success-strong">Cleared: <span className="font-medium">{row.cleared}</span></span>
+              <span className="text-warning-strong">Pending: <span className="font-medium">{row.pending}</span></span>
+              <span className="text-info-strong">Initiated: <span className="font-medium">{row.initiated}</span></span>
               <span className="text-destructive">Failed: <span className="font-medium">{row.failed}</span></span>
               <span className="text-muted-foreground">Not initiated: <span className="font-medium">{row.notInitiated}</span></span>
             </div>
@@ -161,10 +161,10 @@ function BGVContent() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold">{bgv.user?.name ?? "Employee"}</p>
-                        <Badge variant="outline" className="text-[10px]">{bgv.type}</Badge>
-                        <Badge variant={statusBadge(bgv.status)} className="text-[10px]">{bgv.status ?? "PENDING"}</Badge>
+                        <Badge variant="outline" className="text-2xs">{bgv.type}</Badge>
+                        <Badge variant={statusBadge(bgv.status)} className="text-2xs">{bgv.status ?? "PENDING"}</Badge>
                       </div>
-                      <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                      <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5">
                         {bgv.provider && <span>Provider: {bgv.provider}</span>}
                         {bgv.referenceNumber && <span>Ref: {bgv.referenceNumber}</span>}
                         {bgv.createdAt && <span>{format(new Date(bgv.createdAt), "MMM d, yyyy")}</span>}

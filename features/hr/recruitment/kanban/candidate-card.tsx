@@ -42,7 +42,7 @@ export const CandidateCard = memo(function CandidateCard({
           >
             <div className="flex items-start gap-2">
               <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-[10px] font-semibold bg-primary/10 text-primary">
+                <AvatarFallback className="text-2xs font-semibold bg-primary/10 text-primary">
                   {getInitials(candidate.name)}
                 </AvatarFallback>
               </Avatar>
@@ -51,12 +51,12 @@ export const CandidateCard = memo(function CandidateCard({
                 <p className="text-xs font-semibold truncate leading-tight">{candidate.name}</p>
 
                 {candidate.jobTitle ? (
-                  <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                  <p className="text-2xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
                     <Briefcase className="h-2.5 w-2.5 shrink-0" />
                     {candidate.jobTitle}
                   </p>
                 ) : (
-                  <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                  <p className="text-2xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
                     <MailIcon className="h-2.5 w-2.5 shrink-0" />
                     {candidate.email}
                   </p>
@@ -66,15 +66,15 @@ export const CandidateCard = memo(function CandidateCard({
                   {candidate.source && (
                     <Badge
                       variant="outline"
-                      className="text-[9px] px-1.5 py-0 h-4 font-normal"
+                      className="text-3xs px-1.5 py-0 h-4 font-normal"
                     >
                       {candidate.source}
                     </Badge>
                   )}
                   {candidate.rating !== null && (
                     <div className="flex items-center gap-0.5 ml-auto">
-                      <Star className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
-                      <span className="text-[10px] font-medium text-amber-600">
+                      <Star className="h-2.5 w-2.5 text-warning-strong fill-warning-500" />
+                      <span className="text-2xs font-medium text-warning-strong">
                         {candidate.rating}
                       </span>
                     </div>

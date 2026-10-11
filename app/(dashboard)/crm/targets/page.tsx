@@ -34,19 +34,25 @@ import { ADMIN_ROLES } from "@/lib/constants/roles";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTargetSheet } from "@/features/crm/targets/create-target-sheet";
 import { getInitials } from "@/lib/format-utils";
+import { rankStyles } from "@/lib/theme-constants";
+import { toneBar } from "@/lib/design/tones";
 const METRIC_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
-  calls: { icon: Phone, color: "text-blue-400" },
-  leads_converted: { icon: UserCheck, color: "text-emerald-400" },
-  revenue: { icon: TrendingUp, color: "text-gold" },
-  meetings: { icon: Calendar, color: "text-purple-400" },
-  deals: { icon: Zap, color: "text-amber-400" },
+  calls: { icon: Phone, color: "text-info-strong" },
+  leads_converted: { icon: UserCheck, color: "text-success-strong" },
+  revenue: { icon: TrendingUp, color: "text-brand-text" },
+  meetings: { icon: Calendar, color: "text-plum-strong" },
+  deals: { icon: Zap, color: "text-warning-strong" },
 };
 
-const RANK_STYLES = [
-  { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", ring: "ring-amber-500/10", bar: "bg-gradient-to-r from-amber-500 to-amber-400", badge: "bg-amber-500 text-white" },
-  { bg: "bg-slate-400/10", border: "border-slate-400/20", text: "text-slate-300", ring: "ring-slate-400/10", bar: "bg-gradient-to-r from-slate-400 to-slate-300", badge: "bg-slate-400 text-white" },
-  { bg: "bg-orange-700/10", border: "border-orange-700/20", text: "text-orange-400", ring: "ring-orange-700/10", bar: "bg-gradient-to-r from-orange-700 to-orange-500", badge: "bg-orange-700 text-white" },
-];
+// Gold / silver / bronze from the shared rank palette.
+const RANK_STYLES = rankStyles.map((r) => ({
+  bg: r.bg,
+  border: r.border,
+  text: r.text,
+  ring: r.ring,
+  bar: r.barColor,
+  badge: r.badgeColor,
+}));
 
 function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metricType: string }) {
   const { data: history, isLoading } = useTargetHistory(targetId);
@@ -82,7 +88,7 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
             <div key={h.id} className="flex items-start gap-3 text-sm border-b pb-2 last:border-0">
               <Avatar className="h-6 w-6 mt-0.5 shrink-0">
                 <AvatarImage src={resolveImageUrl(h.changedBy?.image)} />
-                <AvatarFallback className="text-[9px]">{getInitials(h.changedBy?.name ?? "")}</AvatarFallback>
+                <AvatarFallback className="text-3xs">{getInitials(h.changedBy?.name ?? "")}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-xs">
@@ -92,7 +98,7 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
                   to <span className="font-medium">{h.newValue ?? ""}</span>
                 </p>
                 {h.createdAt && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-2xs text-muted-foreground mt-0.5">
                     {formatDistanceToNow(new Date(h.createdAt), { addSuffix: true })}
                   </p>
                 )}
@@ -203,7 +209,7 @@ export default function TargetsPage() {
         {myTargets && myTargets.length > 0 && (
           <motion.div variants={fadeUp}>
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Target className="h-5 w-5 text-gold" />
+              <Target className="h-5 w-5 text-brand-text" />
               My Targets
             </h2>
             <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -214,7 +220,7 @@ export default function TargetsPage() {
                 const config = METRIC_ICONS[target.metricType] || { icon: BarChart3, color: "text-muted-foreground" };
                 const MetricIcon = config.icon;
                 return (
-                  <Card key={target.id} className="shadow-noir overflow-hidden">
+                  <Card key={target.id} className="shadow-sm overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
@@ -223,7 +229,7 @@ export default function TargetsPage() {
                           </div>
                           <div>
                             <p className="text-sm font-medium capitalize">{target.metricType.replace(/_/g, " ")}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">{target.period}</p>
+                            <p className="text-2xs text-muted-foreground uppercase">{target.period}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
@@ -246,21 +252,21 @@ export default function TargetsPage() {
                         <motion.div
                           className={cn(
                             "h-full rounded-full",
-                            progress >= 100 ? "bg-emerald-500" :
-                            progress >= 75 ? "bg-gold" :
-                            progress >= 50 ? "bg-amber-500" : "bg-blue-500",
+                            progress >= 100 ? toneBar.success :
+                            progress >= 75 ? toneBar.brand :
+                            progress >= 50 ? toneBar.warning : toneBar.info,
                           )}
                           initial={{ width: 0 }}
                           animate={{ width: `${progress}%` }}
                           transition={{ duration: 0.8, ease: "easeOut" }}
                         />
                       </div>
-                      <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-between mt-2 text-2xs text-muted-foreground">
                         <span>{target.startDate}</span>
                         <span>{target.endDate}</span>
                       </div>
                       {target.notes && (
-                        <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2 italic">
+                        <p className="text-2xs text-muted-foreground mt-2 line-clamp-2 italic">
                           {target.notes}
                         </p>
                       )}
@@ -274,7 +280,7 @@ export default function TargetsPage() {
 
         {myTargets && myTargets.length === 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardContent className="py-12">
                 <div className="flex flex-col items-center text-center gap-4">
                   <EmptyTargetIllustration className="w-40 h-40" />
@@ -294,11 +300,11 @@ export default function TargetsPage() {
 
         <motion.div variants={fadeUp}>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-gold" />
+            <Trophy className="h-5 w-5 text-brand-text" />
             Team Leaderboard
           </h2>
           {leaderboard && leaderboard.length > 0 ? (
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardContent className="p-4">
                 <div className="space-y-2">
                   {leaderboard.map((member, i) => {
@@ -323,7 +329,7 @@ export default function TargetsPage() {
                             {isTop3 ? (
                               <>
                                 <Medal className={cn("h-5 w-5", style?.text)} />
-                                <span className={cn("absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold", style?.badge)}>
+                                <span className={cn("absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-3xs font-bold", style?.badge)}>
                                   {i + 1}
                                 </span>
                               </>
@@ -350,7 +356,7 @@ export default function TargetsPage() {
                               </div>
                             </div>
                             <div
-                              className="h-2 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden"
+                              className="h-2 rounded-full bg-overlay overflow-hidden"
                               role="progressbar"
                               aria-valuenow={member.progress}
                               aria-valuemin={0}
@@ -373,7 +379,7 @@ export default function TargetsPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="shadow-noir">
+            <Card className="shadow-sm">
               <CardContent className="py-12">
                 <div className="flex flex-col items-center text-center gap-4">
                   <EmptyLeaderboardIllustration className="w-40 h-40" />

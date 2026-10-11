@@ -35,17 +35,17 @@ export function AIPredictDealButton({ dealId, compact }: AIPredictDealButtonProp
   };
 
   const probColor = (prob: number) => {
-    if (prob >= 75) return "text-emerald-500";
-    if (prob >= 50) return "text-amber-500";
-    if (prob >= 25) return "text-orange-500";
-    return "text-red-500";
+    if (prob >= 75) return "text-success-strong";
+    if (prob >= 50) return "text-warning-strong";
+    if (prob >= 25) return "text-warning-strong";
+    return "text-danger-strong";
   };
 
   const probBg = (prob: number) => {
-    if (prob >= 75) return "bg-emerald-500/10";
-    if (prob >= 50) return "bg-amber-500/10";
-    if (prob >= 25) return "bg-orange-500/10";
-    return "bg-red-500/10";
+    if (prob >= 75) return "bg-success-soft";
+    if (prob >= 50) return "bg-warning-soft";
+    if (prob >= 25) return "bg-warning-soft";
+    return "bg-danger-soft";
   };
 
   const confidenceVariant = (c: string): "default" | "secondary" | "outline" => {
@@ -68,7 +68,7 @@ export function AIPredictDealButton({ dealId, compact }: AIPredictDealButtonProp
             {predictMutation.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Sparkles className="h-3 w-3 text-gold" />
+              <Sparkles className="h-3 w-3 text-brand-text" />
             )}
             {result ? <span className={cn("font-bold", probColor(result.winProbability))}>{result.winProbability}%</span> : "Predict"}
           </Button>
@@ -94,7 +94,7 @@ export function AIPredictDealButton({ dealId, compact }: AIPredictDealButtonProp
         {predictMutation.isPending ? (
           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Predicting...</>
         ) : (
-          <><Sparkles className="h-4 w-4 mr-2 text-gold" />AI Predict Win Probability</>
+          <><Sparkles className="h-4 w-4 mr-2 text-brand-text" />AI Predict Win Probability</>
         )}
       </Button>
       {result && <PredictDetails result={result} probColor={probColor} probBg={probBg} confidenceVariant={confidenceVariant} />}
@@ -127,23 +127,23 @@ function PredictDetails({
       <div className="flex items-center gap-2">
         <div className={cn("h-12 w-12 rounded-lg flex flex-col items-center justify-center font-bold", probBg(result.winProbability), probColor(result.winProbability))}>
           <span className="text-base leading-none">{result.winProbability}%</span>
-          <span className="text-[8px] uppercase tracking-wider mt-0.5">win</span>
+          <span className="text-3xs uppercase tracking-wider mt-0.5">win</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="text-xs font-medium">AI Prediction</p>
-            <Badge variant={confidenceVariant(result.confidence)} className="text-[9px] h-4 px-1">{result.confidence}</Badge>
+            <Badge variant={confidenceVariant(result.confidence)} className="text-3xs h-4 px-1">{result.confidence}</Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{result.reasoning}</p>
+          <p className="text-2xs text-muted-foreground leading-snug mt-0.5">{result.reasoning}</p>
         </div>
       </div>
 
       {result.positiveSignals.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Positive Signals</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Positive Signals</p>
           {result.positiveSignals.map((s, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <TrendingUp className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <TrendingUp className="h-3 w-3 text-success-strong mt-0.5 shrink-0" />
               <span>{s}</span>
             </div>
           ))}
@@ -152,10 +152,10 @@ function PredictDetails({
 
       {result.riskFactors.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Risk Factors</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Risk Factors</p>
           {result.riskFactors.map((r, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <AlertTriangle className="h-3 w-3 text-red-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <AlertTriangle className="h-3 w-3 text-danger-strong mt-0.5 shrink-0" />
               <span>{r}</span>
             </div>
           ))}
@@ -164,10 +164,10 @@ function PredictDetails({
 
       {result.recommendedActions.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Recommended Actions</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Recommended Actions</p>
           {result.recommendedActions.map((a, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <Lightbulb className="h-3 w-3 text-blue-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <Lightbulb className="h-3 w-3 text-info-strong mt-0.5 shrink-0" />
               <span>{a}</span>
             </div>
           ))}

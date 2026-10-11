@@ -9,7 +9,7 @@ export function EmptyProjectsIllustration({ className }: IllustrationProps) {
 
       <path d="M30 65h50l10-15h70a6 6 0 016 6v80a6 6 0 01-6 6H30a6 6 0 01-6-6V71a6 6 0 016-6z" fill={BLUE} opacity="0.08" stroke={BLUE} strokeWidth="2" />
 
-      <rect x="24" y="75" width="152" height="67" rx="6" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="24" y="75" width="152" height="67" rx="6" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
 
       <rect x="24" y="75" width="152" height="8" rx="4" fill={GOLD} opacity="0.15" />
 

@@ -76,11 +76,11 @@ export default function BranchCommandCenterPage() {
   const branches = data?.branches ?? [];
 
   const summaryCards = [
-    { label: "Total Branches", value: summary?.totalBranches ?? 0, icon: Building2, color: "text-blue-500" },
-    { label: "Active", value: summary?.activeBranches ?? 0, icon: BarChart3, color: "text-green-500" },
-    { label: "Total Employees", value: summary?.totalEmployees ?? 0, icon: Users, color: "text-purple-500" },
-    { label: "Hours (This Month)", value: Math.round(summary?.totalWorkLogHours ?? 0), icon: Clock, color: "text-amber-500" },
-    { label: "Total Clients", value: summary?.totalClients ?? 0, icon: Briefcase, color: "text-gold" },
+    { label: "Total Branches", value: summary?.totalBranches ?? 0, icon: Building2, color: "text-info-strong" },
+    { label: "Active", value: summary?.activeBranches ?? 0, icon: BarChart3, color: "text-success-strong" },
+    { label: "Total Employees", value: summary?.totalEmployees ?? 0, icon: Users, color: "text-plum-strong" },
+    { label: "Hours (This Month)", value: Math.round(summary?.totalWorkLogHours ?? 0), icon: Clock, color: "text-warning-strong" },
+    { label: "Total Clients", value: summary?.totalClients ?? 0, icon: Briefcase, color: "text-brand-text" },
   ];
 
   return (
@@ -155,7 +155,7 @@ export default function BranchCommandCenterPage() {
                         </TableCell>
                         <TableCell>{branch.branchManager?.name || ""}</TableCell>
                         <TableCell>
-                          <Badge variant={branch.status === "ACTIVE" ? "default" : "secondary"} className={branch.status === "ACTIVE" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : ""}>
+                          <Badge variant={branch.status === "ACTIVE" ? "default" : "secondary"} className={branch.status === "ACTIVE" ? "bg-success-soft text-success-strong" : ""}>
                             {branch.status}
                           </Badge>
                         </TableCell>
@@ -164,11 +164,11 @@ export default function BranchCommandCenterPage() {
                         <TableCell className="text-right">{branch.kpis.clients}</TableCell>
                         <TableCell className="text-right">
                           {branch.kpis.pendingExpenses.count > 0 ? (
-                            <span className="text-amber-600 font-medium">
+                            <span className="text-warning-strong font-medium">
                               {branch.kpis.pendingExpenses.count} (INR {branch.kpis.pendingExpenses.total.toLocaleString(DEFAULT_LOCALE)})
                             </span>
                           ) : (
-                            <span className="text-green-600">0</span>
+                            <span className="text-success-strong">0</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -187,17 +187,17 @@ export default function BranchCommandCenterPage() {
 function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSelected: boolean; onSelect: () => void }) {
   return (
     <Card
-      className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? "ring-2 ring-gold" : ""}`}
+      className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? "ring-2 ring-ring" : ""}`}
       onClick={onSelect}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-blue-500" />
+            <Building2 className="h-5 w-5 text-info-strong" />
             <CardTitle className="text-base">{branch.name}</CardTitle>
             <span className="text-xs text-muted-foreground font-mono">{branch.code}</span>
           </div>
-          <Badge variant={branch.status === "ACTIVE" ? "default" : "secondary"} className={branch.status === "ACTIVE" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : ""}>
+          <Badge variant={branch.status === "ACTIVE" ? "default" : "secondary"} className={branch.status === "ACTIVE" ? "bg-success-soft text-success-strong" : ""}>
             {branch.status}
           </Badge>
         </div>
@@ -224,7 +224,7 @@ function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSel
           </div>
           <div className="bg-muted/50 rounded-md p-2">
             <p className="text-xs text-muted-foreground">Pending Expenses</p>
-            <p className={`text-lg font-bold ${branch.kpis.pendingExpenses.count > 0 ? "text-amber-500" : "text-green-500"}`}>
+            <p className={`text-lg font-bold ${branch.kpis.pendingExpenses.count > 0 ? "text-warning-strong" : "text-success-strong"}`}>
               {branch.kpis.pendingExpenses.count}
             </p>
           </div>
@@ -235,7 +235,7 @@ function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSel
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={branch.branchManager.image ?? undefined} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-2xs">
                   {branch.branchManager.name?.charAt(0) || "M"}
                 </AvatarFallback>
               </Avatar>
@@ -249,7 +249,7 @@ function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSel
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={branch.branchHr.image ?? undefined} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-2xs">
                   {branch.branchHr.name?.charAt(0) || "H"}
                 </AvatarFallback>
               </Avatar>
@@ -267,7 +267,7 @@ function BranchCard({ branch, isSelected, onSelect }: { branch: BranchKpi; isSel
         {isSelected && (
           <div className="mt-4 pt-4 border-t space-y-2">
             {branch.kpis.pendingExpenses.count > 0 && (
-              <p className="text-sm text-amber-600">
+              <p className="text-sm text-warning-strong">
                 INR {branch.kpis.pendingExpenses.total.toLocaleString(DEFAULT_LOCALE)} in pending expense approvals
               </p>
             )}

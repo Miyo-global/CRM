@@ -213,14 +213,14 @@ export default function CareerPromotionsPage() {
                         <TableCell>
                           <div className="flex items-center gap-1 text-xs">
                             {rec.fromLevel ? (
-                              <><Badge variant="outline" className="text-[10px]">L{rec.fromLevel}</Badge>
+                              <><Badge variant="outline" className="text-2xs">L{rec.fromLevel}</Badge>
                               <span className="text-muted-foreground">→</span></>
                             ) : null}
-                            <Badge variant="secondary" className="text-[10px]">L{rec.toLevel}</Badge>
+                            <Badge variant="secondary" className="text-2xs">L{rec.toLevel}</Badge>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge>
+                          <Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground max-w-[200px]">
                           <p className="line-clamp-2">{rec.reason ?? "—"}</p>
@@ -236,7 +236,7 @@ export default function CareerPromotionsPage() {
                                   type="button"
                                   size="icon"
                                   variant="ghost"
-                                  className="h-7 w-7 text-green-600"
+                                  className="h-7 w-7 text-success-strong"
                                   title="Approve"
                                   onClick={() => { setReviewTarget(rec); setReviewAction("APPROVED"); setReviewNotes(""); }}
                                 >

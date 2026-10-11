@@ -62,18 +62,18 @@ export function AssignCrmDialog() {
           </DialogHeader>
 
           {!statsLoading && unassignedCount > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-              <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+            <div className="flex items-center gap-2 rounded-lg border border-warning-strong/30 bg-warning-soft p-3">
+              <AlertCircle className="h-4 w-4 text-warning-strong shrink-0" />
+              <p className="text-sm text-warning-strong">
                 <span className="font-semibold">{unassignedCount}</span> client{unassignedCount !== 1 ? "s" : ""} unassigned
               </p>
             </div>
           )}
 
           {!statsLoading && unassignedCount === 0 && members.length > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-              <Zap className="h-4 w-4 text-emerald-500 shrink-0" />
-              <p className="text-sm text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 rounded-lg border border-success-strong/30 bg-success-soft p-3">
+              <Zap className="h-4 w-4 text-success-strong shrink-0" />
+              <p className="text-sm text-success-strong">
                 All clients are assigned
               </p>
             </div>

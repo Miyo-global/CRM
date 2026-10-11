@@ -18,14 +18,15 @@ import { staggerContainer, fadeUp, scaleIn } from "@/lib/motion-variants";
 import { useLeadStats, useSlaAlerts } from "@/lib/api/hooks/leads";
 import { toast } from "sonner";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { toneVar } from "@/lib/design/tones";
 
 const PIPELINE_COLORS: Record<string, { color: string; bg: string }> = {
-  NEW: { color: "#3B82F6", bg: "bg-blue-500/10" },
-  CONTACTED: { color: "#0EA5E9", bg: "bg-sky-500/10" },
-  INTERESTED: { color: "#F59E0B", bg: "bg-amber-500/10" },
-  QUALIFIED: { color: "#8B5CF6", bg: "bg-purple-500/10" },
-  CONVERTED: { color: "#10B981", bg: "bg-emerald-500/10" },
-  LOST: { color: "#EF4444", bg: "bg-red-500/10" },
+  NEW: { color: toneVar.info, bg: "bg-info-soft" },
+  CONTACTED: { color: toneVar.teal, bg: "bg-teal-soft" },
+  INTERESTED: { color: toneVar.warning, bg: "bg-warning-soft" },
+  QUALIFIED: { color: toneVar.plum, bg: "bg-plum-soft" },
+  CONVERTED: { color: toneVar.success, bg: "bg-success-soft" },
+  LOST: { color: toneVar.danger, bg: "bg-danger-soft" },
 };
 
 export default function CrmReportsPage() {
@@ -211,9 +212,9 @@ export default function CrmReportsPage() {
       >
         {slaData && slaData.total > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-noir border-red-500/20">
+            <Card className="shadow-sm border-danger-strong/20">
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2 text-red-400">
+                <CardTitle className="text-base flex items-center gap-2 text-danger-strong">
                   <AlertTriangle className="h-4 w-4" />
                   SLA Breached — {slaData.total} leads not contacted in 24h+
                 </CardTitle>
@@ -221,15 +222,15 @@ export default function CrmReportsPage() {
               <CardContent>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {slaData.leads.slice(0, 10).map((lead) => (
-                    <div key={lead.leadId} className="flex items-center justify-between p-2 rounded-lg bg-red-500/5 border border-red-500/10">
+                    <div key={lead.leadId} className="flex items-center justify-between p-2 rounded-lg bg-danger-soft border border-danger-strong/10">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5 text-sm font-medium">{lead.leadName}</div>
-                        <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
+                        <Badge variant="outline" className="text-2xs">{lead.status}</Badge>
                         {lead.priority && (
-                          <Badge variant="outline" className={cn("text-[10px]",
-                            lead.priority === "HOT" && "border-red-500/50 text-red-500",
-                            lead.priority === "WARM" && "border-amber-500/50 text-amber-500",
-                            lead.priority === "COLD" && "border-blue-400/50 text-blue-400",
+                          <Badge variant="outline" className={cn("text-2xs",
+                            lead.priority === "HOT" && "border-danger-500/50 text-danger-strong",
+                            lead.priority === "WARM" && "border-warning-500/50 text-warning-strong",
+                            lead.priority === "COLD" && "border-info-400/50 text-info-strong",
                           )}>{lead.priority}</Badge>
                         )}
                       </div>
@@ -250,13 +251,13 @@ export default function CrmReportsPage() {
           <>
             <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {[
-                { label: "Total Leads", value: stats.total, icon: Users, color: "text-blue-400" },
-                { label: "Conversion Rate", value: `${stats.conversionRate}%`, icon: TrendingUp, color: "text-emerald-400" },
-                { label: "Potential Value", value: `${CURRENCY_SYMBOL}${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, color: "text-gold" },
-                { label: "Unassigned", value: stats.unassigned, icon: UserCheck, color: "text-red-400" },
-                { label: "New This Month", value: stats.thisMonth, icon: Calendar, color: "text-purple-400" },
+                { label: "Total Leads", value: stats.total, icon: Users, color: "text-info-strong" },
+                { label: "Conversion Rate", value: `${stats.conversionRate}%`, icon: TrendingUp, color: "text-success-strong" },
+                { label: "Potential Value", value: `${CURRENCY_SYMBOL}${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, color: "text-brand-text" },
+                { label: "Unassigned", value: stats.unassigned, icon: UserCheck, color: "text-danger-strong" },
+                { label: "New This Month", value: stats.thisMonth, icon: Calendar, color: "text-plum-strong" },
               ].map(s => (
-                <Card key={s.label} className="shadow-noir">
+                <Card key={s.label} className="shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <s.icon className={cn("h-5 w-5", s.color)} />
@@ -269,10 +270,10 @@ export default function CrmReportsPage() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-gold" />
+                    <BarChart3 className="h-4 w-4 text-brand-text" />
                     Pipeline Breakdown
                   </CardTitle>
                 </CardHeader>
@@ -319,10 +320,10 @@ export default function CrmReportsPage() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <Card className="shadow-noir">
+              <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-gold" />
+                    <TrendingUp className="h-4 w-4 text-brand-text" />
                     Conversion Funnel
                   </CardTitle>
                 </CardHeader>
@@ -346,11 +347,11 @@ export default function CrmReportsPage() {
                             className="h-12 rounded-lg flex items-center justify-center gap-2 transition-all"
                             style={{
                               width: `${widthPct}%`,
-                              backgroundColor: config.color + "20",
+                              backgroundColor: `color-mix(in oklab, ${config.color} 12%, transparent)`,
                               borderLeft: `3px solid ${config.color}`,
                             }}
                           >
-                            <span className="text-sm font-semibold" style={{ color: config.color }}>
+                            <span className="text-sm font-semibold text-foreground">
                               {status}
                             </span>
                             <Badge variant="secondary" className="text-xs">{count}</Badge>

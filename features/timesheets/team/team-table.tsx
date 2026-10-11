@@ -26,9 +26,9 @@ type TimesheetEntry = TimeEntryWithUser;
 const ITEMS_PER_PAGE = 10;
 
 const statusBadgeStyles: Record<string, string> = {
-  APPROVED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-  PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  REJECTED: "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-400",
+  APPROVED: "bg-success-soft text-success-strong",
+  PENDING: "bg-warning-soft text-warning-strong",
+  REJECTED: "bg-muted text-muted-foreground",
 };
 
 
@@ -85,7 +85,7 @@ const EntryRow = memo(function EntryRow({ entry, onEntryClick }: EntryRowProps) 
       </TableCell>
       <TableCell className="px-6 py-4 text-center">
         <Badge
-          className={`text-[10px] font-bold uppercase tracking-wide border-0 ${
+          className={`text-2xs font-bold uppercase tracking-wide border-0 ${
             statusBadgeStyles[entry.status || "PENDING"]
           }`}
         >
@@ -169,37 +169,37 @@ export const TeamTable = memo(function TeamTable({
                   <TableRow className="border-b">
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
                     >
                       Employee
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
                     >
                       Project
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
                     >
                       Task Description
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
                     >
                       Duration
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 text-center"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 text-center"
                     >
                       Status
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 w-10"
+                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 w-10"
                     />
                   </TableRow>
                 </TableHeader>
@@ -247,7 +247,7 @@ export const TeamTable = memo(function TeamTable({
                         </TableCell>
                         <TableCell className="px-6 py-4 text-center">
                           <Badge
-                            className={`text-[10px] font-bold uppercase tracking-wide border-0 ${
+                            className={`text-2xs font-bold uppercase tracking-wide border-0 ${
                               statusBadgeStyles[entry.status || "PENDING"]
                             }`}
                           >

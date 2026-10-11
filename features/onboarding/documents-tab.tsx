@@ -156,11 +156,11 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                     key={doc.type}
                     variants={fadeUp}
                     className={`border border-dashed rounded-lg p-5 flex flex-col items-center text-center space-y-2 transition ${
-                      isUploaded ? "border-emerald-500/50 bg-emerald-500/5" : "border-border hover:bg-muted/50"
+                      isUploaded ? "border-success-500/50 bg-success-soft" : "border-border hover:bg-muted/50"
                     }`}
                   >
                     {isUploaded ? (
-                      <CheckCircle className="h-7 w-7 text-emerald-500" aria-hidden="true" />
+                      <CheckCircle className="h-7 w-7 text-success-strong" aria-hidden="true" />
                     ) : isThisLoading ? (
                       <Loader2 className="h-7 w-7 text-muted-foreground animate-spin" aria-hidden="true" />
                     ) : (
@@ -173,7 +173,7 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                     <span className="text-xs text-muted-foreground">{doc.hint}</span>
                     <span className="text-xs text-muted-foreground/60">Max {MAX_FILE_SIZE_MB}MB · {FILE_HINT}</span>
                     {uploadedFiles[doc.type] && (
-                      <span className="text-xs text-emerald-600 font-medium truncate max-w-full">{uploadedFiles[doc.type]}</span>
+                      <span className="text-xs text-success-strong font-medium truncate max-w-full">{uploadedFiles[doc.type]}</span>
                     )}
                     <input
                       ref={(el) => { fileInputRefs.current[doc.type] = el; }}

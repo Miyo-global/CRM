@@ -152,7 +152,7 @@ export default function SprintsPage({ params }: PageProps) {
       {activeSprints.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Play className="h-5 w-5 text-blue-500" />
+            <Play className="h-5 w-5 text-info-strong" />
             Active Sprints
           </h2>
           <div className="grid gap-4">
@@ -175,7 +175,7 @@ export default function SprintsPage({ params }: PageProps) {
       {plannedSprints.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-gray-500" />
+            <Calendar className="h-5 w-5 text-muted-foreground" />
             Planned Sprints
           </h2>
           <div className="grid gap-4">
@@ -198,7 +198,7 @@ export default function SprintsPage({ params }: PageProps) {
       {completedSprints.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success-strong" />
             Completed Sprints
           </h2>
           <div className="grid gap-4">

@@ -100,7 +100,7 @@ export default function AlumniPage() {
               <CardContent className="p-4 space-y-2">
                 <h3 className="text-sm font-semibold">{a.name}</h3>
                 {a.lastDesignation && <p className="text-xs text-muted-foreground">{a.lastDesignation}{a.department ? ` - ${a.department}` : ""}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                   {a.exitDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Left {format(new Date(a.exitDate), "MMM yyyy")}</span>}
                   {a.currentCompany && <span className="flex items-center gap-0.5"><Briefcase className="h-3 w-3" />{a.currentCompany}</span>}
                   {a.email && <span className="flex items-center gap-0.5"><Mail className="h-3 w-3" />{a.email}</span>}

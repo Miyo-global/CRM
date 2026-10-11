@@ -488,7 +488,7 @@ function BranchManagementContent() {
               placeholder="e.g., Mumbai Office"
               maxLength={100}
             />
-            {errors.name && <p className="text-[11px] text-destructive">{errors.name}</p>}
+            {errors.name && <p className="text-2xs text-destructive">{errors.name}</p>}
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Branch Code *</Label>
@@ -501,7 +501,7 @@ function BranchManagementContent() {
               placeholder="e.g., MUM-01"
               maxLength={20}
             />
-            {errors.code && <p className="text-[11px] text-destructive">{errors.code}</p>}
+            {errors.code && <p className="text-2xs text-destructive">{errors.code}</p>}
           </div>
         </div>
 
@@ -527,7 +527,7 @@ function BranchManagementContent() {
               onValueChange={(v) => selectSetter("state", v)}
               invalid={!!errors.state}
             />
-            {errors.state && <p className="text-[11px] text-destructive">{errors.state}</p>}
+            {errors.state && <p className="text-2xs text-destructive">{errors.state}</p>}
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">City</Label>
@@ -555,7 +555,7 @@ function BranchManagementContent() {
                 maxLength={100}
               />
             )}
-            {errors.city && <p className="text-[11px] text-destructive">{errors.city}</p>}
+            {errors.city && <p className="text-2xs text-destructive">{errors.city}</p>}
           </div>
         </div>
 
@@ -570,7 +570,7 @@ function BranchManagementContent() {
             placeholder={isIndia ? "e.g., 400001" : "e.g., 10001"}
             maxLength={12}
           />
-          {errors.pincode && <p className="text-[11px] text-destructive">{errors.pincode}</p>}
+          {errors.pincode && <p className="text-2xs text-destructive">{errors.pincode}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -585,9 +585,9 @@ function BranchManagementContent() {
             maxLength={BRANCH_ADDRESS_MAX}
           />
           {errors.address ? (
-            <p className="text-[11px] text-destructive">{errors.address}</p>
+            <p className="text-2xs text-destructive">{errors.address}</p>
           ) : (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Up to {BRANCH_ADDRESS_MAX} characters. {NAME_ALLOWED_HINT}.
             </p>
           )}
@@ -597,7 +597,7 @@ function BranchManagementContent() {
           <div className="space-y-1.5">
             <Label className="text-xs">Phone</Label>
             <PhoneInput value={data.phone} onChange={(v) => onPhoneChange(v ?? "")} />
-            {errors.phone && <p className="text-[11px] text-destructive">{errors.phone}</p>}
+            {errors.phone && <p className="text-2xs text-destructive">{errors.phone}</p>}
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Email</Label>
@@ -610,7 +610,7 @@ function BranchManagementContent() {
               placeholder="branch@company.com"
               type="email"
             />
-            {errors.email && <p className="text-[11px] text-destructive">{errors.email}</p>}
+            {errors.email && <p className="text-2xs text-destructive">{errors.email}</p>}
           </div>
         </div>
       </div>
@@ -630,7 +630,7 @@ function BranchManagementContent() {
               Back
             </Link>
           </Button>
-          <Button onClick={handleOpenCreate} className="bg-gold hover:bg-gold/80 text-white">
+          <Button onClick={handleOpenCreate} className="bg-primary hover:bg-brand-soft text-primary-foreground">
             <Plus className="h-4 w-4 mr-2" />
             Add Branch
           </Button>
@@ -652,7 +652,7 @@ function BranchManagementContent() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {branches.map((branch) => (
-            <Card key={branch.id} className="hover:border-gold/30 transition-colors">
+            <Card key={branch.id} className="hover:border-primary/40 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -660,8 +660,8 @@ function BranchManagementContent() {
                     <p className="text-xs text-muted-foreground font-mono mt-0.5">{branch.code}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Badge variant="outline" className={cn("text-[10px]",
-                      branch.status === "ACTIVE" ? "text-emerald-400 bg-emerald-500/10" : "text-muted-foreground"
+                    <Badge variant="outline" className={cn("text-2xs",
+                      branch.status === "ACTIVE" ? "text-success-strong bg-success-soft" : "text-muted-foreground"
                     )}>
                       {branch.status}
                     </Badge>
@@ -712,7 +712,7 @@ function BranchManagementContent() {
                     {branch.branchManager ? (
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[8px]">{branch.branchManager.name?.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="text-3xs">{branch.branchManager.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span className="text-xs">{branch.branchManager.name}</span>
                       </div>
@@ -723,7 +723,7 @@ function BranchManagementContent() {
                     {branch.branchHr ? (
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[8px]">{branch.branchHr.name?.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="text-3xs">{branch.branchHr.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span className="text-xs">{branch.branchHr.name}</span>
                       </div>

@@ -10,10 +10,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const typeMap = {
-  TASK: { icon: CheckSquare, color: "text-blue-500" },
-  BUG: { icon: Bug, color: "text-red-500" },
-  STORY: { icon: BookOpen, color: "text-green-500" },
-  EPIC: { icon: Layers, color: "text-purple-500" },
+  TASK: { icon: CheckSquare, color: "text-info-strong" },
+  BUG: { icon: Bug, color: "text-danger-strong" },
+  STORY: { icon: BookOpen, color: "text-success-strong" },
+  EPIC: { icon: Layers, color: "text-plum-strong" },
   SUBTASK: { icon: GitBranch, color: "text-muted-foreground" },
 } as const;
 

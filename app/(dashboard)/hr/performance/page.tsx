@@ -246,11 +246,11 @@ function ReviewsTab() {
             <Card key={review.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <Badge variant={review.status === "COMPLETED" ? "default" : review.status === "IN_PROGRESS" ? "secondary" : "outline"} className="text-[10px]">
+                  <Badge variant={review.status === "COMPLETED" ? "default" : review.status === "IN_PROGRESS" ? "secondary" : "outline"} className="text-2xs">
                     {review.status ?? "DRAFT"}
                   </Badge>
                   {review.overallRating && (
-                    <div className="flex items-center gap-1 text-amber-500">
+                    <div className="flex items-center gap-1 text-warning-strong">
                       <Star className="h-3 w-3 fill-current" />
                       <span className="text-xs font-bold">{Number(review.overallRating).toFixed(1)}</span>
                     </div>
@@ -259,11 +259,11 @@ function ReviewsTab() {
                 <div className="flex items-center gap-2 mb-1">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={resolveImageUrl(review.user?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{review.user?.name?.[0] ?? "?"}</AvatarFallback>
+                    <AvatarFallback className="text-3xs bg-primary/10 text-primary">{review.user?.name?.[0] ?? "?"}</AvatarFallback>
                   </Avatar>
                   <p className="text-sm font-medium truncate">{review.user?.name ?? "Employee"}</p>
                 </div>
-                <p className="text-[10px] text-muted-foreground mb-2">
+                <p className="text-2xs text-muted-foreground mb-2">
                   {review.periodStart} → {review.periodEnd}
                   {review.reviewer?.name && <> &middot; by {review.reviewer.name}</>}
                 </p>
@@ -288,7 +288,7 @@ function ReviewsTab() {
             placeholder="Select employee"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.employeeId && <p className="text-[11px] text-destructive">{formErrors.employeeId}</p>}
+          {formErrors.employeeId && <p className="text-2xs text-destructive">{formErrors.employeeId}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Review Cycle (optional)</label>
@@ -302,7 +302,7 @@ function ReviewsTab() {
             </SelectContent>
           </Select>
           {selectedCycle && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Inherits {selectedCycle.periodStart} → {selectedCycle.periodEnd}. Dates must stay within this range.
             </p>
           )}
@@ -311,17 +311,17 @@ function ReviewsTab() {
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period Start</label>
             <Input type="date" value={periodStart} min={minStart} max={periodEnd || maxEnd} onChange={(e) => setPeriodStart(e.target.value)} />
-            {formErrors.periodStart && <p className="text-[11px] text-destructive">{formErrors.periodStart}</p>}
+            {formErrors.periodStart && <p className="text-2xs text-destructive">{formErrors.periodStart}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period End</label>
             <Input type="date" value={periodEnd} min={periodStart || minStart} max={maxEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
-            {formErrors.periodEnd && <p className="text-[11px] text-destructive">{formErrors.periodEnd}</p>}
+            {formErrors.periodEnd && <p className="text-2xs text-destructive">{formErrors.periodEnd}</p>}
           </div>
         </div>
         {employeeId && periodStart && periodEnd && (
           <div className="pt-2 border-t border-border">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">AI Assist</p>
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">AI Assist</p>
             <AIGenerateReviewButton
               userId={employeeId}
               userName={employees.find((e) => e.id === employeeId)?.name ?? "Employee"}
@@ -439,7 +439,7 @@ function GoalsTab() {
             <Card key={goal.id}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
-                  <Badge variant={goal.status === "COMPLETED" ? "default" : "secondary"} className="text-[10px]">
+                  <Badge variant={goal.status === "COMPLETED" ? "default" : "secondary"} className="text-2xs">
                     {(goal.status ?? "IN_PROGRESS").replace("_", " ")}
                   </Badge>
                   <DropdownMenu>
@@ -452,9 +452,9 @@ function GoalsTab() {
                   </DropdownMenu>
                 </div>
                 <p className="text-sm font-semibold leading-tight">{goal.title}</p>
-                {goal.endDate && <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
+                {goal.endDate && <p className="text-2xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[10px]">
+                  <div className="flex justify-between text-2xs">
                     <span className="text-muted-foreground">Progress</span>
                     <span className="font-medium">{goal.progress ?? 0}%</span>
                   </div>
@@ -476,23 +476,23 @@ function GoalsTab() {
             placeholder="Select employee"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.userId && <p className="text-[11px] text-destructive">{formErrors.userId}</p>}
+          {formErrors.userId && <p className="text-2xs text-destructive">{formErrors.userId}</p>}
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Title</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{title.length}/120</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{title.length}/120</span>
           </div>
           <Input placeholder="e.g., Complete Q2 OKRs" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
-          {formErrors.title && <p className="text-[11px] text-destructive">{formErrors.title}</p>}
+          {formErrors.title && <p className="text-2xs text-destructive">{formErrors.title}</p>}
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Description</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{description.length}/2000</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{description.length}/2000</span>
           </div>
           <Textarea placeholder="Goal details..." value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} rows={3} />
-          {formErrors.description && <p className="text-[11px] text-destructive">{formErrors.description}</p>}
+          {formErrors.description && <p className="text-2xs text-destructive">{formErrors.description}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Target Value</label>
@@ -503,18 +503,18 @@ function GoalsTab() {
             value={targetValue}
             onChange={(e) => setTargetValue(sanitizeTargetValueInput(e.target.value))}
           />
-          {formErrors.targetValue && <p className="text-[11px] text-destructive">{formErrors.targetValue}</p>}
+          {formErrors.targetValue && <p className="text-2xs text-destructive">{formErrors.targetValue}</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Start Date</label>
             <Input type="date" value={startDate} max={endDate || undefined} onChange={(e) => setStartDate(e.target.value)} />
-            {formErrors.startDate && <p className="text-[11px] text-destructive">{formErrors.startDate}</p>}
+            {formErrors.startDate && <p className="text-2xs text-destructive">{formErrors.startDate}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">End Date</label>
             <Input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)} />
-            {formErrors.endDate && <p className="text-[11px] text-destructive">{formErrors.endDate}</p>}
+            {formErrors.endDate && <p className="text-2xs text-destructive">{formErrors.endDate}</p>}
           </div>
         </div>
       </HrSheet>
@@ -684,32 +684,32 @@ function OneOnOnesTab() {
                 <div className="flex -space-x-2 shrink-0">
                   <Avatar className="h-7 w-7 border-2 border-background">
                     <AvatarImage src={resolveImageUrl(m.manager?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{m.manager?.name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="text-3xs bg-primary/10 text-primary">{m.manager?.name?.[0]}</AvatarFallback>
                   </Avatar>
                   <Avatar className="h-7 w-7 border-2 border-background">
                     <AvatarImage src={resolveImageUrl(m.employee?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{m.employee?.name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="text-3xs bg-primary/10 text-primary">{m.employee?.name?.[0]}</AvatarFallback>
                   </Avatar>
                   {participants.slice(0, 3).map((p) => (
                     <Avatar key={p.id} className="h-7 w-7 border-2 border-background">
                       <AvatarImage src={resolveImageUrl(p.image ?? null)} />
-                      <AvatarFallback className="text-[9px] bg-muted text-muted-foreground">{p.name?.[0] ?? "?"}</AvatarFallback>
+                      <AvatarFallback className="text-3xs bg-muted text-muted-foreground">{p.name?.[0] ?? "?"}</AvatarFallback>
                     </Avatar>
                   ))}
                   {participants.length > 3 && (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-medium text-muted-foreground">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-3xs font-medium text-muted-foreground">
                       +{participants.length - 3}
                     </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{m.manager?.name} & {m.employee?.name}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <p className="text-2xs text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {formatMeetingDateTime(String(m.scheduledAt))} &middot; {m.duration}min
                   </p>
                   {participants.length > 0 && (
-                    <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
+                    <p className="text-2xs text-muted-foreground truncate flex items-center gap-1">
                       <Users className="h-3 w-3 shrink-0" />
                       <span className="truncate">
                         with {participants.map((p) => p.name ?? "Participant").join(", ")}
@@ -717,7 +717,7 @@ function OneOnOnesTab() {
                     </p>
                   )}
                 </div>
-                <Badge variant={m.status === "COMPLETED" ? "default" : m.status === "CANCELLED" ? "destructive" : "outline"} className="text-[10px] shrink-0">
+                <Badge variant={m.status === "COMPLETED" ? "default" : m.status === "CANCELLED" ? "destructive" : "outline"} className="text-2xs shrink-0">
                   {m.status}
                 </Badge>
                 <DropdownMenu>
@@ -745,7 +745,7 @@ function OneOnOnesTab() {
             placeholder="Select team member"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.employeeId && <p className="text-[11px] text-destructive">{formErrors.employeeId}</p>}
+          {formErrors.employeeId && <p className="text-2xs text-destructive">{formErrors.employeeId}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Additional participants (optional)</label>
@@ -757,7 +757,7 @@ function OneOnOnesTab() {
             searchPlaceholder="Search teammates…"
             selectedLabel={(count) => `${count} participant${count === 1 ? "" : "s"}`}
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             They are added to the calendar (.ics) invite and emailed alongside the manager and employee.
           </p>
         </div>
@@ -765,18 +765,18 @@ function OneOnOnesTab() {
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Date</label>
             <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
-            {formErrors.date && <p className="text-[11px] text-destructive">{formErrors.date}</p>}
+            {formErrors.date && <p className="text-2xs text-destructive">{formErrors.date}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Time</label>
             <Input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
-            {formErrors.time && <p className="text-[11px] text-destructive">{formErrors.time}</p>}
+            {formErrors.time && <p className="text-2xs text-destructive">{formErrors.time}</p>}
           </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Duration (min)</label>
           <Input type="number" min={15} max={180} step={5} value={duration} onChange={(e) => setDuration(e.target.value)} />
-          {formErrors.duration && <p className="text-[11px] text-destructive">{formErrors.duration}</p>}
+          {formErrors.duration && <p className="text-2xs text-destructive">{formErrors.duration}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Meeting link (optional)</label>
@@ -786,14 +786,14 @@ function OneOnOnesTab() {
             value={meetingLink}
             onChange={(e) => setMeetingLink(e.target.value)}
           />
-          {formErrors.meetingLink && <p className="text-[11px] text-destructive">{formErrors.meetingLink}</p>}
+          {formErrors.meetingLink && <p className="text-2xs text-destructive">{formErrors.meetingLink}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Agenda</label>
           <Textarea placeholder="Topics to discuss..." value={agenda} maxLength={1000} onChange={(e) => setAgenda(e.target.value)} rows={3} />
-          {formErrors.agenda && <p className="text-[11px] text-destructive">{formErrors.agenda}</p>}
+          {formErrors.agenda && <p className="text-2xs text-destructive">{formErrors.agenda}</p>}
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           The employee receives an email with a calendar (.ics) invite they can add to Google Calendar, Outlook, or Apple Calendar.
         </p>
       </HrSheet>
@@ -929,9 +929,9 @@ function CyclesTab() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">{cycle.name}</p>
-                    <Badge variant={cycle.status === "ACTIVE" ? "default" : cycle.status === "COMPLETED" ? "secondary" : "outline"} className="text-[10px]">{cycle.status}</Badge>
+                    <Badge variant={cycle.status === "ACTIVE" ? "default" : cycle.status === "COMPLETED" ? "secondary" : "outline"} className="text-2xs">{cycle.status}</Badge>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-2xs text-muted-foreground mt-0.5">
                     {cycle.periodStart} → {cycle.periodEnd}
                     {cycle.deadline && <> &middot; Deadline: {cycle.deadline}</>}
                     {cycle.type && (
@@ -939,7 +939,7 @@ function CyclesTab() {
                     )}
                   </p>
                   {cycle.type && REVIEW_CYCLE_TYPE_MAP[cycle.type] && (
-                    <p className="text-[10px] text-muted-foreground/80 mt-1 max-w-md">
+                    <p className="text-2xs text-muted-foreground/80 mt-1 max-w-md">
                       {REVIEW_CYCLE_TYPE_MAP[cycle.type]!.description}
                     </p>
                   )}
@@ -967,10 +967,10 @@ function CyclesTab() {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Cycle Name</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{name.length}/100</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{name.length}/100</span>
           </div>
           <Input placeholder="e.g., Q2 2026 Review" value={name} maxLength={100} onChange={(e) => setName(e.target.value)} />
-          {formErrors.name && <p className="text-[11px] text-destructive">{formErrors.name}</p>}
+          {formErrors.name && <p className="text-2xs text-destructive">{formErrors.name}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Type</label>
@@ -983,7 +983,7 @@ function CyclesTab() {
             </SelectContent>
           </Select>
           {typeInfo && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               {typeInfo.description}
               {typeInfo.months ? " End date auto-fills from the start — adjust if needed." : ""}
             </p>
@@ -993,18 +993,18 @@ function CyclesTab() {
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period Start</label>
             <Input type="date" value={periodStart} min={orgStartDate} max={periodEnd || undefined} onChange={(e) => handlePeriodStartChange(e.target.value)} />
-            {formErrors.periodStart && <p className="text-[11px] text-destructive">{formErrors.periodStart}</p>}
+            {formErrors.periodStart && <p className="text-2xs text-destructive">{formErrors.periodStart}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period End</label>
             <Input type="date" value={periodEnd} min={periodStart || orgStartDate} readOnly={type !== "CUSTOM"} onChange={(e) => setPeriodEnd(e.target.value)} className={type !== "CUSTOM" ? "bg-muted" : undefined} />
-            {formErrors.periodEnd && <p className="text-[11px] text-destructive">{formErrors.periodEnd}</p>}
+            {formErrors.periodEnd && <p className="text-2xs text-destructive">{formErrors.periodEnd}</p>}
           </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Submission Deadline</label>
           <Input type="date" value={deadline} min={periodStart || undefined} max={periodEnd || undefined} onChange={(e) => setDeadline(e.target.value)} />
-          {formErrors.deadline && <p className="text-[11px] text-destructive">{formErrors.deadline}</p>}
+          {formErrors.deadline && <p className="text-2xs text-destructive">{formErrors.deadline}</p>}
         </div>
       </HrSheet>
 

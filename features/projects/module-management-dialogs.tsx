@@ -81,12 +81,12 @@ const MODULE_STATUSES = [
 ] as const;
 
 const statusColors: Record<string, string> = {
-  backlog: "bg-gray-100 text-gray-700",
-  planned: "bg-blue-100 text-blue-700",
-  "in-progress": "bg-yellow-100 text-yellow-700",
-  paused: "bg-orange-100 text-orange-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+  backlog: "bg-muted text-neutral-strong",
+  planned: "bg-info-soft text-info-strong",
+  "in-progress": "bg-warning-soft text-warning-strong",
+  paused: "bg-warning-soft text-warning-strong",
+  completed: "bg-success-soft text-success-strong",
+  cancelled: "bg-danger-soft text-danger-strong",
 };
 
 const PROJECT_MODULE_MANAGER_ROLES = ["ADMIN", "MANAGER", "OWNER"] as const;
@@ -197,7 +197,7 @@ export function ModulePreviewSheet(props: {
                 </span>
               </p>
               {(mod.activeTicketCount ?? 0) > 0 && (
-                <p className="text-xs text-amber-700 dark:text-amber-500">
+                <p className="text-xs text-warning-strong">
                   {mod.activeTicketCount} open work item
                   {(mod.activeTicketCount ?? 0) === 1 ? "" : "s"} in non-terminal
                   states.

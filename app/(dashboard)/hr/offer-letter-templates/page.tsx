@@ -188,7 +188,7 @@ function TemplateFormFields({
           />
           <label htmlFor="showSigBlock" className="text-sm">
             Add employee signature block at bottom
-            <span className="ml-1 text-[10px] text-muted-foreground">(name, ID, designation, signature line)</span>
+            <span className="ml-1 text-2xs text-muted-foreground">(name, ID, designation, signature line)</span>
           </label>
         </div>
       )}
@@ -196,7 +196,7 @@ function TemplateFormFields({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Template Name <span className="text-destructive">*</span></label>
-          <span className="text-[10px] text-muted-foreground">{name.length}/{NAME_MAX}</span>
+          <span className="text-2xs text-muted-foreground">{name.length}/{NAME_MAX}</span>
         </div>
         <Input
           placeholder="e.g., Standard Offer Letter"
@@ -225,28 +225,28 @@ function TemplateFormFields({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto w-64">
-              <DropdownMenuLabel className="text-[11px]">Built-in tokens</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-2xs">Built-in tokens</DropdownMenuLabel>
               {BUILT_IN_INSERT_ITEMS.map((item) => (
                 <DropdownMenuItem
                   key={item.key}
                   onSelect={() => insertToken(item.key)}
                   className="text-xs"
                 >
-                  <span className="font-mono text-[11px] text-primary mr-2">{`{{${item.key}}}`}</span>
+                  <span className="font-mono text-2xs text-primary mr-2">{`{{${item.key}}}`}</span>
                   <span className="text-muted-foreground truncate">{item.label}</span>
                 </DropdownMenuItem>
               ))}
               {customVariables.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-[11px]">Custom variables</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-2xs">Custom variables</DropdownMenuLabel>
                   {customVariables.map((cv) => (
                     <DropdownMenuItem
                       key={cv.id}
                       onSelect={() => insertToken(cv.variableKey)}
                       className="text-xs"
                     >
-                      <span className="font-mono text-[11px] text-primary mr-2">{`{{${cv.variableKey}}}`}</span>
+                      <span className="font-mono text-2xs text-primary mr-2">{`{{${cv.variableKey}}}`}</span>
                       <span className="text-muted-foreground truncate">{cv.label}</span>
                     </DropdownMenuItem>
                   ))}
@@ -258,7 +258,7 @@ function TemplateFormFields({
         <div className="rounded-md border border-dashed">
           <button
             type="button"
-            className="flex w-full items-center justify-between px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="flex w-full items-center justify-between px-3 py-2 text-2xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setVarGuideOpen((o) => !o)}
           >
             <span>Variable reference</span>
@@ -267,26 +267,26 @@ function TemplateFormFields({
           {varGuideOpen && (
             <div className="border-t px-3 pb-3 pt-2 space-y-2">
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Built-in tokens</p>
+                <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide">Built-in tokens</p>
                 <div className="grid grid-cols-1 gap-0.5">
                   {BUILT_IN_INSERT_ITEMS.map((item) => (
                     <div key={item.key} className="flex items-center gap-2 py-0.5">
-                      <span className="font-mono text-[10px] text-primary shrink-0">{`{{${item.key}}}`}</span>
-                      <span className="text-[10px] text-muted-foreground truncate">{item.label}</span>
+                      <span className="font-mono text-2xs text-primary shrink-0">{`{{${item.key}}}`}</span>
+                      <span className="text-2xs text-muted-foreground truncate">{item.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
               {tokenLegend && tokenLegend.length > 0 && (
                 <div className="space-y-1">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Available tokens</p>
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide">Available tokens</p>
                   <div className="grid grid-cols-1 gap-0.5">
                     {tokenLegend.map((line, i) => {
                       const [token, ...rest] = line.split(" — ");
                       return (
                         <div key={i} className="flex items-center gap-2 py-0.5">
-                          <span className="font-mono text-[10px] text-primary shrink-0">{token}</span>
-                          <span className="text-[10px] text-muted-foreground truncate">{rest.join(" — ")}</span>
+                          <span className="font-mono text-2xs text-primary shrink-0">{token}</span>
+                          <span className="text-2xs text-muted-foreground truncate">{rest.join(" — ")}</span>
                         </div>
                       );
                     })}
@@ -295,18 +295,18 @@ function TemplateFormFields({
               )}
               {customVariables.length > 0 && (
                 <div className="space-y-1">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Custom variables</p>
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide">Custom variables</p>
                   <div className="grid grid-cols-1 gap-0.5">
                     {customVariables.map((cv) => (
                       <div key={cv.id} className="flex items-center gap-2 py-0.5">
-                        <span className="font-mono text-[10px] text-primary shrink-0">{`{{${cv.variableKey}}}`}</span>
-                        <span className="text-[10px] text-muted-foreground truncate">{cv.label}</span>
+                        <span className="font-mono text-2xs text-primary shrink-0">{`{{${cv.variableKey}}}`}</span>
+                        <span className="text-2xs text-muted-foreground truncate">{cv.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Plain text only. Blank lines = new paragraph. Lines starting with {"- "} or {"* "} render as bullets in the PDF.
               </p>
             </div>
@@ -448,7 +448,7 @@ function CustomVariablesManager() {
             maxLength={64}
             className="font-mono text-xs"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Inserted as <span className="font-mono">{`{{${variableKey || "key"}}}`}</span>.
             {resolveCustomVariableToSystemField(variableKey)
               ? " Matches a system field — auto-filled at generation."
@@ -497,7 +497,7 @@ function CustomVariablesManager() {
                     <p className="text-xs font-mono text-primary truncate">{`{{${cv.variableKey}}}`}</p>
                     <p className="text-sm font-medium leading-tight truncate">{cv.label}</p>
                     {cv.description && (
-                      <p className="text-[11px] text-muted-foreground truncate">{cv.description}</p>
+                      <p className="text-2xs text-muted-foreground truncate">{cv.description}</p>
                     )}
                   </div>
                   <div className="flex gap-0.5 shrink-0">
@@ -717,9 +717,9 @@ function OfferLetterTemplatesContent() {
                       <span className="font-mono">{`{{${cv.variableKey}}}`}</span> — {cv.label}
                       {cv.description ? `: ${cv.description}` : ""}
                       {mapped ? (
-                        <span className="text-emerald-600"> (auto-filled)</span>
+                        <span className="text-success-strong"> (auto-filled)</span>
                       ) : (
-                        <span className="text-amber-600"> (manual placeholder)</span>
+                        <span className="text-warning-strong"> (manual placeholder)</span>
                       )}
                     </li>
                   );
@@ -727,7 +727,7 @@ function OfferLetterTemplatesContent() {
               </ul>
             </>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             All other content (reporting manager, probation, notice, signatory, leaves) is free text you write directly into the body.
           </p>
         </CardContent>
@@ -749,7 +749,7 @@ function OfferLetterTemplatesContent() {
                   <div className="flex items-center gap-1.5 min-w-0">
                     <FileText className="h-4 w-4 text-primary shrink-0" />
                     {t.isDefault && (
-                      <Star className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <Star className="h-3.5 w-3.5 text-warning-strong shrink-0" />
                     )}
                   </div>
                   <div className="flex gap-0.5">
@@ -757,7 +757,7 @@ function OfferLetterTemplatesContent() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-amber-500"
+                        className="h-7 w-7 text-warning-strong"
                         title="Remove default status"
                         onClick={() => handleUnsetDefault(t)}
                       >
@@ -811,15 +811,15 @@ function OfferLetterTemplatesContent() {
                 <p className="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">{t.body}</p>
                 <div className="flex flex-wrap gap-1">
                   {t.isDefault && (
-                    <Badge variant="outline" className="text-[10px] border-amber-400 text-amber-600">
+                    <Badge variant="outline" className="text-2xs border-warning-400 text-warning-strong">
                       Default
                     </Badge>
                   )}
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-2xs">
                     {HR_LETTER_DOCUMENT_TYPES.find((d) => d.value === (t.documentType ?? "OFFER_LETTER"))?.label ?? t.documentType}
                   </Badge>
                   {t.showSignatureBlock && (
-                    <Badge variant="outline" className="text-[10px]">Sig block</Badge>
+                    <Badge variant="outline" className="text-2xs">Sig block</Badge>
                   )}
                 </div>
               </CardContent>

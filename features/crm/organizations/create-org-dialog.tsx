@@ -143,7 +143,7 @@ export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)} disabled={createOrgMutation.isPending}>
             Cancel
           </Button>
-          <Button type="submit" form="create-org-form" className="flex-1 bg-gold hover:bg-gold/90 text-white" disabled={createOrgMutation.isPending}>
+          <Button type="submit" form="create-org-form" className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createOrgMutation.isPending}>
             {createOrgMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Organization
           </Button>

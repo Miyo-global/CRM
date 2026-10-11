@@ -77,8 +77,8 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
             animate="visible"
             className="flex flex-col items-center space-y-4"
           >
-            <motion.div variants={fadeUp} className="bg-green-500/15 p-4 rounded-full">
-              <CheckCircle className="h-16 w-16 text-green-500" aria-hidden="true" />
+            <motion.div variants={fadeUp} className="bg-success-soft p-4 rounded-full">
+              <CheckCircle className="h-16 w-16 text-success-strong" aria-hidden="true" />
             </motion.div>
             <motion.h2 variants={fadeUp} className="text-2xl font-bold">You&apos;re All Set!</motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground max-w-md">
@@ -89,13 +89,13 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
               {dataSteps.map((step) => (
                 <div
                   key={step.id}
-                  className="flex items-center gap-3 p-3 rounded-lg text-left bg-green-500/10"
+                  className="flex items-center gap-3 p-3 rounded-lg text-left bg-success-soft"
                 >
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm font-medium text-green-600">
+                  <Check className="h-5 w-5 text-success-strong flex-shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-medium text-success-strong">
                     {step.label}
                   </span>
-                  <span className="ml-auto text-xs text-green-600">
+                  <span className="ml-auto text-xs text-success-strong">
                     Completed
                   </span>
                 </div>
@@ -148,17 +148,17 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg text-left ${isCompleted ? "bg-green-500/10" : "bg-muted/50"}`}
+                  className={`flex items-center gap-3 p-3 rounded-lg text-left ${isCompleted ? "bg-success-soft" : "bg-muted/50"}`}
                 >
                   {isCompleted ? (
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-success-strong flex-shrink-0" aria-hidden="true" />
                   ) : (
                     <StepIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                   )}
-                  <span className={`text-sm font-medium ${isCompleted ? "text-green-600" : "text-muted-foreground"}`}>
+                  <span className={`text-sm font-medium ${isCompleted ? "text-success-strong" : "text-muted-foreground"}`}>
                     {step.label}
                   </span>
-                  <span className={`ml-auto text-xs ${isCompleted ? "text-green-600" : "text-muted-foreground"}`}>
+                  <span className={`ml-auto text-xs ${isCompleted ? "text-success-strong" : "text-muted-foreground"}`}>
                     {isCompleted ? "Completed" : "Pending"}
                   </span>
                 </div>

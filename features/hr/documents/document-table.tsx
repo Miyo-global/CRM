@@ -77,32 +77,32 @@ const DOCUMENT_TYPES = [
 ] as const;
 
 const FILE_ICON_CONFIG: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-  pdf:  { bg: "bg-red-100 dark:bg-red-900/20",    text: "text-red-600 dark:text-red-400",    icon: FileText },
-  docx: { bg: "bg-blue-100 dark:bg-blue-900/20",   text: "text-blue-600 dark:text-blue-400",   icon: FileText },
-  doc:  { bg: "bg-blue-100 dark:bg-blue-900/20",   text: "text-blue-600 dark:text-blue-400",   icon: FileText },
-  xlsx: { bg: "bg-emerald-100 dark:bg-emerald-900/20", text: "text-emerald-600 dark:text-emerald-400", icon: FileSpreadsheet },
-  xls:  { bg: "bg-emerald-100 dark:bg-emerald-900/20", text: "text-emerald-600 dark:text-emerald-400", icon: FileSpreadsheet },
-  csv:  { bg: "bg-emerald-100 dark:bg-emerald-900/20", text: "text-emerald-600 dark:text-emerald-400", icon: FileSpreadsheet },
-  png:  { bg: "bg-amber-100 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", icon: FileImage },
-  jpg:  { bg: "bg-amber-100 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", icon: FileImage },
-  jpeg: { bg: "bg-amber-100 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", icon: FileImage },
+  pdf:  { bg: "bg-danger-soft",    text: "text-danger-strong",    icon: FileText },
+  docx: { bg: "bg-info-soft",   text: "text-info-strong",   icon: FileText },
+  doc:  { bg: "bg-info-soft",   text: "text-info-strong",   icon: FileText },
+  xlsx: { bg: "bg-success-soft", text: "text-success-strong", icon: FileSpreadsheet },
+  xls:  { bg: "bg-success-soft", text: "text-success-strong", icon: FileSpreadsheet },
+  csv:  { bg: "bg-success-soft", text: "text-success-strong", icon: FileSpreadsheet },
+  png:  { bg: "bg-warning-soft", text: "text-warning-strong", icon: FileImage },
+  jpg:  { bg: "bg-warning-soft", text: "text-warning-strong", icon: FileImage },
+  jpeg: { bg: "bg-warning-soft", text: "text-warning-strong", icon: FileImage },
 };
 
-const DEFAULT_FILE_ICON = { bg: "bg-gray-100 dark:bg-gray-800/30", text: "text-gray-600 dark:text-gray-400", icon: File };
+const DEFAULT_FILE_ICON = { bg: "bg-muted", text: "text-muted-foreground", icon: File };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Policies: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
-  Templates: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
-  Payroll: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
-  "Tax Forms": "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
-  General: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/30 dark:text-gray-400 dark:border-gray-700",
+  Policies: "bg-info-soft text-info-strong border-info-strong/25",
+  Templates: "bg-plum-soft text-plum-strong border-plum-strong/25",
+  Payroll: "bg-success-soft text-success-strong border-success-strong/25",
+  "Tax Forms": "bg-warning-soft text-warning-strong border-warning-strong/25",
+  General: "bg-muted text-neutral-strong border-border",
 };
 
 const FOLDER_COLORS = [
-  "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-  "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
-  "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400",
-  "bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+  "bg-info-soft text-info-strong",
+  "bg-success-soft text-success-strong",
+  "bg-success-soft text-success-strong",
+  "bg-warning-soft text-warning-strong",
 ];
 
 function getFileIconConfig(fileName: string) {
@@ -230,7 +230,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
             <p className="font-medium text-sm text-foreground truncate" title={doc.fileName || doc.name}>
               {doc.fileName || doc.name}
             </p>
-            <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 mt-0.5 text-2xs text-muted-foreground">
               {ext && <span className="font-mono uppercase">{ext}</span>}
               {ext && (ownerLabel || doc.isPublic) && <span aria-hidden>·</span>}
               {ownerLabel ? (
@@ -241,7 +241,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
               {assignedCount > 0 && (
                 <>
                   {(ext || ownerLabel || doc.isPublic) && <span aria-hidden>·</span>}
-                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1 text-success-strong">
                     <Users className="h-3 w-3" aria-hidden />
                     Assigned to {assignedCount}
                   </span>
@@ -254,9 +254,9 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
                   <Badge
                     key={tag}
                     variant="outline"
-                    className={`text-[10px] px-1.5 py-0 font-medium ${
+                    className={`text-2xs px-1.5 py-0 font-medium ${
                       tag.toLowerCase().includes("confidential")
-                        ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                        ? "bg-danger-soft text-danger-strong border-danger-strong/25"
                         : "bg-muted/50 text-muted-foreground border-border"
                     }`}
                   >
@@ -348,7 +348,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+              <DropdownMenuItem onClick={handleDelete} className="text-danger-strong">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
@@ -414,7 +414,7 @@ export function DocumentTable({
             <TableRow className="bg-muted/30">
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
               >
                 <div className="flex items-center gap-1">
                   Name
@@ -423,31 +423,31 @@ export function DocumentTable({
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
               >
                 Folder
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
               >
                 Document type
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
               >
                 Date Modified
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
               >
                 Size
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
+                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
               >
                 Actions
               </TableHead>
@@ -459,7 +459,7 @@ export function DocumentTable({
               <>
                 <TableRow>
                   <TableCell colSpan={6} className="px-6 py-3">
-                    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Folders
                     </p>
                   </TableCell>
@@ -650,7 +650,7 @@ function MoveToFolderSheet({
             aria-label="Destination folder"
           />
           {currentFolder && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Currently in <span className="font-medium">{currentFolder}</span>.
             </p>
           )}
@@ -810,13 +810,13 @@ function AssignDocumentSheet({
                       <Checkbox checked={checked} onCheckedChange={() => toggle(e.id)} aria-label={`Select ${name}`} />
                       <Avatar className="h-7 w-7">
                         {e.image ? <AvatarImage src={e.image} alt={name} /> : null}
-                        <AvatarFallback className="text-[10px]">
+                        <AvatarFallback className="text-2xs">
                           {name.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{name}</p>
-                        <p className="truncate text-[11px] text-muted-foreground">{e.email}</p>
+                        <p className="truncate text-2xs text-muted-foreground">{e.email}</p>
                       </div>
                     </label>
                   </li>

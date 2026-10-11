@@ -110,7 +110,7 @@ export const CandidateSheet = memo(function CandidateSheet({
                   title="Candidate Resume"
                   className="flex-1 w-full h-full border-0"
                 />
-                <div className="shrink-0 border-t bg-background px-4 py-1.5 text-[11px] text-muted-foreground">
+                <div className="shrink-0 border-t bg-background px-4 py-1.5 text-2xs text-muted-foreground">
                   Preview not showing?{" "}
                   <a
                     href={openSrc ?? "#"}
@@ -193,7 +193,7 @@ export const CandidateSheet = memo(function CandidateSheet({
                       className={cn(
                         "h-4 w-4",
                         i < (candidate.rating ?? 0)
-                          ? "text-amber-500 fill-amber-500"
+                          ? "text-warning-strong fill-warning-500"
                           : "text-muted-foreground/30"
                       )}
                     />

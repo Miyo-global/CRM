@@ -30,9 +30,9 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import type { HolidayWorkRequest } from "@/lib/api/hooks/hr/payroll-extended";
 
 const statusBadge = (status: string) => {
-  if (status === "APPROVED") return <Badge className="bg-green-100 text-green-800 border-green-200">Approved</Badge>;
-  if (status === "REJECTED") return <Badge className="bg-red-100 text-red-800 border-red-200">Rejected</Badge>;
-  return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+  if (status === "APPROVED") return <Badge className="bg-success-soft text-success-strong border-success-strong/25">Approved</Badge>;
+  if (status === "REJECTED") return <Badge className="bg-danger-soft text-danger-strong border-danger-strong/25">Rejected</Badge>;
+  return <Badge className="bg-warning-soft text-warning-strong border-warning-strong/25">Pending</Badge>;
 };
 
 function isLateSubmission(r: { createdAt?: string | Date | null; requestDate: string }): boolean {
@@ -202,7 +202,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
             <>
               {isAdmin && pending.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Pending Approval
                   </p>
                   {pending.map((r) => (
@@ -217,7 +217,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
                           · {r.compensationPreference === "COMP_OFF" ? "Comp-off" : "Extra pay"}
                         </span>
                         {isLateSubmission(r) && (
-                          <Badge variant="outline" className="ml-2 text-[10px] border-amber-300 text-amber-800">
+                          <Badge variant="outline" className="ml-2 text-2xs border-warning-strong/25 text-warning-strong">
                             Late submission
                           </Badge>
                         )}
@@ -226,7 +226,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 px-2 text-xs text-green-700 border-green-200 hover:bg-green-50"
+                          className="h-7 px-2 text-xs text-success-strong border-success-strong/25 hover:bg-success-soft"
                           disabled={approve.isPending}
                           onClick={() =>
                             approve.mutate(r.id, {
@@ -240,7 +240,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 px-2 text-xs text-red-700 border-red-200 hover:bg-red-50"
+                          className="h-7 px-2 text-xs text-danger-strong border-danger-strong/25 hover:bg-danger-soft"
                           onClick={() => setRejectTarget(r)}
                         >
                           Reject
@@ -270,7 +270,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
                             · {r.compensationPreference === "COMP_OFF" ? "Comp-off" : "Extra pay"}
                           </span>
                           {isLateSubmission(r) && (
-                            <Badge variant="outline" className="ml-2 text-[10px] border-amber-300 text-amber-800">
+                            <Badge variant="outline" className="ml-2 text-2xs border-warning-strong/25 text-warning-strong">
                               Late submission
                             </Badge>
                           )}
@@ -284,7 +284,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
 
               {isAdmin && recent.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Recent
                   </p>
                   {recent.map((r) => (
@@ -296,7 +296,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
                         <span className="font-medium">{r.user?.name ?? r.userId}</span>
                         <span className="text-muted-foreground ml-2 text-xs">{r.requestDate}</span>
                         {isLateSubmission(r) && (
-                          <Badge variant="outline" className="ml-2 text-[10px] border-amber-300 text-amber-800">
+                          <Badge variant="outline" className="ml-2 text-2xs border-warning-strong/25 text-warning-strong">
                             Late submission
                           </Badge>
                         )}

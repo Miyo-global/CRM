@@ -39,7 +39,7 @@ function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange,
           <Icon className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <Label htmlFor={id} className="text-[13px] font-medium text-foreground cursor-pointer">
+          <Label htmlFor={id} className="text-sm font-medium text-foreground cursor-pointer">
             {label}
           </Label>
           <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{description}</p>
@@ -171,7 +171,7 @@ export function SettingsPreferences() {
               <Moon className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex-1">
-              <p className="text-[13px] font-medium text-foreground">Quiet hours</p>
+              <p className="text-sm font-medium text-foreground">Quiet hours</p>
               <p className="text-xs text-muted-foreground mt-0.5 mb-3">
                 Push and SMS notifications are silenced during these hours.
               </p>

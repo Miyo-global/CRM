@@ -109,7 +109,7 @@ interface CandidateProfileCardProps {
 
 function SkillBadge({ skill }: { skill: string }) {
   return (
-    <Badge key={skill} variant="outline" className="text-[10px]">
+    <Badge key={skill} variant="outline" className="text-2xs">
       {skill}
     </Badge>
   );
@@ -121,7 +121,7 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`h-3.5 w-3.5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"}`}
+          className={`h-3.5 w-3.5 ${i < rating ? "text-warning-strong fill-warning-500" : "text-muted-foreground/20"}`}
         />
       ))}
     </div>

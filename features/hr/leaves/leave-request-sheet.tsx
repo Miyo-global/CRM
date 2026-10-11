@@ -313,17 +313,17 @@ export function LeaveRequestSheet({
                   <SelectContent>
                     <SelectItem value="LOW">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />Low
+                        <span className="h-2 w-2 rounded-full bg-success-500" />Low
                       </span>
                     </SelectItem>
                     <SelectItem value="MEDIUM">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-amber-500" />Medium
+                        <span className="h-2 w-2 rounded-full bg-warning-500" />Medium
                       </span>
                     </SelectItem>
                     <SelectItem value="HIGH">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-red-500" />High
+                        <span className="h-2 w-2 rounded-full bg-danger-500" />High
                       </span>
                     </SelectItem>
                   </SelectContent>

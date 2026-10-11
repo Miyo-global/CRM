@@ -250,7 +250,7 @@ export default function TimesheetsPage() {
   const filtersBar = (
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Project:</span>
+        <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Project:</span>
         <Select value={selectedProject} onValueChange={handleProjectChange}>
           <SelectTrigger aria-label="Filter by project" className="h-auto border-0 bg-transparent p-0 shadow-none text-sm font-medium min-w-[100px] focus:ring-0">
             <SelectValue placeholder="All" />
@@ -265,7 +265,7 @@ export default function TimesheetsPage() {
       </div>
 
       <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Period:</span>
+        <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Period:</span>
         <Select value={dateRange} onValueChange={handlePeriodChange}>
           <SelectTrigger aria-label="Filter by time period" className="h-auto border-0 bg-transparent p-0 shadow-none text-sm font-medium min-w-[100px] focus:ring-0">
             <SelectValue />
@@ -295,7 +295,7 @@ export default function TimesheetsPage() {
       <button
         onClick={handleViewModeCurrent}
         className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-          viewMode === "current" ? "bg-gold/10 text-gold" : "text-muted-foreground hover:text-foreground"
+          viewMode === "current" ? "bg-brand-soft text-brand-text" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         Current Quarter
@@ -303,7 +303,7 @@ export default function TimesheetsPage() {
       <button
         onClick={handleViewModeHistory}
         className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-          viewMode === "history" ? "bg-gold/10 text-gold" : "text-muted-foreground hover:text-foreground"
+          viewMode === "history" ? "bg-brand-soft text-brand-text" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         History
@@ -318,7 +318,7 @@ export default function TimesheetsPage() {
       actions={
         <LogTimeDialog
           trigger={
-            <Button className="bg-gold hover:bg-gold/90 text-white font-bold shadow-sm">
+            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground font-bold shadow-sm">
               <Plus className="mr-2 h-4 w-4" />
               Add New Log
             </Button>
@@ -355,12 +355,12 @@ export default function TimesheetsPage() {
                       <caption className="sr-only">Your daily work logs</caption>
                       <TableHeader className="sticky top-0 z-10">
                         <TableRow className="bg-muted/30">
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Project</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Task Description</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Duration</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Actions</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Project</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Task Description</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Duration</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
+                          <TableHead scope="col" className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -416,7 +416,7 @@ export default function TimesheetsPage() {
                               variant={num === page ? "default" : "outline"}
                               size="icon"
                               className={`h-8 w-8 text-sm font-bold ${
-                                num === page ? "bg-gold hover:bg-gold/90 text-white border-gold" : ""
+                                num === page ? "bg-primary hover:bg-brand-soft text-primary-foreground border-primary/40" : ""
                               }`}
                               onClick={handlePageNumber}
                               {...(num === page ? { "aria-current": "page" as const } : {})}

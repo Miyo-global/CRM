@@ -25,9 +25,9 @@ interface KanbanCardProps {
 }
 
 const PRIORITY_BORDER: Record<string, string> = {
-  HOT: "border-l-red-500",
-  WARM: "border-l-amber-500",
-  COLD: "border-l-blue-400",
+  HOT: "border-l-danger-500",
+  WARM: "border-l-warning-500",
+  COLD: "border-l-info-400",
 };
 
 function SlaCountdown({ deadline }: { deadline: string | Date }) {
@@ -48,11 +48,11 @@ function SlaCountdown({ deadline }: { deadline: string | Date }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <span className={cn(
-            "inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border font-medium",
+            "inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full border font-medium",
             overdue
-              ? "bg-red-500/10 text-red-500 border-red-500/30"
+              ? "bg-danger-soft text-danger-strong border-danger-strong/30"
               : urgent
-              ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+              ? "bg-warning-soft text-warning-strong border-warning-strong/30"
               : "bg-muted text-muted-foreground border-border",
           )}>
             {overdue ? <AlertTriangle className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
@@ -72,19 +72,19 @@ function ScoreExplainerBadge({ leadId, score }: { leadId: number; score: number 
   const { data } = useLeadScoreExplanation(leadId, enabled);
 
   const color = score >= 80
-    ? "text-emerald-500 border-emerald-500/30 bg-emerald-500/10"
+    ? "text-success-strong border-success-strong/30 bg-success-soft"
     : score >= 60
-    ? "text-amber-500 border-amber-500/30 bg-amber-500/10"
+    ? "text-warning-strong border-warning-strong/30 bg-warning-soft"
     : score >= 40
-    ? "text-orange-500 border-orange-500/30 bg-orange-500/10"
-    : "text-red-400 border-red-400/30 bg-red-400/10";
+    ? "text-warning-strong border-warning-strong/30 bg-warning-soft"
+    : "text-danger-strong border-danger-strong/30 bg-danger-soft";
 
   return (
     <TooltipProvider>
       <Tooltip onOpenChange={(open) => { if (open) setEnabled(true); }}>
         <TooltipTrigger asChild>
           <span
-            className={cn("inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border font-semibold cursor-help", color)}
+            className={cn("inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full border font-semibold cursor-help", color)}
             onClick={(e) => e.stopPropagation()}
           >
             <Info className="h-2.5 w-2.5 opacity-60" />
@@ -95,22 +95,22 @@ function ScoreExplainerBadge({ leadId, score }: { leadId: number; score: number 
           <p className="text-xs font-semibold">Score: {score}/100</p>
           {data ? (
             data.firedRules.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground">No scoring rules matched this lead.</p>
+              <p className="text-2xs text-muted-foreground">No scoring rules matched this lead.</p>
             ) : (
               <div className="space-y-1">
                 {data.firedRules.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between gap-2 text-[11px]">
+                  <div key={i} className="flex items-center justify-between gap-2 text-2xs">
                     <span className="truncate">{r.name}</span>
-                    <span className="font-semibold text-emerald-500 shrink-0">+{r.points}</span>
+                    <span className="font-semibold text-success-strong shrink-0">+{r.points}</span>
                   </div>
                 ))}
-                <p className="text-[10px] text-muted-foreground pt-0.5 border-t border-border">
+                <p className="text-2xs text-muted-foreground pt-0.5 border-t border-border">
                   {data.firedRules.length} of {data.totalRules} rules matched
                 </p>
               </div>
             )
           ) : (
-            <p className="text-[11px] text-muted-foreground">Loading...</p>
+            <p className="text-2xs text-muted-foreground">Loading...</p>
           )}
         </TooltipContent>
       </Tooltip>
@@ -153,8 +153,8 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
               "cursor-pointer transition-all border-l-[3px]",
               priorityBorder || "border-l-transparent",
               dragSnapshot.isDragging
-                ? "shadow-xl ring-2 ring-gold/30 rotate-[2deg] scale-105"
-                : "hover:shadow-md hover:border-gold/30",
+                ? "shadow-xl ring-2 ring-ring rotate-[2deg] scale-105"
+                : "hover:shadow-md hover:border-primary/40",
             )}
             onClick={handleOpen}
           >
@@ -172,21 +172,21 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{lead.name}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground/50 leading-none mt-0.5">
+                      <p className="text-2xs font-mono text-muted-foreground/50 leading-none mt-0.5">
                         LD-{String(lead.id).padStart(5, "0")}
                       </p>
                     </div>
                     {lead.assignedTo ? (
                       <Avatar className="h-6 w-6 shrink-0">
                         <AvatarImage src={resolveImageUrl(lead.assignedTo.image)} />
-                        <AvatarFallback className="text-[10px]">
+                        <AvatarFallback className="text-2xs">
                           {getInitials(lead.assignedTo.name ?? "")}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
                       <button
                         onClick={handleSelfAssign}
-                        className="h-6 w-6 shrink-0 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-gold/50 transition-colors"
+                        className="h-6 w-6 shrink-0 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-primary/40 transition-colors"
                         aria-label="Self-assign this lead"
                       >
                         <Plus className="h-3 w-3 text-muted-foreground" />
@@ -204,7 +204,7 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     {lead.priority && (
                       <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded-full border font-semibold",
+                        "text-2xs px-1.5 py-0.5 rounded-full border font-semibold",
                         PRIORITY_CONFIG[lead.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.WARM,
                       )}>
                         {lead.priority}
@@ -212,14 +212,14 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                     )}
                     {lead.source && (
                       <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded-full border",
+                        "text-2xs px-1.5 py-0.5 rounded-full border",
                         SOURCE_COLORS[lead.source] || SOURCE_COLORS.other,
                       )}>
                         {lead.source.replace("_", " ")}
                       </span>
                     )}
                     {lead.potentialValue && Number(lead.potentialValue) > 0 && (
-                      <span className="text-[10px] text-gold font-semibold">
+                      <span className="text-2xs text-brand-text font-semibold">
                         {formatINRCompact(lead.potentialValue)}
                       </span>
                     )}
@@ -232,7 +232,7 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
 
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {lead.createdAt ? timeAgo(lead.createdAt) : ""}
                       </span>
                       {lead.score != null && lead.score > 0 ? (
@@ -248,17 +248,17 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                         <>
                           <button
                             onClick={handleMarkLost}
-                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-red-500/20 transition-colors"
+                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-danger-soft transition-colors"
                             aria-label="Mark as lost"
                           >
-                            <X className="h-3 w-3 text-red-400" />
+                            <X className="h-3 w-3 text-danger-strong" />
                           </button>
                           <button
                             onClick={handleMoveNext}
-                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-gold/20 transition-colors"
+                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-brand-soft transition-colors"
                             aria-label="Move to next stage"
                           >
-                            <ArrowRight className="h-3 w-3 text-gold" />
+                            <ArrowRight className="h-3 w-3 text-brand-text" />
                           </button>
                         </>
                       )}

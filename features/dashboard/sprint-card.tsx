@@ -33,15 +33,15 @@ interface SprintCardProps {
 
 export const SprintCard = memo(function SprintCard({ summary, isLoading }: SprintCardProps) {
   return (
-    <Card className="bg-card border-border shadow-noir flex flex-col h-full w-full">
+    <Card className="bg-card border-border shadow-sm flex flex-col h-full w-full">
       <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between px-4 py-3">
         <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Zap className="h-4 w-4 text-gold" aria-hidden="true" />
+          <Zap className="h-4 w-4 text-brand-text" aria-hidden="true" />
           Active Sprint
         </CardTitle>
         {summary?.projectId && (
           <Link href={`/projects/${summary.projectId}`}>
-            <Button variant="ghost" size="sm" className="hover:bg-gold/10 hover:text-gold" aria-label="View sprint project">
+            <Button variant="ghost" size="sm" className="hover:bg-brand-soft hover:text-brand-text" aria-label="View sprint project">
               <ArrowUpRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -65,25 +65,25 @@ export const SprintCard = memo(function SprintCard({ summary, isLoading }: Sprin
             <div className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-gold">{summary.progress}%</span>
+                <span className="font-medium text-brand-text">{summary.progress}%</span>
               </div>
               <div className="h-2.5 bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={summary.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Sprint progress" aria-valuetext={`${summary.progress}% complete — ${summary.completedPoints} of ${summary.totalPoints} points`}>
                 <div
-                  className="h-full rounded-full transition-all gold-gradient"
+                  className="h-full rounded-full transition-all bg-primary text-primary-foreground"
                   style={{ width: `${Math.min(100, Math.max(0, summary.progress))}%` }}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={`p-2.5 rounded-lg border ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "bg-red-500/10 border-red-500/30" : "bg-muted/50 border-border"}`}>
+              <div className={`p-2.5 rounded-lg border ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "bg-danger-soft border-danger-strong/30" : "bg-muted/50 border-border"}`}>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   Days Left
                   {summary.daysRemaining <= SPRINT_DANGER_DAYS && (
-                    <AlertTriangle className="h-3 w-3 text-red-500" aria-hidden="true" />
+                    <AlertTriangle className="h-3 w-3 text-danger-strong" aria-hidden="true" />
                   )}
                 </p>
-                <p className={`text-lg font-bold ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "text-red-500" : "text-foreground"}`}>
+                <p className={`text-lg font-bold ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "text-danger-strong" : "text-foreground"}`}>
                   {summary.daysRemaining}
                   {summary.daysRemaining <= SPRINT_DANGER_DAYS && (
                     <span className="text-xs font-medium ml-1">Urgent</span>

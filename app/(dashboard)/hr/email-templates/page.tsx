@@ -518,7 +518,7 @@ function EmailTemplatesContent() {
               <li key={i}>{line}</li>
             ))}
           </ul>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Use double curly braces in subject and body, e.g.{" "}
             <code className="rounded bg-muted px-1">Dear {"{{name}}"}</code>. HTML is supported in
             the body.
@@ -608,7 +608,7 @@ function EmailTemplatesContent() {
                 <p className="text-xs text-muted-foreground line-clamp-2">{t.body}</p>
                 <div className="flex gap-2 flex-wrap">
                   {t.category && (
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-2xs">
                       {t.category}
                     </Badge>
                   )}
@@ -683,7 +683,7 @@ function EmailTemplatesContent() {
           {previewTemplate && (
             <ScrollArea className="flex-1 pr-3">
               {previewTemplate.category && (
-                <Badge variant="outline" className="text-[10px] mb-3">
+                <Badge variant="outline" className="text-2xs mb-3">
                   {previewTemplate.category}
                 </Badge>
               )}
@@ -742,8 +742,8 @@ function EmailTemplatesContent() {
             <TabsContent value="directory" className="mt-3 space-y-2">
               <p className="text-xs text-muted-foreground">
                 Sends to each employee&apos;s work email. Profile fields fill{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">{"{{name}}"}</code>,{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">{"{{employee_name}}"}</code>, etc.
+                <code className="text-2xs bg-muted px-1 rounded">{"{{name}}"}</code>,{" "}
+                <code className="text-2xs bg-muted px-1 rounded">{"{{employee_name}}"}</code>, etc.
               </p>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -837,7 +837,7 @@ function EmailTemplatesContent() {
           {keysNeedingManualInput.length > 0 && (
             <div className="space-y-2 border-t pt-3">
               <p className="text-xs font-medium">Template fields</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Fill placeholders not covered by the employee profile
                 {mergeFilledFromEmployeeProfile ? "" : " (custom send: pick “Merge fields from employee” or fill every field below)"}.
                 Custom fields use the input type you defined in Settings.

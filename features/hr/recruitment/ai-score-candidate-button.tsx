@@ -29,17 +29,17 @@ export function AIScoreCandidateButton({ candidateId, jobId, compact }: AIScoreC
   };
 
   const fitColor = (level: string) => {
-    if (level === "excellent") return "text-emerald-500";
-    if (level === "good") return "text-amber-500";
-    if (level === "average") return "text-orange-500";
-    return "text-red-500";
+    if (level === "excellent") return "text-success-strong";
+    if (level === "good") return "text-warning-strong";
+    if (level === "average") return "text-warning-strong";
+    return "text-danger-strong";
   };
 
   const fitBg = (level: string) => {
-    if (level === "excellent") return "bg-emerald-500/10";
-    if (level === "good") return "bg-amber-500/10";
-    if (level === "average") return "bg-orange-500/10";
-    return "bg-red-500/10";
+    if (level === "excellent") return "bg-success-soft";
+    if (level === "good") return "bg-warning-soft";
+    if (level === "average") return "bg-warning-soft";
+    return "bg-danger-soft";
   };
 
   if (compact) {
@@ -59,7 +59,7 @@ export function AIScoreCandidateButton({ candidateId, jobId, compact }: AIScoreC
             {scoreMutation.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Sparkles className="h-3 w-3 text-gold" />
+              <Sparkles className="h-3 w-3 text-brand-text" />
             )}
             {result ? <span className={cn("font-bold", fitColor(result.fitLevel))}>{result.score}</span> : "Score"}
           </Button>
@@ -79,7 +79,7 @@ export function AIScoreCandidateButton({ candidateId, jobId, compact }: AIScoreC
         {scoreMutation.isPending ? (
           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Scoring...</>
         ) : (
-          <><Sparkles className="h-4 w-4 mr-2 text-gold" />AI Score Candidate</>
+          <><Sparkles className="h-4 w-4 mr-2 text-brand-text" />AI Score Candidate</>
         )}
       </Button>
       {result && <ScoreDetails result={result} fitColor={fitColor} fitBg={fitBg} />}
@@ -110,25 +110,25 @@ function ScoreDetails({
       <div className="flex items-center gap-2">
         <div className={cn("h-12 w-12 rounded-lg flex flex-col items-center justify-center font-bold", fitBg(result.fitLevel), fitColor(result.fitLevel))}>
           <span className="text-base leading-none">{result.score}</span>
-          <span className="text-[8px] uppercase tracking-wider mt-0.5">fit</span>
+          <span className="text-3xs uppercase tracking-wider mt-0.5">fit</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="text-xs font-medium">Candidate Score</p>
-            <Badge variant="secondary" className={cn("text-[9px] h-4 px-1 capitalize", fitColor(result.fitLevel))}>
+            <Badge variant="secondary" className={cn("text-3xs h-4 px-1 capitalize", fitColor(result.fitLevel))}>
               {result.fitLevel}
             </Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{result.reasoning}</p>
+          <p className="text-2xs text-muted-foreground leading-snug mt-0.5">{result.reasoning}</p>
         </div>
       </div>
 
       {result.strengths.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Strengths</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Strengths</p>
           {result.strengths.map((s, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <TrendingUp className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <TrendingUp className="h-3 w-3 text-success-strong mt-0.5 shrink-0" />
               <span>{s}</span>
             </div>
           ))}
@@ -137,10 +137,10 @@ function ScoreDetails({
 
       {result.concerns.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Concerns</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Concerns</p>
           {result.concerns.map((c, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <AlertCircle className="h-3 w-3 text-red-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <AlertCircle className="h-3 w-3 text-danger-strong mt-0.5 shrink-0" />
               <span>{c}</span>
             </div>
           ))}
@@ -149,10 +149,10 @@ function ScoreDetails({
 
       {result.suggestedQuestions.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Suggested Questions</p>
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Suggested Questions</p>
           {result.suggestedQuestions.map((q, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[11px]">
-              <MessageSquare className="h-3 w-3 text-blue-400 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-1.5 text-2xs">
+              <MessageSquare className="h-3 w-3 text-info-strong mt-0.5 shrink-0" />
               <span>{q}</span>
             </div>
           ))}

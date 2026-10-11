@@ -42,25 +42,25 @@ const clKeys = {
 };
 
 const STATUS_CONFIG: Record<CareerLadderStatus, { label: string; className: string }> = {
-  draft:    { label: "Draft",    className: "bg-amber-50 text-amber-700 border-amber-200" },
-  active:   { label: "Active",   className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  archived: { label: "Archived", className: "bg-slate-100 text-slate-500 border-slate-200" },
+  draft:    { label: "Draft",    className: "bg-warning-soft text-warning-strong border-warning-strong/25" },
+  active:   { label: "Active",   className: "bg-success-soft text-success-strong border-success-strong/25" },
+  archived: { label: "Archived", className: "bg-muted text-muted-foreground border-border" },
 };
 
 const TRACK_CONFIG: Record<CareerLadderTrackType, { label: string; icon: React.ElementType; className: string }> = {
-  individual_contributor: { label: "Individual Contributor", icon: TrendingUp,  className: "bg-blue-50 text-blue-700 border-blue-200" },
-  management:             { label: "Management",             icon: Users,        className: "bg-violet-50 text-violet-700 border-violet-200" },
-  technical:              { label: "Technical",              icon: Code2,        className: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  specialist:             { label: "Specialist",             icon: Star,         className: "bg-orange-50 text-orange-700 border-orange-200" },
+  individual_contributor: { label: "Individual Contributor", icon: TrendingUp,  className: "bg-info-soft text-info-strong border-info-strong/25" },
+  management:             { label: "Management",             icon: Users,        className: "bg-plum-soft text-plum-strong border-plum-strong/25" },
+  technical:              { label: "Technical",              icon: Code2,        className: "bg-info-soft text-info-strong border-info-strong/25" },
+  specialist:             { label: "Specialist",             icon: Star,         className: "bg-warning-soft text-warning-strong border-warning-strong/25" },
 };
 
 const LEVEL_STRIP_COLORS = [
-  "bg-slate-300",
-  "bg-blue-400",
-  "bg-indigo-400",
-  "bg-violet-400",
-  "bg-purple-400",
-  "bg-fuchsia-400",
+  "bg-ink-200",
+  "bg-info-400",
+  "bg-info-400",
+  "bg-plum-400",
+  "bg-plum-400",
+  "bg-plum-400",
 ];
 
 function LevelStrip({ levels }: { levels: CareerLadder["levels"] }) {
@@ -82,7 +82,7 @@ function LevelStrip({ levels }: { levels: CareerLadder["levels"] }) {
           )}
         </div>
       ))}
-      <span className="text-[10px] text-muted-foreground ml-1">
+      <span className="text-2xs text-muted-foreground ml-1">
         {levels.length} level{levels.length !== 1 ? "s" : ""}
       </span>
     </div>
@@ -336,11 +336,11 @@ export default function CareerLaddersPage() {
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
-                        <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", statusCfg.className)}>
+                        <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-2xs font-medium", statusCfg.className)}>
                           {statusCfg.label}
                         </span>
                         {trackCfg && TrackIcon && (
-                          <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", trackCfg.className)}>
+                          <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium", trackCfg.className)}>
                             <TrackIcon className="h-2.5 w-2.5" />
                             {trackCfg.label}
                           </span>
@@ -354,7 +354,7 @@ export default function CareerLaddersPage() {
                       {cl.department && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <Building2 className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-[11px] text-muted-foreground">{cl.department}</span>
+                          <span className="text-2xs text-muted-foreground">{cl.department}</span>
                         </div>
                       )}
                     </div>
@@ -370,7 +370,7 @@ export default function CareerLaddersPage() {
                         asChild
                         size="sm"
                         variant="ghost"
-                        className="h-7 text-xs px-2 -ml-2 text-muted-foreground hover:bg-gold/10 hover:text-gold"
+                        className="h-7 text-xs px-2 -ml-2 text-muted-foreground hover:bg-brand-soft hover:text-brand-text"
                       >
                         <Link href={`/hr/career-ladders/${cl.id}`}>
                           {isAdmin ? "View / Edit" : "View Details"}
@@ -411,13 +411,13 @@ export default function CareerLaddersPage() {
               className={cn(titleTouched && titleError && "border-destructive")}
             />
             {titleTouched && titleError ? (
-              <p className="text-[11px] text-destructive">{titleError}</p>
+              <p className="text-2xs text-destructive">{titleError}</p>
             ) : (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Letters, numbers, spaces, and - &apos; . &amp; / , only
               </p>
             )}
-            <p className="text-[10px] text-muted-foreground text-right">{title.length}/120</p>
+            <p className="text-2xs text-muted-foreground text-right">{title.length}/120</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -496,8 +496,8 @@ export default function CareerLaddersPage() {
               aria-invalid={!!descError}
               className={cn(descError && "border-destructive")}
             />
-            {descError && <p className="text-[11px] text-destructive">{descError}</p>}
-            <p className="text-[10px] text-muted-foreground text-right">{description.length}/500</p>
+            {descError && <p className="text-2xs text-destructive">{descError}</p>}
+            <p className="text-2xs text-muted-foreground text-right">{description.length}/500</p>
           </div>
         </div>
       </HrSheet>

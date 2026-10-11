@@ -150,15 +150,15 @@ export function DocumentFilters({
               <HardDrive
                 className={`h-4 w-4 shrink-0 ${
                   storagePercent > 80
-                    ? "text-red-500"
+                    ? "text-danger-strong"
                     : storagePercent > 50
-                      ? "text-amber-500"
-                      : "text-emerald-500"
+                      ? "text-warning-strong"
+                      : "text-success-strong"
                 }`}
                 aria-hidden
               />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide">
                   Storage
                 </p>
                 <div className="flex items-center gap-2">
@@ -166,10 +166,10 @@ export function DocumentFilters({
                     <div
                       className={`h-full rounded-full transition-all ${
                         storagePercent > 80
-                          ? "bg-red-500"
+                          ? "bg-danger-500"
                           : storagePercent > 50
-                            ? "bg-amber-500"
-                            : "bg-emerald-500"
+                            ? "bg-warning-500"
+                            : "bg-success-500"
                       }`}
                       style={{ width: `${storagePercent}%` }}
                     />

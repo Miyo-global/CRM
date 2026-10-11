@@ -48,7 +48,9 @@ export function AnalyticsChartCard({ title, data, filename, children }: Analytic
             <Download className="h-3.5 w-3.5" />
           </Button>
         </CardHeader>
-        <CardContent>{children}</CardContent>
+        <CardContent>
+          <div role="img" aria-label={title}>{children}</div>
+        </CardContent>
       </Card>
     </motion.div>
   );

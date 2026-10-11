@@ -7,7 +7,7 @@ export function EmptyTimeIllustration({ className }: IllustrationProps) {
 
       <circle cx="95" cy="95" r="78" fill={GOLD} opacity="0.03" />
 
-      <circle cx="100" cy="88" r="52" fill="white" stroke={BLUE} strokeWidth="2.5" />
+      <circle cx="100" cy="88" r="52" fill="var(--card)" stroke={BLUE} strokeWidth="2.5" />
       <circle cx="100" cy="88" r="46" fill={BLUE} opacity="0.03" />
 
       <circle cx="100" cy="88" r="52" stroke={GOLD} strokeWidth="1" strokeDasharray="6 14" opacity="0.3" />

@@ -8,16 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceAllocation } from "@/lib/api/hooks/projects";
 import { EmptyState } from "@/components/ui/empty-state";
+import { TAG_TONE_CYCLE, toneDot } from "@/lib/design/tones";
 
-const PROJECT_COLORS = [
-  "bg-blue-500",
-  "bg-purple-500",
-  "bg-green-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-cyan-500",
-  "bg-indigo-500",
-];
+const PROJECT_COLORS = TAG_TONE_CYCLE.map((t) => toneDot[t]);
 
 function getInitials(name: string | null, email: string) {
   if (name) return name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
@@ -81,7 +74,7 @@ export default function ResourceAllocationPage() {
                             <span
                               className={`h-2 w-2 rounded-full shrink-0 ${PROJECT_COLORS[(pIdx + idx) % PROJECT_COLORS.length]}`}
                             />
-                            <span className="font-mono text-[10px] text-muted-foreground">{p.projectKey}</span>
+                            <span className="font-mono text-2xs text-muted-foreground">{p.projectKey}</span>
                             <span>{p.projectName}</span>
                             <span className="font-semibold">{p.open}</span>
                           </div>

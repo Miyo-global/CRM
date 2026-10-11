@@ -91,7 +91,7 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+            <label className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
               Employee
             </label>
             <Select value={selectedEmployee} onValueChange={onEmployeeChange}>
@@ -109,7 +109,7 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+            <label className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
               Status
             </label>
             <Select value={selectedStatus} onValueChange={onStatusChange}>
@@ -127,7 +127,7 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+          <label className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
             Project
           </label>
           <Select value={selectedProject} onValueChange={onProjectChange}>
@@ -167,7 +167,7 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
           </div>
           <div className="grid grid-cols-7 gap-1 text-center">
             {WEEKDAY_LABELS.map((d, i) => (
-              <span key={`${d}-${i}`} className="text-[10px] font-bold text-muted-foreground">
+              <span key={`${d}-${i}`} className="text-2xs font-bold text-muted-foreground">
                 {d}
               </span>
             ))}
@@ -180,9 +180,9 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
                 <button
                   key={date.getDate()}
                   onClick={() => onDateSelect(date)}
-                  className={`h-6 text-[10px] flex items-center justify-center rounded-full transition-colors ${
+                  className={`h-6 text-2xs flex items-center justify-center rounded-full transition-colors ${
                     isTodayDate
-                      ? "bg-primary text-white font-bold"
+                      ? "bg-primary text-primary-foreground font-bold"
                       : "hover:bg-primary/10"
                   }`}
                 >

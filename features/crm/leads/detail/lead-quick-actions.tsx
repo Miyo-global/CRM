@@ -64,31 +64,31 @@ const ACTION_BUTTONS = [
     key: "call" as const,
     label: "Log Call",
     icon: Phone,
-    color: "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20",
+    color: "bg-info-soft text-info-strong hover:bg-info-soft",
   },
   {
     key: "email" as const,
     label: "Send Email",
     icon: Mail,
-    color: "bg-purple-500/10 text-purple-400 hover:bg-purple-500/20",
+    color: "bg-plum-soft text-plum-strong hover:bg-plum-soft",
   },
   {
     key: "note" as const,
     label: "Add Note",
     icon: StickyNote,
-    color: "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20",
+    color: "bg-warning-soft text-warning-strong hover:bg-warning-soft",
   },
   {
     key: "task" as const,
     label: "New Task",
     icon: ListTodo,
-    color: "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20",
+    color: "bg-success-soft text-success-strong hover:bg-success-soft",
   },
   {
     key: "draft" as const,
     label: "Draft Email",
     icon: Wand2,
-    color: "bg-violet-500/10 text-violet-400 hover:bg-violet-500/20",
+    color: "bg-plum-soft text-plum-strong hover:bg-plum-soft",
   },
 ] as const;
 
@@ -172,7 +172,7 @@ export function LeadQuickActions({
   }, [leadName, leadContext, onDraftEmail, generateEmailMutation]);
 
   return (
-    <Card className="shadow-noir">
+    <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">Quick Actions</CardTitle>
       </CardHeader>
@@ -213,7 +213,6 @@ export function LeadQuickActions({
               <Button
                 type="button"
                 size="sm"
-                className="bg-violet-600 hover:bg-violet-700 text-white"
                 onClick={handleGenerateDraft}
                 disabled={generateEmailMutation.isPending || !leadName}
               >
@@ -268,7 +267,6 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-gold hover:bg-gold/80 text-white"
                   disabled={isNotePending}
                 >
                   {isNotePending ? "Saving..." : "Save Note"}
@@ -322,7 +320,6 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-gold hover:bg-gold/80 text-white"
                   disabled={isTaskPending}
                 >
                   {isTaskPending ? "Creating..." : "Create Task"}
@@ -410,7 +407,6 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-gold hover:bg-gold/80 text-white"
                   disabled={isEmailPending}
                 >
                   {isEmailPending ? "Sending..." : "Send Email"}
@@ -492,7 +488,6 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-gold hover:bg-gold/80 text-white"
                   disabled={isCallPending}
                 >
                   {isCallPending ? "Logging..." : "Log Call"}
