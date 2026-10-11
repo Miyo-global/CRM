@@ -23,10 +23,7 @@ import {
   CalendarCheck,
   Building2,
   RefreshCw,
-  Contact2,
   Ticket,
-  Target,
-  TrendingUp,
   CheckCircle2,
   ListChecks,
   Zap,
@@ -149,10 +146,8 @@ export default function DashboardPage() {
         ];
       case "SALES":
         return [
-          { id: "leads", label: "My Leads", value: rs?.myLeads ?? 0, icon: Contact2, href: "/crm/leads" },
-          { id: "converted", label: "Converted", value: rs?.myConverted ?? 0, icon: TrendingUp, href: "/crm/leads" },
-          { id: "deals", label: "My Deals", value: rs?.myDeals ?? 0, icon: Zap, href: "/crm/deals" },
-          { id: "target", label: "Target Progress", value: `${rs?.targetProgress ?? 0}%`, icon: Target, href: "/crm/targets" },
+          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, href: "/projects" },
+          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, href: "/hr/attendance" },
         ];
       case "CUSTOMER_SUPPORT":
         return [

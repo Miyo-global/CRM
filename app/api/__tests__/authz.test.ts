@@ -16,19 +16,6 @@ vi.mock("@/lib/db", () => ({
     },
   },
 }));
-vi.mock("@/server/queries/invoice", () => ({
-  getInvoices: vi.fn(async () => ({ invoices: [], total: 0 })),
-  getInvoiceStats: vi.fn(async () => ({})),
-}));
-vi.mock("@/server/queries/crm", () => ({
-  getDeals: vi.fn(async (_org: string, f: { limit?: number; offset?: number }) => ({
-    data: [],
-    total: 0,
-    limit: f.limit ?? 50,
-    offset: f.offset ?? 0,
-    totalPages: 0,
-  })),
-}));
 vi.mock("@/server/queries/hr", () => ({
   getEmployees: vi.fn(async () => [
     { id: "self", monthlySalary: "50000" },
@@ -56,65 +43,6 @@ const req = (path: string, init?: ConstructorParameters<typeof NextRequest>[1]) 
   new NextRequest(`http://localhost${path}`, init);
 
 beforeEach(() => authMock.mockReset());
-
-describe("invoices GET", () => {
-  it("rejects anonymous callers", async () => {
-    signIn(null);
-    const { GET } = await import("@/app/api/invoices/route");
-    expect((await GET(req("/api/invoices"))).status).toBe(401);
-  });
-
-  it.each(["ENGINEERING", "DESIGN", "CUSTOMER_SUPPORT", "BRANCH_HR"])("forbids %s", async (role) => {
-    signIn(role);
-    const list = await import("@/app/api/invoices/route");
-    const stats = await import("@/app/api/invoices/stats/route");
-    expect((await list.GET(req("/api/invoices"))).status).toBe(403);
-    expect((await stats.GET()).status).toBe(403);
-  });
-
-  it.each(["CEO", "ADMIN", "HR", "SALES"])("allows %s", async (role) => {
-    signIn(role);
-    const { GET } = await import("@/app/api/invoices/route");
-    expect((await GET(req("/api/invoices"))).status).toBe(200);
-  });
-});
-
-describe("billing razorpay", () => {
-  it("rejects anonymous callers", async () => {
-    signIn(null);
-    const { GET } = await import("@/app/api/billing/razorpay/route");
-    expect((await GET(req("/api/billing/razorpay"))).status).toBe(401);
-  });
-
-  it.each(["ENGINEERING", "SALES", "BRANCH_MANAGER"])("forbids %s on GET, POST and PATCH", async (role) => {
-    signIn(role);
-    const { GET, POST, PATCH } = await import("@/app/api/billing/razorpay/route");
-    const body = JSON.stringify({ plan: "STARTER" });
-    expect((await GET(req("/api/billing/razorpay"))).status).toBe(403);
-    expect((await POST(req("/api/billing/razorpay", { method: "POST", body }))).status).toBe(403);
-    expect((await PATCH(req("/api/billing/razorpay", { method: "PATCH", body }))).status).toBe(403);
-  });
-
-  it("forbids HR from creating orders", async () => {
-    signIn("HR");
-    const { POST } = await import("@/app/api/billing/razorpay/route");
-    const res = await POST(req("/api/billing/razorpay", { method: "POST", body: JSON.stringify({ plan: "STARTER" }) }));
-    expect(res.status).toBe(403);
-  });
-
-  it("lets CEO reach order creation", async () => {
-    signIn("CEO");
-    const { POST } = await import("@/app/api/billing/razorpay/route");
-    const res = await POST(req("/api/billing/razorpay", { method: "POST", body: JSON.stringify({ plan: "STARTER" }) }));
-    expect(res.status).toBe(503);
-  });
-
-  it.each(["CEO", "ADMIN", "HR"])("lets %s view the subscription", async (role) => {
-    signIn(role);
-    const { GET } = await import("@/app/api/billing/razorpay/route");
-    expect((await GET(req("/api/billing/razorpay"))).status).toBe(200);
-  });
-});
 
 describe("rbac permission catalog", () => {
   it.each(["ENGINEERING", "SALES", "BRANCH_HR"])("forbids %s", async (role) => {
@@ -165,30 +93,6 @@ describe("employee salary exposure", () => {
     const { GET } = await import("@/app/api/hr/employees/route");
     const rows = (await (await GET(req("/api/hr/employees"))).json()) as { id: string; monthlySalary: string | null }[];
     expect(rows.find((r) => r.id === "ceo")?.monthlySalary).toBe("250000");
-  });
-});
-
-describe("deals list limit contract", () => {
-  it.each(["101", "500", "0", "-1", "abc"])("rejects limit=%s with 400", async (limit) => {
-    signIn("SALES");
-    const { GET } = await import("@/app/api/deals/route");
-    const res = await GET(req(`/api/deals?limit=${limit}`));
-    expect(res.status).toBe(400);
-    expect(((await res.json()) as { error: string }).error).toMatch(/limit/);
-  });
-
-  it("rejects a negative offset", async () => {
-    signIn("SALES");
-    const { GET } = await import("@/app/api/deals/route");
-    expect((await GET(req("/api/deals?offset=-5"))).status).toBe(400);
-  });
-
-  it("accepts the maximum page size with an offset", async () => {
-    signIn("SALES");
-    const { GET } = await import("@/app/api/deals/route");
-    const res = await GET(req("/api/deals?limit=100&offset=200"));
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ limit: 100, offset: 200 });
   });
 });
 

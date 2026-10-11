@@ -42,15 +42,6 @@ export default function AdminHealthDashboardPage() {
 
   const kpis = [
     {
-      label: "Unassigned Leads",
-      value: data?.unassignedLeads ?? 0,
-      icon: AlertTriangle,
-      color: (data?.unassignedLeads ?? 0) > 0 ? "text-red-500" : "text-green-500",
-      bgColor: (data?.unassignedLeads ?? 0) > 0 ? "bg-red-50 dark:bg-red-950" : "bg-green-50 dark:bg-green-950",
-      description: "Leads without an assigned owner",
-      link: "/crm/leads?assignedToId=",
-    },
-    {
       label: "Overdue Tasks",
       value: data?.overdueTasks ?? 0,
       icon: Clock,

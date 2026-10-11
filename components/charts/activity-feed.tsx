@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Phone,
@@ -11,7 +10,6 @@ import {
   AlertTriangle,
   Ticket,
 } from "lucide-react";
-import { useCrmPeopleSlugs } from "@/lib/hooks/trpc-hooks";
 
 type ActivityType = "deal_won" | "meeting" | "proposal" | "call" | "email" | "ticket" | "escalation";
 
@@ -37,14 +35,11 @@ const typeConfig: Record<ActivityType, { icon: React.ElementType; color: string;
 };
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
-  const { data: slugMap } = useCrmPeopleSlugs();
-
   return (
     <div className="space-y-0">
       {items.map((item, i) => {
         const config = typeConfig[item.type];
         const Icon = config.icon;
-        const personSlug = item.person && slugMap ? slugMap[item.person] ?? null : null;
 
         return (
           <motion.div
@@ -68,16 +63,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
               <p className="text-sm text-foreground leading-snug">{item.message}</p>
               {item.person && (
                 <div className="flex items-center gap-2 mt-0.5">
-                  {personSlug ? (
-                    <Link
-                      href={`/sales/person/${personSlug}`}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      {item.person}
-                    </Link>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">{item.person}</span>
-                  )}
+                  <span className="text-xs text-muted-foreground">{item.person}</span>
                   <span className="text-xs text-muted-foreground/50">·</span>
                   <span className="text-xs text-muted-foreground">{item.time}</span>
                 </div>
