@@ -15,12 +15,14 @@ import {
   FileSpreadsheet,
   FileImage,
   ArrowDown,
-  Upload,
   Users,
   Search,
   Loader2,
 } from "lucide-react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { toneSoft, type Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -31,7 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -90,20 +91,16 @@ const FILE_ICON_CONFIG: Record<string, { bg: string; text: string; icon: React.E
 
 const DEFAULT_FILE_ICON = { bg: "bg-muted", text: "text-muted-foreground", icon: File };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Policies: "bg-info-soft text-info-strong border-info-strong/25",
-  Templates: "bg-plum-soft text-plum-strong border-plum-strong/25",
-  Payroll: "bg-success-soft text-success-strong border-success-strong/25",
-  "Tax Forms": "bg-warning-soft text-warning-strong border-warning-strong/25",
-  General: "bg-muted text-neutral-strong border-border",
+const TYPE_TONES: Record<string, Tone> = {
+  CONTRACT: "plum",
+  OFFER_LETTER: "plum",
+  POLICY: "info",
+  PAYSLIP: "success",
+  ID_PROOF: "warning",
+  CERTIFICATE: "teal",
 };
 
-const FOLDER_COLORS = [
-  "bg-info-soft text-info-strong",
-  "bg-success-soft text-success-strong",
-  "bg-success-soft text-success-strong",
-  "bg-warning-soft text-warning-strong",
-];
+const FOLDER_TONES: Tone[] = ["info", "teal", "success", "warning"];
 
 function getFileIconConfig(fileName: string) {
   const ext = fileName.split(".").pop()?.toLowerCase() || "";
@@ -139,6 +136,8 @@ export interface DocumentTableProps {
   onFolderSelect?: (folderName: string) => void;
   onMove?: (documentId: number, folderName: string) => Promise<void>;
   enableAssign?: boolean;
+  /** When provided, an empty result renders the filtered-empty state with a "Clear filters" action. */
+  onClearFilters?: () => void;
 }
 
 
@@ -160,7 +159,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
   const FileIcon = fileConfig.icon;
   const typeLabel =
     DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label || "Other";
-  const typeColor = CATEGORY_COLORS[typeLabel] || CATEGORY_COLORS.General;
+  const typeTone = TYPE_TONES[doc.type] ?? "neutral";
   const folderLabel = doc.category?.trim() || "Uncategorized";
   const isUncategorized = !doc.category?.trim();
   const ownerLabel = getOwnerLabel(doc);
@@ -220,11 +219,11 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
   const handleMenuTriggerClick = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
 
   return (
-    <TableRow className="hover:bg-muted/30 transition-colors group">
-      <TableCell className="px-6 py-4">
+    <TableRow className="group">
+      <TableCell className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg flex-shrink-0 ${fileConfig.bg}`}>
-            <FileIcon className={`h-5 w-5 ${fileConfig.text}`} />
+          <div className={`flex size-9 shrink-0 items-center justify-center rounded-full ${fileConfig.bg}`}>
+            <FileIcon className={`size-4 ${fileConfig.text}`} aria-hidden />
           </div>
           <div className="min-w-0">
             <p className="font-medium text-sm text-foreground truncate" title={doc.fileName || doc.name}>
@@ -249,26 +248,21 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
               )}
             </div>
             {doc.tags && doc.tags.length > 0 && (
-              <div className="flex gap-1.5 mt-1">
+              <div className="mt-1 flex flex-wrap gap-1">
                 {doc.tags.slice(0, 3).map((tag) => (
-                  <Badge
+                  <StatusPill
                     key={tag}
-                    variant="outline"
-                    className={`text-2xs px-1.5 py-0 font-medium ${
-                      tag.toLowerCase().includes("confidential")
-                        ? "bg-danger-soft text-danger-strong border-danger-strong/25"
-                        : "bg-muted/50 text-muted-foreground border-border"
-                    }`}
+                    tone={tag.toLowerCase().includes("confidential") ? "danger" : "neutral"}
                   >
                     #{tag}
-                  </Badge>
+                  </StatusPill>
                 ))}
               </div>
             )}
           </div>
         </div>
       </TableCell>
-      <TableCell className="px-6 py-4 text-sm max-w-[140px]">
+      <TableCell className="px-4 py-3 text-sm max-w-36">
         <span
           className={`truncate block ${isUncategorized ? "italic text-muted-foreground/70" : "text-muted-foreground"}`}
           title={folderLabel}
@@ -276,45 +270,40 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
           {folderLabel}
         </span>
       </TableCell>
-      <TableCell className="px-6 py-4">
-        <Badge variant="outline" className={`text-xs font-medium ${typeColor}`}>
-          {typeLabel}
-        </Badge>
+      <TableCell className="px-4 py-3">
+        <StatusPill tone={typeTone}>{typeLabel}</StatusPill>
       </TableCell>
-      <TableCell className="px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">
+      <TableCell className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap tabular-nums">
         {doc.createdAt ? format(new Date(doc.createdAt), "MMM dd, yyyy") : "-"}
       </TableCell>
-      <TableCell className="px-6 py-4 text-sm text-muted-foreground text-right">
+      <TableCell className="px-4 py-3 text-sm text-muted-foreground text-right tabular-nums">
         {formatFileSize(doc.fileSize)}
       </TableCell>
-      <TableCell className="px-6 py-4">
+      <TableCell className="px-4 py-3">
         <div className="flex items-center justify-end gap-1.5">
           <Button
             variant="outline"
-            size="sm"
-            className="h-7 text-xs"
+            size="xs"
             disabled={!hasFileUrl}
             onClick={handleView}
           >
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
+            <Eye className="size-3.5" aria-hidden />
             View
           </Button>
           <Button
             variant="outline"
-            size="sm"
-            className="h-7 text-xs"
+            size="xs"
             disabled={!hasFileUrl}
             onClick={handleDownload}
           >
-            <Download className="mr-1.5 h-3.5 w-3.5" />
+            <Download className="size-3.5" aria-hidden />
             Download
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={handleMenuTriggerClick}>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7"
+                size="icon-sm"
                 aria-label="More options"
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -377,6 +366,7 @@ export function DocumentTable({
   onFolderSelect,
   onMove,
   enableAssign = false,
+  onClearFilters,
 }: DocumentTableProps) {
   const [moveTarget, setMoveTarget] = useState<Document | null>(null);
   const [assignTarget, setAssignTarget] = useState<Document | null>(null);
@@ -387,34 +377,34 @@ export function DocumentTable({
   const handleRequestAssign = useCallback((doc: Document) => setAssignTarget(doc), []);
 
   return (
-    <Card className="shadow-sm border overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/20 px-6 py-3">
+    <Card className="gap-0 overflow-hidden py-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground truncate">
             {selectedCategory === "All Files" ? "All documents" : selectedCategory}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground tabular-nums">
             {searchTerm
               ? `${totalFiltered} result${totalFiltered === 1 ? "" : "s"} for “${searchTerm}”`
               : `${totalFiltered} document${totalFiltered === 1 ? "" : "s"} in this view`}
           </p>
         </div>
         {selectedCategory !== "All Files" && onFolderSelect && (
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => onFolderSelect("All Files")}>
+          <Button variant="ghost" size="xs" onClick={() => onFolderSelect("All Files")}>
             View all files
           </Button>
         )}
       </div>
       <CardContent className="p-0" aria-live="polite">
         <ScrollArea className="w-full max-h-[60vh]" type="auto">
-        <div className="min-w-[700px]">
+        <div className="min-w-176">
         <Table>
           <caption className="sr-only">Document library</caption>
           <TableHeader>
-            <TableRow className="bg-muted/30">
+            <TableRow>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="px-4"
               >
                 <div className="flex items-center gap-1">
                   Name
@@ -423,31 +413,31 @@ export function DocumentTable({
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="px-4"
               >
                 Folder
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="px-4"
               >
                 Document type
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3"
+                className="px-4"
               >
                 Date Modified
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
+                className="px-4 text-right"
               >
                 Size
               </TableHead>
               <TableHead
                 scope="col"
-                className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3 text-right"
+                className="px-4 text-right"
               >
                 Actions
               </TableHead>
@@ -458,28 +448,28 @@ export function DocumentTable({
             {page === 1 && selectedCategory === "All Files" && searchTerm === "" && (
               <>
                 <TableRow>
-                  <TableCell colSpan={6} className="px-6 py-3">
+                  <TableCell colSpan={6} className="px-4 py-3">
                     <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Folders
                     </p>
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell colSpan={6} className="px-6 py-0 pb-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <TableCell colSpan={6} className="px-4 py-0 pb-4">
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                       {folders.map((folder) => (
                         <button
                           key={folder.name}
                           type="button"
                           onClick={() => onFolderSelect?.(folder.name)}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background hover:bg-muted/30 transition-colors text-left"
+                          className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-border-strong hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          <div className={`p-2 rounded-lg ${FOLDER_COLORS[folder.colorIdx]}`}>
-                            <Folder className="h-5 w-5" />
+                          <div className={`flex size-9 shrink-0 items-center justify-center rounded-full ${toneSoft[FOLDER_TONES[folder.colorIdx % FOLDER_TONES.length]]}`}>
+                            <Folder className="size-4" aria-hidden />
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{folder.name}</p>
-                            <p className="text-xs text-muted-foreground">{folder.count} files</p>
+                            <p className="text-xs text-muted-foreground tabular-nums">{folder.count} files</p>
                           </div>
                         </button>
                       ))}
@@ -491,18 +481,24 @@ export function DocumentTable({
 
             {paginatedDocuments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6}>
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <EmptyDocumentsIllustration className="mb-3" />
-                    <h3 className="text-lg font-medium text-foreground">No documents found</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Upload your first document to get started
-                    </p>
-                    <Button onClick={onOpenUpload}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Document
-                    </Button>
-                  </div>
+                <TableCell colSpan={6} className="p-4 whitespace-normal">
+                  {onClearFilters ? (
+                    <EmptyState
+                      illustration={<EmptySearchIllustration />}
+                      title="No results for these filters"
+                      description="Try a different search, folder, or document type."
+                      action={{ label: "Clear filters", onClick: onClearFilters }}
+                      className="min-h-0 border-0 bg-transparent"
+                    />
+                  ) : (
+                    <EmptyState
+                      illustration={<EmptyDocumentsIllustration />}
+                      title="No documents found"
+                      description="Upload your first document to get started"
+                      action={{ label: "Upload Document", onClick: onOpenUpload }}
+                      className="min-h-0 border-0 bg-transparent"
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -523,8 +519,8 @@ export function DocumentTable({
         </ScrollArea>
 
         {totalFiltered > 0 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
+            <span className="text-sm text-muted-foreground tabular-nums">
               Showing{" "}
               <strong className="text-foreground">
                 {Math.min((page - 1) * pageSize + 1, totalFiltered)}
@@ -539,7 +535,6 @@ export function DocumentTable({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs"
                 disabled={page <= 1}
                 onClick={() => onPageChange(page - 1)}
               >
@@ -548,7 +543,6 @@ export function DocumentTable({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs"
                 disabled={page >= totalPages}
                 onClick={() => onPageChange(page + 1)}
               >
@@ -659,8 +653,7 @@ function MoveToFolderSheet({
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={() => void handleSave()} disabled={isSaving || !folder}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={() => void handleSave()} disabled={!folder} loading={isSaving}>
             Move document
           </Button>
         </SheetFooter>
@@ -782,7 +775,7 @@ function AssignDocumentSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="relative mt-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden />
           <Input
             placeholder="Search employees…"
             value={search}
@@ -806,7 +799,7 @@ function AssignDocumentSheet({
                 const checked = selected.includes(e.id);
                 return (
                   <li key={e.id}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/50">
+                    <label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-accent">
                       <Checkbox checked={checked} onCheckedChange={() => toggle(e.id)} aria-label={`Select ${name}`} />
                       <Avatar className="h-7 w-7">
                         {e.image ? <AvatarImage src={e.image} alt={name} /> : null}
@@ -826,14 +819,13 @@ function AssignDocumentSheet({
           )}
         </ScrollArea>
         <SheetFooter className="mt-2 gap-2 sm:gap-0">
-          <span className="mr-auto self-center text-xs text-muted-foreground">
+          <span className="mr-auto self-center text-xs text-muted-foreground tabular-nums">
             {selected.length} selected
           </span>
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={() => void handleSave()} disabled={isSaving || loading || !hasChanges}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={() => void handleSave()} disabled={loading || !hasChanges} loading={isSaving}>
             Save changes
           </Button>
         </SheetFooter>

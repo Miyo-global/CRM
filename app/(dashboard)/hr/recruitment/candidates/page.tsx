@@ -3,7 +3,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 
 import { useState, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { EmptyPersonIllustration } from "@/components/illustrations";
+import { EmptyPersonIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import Link from "next/link";
 import { useCandidates, useUpdateCandidateStage, useDeleteCandidate, useBulkRejectCandidates, useJobPostings } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -12,7 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import { cn } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -22,7 +27,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Search, Mail, Phone, Building2, Star, XCircle, CheckSquare, GitCompare, MoreVertical, Pencil, Trash2, Briefcase, CalendarDays, LayoutGrid, List } from "lucide-react";
+import { Plus, Mail, Phone, Building2, Star, XCircle, CheckSquare, GitCompare, MoreHorizontal, Pencil, Trash2, Briefcase, CalendarDays, LayoutGrid, List } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Candidate, CandidateListItem, CandidateStatus, JobPostingStatus } from "@/types/hr";
 import { AIScoreCandidateButton } from "@/features/hr/recruitment/ai-score-candidate-button";
@@ -35,11 +40,12 @@ import {
 import { CandidatesTableView } from "@/features/hr/recruitment/candidates-list/candidates-table-view";
 import {
   JOB_STATUS_LABELS,
+  JOB_STATUS_TONE,
   SOURCE_BADGE_CLASSES,
   SOURCE_LABELS,
   STATUSES,
-  jobStatusClass,
-  statusBadgeVariant,
+  candidateStatusLabel,
+  candidateStatusTone,
   type CandidatesViewMode,
 } from "@/features/hr/recruitment/candidates-list/candidates-list-shared";
 
@@ -49,7 +55,7 @@ function AppliedRoleBlock({ candidate }: { candidate: CandidateListItem }) {
 
   if (!candidate.primaryJobTitle) {
     return (
-      <div className="rounded-md border border-dashed border-warning-300/60 bg-warning-500/50 px-2.5 py-2">
+      <div className="rounded-md border border-dashed border-warning-500/40 bg-warning-soft px-2.5 py-2">
         <p className="text-2xs font-medium uppercase tracking-wide text-warning-strong">
           Applied role
         </p>
@@ -59,27 +65,27 @@ function AppliedRoleBlock({ candidate }: { candidate: CandidateListItem }) {
   }
 
   return (
-    <div className="rounded-md border border-primary/15 bg-primary/5 px-2.5 py-2">
+    <div className="rounded-md border border-border bg-surface-sunken px-2.5 py-2">
       <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
         Applied for
       </p>
       <div className="mt-1 flex flex-wrap items-center gap-1.5">
-        <Badge variant="outline" className="text-xs font-medium gap-1 max-w-full">
-          <Briefcase className="h-3 w-3 shrink-0" />
-          <span className="truncate">{candidate.primaryJobTitle}</span>
+        <Badge variant="outline" className="max-w-full gap-1 text-xs font-medium">
+          <Briefcase className="size-3 shrink-0" aria-hidden="true" />
+          <span className="truncate" title={candidate.primaryJobTitle}>{candidate.primaryJobTitle}</span>
         </Badge>
         {primary?.jobStatus && (
-          <Badge variant="outline" className={`text-2xs ${jobStatusClass(primary.jobStatus)}`}>
+          <StatusPill tone={JOB_STATUS_TONE[primary.jobStatus] ?? "neutral"}>
             {JOB_STATUS_LABELS[primary.jobStatus]}
-          </Badge>
+          </StatusPill>
         )}
         {extraCount > 0 && (
           <span className="text-2xs text-muted-foreground">+{extraCount} more role{extraCount > 1 ? "s" : ""}</span>
         )}
       </div>
       {candidate.primaryAppliedAt && (
-        <p className="mt-1 flex items-center gap-1 text-2xs text-muted-foreground">
-          <CalendarDays className="h-3 w-3" />
+        <p className="mt-1 flex items-center gap-1 text-2xs text-muted-foreground tabular-nums">
+          <CalendarDays className="size-3" aria-hidden="true" />
           Applied {format(new Date(candidate.primaryAppliedAt), "dd MMM yyyy")}
         </p>
       )}
@@ -109,7 +115,7 @@ export default function CandidatesPage() {
     return Object.keys(params).length ? params : undefined;
   }, [statusFilter, jobFilter, sourceFilter]);
 
-  const { data: candidates, isLoading } = useCandidates(listParams);
+  const { data: candidates, isLoading, isError, error, refetch } = useCandidates(listParams);
   const { data: jobPostings } = useJobPostings();
   const updateCandidateStage = useUpdateCandidateStage();
   const deleteCandidate = useDeleteCandidate();
@@ -255,139 +261,118 @@ export default function CandidatesPage() {
           : `${filteredCandidates.length} candidates`
       }
       actions={
-        <div className="flex items-center gap-2">
-          {selectedIds.size > 0 && (
-            <>
-              <span className="text-sm text-muted-foreground">{selectedIds.size} selected</span>
-              <Button
-                size="sm"
-                variant="destructive"
-                className="gap-1.5 h-8 text-xs"
-                onClick={() => setBulkRejectOpen(true)}
-              >
-                <XCircle className="h-3.5 w-3.5" />
-                Reject Selected
-              </Button>
-              {selectedIds.size >= 2 && selectedIds.size <= 3 && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5 h-8 text-xs"
-                  onClick={() => setCompareOpen(true)}
-                >
-                  <GitCompare className="h-3.5 w-3.5" />
-                  Compare ({selectedIds.size})
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 text-xs"
-                onClick={() => setSelectedIds(new Set())}
-              >
-                Clear
-              </Button>
-            </>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <PageBackButton fallback="/hr/recruitment" />
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5 h-8 text-xs"
             onClick={handleSelectAll}
             title={selectedIds.size === filteredCandidates.length ? "Deselect all" : "Select all"}
           >
-            <CheckSquare className="h-3.5 w-3.5" />
+            <CheckSquare className="size-3.5" aria-hidden="true" />
             {selectedIds.size === filteredCandidates.length && filteredCandidates.length > 0
               ? "Deselect all"
               : "Select all"}
           </Button>
-            <PageBackButton fallback="/hr/recruitment" />
           <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="size-4" aria-hidden="true" />
             Add Candidate
           </Button>
         </div>
       }
       filters={
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search name, email, role…"
-              value={searchQuery}
-              onChange={(e) => setFilter("q", e.target.value || null)}
-              className="pl-9 w-[220px]"
-            />
-          </div>
-          <Select value={jobFilter ?? "ALL"} onValueChange={(v) => setFilter("jobId", v)}>
-            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Job role" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All job roles</SelectItem>
-              {(jobPostings ?? []).map((job) => (
-                <SelectItem key={job.id} value={String(job.id)}>
-                  {job.title}
-                  {job.status ? ` (${JOB_STATUS_LABELS[job.status as JobPostingStatus] ?? job.status})` : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter ?? "ALL"} onValueChange={(v) => setFilter("status", v)}>
-            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All status</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={sourceFilter ?? "ALL"} onValueChange={(v) => setFilter("source", v)}>
-            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Source" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All sources</SelectItem>
-              {Object.entries(SOURCE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
-              Clear filters
-            </Button>
-          )}
-          <div className="ml-auto flex items-center gap-1 border rounded-md p-0.5">
-            <Button
-              type="button"
-              variant={viewMode === "cards" ? "default" : "ghost"}
-              size="sm"
-              className="h-8 px-2.5 gap-1.5"
-              onClick={() => setViewMode("cards")}
-              aria-pressed={viewMode === "cards"}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span className="text-xs">Cards</span>
-            </Button>
-            <Button
-              type="button"
-              variant={viewMode === "rows" ? "default" : "ghost"}
-              size="sm"
-              className="h-8 px-2.5 gap-1.5"
-              onClick={() => setViewMode("rows")}
-              aria-pressed={viewMode === "rows"}
-            >
-              <List className="h-3.5 w-3.5" />
-              <span className="text-xs">Rows</span>
-            </Button>
-          </div>
-        </div>
+        <ListToolbar
+          search={{
+            value: searchQuery,
+            onChange: (v) => setFilter("q", v || null),
+            placeholder: "Search name, email, role…",
+          }}
+          filters={
+            <>
+              <Select value={jobFilter ?? "ALL"} onValueChange={(v) => setFilter("jobId", v)}>
+                <SelectTrigger className="w-full sm:w-52"><SelectValue placeholder="Job role" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All job roles</SelectItem>
+                  {(jobPostings ?? []).map((job) => (
+                    <SelectItem key={job.id} value={String(job.id)}>
+                      {job.title}
+                      {job.status ? ` (${JOB_STATUS_LABELS[job.status as JobPostingStatus] ?? job.status})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter ?? "ALL"} onValueChange={(v) => setFilter("status", v)}>
+                <SelectTrigger className="w-[calc(50%-0.25rem)] sm:w-36"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All status</SelectItem>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sourceFilter ?? "ALL"} onValueChange={(v) => setFilter("source", v)}>
+                <SelectTrigger className="w-[calc(50%-0.25rem)] sm:w-36"><SelectValue placeholder="Source" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All sources</SelectItem>
+                  {Object.entries(SOURCE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              )}
+            </>
+          }
+          view={
+            <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className={cn("gap-1.5", viewMode === "cards" && "bg-card text-foreground shadow-xs hover:bg-card")}
+                onClick={() => setViewMode("cards")}
+                aria-pressed={viewMode === "cards"}
+              >
+                <LayoutGrid className="size-3.5" aria-hidden="true" />
+                Cards
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className={cn("gap-1.5", viewMode === "rows" && "bg-card text-foreground shadow-xs hover:bg-card")}
+                onClick={() => setViewMode("rows")}
+                aria-pressed={viewMode === "rows"}
+              >
+                <List className="size-3.5" aria-hidden="true" />
+                Rows
+              </Button>
+            </div>
+          }
+        />
       }
     >
-      {filteredCandidates.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <EmptyPersonIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            {searchQuery || hasActiveFilters ? "No candidates match your filters." : "No candidates yet. Add your first one!"}
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState title="Couldn't load candidates" error={error} onRetry={() => refetch()} />
+      ) : filteredCandidates.length === 0 ? (
+        hasActiveFilters ? (
+          <EmptyState
+            illustration={<EmptySearchIllustration className="size-32" />}
+            title="No results for these filters"
+            description="No candidates match your filters."
+            action={{ label: "Clear filters", onClick: clearFilters }}
+          />
+        ) : (
+          <EmptyState
+            illustration={<EmptyPersonIllustration className="size-32" />}
+            title="No candidates yet"
+            description="Add your first one!"
+            action={{ label: "Add Candidate", onClick: () => setSheetOpen(true) }}
+          />
+        )
       ) : viewMode === "rows" ? (
         <CandidatesTableView
           candidates={filteredCandidates}
@@ -398,11 +383,12 @@ export default function CandidatesPage() {
           onDelete={openDeleteDialog}
         />
       ) : (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredCandidates.map((candidate) => (
             <Card
               key={candidate.id}
-              className={`hover:border-primary/30 transition-colors relative ${selectedIds.has(candidate.id) ? "ring-2 ring-primary/40 border-primary/40" : ""}`}
+              interactive
+              className={cn("relative", selectedIds.has(candidate.id) && "border-primary ring-2 ring-ring/40")}
             >
               <div
                 className="absolute top-3 right-3 z-10 flex items-center gap-1"
@@ -410,13 +396,17 @@ export default function CandidatesPage() {
               >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <MoreVertical className="h-3.5 w-3.5" />
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={`Actions for ${candidate.firstName} ${candidate.lastName}`}
+                    >
+                      <MoreHorizontal className="size-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
                     <DropdownMenuItem onClick={() => openEditSheet(candidate)}>
-                      <Pencil className="h-3.5 w-3.5 mr-2" />
+                      <Pencil className="size-3.5" aria-hidden="true" />
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -424,7 +414,7 @@ export default function CandidatesPage() {
                       className="text-destructive focus:text-destructive"
                       onClick={() => openDeleteDialog(candidate)}
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />
+                      <Trash2 className="size-3.5" aria-hidden="true" />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -435,33 +425,52 @@ export default function CandidatesPage() {
                   aria-label={`Select ${candidate.firstName} ${candidate.lastName}`}
                 />
               </div>
-              <Link href={`/hr/recruitment/candidates/${candidate.id}`}>
+              <Link
+                href={`/hr/recruitment/candidates/${candidate.id}`}
+                className="block rounded-lg focus-ring"
+              >
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2 pr-14">
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold">
+                <div className="mb-3 flex items-start gap-3 pr-14">
+                  <Avatar className="size-10">
+                    <AvatarFallback className="text-sm">
+                      {candidate.firstName.charAt(0)}
+                      {candidate.lastName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-foreground">
                       {candidate.firstName} {candidate.lastName}
                     </h3>
                     {candidate.currentRole && (
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="truncate text-xs text-muted-foreground">
                         Current: {candidate.currentRole}
                         {candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}
                       </p>
                     )}
+                    <StatusPill tone={candidateStatusTone(candidate.status)} dot className="mt-1.5">
+                      {candidateStatusLabel(candidate.status)}
+                    </StatusPill>
                   </div>
-                  <Badge variant={statusBadgeVariant(candidate.status)}>{candidate.status}</Badge>
                 </div>
 
                 <div className="mb-3">
                   <AppliedRoleBlock candidate={candidate} />
                 </div>
 
-                <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
-                  <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{candidate.email}</div>
-                  {candidate.phone && <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" />{candidate.phone}</div>}
+                <div className="mb-4 space-y-1.5 text-sm text-muted-foreground">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate" title={candidate.email}>{candidate.email}</span>
+                  </div>
+                  {candidate.phone && (
+                    <div className="flex items-center gap-2 tabular-nums">
+                      <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                      {candidate.phone}
+                    </div>
+                  )}
                   {candidate.source && (
                     <div className="flex items-center gap-2">
-                      <Building2 className="h-3.5 w-3.5" />
+                      <Building2 className="size-3.5 shrink-0" aria-hidden="true" />
                       <Badge variant="outline" className={SOURCE_BADGE_CLASSES[candidate.source] ?? "text-muted-foreground"}>
                         {SOURCE_LABELS[candidate.source] ?? candidate.source}
                       </Badge>
@@ -470,14 +479,25 @@ export default function CandidatesPage() {
                   {candidate.rating && (
                     <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`h-3.5 w-3.5 ${i < candidate.rating! ? "text-warning-strong fill-warning-500" : "text-muted-foreground/30"}`} />
+                        <Star
+                          key={i}
+                          aria-hidden="true"
+                          className={cn("size-3.5", i < candidate.rating! ? "fill-warning-500 text-warning-strong" : "text-muted-foreground/30")}
+                        />
                       ))}
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">
+                <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                  <span
+                    className="text-xs text-muted-foreground tabular-nums"
+                    title={
+                      candidate.updatedAt || candidate.createdAt
+                        ? format(new Date(candidate.updatedAt ?? candidate.createdAt!), "dd MMM yyyy, HH:mm")
+                        : undefined
+                    }
+                  >
                     {candidate.updatedAt || candidate.createdAt
                       ? formatDistanceToNow(new Date(candidate.updatedAt ?? candidate.createdAt!), { addSuffix: true })
                       : ""}
@@ -488,7 +508,7 @@ export default function CandidatesPage() {
                       value={candidate.status ?? "NEW"}
                       onValueChange={(v) => handleStatusChange(candidate.id, v as CandidateStatus)}
                     >
-                      <SelectTrigger className="h-7 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger size="sm" className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {STATUSES.map((s) => (
                           <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -502,6 +522,41 @@ export default function CandidatesPage() {
             </Card>
           ))}
       </div>
+      )}
+
+      {selectedIds.size > 0 && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-sticky flex justify-center px-4">
+          <div
+            role="toolbar"
+            aria-label="Bulk actions"
+            className="pointer-events-auto flex h-11 items-center gap-2 rounded-full bg-secondary px-4 text-secondary-foreground shadow-lg"
+          >
+            <span className="text-sm font-medium tabular-nums">{selectedIds.size} selected</span>
+            <Button size="xs" variant="destructive" onClick={() => setBulkRejectOpen(true)}>
+              <XCircle className="size-3.5" aria-hidden="true" />
+              Reject Selected
+            </Button>
+            {selectedIds.size >= 2 && selectedIds.size <= 3 && (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
+                onClick={() => setCompareOpen(true)}
+              >
+                <GitCompare className="size-3.5" aria-hidden="true" />
+                Compare ({selectedIds.size})
+              </Button>
+            )}
+            <Button
+              size="xs"
+              variant="ghost"
+              className="text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
       )}
 
       <AddCandidateSheet open={sheetOpen} onOpenChange={setSheetOpen} />

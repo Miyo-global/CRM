@@ -78,13 +78,14 @@ export function WorkLogFiltersPanel({
 
   return (
     <div className="flex flex-wrap items-center gap-3 w-full">
-      <div className="relative w-full sm:w-auto sm:max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+      <div className="relative w-full sm:w-64">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
         <Input
           placeholder="Search by date or keyword..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="pl-9 pr-9 h-9 border-border bg-muted/50 focus-visible:bg-background"
+          data-page-search
+          className="h-9 pl-9 pr-9"
           aria-label="Search work logs"
         />
         {searchTerm && (

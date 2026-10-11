@@ -30,6 +30,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -207,7 +208,7 @@ function ExportEmployeeFilter({
                 return (
                   <label
                     key={e.id}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted/60"
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent"
                   >
                     <Checkbox
                       checked={checked}
@@ -452,10 +453,10 @@ export function ExpenseExportDialog({
           )}
         </SheetTrigger>
 
-        <SheetContent className="sm:max-w-lg overflow-y-auto p-6">
+        <SheetContent size="md" className="overflow-y-auto p-6">
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl font-semibold flex items-center gap-2">
-              <Download className="h-5 w-5 text-primary" />
+            <SheetTitle className="flex items-center gap-2 font-display text-xl font-bold">
+              <IconChip icon={Download} size="sm" />
               Export Expenses
             </SheetTitle>
             <SheetDescription>
@@ -500,7 +501,7 @@ export function ExpenseExportDialog({
                     setDateFrom("");
                     setDateTo("");
                   }}
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs text-brand-text hover:underline"
                 >
                   Clear dates
                 </button>
@@ -577,8 +578,8 @@ export function ExpenseExportDialog({
                 {FORMAT_OPTIONS.map((option) => (
                   <label
                     key={option.value}
-                    className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
-                      format === option.value ? "border-primary bg-primary/5" : "border-border"
+                    className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-accent ${
+                      format === option.value ? "border-primary bg-brand-soft" : "border-border"
                     }`}
                   >
                     <RadioGroupItem value={option.value} className="mt-0.5" />
@@ -595,7 +596,7 @@ export function ExpenseExportDialog({
             </div>
 
             <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-surface-sunken p-4">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">Include Header</Label>
                   <p className="text-xs text-muted-foreground">
@@ -609,7 +610,7 @@ export function ExpenseExportDialog({
                   Header metadata will be omitted from the exported file.
                 </p>
               )}
-              <div className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-surface-sunken p-4">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">Include Totals</Label>
                   <p className="text-xs text-muted-foreground">Add summary totals at the end</p>
@@ -619,7 +620,7 @@ export function ExpenseExportDialog({
             </div>
 
             {Object.values(exportFilters).some((v) => v !== undefined && v !== "") && (
-              <div className="p-4 bg-muted/30 rounded-lg border text-sm">
+              <div className="rounded-lg border border-border bg-surface-sunken p-4 text-sm">
                 <p className="font-medium text-sm mb-2">Applied Filters:</p>
                 <ul className="text-muted-foreground space-y-1 text-xs">
                   {exportFilters.startDate && (

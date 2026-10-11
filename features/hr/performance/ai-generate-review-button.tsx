@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { IconChip } from "@/components/ui/icon-chip";
 import { useAIGenerateReview } from "@/lib/api/hooks/ai";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
@@ -58,83 +59,83 @@ ${result.ratings.map((r) => `- ${r.category}: ${r.score}/5 — ${r.comment}`).jo
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-brand-text" />
+        <Button variant="outline" size="sm">
+          <Sparkles className="size-4 text-brand-text" aria-hidden="true" />
           AI Draft Review
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
-        <SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b">
-          <SheetTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-brand-text" />
+      <SheetContent size="lg" className="flex w-full flex-col gap-0 p-0">
+        <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5 pr-12">
+          <SheetTitle className="flex items-center gap-2.5 font-display text-lg">
+            <IconChip icon={Sparkles} tone="brand" size="sm" />
             AI Performance Review Draft
           </SheetTitle>
-          <SheetDescription className="text-xs">
+          <SheetDescription className="text-xs tabular-nums">
             For {userName} — {periodStart} to {periodEnd}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 min-h-0">
-          <div className="px-5 py-4 space-y-4">
+          <div className="space-y-5 px-5 py-4">
             {!result && !generateMutation.isPending && (
-              <Button onClick={handleGenerate} className="w-full" size="sm">
-                <Sparkles className="h-4 w-4 mr-2" />
+              <Button onClick={handleGenerate} className="w-full">
+                <Sparkles className="size-4" aria-hidden="true" />
                 Generate Review Draft
               </Button>
             )}
 
             {generateMutation.isPending && (
-              <div className="flex items-center justify-center py-8 gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <div role="status" className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-sunken/40 py-10 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 Drafting review...
               </div>
             )}
 
             {result && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-sunken/60 p-4">
                   <div>
-                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">Overall Rating</p>
-                    <p className="text-2xl font-bold text-brand-text">{result.overallRating}/5</p>
+                    <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Overall Rating</p>
+                    <p className="font-display text-3xl font-extrabold tabular-nums text-foreground">{result.overallRating}<span className="text-base font-semibold text-muted-foreground">/5</span></p>
                   </div>
                   <Button size="sm" variant="outline" onClick={copyAll}>
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
+                    <Copy className="size-4" aria-hidden="true" />
                     Copy All
                   </Button>
                 </div>
 
                 <div>
-                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Strengths</p>
-                  <p className="text-sm leading-snug">{result.strengths}</p>
+                  <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Strengths</p>
+                  <p className="text-sm leading-relaxed text-foreground">{result.strengths}</p>
                 </div>
 
                 <div>
-                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Areas for Improvement</p>
-                  <p className="text-sm leading-snug">{result.improvements}</p>
+                  <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Areas for Improvement</p>
+                  <p className="text-sm leading-relaxed text-foreground">{result.improvements}</p>
                 </div>
 
                 <div>
-                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Overall Comments</p>
-                  <p className="text-sm leading-snug">{result.comments}</p>
+                  <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Overall Comments</p>
+                  <p className="text-sm leading-relaxed text-foreground">{result.comments}</p>
                 </div>
 
                 <div>
-                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Category Ratings</p>
+                  <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Category Ratings</p>
                   <div className="space-y-2">
                     {result.ratings.map((r, i) => (
-                      <div key={i} className="rounded-md border border-border bg-muted/20 p-2.5">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium">{r.category}</span>
-                          <Badge variant="secondary" className="text-2xs h-5">{r.score}/5</Badge>
+                      <div key={i} className="rounded-md border border-border bg-card p-3">
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium text-foreground">{r.category}</span>
+                          <Badge variant="secondary" className="tabular-nums">{r.score}/5</Badge>
                         </div>
-                        <p className="text-2xs text-muted-foreground leading-snug">{r.comment}</p>
+                        <p className="text-xs leading-snug text-muted-foreground">{r.comment}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <Button onClick={handleGenerate} variant="outline" size="sm" className="w-full">
-                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  <Sparkles className="size-4" aria-hidden="true" />
                   Regenerate
                 </Button>
               </div>

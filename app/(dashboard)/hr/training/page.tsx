@@ -27,17 +27,21 @@ import {
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
-function statusBadge(status: string | null): "default" | "secondary" | "outline" {
-  if (status === "PUBLISHED") return "default";
-  if (status === "ARCHIVED") return "outline";
-  return "secondary";
+function statusTone(status: string | null): Tone {
+  if (status === "PUBLISHED") return "success";
+  if (status === "ARCHIVED") return "neutral";
+  return "warning";
 }
 
 export default function TrainingPage() {
   const { data: session } = useSession();
-  const { data: programs, isLoading } = useTrainingPrograms();
+  const { data: programs, isLoading, isError, error, refetch } = useTrainingPrograms();
   const createProgram = useCreateTrainingProgram();
   const updateProgram = useUpdateTrainingProgram();
   const deleteProgram = useDeleteTrainingProgram();
@@ -108,8 +112,8 @@ export default function TrainingPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Training" subtitle="Programs and development">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -123,31 +127,36 @@ export default function TrainingPage() {
       actions={
         isAdmin ? (
           <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" />New Program
+            <Plus className="size-4" aria-hidden="true" />New Program
           </Button>
         ) : undefined
       }
     >
-      {!programs?.length ? (
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !programs?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No training programs yet"
           description="Programs, courses, and certifications will appear here."
           {...(isAdmin ? { action: { label: "New Program", onClick: () => setSheetOpen(true) } } : {})}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {programs.map((program: TrainingProgram) => {
             const enrolled = program.enrollments?.length ?? 0;
             const isUserEnrolled = program.enrollments?.some((e) => e.userId === session?.user?.id);
             return (
-              <Card key={program.id} className="hover:shadow-sm transition-shadow">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <Badge variant={statusBadge(program.status)} className="text-2xs">{program.status}</Badge>
+              <Card key={program.id}>
+                <CardContent className="flex h-full flex-col gap-3 p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <IconChip icon={BookOpen} tone="brand" />
+                      <StatusPill tone={statusTone(program.status)} dot>{program.status}</StatusPill>
+                    </div>
                     {isAdmin && (
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label="Program actions"><MoreHorizontal className="size-4" aria-hidden="true" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {program.status === "DRAFT" && <DropdownMenuItem onClick={() => handlePublish(program.id)}><Play className="h-3.5 w-3.5 mr-1.5" />Publish</DropdownMenuItem>}
                           {program.status === "PUBLISHED" && <DropdownMenuItem onClick={() => handleArchive(program.id)}><Archive className="h-3.5 w-3.5 mr-1.5" />Archive</DropdownMenuItem>}
@@ -162,20 +171,20 @@ export default function TrainingPage() {
                     {program.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{program.description}</p>}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
-                    {program.category && <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{program.category}</span>}
-                    {program.duration && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{program.duration}</span>}
-                    {program.startDate && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{format(new Date(program.startDate), "MMM d")}</span>}
-                    <span className="flex items-center gap-1"><Users className="h-3 w-3" />{enrolled} enrolled</span>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
+                    {program.category && <span className="flex items-center gap-1"><BookOpen className="size-3.5" aria-hidden="true" />{program.category}</span>}
+                    {program.duration && <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{program.duration}</span>}
+                    {program.startDate && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />{format(new Date(program.startDate), "MMM d")}</span>}
+                    <span className="flex items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{enrolled} enrolled</span>
                   </div>
 
                   {program.status === "PUBLISHED" && !isUserEnrolled && (
-                    <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => handleEnroll(program.id)}>
-                      <UserPlus className="h-3 w-3 mr-1" />Enroll
+                    <Button size="sm" variant="outline" className="mt-auto w-full" onClick={() => handleEnroll(program.id)} loading={enroll.isPending && enroll.variables?.programId === program.id}>
+                      <UserPlus className="size-4" aria-hidden="true" />Enroll
                     </Button>
                   )}
                   {isUserEnrolled && (
-                    <Badge variant="default" className="text-2xs w-full justify-center">Enrolled</Badge>
+                    <Badge variant="success" dot className="mt-auto w-full justify-center">Enrolled</Badge>
                   )}
                 </CardContent>
               </Card>

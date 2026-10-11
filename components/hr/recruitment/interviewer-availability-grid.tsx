@@ -52,8 +52,8 @@ export function InterviewerAvailabilityGrid({
   if (availability.length === 0) return null;
 
   return (
-    <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+    <div className="space-y-2 rounded-lg border border-border bg-surface-sunken/60 p-3">
+      <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
         Availability ({WORK_START > 12 ? `${WORK_START - 12} PM` : `${WORK_START} AM`} – {WORK_END > 12 ? `${WORK_END - 12} PM` : `${WORK_END} AM`})
       </p>
 
@@ -62,7 +62,7 @@ export function InterviewerAvailabilityGrid({
           {hourLabels.map((label) => (
             <div
               key={label}
-              className="text-2xs text-muted-foreground"
+              className="text-2xs tabular-nums text-muted-foreground"
               style={{ width: `${100 / TOTAL_HOURS}%` }}
             >
               {label}
@@ -76,7 +76,7 @@ export function InterviewerAvailabilityGrid({
           <span className="text-xs truncate w-18 shrink-0 text-right text-muted-foreground">
             {interviewerNames.get(iv.interviewerId)?.split(" ")[0] ?? ""}
           </span>
-          <div className="relative flex-1 h-5 rounded bg-success-soft overflow-hidden">
+          <div className="relative h-6 flex-1 overflow-hidden rounded-sm bg-success-soft">
             {iv.busyBlocks.map((block, idx) => {
               const start = new Date(block.start);
               const end = new Date(block.end);
@@ -87,7 +87,7 @@ export function InterviewerAvailabilityGrid({
               return (
                 <div
                   key={idx}
-                  className="absolute top-0 h-full bg-destructive/60 rounded-sm"
+                  className="absolute top-0 h-full rounded-sm bg-neutral-soft ring-1 ring-border-strong ring-inset"
                   style={{ left: `${Math.max(0, leftPct)}%`, width: `${Math.min(widthPct, 100 - leftPct)}%` }}
                   title={`${block.title} (${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`}
                 />
@@ -95,7 +95,7 @@ export function InterviewerAvailabilityGrid({
             })}
             {proposedBlock && (
               <div
-                className="absolute top-0 h-full border-2 border-secondary rounded-sm bg-secondary"
+                className="absolute top-0 h-full rounded-sm bg-primary/70 ring-2 ring-primary ring-inset"
                 style={{ left: `${proposedBlock.left}%`, width: `${proposedBlock.width}%` }}
               />
             )}
@@ -103,18 +103,18 @@ export function InterviewerAvailabilityGrid({
         </div>
       ))}
 
-      <div className="flex items-center gap-4 text-2xs text-muted-foreground ml-20">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-2 rounded-sm bg-success-soft border" />
+      <div className="ml-20 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <div className="h-2.5 w-3.5 rounded-sm bg-success-soft ring-1 ring-success-500/40 ring-inset" aria-hidden="true" />
           Free
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-2 rounded-sm bg-destructive/60" />
+        <div className="flex items-center gap-1.5">
+          <div className="h-2.5 w-3.5 rounded-sm bg-neutral-soft ring-1 ring-border-strong ring-inset" aria-hidden="true" />
           Busy
         </div>
         {proposedBlock && (
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-2 rounded-sm border-2 border-secondary bg-secondary" />
+          <div className="flex items-center gap-1.5">
+            <div className="h-2.5 w-3.5 rounded-sm bg-primary/70 ring-2 ring-primary ring-inset" aria-hidden="true" />
             Proposed
           </div>
         )}

@@ -50,8 +50,7 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className={compact ? "h-7 px-2 text-xs gap-1" : "gap-1.5"}
+          size={compact ? "xs" : "sm"}
           onClick={(e) => {
             e.stopPropagation();
             if (!result && !errorMsg) handleSuggest();
@@ -59,21 +58,21 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
           disabled={suggestMutation.isPending}
         >
           {suggestMutation.isPending ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
           ) : (
-            <Sparkles className="h-3 w-3 text-warning-strong" />
+            <Sparkles className="size-3.5 text-brand-text" aria-hidden="true" />
           )}
           AI Reply
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-3" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent className="w-96 max-w-[calc(100vw-2rem)] p-3" align="end" onClick={(e) => e.stopPropagation()}>
         {errorMsg ? (
-          <div className="flex items-start gap-2 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div className="flex items-start gap-2.5 text-sm text-danger-strong">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <div className="space-y-2">
               <p className="font-medium">AI Reply unavailable</p>
               <p className="text-xs text-muted-foreground">{errorMsg}</p>
-              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleSuggest} disabled={suggestMutation.isPending}>
+              <Button size="xs" variant="outline" onClick={handleSuggest} disabled={suggestMutation.isPending} loading={suggestMutation.isPending}>
                 Try again
               </Button>
             </div>
@@ -81,22 +80,22 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
         ) : result ? (
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium">Suggested Reply</p>
-              <Button size="sm" variant="ghost" className="h-6 px-2 text-2xs" onClick={copyReply}>
-                <Copy className="h-3 w-3 mr-1" />
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground"><Sparkles className="size-3.5 text-brand-text" aria-hidden="true" />Suggested Reply</p>
+              <Button size="xs" variant="ghost" onClick={copyReply}>
+                <Copy aria-hidden="true" />
                 Copy
               </Button>
             </div>
-            <div className="rounded-md border border-border bg-muted/20 p-2.5">
-              <p className="text-xs leading-relaxed whitespace-pre-wrap">{result.suggestedReply}</p>
+            <div className="max-h-64 overflow-y-auto rounded-md border border-border bg-surface-sunken/60 p-3">
+              <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground">{result.suggestedReply}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-2xs gap-1">
-                <Tag className="h-2.5 w-2.5" />
+              <Badge variant="secondary">
+                <Tag aria-hidden="true" />
                 {result.category}
               </Badge>
-              <Badge variant="outline" className="text-2xs gap-1">
-                <Clock className="h-2.5 w-2.5" />
+              <Badge variant="outline" className="tabular-nums">
+                <Clock aria-hidden="true" />
                 {result.estimatedResolutionTime}
               </Badge>
             </div>
@@ -105,8 +104,8 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
                 <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Follow-up Actions</p>
                 <ul className="space-y-0.5">
                   {result.followUpActions.map((a, i) => (
-                    <li key={i} className="text-2xs flex items-start gap-1.5">
-                      <span className="text-info-strong mt-0.5">→</span>
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                      <span className="text-brand-text" aria-hidden="true">→</span>
                       <span>{a}</span>
                     </li>
                   ))}
@@ -116,7 +115,7 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
           </div>
         ) : (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
           </div>
         )}
       </PopoverContent>

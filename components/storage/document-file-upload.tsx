@@ -58,7 +58,7 @@ export function DocumentFileUpload({
           {onClear ? (
             <button
               type="button"
-              className="ml-2 text-primary underline-offset-2 hover:underline"
+              className="ml-2 text-brand-text underline-offset-2 hover:underline"
               onClick={handleClear}
             >
               Clear

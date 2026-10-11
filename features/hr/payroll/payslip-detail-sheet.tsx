@@ -78,7 +78,7 @@ export function PayslipDetailSheet({
       }
       isPending={isGenerating}
     >
-      <Card className="border-2">
+      <Card className="gap-0">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div className="min-w-0">
@@ -197,12 +197,12 @@ export function PayslipDetailSheet({
 
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
-            <span className="text-2xl font-bold text-success-strong tabular-nums">
+            <span className="font-display text-2xl font-bold tabular-nums text-success-strong">
               ₹{Math.round(payslipPreview?.netSalary || 0).toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-3 text-xs space-y-1">
+          <div className="space-y-1 rounded-lg bg-surface-sunken p-3 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Working Days</span>
               <span className="tabular-nums">{payslipPreview?.workingDays}</span>

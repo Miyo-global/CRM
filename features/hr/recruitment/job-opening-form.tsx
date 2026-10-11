@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { PageBackButton } from "@/components/ui/page-back-button";
 import { Button } from "@/components/ui/button";
@@ -175,16 +175,20 @@ function hiringManagerPickLabel(m: Pick<OrgMember, "name" | "email" | "role">): 
 }
 
 function SectionCard({ id, n, title, children }: { id: string; n: number; title: string; children: React.ReactNode }) {
+  const sub = SECTIONS.find((s) => s.id === id)?.sub;
   return (
     <Card id={id} className="scroll-mt-24">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-soft text-brand-text text-xs font-semibold">
+      <CardContent className="grid gap-4 p-5 xl:grid-cols-[240px_1fr] xl:gap-6">
+        <div className="flex items-start gap-2.5">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold tabular-nums text-brand-soft-foreground">
             {n}
           </span>
-          <h2 className="text-base font-semibold">{title}</h2>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold leading-6">{title}</h2>
+            {sub && <p className="mt-0.5 text-sm text-muted-foreground">{sub}</p>}
+          </div>
         </div>
-        {children}
+        <div className="min-w-0">{children}</div>
       </CardContent>
     </Card>
   );
@@ -409,34 +413,6 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
 
   const backAction = <PageBackButton fallback="/hr/recruitment/jobs" />;
 
-  const actions = (
-    <div className="flex gap-2">
-      {backAction}
-      {isEdit ? (
-        <>
-          <Button size="sm" disabled={isPending || !hydrated} onClick={() => submit()}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving…
-              </>
-            ) : (
-              "Save Changes"
-            )}
-          </Button>
-        </>
-      ) : (
-        <>
-          <Button variant="outline" size="sm" disabled={isPending} onClick={saveAsDraft}>
-            Save as Draft
-          </Button>
-          <Button size="sm" disabled={isPending} onClick={publishJob}>
-            Publish Job
-          </Button>
-        </>
-      )}
-    </div>
-  );
 
   if (isEdit && jobLoading) {
     return (
@@ -446,7 +422,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
         stickyHeader
         actions={backAction}
       >
-        <div className="space-y-4 max-w-3xl">
+        <div className="mx-auto max-w-5xl space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-32 w-full rounded-xl" />
           ))}
@@ -463,7 +439,7 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
         stickyHeader
         actions={backAction}
       >
-        <Card>
+        <Card className="mx-auto max-w-5xl">
           <CardContent className="p-6 text-sm text-muted-foreground">
             This job posting could not be loaded. It may have been deleted.
             <div className="mt-4">
@@ -485,29 +461,11 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
           ? "Update all sections — same layout as creating a new job"
           : "Fill in the details to create a new job posting"
       }
-      actions={actions}
-      stickyHeader
+      actions={backAction}
+      contentClassName="pb-0"
     >
-      <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-6 lg:items-start">
-        <nav className="hidden lg:block sticky top-20 space-y-1">
-          {SECTIONS.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className="flex items-start gap-2 rounded-lg px-3 py-2 hover:bg-muted/60 transition-colors"
-            >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-2xs font-semibold">
-                {s.n}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-xs font-medium leading-tight">{s.title}</span>
-                <span className="block text-2xs text-muted-foreground">{s.sub}</span>
-              </span>
-            </a>
-          ))}
-        </nav>
-
-        <div className="space-y-4 min-w-0">
+      <div className="mx-auto max-w-5xl">
+        <div className="space-y-4 pb-6">
           <SectionCard id="basic" n={1} title="Basic Job Details">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
@@ -1107,29 +1065,32 @@ export function JobOpeningForm({ jobId }: JobOpeningFormProps) {
             </div>
           </SectionCard>
 
-          <div className="flex justify-end gap-2 pb-6">
-            {isEdit ? (
-              <Button disabled={isPending || !hydrated} onClick={() => submit()}>
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving…
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
+        </div>
+      </div>
+      <div className="sticky bottom-0 z-sticky -mx-4 border-t border-border bg-background/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 xl:-mx-8 xl:px-8">
+        <div className="mx-auto flex max-w-5xl flex-wrap justify-end gap-2">
+          <Button variant="ghost" asChild>
+            <Link href="/hr/recruitment/jobs">Cancel</Link>
+          </Button>
+          {isEdit ? (
+            <Button loading={isPending} disabled={!hydrated} onClick={() => submit()}>
+              {isPending ? "Saving…" : "Save Changes"}
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                loading={isPending && form.status !== "OPEN"}
+                disabled={isPending}
+                onClick={saveAsDraft}
+              >
+                Save as Draft
               </Button>
-            ) : (
-              <>
-                <Button variant="outline" disabled={isPending} onClick={saveAsDraft}>
-                  Save as Draft
-                </Button>
-                <Button disabled={isPending} onClick={publishJob}>
-                  Publish Job
-                </Button>
-              </>
-            )}
-          </div>
+              <Button loading={isPending && form.status === "OPEN"} disabled={isPending} onClick={publishJob}>
+                Publish Job
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </PageWrapper>

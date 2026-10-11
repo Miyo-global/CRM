@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
+import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminExpenseItem, MemberExpenseItem } from "./expense-item";
 import type { ExpenseWithRelations } from "@/server/actions/expense-query";
 import type { ExpenseToEdit } from "@/app/(dashboard)/hr/expenses/create-expense-dialog";
@@ -69,7 +70,7 @@ function ExpensePagination({
 
   if (variant === "admin") {
     return (
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-t bg-muted/10">
+      <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <span className="text-sm text-muted-foreground">
           Showing <strong className="text-foreground">{startItem}</strong> to{" "}
           <strong className="text-foreground">{endItem}</strong> of{" "}
@@ -203,29 +204,24 @@ export function AdminExpenseList({
   onShowAll,
 }: AdminExpenseListProps) {
   return (
-    <Card className="shadow-sm border">
+    <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="p-0">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-4 sm:px-6">
           <h3 className="text-base font-semibold">Recent Claims</h3>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm tabular-nums text-muted-foreground">
             Showing {startItem}-{endItem} of {pagination.total}{" "}
             {statusFilter === "PENDING" ? "pending" : "total"}
           </span>
         </div>
 
         {expenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <EmptyExpensesIllustration className="mb-3" />
-            <h3 className="text-lg font-medium">No expenses found</h3>
-            <p className="text-muted-foreground mb-4">
-              {statusFilter !== "ALL" ? "Try adjusting your filters" : "No expense claims to review"}
-            </p>
-            {statusFilter !== "ALL" && (
-              <Button variant="outline" onClick={onShowAll}>
-                Show All Claims
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            className="rounded-none border-0"
+            illustration={statusFilter !== "ALL" ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />}
+            title="No expenses found"
+            description={statusFilter !== "ALL" ? "Try adjusting your filters" : "No expense claims to review"}
+            action={statusFilter !== "ALL" ? { label: "Show All Claims", onClick: onShowAll } : undefined}
+          />
         ) : (
           <div className="divide-y">
             {expenses.map((expense) => (
@@ -292,42 +288,40 @@ export function MemberExpenseList({
   onPageSizeChange,
 }: MemberExpenseListProps) {
   return (
-    <Card className="overflow-hidden shadow-sm border">
+    <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="p-0" aria-live="polite">
         {expenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <EmptyExpensesIllustration className="mb-3" />
-            <h3 className="text-lg font-medium">No expenses found</h3>
-            <p className="text-muted-foreground mb-4">
-              {statusFilter !== "ALL" || activeFilterCount > 0
+          <EmptyState
+            className="rounded-none border-0"
+            illustration={
+              statusFilter !== "ALL" || activeFilterCount > 0 ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />
+            }
+            title="No expenses found"
+            description={
+              statusFilter !== "ALL" || activeFilterCount > 0
                 ? "Try adjusting your filters"
-                : "Submit your first expense claim to get started"}
-            </p>
-            {statusFilter !== "ALL" ? (
-              <Button variant="outline" onClick={onShowAll}>
-                Show All Claims
-              </Button>
-            ) : (
-              <Button className="bg-primary hover:bg-brand-soft text-primary-foreground" onClick={onCreateNew}>
-                <Plus className="mr-2 h-4 w-4" />
-                Submit New Claim
-              </Button>
-            )}
-          </div>
+                : "Submit your first expense claim to get started"
+            }
+            action={
+              statusFilter !== "ALL"
+                ? { label: "Show All Claims", onClick: onShowAll }
+                : { label: "Submit New Claim", onClick: onCreateNew }
+            }
+          />
         ) : (
           <>
-            <ScrollArea className="w-full max-h-[60vh]" type="auto" role="region" aria-label="Expense claims table">
+            <ScrollArea className="max-h-[60vh] w-full" type="auto" role="region" aria-label="Expense claims table">
               <div className="min-w-[640px]">
               <Table>
                 <caption className="sr-only">Expense claims</caption>
                 <TableHeader>
-                  <TableRow className="bg-muted/30">
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Claim ID</TableHead>
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Category</TableHead>
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Description</TableHead>
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Amount</TableHead>
-                    <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
+                  <TableRow className="bg-surface-sunken hover:bg-surface-sunken">
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Claim ID</TableHead>
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Date</TableHead>
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Description</TableHead>
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</TableHead>
+                    <TableHead scope="col" className="px-6 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
                     <TableHead scope="col" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>

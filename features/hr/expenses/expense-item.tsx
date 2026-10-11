@@ -179,12 +179,12 @@ export function AdminExpenseItem({
   const adminCatLabel = ADMIN_CATEGORY_LABELS[expense.category || ""] || catConfig.label;
 
   return (
-    <div className="flex items-start gap-4 px-4 py-4 hover:bg-muted/20 transition-colors">
+    <div className="flex flex-col items-start gap-4 px-4 py-4 transition-colors hover:bg-muted/40 sm:flex-row">
       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
         <div
           className={cn(
-            "relative w-[100px] h-[80px] rounded-lg bg-gradient-to-br from-danger-100 to-danger-200 flex items-center justify-center overflow-hidden border border-danger-200/50",
-            expense.receiptUrl && "cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+            "relative flex h-20 w-25 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-sunken",
+            expense.receiptUrl && "cursor-pointer transition-shadow hover:ring-2 hover:ring-ring"
           )}
           onClick={() => expense.receiptUrl && viewFile(expense.receiptUrl)}
         >
@@ -197,7 +197,7 @@ export function AdminExpenseItem({
               className="object-cover rounded-lg"
             />
           ) : (
-            <Receipt className="h-7 w-7 text-danger-strong" />
+            <Receipt className="size-7 text-muted-foreground" aria-hidden="true" />
           )}
         </div>
         {expense.receiptUrl && (
@@ -413,7 +413,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
   });
 
   return (
-    <TableRow className="hover:bg-muted/30 transition-colors">
+    <TableRow>
       <TableCell className="px-6 py-4 text-sm font-medium">
         #EXP-{new Date(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
       </TableCell>

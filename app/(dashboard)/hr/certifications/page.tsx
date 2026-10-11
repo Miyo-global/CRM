@@ -5,7 +5,10 @@ import { useState, useCallback } from "react";
 import { useCertifications, useCreateCertification, type Certification } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +19,7 @@ import { Plus, Award, Calendar, ExternalLink, AlertTriangle } from "lucide-react
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 export default function CertificationsPage() {
-  const { data: certs, isLoading } = useCertifications();
+  const { data: certs, isLoading, isError, error, refetch } = useCertifications();
   const create = useCreateCertification();
 
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -49,8 +52,8 @@ export default function CertificationsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Certifications" subtitle="Employee certifications and credentials">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -61,39 +64,42 @@ export default function CertificationsPage() {
       title="Certifications"
       subtitle="Track professional certifications and renewals"
       badge={`${certs?.length ?? 0} certifications`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Add Certification</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Add Certification</Button>}
     >
-      {!certs?.length ? (
-        <Card><CardContent className="py-12 text-center">
-          <EmptyDocumentsIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">No certifications recorded yet.</p>
-        </CardContent></Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !certs?.length ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
+          title="No certifications recorded yet."
+          action={{ label: "Add Certification", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {certs.map((cert: Certification) => {
             const daysToExpiry = cert.expiryDate ? differenceInDays(new Date(cert.expiryDate), new Date()) : null;
             const expiring = daysToExpiry !== null && daysToExpiry <= 30 && daysToExpiry > 0;
             const expired = daysToExpiry !== null && daysToExpiry <= 0;
             return (
-              <Card key={cert.id} className="hover:shadow-sm transition-shadow">
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <Award className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                    {expired && <Badge variant="destructive" className="text-2xs">Expired</Badge>}
-                    {expiring && <Badge variant="outline" className="text-2xs text-warning-strong"><AlertTriangle className="h-3 w-3 mr-0.5" />Expiring</Badge>}
+              <Card key={cert.id}>
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <IconChip icon={Award} tone="brand" />
+                    {expired && <StatusPill tone="danger" dot>Expired</StatusPill>}
+                    {expiring && <StatusPill tone="warning"><AlertTriangle aria-hidden="true" />Expiring</StatusPill>}
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold leading-tight">{cert.name}</h3>
-                    {cert.issuingOrganization && <p className="text-xs text-muted-foreground mt-0.5">{cert.issuingOrganization}</p>}
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold leading-tight text-foreground">{cert.name}</h3>
+                    {cert.issuingOrganization && <p className="mt-0.5 truncate text-xs text-muted-foreground" title={cert.issuingOrganization}>{cert.issuingOrganization}</p>}
                   </div>
-                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
-                    {cert.user?.name && <span>{cert.user.name}</span>}
-                    {cert.issueDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />{format(new Date(cert.issueDate), "MMM yyyy")}</span>}
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground tabular-nums">
+                    {cert.user?.name && <span className="font-medium text-foreground">{cert.user.name}</span>}
+                    {cert.issueDate && <span className="flex items-center gap-1"><Calendar className="size-3" aria-hidden="true" />{format(new Date(cert.issueDate), "MMM yyyy")}</span>}
                     {cert.expiryDate && <span>Exp: {format(new Date(cert.expiryDate), "MMM yyyy")}</span>}
                   </div>
                   {cert.credentialUrl && (
-                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 hover:underline">
-                      <ExternalLink className="h-3 w-3" />View Credential
+                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-brand-text hover:underline focus-visible:focus-ring rounded-sm">
+                      <ExternalLink className="size-3" aria-hidden="true" />View Credential
                     </a>
                   )}
                 </CardContent>
@@ -112,7 +118,7 @@ export default function CertificationsPage() {
           <label className="text-sm font-medium">Issuing Organization</label>
           <Input placeholder="e.g., Amazon Web Services" value={org} onChange={(e) => setOrg(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Issue Date</label>
             <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />

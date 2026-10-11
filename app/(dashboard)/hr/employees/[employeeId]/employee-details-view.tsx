@@ -26,6 +26,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -66,6 +68,7 @@ import {
   User,
   Cake,
   FileText,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -87,18 +90,18 @@ function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label
   if (!value) return null;
   return (
     <div className="flex items-center gap-2 text-sm">
-      <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-      <span className="text-muted-foreground">{label}:</span>
-      <span className="font-medium truncate">{value}</span>
+      <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span className="sr-only">{label}:</span>
+      <span className="truncate text-foreground" title={value}>{value}</span>
     </div>
   );
 }
 
 function StatBlock({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
-    <div className="text-center">
-      <p className={`text-lg font-bold tabular-nums ${color ?? ""}`}>{value}</p>
-      <p className="text-2xs text-muted-foreground uppercase tracking-wider">{label}</p>
+    <div className="min-w-16 text-center">
+      <p className={`font-display text-xl font-bold tabular-nums ${color ?? ""}`}>{value}</p>
+      <p className="text-2xs uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -136,18 +139,18 @@ function DetailCard({
   action,
   children,
 }: {
-  icon: React.ElementType;
+  icon: LucideIcon;
   title: string;
   action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-1.5">
-            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <CardContent className="p-5">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <IconChip icon={Icon} size="sm" tone="neutral" />
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
           </div>
           {action}
         </div>
@@ -160,9 +163,9 @@ function DetailCard({
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   if (value == null || value === "") return null;
   return (
-    <div className="flex items-start justify-between gap-3 text-sm">
-      <dt className="text-muted-foreground shrink-0">{label}</dt>
-      <dd className="font-medium text-right break-words min-w-0">{value}</dd>
+    <div className="grid grid-cols-[120px_1fr] gap-x-4 text-sm">
+      <dt className="truncate text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 break-words text-foreground">{value}</dd>
     </div>
   );
 }
@@ -177,7 +180,7 @@ function AvailabilityDot({ userId }: { userId: string }) {
     entry.status === "ON_LEAVE"
       ? "bg-danger-500"
       : entry.status === "HALF_DAY"
-        ? "bg-warning-400"
+        ? "bg-warning-500"
         : "bg-success-500";
 
   const label =
@@ -192,7 +195,7 @@ function AvailabilityDot({ userId }: { userId: string }) {
       className="flex items-center gap-1"
       title={label}
     >
-      <span className={`h-2.5 w-2.5 rounded-full ${dotClass} shrink-0`} />
+      <span className={`size-2 shrink-0 rounded-full ${dotClass}`} aria-hidden="true" />
       <span className="text-xs text-muted-foreground">{label}</span>
     </span>
   );
@@ -253,7 +256,7 @@ function DirectReportsSection({ employeeId }: { employeeId: string }) {
             >
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={resolveImageUrl(r.image)} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="text-xs bg-brand-soft text-brand-soft-foreground font-bold">
                   {(r.name ?? "?")[0]?.toUpperCase() ?? "?"}
                 </AvatarFallback>
               </Avatar>
@@ -419,7 +422,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               <>
                 <Button variant="outline" size="sm" asChild title="Download employee profile as PDF">
                   <a href={`/api/hr/employees/${employee.id}/profile-pdf`} download>
-                    <Download className="h-3.5 w-3.5 mr-1" />
+                    <Download className="size-4" aria-hidden="true" />
                     Download Profile
                   </a>
                 </Button>
@@ -429,51 +432,57 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   onClick={() => { setLetterSheetOpen(true); setLetterTemplateId(""); setLetterExtraVars({}); }}
                   title="Generate HR letter for this employee"
                 >
-                  <FileText className="h-3.5 w-3.5 mr-1" />
+                  <FileText className="size-4" aria-hidden="true" />
                   Generate Letter
                 </Button>
               </>
             )}
             {employee.isActive === false || (employee as Record<string, unknown>).terminatedAt ? (
-              <Badge variant="destructive" className="text-xs">Terminated</Badge>
+              <StatusPill tone="danger" dot>Terminated</StatusPill>
             ) : employee.role?.toUpperCase() !== "CEO" && (
               <Button
                 variant="outline"
                 size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                className="border-destructive/30 text-destructive hover:bg-danger-soft hover:text-destructive"
                 onClick={handleTerminateClick}
                 disabled={terminateMutation.isPending}
                 title="Terminate this employee — revokes access immediately"
               >
-                <UserX className="h-3.5 w-3.5 mr-1" />
+                <UserX className="size-4" aria-hidden="true" />
                 Terminate
               </Button>
             )}
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/hr"><ArrowLeft className="mr-1 h-3.5 w-3.5" />Back</Link>
+              <Link href="/hr"><ArrowLeft className="size-4" aria-hidden="true" />Back</Link>
             </Button>
           </div>
         }
         noInternalScroll
         contentClassName="flex flex-col gap-3"
       >
-        <Card className="shrink-0">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative">
-                <Avatar className="h-16 w-16 shrink-0">
-                  <AvatarImage src={resolveImageUrl(typeof employee.image === "string" ? employee.image : null)} />
-                  <AvatarFallback className="text-lg bg-primary/10 text-primary font-bold">
+        <Card className="shrink-0 gap-0 overflow-hidden py-0">
+          <div className="brand-mark-bg h-20 sm:h-24" aria-hidden="true" />
+          <CardContent className="px-5 pb-5">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="relative -mt-12 shrink-0">
+                <Avatar className="size-24 ring-4 ring-card">
+                  <AvatarImage src={resolveImageUrl(typeof employee.image === "string" ? employee.image : null)} alt="" />
+                  <AvatarFallback className="bg-brand-soft font-display text-2xl font-bold text-brand-soft-foreground">
                     {getInitials(employee.firstName, employee.lastName)}
                   </AvatarFallback>
                 </Avatar>
               </div>
 
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base font-semibold">{employeeName}</h2>
-                  {employee.role && <Badge variant="secondary" className="text-2xs">{employee.role}</Badge>}
-                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="text-2xs">ID: {employee.employeeId}</Badge>}
+              <div className="min-w-0 flex-1 space-y-2 sm:pt-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display text-xl font-bold">{employeeName}</h2>
+                  {employee.role && <Badge variant="secondary">{employee.role}</Badge>}
+                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="font-mono">ID: {employee.employeeId}</Badge>}
+                  {employee.isActive === false || e.terminatedAt ? (
+                    <StatusPill tone="danger" dot>Terminated</StatusPill>
+                  ) : (
+                    <StatusPill tone="success" dot>Active</StatusPill>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
@@ -504,14 +513,14 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               </div>
 
               {!statsLoading && stats && (
-                <div className="flex items-center gap-4 sm:gap-6 shrink-0 border-l pl-4 sm:pl-6">
+                <div className="flex shrink-0 items-center gap-4 border-border sm:gap-6 sm:self-center sm:border-l sm:pl-6">
                   <StatBlock label="Present" value={stats.attendance?.daysPresent ?? 0} />
                   <StatBlock label="Leaves" value={stats.leaves.total} />
                   <StatBlock label="Pending" value={stats.leaves.pending} color="text-warning-strong" />
                 </div>
               )}
               {statsLoading && (
-                <div className="flex gap-4 shrink-0 border-l pl-4">
+                <div className="flex shrink-0 gap-4 border-border sm:self-center sm:border-l sm:pl-6">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="text-center space-y-1">
                       <Skeleton className="h-6 w-8 mx-auto" />
@@ -525,21 +534,21 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
         </Card>
 
         <Tabs defaultValue={safeDefaultTab} className="flex flex-col flex-1 min-h-0">
-          <TabsList className="h-9 shrink-0">
-            <TabsTrigger value="overview" className="text-xs gap-1.5">
-              <Briefcase className="h-3 w-3" />Overview
+          <TabsList variant="underline" className="shrink-0 overflow-x-auto">
+            <TabsTrigger value="overview" className="gap-1.5">
+              <Briefcase className="size-4" aria-hidden="true" />Overview
             </TabsTrigger>
-            <TabsTrigger value="attendance" className="text-xs gap-1.5">
-              <Clock className="h-3 w-3" />Attendance
+            <TabsTrigger value="attendance" className="gap-1.5">
+              <Clock className="size-4" aria-hidden="true" />Attendance
             </TabsTrigger>
             {isSelf && (
-              <TabsTrigger value="my-profile" className="text-xs gap-1.5">
-                <UserCircle className="h-3 w-3" />My Profile
+              <TabsTrigger value="my-profile" className="gap-1.5">
+                <UserCircle className="size-4" aria-hidden="true" />My Profile
               </TabsTrigger>
             )}
             {canManage && (
-              <TabsTrigger value="profile" className="text-xs gap-1.5">
-                <FileCheck className="h-3 w-3" />Edit
+              <TabsTrigger value="profile" className="gap-1.5">
+                <FileCheck className="size-4" aria-hidden="true" />Edit
               </TabsTrigger>
             )}
           </TabsList>
@@ -564,7 +573,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                       asStr(e.managerName)
                         ? employee.reportingTo
                           ? (
-                            <Link href={`/hr/employees/${String(employee.reportingTo)}`} className="text-primary hover:underline">
+                            <Link href={`/hr/employees/${String(employee.reportingTo)}`} className="text-brand-text hover:underline">
                               {asStr(e.managerName)}
                               {asStr(e.managerDesignation) ? ` · ${asStr(e.managerDesignation)}` : ""}
                             </Link>
@@ -582,9 +591,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     label="Status"
                     value={
                       employee.isActive === false || e.terminatedAt ? (
-                        <span className="text-destructive">Terminated</span>
+                        <StatusPill tone="danger" dot>Terminated</StatusPill>
                       ) : (
-                        <span className="text-success-strong">Active</span>
+                        <StatusPill tone="success" dot>Active</StatusPill>
                       )
                     }
                   />
@@ -595,7 +604,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     label="Email"
                     value={
                       asStr(employee.email) ? (
-                        <a href={`mailto:${employee.email}`} className="text-primary hover:underline">
+                        <a href={`mailto:${employee.email}`} className="text-brand-text hover:underline">
                           {employee.email}
                         </a>
                       ) : null
@@ -607,22 +616,22 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   {(asStr(e.linkedinUrl) || asStr(e.githubUrl) || asStr(e.twitterUrl) || asStr(e.websiteUrl)) && (
                     <div className="flex items-center gap-3 pt-1">
                       {asStr(e.linkedinUrl) && (
-                        <a href={String(e.linkedinUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="LinkedIn">
+                        <a href={String(e.linkedinUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-brand-text" title="LinkedIn">
                           <Linkedin className="h-4 w-4" />
                         </a>
                       )}
                       {asStr(e.githubUrl) && (
-                        <a href={String(e.githubUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="GitHub">
+                        <a href={String(e.githubUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-brand-text" title="GitHub">
                           <Github className="h-4 w-4" />
                         </a>
                       )}
                       {asStr(e.twitterUrl) && (
-                        <a href={String(e.twitterUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="Twitter">
+                        <a href={String(e.twitterUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-brand-text" title="Twitter">
                           <Twitter className="h-4 w-4" />
                         </a>
                       )}
                       {asStr(e.websiteUrl) && (
-                        <a href={String(e.websiteUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="Website">
+                        <a href={String(e.websiteUrl)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-brand-text" title="Website">
                           <Globe className="h-4 w-4" />
                         </a>
                       )}
@@ -763,7 +772,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             <SheetTitle className="text-base">Generate HR Letter</SheetTitle>
           </SheetHeader>
           <div className="py-4 space-y-4">
-            <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
+            <div className="space-y-0.5 rounded-md border border-border bg-surface-sunken px-3 py-2">
               <p className="text-xs font-medium">{employee.firstName} {employee.lastName}</p>
               <p className="text-2xs text-muted-foreground">{employee.designation ?? employee.role ?? ""}{employee.employeeId ? ` · ${employee.employeeId}` : ""}</p>
             </div>
@@ -773,7 +782,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               {hrTemplates.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">
                   No HR letter templates found. Create one at{" "}
-                  <Link href="/hr/offer-letter-templates" className="underline text-primary">HR Letter Templates</Link>.
+                  <Link href="/hr/offer-letter-templates" className="underline text-brand-text">HR Letter Templates</Link>.
                 </p>
               ) : (
                 <Select value={letterTemplateId} onValueChange={(v) => { setLetterTemplateId(v); setLetterExtraVars({}); }}>

@@ -210,7 +210,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
                     className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                   >
                     {field.value ? format(field.value, "PPP") : "Pick a date"}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <CalendarIcon className="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
@@ -268,7 +268,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
 
 function EmploymentFieldsIntro() {
   return (
-    <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+    <div className="rounded-lg border bg-surface-sunken/40 px-4 py-3 text-sm text-muted-foreground">
       <p className="font-medium text-foreground mb-1">How these fields differ</p>
       <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
         <li>

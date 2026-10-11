@@ -318,7 +318,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
               </div>
 
               <div className="pl-8 cursor-pointer min-h-[92px]" onClick={handleClickUploadArea}>
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 transition-colors hover:border-primary/40 hover:bg-brand-soft">
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong bg-surface-sunken/40 p-6 transition-colors hover:border-primary hover:bg-brand-soft">
                   <FileSpreadsheet className="h-8 w-8 text-muted-foreground/50 mb-2" />
                   <p className="text-sm font-medium text-foreground">Click to upload</p>
                   <p className="text-xs text-muted-foreground mt-1">CSV or Excel (.xlsx, .xls) — Max 5MB</p>
@@ -336,7 +336,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
             </div>
           ) : (
             <div className="-mx-4 -mt-4 px-4 pt-4 pb-3 bg-background border-b mb-4">
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken p-3">
                 <FileText className="h-8 w-8 text-brand-text shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{file.name}</p>

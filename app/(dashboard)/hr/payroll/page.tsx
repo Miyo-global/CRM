@@ -29,9 +29,13 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { PayrollRunStepper } from "@/features/hr/payroll/payroll-run-stepper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
+import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -113,7 +117,7 @@ export default function PayrollPage() {
   const [periodStart, setPeriodStart] = useState<string>("");
   const [periodEnd, setPeriodEnd] = useState<string>("");
 
-  const { data: allPayrolls, isLoading } = useHrAllPayrolls({ month: selectedMonth });
+  const { data: allPayrolls, isLoading, isError, error, refetch } = useHrAllPayrolls({ month: selectedMonth });
   const { data: payrollSchedule } = usePayrollSchedule();
   const { data: employeesRaw } = useHrEmployees();
   const { data: salaryStructures } = useHrSalaryStructures(selectedEmployee || undefined);
@@ -385,58 +389,31 @@ export default function PayrollPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 px-4 sm:px-6 py-5">
-        <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <Skeleton className="h-8 w-44" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Skeleton className="h-9 w-[180px]" />
-            <Skeleton className="h-9 w-28" />
-            <Skeleton className="h-9 w-32" />
-          </div>
-        </div>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-3 w-28" />
-                  <Skeleton className="h-7 w-32" />
-                </div>
-                <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
-              </div>
-            </div>
-          ))}
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </CardHeader>
-          <CardContent className="px-0 pb-0">
-            <div>
+      <PageWrapper title="Payroll Management" subtitle="Generate and manage employee payrolls">
+        <div className="space-y-6">
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <Card className="gap-0 py-0">
+            <CardHeader className="border-b">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="px-0 pb-0">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between px-4 py-3 border-b border-border/50"
-                >
+                <div key={i} className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-0">
                   <div className="space-y-1">
                     <Skeleton className="h-4 w-28" />
                     <Skeleton className="h-3 w-20" />
                   </div>
                   <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-20" />
                   <Skeleton className="h-5 w-16 rounded-full" />
-                  <Skeleton className="h-8 w-20" />
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </PageWrapper>
     );
   }
 
@@ -457,14 +434,14 @@ export default function PayrollPage() {
               onChange={(e) => {
                 if (e.target.value) setSelectedMonth(e.target.value);
               }}
-              className="w-[11.5rem] min-w-[11.5rem]"
+              className="w-44 tabular-nums"
               aria-label="Payroll period (month)"
               title="Pick any month — payroll is calculated per calendar month"
             />
           </div>
 
           <Button variant="outline" onClick={() => setGenerateSheetOpen(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />
+            <Plus className="size-4" aria-hidden="true" />
             Individual
           </Button>
 
@@ -501,23 +478,15 @@ export default function PayrollPage() {
       }
     >
       <div className="space-y-6">
-        <div className="rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-              <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            </span>
+            <IconChip icon={CalendarClock} tone={payrollSchedule?.isEnabled ? "success" : "neutral"} />
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Automatic payroll</p>
-                <span
-                  className={`text-2xs font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
-                    payrollSchedule?.isEnabled
-                      ? "bg-success-soft text-success-strong"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
+                <StatusPill tone={payrollSchedule?.isEnabled ? "success" : "neutral"} dot>
                   {payrollSchedule?.isEnabled ? "On" : "Off"}
-                </span>
+                </StatusPill>
               </div>
               <p className="text-xs text-muted-foreground">
                 {payrollSchedule?.isEnabled
@@ -534,30 +503,30 @@ export default function PayrollPage() {
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <StatCard
-            label="Total Employees"
-            value={filteredPayrolls.length}
-            icon={Users}
-            color="blue"
-          />
-          <StatCard
-            label="Total Gross"
-            value={`${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`}
-            icon={DollarSign}
-            color="gold"
-          />
-          <StatCard
-            label="Total Net Payout"
-            value={`${CURRENCY_SYMBOL}${totalNet.toLocaleString(DEFAULT_LOCALE)}`}
-            icon={CreditCard}
-            color="green"
-          />
-        </div>
+        <StatsStrip
+          items={[
+            { label: "Total Employees", value: filteredPayrolls.length, icon: Users },
+            {
+              label: "Total Gross",
+              value: `${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`,
+              icon: DollarSign,
+            },
+            {
+              label: "Total Net Payout",
+              value: `${CURRENCY_SYMBOL}${totalNet.toLocaleString(DEFAULT_LOCALE)}`,
+              icon: CreditCard,
+              tone: "success",
+            },
+          ]}
+        />
 
-        {(allPayrolls?.length ?? 0) === 0 ? (
+        {(allPayrolls?.length ?? 0) > 0 && <PayrollRunStepper payrolls={filteredPayrolls} />}
+
+        {isError ? (
+          <QueryErrorState title="Couldn't load payroll" error={error} onRetry={() => refetch()} />
+        ) : (allPayrolls?.length ?? 0) === 0 ? (
           <EmptyState
-            illustration={<EmptyExpensesIllustration className="h-40 w-40" />}
+            illustration={<EmptyExpensesIllustration />}
             title="No payroll records yet"
             description={`No payroll generated for ${format(new Date(selectedMonth + "-01"), "MMMM yyyy")}. Generate payroll for all employees or create one for an individual.`}
           />
@@ -586,9 +555,11 @@ export default function PayrollPage() {
         )}
         {(allPayrolls?.length ?? 0) > 0 && filteredPayrolls.length === 0 && (
           <EmptyState
-            illustration={<EmptyExpensesIllustration className="h-32 w-32" />}
+            compact
+            illustration={<EmptySearchIllustration />}
             title="No records for selected filters"
             description="Try a different employee or month/year combination."
+            action={employeeFilter !== "all" ? { label: "Clear filters", onClick: () => setEmployeeFilter("all") } : undefined}
           />
         )}
 

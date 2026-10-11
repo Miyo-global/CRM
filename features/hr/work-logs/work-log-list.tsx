@@ -54,15 +54,11 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
 
   if (groups.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12">
-          <EmptyState
-            illustration={<EmptyTimeIllustration className="h-32 w-32 opacity-95" />}
-            title="No work logs found"
-            description="No logged work matches the selected filters for this department."
-          />
-        </CardContent>
-      </Card>
+      <EmptyState
+        illustration={<EmptyTimeIllustration />}
+        title="No work logs found"
+        description="No logged work matches the selected filters for this department."
+      />
     );
   }
 
@@ -73,7 +69,7 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">{group.label}</h3>
-              <Badge variant="secondary" className="text-2xs tabular-nums">
+              <Badge variant="secondary" className="tabular-nums">
                 {group.entries.length} {group.entries.length === 1 ? "entry" : "entries"}
               </Badge>
             </div>
@@ -90,7 +86,7 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
                         href={l.workLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline break-all"
+                        className="text-xs text-brand-text hover:underline break-all"
                       >
                         {l.workLink}
                       </a>

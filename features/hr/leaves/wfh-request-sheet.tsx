@@ -172,13 +172,13 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
     >
       <Form {...form}>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="startDate"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-medium">Start Date</FormLabel>
+                  <FormLabel>Start Date</FormLabel>
                   <FormControl>
                     <DatePicker
                       value={field.value}
@@ -204,7 +204,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
               name="endDate"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-medium">End Date</FormLabel>
+                  <FormLabel>End Date</FormLabel>
                   <FormControl>
                     <DatePicker
                       value={field.value}
@@ -228,7 +228,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
             name="reason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">Reason</FormLabel>
+                <FormLabel>Reason</FormLabel>
                 <Select
                   onValueChange={(val) => {
                     field.onChange(val);
@@ -240,7 +240,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
                   }}
                 >
                   <FormControl>
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select reason" />
                     </SelectTrigger>
                   </FormControl>
@@ -260,7 +260,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
             name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">
+                <FormLabel>
                   {notesRequired ? (
                     <>
                       Details <span className="text-destructive">*</span>
@@ -278,7 +278,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
                         ? "Describe your reason (required, at least 10 characters)"
                         : "Any additional details..."
                     }
-                    className="resize-none text-sm"
+                    className="resize-none"
                     rows={3}
                     {...field}
                     onChange={(e) => {

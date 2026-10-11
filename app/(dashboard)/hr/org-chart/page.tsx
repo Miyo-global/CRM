@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -142,12 +143,12 @@ function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" })
   const isSm = size === "sm";
   return (
     <div className={cn(
-      "flex items-center gap-2.5 rounded-lg border bg-card p-2.5 hover:shadow-sm transition-shadow",
-      isSm ? "min-w-[160px]" : "min-w-[200px]"
+      "flex items-center gap-2.5 rounded-lg border border-border bg-card p-2.5 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md",
+      isSm ? "w-60" : "w-64"
     )}>
-      <Avatar className={isSm ? "h-8 w-8" : "h-9 w-9"}>
-        <AvatarImage src={resolveImageUrl(emp.image)} />
-        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+      <Avatar className={isSm ? "size-8" : "size-9"}>
+        <AvatarImage src={resolveImageUrl(emp.image)} alt="" />
+        <AvatarFallback className="bg-brand-soft text-brand-soft-foreground text-xs">
           {initials(emp)}
         </AvatarFallback>
       </Avatar>
@@ -163,12 +164,13 @@ function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" })
           {emp.employeeId ? ` · ${emp.employeeId}` : ""}
         </p>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Badge variant="outline" className="text-2xs h-5 px-1.5">
-          {roleDisplay(emp.role)}
-        </Badge>
-        <span className={cn("h-2 w-2 rounded-full", ROLE_DOT[canonicalRole(emp.role)] ?? "bg-muted-foreground/40")} />
-      </div>
+      <Badge variant="outline" className="shrink-0 gap-1.5">
+        <span
+          className={cn("size-2 shrink-0 rounded-full", ROLE_DOT[canonicalRole(emp.role)] ?? "bg-ink-300")}
+          aria-hidden="true"
+        />
+        {roleDisplay(emp.role)}
+      </Badge>
     </div>
   );
 }
@@ -188,11 +190,11 @@ function TreeBranch({ node, depth = 0, isLast = false }: { node: TreeNode; depth
         <>
           <span
             className={cn(
-              "absolute left-0 border-l border-border/60",
+              "absolute left-0 border-l border-border-strong",
               isLast ? "top-0 h-5" : "top-0 h-full"
             )}
           />
-          <span className="absolute left-0 top-5 w-4 border-t border-border/60" />
+          <span className="absolute left-0 top-5 w-4 border-t border-border-strong" />
         </>
       )}
 
@@ -200,7 +202,7 @@ function TreeBranch({ node, depth = 0, isLast = false }: { node: TreeNode; depth
         <div className="flex items-center gap-2">
           <PersonCard emp={node.employee} size={depth > 1 ? "sm" : "md"} />
           {hasChildren && (
-            <Badge variant="secondary" className="h-5 text-2xs">
+            <Badge variant="secondary" className="tabular-nums">
               {countSubtree(node) - 1} in team
             </Badge>
           )}
@@ -228,14 +230,14 @@ function TreeLegend() {
     { label: "CEO", cls: ROLE_DOT.CEO },
     { label: "Admin", cls: ROLE_DOT.ADMIN },
     { label: "HR", cls: ROLE_DOT.HR },
-    { label: "Other", cls: "bg-muted-foreground/40" },
+    { label: "Other", cls: "bg-ink-300" },
   ];
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {items.map((item) => (
-        <Badge key={item.label} variant="outline" className="text-2xs h-6 gap-1.5">
-          <span className={cn("h-2 w-2 rounded-full", item.cls)} />
+        <Badge key={item.label} variant="outline" className="gap-1.5">
+          <span className={cn("size-2 rounded-full", item.cls)} aria-hidden="true" />
           {item.label}
         </Badge>
       ))}
@@ -244,7 +246,7 @@ function TreeLegend() {
 }
 
 export default function OrgChartPage() {
-  const { data: employeesRaw, isLoading } = useHrEmployees();
+  const { data: employeesRaw, isLoading, isError, error, refetch } = useHrEmployees();
   const { data: departments } = useHrDepartments();
 
   const employees = useMemo(() => {
@@ -307,11 +309,7 @@ export default function OrgChartPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Organization" subtitle="Team structure and departments">
-        <div className="space-y-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full" />
-          ))}
-        </div>
+        <Skeleton className="h-[60vh] w-full rounded-lg" />
       </PageWrapper>
     );
   }
@@ -321,22 +319,25 @@ export default function OrgChartPage() {
       title="Organization"
       subtitle={`${deptMemberTotal} members across ${deptGroups.length} departments`}
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load the organization" error={error} onRetry={() => refetch()} />
+      ) : (
       <Tabs defaultValue="tree">
-        <TabsList className="h-9 mb-4">
-          <TabsTrigger value="tree" className="text-xs gap-1.5 px-3">
-            <Network className="h-3.5 w-3.5" />
+        <TabsList variant="underline" className="mb-4">
+          <TabsTrigger value="tree" className="gap-1.5">
+            <Network className="size-4" aria-hidden="true" />
             Hierarchy
           </TabsTrigger>
-          <TabsTrigger value="departments" className="text-xs gap-1.5 px-3">
-            <Building2 className="h-3.5 w-3.5" />
+          <TabsTrigger value="departments" className="gap-1.5">
+            <Building2 className="size-4" aria-hidden="true" />
             Departments
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tree">
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between gap-3">
+          <Card className="gap-0 overflow-hidden py-0">
+            <CardContent className="space-y-3 p-0">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
                 <p className="text-xs text-muted-foreground">
                   {hasHierarchy
                     ? "Reporting tree with parent-child links and direct reports."
@@ -345,15 +346,18 @@ export default function OrgChartPage() {
                 <TreeLegend />
               </div>
               {!hasHierarchy && employees.length > 0 && (
-                <div className="rounded-lg border border-warning-300/60 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
+                <div role="note" className="mx-4 rounded-lg bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
                   No reporting managers are assigned yet, so everyone appears at the top level.
                   Set each person&apos;s manager in{" "}
                   <span className="font-medium">Employees → Edit → Reporting Manager</span>{" "}
                   to build the hierarchy.
                 </div>
               )}
-              <ScrollArea className="w-full" type="auto">
-                <div className="space-y-2 min-w-[720px]">
+              <ScrollArea
+                className="w-full bg-surface-sunken bg-[radial-gradient(var(--border-strong)_1px,transparent_1px)] bg-size-[16px_16px]"
+                type="auto"
+              >
+                <div className="min-w-[720px] space-y-2 p-4">
                   {tree.map((root, idx) => (
                     <TreeBranch
                       key={root.employee.id}
@@ -363,7 +367,7 @@ export default function OrgChartPage() {
                   ))}
                   {tree.length === 0 && (
                     <EmptyState
-                      illustration={<EmptyTeamIllustration className="h-32 w-32 opacity-95" />}
+                      illustration={<EmptyTeamIllustration />}
                       title="No reporting structure found"
                       description="Assign reporting managers to employees to build the org hierarchy."
                     />
@@ -377,16 +381,16 @@ export default function OrgChartPage() {
         <TabsContent value="departments">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 items-start">
             {deptGroups.map((dept) => (
-              <Card key={dept.name} className="max-h-[min(420px,70vh)] flex flex-col">
-                <CardContent className="p-4 flex flex-col min-h-0 flex-1">
-                  <div className="flex items-center justify-between mb-3">
+              <Card key={dept.name} className="flex max-h-[min(420px,70vh)] flex-col">
+                <CardContent className="flex min-h-0 flex-1 flex-col p-4">
+                  <div className="mb-3 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{dept.name}</h3>
-                    <Badge variant="secondary" className="text-2xs gap-1">
-                      <Users className="h-3 w-3" />
+                    <Badge variant="secondary" className="gap-1 tabular-nums">
+                      <Users className="size-3" aria-hidden="true" />
                       {dept.members.length}
                     </Badge>
                   </div>
-                  <ScrollArea className="flex-1 min-h-0 pr-2 max-h-[280px]" type="auto">
+                  <ScrollArea className="max-h-72 min-h-0 flex-1 pr-2" type="auto">
                   <div className="space-y-3">
                     {dept.roleGroups.map((rg) => (
                       <div key={rg.role} className="space-y-1.5">
@@ -394,15 +398,15 @@ export default function OrgChartPage() {
                           <span className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                             {rg.role}
                           </span>
-                          <Badge variant="outline" className="h-4 text-3xs px-1.5">
+                          <Badge variant="outline" className="h-4 px-1.5 text-3xs tabular-nums">
                             {rg.people.length}
                           </Badge>
                         </div>
                         {rg.people.map((emp) => (
                           <div key={emp.id} className="flex items-center gap-2 pl-1">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={resolveImageUrl(emp.image)} />
-                              <AvatarFallback className="text-3xs bg-primary/10 text-primary">
+                            <Avatar className="size-6">
+                              <AvatarImage src={resolveImageUrl(emp.image)} alt="" />
+                              <AvatarFallback className="text-3xs bg-brand-soft text-brand-soft-foreground">
                                 {initials(emp)}
                               </AvatarFallback>
                             </Avatar>
@@ -415,7 +419,7 @@ export default function OrgChartPage() {
                               )}
                             </div>
                             {emp.employeeId && (
-                              <span className="text-2xs text-muted-foreground shrink-0">
+                              <span className="shrink-0 font-mono text-2xs text-muted-foreground">
                                 {emp.employeeId}
                               </span>
                             )}
@@ -431,6 +435,7 @@ export default function OrgChartPage() {
           </div>
         </TabsContent>
       </Tabs>
+      )}
     </PageWrapper>
   );
 }

@@ -4,8 +4,11 @@ import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -31,25 +34,37 @@ import {
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Send, CheckCircle2, XCircle, Eye, FileText, Loader2, AlertTriangle, ExternalLink,
+  Plus, Trash2, Send, CheckCircle2, XCircle, Eye, FileText, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { HR_ROLES, isCEO } from "@/lib/constants/roles";
 import {
   OFFER_STATUS_LABELS,
-  OFFER_STATUS_VARIANTS,
   PATCH_OFFER_TRANSITIONS,
   type CandidateOfferStatus,
 } from "@/lib/constants/candidate-offers";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
+const OFFER_STATUS_TONE: Record<CandidateOfferStatus, Tone> = {
+  DRAFT: "neutral",
+  PENDING_CEO: "warning",
+  CEO_APPROVED: "success",
+  CEO_REJECTED: "danger",
+  SENT: "info",
+  VIEWED: "info",
+  ACCEPTED: "success",
+  DECLINED: "danger",
+  COUNTERED: "plum",
+  EXPIRED: "neutral",
+};
+
 const STATUS_ICONS: Partial<Record<CandidateOfferStatus, React.ReactNode>> = {
-  SENT: <Send className="h-3 w-3" />,
-  VIEWED: <Eye className="h-3 w-3" />,
-  ACCEPTED: <CheckCircle2 className="h-3 w-3" />,
-  DECLINED: <XCircle className="h-3 w-3" />,
-  PENDING_CEO: <AlertTriangle className="h-3 w-3" />,
-  CEO_REJECTED: <XCircle className="h-3 w-3" />,
+  SENT: <Send className="size-3" />,
+  VIEWED: <Eye className="size-3" />,
+  ACCEPTED: <CheckCircle2 className="size-3" />,
+  DECLINED: <XCircle className="size-3" />,
+  PENDING_CEO: <AlertTriangle className="size-3" />,
+  CEO_REJECTED: <XCircle className="size-3" />,
 };
 
 function formatINR(val: string | null) {
@@ -130,10 +145,10 @@ function GenerateLetterDialog({
 
   return (
     <Sheet open onOpenChange={(o) => { if (!o) onClose(); }}>
-      <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
+      <SheetContent size="lg" className="flex flex-col gap-0 p-0">
         <div ref={sheetPortalRef} className="flex min-h-0 flex-1 flex-col">
-        <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
-          <SheetTitle className="text-base">Generate Offer Letter</SheetTitle>
+        <SheetHeader className="shrink-0 border-b border-border">
+          <SheetTitle>Generate Offer Letter</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           <div className="space-y-1.5">
@@ -165,41 +180,42 @@ function GenerateLetterDialog({
             onClick={handlePreview}
             disabled={!effectiveSelected}
           >
-            <Eye className="h-3.5 w-3.5 mr-1" />
+            <Eye aria-hidden="true" />
             Preview PDF
           </Button>
 
           {previewSrc && !previewError && (
             <iframe
               src={`${previewSrc}#toolbar=0&navpanes=0`}
-              className="w-full h-80 rounded border bg-muted/30"
+              className="h-80 w-full rounded-md border border-border bg-surface-sunken"
               title="Offer letter preview"
               onError={() => setPreviewError(true)}
             />
           )}
 
           {previewSrc && previewError && (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-muted/20 px-4 py-8 text-center">
-              <FileText className="h-8 w-8 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-surface-sunken/40 px-4 py-8 text-center">
+              <IconChip icon={FileText} tone="neutral" />
               <p className="text-sm text-muted-foreground">
                 Couldn&apos;t preview this letter inline.
               </p>
               <Button asChild size="sm" variant="outline">
                 <a href={previewSrc} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  <ExternalLink aria-hidden="true" />
                   Open in new tab
                 </a>
               </Button>
             </div>
           )}
         </div>
-        <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
+        <SheetFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button
             onClick={handleGenerate}
-            disabled={!effectiveSelected || generateLetter.isPending}
+            disabled={!effectiveSelected}
+            loading={generateLetter.isPending}
           >
-            {generateLetter.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <FileText className="h-3.5 w-3.5 mr-1" />}
+            <FileText aria-hidden="true" />
             Generate &amp; Attach
           </Button>
         </SheetFooter>
@@ -357,40 +373,41 @@ export function OffersTab({ candidateId }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">Track offer letters and candidate responses</p>
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />Create Offer
+          <Plus aria-hidden="true" />Create Offer
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => <Skeleton key={i} className="h-28 w-full" />)}
+        <div className="space-y-3" aria-busy="true">
+          {[1, 2].map((i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
         </div>
       ) : !offers?.length ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            No offers created yet.
-          </CardContent>
-        </Card>
+        <EmptyState
+          compact
+          illustration={<EmptyDocumentsIllustration className="size-24" />}
+          title="No offers created yet."
+          className="border-0 bg-transparent"
+        />
       ) : (
         <div className="space-y-3">
           {offers.map((offer) => {
             const status = offer.offerStatus as CandidateOfferStatus;
             const nextStatuses = PATCH_OFFER_TRANSITIONS[status] ?? [];
             return (
-              <Card key={offer.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+              <div key={offer.id} className="rounded-lg border border-border p-4">
+                <div>
+                  <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={OFFER_STATUS_VARIANTS[status]} className="gap-1 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusPill tone={OFFER_STATUS_TONE[status] ?? "neutral"}>
                           {STATUS_ICONS[status]}
                           {OFFER_STATUS_LABELS[status]}
-                        </Badge>
+                        </StatusPill>
                         {offer.validUntil && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs tabular-nums text-muted-foreground">
                             Valid until {format(new Date(offer.validUntil), "dd MMM yyyy")}
                           </span>
                         )}
@@ -403,26 +420,26 @@ export function OffersTab({ candidateId }: Props) {
                       {(status === "DRAFT" || status === "CEO_REJECTED") && (
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="h-7 text-xs gap-1"
+                          size="xs"
                           onClick={() => setGenerateOffer(offer)}
                         >
-                          <FileText className="h-3 w-3" />
+                          <FileText aria-hidden="true" />
                           Generate Letter
                         </Button>
                       )}
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => setDeleteOfferId(offer.id)}
+                        aria-label="Delete offer"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="size-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+                  <div className="mb-3 grid grid-cols-2 gap-3 rounded-md bg-surface-sunken p-3 text-xs tabular-nums sm:grid-cols-4">
                     <div>
                       <p className="text-muted-foreground">Salary</p>
                       <p className="font-medium">{formatINR(offer.offeredSalary)}</p>
@@ -458,7 +475,7 @@ export function OffersTab({ candidateId }: Props) {
                     </p>
                   )}
                   {status === "CEO_REJECTED" && offer.ceoRemarks && (
-                    <p className="text-xs text-destructive mb-2">
+                    <p className="mb-2 text-xs text-danger-strong">
                       CEO remarks: {offer.ceoRemarks}
                     </p>
                   )}
@@ -472,7 +489,7 @@ export function OffersTab({ candidateId }: Props) {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline block mb-3"
+                      className="mb-3 inline-block rounded-sm text-xs font-medium text-brand-text outline-none hover:underline focus-visible:focus-ring"
                     >
                       View Offer Letter →
                     </a>
@@ -485,13 +502,12 @@ export function OffersTab({ candidateId }: Props) {
                   <div className="flex items-center gap-2 flex-wrap">
                     {userIsHR && (status === "DRAFT" || status === "CEO_REJECTED") && (
                       <Button
-                        size="sm"
+                        size="xs"
                         variant="outline"
-                        className="h-7 text-xs"
                         onClick={() => setSubmitOfferId(offer.id)}
                         disabled={!offer.offerLetterUrl || submitForCeo.isPending}
                       >
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <AlertTriangle aria-hidden="true" />
                         {status === "CEO_REJECTED" ? "Resubmit for CEO Approval" : "Submit for CEO Approval"}
                       </Button>
                     )}
@@ -499,21 +515,20 @@ export function OffersTab({ candidateId }: Props) {
                     {userIsCEO && status === "PENDING_CEO" && (
                       <>
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="outline"
-                          className="h-7 text-xs"
                           onClick={() => handleOpenCeoReview(offer, "approve")}
                         >
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          <CheckCircle2 aria-hidden="true" />
                           Approve
                         </Button>
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="outline"
-                          className="h-7 text-xs text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive"
                           onClick={() => handleOpenCeoReview(offer, "reject")}
                         >
-                          <XCircle className="h-3 w-3 mr-1" />
+                          <XCircle aria-hidden="true" />
                           Reject
                         </Button>
                       </>
@@ -521,13 +536,12 @@ export function OffersTab({ candidateId }: Props) {
 
                     {userIsHR && status === "CEO_APPROVED" && (
                       <Button
-                        size="sm"
+                        size="xs"
                         variant="outline"
-                        className="h-7 text-xs"
                         onClick={() => setSendOfferId(offer.id)}
                         disabled={updateOffer.isPending}
                       >
-                        <Send className="h-3 w-3 mr-1" />
+                        <Send aria-hidden="true" />
                         Send to Candidate
                       </Button>
                     )}
@@ -539,7 +553,7 @@ export function OffersTab({ candidateId }: Props) {
                           value={offer.offerStatus}
                           onValueChange={(v) => handleStatusChange(offer.id, v as CandidateOffer["offerStatus"])}
                         >
-                          <SelectTrigger className="h-7 text-xs w-36">
+                          <SelectTrigger className="h-7 w-36 text-xs" aria-label="Update status">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -556,8 +570,8 @@ export function OffersTab({ candidateId }: Props) {
                       </>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -612,19 +626,19 @@ export function OffersTab({ candidateId }: Props) {
           }
         }}
       >
-        <SheetContent className="flex flex-col p-0 gap-0">
-          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
-            <SheetTitle className="text-base">
+        <SheetContent size="md" className="flex flex-col gap-0 p-0">
+          <SheetHeader className="shrink-0 border-b border-border">
+            <SheetTitle>
               {reviewDecision === "approve" ? "Approve Offer" : "Reject Offer"}
             </SheetTitle>
-            <SheetDescription className="text-xs">
+            <SheetDescription>
               Review the offer details before making a decision.
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             {reviewOffer && (
               <>
-                <div className="text-sm space-y-1">
+                <div className="space-y-1 rounded-md bg-surface-sunken p-3 text-sm tabular-nums">
                   {reviewOffer.offeredDesignation && (
                     <p><span className="text-muted-foreground">Role:</span> {reviewOffer.offeredDesignation}</p>
                   )}
@@ -655,7 +669,7 @@ export function OffersTab({ candidateId }: Props) {
               </>
             )}
           </div>
-          <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
+          <SheetFooter>
             <Button
               variant="outline"
               onClick={() => {
@@ -668,15 +682,13 @@ export function OffersTab({ candidateId }: Props) {
             </Button>
             <Button
               onClick={handleCeoReviewSubmit}
-              disabled={ceoReview.isPending}
+              loading={ceoReview.isPending}
               variant={reviewDecision === "reject" ? "destructive" : "default"}
             >
-              {ceoReview.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-              ) : reviewDecision === "approve" ? (
-                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+              {reviewDecision === "approve" ? (
+                <CheckCircle2 aria-hidden="true" />
               ) : (
-                <XCircle className="h-3.5 w-3.5 mr-1" />
+                <XCircle aria-hidden="true" />
               )}
               {reviewDecision === "approve" ? "Approve" : "Reject"}
             </Button>
@@ -685,10 +697,10 @@ export function OffersTab({ candidateId }: Props) {
       </Sheet>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="flex flex-col p-0 gap-0">
-          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
-            <SheetTitle className="text-base">Create Offer</SheetTitle>
-            <SheetDescription className="text-xs">Create an offer for this candidate.</SheetDescription>
+        <SheetContent size="md" className="flex flex-col gap-0 p-0">
+          <SheetHeader className="shrink-0 border-b border-border">
+            <SheetTitle>Create Offer</SheetTitle>
+            <SheetDescription>Create an offer for this candidate.</SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             <div className="space-y-1.5">
@@ -699,7 +711,7 @@ export function OffersTab({ candidateId }: Props) {
               <label className="text-sm font-medium">Offered Salary (₹/year)</label>
               <Input type="number" min={1} step={10000} placeholder="e.g. 1200000" value={offeredSalary} onChange={(e) => setOfferedSalary(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Joining Date</label>
                 <Input type="date" value={joiningDate} onChange={(e) => setJoiningDate(e.target.value)} />
@@ -714,10 +726,10 @@ export function OffersTab({ candidateId }: Props) {
               <Textarea placeholder="Any additional notes..." rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
           </div>
-          <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleCreate} disabled={createOffer.isPending}>
-              {createOffer.isPending ? "Creating..." : "Create Offer"}
+          <SheetFooter>
+            <Button variant="ghost" onClick={() => setSheetOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={createOffer.isPending}>
+              Create Offer
             </Button>
           </SheetFooter>
         </SheetContent>

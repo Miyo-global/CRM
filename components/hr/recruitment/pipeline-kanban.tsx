@@ -3,6 +3,7 @@
 import { useState, useCallback, memo } from "react";
 import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { KanbanCanvas, KanbanColumnShell, KanbanEmptyDrop } from "@/components/shared/kanban";
 import type {
   AtsPipelineStage,
   AtsPipelineCandidate,
@@ -36,60 +37,33 @@ const KanbanColumn = memo(function KanbanColumn({
   onCardClick,
 }: KanbanColumnProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col min-w-[280px] w-[280px] shrink-0",
-        isRejected && "opacity-80",
-      )}
-    >
-      <div className="flex items-center gap-2 mb-2 px-0.5">
-        <span className="text-xs font-semibold tracking-wide">{col.label}</span>
-        <span
-          className={cn(
-            "ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-2xs font-semibold min-w-[22px]",
-            col.badge,
-          )}
+    <Droppable droppableId={col.id}>
+      {(provided, snapshot) => (
+        <KanbanColumnShell
+          title={col.label}
+          tone={col.tone}
+          count={items.length}
+          isDraggingOver={snapshot.isDraggingOver}
+          innerRef={provided.innerRef}
+          droppableProps={provided.droppableProps}
+          className={cn(isRejected && "opacity-80")}
         >
-          {items.length}
-        </span>
-      </div>
+          <div className="space-y-2 overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
+            {items.map((candidate, index) => (
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                index={index}
+                onClick={onCardClick}
+              />
+            ))}
+            {provided.placeholder}
 
-      <Droppable droppableId={col.id}>
-        {(provided, snapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className={cn(
-              "flex-1 rounded-xl border-2 p-2 transition-colors",
-              col.bg,
-              col.border,
-              snapshot.isDraggingOver && "ring-2 ring-primary/30",
-            )}
-          >
-            <div
-              className="overflow-y-auto space-y-2"
-              style={{ maxHeight: "calc(100vh - 250px)" }}
-            >
-              {items.map((candidate, index) => (
-                <CandidateCard
-                  key={candidate.id}
-                  candidate={candidate}
-                  index={index}
-                  onClick={onCardClick}
-                />
-              ))}
-              {provided.placeholder}
-
-              {items.length === 0 && !snapshot.isDraggingOver && (
-                <div className="flex items-center justify-center h-16 rounded-lg border border-dashed border-border/50">
-                  <p className="text-2xs text-muted-foreground">Drop here</p>
-                </div>
-              )}
-            </div>
+            {items.length === 0 && !snapshot.isDraggingOver && <KanbanEmptyDrop />}
           </div>
-        )}
-      </Droppable>
-    </div>
+        </KanbanColumnShell>
+      )}
+    </Droppable>
   );
 });
 
@@ -165,18 +139,18 @@ export function PipelineKanban({
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <KanbanCanvas aria-busy="true">
         {COLUMNS.map((col) => (
           <ColumnSkeleton key={col.id} col={col} />
         ))}
-      </div>
+      </KanbanCanvas>
     );
   }
 
   return (
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <KanbanCanvas>
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col.id}
@@ -186,7 +160,7 @@ export function PipelineKanban({
               onCardClick={handleCardClick}
             />
           ))}
-        </div>
+        </KanbanCanvas>
       </DragDropContext>
 
       <CandidateSheet

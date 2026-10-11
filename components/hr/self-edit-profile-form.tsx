@@ -328,11 +328,11 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
       </Card>
 
       {hasPendingEdits && (
-        <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 shadow-sm">
+        <div className="sticky bottom-0 z-sticky -mx-4 flex items-center justify-end gap-3 border-t border-border bg-background/90 px-4 py-3 backdrop-blur">
+          <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>
           <Button
             type="submit"
-            className="w-full"
-            disabled={updateProfile.isPending}
+            loading={updateProfile.isPending}
           >
             {updateProfile.isPending ? "Saving…" : "Save Profile"}
           </Button>
@@ -353,8 +353,8 @@ interface SocialFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const SocialField = ({ id, icon, placeholder, error, ...rest }: SocialFieldProps) => (
   <div>
     <div className="flex items-center gap-2">
-      <div className="flex items-center justify-center w-7 h-8 shrink-0">{icon}</div>
-      <Input id={id} {...rest} placeholder={placeholder} className="h-8 text-sm" />
+      <div className="flex h-9 w-7 shrink-0 items-center justify-center text-muted-foreground" aria-hidden="true">{icon}</div>
+      <Input id={id} {...rest} placeholder={placeholder} />
     </div>
     {error && <p className="text-xs text-destructive mt-0.5 pl-9">{error}</p>}
   </div>

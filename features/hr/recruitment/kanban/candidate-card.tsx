@@ -4,11 +4,12 @@ import { memo, useCallback } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { kanbanCardClass } from "@/components/shared/kanban";
+import { formatDistanceToNowStrict } from "date-fns";
 import { Briefcase, MailIcon, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AtsPipelineCandidate } from "@/types/hr";
-import { getInitials } from "./types";
+import { formatDate, getInitials } from "./types";
 
 interface CandidateCardProps {
   candidate: AtsPipelineCandidate;
@@ -32,57 +33,58 @@ export const CandidateCard = memo(function CandidateCard({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          onClick={handleClick}
+          className={cn(kanbanCardClass(snapshot.isDragging), "cursor-pointer select-none")}
         >
-          <Card
-            onClick={handleClick}
-            className={cn(
-              "p-2.5 cursor-pointer select-none transition-shadow hover:shadow-md",
-              snapshot.isDragging && "shadow-lg ring-2 ring-primary/25 rotate-[0.5deg]"
-            )}
-          >
-            <div className="flex items-start gap-2">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-2xs font-semibold bg-primary/10 text-primary">
-                  {getInitials(candidate.name)}
-                </AvatarFallback>
-              </Avatar>
+          <div className="flex items-start gap-2.5">
+            <Avatar className="size-8 shrink-0">
+              <AvatarFallback className="bg-brand-soft text-2xs font-semibold text-brand-soft-foreground">
+                {getInitials(candidate.name)}
+              </AvatarFallback>
+            </Avatar>
 
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold truncate leading-tight">{candidate.name}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium leading-tight" title={candidate.name}>
+                {candidate.name}
+              </p>
 
-                {candidate.jobTitle ? (
-                  <p className="text-2xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
-                    <Briefcase className="h-2.5 w-2.5 shrink-0" />
-                    {candidate.jobTitle}
-                  </p>
-                ) : (
-                  <p className="text-2xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
-                    <MailIcon className="h-2.5 w-2.5 shrink-0" />
-                    {candidate.email}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  {candidate.source && (
-                    <Badge
-                      variant="outline"
-                      className="text-3xs px-1.5 py-0 h-4 font-normal"
-                    >
-                      {candidate.source}
-                    </Badge>
-                  )}
-                  {candidate.rating !== null && (
-                    <div className="flex items-center gap-0.5 ml-auto">
-                      <Star className="h-2.5 w-2.5 text-warning-strong fill-warning-500" />
-                      <span className="text-2xs font-medium text-warning-strong">
-                        {candidate.rating}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {candidate.jobTitle ? (
+                <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                  <Briefcase className="size-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{candidate.jobTitle}</span>
+                </p>
+              ) : (
+                <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                  <MailIcon className="size-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{candidate.email}</span>
+                </p>
+              )}
             </div>
-          </Card>
+          </div>
+
+          {(candidate.source || candidate.rating !== null || candidate.appliedAt) && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              {candidate.source && (
+                <Badge variant="secondary" className="max-w-32 truncate font-normal">
+                  {candidate.source}
+                </Badge>
+              )}
+              {candidate.rating !== null && (
+                <Badge variant="warning" className="tabular-nums">
+                  <Star className="size-3 fill-current" aria-hidden="true" />
+                  {candidate.rating}
+                </Badge>
+              )}
+              {candidate.appliedAt && (
+                <span
+                  className="ml-auto text-xs tabular-nums text-muted-foreground"
+                  title={formatDate(candidate.appliedAt)}
+                >
+                  {formatDistanceToNowStrict(new Date(candidate.appliedAt))}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </Draggable>

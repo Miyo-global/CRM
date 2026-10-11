@@ -27,9 +27,13 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Plus, FileText, Trash2, Eye, Pencil, MoreHorizontal,
-  Upload, Link2, Loader2, BookOpen, CheckCircle2, Info,
+  Upload, Link2, BookOpen, CheckCircle2, Info,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { handbookVersionSchema } from "@/lib/validations/handbook";
 import { cn } from "@/lib/utils";
@@ -54,10 +58,10 @@ const hbKeys = {
   list: () => [...hbKeys.all, "list"] as const,
 };
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" {
-  if (s === "PUBLISHED") return "default";
-  if (s === "ARCHIVED") return "outline";
-  return "secondary";
+function statusTone(s: string | null): Tone {
+  if (s === "PUBLISHED") return "success";
+  if (s === "ARCHIVED") return "neutral";
+  return "warning";
 }
 
 type ContentMode = "url" | "file";
@@ -168,7 +172,7 @@ function HandbookFormFields({
       <div className="space-y-1.5 min-w-0">
         <Label className="text-sm font-medium">Description</Label>
         <Textarea
-          className="max-w-full resize-y min-h-[80px] max-h-[200px]"
+          className="max-w-full resize-y min-h-20 max-h-50"
           placeholder="What changed in this version..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -183,10 +187,10 @@ function HandbookFormFields({
         <Tabs value={contentMode} onValueChange={handleContentModeChange} className="w-full">
           <TabsList className="grid h-9 w-full grid-cols-2">
             <TabsTrigger value="url" type="button" className="gap-1.5 text-xs">
-              <Link2 className="h-3 w-3" /> URL
+              <Link2 className="size-3" aria-hidden="true" /> URL
             </TabsTrigger>
             <TabsTrigger value="file" type="button" className="gap-1.5 text-xs">
-              <Upload className="h-3 w-3" /> Upload File
+              <Upload className="size-3" aria-hidden="true" /> Upload File
             </TabsTrigger>
           </TabsList>
 
@@ -215,19 +219,19 @@ function HandbookFormFields({
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-2 text-xs"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadStatus === "uploading"}
+              loading={uploadStatus === "uploading"}
             >
               {uploadStatus === "uploading" ? (
-                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…</>
+                "Uploading…"
               ) : (
-                <><Upload className="h-3.5 w-3.5" /> Choose file</>
+                <><Upload className="size-3.5" aria-hidden="true" /> Choose file</>
               )}
             </Button>
             {uploadStatus === "done" && (
               <div className="flex items-center gap-1.5 text-xs text-success-strong">
-                <CheckCircle2 className="h-3.5 w-3.5" />
+                <CheckCircle2 className="size-3.5" aria-hidden="true" />
                 <span className="truncate max-w-xs">{uploadedFileName} uploaded</span>
               </div>
             )}
@@ -322,7 +326,7 @@ function useHandbookForm() {
 function HandbookAdminContent() {
   const qc = useQueryClient();
 
-  const { data: versions, isLoading } = useQuery({
+  const { data: versions, isLoading, isError, error, refetch } = useQuery({
     queryKey: hbKeys.list(),
     queryFn: () => apiClient.get<HandbookVersion[]>("/hr/handbook"),
   });
@@ -414,42 +418,40 @@ function HandbookAdminContent() {
       badge={`${versions?.length ?? 0} versions`}
       actions={
         <Button size="sm" onClick={() => { form.reset(); setSheetOpen(true); }}>
-          <Plus className="h-3.5 w-3.5 mr-1" />
+          <Plus className="size-3.5" aria-hidden="true" />
           New Version
         </Button>
       }
     >
       {versions?.some((v) => v.status === "PUBLISHED") && (
-        <div className="flex items-start gap-2 rounded-lg border border-info-strong/25 bg-info-soft px-3 py-2.5 text-xs text-info-strong">
-          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-info-strong/25 bg-info-soft px-3 py-2.5 text-xs text-info-strong">
+          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>Published versions are visible to all employees under <strong>HR → Handbook</strong>. Use ⋯ → Unpublish to hide a version from employees.</span>
         </div>
       )}
 
-      {!versions?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
-              title="No handbook versions yet"
-              description="Create your first handbook version to publish it to employees."
-              action={{ label: "New Version", onClick: () => { form.reset(); setSheetOpen(true); } }}
-            />
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !versions?.length ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="No handbook versions yet"
+          description="Create your first handbook version to publish it to employees."
+          action={{ label: "New Version", onClick: () => { form.reset(); setSheetOpen(true); } }}
+        />
       ) : (
         <div className="space-y-2">
           {versions.map((v) => (
             <Card key={v.id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+              <CardContent className="flex items-center gap-3 p-4">
+                <IconChip icon={FileText} tone="neutral" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold truncate max-w-[200px] sm:max-w-none">{v.title}</p>
-                    <Badge variant="outline" className="text-2xs">v{v.version}</Badge>
-                    <Badge variant={statusBadge(v.status)} className="text-2xs">{v.status}</Badge>
+                    <p className="max-w-48 truncate text-sm font-semibold sm:max-w-none" title={v.title}>{v.title}</p>
+                    <Badge variant="outline" className="font-mono">v{v.version}</Badge>
+                    <StatusPill tone={statusTone(v.status)} dot>{v.status}</StatusPill>
                   </div>
-                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
+                  <div className="mt-0.5 flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
                     {v.description && <span className="line-clamp-1 max-w-full">{v.description}</span>}
                     {v.publishedAt && <span>Published {format(new Date(v.publishedAt), "MMM d, yyyy")}</span>}
                     {v.createdAt && <span>Created {format(new Date(v.createdAt), "MMM d, yyyy")}</span>}
@@ -458,24 +460,24 @@ function HandbookAdminContent() {
                 <div className="flex items-center gap-1.5 shrink-0">
                   {v.documentUrl && (
                     <Button
-                      size="sm"
+                      size="icon-sm"
                       variant="ghost"
-                      className="h-7 text-xs"
                       title="View document"
+                      aria-label="View document"
                       onClick={() => void viewFile(v.documentUrl!)}
                     >
-                      <Eye className="h-3 w-3" />
+                      <Eye className="size-4" />
                     </Button>
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" disabled={update.isPending}>
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button size="icon-sm" variant="ghost" disabled={update.isPending} aria-label="More actions">
+                        <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem onClick={() => { form.populate(v); setEditId(v.id); }}>
-                        <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
+                        <Pencil className="size-3.5" aria-hidden="true" /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {v.status === "DRAFT" && (
@@ -503,7 +505,7 @@ function HandbookAdminContent() {
                         className="text-destructive focus:text-destructive"
                         onClick={() => setDeleteId(v.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                        <Trash2 className="size-3.5" aria-hidden="true" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -565,7 +567,7 @@ function HandbookAdminContent() {
 }
 
 function HandbookEmployeeView() {
-  const { data: versions, isLoading } = useQuery({
+  const { data: versions, isLoading, isError, error, refetch } = useQuery({
     queryKey: hbKeys.list(),
     queryFn: () => apiClient.get<HandbookVersion[]>("/hr/handbook"),
   });
@@ -587,30 +589,26 @@ function HandbookEmployeeView() {
       title="Employee Handbook"
       subtitle="Official company policies and guidelines"
     >
-      {!published.length ? (
-        <Card>
-          <CardContent className="py-12">
-            <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
-              title="No handbook published yet"
-              description="The HR team hasn't published a handbook yet. Check back later."
-            />
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !published.length ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="No handbook published yet"
+          description="The HR team hasn't published a handbook yet. Check back later."
+        />
       ) : (
         <div className="space-y-3">
           {published.map((v) => (
             <Card key={v.id}>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-brand-soft flex items-center justify-center shrink-0">
-                  <BookOpen className="h-4 w-4 text-brand-text" />
-                </div>
+                <IconChip icon={BookOpen} tone="brand" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold truncate">{v.title}</p>
-                    <Badge variant="outline" className="text-2xs">v{v.version}</Badge>
+                    <p className="truncate text-sm font-semibold" title={v.title}>{v.title}</p>
+                    <Badge variant="outline" className="font-mono">v{v.version}</Badge>
                   </div>
-                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
+                  <div className="mt-0.5 flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
                     {v.description && <span className="line-clamp-1">{v.description}</span>}
                     {v.publishedAt && <span>Published {format(new Date(v.publishedAt), "MMM d, yyyy")}</span>}
                   </div>
@@ -619,10 +617,10 @@ function HandbookEmployeeView() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 text-xs gap-1.5 shrink-0"
+                    className="shrink-0"
                     onClick={() => void viewFile(v.documentUrl!)}
                   >
-                    <Eye className="h-3 w-3" /> View
+                    <Eye className="size-3.5" aria-hidden="true" /> View
                   </Button>
                 )}
               </CardContent>

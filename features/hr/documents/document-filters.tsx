@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { Search, HelpCircle, HardDrive } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import {
@@ -78,77 +77,75 @@ export function DocumentFilters({
   };
 
   return (
-    <Card className="shadow-sm border">
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4 w-full">
-          <div className="relative flex-1 min-w-0">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              placeholder="Search by name, tag, or content..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 border-0 bg-muted/50 focus-visible:bg-background w-full"
-              aria-label="Search documents"
-            />
-          </div>
+    <div className="flex w-full flex-wrap items-center gap-2">
+      <div className="relative w-full sm:w-64">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
+          aria-hidden="true"
+        />
+        <Input
+          type="search"
+          data-page-search
+          placeholder="Search by name, tag, or content..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-9"
+          aria-label="Search documents"
+        />
+      </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:shrink-0">
-            <div className="flex items-center gap-2 min-w-[200px] sm:min-w-[220px]">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap flex items-center gap-1">
-                Folder / view
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button type="button" className="text-muted-foreground hover:text-foreground">
-                        <HelpCircle className="h-3.5 w-3.5" aria-label="Folder help" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs text-xs">
-                      Custom folders group files by category. Quick views (Contracts, Policies, etc.)
-                      filter by document type.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </span>
-              <SearchableCombobox
-                options={folderOptions}
-                value={selectedCategory}
-                onValueChange={onCategoryChange}
-                placeholder="All Files"
-                searchPlaceholder="Search folders…"
-                emptyMessage="No folders found."
-                className="flex-1"
-                aria-label="Filter by folder or view"
-              />
-            </div>
+      <div className="flex w-full items-center gap-2 sm:w-auto">
+        <span className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
+          Folder / view
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="rounded-sm text-subtle-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <HelpCircle className="size-3.5" aria-label="Folder help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-xs">
+                Custom folders group files by category. Quick views (Contracts, Policies, etc.)
+                filter by document type.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </span>
+        <SearchableCombobox
+          options={folderOptions}
+          value={selectedCategory}
+          onValueChange={onCategoryChange}
+          placeholder="All Files"
+          searchPlaceholder="Search folders…"
+          emptyMessage="No folders found."
+          className="min-w-0 flex-1 sm:w-44 sm:flex-none"
+          aria-label="Filter by folder or view"
+        />
+      </div>
 
-            <div className="flex items-center gap-2 min-w-[200px] sm:min-w-[220px]">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                Document type
-              </span>
-              <SearchableCombobox
-                options={typeOptions}
-                value={selectedTypeLabel}
-                onValueChange={handleTypeLabelChange}
-                placeholder="All types"
-                searchPlaceholder="Search types…"
-                emptyMessage="No types found."
-                className="flex-1 min-w-[7.5rem]"
-                aria-label="Filter by document type"
-              />
-            </div>
-          </div>
+      <div className="flex w-full items-center gap-2 sm:w-auto">
+        <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+          Document type
+        </span>
+        <SearchableCombobox
+          options={typeOptions}
+          value={selectedTypeLabel}
+          onValueChange={handleTypeLabelChange}
+          placeholder="All types"
+          searchPlaceholder="Search types…"
+          emptyMessage="No types found."
+          className="min-w-0 flex-1 sm:w-40 sm:flex-none"
+          aria-label="Filter by document type"
+        />
+      </div>
 
           {typeof storagePercent === "number" && (
             <div
-              className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 shrink-0 min-w-[200px]"
+              className="flex w-full items-center gap-2 rounded-md border border-border bg-surface-sunken/40 px-3 py-1.5 sm:ml-auto sm:w-52"
               title={`${usedStorageGB?.toFixed(2) ?? "0"} GB of ${maxStorageGB} GB used`}
             >
               <HardDrive
-                className={`h-4 w-4 shrink-0 ${
+                className={`size-4 shrink-0 ${
                   storagePercent > 80
                     ? "text-danger-strong"
                     : storagePercent > 50
@@ -179,8 +176,6 @@ export function DocumentFilters({
               </div>
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

@@ -24,7 +24,7 @@ export function EmployeesLoadingSkeleton() {
     >
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="border-b px-4 py-3 flex items-center gap-8 bg-muted/30">
+          <div className="flex items-center gap-8 border-b border-border bg-surface-sunken px-4 py-3">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-4 w-24 hidden md:block" />
             <Skeleton className="h-4 w-40 hidden md:block" />

@@ -24,7 +24,7 @@ export function EmployeeAssignedAssetsPanel({
     return (
       <div
         className={cn(
-          "rounded-lg border border-dashed bg-muted/20 px-3 py-4 text-center text-xs text-muted-foreground",
+          "rounded-lg border border-dashed bg-surface-sunken/40 px-3 py-4 text-center text-xs text-muted-foreground",
           className,
         )}
       >
@@ -41,7 +41,7 @@ export function EmployeeAssignedAssetsPanel({
           {assets.length}
         </Badge>
       </div>
-      <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-lg border bg-muted/10 p-2">
+      <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-lg border bg-surface-sunken/40 p-2">
         {assets.map((asset) => {
           const selected = selectedAssetId === asset.id;
           const Icon = asset.type?.toLowerCase().includes("laptop") ? Laptop : Package;
@@ -54,15 +54,15 @@ export function EmployeeAssignedAssetsPanel({
               disabled={!clickable}
               onClick={() => onSelect?.(asset)}
               className={cn(
-                "flex w-full items-start gap-2 rounded-md border px-2.5 py-2 text-left text-sm transition-colors",
+                "flex w-full items-start gap-2 rounded-md border px-2.5 py-2 text-left text-sm transition-colors focus-visible:focus-ring outline-none",
                 clickable && "hover:bg-accent/60 cursor-pointer",
                 !clickable && "cursor-default",
                 selected
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                  ? "border-primary bg-brand-soft ring-1 ring-ring"
                   : "border-border bg-card",
               )}
             >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="font-medium leading-tight">{asset.name}</p>
                 <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">

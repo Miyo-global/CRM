@@ -117,7 +117,7 @@ export function GeneratePayrollSheet({
       isPending={false}
       submitDisabled={!customRangeValid}
     >
-      <div className="space-y-2 rounded-md border bg-muted/50 px-3 py-2.5">
+      <div className="space-y-2 rounded-md border border-border bg-surface-sunken px-3 py-2.5">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">Pay Period</span>
           <div className="inline-flex rounded-md border bg-background p-0.5 text-xs">
@@ -209,7 +209,7 @@ export function GeneratePayrollSheet({
               Attendance (auto-calculated)
             </p>
             {overtimePreview ? (
-              <div className="rounded-lg border border-border bg-muted/40 p-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+              <div className="rounded-lg border border-border bg-surface-sunken p-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Present days</span>
                   <span className="font-medium">{overtimePreview.fullPresentDays}</span>
@@ -275,7 +275,7 @@ export function GeneratePayrollSheet({
           {overtimePreview != null && (
             <>
               <Separator />
-              <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1 text-sm">
+              <div className="rounded-lg border border-border bg-surface-sunken p-3 space-y-1 text-sm">
                 <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                   Auto-Detected Overtime
                 </p>

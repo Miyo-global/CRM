@@ -230,8 +230,8 @@ export const DailyHistoryTable = memo(function DailyHistoryTable({
             <div className="min-w-max">
               <Table className="border-collapse">
                 <caption className="sr-only">Recent attendance history</caption>
-                <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-sm">
-                  <TableRow className="bg-muted/60 hover:bg-muted/60">
+                <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
+                  <TableRow className="hover:bg-transparent">
                     <TableHead className="text-2xs uppercase tracking-wider font-semibold border border-border px-4 py-2.5 text-foreground">
                       Date
                     </TableHead>
@@ -281,7 +281,7 @@ export const DailyHistoryTable = memo(function DailyHistoryTable({
           </ScrollArea>
 
           {!tableLoading && !rangeInvalid && logs.length > 0 ? (
-            <div className="border-t border-border px-2 bg-muted/20">
+            <div className="border-t border-border px-2">
               <DataTablePagination
                 page={safePage}
                 totalPages={totalPages}

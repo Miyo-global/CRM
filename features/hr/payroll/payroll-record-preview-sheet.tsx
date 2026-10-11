@@ -7,6 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
+
+const STATUS_TONE: Record<string, Tone> = {
+  DRAFT: "neutral",
+  PENDING_APPROVAL: "warning",
+  APPROVED: "info",
+  PAID: "success",
+};
 import { Separator } from "@/components/ui/separator";
 import { format, getDaysInMonth } from "date-fns";
 import { HrSheet } from "@/features/hr/hr-sheet";
@@ -78,7 +87,7 @@ export function PayrollRecordPreviewSheet({
       description="Read-only breakdown for this payroll record."
       showSubmit={false}
     >
-      <Card className="border-2">
+      <Card className="gap-0">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div className="min-w-0">
@@ -90,7 +99,7 @@ export function PayrollRecordPreviewSheet({
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <Badge variant="outline">
+              <Badge variant="outline" className="tabular-nums">
                 {format(new Date(monthKey + "-01"), "MMMM yyyy")}
               </Badge>
               <p className="text-2xs text-muted-foreground tabular-nums">
@@ -100,9 +109,9 @@ export function PayrollRecordPreviewSheet({
                   return `${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`;
                 })()}
               </p>
-              <Badge variant="secondary" className="text-2xs">
+              <StatusPill tone={STATUS_TONE[payroll.status ?? ""] ?? "neutral"} dot>
                 {payroll.status ?? ""}
-              </Badge>
+              </StatusPill>
             </div>
           </div>
         </CardHeader>
@@ -196,12 +205,12 @@ export function PayrollRecordPreviewSheet({
 
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
-            <span className="text-2xl font-bold text-success-strong tabular-nums">
+            <span className="font-display text-2xl font-bold tabular-nums text-success-strong">
               ₹{netSalary.toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-3 text-xs space-y-1">
+          <div className="space-y-1 rounded-lg bg-surface-sunken p-3 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Calendar days</span>
               <span className="tabular-nums">{workingDays}</span>

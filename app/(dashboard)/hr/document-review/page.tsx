@@ -23,9 +23,11 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -200,20 +202,18 @@ function toTitleCase(name: string | null): string {
     .join(" ");
 }
 
-function docStatusVariant(
-  status: OnboardingDoc["status"]
-): "default" | "secondary" | "outline" | "destructive" {
+function docStatusTone(status: OnboardingDoc["status"]): Tone {
   switch (status) {
     case "APPROVED":
-      return "default";
+      return "success";
     case "SUBMITTED":
-      return "secondary";
+      return "info";
     case "REJECTED":
-      return "destructive";
+      return "danger";
     case "RE_UPLOAD_REQUESTED":
-      return "outline";
+      return "warning";
     default:
-      return "outline";
+      return "neutral";
   }
 }
 
@@ -232,20 +232,15 @@ function docStatusLabel(status: OnboardingDoc["status"]): string {
   }
 }
 
-function overallStatusVariant(
-  status: string | null
-): "default" | "secondary" | "outline" | "destructive" {
+function overallStatusTone(status: string | null): Tone {
   switch (status) {
     case "APPROVED":
-      return "default";
+      return "success";
     case "SUBMITTED":
     case "IN_PROGRESS":
-      return "secondary";
-    case "NOT_STARTED":
-    case "PENDING":
-      return "outline";
+      return "info";
     default:
-      return "outline";
+      return "neutral";
   }
 }
 
@@ -283,7 +278,7 @@ function ProgressBar({
 }) {
   const pct = total === 0 ? 0 : Math.round((approved / total) * 100);
   return (
-    <div className="flex flex-col gap-0.5 min-w-[130px]">
+    <div className="flex flex-col gap-0.5 min-w-32">
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
           <div
@@ -304,7 +299,7 @@ function ProgressBar({
 
 
 export default function DocumentReviewPage() {
-  const { data: summary, isLoading } = useDocReviewSummary();
+  const { data: summary, isLoading, isError, error, refetch } = useDocReviewSummary();
   const reviewMutation = useReviewDocument();
 
   const [reviewUserId, setReviewUserId] = useState<string | null>(null);
@@ -544,26 +539,19 @@ export default function DocumentReviewPage() {
       title="Document Review"
       subtitle="Review employee onboarding documents"
       badge={`${list.length} of ${allEmployees.length} employees`}
-    >
-      {allEmployees.length === 0 ? (
-        <EmptyState
-          illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
-          title="No documents to review"
-          description="Once employees submit onboarding documents, they will appear here."
-        />
-      ) : (
-        <TooltipProvider>
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
+      filters={allEmployees.length > 0 ? (
+          <div className="flex w-full flex-wrap items-center gap-2">
             <Input
               placeholder="Search by name, ID, or designation…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full sm:max-w-xs"
+              className="w-full sm:w-64"
+              type="search"
+              data-page-search
               aria-label="Search employees"
             />
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="h-9 w-[170px]">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
@@ -577,7 +565,7 @@ export default function DocumentReviewPage() {
             </Select>
             {departmentOptions.length > 0 && (
               <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger className="h-9 w-[180px]">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -591,7 +579,7 @@ export default function DocumentReviewPage() {
               </Select>
             )}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-9 w-[160px]">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -606,7 +594,7 @@ export default function DocumentReviewPage() {
               value={groupBy}
               onValueChange={(v) => setGroupBy(v as "none" | "role" | "department")}
             >
-              <SelectTrigger className="h-9 w-[150px]">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Group by" />
               </SelectTrigger>
               <SelectContent>
@@ -616,14 +604,28 @@ export default function DocumentReviewPage() {
               </SelectContent>
             </Select>
           </div>
+      ) : undefined}
+    >
+      {isError ? (
+        <QueryErrorState title="Couldn't load document review" error={error} onRetry={() => void refetch()} />
+      ) : allEmployees.length === 0 ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration />}
+          title="No documents to review"
+          description="Once employees submit onboarding documents, they will appear here."
+        />
+      ) : (
+        <TooltipProvider>
+        <div className="space-y-3">
           {list.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No employees match your filters.
-            </p>
+            <EmptyState
+              illustration={<EmptySearchIllustration />}
+              title="No results for these filters"
+              description="No employees match your filters."
+              action={{ label: "Clear filters", onClick: () => { setSearch(""); setRoleFilter("ALL"); setStatusFilter("ALL"); setDepartmentFilter("ALL"); } }}
+            />
           ) : (
-          <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[640px]">
-            <Table>
+            <Table className="min-w-160">
               <TableHeader>
                 <TableRow>
                   <TableHead>Employee</TableHead>
@@ -647,12 +649,12 @@ export default function DocumentReviewPage() {
                 {groups.map((group) => (
                   <Fragment key={group.key}>
                     {groupBy !== "none" && (
-                      <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableRow className="bg-surface-sunken hover:bg-surface-sunken">
                         <TableCell colSpan={4} className="py-1.5">
                           <span className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {group.label}
                           </span>
-                          <span className="ml-2 text-2xs text-muted-foreground">
+                          <span className="ml-2 text-2xs text-muted-foreground tabular-nums">
                             {group.items.length}
                           </span>
                         </TableCell>
@@ -686,7 +688,7 @@ export default function DocumentReviewPage() {
                           </Tooltip>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-medium truncate" title={toTitleCase(emp.userName)}>
                             {toTitleCase(emp.userName)}
                           </p>
                           <p className="text-2xs text-muted-foreground truncate">
@@ -708,7 +710,7 @@ export default function DocumentReviewPage() {
                             />
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[240px]">
+                        <TooltipContent className="max-w-60">
                           {emp.totalRequired === 0 ? (
                             <span>
                               No documents required for {getRoleLabel(emp.role)}.
@@ -731,14 +733,11 @@ export default function DocumentReviewPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Badge
-                          variant={overallStatusVariant(emp.onboardingDocStatus)}
-                          className="text-2xs"
-                        >
+                        <StatusPill tone={overallStatusTone(emp.onboardingDocStatus)} dot>
                           {overallStatusLabel(emp.onboardingDocStatus)}
-                        </Badge>
+                        </StatusPill>
                         {emp.totalPendingReview > 0 && (
-                          <span className="text-2xs font-medium text-warning-strong">
+                          <span className="whitespace-nowrap text-2xs font-medium text-warning-strong tabular-nums">
                             {emp.totalPendingReview} to review
                           </span>
                         )}
@@ -747,23 +746,21 @@ export default function DocumentReviewPage() {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="outline"
-                          className="h-7 text-xs"
                           onClick={() => handleOpenReview(emp)}
                           aria-label={`Review documents for ${toTitleCase(emp.userName)}`}
                         >
-                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          <Eye className="size-3.5" aria-hidden />
                           Review
                         </Button>
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="ghost"
-                          className="h-7 text-xs"
                           onClick={() => handleOpenUploadFor(emp)}
                           aria-label={`Upload document for ${toTitleCase(emp.userName)}`}
                         >
-                          <Upload className="h-3.5 w-3.5 mr-1" />
+                          <Upload className="size-3.5" aria-hidden />
                           Upload
                         </Button>
                       </div>
@@ -774,8 +771,6 @@ export default function DocumentReviewPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </ScrollArea>
           )}
         </div>
         </TooltipProvider>
@@ -783,7 +778,7 @@ export default function DocumentReviewPage() {
 
       <Sheet open={reviewUserId !== null} onOpenChange={(open) => { if (!open) handleCloseReview(); }}>
         <SheetContent side="right" className="flex flex-col p-0 gap-0 sm:max-w-lg w-full">
-          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b space-y-2">
+          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b border-border space-y-2">
             <SheetTitle className="text-base">
               {toTitleCase(reviewUserName)} — Document Review
             </SheetTitle>
@@ -815,7 +810,7 @@ export default function DocumentReviewPage() {
                 </div>
               ) : checklist.length === 0 ? (
                 <EmptyState
-                  illustration={<EmptyDocumentsIllustration className="h-24 w-24" />}
+                  illustration={<EmptyDocumentsIllustration className="size-24" />}
                   title="No document types configured"
                   description="Configure document types and role requirements in Document Types before reviewing submissions."
                   compact
@@ -826,7 +821,7 @@ export default function DocumentReviewPage() {
                   return (
                   <div
                     key={item.documentTypeId}
-                    className="rounded-md border bg-muted/20 p-3 space-y-2"
+                    className="rounded-lg border border-border bg-card p-3 space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -835,12 +830,7 @@ export default function DocumentReviewPage() {
                             {item.documentTypeName}
                           </p>
                           {item.isMandatory && (
-                            <Badge
-                              variant="default"
-                              className="text-3xs py-0 h-4 shrink-0"
-                            >
-                              Required
-                            </Badge>
+                            <StatusPill tone="brand" className="shrink-0">Required</StatusPill>
                           )}
                         </div>
                         {item.description ? (
@@ -849,17 +839,17 @@ export default function DocumentReviewPage() {
                           </p>
                         ) : null}
                         {doc ? (
-                        <div className="flex items-center gap-3 mt-0.5 flex-wrap text-2xs text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-0.5 flex-wrap text-2xs text-muted-foreground tabular-nums">
                           <Button
                             type="button"
                             variant="link"
                             size="sm"
-                            className="h-auto p-0 text-xs inline-flex items-center gap-0.5"
+                            className="h-auto max-w-full p-0 text-xs"
                             onClick={() => viewFile(doc.fileUrl)}
                             aria-label={`View ${doc.fileName}`}
                           >
-                            {doc.fileName}
-                            <ExternalLink className="h-3 w-3 ml-0.5" />
+                            <span className="truncate">{doc.fileName}</span>
+                            <ExternalLink className="size-3" aria-hidden />
                           </Button>
                           {doc.fileSize != null && (
                             <span>{formatBytes(doc.fileSize)}</span>
@@ -874,16 +864,13 @@ export default function DocumentReviewPage() {
                           </p>
                         )}
                       </div>
-                      <Badge
-                        variant={doc ? docStatusVariant(doc.status) : "outline"}
-                        className="text-2xs shrink-0"
-                      >
+                      <StatusPill tone={doc ? docStatusTone(doc.status) : "neutral"} dot className="shrink-0">
                         {doc ? docStatusLabel(doc.status) : "Missing"}
-                      </Badge>
+                      </StatusPill>
                     </div>
 
                     {doc?.reviewedAt && (
-                      <p className="text-2xs text-muted-foreground">
+                      <p className="text-2xs text-muted-foreground tabular-nums">
                         Reviewed {format(new Date(doc.reviewedAt), "MMM d, yyyy")}
                         {doc.reviewerName ? ` by ${doc.reviewerName}` : ""}
                       </p>
@@ -899,9 +886,9 @@ export default function DocumentReviewPage() {
                         <Separator />
                         <div className="flex items-center gap-2">
                           <Button
-                            size="sm"
+                            size="xs"
                             variant="outline"
-                            className="h-7 text-xs flex-1"
+                            className="flex-1"
                             onClick={() =>
                               setApproveDoc({
                                 ...doc,
@@ -910,13 +897,13 @@ export default function DocumentReviewPage() {
                             }
                             aria-label={`Approve ${item.documentTypeName}`}
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            <CheckCircle2 className="size-3.5" aria-hidden />
                             Approve
                           </Button>
                           <Button
-                            size="sm"
+                            size="xs"
                             variant="outline"
-                            className="h-7 text-xs flex-1"
+                            className="flex-1"
                             onClick={() => {
                               setReuploadDoc({
                                 ...doc,
@@ -926,7 +913,7 @@ export default function DocumentReviewPage() {
                             }}
                             aria-label={`Request re-upload for ${item.documentTypeName}`}
                           >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            <RefreshCw className="size-3.5" aria-hidden />
                             Request Re-upload
                           </Button>
                         </div>
@@ -962,7 +949,7 @@ export default function DocumentReviewPage() {
         }}
       >
         <SheetContent side="right" className="flex flex-col p-0 gap-0">
-          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
+          <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b border-border">
             <SheetTitle className="text-base">Request Re-upload</SheetTitle>
             <SheetDescription className="text-xs">
               Explain what needs to be corrected for{" "}
@@ -973,7 +960,7 @@ export default function DocumentReviewPage() {
           <div className="flex-1 px-4 py-4 space-y-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">
-                Remarks <span className="text-destructive">*</span>
+                Remarks <span className="text-danger-strong">*</span>
               </Label>
               <Textarea
                 placeholder="Describe what needs to be corrected or re-submitted..."
@@ -985,7 +972,7 @@ export default function DocumentReviewPage() {
             </div>
           </div>
 
-          <div className="shrink-0 px-4 py-3 border-t flex gap-2">
+          <div className="shrink-0 px-4 py-3 border-t border-border flex gap-2">
             <Button
               variant="outline"
               className="flex-1"
@@ -1000,11 +987,9 @@ export default function DocumentReviewPage() {
             <Button
               className="flex-1"
               onClick={handleReupload}
-              disabled={reviewMutation.isPending || !reuploadRemarks.trim()}
+              disabled={!reuploadRemarks.trim()}
+              loading={reviewMutation.isPending}
             >
-              {reviewMutation.isPending && (
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              )}
               Send Request
             </Button>
           </div>

@@ -21,11 +21,14 @@ import {
 } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -53,7 +56,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   useDocumentTemplates,
@@ -65,33 +67,13 @@ import { getErrorMessage } from "@/lib/get-error-message";
 
 const TYPE_CONFIG: Record<
   string,
-  { label: string; className: string; icon: React.ElementType }
+  { label: string; tone: Tone; icon: React.ComponentType<{ className?: string }> }
 > = {
-  OFFER_LETTER: {
-    label: "Offer Letter",
-    className: "bg-brand-soft text-brand-text border-primary/40",
-    icon: FileCheck,
-  },
-  NDA: {
-    label: "NDA",
-    className: "bg-danger-soft text-danger-strong border-danger-strong/20",
-    icon: FileLock,
-  },
-  POLICY: {
-    label: "Policy",
-    className: "bg-secondary text-secondary border-secondary",
-    icon: FileKey,
-  },
-  WELCOME: {
-    label: "Welcome",
-    className: "bg-success-soft text-success-strong border-success-strong/20",
-    icon: Smile,
-  },
-  OTHER: {
-    label: "Other",
-    className: "bg-muted text-muted-foreground border-border",
-    icon: FileText,
-  },
+  OFFER_LETTER: { label: "Offer Letter", tone: "brand", icon: FileCheck },
+  NDA: { label: "NDA", tone: "danger", icon: FileLock },
+  POLICY: { label: "Policy", tone: "info", icon: FileKey },
+  WELCOME: { label: "Welcome", tone: "success", icon: Smile },
+  OTHER: { label: "Other", tone: "neutral", icon: FileText },
 };
 
 function getTypeConfig(type: string) {
@@ -110,13 +92,13 @@ function VariableChips({ variables }: { variables: string[] }) {
       {visible.map((v) => (
         <span
           key={v}
-          className="inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-mono bg-muted text-muted-foreground border border-border/60"
+          className="inline-flex items-center rounded-xs border border-border bg-surface-sunken px-1.5 py-0.5 font-mono text-2xs text-muted-foreground"
         >
           {`{{${v}}}`}
         </span>
       ))}
       {rest > 0 && (
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-2xs bg-muted/50 text-muted-foreground border border-border/40">
+        <span className="inline-flex items-center rounded-xs px-1.5 py-0.5 text-2xs text-muted-foreground tabular-nums">
           +{rest} more
         </span>
       )}
@@ -176,7 +158,7 @@ function DeleteConfirm({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
-          className="text-destructive focus:text-destructive"
+          className="text-danger-strong focus:text-danger-strong"
           onSelect={(e) => e.preventDefault()}
         >
           <Trash2 className="mr-2 h-3.5 w-3.5" />
@@ -212,30 +194,18 @@ function TemplatesPageSkeleton() {
     <PageWrapper
       title="Document Templates"
       subtitle="Manage reusable HTML templates for offer letters, NDAs, and policies."
-      actions={<Skeleton className="h-8 w-[140px] rounded-md" />}
+      actions={<Skeleton className="h-8 w-36 rounded-md" />}
     >
-      <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl border bg-card p-4 space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-7 w-10" />
-                </div>
-                <Skeleton className="h-9 w-9 rounded-lg" />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <div className="flex items-center gap-4 px-4 py-3 bg-muted/30 border-b">
+      <div className="space-y-4">
+        <Skeleton className="h-20 rounded-lg" />
+        <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-4 overflow-hidden border-b border-border bg-surface-sunken px-4 py-3">
             {["Title", "Type", "Variables", "Version", "Status", "Created"].map((h) => (
               <Skeleton key={h} className="h-3" style={{ width: `${h.length * 9}px` }} />
             ))}
           </div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-4 py-4 border-b last:border-0">
+            <div key={i} className="flex items-center gap-4 overflow-hidden border-b border-border px-4 py-4 last:border-0">
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-5 w-20 rounded-full" />
               <Skeleton className="h-4 w-48" />
@@ -254,7 +224,7 @@ function TemplatesPageSkeleton() {
 
 export default function DocumentTemplatesPage() {
   const router = useRouter();
-  const { data: templates, isLoading } = useDocumentTemplates();
+  const { data: templates, isLoading, isError, error, refetch } = useDocumentTemplates();
   const deleteMutation = useDeleteDocumentTemplate();
 
   const handleDelete = useCallback(
@@ -284,49 +254,50 @@ export default function DocumentTemplatesPage() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/hr/documents">
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="size-4" aria-hidden />
               Back to Documents
             </Link>
           </Button>
-          <Button size="sm" className="gap-2" asChild>
+          <Button size="sm" asChild>
             <Link href="/hr/documents/templates/new">
-              <FilePlus2 className="h-4 w-4" />
+              <FilePlus2 className="size-4" aria-hidden />
               Add Template
             </Link>
           </Button>
         </div>
       }
     >
-      <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Total Templates" value={total} icon={FileText} color="blue" index={0} />
-          <StatCard label="Active" value={active} icon={FileCheck} color="green" index={1} />
-          <StatCard label="NDAs" value={ndaCount} icon={FileLock} color="red" index={2} />
-          <StatCard label="Offer Letters" value={offerCount} icon={FileKey} color="gold" index={3} />
-        </div>
+      <div className="space-y-4">
+        <StatsStrip
+          items={[
+            { label: "Total Templates", value: total, icon: FileText },
+            { label: "Active", value: active, icon: FileCheck, tone: "success" },
+            { label: "NDAs", value: ndaCount, icon: FileLock },
+            { label: "Offer Letters", value: offerCount, icon: FileKey },
+          ]}
+        />
 
-        {list.length === 0 ? (
+        {isError ? (
+          <QueryErrorState title="Couldn't load templates" error={error} onRetry={() => void refetch()} />
+        ) : list.length === 0 ? (
           <EmptyState
-            illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
+            illustration={<EmptyDocumentsIllustration />}
             title="No templates yet"
             description="Create your first document template to automate offer letters, NDAs, and more."
             action={{ label: "Create your first template", href: "/hr/documents/templates/new" }}
           />
         ) : (
-          <div className="rounded-xl border bg-card overflow-hidden">
-            <ScrollArea className="w-full" type="auto">
-              <div className="min-w-[780px]">
-                <Table>
+                <Table className="min-w-196">
                   <TableHeader>
-                    <TableRow className="bg-muted/30">
-                      <TableHead className="w-[48px] text-center">#</TableHead>
-                      <TableHead className="w-[220px]">Title</TableHead>
-                      <TableHead className="w-[120px]">Type</TableHead>
+                    <TableRow>
+                      <TableHead className="w-12 text-center">#</TableHead>
+                      <TableHead className="w-56">Title</TableHead>
+                      <TableHead className="w-32">Type</TableHead>
                       <TableHead>Variables</TableHead>
-                      <TableHead className="w-[80px] text-center">Version</TableHead>
-                      <TableHead className="w-[90px]">Status</TableHead>
-                      <TableHead className="w-[120px]">Created</TableHead>
-                      <TableHead className="w-[56px]" />
+                      <TableHead className="w-20 text-center">Version</TableHead>
+                      <TableHead className="w-24">Status</TableHead>
+                      <TableHead className="w-32">Created</TableHead>
+                      <TableHead className="w-14" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -339,38 +310,26 @@ export default function DocumentTemplatesPage() {
                             {index + 1}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2 min-w-0">
-                              <TypeIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                              <span className="font-medium text-sm truncate">{template.title}</span>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <IconChip icon={TypeIcon} tone={cfg.tone} size="sm" />
+                              <span className="font-medium text-sm truncate" title={template.title}>{template.title}</span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={`text-2xs px-2 py-0.5 ${cfg.className}`}
-                            >
-                              {cfg.label}
-                            </Badge>
+                            <StatusPill tone={cfg.tone}>{cfg.label}</StatusPill>
                           </TableCell>
                           <TableCell>
                             <VariableChips variables={template.variables ?? []} />
                           </TableCell>
-                          <TableCell className="text-center text-sm text-muted-foreground">
+                          <TableCell className="text-center text-sm text-muted-foreground tabular-nums">
                             v{template.version}
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={
-                                template.isActive
-                                  ? "bg-success-soft text-success-strong border-success-strong/20 text-2xs"
-                                  : "bg-muted text-muted-foreground border-border text-2xs"
-                              }
-                            >
+                            <StatusPill tone={template.isActive ? "success" : "neutral"} dot>
                               {template.isActive ? "Active" : "Inactive"}
-                            </Badge>
+                            </StatusPill>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
+                          <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                             {template.createdAt
                               ? format(new Date(template.createdAt), "MMM d, yyyy")
                               : ""}
@@ -380,8 +339,7 @@ export default function DocumentTemplatesPage() {
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
+                                  size="icon-sm"
                                   aria-label="Template actions"
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
@@ -411,9 +369,6 @@ export default function DocumentTemplatesPage() {
                     })}
                   </TableBody>
                 </Table>
-              </div>
-            </ScrollArea>
-          </div>
         )}
       </div>
     </PageWrapper>

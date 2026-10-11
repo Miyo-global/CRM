@@ -14,6 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import {
   Sheet,
@@ -77,16 +80,13 @@ const ROUND_MODES = [
   { value: "ONSITE", label: "On-site" },
 ];
 
-function roundTypeBadgeColor(type: string) {
-  switch (type) {
-    case "HR_SCREENING": return "bg-info-soft text-info-strong";
-    case "TECHNICAL": return "bg-plum-soft text-plum-strong";
-    case "MANAGER": return "bg-warning-soft text-warning-strong";
-    case "CULTURAL_FIT": return "bg-success-soft text-success-strong";
-    case "FINAL": return "bg-danger-soft text-danger-strong";
-    default: return "bg-muted text-muted-foreground";
-  }
-}
+const ROUND_TYPE_TONE: Record<string, Tone> = {
+  HR_SCREENING: "info",
+  TECHNICAL: "plum",
+  MANAGER: "warning",
+  CULTURAL_FIT: "success",
+  FINAL: "danger",
+};
 
 const emptyRound = (): HiringFlowRoundInput & { _key: string } => ({
   _key: Math.random().toString(36).slice(2),
@@ -118,6 +118,7 @@ function RoundRow({ round, index, total, errors, onUpdate, onRemove, onMoveUp, o
             type="button"
             className={cn("text-muted-foreground hover:text-foreground transition-colors text-2xs leading-none", index === 0 && "opacity-30 pointer-events-none")}
             onClick={() => onMoveUp(round._key)}
+            aria-label="Move round up"
           >
             ▲
           </button>
@@ -125,6 +126,7 @@ function RoundRow({ round, index, total, errors, onUpdate, onRemove, onMoveUp, o
             type="button"
             className={cn("text-muted-foreground hover:text-foreground transition-colors text-2xs leading-none", index === total - 1 && "opacity-30 pointer-events-none")}
             onClick={() => onMoveDown(round._key)}
+            aria-label="Move round down"
           >
             ▼
           </button>
@@ -144,6 +146,7 @@ function RoundRow({ round, index, total, errors, onUpdate, onRemove, onMoveUp, o
           className={cn("h-7 w-7 text-destructive shrink-0", total <= 1 && "invisible")}
           onClick={() => onRemove(round._key)}
           type="button"
+          aria-label="Remove round"
         >
           ×
         </Button>
@@ -256,7 +259,7 @@ function toRoundInputs(rounds: HiringFlowRound[]): (HiringFlowRoundInput & { _ke
 }
 
 export default function HiringFlowsPage() {
-  const { data: templates, isLoading } = useHiringFlows();
+  const { data: templates, isLoading, isError, error, refetch } = useHiringFlows();
   const createMutation = useCreateHiringFlow();
   const deleteMutation = useDeleteHiringFlow();
 
@@ -406,18 +409,20 @@ export default function HiringFlowsPage() {
       }
     >
       {isLoading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
         </div>
+      ) : isError ? (
+        <QueryErrorState title="Couldn't load hiring flows" error={error} onRetry={() => void refetch()} />
       ) : !templates?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration />}
+          illustration={<EmptyDocumentsIllustration className="size-28" />}
           title="No hiring flows yet"
           description="Create a template to define the rounds of interviews for any job."
           action={{ label: "New Flow", onClick: openCreateSheet }}
         />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {templates.map((t) => (
             <Card key={t.id} className="group relative">
               <CardHeader className="pb-2">
@@ -426,26 +431,26 @@ export default function HiringFlowsPage() {
                     <CardTitle className="text-sm truncate">{t.name}</CardTitle>
                     {t.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{t.description}</p>}
                   </div>
-                  {t.isDefault && <Badge className="shrink-0 text-2xs">Default</Badge>}
+                  {t.isDefault && <Badge className="shrink-0">Default</Badge>}
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="space-y-1">
                   {t.rounds.map((r, i) => (
                     <div key={r.id} className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground w-4 shrink-0">{i + 1}.</span>
-                      <span className="font-medium truncate flex-1">{r.name}</span>
-                      <span className={cn("px-1.5 py-0.5 rounded text-2xs font-medium shrink-0", roundTypeBadgeColor(r.type))}>
+                      <span className="w-4 shrink-0 tabular-nums text-muted-foreground">{i + 1}.</span>
+                      <span className="flex-1 truncate font-medium" title={r.name}>{r.name}</span>
+                      <StatusPill tone={ROUND_TYPE_TONE[r.type] ?? "neutral"} className="shrink-0">
                         {ROUND_TYPES.find((x) => x.value === r.type)?.label ?? r.type}
-                      </span>
+                      </StatusPill>
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-2 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="outline" size="sm" className="h-7 text-xs flex-1" onClick={() => openEditSheet(t)}>
+                <div className="flex gap-2 pt-1 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100">
+                  <Button variant="outline" size="xs" className="flex-1" onClick={() => openEditSheet(t)}>
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setDeleteTarget(t)}>
+                  <Button variant="outline" size="xs" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(t)}>
                     Delete
                   </Button>
                 </div>
@@ -537,7 +542,7 @@ export default function HiringFlowsPage() {
           </div>
           <SheetFooter className="flex gap-2">
             <Button variant="outline" onClick={close} disabled={saving}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} loading={saving}>
               {saving ? "Saving…" : sheetState.mode === "create" ? "Create Flow" : "Save Changes"}
             </Button>
           </SheetFooter>

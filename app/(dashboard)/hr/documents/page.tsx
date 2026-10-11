@@ -6,7 +6,9 @@ import { FolderPlus, Upload, FilePlus2, FileText, Eye, Trash2, Globe, FolderOpen
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -65,7 +67,7 @@ export default function DocumentsPage() {
     [folderRows],
   );
 
-  const { data: rawDocuments = [], isLoading, refetch } = useHrDocuments(undefined, typeFilter);
+  const { data: rawDocuments = [], isLoading, isError, error, refetch } = useHrDocuments(undefined, typeFilter);
   const { data: rawPolicies = [] } = useHrDocuments(undefined, "POLICY");
   const { data: statsData } = useHrDocumentStats();
   const deleteMutation = useDeleteDocument();
@@ -166,6 +168,13 @@ export default function DocumentsPage() {
   const handleSearchChange = (value: string) => { setSearchTerm(value); resetPage(); };
   const handleTypeChange = (value: string) => { setSelectedType(value); resetPage(); };
   const handleCategoryChange = (value: string) => { setSelectedCategory(value); resetPage(); };
+  const hasActiveFilters = searchTerm !== "" || selectedType !== "all" || selectedCategory !== "All Files";
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedType("all");
+    setSelectedCategory("All Files");
+    resetPage();
+  };
 
   const handleNewFolder = useCallback(
     (name: string) => {
@@ -192,26 +201,21 @@ export default function DocumentsPage() {
         <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <Skeleton className="h-8 w-52" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-4 w-full max-w-96" />
           </div>
           <div className="flex items-center gap-3 mt-4 md:mt-0">
             <Skeleton className="h-10 w-[120px] rounded-md" />
             <Skeleton className="h-10 w-[160px] rounded-md" />
           </div>
         </div>
-        <Card className="shadow-sm border">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <Skeleton className="h-10 flex-1 min-w-[200px] max-w-md rounded-md" />
-              {BUILT_IN_CATEGORY_TABS.map((tab) => (
-                <Skeleton key={tab} className="h-8 rounded-full" style={{ width: `${tab.length * 9 + 24}px` }} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+        <div className="flex flex-wrap items-center gap-2">
+          <Skeleton className="h-9 w-full rounded-md sm:w-64" />
+          {BUILT_IN_CATEGORY_TABS.map((tab) => (
+            <Skeleton key={tab} className="h-8 rounded-full" style={{ width: `${tab.length * 9 + 24}px` }} />
+          ))}
         </div>
+        <Skeleton className="h-20 rounded-lg" />
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     );
   }
@@ -261,12 +265,17 @@ export default function DocumentsPage() {
       }
     >
       <div className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard label="Total Documents" value={documents.length} icon={FileText} color="blue" />
-          <StatCard label="Folders" value={folders.length} icon={FolderOpen} color="gold" />
-          <StatCard label="Public Documents" value={documents.filter((d) => d.isPublic).length} icon={Star} color="purple" />
-        </div>
+        <StatsStrip
+          items={[
+            { label: "Total Documents", value: documents.length, icon: FileText },
+            { label: "Folders", value: folders.length, icon: FolderOpen },
+            { label: "Public Documents", value: documents.filter((d) => d.isPublic).length, icon: Star },
+          ]}
+        />
 
+        {isError ? (
+          <QueryErrorState title="Couldn't load documents" error={error} onRetry={() => void refetch()} />
+        ) : (
         <DocumentTable
           paginatedDocuments={paginatedDocuments}
           folders={folders}
@@ -283,7 +292,9 @@ export default function DocumentsPage() {
           onFolderSelect={handleCategoryChange}
           onMove={handleMove}
           enableAssign
+          onClearFilters={hasActiveFilters ? handleClearFilters : undefined}
         />
+        )}
 
         <RichDocumentsSection />
 
@@ -343,32 +354,35 @@ function RichDocumentsSection() {
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm">Created Documents</h3>
-          <span className="text-xs text-muted-foreground">{richDocs.length} documents</span>
+          <span className="text-xs text-muted-foreground tabular-nums">{richDocs.length} documents</span>
         </div>
         <div className="space-y-2">
           {richDocs.map((doc) => (
             <div
               key={doc.id}
-              className="flex flex-col gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-border-strong hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <IconChip icon={FileText} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{doc.title}</p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2">
                     {doc.templateType && (
-                      <Badge variant="outline" className="px-1.5 py-0 text-2xs">
+                      <Badge variant="secondary">
                         {doc.templateType}
                       </Badge>
                     )}
                     {doc.isPublished && (
-                      <Badge variant="default" className="gap-0.5 px-1.5 py-0 text-2xs">
-                        <Globe className="h-2.5 w-2.5" aria-hidden />
+                      <Badge variant="success" className="gap-1">
+                        <Globe className="size-3" aria-hidden />
                         Published
                       </Badge>
                     )}
                     {doc.updatedAt && (
-                      <span className="text-2xs text-muted-foreground">
+                      <span
+                        className="text-2xs text-muted-foreground tabular-nums"
+                        title={new Date(doc.updatedAt).toLocaleString()}
+                      >
                         {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                       </span>
                     )}
@@ -385,7 +399,7 @@ function RichDocumentsSection() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
                   onClick={() => handleDelete(doc.id)}
                   disabled={deleteMutation.isPending}
                   aria-label={`Delete ${doc.title}`}

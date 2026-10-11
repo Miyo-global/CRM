@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { Download, Loader2, Mail } from "lucide-react";
+import { Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -365,11 +365,12 @@ export function DocumentExportSheet({
                   : "No files match the current filters."}
               </p>
               <Button
-                className="w-full gap-2"
+                className="w-full"
                 onClick={() => void handleDownloadZip()}
-                disabled={exporting || !hasMatches}
+                disabled={!hasMatches}
+                loading={exporting}
               >
-                {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {!exporting && <Download className="size-4" aria-hidden />}
                 {hasMatches ? `Download ZIP (${matchCount})` : "Download ZIP"}
               </Button>
             </TabsContent>

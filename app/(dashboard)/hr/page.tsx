@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { LayoutGrid, List, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { ExportButton } from "@/components/ui/export-button";
 import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -29,11 +31,13 @@ import {
   type PageSizeOption,
   PAGE_SIZE,
   ROLE_LABELS,
+  getDisplayName,
+  getInitials,
 } from "@/features/hr/employees/hr-types";
 import { EmployeesLoadingSkeleton } from "@/features/hr/employees/employees-loading-skeleton";
 import { HrEmployeeListToolbar } from "@/features/hr/employees/hr-employee-list-toolbar";
-import { HrEmployeeTable } from "@/features/hr/employees/hr-employee-table";
-import { Card, CardContent } from "@/components/ui/card";
+import { HrEmployeePagination, HrEmployeeTable } from "@/features/hr/employees/hr-employee-table";
+import { EmployeeDirectoryCard } from "@/features/hr/employees/employee-directory-card";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 
 const MIN_SEARCH_LENGTH = 3;
@@ -81,7 +85,9 @@ export default function HRDashboardPage() {
     return trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : "";
   }, [debouncedSearchInput]);
 
-  const { data: employeesResponse, isLoading } = useHrEmployees({
+  const [view, setView] = useState<"table" | "grid">("table");
+
+  const { data: employeesResponse, isLoading, isError, error, refetch } = useHrEmployees({
     page,
     limit: pageSize,
     q: effectiveSearchTerm || undefined,
@@ -193,11 +199,23 @@ export default function HRDashboardPage() {
     statusFilter !== "Active" ||
     roleFilter !== "All";
 
+  const paginationProps = {
+    page,
+    pageSize,
+    totalPages,
+    totalCount,
+    showFrom,
+    showTo,
+    onPageChange: setPage,
+    onPageSizeChange: handlePageSizeChange,
+  };
+
   return (
     <PageWrapper
       title="Employees"
       subtitle="Employee directory — search, filter, and manage team records"
       badge={String(totalCount)}
+      stickyHeader
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
@@ -207,68 +225,105 @@ export default function HRDashboardPage() {
             filename={`employees-${new Date().toISOString().slice(0, 10)}.xlsx`}
             sheets={employeeExportSheets}
           />
-          <Button size="sm" className="gap-2" asChild>
+          <Button size="sm" asChild>
             <Link href="/hr/onboarding?tab=wizard">
-              <Plus className="h-4 w-4" aria-hidden="true" />
+              <Plus className="size-4" aria-hidden="true" />
               Add Employee
             </Link>
           </Button>
         </div>
       }
+      filters={
+        <div className="flex w-full flex-wrap items-center gap-2">
+          <HrEmployeeListToolbar
+            className="w-auto flex-1"
+            searchTerm={searchInput}
+            onSearchChange={setSearchTerm}
+            deptFilter={deptFilter}
+            onDeptChange={setDeptFilter}
+            departments={departments}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            roleFilter={roleFilter}
+            onRoleChange={setRoleFilter}
+            onClearFilters={handleClearFilters}
+            hasSearchFilter={!!effectiveSearchTerm || !!searchInput.trim()}
+          />
+          <Tabs value={view} onValueChange={(v) => setView(v as "table" | "grid")} className="ml-auto">
+            <TabsList aria-label="View">
+              <TabsTrigger value="table" aria-label="Table view">
+                <List className="size-4" aria-hidden="true" />
+              </TabsTrigger>
+              <TabsTrigger value="grid" aria-label="Grid view">
+                <LayoutGrid className="size-4" aria-hidden="true" />
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      }
     >
-      {employees.length > 0 ? (
-        <HrEmployeeTable
-          searchTerm={searchInput}
-          onSearchChange={setSearchTerm}
-          deptFilter={deptFilter}
-          onDeptChange={setDeptFilter}
-          departments={departments}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          roleFilter={roleFilter}
-          onRoleChange={setRoleFilter}
-          onClearFilters={handleClearFilters}
-          hasSearchFilter={!!effectiveSearchTerm || !!searchInput.trim()}
-          employees={employees}
-          totalCount={totalCount}
-          page={page}
-          pageSize={pageSize}
-          totalPages={totalPages}
-          showFrom={showFrom}
-          showTo={showTo}
-          currentUserRole={currentUserRole}
-          currentUserId={currentUserId}
-          onPageChange={setPage}
-          onPageSizeChange={handlePageSizeChange}
-          onRequestDelete={handleRequestDelete}
-        />
+      {isError ? (
+        <QueryErrorState title="Couldn't load employees" error={error} onRetry={() => refetch()} />
+      ) : employees.length > 0 ? (
+        view === "table" ? (
+          <HrEmployeeTable
+            hideToolbar
+            searchTerm={searchInput}
+            onSearchChange={setSearchTerm}
+            deptFilter={deptFilter}
+            onDeptChange={setDeptFilter}
+            departments={departments}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            roleFilter={roleFilter}
+            onRoleChange={setRoleFilter}
+            onClearFilters={handleClearFilters}
+            hasSearchFilter={!!effectiveSearchTerm || !!searchInput.trim()}
+            employees={employees}
+            totalCount={totalCount}
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            showFrom={showFrom}
+            showTo={showTo}
+            currentUserRole={currentUserRole}
+            currentUserId={currentUserId}
+            onPageChange={setPage}
+            onPageSizeChange={handlePageSizeChange}
+            onRequestDelete={handleRequestDelete}
+          />
+        ) : (
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {employees.map((e) => (
+                <EmployeeDirectoryCard
+                  key={e.id}
+                  id={e.id}
+                  name={getDisplayName(e)}
+                  initials={getInitials(e)}
+                  email={e.email}
+                  role={e.role}
+                  roleLabel={ROLE_LABELS[e.role] ?? e.role}
+                  designation={e.designation}
+                  department={e.department?.name ?? null}
+                  image={e.image}
+                  isActive={e.isActive !== false}
+                />
+              ))}
+            </div>
+            <HrEmployeePagination {...paginationProps} className="rounded-lg border bg-card" />
+          </div>
+        )
       ) : hasActiveFilters ? (
-        <Card className="border-border">
-          <CardContent className="p-0">
-            <HrEmployeeListToolbar
-              searchTerm={searchInput}
-              onSearchChange={setSearchTerm}
-              deptFilter={deptFilter}
-              onDeptChange={setDeptFilter}
-              departments={departments}
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              roleFilter={roleFilter}
-              onRoleChange={setRoleFilter}
-              onClearFilters={handleClearFilters}
-              hasSearchFilter={!!effectiveSearchTerm || !!searchInput.trim()}
-            />
-            <EmptyState
-              illustration={<EmptySearchIllustration className="mb-3" />}
-              title="No results found"
-              description="No employees match your current filters. Try adjusting your search."
-              className="py-12"
-            />
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptySearchIllustration />}
+          title="No results found"
+          description="No employees match your current filters. Try adjusting your search."
+          action={{ label: "Clear filters", onClick: handleClearFilters }}
+        />
       ) : (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="mb-3" />}
+          illustration={<EmptyTeamIllustration />}
           title="No employees found"
           description="Get started by adding your first team member."
           action={{ label: "Add Employee", href: "/hr/onboarding?tab=wizard" }}

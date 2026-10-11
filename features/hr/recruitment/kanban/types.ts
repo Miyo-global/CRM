@@ -8,6 +8,8 @@ export interface ColumnConfig {
   bg: string;
   border: string;
   badge: string;
+  /** Stage tone (column dot, §8.4). */
+  tone: Tone;
 }
 
 // Columns stay neutral (§8.4); the stage tone lives on the count pill.
@@ -17,6 +19,7 @@ const column = (id: CandidateStatus, label: string, t: Tone): ColumnConfig => ({
   bg: "bg-muted/60",
   border: "border-transparent",
   badge: toneSoft[t],
+  tone: t,
 });
 
 export const COLUMNS: ColumnConfig[] = [

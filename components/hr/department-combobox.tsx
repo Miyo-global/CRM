@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { comboboxTriggerClassName } from "@/components/ui/searchable-select";
 import { useHrDepartments, useCreateDepartment } from "@/lib/api/hooks/hr";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
@@ -38,14 +39,12 @@ const DepartmentOption = memo(function DepartmentOption({ dept, isSelected, onSe
     <button
       type="button"
       className={cn(
-        "flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+        "flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground",
         isSelected && "bg-accent text-accent-foreground"
       )}
       onClick={handleClick}
     >
-      <Check
-        className={cn("h-4 w-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")}
-      />
+      <Check className={cn("size-4 shrink-0 text-brand-text", isSelected ? "opacity-100" : "opacity-0")} aria-hidden="true" />
       <span className="truncate">{dept.name}</span>
     </button>
   );
@@ -152,19 +151,19 @@ export function DepartmentCombobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal border-input data-[placeholder]:text-muted-foreground",
-            !selectedDept && "text-muted-foreground",
+            comboboxTriggerClassName,
+            !selectedDept && "text-subtle-foreground",
             className
           )}
         >
           <span className="truncate">
             {selectedDept ? selectedDept.name : placeholder}
           </span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <div className="flex flex-col gap-1 p-2">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] overflow-hidden p-0" align="start">
+        <div className="flex flex-col gap-1 border-b border-border p-2">
           <Input
             ref={inputRef}
             placeholder="Search or add department..."
@@ -187,10 +186,10 @@ export function DepartmentCombobox({
             {canAdd && (
               <button
                 type="button"
-                className="flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground"
+                className="flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
                 onClick={handleAdd}
               >
-                <Plus className="h-4 w-4 shrink-0" />
+                <Plus className="size-4 shrink-0 text-brand-text" aria-hidden="true" />
                 <span>Add &quot;{search.trim()}&quot;</span>
               </button>
             )}

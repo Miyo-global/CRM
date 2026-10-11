@@ -13,7 +13,10 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { PhoneValue } from "@/lib/phone";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyPersonIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -28,11 +31,11 @@ import { Plus, Trash2, Mail, Phone, Building2, User2, CheckCircle2, Clock, XCirc
 const STATUS_OPTIONS = ["PENDING", "IN_PROGRESS", "COMPLETED", "DECLINED"] as const;
 type ReferenceStatus = typeof STATUS_OPTIONS[number];
 
-const STATUS_CONFIG: Record<ReferenceStatus, { label: string; variant: "secondary" | "default" | "destructive" | "outline"; icon: React.FC<{ className?: string }> }> = {
-  PENDING: { label: "Pending", variant: "secondary", icon: Clock },
-  IN_PROGRESS: { label: "In Progress", variant: "outline", icon: AlertCircle },
-  COMPLETED: { label: "Completed", variant: "default", icon: CheckCircle2 },
-  DECLINED: { label: "Declined", variant: "destructive", icon: XCircle },
+const STATUS_CONFIG: Record<ReferenceStatus, { label: string; tone: Tone; icon: React.FC<{ className?: string }> }> = {
+  PENDING: { label: "Pending", tone: "warning", icon: Clock },
+  IN_PROGRESS: { label: "In Progress", tone: "info", icon: AlertCircle },
+  COMPLETED: { label: "Completed", tone: "success", icon: CheckCircle2 },
+  DECLINED: { label: "Declined", tone: "danger", icon: XCircle },
 };
 
 interface Props {
@@ -82,35 +85,35 @@ export function ReferenceChecksTab({ candidateId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[1, 2].map((i) => <Skeleton key={i} className="h-20 w-full" />)}
+      <div className="space-y-3" aria-busy="true">
+        {[1, 2].map((i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm tabular-nums text-muted-foreground">
           {checks?.length ?? 0} reference{checks?.length !== 1 ? "s" : ""}
         </p>
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <Button size="sm" variant="outline">
-              <Plus className="mr-2 h-3.5 w-3.5" />Add Reference
+              <Plus aria-hidden="true" />Add Reference
             </Button>
           </SheetTrigger>
-          <SheetContent className="flex flex-col p-0 gap-0">
-            <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
-              <SheetTitle className="text-base">Add Reference</SheetTitle>
-              <SheetDescription className="text-xs">Add a reference contact to track.</SheetDescription>
+          <SheetContent size="md" className="flex flex-col gap-0 p-0">
+            <SheetHeader className="shrink-0 border-b border-border">
+              <SheetTitle>Add Reference</SheetTitle>
+              <SheetDescription>Add a reference contact to track.</SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Reference Name</label>
                 <Input placeholder="e.g. Rajesh Kumar" value={refName} onChange={(e) => setRefName(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Designation</label>
                   <Input placeholder="e.g. VP Engineering" value={refDesignation} onChange={(e) => setRefDesignation(e.target.value)} />
@@ -120,7 +123,7 @@ export function ReferenceChecksTab({ candidateId }: Props) {
                   <Input placeholder="e.g. Infosys" value={refCompany} onChange={(e) => setRefCompany(e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Email</label>
                   <Input type="email" placeholder="ref@company.com" value={refEmail} onChange={(e) => setRefEmail(e.target.value)} />
@@ -139,10 +142,10 @@ export function ReferenceChecksTab({ candidateId }: Props) {
                 <Textarea placeholder="Any notes..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
               </div>
             </div>
-            <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>Cancel</Button>
-              <Button className="flex-1" onClick={handleCreate} disabled={createCheck.isPending}>
-                {createCheck.isPending ? "Adding..." : "Add Reference"}
+            <SheetFooter>
+              <Button variant="ghost" onClick={() => setSheetOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreate} loading={createCheck.isPending}>
+                Add Reference
               </Button>
             </SheetFooter>
           </SheetContent>
@@ -150,9 +153,12 @@ export function ReferenceChecksTab({ candidateId }: Props) {
       </div>
 
       {!checks?.length ? (
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          No reference checks added yet.
-        </div>
+        <EmptyState
+          compact
+          illustration={<EmptyPersonIllustration className="size-24" />}
+          title="No reference checks added yet."
+          className="border-0 bg-transparent"
+        />
       ) : (
         <div className="space-y-3">
           {checks.map((check) => (
@@ -201,35 +207,35 @@ function ReferenceCheckCard({
   }, [updateCheck]);
 
   return (
-    <div className="rounded-lg border p-3 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+    <div className="space-y-2 rounded-lg border border-border p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-medium">{check.referenceName}</p>
-            <Badge variant={cfg.variant} className="text-2xs gap-1">
-              <Icon className="h-2.5 w-2.5" />
+            <StatusPill tone={cfg.tone}>
+              <Icon className="size-3" aria-hidden="true" />
               {cfg.label}
-            </Badge>
+            </StatusPill>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
             {check.referenceDesignation && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <User2 className="h-3 w-3" />{check.referenceDesignation}
+                <User2 className="size-3" aria-hidden="true" />{check.referenceDesignation}
               </span>
             )}
             {check.referenceCompany && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Building2 className="h-3 w-3" />{check.referenceCompany}
+                <Building2 className="size-3" aria-hidden="true" />{check.referenceCompany}
               </span>
             )}
             {check.referenceEmail && (
-              <a href={`mailto:${check.referenceEmail}`} className="text-xs text-primary flex items-center gap-1 hover:underline">
-                <Mail className="h-3 w-3" />{check.referenceEmail}
+              <a href={`mailto:${check.referenceEmail}`} className="flex items-center gap-1 rounded-sm text-xs text-brand-text outline-none hover:underline focus-visible:focus-ring">
+                <Mail className="size-3" aria-hidden="true" />{check.referenceEmail}
               </a>
             )}
             {check.referencePhone && (
-              <a href={`tel:${check.referencePhone}`} className="text-xs text-muted-foreground flex items-center gap-1 hover:underline">
-                <Phone className="h-3 w-3" />{check.referencePhone}
+              <a href={`tel:${check.referencePhone}`} className="flex items-center gap-1 rounded-sm text-xs tabular-nums text-muted-foreground outline-none hover:underline focus-visible:focus-ring">
+                <Phone className="size-3" aria-hidden="true" />{check.referencePhone}
               </a>
             )}
           </div>
@@ -244,7 +250,7 @@ function ReferenceCheckCard({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Select value={status} onValueChange={handleStatusChange} disabled={updateCheck.isPending}>
-            <SelectTrigger className="h-7 text-xs w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-8 w-36 text-xs" aria-label="Reference status"><SelectValue /></SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((s) => (
                 <SelectItem key={s} value={s} className="text-xs">{STATUS_CONFIG[s].label}</SelectItem>
@@ -253,12 +259,13 @@ function ReferenceCheckCard({
           </Select>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-destructive hover:text-destructive"
+            size="icon-sm"
+            className="text-destructive hover:text-destructive"
             disabled={deleteCheck.isPending}
             onClick={() => setConfirmDelete(true)}
+            aria-label="Remove reference"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

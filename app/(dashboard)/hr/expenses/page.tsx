@@ -21,6 +21,7 @@ import {
 } from "@/hooks/use-expense-filters";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import {
   EXPENSE_CATEGORIES,
@@ -82,6 +83,8 @@ export default function ExpensesPage() {
   const {
     data: pageData,
     isLoading,
+    isError,
+    error,
     refetch,
   } = useExpensePageData({
     page: filters.page,
@@ -255,7 +258,7 @@ export default function ExpensesPage() {
               className="gap-2"
               onClick={() => setIsImportOpen(true)}
             >
-              <Upload className="h-4 w-4" />
+              <Upload className="size-4" aria-hidden="true" />
               Import
             </Button>
             <ExpenseExportDialog
@@ -264,13 +267,13 @@ export default function ExpensesPage() {
               employees={employees}
               trigger={
                 <Button variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
+                  <Download className="size-4" aria-hidden="true" />
                   Export Report
                 </Button>
               }
             />
             <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
-              <Plus className="h-4 w-4" />
+              <Plus className="size-4" aria-hidden="true" />
               New Expense
             </Button>
           </div>
@@ -311,6 +314,9 @@ export default function ExpensesPage() {
             />
           </motion.div>
           <motion.div variants={fadeUp} className="flex-1 min-h-0 overflow-y-auto">
+            {isError ? (
+              <QueryErrorState title="Couldn't load expenses" error={error} onRetry={() => void refetch()} />
+            ) : (
             <AdminExpenseList
               expenses={filteredExpenses}
               pagination={pagination}
@@ -339,6 +345,7 @@ export default function ExpensesPage() {
               }
               onShowAll={() => setStatusFilter("ALL")}
             />
+            )}
           </motion.div>
         </motion.div>
 
@@ -372,10 +379,10 @@ export default function ExpensesPage() {
       subtitle="Track, manage, and submit your expense claims for reimbursement."
       actions={
         <Button
-          className="bg-primary hover:bg-brand-soft text-primary-foreground font-bold shadow-sm gap-2 rounded-full px-6"
+          className="gap-2"
           onClick={() => setIsCreateOpen(true)}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="size-4" aria-hidden="true" />
           Submit New Claim
         </Button>
       }
@@ -400,6 +407,9 @@ export default function ExpensesPage() {
           />
         </motion.div>
         <motion.div variants={fadeUp}>
+          {isError ? (
+            <QueryErrorState title="Couldn't load expenses" error={error} onRetry={() => void refetch()} />
+          ) : (
           <MemberExpenseList
             expenses={filteredExpenses}
             pagination={pagination}
@@ -417,6 +427,7 @@ export default function ExpensesPage() {
               setFilter("pageSize", clampExpensePageSize(size))
             }
           />
+          )}
         </motion.div>
       </motion.div>
 

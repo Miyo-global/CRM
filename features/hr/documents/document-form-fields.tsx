@@ -69,13 +69,13 @@ export function DocumentFormFields({
   const form = useFormContext<DocumentFormData>();
 
   return (
-    <div className="grid grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       {filesCount <= 1 && (
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="col-span-2">
+            <FormItem className="sm:col-span-2">
               <FormLabel>Document Name *</FormLabel>
               <FormControl>
                 <Input
@@ -148,7 +148,7 @@ export function DocumentFormFields({
           control={form.control}
           name="userId"
           render={({ field }) => (
-            <FormItem className="col-span-2">
+            <FormItem className="sm:col-span-2">
               <FormLabel>Associate with Employee</FormLabel>
               <SearchableCombobox
                 options={["No specific employee", ...filteredEmployees.map((e) => `${e.firstName ?? ""} ${e.lastName ?? ""}`.trim())]}
@@ -187,7 +187,7 @@ export function DocumentFormFields({
         control={form.control}
         name="description"
         render={({ field }) => (
-          <FormItem className="col-span-2">
+          <FormItem className="sm:col-span-2">
             <FormLabel>Description</FormLabel>
             <FormControl>
               <Textarea
@@ -209,7 +209,7 @@ export function DocumentFormFields({
         control={form.control}
         name="expiryDate"
         render={({ field }) => (
-          <FormItem className="flex flex-col col-span-2">
+          <FormItem className="flex flex-col sm:col-span-2">
             <FormLabel>Expiry Date</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
@@ -239,7 +239,7 @@ export function DocumentFormFields({
         )}
       />
 
-      <div className="col-span-2 space-y-2">
+      <div className="sm:col-span-2 space-y-2">
         <label className="text-sm font-medium">Tags</label>
         <div className="flex gap-3">
           <Input
@@ -263,16 +263,16 @@ export function DocumentFormFields({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="pl-2.5 pr-1.5 py-1 flex items-center gap-1">
+              <Badge key={tag} variant="secondary" className="gap-1 pr-1">
                 {tag}
                 <button
                   type="button"
                   data-tag={tag}
                   onClick={onRemoveTag}
                   aria-label={`Remove tag ${tag}`}
-                  className="hover:text-foreground"
+                  className="rounded-full p-0.5 hover:bg-neutral-strong/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="size-3" aria-hidden />
                 </button>
               </Badge>
             ))}
@@ -284,7 +284,7 @@ export function DocumentFormFields({
         control={form.control}
         name="isPublic"
         render={({ field }) => (
-          <FormItem className="col-span-2 flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+          <FormItem className="sm:col-span-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-sunken/40 p-4">
             <div className="space-y-0.5">
               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                 {field.value ? (

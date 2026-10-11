@@ -13,7 +13,6 @@ import {
 } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +34,7 @@ import {
   Download,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyPersonIllustration } from "@/components/illustrations";
 import { useSession } from "next-auth/react";
 import { isCEO as checkIsCEO } from "@/lib/constants/roles";
@@ -62,7 +62,7 @@ interface RejectDialogState {
 
 export default function ExitManagementPage() {
   const { data: session } = useSession();
-  const { data: resignations, isLoading } = useResignations();
+  const { data: resignations, isLoading, isError, error, refetch } = useResignations();
   const createResignation = useCreateResignation();
   const hrReview = useHrReviewResignation();
   const ceoReview = useCeoReviewResignation();
@@ -277,7 +277,7 @@ export default function ExitManagementPage() {
       <PageWrapper title="Exit Management" subtitle="Resignations and offboarding">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+            <Skeleton key={i} className="h-20 rounded-lg" />
           ))}
         </div>
       </PageWrapper>
@@ -292,35 +292,33 @@ export default function ExitManagementPage() {
       actions={
         canSubmitResignation ? (
           <Button size="sm" onClick={openResignationSheet}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
+            <Plus className="size-4" aria-hidden="true" />
             Submit Resignation
           </Button>
         ) : null
       }
     >
       {!isCEO && hasActiveResignation && (
-        <div className="mb-3 rounded-md border border-warning-strong/25 bg-warning-soft px-3 py-2 text-xs text-warning-strong">
+        <div role="status" className="mb-4 rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-strong">
           You already have an active resignation request in progress. Withdraw it before submitting a new one.
         </div>
       )}
 
-      {!resignations?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <EmptyState
-              illustration={<EmptyPersonIllustration className="h-32 w-32 opacity-95" />}
-              title="No resignations on record"
-              description="Resignation requests and offboarding details will appear here."
-              action={
-                canSubmitResignation
-                  ? { label: "Submit Resignation", onClick: openResignationSheet }
-                  : undefined
-              }
-            />
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !resignations?.length ? (
+        <EmptyState
+          illustration={<EmptyPersonIllustration className="size-32" />}
+          title="No resignations on record"
+          description="Resignation requests and offboarding details will appear here."
+          action={
+            canSubmitResignation
+              ? { label: "Submit Resignation", onClick: openResignationSheet }
+              : undefined
+          }
+        />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {resignations.map((r: Resignation) => (
             <ResignationCard
               key={r.id}
@@ -355,12 +353,12 @@ export default function ExitManagementPage() {
         submitLabel="Submit"
         isPending={createResignation.isPending}
       >
-        <div className="rounded-md border border-border bg-muted/40 px-3 py-2.5 flex items-start gap-2.5 text-xs text-muted-foreground">
-          <FileText className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface-sunken/60 px-3 py-2.5 text-xs text-muted-foreground">
+          <FileText className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>
             Notice period is <strong className="text-foreground">60 days</strong> as per
             company policy. Your last working date will be{" "}
-            <strong className="text-foreground">
+            <strong className="tabular-nums text-foreground">
               {format(addDays(new Date(), NOTICE_PERIOD_DAYS), "dd MMM yyyy")}
             </strong>
             .
@@ -419,7 +417,7 @@ export default function ExitManagementPage() {
           </p>
         </div>
 
-        <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5">
           <div>
             <p className="text-sm font-medium">Willing for Exit Interview?</p>
             <p className="text-xs text-muted-foreground">
@@ -452,10 +450,10 @@ export default function ExitManagementPage() {
           </p>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-text hover:underline"
             onClick={handleDownloadLetterTemplate}
           >
-            <Download className="h-3 w-3" />
+            <Download className="size-3.5" aria-hidden="true" />
             Download Resignation Letter Template
           </button>
         </div>

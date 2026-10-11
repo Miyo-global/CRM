@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { format, differenceInCalendarDays } from "date-fns";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -34,12 +33,16 @@ import {
   Check,
   X,
   RotateCcw,
+  type LucideIcon,
 } from "lucide-react";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 import { resolveImageUrl } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { getColorSafe, wfhStatusColors } from "@/lib/theme-constants";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { PropertyList } from "@/components/shared/property-list";
+import type { Tone } from "@/lib/design/tones";
 
 export interface LeaveBalance {
   id: number;
@@ -116,9 +119,9 @@ export interface WfhRequest {
   } | null;
 }
 
-export const balanceCardConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+export const balanceCardConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   "Casual Leave": { label: "CASUAL", color: "bg-primary", icon: CalendarDays },
-  "Sick Leave": { label: "SICK", color: "bg-danger-400", icon: Heart },
+  "Sick Leave": { label: "SICK", color: "bg-danger-500", icon: Heart },
   "Unpaid Leave": { label: "UNPAID", color: "bg-ink-400", icon: Palmtree },
 };
 
@@ -130,6 +133,28 @@ export function formatLeaveBalanceDisplay(balance: string | number): string {
   const rounded = Math.round(n * 10) / 10;
   if (Math.abs(rounded - Math.round(rounded)) < 1e-6) return String(Math.round(rounded));
   return rounded.toFixed(1);
+}
+
+/** Leave/WFH status → tone (§5.3 semantic mapping). */
+export function leaveStatusTone(status: string): Tone {
+  switch (status) {
+    case "APPROVED":
+      return "success";
+    case "PENDING":
+      return "warning";
+    case "CANCELLED":
+      return "neutral";
+    default:
+      return "danger";
+  }
+}
+
+function LeaveStatusPill({ status }: { status: string }) {
+  return (
+    <StatusPill tone={leaveStatusTone(status)} dot>
+      {status.charAt(0) + status.slice(1).toLowerCase()}
+    </StatusPill>
+  );
 }
 
 export const statusIconMap: Record<string, React.ElementType> = {
@@ -162,21 +187,26 @@ export const BalanceCard = React.memo(function BalanceCard({
   const isUnpaid = name.toLowerCase().includes("unpaid");
 
   return (
-    <Card className="border-border" role="listitem">
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+    <Card role="listitem">
+      <CardContent className="p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <IconChip icon={config.icon} tone="neutral" size="sm" />
             {config.label}
           </span>
-          <button className="text-muted-foreground hover:text-foreground" aria-label={`Info about ${name}`}>
-            <Info className="h-4 w-4" />
+          <button
+            type="button"
+            className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:focus-ring"
+            aria-label={`Info about ${name}`}
+          >
+            <Info className="size-4" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="mb-1">
-          <span className="text-3xl font-bold text-foreground">{balanceLabel}</span>
+        <div className="mb-1 tabular-nums">
+          <span className="font-display text-3xl font-extrabold text-foreground">{balanceLabel}</span>
           {total > 0 && (
-            <span className="text-lg text-muted-foreground ml-1">/ {total}</span>
+            <span className="ml-1 text-lg text-muted-foreground">/ {total}</span>
           )}
         </div>
         <p className="text-xs text-muted-foreground mb-3">
@@ -193,7 +223,7 @@ export const BalanceCard = React.memo(function BalanceCard({
           aria-valuetext={`${balanceLabel} of ${total} days available`}
         >
           <div
-            className={`h-full rounded-full transition-all duration-500 ${config.color}`}
+            className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${config.color}`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -218,15 +248,15 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
 
   return (
     <div
-      className="rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-colors min-w-0 max-w-full overflow-hidden"
+      className="min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-border-strong"
       role="listitem"
     >
       <div className="flex min-w-0 flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {showUser && request.user && (
             <Avatar className="h-9 w-9 shrink-0">
-              <AvatarImage src={resolveImageUrl(request.user.image)} />
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+              <AvatarImage src={resolveImageUrl(request.user.image)} alt="" />
+              <AvatarFallback className="text-xs bg-brand-soft text-brand-soft-foreground">
                 {request.user.firstName?.[0]}
                 {request.user.lastName?.[0]}
               </AvatarFallback>
@@ -238,7 +268,7 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
                 {employeeName}
               </p>
             )}
-            <p className={`text-xs text-muted-foreground ${showUser ? "mt-0.5" : "text-sm text-foreground"}`}>
+            <p className={`tabular-nums ${showUser ? "mt-0.5 text-xs text-muted-foreground" : "text-sm text-foreground"}`}>
               {format(new Date(request.date), "EEEE, MMM dd, yyyy")}
             </p>
             {request.reason && (
@@ -259,13 +289,10 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
         {(showStatusBadge || actions) && (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 sm:ml-3">
             {showStatusBadge && (
-              <Badge
-                variant="outline"
-                className={`text-xs flex items-center gap-1 ${getColorSafe(wfhStatusColors, status)}`}
-              >
-                <StatusIcon className="h-3 w-3" aria-hidden="true" />
+              <StatusPill tone={leaveStatusTone(status)} className="gap-1">
+                <StatusIcon className="size-3" aria-hidden="true" />
                 {status}
-              </Badge>
+              </StatusPill>
             )}
             {actions}
           </div>
@@ -289,18 +316,18 @@ export const StatsCard = React.memo(function StatsCard({
   accent: string;
 }) {
   return (
-    <Card className="border-border" role="listitem">
-      <CardContent className="pt-4 pb-4">
+    <Card role="listitem">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
               {title}
             </p>
-            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+            <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
           </div>
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${accent}`}>
-            <Icon className="h-5 w-5" aria-hidden="true" />
+          <div className={`flex size-9 items-center justify-center rounded-full ${accent}`}>
+            <Icon className="size-4" aria-hidden="true" />
           </div>
         </div>
       </CardContent>
@@ -364,14 +391,6 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
     ? format(start, "MMM d")
     : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
 
-  const statusDotColor =
-    status === "PENDING"
-      ? "bg-warning-500"
-      : status === "APPROVED"
-      ? "bg-success-500"
-      : status === "CANCELLED"
-      ? "bg-ink-400"
-      : "bg-danger-500";
 
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
@@ -379,13 +398,13 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const employeeName = formatEmployeeName(request);
 
   return (
-    <tr className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+    <tr className="group border-b border-border transition-colors last:border-0 hover:bg-muted/40">
       {showEmployee && (
         <td className="py-3.5 px-3">
           <div className="flex items-center gap-2.5 min-w-[140px]">
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src={resolveImageUrl(request.user?.image)} />
-              <AvatarFallback className="text-2xs bg-primary/10 text-primary">
+              <AvatarImage src={resolveImageUrl(request.user?.image)} alt="" />
+              <AvatarFallback className="text-2xs bg-brand-soft text-brand-soft-foreground">
                 {request.user?.firstName?.[0]}
                 {request.user?.lastName?.[0]}
               </AvatarFallback>
@@ -398,23 +417,17 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       )}
       <td className="py-3.5 px-3">
         <div className="flex items-center gap-2.5">
-          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-            status === "PENDING" ? "bg-warning-soft" : status === "APPROVED" ? "bg-success-soft" : "bg-danger-soft"
-          }`}>
-            <Icon className={`h-4 w-4 ${
-              status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : "text-danger-strong"
-            }`} aria-hidden="true" />
-          </div>
+          <IconChip icon={Icon} tone={leaveStatusTone(status)} size="sm" className="size-8" />
           <span className="text-sm font-medium text-foreground">{typeName.replace(" Leave", "")}<br /><span className="font-normal text-muted-foreground">Leave</span></span>
         </div>
       </td>
-      <td className="py-3.5 px-3 text-sm text-muted-foreground">
+      <td className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
         {format(createdAt, "MMM d, yyyy")}
       </td>
-      <td className="py-3.5 px-3 text-sm text-muted-foreground">
+      <td className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
         {periodStr}
       </td>
-      <td className="py-3.5 px-3 text-sm text-foreground text-center">
+      <td className="px-3 py-3.5 text-center text-sm tabular-nums text-foreground">
         {request.isHalfDay ? (
           <span className="text-xs font-medium text-muted-foreground">
             {request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"}
@@ -425,7 +438,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       </td>
       <td className="py-3.5 px-3">
         <div className="flex items-center gap-1.5">
-          <span className={`h-2 w-2 rounded-full ${pConfig.dotColor}`} />
+          <span className={`size-2 rounded-full ${pConfig.dotColor}`} aria-hidden="true" />
           <span className={`text-xs font-medium ${pConfig.textColor}`}>
             {pConfig.label}
           </span>
@@ -433,27 +446,16 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       </td>
       <td className="py-3.5 px-3">
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5">
-            <span className={`h-2 w-2 rounded-full ${statusDotColor}`} />
-            <span className={`text-xs font-medium ${
-              status === "PENDING"
-                ? "text-warning-strong"
-                : status === "APPROVED"
-                ? "text-success-strong"
-                : status === "CANCELLED"
-                ? "text-muted-foreground"
-                : "text-danger-strong"
-            }`}>
-              {status.charAt(0) + status.slice(1).toLowerCase()}
-            </span>
+          <div>
+            <LeaveStatusPill status={status} />
           </div>
           {request.managerComment && (
-            <span className="text-xs text-muted-foreground truncate max-w-[140px]" title={request.managerComment}>
+            <span className="text-xs text-muted-foreground max-w-36 truncate" title={request.managerComment}>
               &ldquo;{request.managerComment}&rdquo;
             </span>
           )}
           {status === "REJECTED" && request.rejectionReason && (
-            <span className="text-xs text-danger-strong truncate max-w-[140px]" title={request.rejectionReason}>
+            <span className="text-xs text-danger-strong max-w-36 truncate" title={request.rejectionReason}>
               {request.rejectionReason}
             </span>
           )}
@@ -462,8 +464,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       <td className="py-3.5 px-3 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Actions">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant="ghost" size="icon-sm" aria-label="Actions">
+              <MoreVertical className="size-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -547,30 +549,22 @@ export function LeaveRequestDetailsSheet({
     : days === 1
     ? format(start, "MMM d")
     : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
-  const statusDotColor =
-    status === "PENDING"
-      ? "bg-warning-500"
-      : status === "APPROVED"
-      ? "bg-success-500"
-      : status === "CANCELLED"
-      ? "bg-ink-400"
-      : "bg-danger-500";
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
   const employeeName = formatEmployeeName(request);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-sm p-0 flex flex-col">
-        <SheetHeader className="p-5 pb-4 border-b">
-          <SheetTitle className="text-base">Leave Request Details</SheetTitle>
+      <SheetContent size="sm" className="flex flex-col gap-0 p-0">
+        <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
+          <SheetTitle className="font-display text-lg font-bold">Leave Request Details</SheetTitle>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm">
+        <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5 text-sm">
           {showEmployee && request.user && (
             <div className="flex items-center gap-3 pb-1">
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={resolveImageUrl(request.user.image)} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                <AvatarImage src={resolveImageUrl(request.user.image)} alt="" />
+                <AvatarFallback className="text-xs bg-brand-soft text-brand-soft-foreground">
                   {request.user.firstName?.[0]}
                   {request.user.lastName?.[0]}
                 </AvatarFallback>
@@ -585,49 +579,42 @@ export function LeaveRequestDetailsSheet({
           )}
 
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-              status === "PENDING" ? "bg-warning-soft" : status === "APPROVED" ? "bg-success-soft" : "bg-danger-soft"
-            }`}>
-              <Icon className={`h-5 w-5 ${
-                status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : "text-danger-strong"
-              }`} />
-            </div>
+            <IconChip icon={Icon} tone={leaveStatusTone(status)} />
             <div>
               <p className="font-semibold text-foreground">{typeName}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`h-2 w-2 rounded-full ${statusDotColor}`} />
-                <span className={`text-xs ${
-                  status === "PENDING" ? "text-warning-strong" : status === "APPROVED" ? "text-success-strong" : status === "CANCELLED" ? "text-muted-foreground" : "text-danger-strong"
-                }`}>{status.charAt(0) + status.slice(1).toLowerCase()}</span>
+              <div className="mt-1">
+                <LeaveStatusPill status={status} />
               </div>
             </div>
           </div>
 
-          <div className="space-y-3 border rounded-lg p-3 bg-muted/20">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground text-xs">Submitted</span>
-              <span className="font-medium text-xs">{format(createdAt, "MMM d, yyyy")}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground text-xs">Period</span>
-              <span className="font-medium text-xs">{periodStr}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground text-xs">Duration</span>
-              <span className="font-medium text-xs">
-                {request.isHalfDay ? `0.5 day (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})` : `${days} day${days !== 1 ? "s" : ""}`}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground text-xs">Priority</span>
-              <span className={`text-xs font-medium ${pConfig.textColor}`}>{pConfig.label}</span>
-            </div>
-          </div>
+          <PropertyList
+            className="rounded-lg border border-border bg-surface-sunken p-3 tabular-nums"
+            items={[
+              { label: "Submitted", value: format(createdAt, "MMM d, yyyy") },
+              { label: "Period", value: periodStr },
+              {
+                label: "Duration",
+                value: request.isHalfDay
+                  ? `0.5 day (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
+                  : `${days} day${days !== 1 ? "s" : ""}`,
+              },
+              {
+                label: "Priority",
+                value: (
+                  <span className={`inline-flex items-center gap-1.5 font-medium ${pConfig.textColor}`}>
+                    <span className={`size-2 rounded-full ${pConfig.dotColor}`} aria-hidden="true" />
+                    {pConfig.label}
+                  </span>
+                ),
+              },
+            ]}
+          />
 
           {request.reason && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reason</p>
-              <p className="max-w-full break-words rounded-lg bg-muted/30 p-3 text-sm text-foreground [overflow-wrap:anywhere]">
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Reason</p>
+              <p className="max-w-full break-words rounded-lg bg-surface-sunken p-3 text-sm text-foreground [overflow-wrap:anywhere]">
                 {request.reason}
               </p>
             </div>
@@ -644,7 +631,7 @@ export function LeaveRequestDetailsSheet({
 
           {status === "REJECTED" && request.rejectionReason && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rejection Reason</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Rejection Reason</p>
               <p className="max-w-full break-words rounded-lg bg-danger-soft p-3 text-sm text-danger-strong [overflow-wrap:anywhere]">
                 {request.rejectionReason}
               </p>
@@ -653,16 +640,16 @@ export function LeaveRequestDetailsSheet({
 
           {request.managerComment && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Manager Comment</p>
-              <p className="max-w-full break-words rounded-lg bg-muted/30 p-3 text-sm text-foreground [overflow-wrap:anywhere]">
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Manager Comment</p>
+              <p className="max-w-full break-words rounded-lg bg-surface-sunken p-3 text-sm text-foreground [overflow-wrap:anywhere]">
                 {request.managerComment}
               </p>
             </div>
           )}
         </div>
-        <div className="p-5 pt-4 border-t">
-          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>Close</Button>
-        </div>
+        <SheetFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
@@ -688,21 +675,24 @@ export function LeaveRequestRejectSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="sm:max-w-sm">
-        <SheetHeader>
-          <SheetTitle>Rejection reason</SheetTitle>
+      <SheetContent size="sm" className="gap-0 p-0">
+        <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
+          <SheetTitle className="font-display text-lg font-bold">Rejection reason</SheetTitle>
         </SheetHeader>
-        <Textarea
-          placeholder="Reason (optional)"
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-          className="min-h-[80px]"
-        />
+        <div className="flex-1 px-6 py-5">
+          <Textarea
+            placeholder="Reason (optional)"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            className="min-h-20"
+            aria-label="Rejection reason"
+          />
+        </div>
         <SheetFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
+          <Button variant="ghost" onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button
             variant="destructive"
-            disabled={isPending}
+            loading={isPending}
             onClick={() => {
               onConfirm(rejectReason);
               setRejectReason("");
@@ -752,22 +742,22 @@ export function LeaveRequestTable({
 
   return (
     <>
-      <div className="w-full max-w-full overflow-x-auto rounded-md border border-border">
+      <div className="w-full max-w-full overflow-x-auto rounded-lg border border-border bg-card">
         <div style={{ minWidth }}>
           <table className="w-full">
             <caption className="sr-only">{caption}</caption>
             <thead>
-              <tr className="border-b border-border bg-muted/40">
+              <tr className="border-b border-border bg-surface-sunken">
                 {showEmployee && (
-                  <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Employee</th>
+                  <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Employee</th>
                 )}
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Type</th>
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Date Requested</th>
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Period</th>
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Days</th>
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Priority</th>
-                <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Status</th>
-                <th className="text-right text-xs font-medium text-muted-foreground py-2.5 px-3">Action</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Type</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Date Requested</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Period</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Days</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Priority</th>
+                <th className="px-3 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-3 py-2.5 text-right text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Action</th>
               </tr>
             </thead>
             <tbody>

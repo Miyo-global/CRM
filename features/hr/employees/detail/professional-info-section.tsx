@@ -134,7 +134,7 @@ export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: 
         <Briefcase className="h-4 w-4 text-muted-foreground" />
         <h3 className="text-sm font-semibold text-foreground">Professional Information</h3>
       </div>
-      <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border bg-surface-sunken px-4 py-3 text-sm text-muted-foreground">
         <p className="font-medium text-foreground mb-1">How these fields differ</p>
         <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
           <li>

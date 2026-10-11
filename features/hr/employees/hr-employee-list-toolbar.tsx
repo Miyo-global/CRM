@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { HrEmployeeSearch } from "./hr-employee-search";
 import { HrFilterBar } from "./hr-filter-bar";
 import type { StatusFilter, RoleFilter } from "./hr-types";
@@ -17,6 +18,7 @@ interface HrEmployeeListToolbarProps {
   onClearFilters: () => void;
   hasSearchFilter?: boolean;
   totalCount?: number;
+  className?: string;
 }
 
 export function HrEmployeeListToolbar({
@@ -32,12 +34,13 @@ export function HrEmployeeListToolbar({
   onClearFilters,
   hasSearchFilter,
   totalCount,
+  className,
 }: HrEmployeeListToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 border-b px-4 py-3 lg:flex-row lg:flex-nowrap lg:items-center">
+    <div className={cn("flex w-full flex-wrap items-center gap-2", className)}>
       <HrEmployeeSearch value={searchTerm} onChange={onSearchChange} />
       <HrFilterBar
-        className="min-w-0 flex-1"
+        className="min-w-0"
         deptFilter={deptFilter}
         onDeptChange={onDeptChange}
         departments={departments}
@@ -49,7 +52,7 @@ export function HrEmployeeListToolbar({
         hasSearchFilter={hasSearchFilter}
       />
       {totalCount !== undefined && (
-        <p className="text-xs text-muted-foreground lg:ml-auto shrink-0">
+        <p className="shrink-0 text-xs tabular-nums text-muted-foreground lg:ml-auto">
           {totalCount} employee{totalCount !== 1 ? "s" : ""}
         </p>
       )}

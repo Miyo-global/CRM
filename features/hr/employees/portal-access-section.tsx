@@ -62,7 +62,7 @@ export function PortalAccessSection({
         <h3 className="text-sm font-semibold text-foreground">Portal Access</h3>
       </div>
 
-      <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-surface-sunken px-4 py-3">
         <div className="space-y-1 pr-4">
           <p className="text-sm font-medium text-foreground">
             {hasAccess ? "Access enabled" : "Access disabled"}

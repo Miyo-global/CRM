@@ -9,6 +9,10 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,11 +26,12 @@ import {
 import { useSession } from "next-auth/react";
 import { EmptyActivityIllustration } from "@/components/illustrations";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import type { Tone } from "@/lib/design/tones";
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" {
-  if (s === "ACTIVE") return "default";
-  if (s === "CLOSED") return "outline";
-  return "secondary";
+function statusTone(s: string | null): Tone {
+  if (s === "ACTIVE") return "success";
+  if (s === "CLOSED") return "neutral";
+  return "warning";
 }
 
 
@@ -35,33 +40,34 @@ interface SurveyCardProps {
   isAdmin: boolean;
   onPublish: (id: number) => void;
   onClose: (id: number) => void;
+  pending?: boolean;
 }
 
-const SurveyCard = memo(function SurveyCard({ s, isAdmin, onPublish, onClose }: SurveyCardProps) {
+const SurveyCard = memo(function SurveyCard({ s, isAdmin, onPublish, onClose, pending }: SurveyCardProps) {
   const handlePublish = useCallback(() => onPublish(s.id), [onPublish, s.id]);
   const handleClose = useCallback(() => onClose(s.id), [onClose, s.id]);
 
   return (
-    <Card className="hover:shadow-sm transition-shadow">
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-start justify-between">
-          <Badge variant={statusBadge(s.status)} className="text-2xs">{s.status ?? "DRAFT"}</Badge>
-          {s.isAnonymous && <Badge variant="outline" className="text-2xs">Anonymous</Badge>}
+    <Card className="h-full">
+      <CardContent className="flex h-full flex-col gap-3 p-5">
+        <div className="flex items-start justify-between gap-2">
+          <StatusPill tone={statusTone(s.status)} dot>{s.status ?? "DRAFT"}</StatusPill>
+          {s.isAnonymous && <Badge variant="outline">Anonymous</Badge>}
         </div>
-        <h3 className="text-sm font-semibold leading-tight">{s.title}</h3>
-        <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
-          <span className="flex items-center gap-0.5"><ClipboardList className="h-3 w-3" />{s.questions?.length ?? 0} questions</span>
-          <span className="flex items-center gap-0.5"><BarChart3 className="h-3 w-3" />{s.responses?.length ?? 0} responses</span>
-          {s.closesAt && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{s.title}</h3>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground tabular-nums">
+          <span className="flex items-center gap-1"><ClipboardList className="size-3.5" aria-hidden="true" />{s.questions?.length ?? 0} questions</span>
+          <span className="flex items-center gap-1"><BarChart3 className="size-3.5" aria-hidden="true" />{s.responses?.length ?? 0} responses</span>
+          {s.closesAt && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}
         </div>
         {isAdmin && s.status === "DRAFT" && (
-          <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={handlePublish}>
-            <Play className="h-3 w-3 mr-1" />Publish
+          <Button size="sm" variant="outline" className="mt-auto w-full" onClick={handlePublish} loading={pending}>
+            <Play className="size-4" aria-hidden="true" />Publish
           </Button>
         )}
         {isAdmin && s.status === "ACTIVE" && (
-          <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={handleClose}>
-            <Archive className="h-3 w-3 mr-1" />Close Survey
+          <Button size="sm" variant="outline" className="mt-auto w-full" onClick={handleClose}>
+            <Archive className="size-4" aria-hidden="true" />Close Survey
           </Button>
         )}
       </CardContent>
@@ -72,7 +78,7 @@ const SurveyCard = memo(function SurveyCard({ s, isAdmin, onPublish, onClose }: 
 
 export default function SurveysPage() {
   const { data: session } = useSession();
-  const { data: surveys, isLoading } = usePulseSurveys();
+  const { data: surveys, isLoading, isError, error, refetch } = usePulseSurveys();
   const create = useCreateSurvey();
   const update = useUpdateSurvey();
   const isAdmin = isAdminOrOwner(session?.user?.role);
@@ -122,8 +128,8 @@ export default function SurveysPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Pulse Surveys" subtitle="Employee engagement surveys">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -134,15 +140,27 @@ export default function SurveysPage() {
       title="Pulse Surveys"
       subtitle="Create and manage employee engagement surveys"
       badge={`${surveys?.length ?? 0} surveys`}
-      actions={isAdmin ? <Button size="sm" onClick={handleOpenSheet}><Plus className="h-3.5 w-3.5 mr-1" />Create Survey</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={handleOpenSheet}><Plus className="size-4" aria-hidden="true" />Create Survey</Button> : undefined}
     >
-      {!surveys?.length ? (
-        <Card><CardContent className="py-12 text-center">
-          <EmptyActivityIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">No surveys created yet.</p>
-        </CardContent></Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !surveys?.length ? (
+        <EmptyState
+          illustration={<EmptyActivityIllustration className="size-32" />}
+          title="No surveys created yet."
+          {...(isAdmin ? { action: { label: "Create Survey", onClick: handleOpenSheet } } : {})}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-4">
+        <StatsStrip
+          items={[
+            { label: "Active", value: surveys.filter((s) => s.status === "ACTIVE").length, tone: "success" },
+            { label: "Draft", value: surveys.filter((s) => (s.status ?? "DRAFT") === "DRAFT").length },
+            { label: "Closed", value: surveys.filter((s) => s.status === "CLOSED").length },
+            { label: "Responses", value: surveys.reduce((n, s) => n + (s.responses?.length ?? 0), 0) },
+          ]}
+        />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {surveys.map((s: PulseSurvey) => (
             <SurveyCard
               key={s.id}
@@ -150,8 +168,10 @@ export default function SurveysPage() {
               isAdmin={isAdmin}
               onPublish={handlePublish}
               onClose={handleCloseOpen}
+              pending={update.isPending && update.variables?.id === s.id && update.variables?.status === "ACTIVE"}
             />
           ))}
+        </div>
         </div>
       )}
 

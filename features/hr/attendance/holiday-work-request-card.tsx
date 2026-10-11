@@ -180,7 +180,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
         </div>
       </HrSheet>
 
-      <Card id="holiday-work" className="overflow-hidden border-border shadow-sm scroll-mt-24">
+      <Card id="holiday-work" className="scroll-mt-24 gap-0 overflow-hidden">
         <CardHeader className="pb-3 pt-5">
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Holiday / Sunday Work</span>

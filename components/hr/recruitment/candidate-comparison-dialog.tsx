@@ -1,13 +1,16 @@
 "use client";
 
+import * as React from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { StatusPill } from "@/components/ui/status-pill";
 import type { Candidate } from "@/types/hr";
-import { Star, Briefcase, Mail, Phone, Globe, Building2 } from "lucide-react";
+import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { COLUMNS } from "@/features/hr/recruitment/kanban/types";
 
 interface Props {
   candidates: Candidate[];
@@ -22,156 +25,177 @@ const BREAKDOWN_LABELS: Record<string, string> = {
   leadership: "Leadership",
 };
 
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="space-y-0.5">
-      <div className="flex justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium tabular-nums">{value}/10</span>
-      </div>
-      <Progress value={value * 10} className="h-1.5" />
-    </div>
-  );
+const STATUS_TONE = Object.fromEntries(COLUMNS.map((c) => [c.id, c.tone]));
+
+function num(v: unknown): number | null {
+  const n = Number(v);
+  return v == null || v === "" || !Number.isFinite(n) ? null : n;
 }
 
-function CandidateColumn({ candidate }: { candidate: Candidate }) {
-  const name = `${candidate.firstName} ${candidate.lastName}`;
-  const breakdown = candidate.aiScoreBreakdown;
+interface Row {
+  label: string;
+  /** Numeric value per candidate; the highest is highlighted. */
+  values?: (number | null)[];
+  render: (c: Candidate, i: number) => React.ReactNode;
+}
 
+function ScoreBar({ value }: { value: number }) {
   return (
-    <div className="flex-1 min-w-0 space-y-4 px-3">
-      <div className="text-center space-y-1">
-        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mx-auto text-sm font-semibold">
-          {candidate.firstName?.[0] ?? ""}{candidate.lastName?.[0] ?? ""}
-        </div>
-        <p className="text-sm font-semibold truncate">{name}</p>
-        {candidate.currentRole && (
-          <p className="text-xs text-muted-foreground truncate">{candidate.currentRole}</p>
-        )}
-        <Badge
-          variant={
-            candidate.status === "HIRED" ? "default" :
-            candidate.status === "REJECTED" ? "destructive" : "secondary"
-          }
-          className="text-2xs"
-        >
-          {candidate.status ?? "NEW"}
-        </Badge>
-      </div>
-
-      <div className="rounded-lg border p-3 space-y-2 bg-muted/30">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium">AI Score</span>
-          <span className="text-lg font-bold tabular-nums">
-            {candidate.aiScore != null ? candidate.aiScore : ""}
-            {candidate.aiScore != null && <span className="text-xs text-muted-foreground font-normal">/100</span>}
-          </span>
-        </div>
-        {breakdown && Object.keys(breakdown).length > 0 ? (
-          <div className="space-y-1.5">
-            {Object.entries(breakdown).map(([key, val]) => (
-              <ScoreBar
-                key={key}
-                label={BREAKDOWN_LABELS[key] ?? key}
-                value={Number.isFinite(Number(val)) ? Number(val) : 0}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-2xs text-muted-foreground text-center py-1">No AI score yet</p>
-        )}
-      </div>
-
-      <div className="space-y-2 text-xs">
-        {candidate.currentCompany && (
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Building2 className="h-3 w-3 shrink-0" />
-            <span className="truncate">{candidate.currentCompany}</span>
-          </div>
-        )}
-        {candidate.experienceYears && (
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Briefcase className="h-3 w-3 shrink-0" />
-            <span>{candidate.experienceYears} yrs exp</span>
-          </div>
-        )}
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <Mail className="h-3 w-3 shrink-0" />
-          <span className="truncate">{candidate.email}</span>
-        </div>
-        {candidate.phone && (
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Phone className="h-3 w-3 shrink-0" />
-            <span>{candidate.phone}</span>
-          </div>
-        )}
-        {(candidate.linkedinUrl || candidate.portfolioUrl) && (
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Globe className="h-3 w-3 shrink-0" />
-            {candidate.linkedinUrl && (
-              <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
-                LinkedIn
-              </a>
-            )}
-            {candidate.linkedinUrl && candidate.portfolioUrl && <span>·</span>}
-            {candidate.portfolioUrl && (
-              <a href={candidate.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
-                Portfolio
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-
-      {candidate.rating != null && (
-        <div className="flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`h-3.5 w-3.5 ${i < (candidate.rating ?? 0) ? "text-warning-strong fill-warning-400" : "text-muted"}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {candidate.skills && candidate.skills.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Skills</p>
-          <div className="flex flex-wrap gap-1">
-            {candidate.skills.slice(0, 8).map((s) => (
-              <Badge key={s} variant="outline" className="text-2xs px-1.5 py-0">{s}</Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {candidate.source && (
-        <div>
-          <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Source</p>
-          <Badge variant="secondary" className="text-2xs">{candidate.source}</Badge>
-        </div>
-      )}
+    <div className="space-y-1">
+      <span className="text-sm font-medium tabular-nums">{value}/10</span>
+      <Progress value={value * 10} className="h-1" />
     </div>
   );
 }
 
 export function CandidateComparisonDialog({ candidates, onClose }: Props) {
+  const breakdownKeys = Array.from(
+    new Set(candidates.flatMap((c) => Object.keys(c.aiScoreBreakdown ?? {}))),
+  );
+
+  const rows: Row[] = [
+    {
+      label: "Status",
+      render: (c) => (
+        <StatusPill tone={STATUS_TONE[c.status ?? "NEW"] ?? "neutral"} dot>{c.status ?? "NEW"}</StatusPill>
+      ),
+    },
+    {
+      label: "AI Score",
+      values: candidates.map((c) => num(c.aiScore)),
+      render: (c) =>
+        c.aiScore != null ? (
+          <span className="font-display text-xl font-bold tabular-nums">
+            {c.aiScore}
+            <span className="text-xs font-normal text-muted-foreground">/100</span>
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">No AI score yet</span>
+        ),
+    },
+    ...breakdownKeys.map<Row>((key) => ({
+      label: BREAKDOWN_LABELS[key] ?? key,
+      values: candidates.map((c) => num(c.aiScoreBreakdown?.[key])),
+      render: (c) => {
+        const v = num(c.aiScoreBreakdown?.[key]);
+        return v != null ? <ScoreBar value={v} /> : null;
+      },
+    })),
+    {
+      label: "Experience",
+      values: candidates.map((c) => num(c.experienceYears)),
+      render: (c) => (c.experienceYears ? <span className="tabular-nums">{c.experienceYears} yrs exp</span> : null),
+    },
+    {
+      label: "Rating",
+      values: candidates.map((c) => num(c.rating)),
+      render: (c) =>
+        c.rating != null ? (
+          <div className="flex items-center gap-0.5" role="img" aria-label={`Rating ${c.rating} of 5`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                aria-hidden="true"
+                className={cn("size-3.5", i < (c.rating ?? 0) ? "fill-current text-warning-500" : "text-border-strong")}
+              />
+            ))}
+          </div>
+        ) : null,
+    },
+    { label: "Company", render: (c) => c.currentCompany },
+    { label: "Email", render: (c) => <span className="break-all">{c.email}</span> },
+    { label: "Phone", render: (c) => (c.phone ? <span className="tabular-nums">{c.phone}</span> : null) },
+    {
+      label: "Links",
+      render: (c) =>
+        c.linkedinUrl || c.portfolioUrl ? (
+          <span className="flex flex-wrap gap-2">
+            {c.linkedinUrl && (
+              <a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer" className="rounded-sm text-brand-text outline-none hover:underline focus-visible:focus-ring">
+                LinkedIn
+              </a>
+            )}
+            {c.portfolioUrl && (
+              <a href={c.portfolioUrl} target="_blank" rel="noopener noreferrer" className="rounded-sm text-brand-text outline-none hover:underline focus-visible:focus-ring">
+                Portfolio
+              </a>
+            )}
+          </span>
+        ) : null,
+    },
+    {
+      label: "Skills",
+      render: (c) =>
+        c.skills && c.skills.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {c.skills.slice(0, 8).map((s) => (
+              <Badge key={s} variant="secondary" className="font-normal">{s}</Badge>
+            ))}
+          </div>
+        ) : null,
+    },
+    { label: "Source", render: (c) => (c.source ? <Badge variant="secondary">{c.source}</Badge> : null) },
+  ];
+
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="max-w-4xl w-full p-0">
-        <DialogHeader className="px-6 pt-5 pb-3 border-b">
-          <DialogTitle className="text-base">Compare Candidates</DialogTitle>
-          <DialogDescription className="text-xs">
+      <DialogContent size="xl" className="gap-0 p-0">
+        <DialogHeader className="border-b border-border px-6 pt-5 pb-3">
+          <DialogTitle>Compare Candidates</DialogTitle>
+          <DialogDescription>
             Side-by-side comparison of {candidates.length} finalist{candidates.length !== 1 ? "s" : ""}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh]">
-          <div className="flex divide-x px-4 py-4">
-            {candidates.map((c) => (
-              <CandidateColumn key={c.id} candidate={c} />
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="max-h-[70vh] overflow-auto">
+          <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
+            <thead>
+              <tr>
+                <th scope="col" className="sticky top-0 left-0 z-sidebar w-36 border-b border-border bg-surface-sunken px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span className="sr-only">Attribute</span>
+                </th>
+                {candidates.map((c) => (
+                  <th key={c.id} scope="col" className="sticky top-0 z-sticky min-w-48 border-b border-border bg-surface-sunken px-4 py-3 text-left align-top font-normal">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
+                        {c.firstName?.[0] ?? ""}{c.lastName?.[0] ?? ""}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold">{c.firstName} {c.lastName}</span>
+                        {c.currentRole && <span className="block truncate text-xs text-muted-foreground">{c.currentRole}</span>}
+                      </span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const nums = (row.values ?? []).filter((v): v is number => v != null);
+                const best = nums.length > 1 ? Math.max(...nums) : null;
+                return (
+                  <tr key={row.label}>
+                    <th scope="row" className="sticky left-0 z-base border-b border-border bg-card px-4 py-3 text-left align-top text-xs font-medium text-muted-foreground">
+                      {row.label}
+                    </th>
+                    {candidates.map((c, i) => {
+                      const isBest = best != null && row.values?.[i] === best;
+                      const content = row.render(c, i);
+                      return (
+                        <td
+                          key={c.id}
+                          className={cn("border-b border-border px-4 py-3 align-top", isBest && "bg-brand-soft")}
+                        >
+                          {content ?? <span className="text-subtle-foreground">—</span>}
+                          {isBest && <span className="sr-only"> (best)</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </DialogContent>
     </Dialog>
   );

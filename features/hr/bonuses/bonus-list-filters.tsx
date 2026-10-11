@@ -78,20 +78,21 @@ export function BonusListFiltersBar({
   );
 
   return (
-    <div className="flex min-w-max flex-nowrap items-center gap-2">
-      <div className="relative w-[min(280px,42vw)] shrink-0">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className="flex w-full flex-wrap items-center gap-2">
+      <div className="relative w-full sm:w-64">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
         <Input
           placeholder="Search bonuses"
           value={filters.search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="h-9 pl-9 text-sm"
+          data-page-search
+          className="h-9 pl-9"
           aria-label="Search bonuses"
         />
       </div>
 
       <Select value={filters.status} onValueChange={onStatusChange}>
-        <SelectTrigger className="h-9 w-[130px] shrink-0 text-xs">
+        <SelectTrigger className="h-9 w-32 shrink-0">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -104,7 +105,7 @@ export function BonusListFiltersBar({
       </Select>
 
       <Select value={filters.type} onValueChange={onTypeChange}>
-        <SelectTrigger className="h-9 w-[130px] shrink-0 text-xs">
+        <SelectTrigger className="h-9 w-32 shrink-0">
           <SelectValue placeholder="Type" />
         </SelectTrigger>
         <SelectContent>
@@ -124,7 +125,7 @@ export function BonusListFiltersBar({
         placeholder="All employees"
         searchPlaceholder="Search employees…"
         triggerClassName="h-9 w-[min(180px,32vw)] shrink-0 text-xs"
-        className="w-[180px] shrink-0"
+        className="w-44 shrink-0"
         compact
         listMaxHeight="220px"
       />
@@ -133,35 +134,35 @@ export function BonusListFiltersBar({
         type="date"
         value={filters.dateFrom}
         onChange={(e) => onDateFromChange(e.target.value)}
-        className="h-9 w-[140px] shrink-0 text-xs"
+        className="h-9 w-36 shrink-0 tabular-nums"
         aria-label="From date"
       />
       <Input
         type="date"
         value={filters.dateTo}
         onChange={(e) => onDateToChange(e.target.value)}
-        className="h-9 w-[140px] shrink-0 text-xs"
+        className="h-9 w-36 shrink-0 tabular-nums"
         aria-label="To date"
       />
 
       <Button
         size="sm"
         variant="outline"
-        className="h-9 shrink-0 gap-1.5 text-xs"
+        className="h-9 shrink-0 gap-1.5"
         disabled={exportDisabled}
         onClick={onExport}
       >
-        <Download className="h-3.5 w-3.5" />
+        <Download className="size-4" aria-hidden="true" />
         Export
       </Button>
       <Button
         size="sm"
         variant="outline"
-        className="h-9 shrink-0 gap-1.5 text-xs"
+        className="h-9 shrink-0 gap-1.5"
         disabled={exportDisabled}
         onClick={onMail}
       >
-        <Mail className="h-3.5 w-3.5" />
+        <Mail className="size-4" aria-hidden="true" />
         Mail
       </Button>
 
@@ -169,10 +170,10 @@ export function BonusListFiltersBar({
         <Button
           size="sm"
           variant="ghost"
-          className="h-9 shrink-0 gap-1 text-xs text-muted-foreground"
+          className="h-9 shrink-0 gap-1 text-muted-foreground"
           onClick={onClearFilters}
         >
-          <X className="h-3 w-3" />
+          <X className="size-4" aria-hidden="true" />
           Clear
         </Button>
       ) : null}

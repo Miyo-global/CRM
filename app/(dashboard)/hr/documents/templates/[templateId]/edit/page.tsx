@@ -4,6 +4,9 @@ import { use } from "react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { NotFoundIllustration } from "@/components/illustrations";
 import { useDocumentTemplate } from "@/lib/api/hooks/hr/document-templates";
 import { TemplateEditor } from "@/features/hr/documents/template-editor";
 
@@ -23,36 +26,34 @@ function EditTemplateSkeleton() {
         </div>
       }
     >
-      <div className="max-w-3xl mx-auto space-y-5">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-4 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-9 w-full" />
-            <Skeleton className="h-9 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-4 w-28" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-1.5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-6 w-20 rounded" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-4 w-24" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[420px] w-full rounded-md" />
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-32" />
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+            </CardContent>
+          </Card>
+          <Skeleton className="h-115 w-full rounded-lg" />
+        </div>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-28" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-1.5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-20 rounded-xs" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Skeleton className="h-48 w-full rounded-lg" />
+        </div>
       </div>
     </PageWrapper>
   );
@@ -61,16 +62,26 @@ function EditTemplateSkeleton() {
 export default function EditTemplatePage({ params }: EditTemplatePageProps) {
   const { templateId } = use(params);
   const id = Number(templateId);
-  const { data: template, isLoading } = useDocumentTemplate(id);
+  const { data: template, isLoading, isError, error, refetch } = useDocumentTemplate(id);
 
   if (isLoading) return <EditTemplateSkeleton />;
+
+  if (isError) {
+    return (
+      <PageWrapper title="Edit Template">
+        <QueryErrorState title="Couldn't load template" error={error} onRetry={() => void refetch()} />
+      </PageWrapper>
+    );
+  }
 
   if (!template) {
     return (
       <PageWrapper title="Template Not Found">
-        <p className="text-sm text-muted-foreground">
-          This template does not exist or has been removed.
-        </p>
+        <EmptyState
+          illustration={<NotFoundIllustration />}
+          title="Template Not Found"
+          description="This template does not exist or has been removed."
+        />
       </PageWrapper>
     );
   }

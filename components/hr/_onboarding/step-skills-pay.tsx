@@ -108,7 +108,7 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
       </div>
 
       <div className="pt-4 border-t border-border">
-        <h3 className="text-base font-semibold mb-4">Salary Information</h3>
+        <h3 className="mb-4 text-sm font-semibold">Salary Information</h3>
         <FormField
           control={form.control}
           name="monthlySalary"
@@ -151,8 +151,8 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
           )}
         />
         {form.watch("monthlySalary") && Number(form.watch("monthlySalary")) > 0 && (
-          <div className="mt-4 p-4 bg-muted/40 rounded-lg border text-sm">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="mt-4 rounded-lg border bg-surface-sunken/40 p-4 text-sm tabular-nums">
+            <div className="grid grid-cols-[1fr_auto] gap-2">
               <span className="text-muted-foreground">Basic Pay:</span>
               <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.5).toLocaleString()}</span>
               <span className="text-muted-foreground">HRA:</span>

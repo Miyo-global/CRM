@@ -148,14 +148,14 @@ function VariableHelpPanel({
   const allVars = [...COMMON_VARS, ...extraVars];
 
   return (
-    <div className="rounded-md border border-dashed border-border bg-muted/20">
+    <div className="rounded-md border border-dashed border-border bg-surface-sunken/40">
       <button
         type="button"
         className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-foreground"
         onClick={() => setOpen((v) => !v)}
       >
         <span>Available variables{category ? ` — ${category}` : ""}</span>
-        {open ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+        {open ? <ChevronUp className="size-3.5 text-muted-foreground" aria-hidden="true" /> : <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden="true" />}
       </button>
       {open && (
         <div className="border-t border-border/40 px-3 pb-3 pt-2">
@@ -169,7 +169,7 @@ function VariableHelpPanel({
                 type="button"
                 title={description}
                 onClick={() => onInsert(`{{${key}}}`)}
-                className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-2xs font-mono text-foreground hover:bg-muted/70 transition-colors"
+                className="inline-flex items-center rounded-xs bg-muted px-2 py-0.5 font-mono text-2xs text-foreground outline-none transition-colors hover:bg-accent focus-visible:focus-ring"
               >
                 {`{{${key}}}`}
               </button>
@@ -209,15 +209,15 @@ function InsertFieldPopover({
   const renderMergeItem = (f: HrEmailMergeField) => (
     <CommandItem key={f.key} value={`${f.label} ${f.key}`} onSelect={() => pick(f.key)}>
       <span className="flex-1 truncate">{f.label}</span>
-      <code className="text-2xs text-muted-foreground">{`{{${f.key}}}`}</code>
+      <code className="font-mono text-2xs text-muted-foreground">{`{{${f.key}}}`}</code>
     </CommandItem>
   );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className="h-8 text-xs">
-          <Plus className="h-3.5 w-3.5 mr-1" />
+        <Button type="button" variant="outline" size="sm">
+          <Plus className="size-3.5" aria-hidden="true" />
           Insert field
         </Button>
       </PopoverTrigger>
@@ -237,7 +237,7 @@ function InsertFieldPopover({
                     onSelect={() => pick(f.name)}
                   >
                     <span className="flex-1 truncate">{f.label}</span>
-                    <code className="text-2xs text-muted-foreground">{`{{${f.name}}}`}</code>
+                    <code className="font-mono text-2xs text-muted-foreground">{`{{${f.name}}}`}</code>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -266,7 +266,7 @@ export function TemplateFieldInput({
   const labelRow = (
     <label className="text-2xs font-medium text-muted-foreground flex items-center gap-1.5" htmlFor={id}>
       <span className="truncate">{label}</span>
-      <code className="text-2xs">{`{{${fieldKey}}}`}</code>
+      <code className="font-mono text-2xs">{`{{${fieldKey}}}`}</code>
       {customField && (
         <Badge variant="outline" className="text-3xs px-1 py-0">
           Custom
@@ -416,7 +416,7 @@ export function TemplateFormFields({
           aria-invalid={nameError ? true : undefined}
           onChange={(e) => setName(e.target.value)}
         />
-        {nameError && <p className="text-2xs text-destructive">{nameError}</p>}
+        {nameError && <p className="text-xs text-destructive">{nameError}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -435,7 +435,7 @@ export function TemplateFormFields({
         </Select>
       </div>
 
-      <div className="flex items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed bg-surface-sunken/40 px-3 py-2">
         <p className="text-2xs text-muted-foreground">
           Insert a merge or custom field into the last-edited field (Subject or Body).
         </p>
@@ -465,7 +465,7 @@ export function TemplateFormFields({
           }}
           onChange={(e) => setSubject(e.target.value)}
         />
-        {errors.subject && <p className="text-2xs text-destructive">{errors.subject}</p>}
+        {errors.subject && <p className="text-xs text-destructive">{errors.subject}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -490,7 +490,7 @@ export function TemplateFormFields({
           }}
           onChange={(e) => setBody(e.target.value)}
         />
-        {errors.body && <p className="text-2xs text-destructive">{errors.body}</p>}
+        {errors.body && <p className="text-xs text-destructive">{errors.body}</p>}
       </div>
     </>
   );

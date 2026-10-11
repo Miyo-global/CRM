@@ -556,7 +556,7 @@ export function WorkLogFilterActions({
               Reset
             </Button>
             <SheetClose asChild>
-              <Button className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground" onClick={handleApplyFilters}>
+              <Button className="flex-1" onClick={handleApplyFilters}>
                 Apply Filters
               </Button>
             </SheetClose>

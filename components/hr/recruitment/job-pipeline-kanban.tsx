@@ -3,7 +3,10 @@
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
-import { TAG_TONE_CYCLE, toneSoft, type Tone } from "@/lib/design/tones";
+import { TAG_TONE_CYCLE, type Tone } from "@/lib/design/tones";
+import { Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { KanbanCanvas, KanbanColumnShell, KanbanEmptyDrop, kanbanCardClass } from "@/components/shared/kanban";
 import type { JobPipelineCandidate, JobPipelineStage } from "@/types/hr";
 import {
   PipelineStageMoveDialog,
@@ -11,23 +14,17 @@ import {
 } from "@/features/hr/recruitment/pipeline-stage-move-dialog";
 import { getCandidateEmailKindForJobStage } from "@/lib/hr/pipeline-stage-email";
 
-// Columns stay neutral (§8.4); the stage tone lives on the count pill.
-const stageTone = (t: Tone) => ({ bg: "bg-muted/60", border: "border-transparent", badge: toneSoft[t] });
-
-const STAGE_COLORS: Record<string, { bg: string; border: string; badge: string }> = {
-  APPLIED: stageTone("info"),
-  SHORTLISTED: stageTone("teal"),
-  OFFER: stageTone("brand"),
-  HIRED: stageTone("success"),
-  REJECTED: stageTone("danger"),
+const STAGE_TONES: Record<string, Tone> = {
+  APPLIED: "info",
+  SHORTLISTED: "teal",
+  OFFER: "brand",
+  HIRED: "success",
+  REJECTED: "danger",
 };
 
 // Interview rounds are categorical → tag cycle.
-const ROUND_COLORS = TAG_TONE_CYCLE.map(stageTone);
-
-function getStageColor(stageId: string, roundIndex: number) {
-  if (STAGE_COLORS[stageId]) return STAGE_COLORS[stageId];
-  return ROUND_COLORS[roundIndex % ROUND_COLORS.length];
+function getStageTone(stageId: string, roundIndex: number): Tone {
+  return STAGE_TONES[stageId] ?? TAG_TONE_CYCLE[roundIndex % TAG_TONE_CYCLE.length];
 }
 
 function getInitials(name: string) {
@@ -47,25 +44,29 @@ function CandidateCard({ candidate, index }: CandidateCardProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={cn(
-            "bg-card rounded-lg border px-3 py-2.5 shadow-xs cursor-grab select-none transition-shadow",
-            snapshot.isDragging && "shadow-md rotate-1",
-          )}
+          className={cn(kanbanCardClass(snapshot.isDragging), "cursor-grab select-none")}
         >
-          <div className="flex items-start gap-2">
-            <div className="h-7 w-7 rounded-full bg-brand-soft text-brand-soft-foreground text-2xs font-semibold flex items-center justify-center shrink-0">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-2xs font-semibold text-brand-soft-foreground">
               {getInitials(candidate.name)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate">{candidate.name}</p>
-              <p className="text-2xs text-muted-foreground truncate">{candidate.email}</p>
+              <p className="truncate text-sm font-medium" title={candidate.name}>{candidate.name}</p>
+              <p className="truncate text-xs text-muted-foreground">{candidate.email}</p>
             </div>
-            {candidate.rating !== null && (
-              <span className="text-2xs text-warning-strong font-semibold shrink-0">★ {candidate.rating}</span>
-            )}
           </div>
-          {candidate.source && (
-            <p className="text-2xs text-muted-foreground mt-1.5 pl-9">{candidate.source}</p>
+          {(candidate.source || candidate.rating !== null) && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              {candidate.source && (
+                <Badge variant="secondary" className="max-w-32 truncate font-normal">{candidate.source}</Badge>
+              )}
+              {candidate.rating !== null && (
+                <Badge variant="warning" className="tabular-nums">
+                  <Star className="size-3 fill-current" aria-hidden="true" />
+                  {candidate.rating}
+                </Badge>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -152,43 +153,33 @@ export function JobPipelineKanban({
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-3 overflow-x-auto pb-4 min-h-[60vh]">
+      <KanbanCanvas className="min-h-[60vh]">
         {stages.map((stage) => {
-          const colors = getStageColor(stage.stage, roundIndices[stage.stage] ?? 0);
+          const tone = getStageTone(stage.stage, roundIndices[stage.stage] ?? 0);
           const isRejected = stage.stage === "REJECTED";
           return (
-            <div
-              key={stage.stage}
-              className={cn("flex flex-col min-w-[260px] w-[260px] shrink-0", isRejected && "opacity-80")}
-            >
-              <div className="flex items-center gap-2 mb-2 px-0.5">
-                <span className="text-xs font-semibold tracking-wide truncate">{stage.label}</span>
-                <span className={cn("ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-2xs font-semibold min-w-[22px]", colors.badge)}>
-                  {stage.candidates.length}
-                </span>
-              </div>
-              <Droppable droppableId={stage.stage}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={cn(
-                      "flex-1 rounded-xl border-2 p-2 space-y-2 transition-colors min-h-[120px]",
-                      colors.bg,
-                      snapshot.isDraggingOver ? "border-primary/50" : colors.border,
-                    )}
-                  >
-                    {stage.candidates.map((c, i) => (
-                      <CandidateCard key={c.id} candidate={c} index={i} />
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
+            <Droppable key={stage.stage} droppableId={stage.stage}>
+              {(provided, snapshot) => (
+                <KanbanColumnShell
+                  title={stage.label}
+                  tone={tone}
+                  count={stage.candidates.length}
+                  isDraggingOver={snapshot.isDraggingOver}
+                  innerRef={provided.innerRef}
+                  droppableProps={provided.droppableProps}
+                  className={cn(isRejected && "opacity-80")}
+                >
+                  {stage.candidates.map((c, i) => (
+                    <CandidateCard key={c.id} candidate={c} index={i} />
+                  ))}
+                  {provided.placeholder}
+                  {stage.candidates.length === 0 && !snapshot.isDraggingOver && <KanbanEmptyDrop />}
+                </KanbanColumnShell>
+              )}
+            </Droppable>
           );
         })}
-      </div>
+      </KanbanCanvas>
       </DragDropContext>
 
       <PipelineStageMoveDialog

@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Eye, EyeOff, Wand2, History } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Wand2, History } from "lucide-react";
 import Link from "next/link";
 import { sanitizeHtml } from "@/lib/sanitize";
 
@@ -242,6 +242,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
 
   return (
     <PageWrapper
+      stickyHeader
       title={isEdit ? `Edit Template` : "New Template"}
       subtitle={
         isEdit
@@ -252,7 +253,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/hr/documents/templates">
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="size-4" aria-hidden />
               Back
             </Link>
           </Button>
@@ -260,29 +261,26 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
             variant="outline"
             size="sm"
             onClick={() => setShowPreview((v) => !v)}
-            className="gap-2"
+            aria-pressed={showPreview}
           >
             {showPreview ? (
               <>
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="size-4" aria-hidden />
                 Hide Preview
               </>
             ) : (
               <>
-                <Eye className="h-4 w-4" />
+                <Eye className="size-4" aria-hidden />
                 Preview
               </>
             )}
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={isSaving} className="gap-2">
+          <Button size="sm" onClick={handleSave} loading={isSaving}>
             {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving...
-              </>
+              "Saving..."
             ) : (
               <>
-                <Wand2 className="h-4 w-4" />
+                <Wand2 className="size-4" aria-hidden />
                 {isEdit ? "Save Changes" : "Create Template"}
               </>
             )}
@@ -290,22 +288,18 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
         </div>
       }
     >
-      <div
-        className={`grid gap-6 ${
-          showPreview ? "lg:grid-cols-2" : "lg:grid-cols-1 max-w-3xl mx-auto"
-        }`}
-      >
-        <div className="space-y-6 pb-2">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Template Details</CardTitle>
               <CardDescription>Choose a type first, then name your template.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 pb-6">
+            <CardContent className="grid gap-4 pb-6 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="tmpl-type">Type</Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger id="tmpl-type">
+                  <SelectTrigger id="tmpl-type" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -327,11 +321,80 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                   onChange={(e) => setTitle(e.target.value)}
                   autoFocus={isEdit}
                 />
-                <p className="text-2xs text-muted-foreground text-right">{title.trim().length}/200</p>
+                <p className="text-2xs text-muted-foreground text-right tabular-nums">{title.trim().length}/200</p>
               </div>
             </CardContent>
           </Card>
 
+          <Card className="gap-0 overflow-hidden py-0 focus-within:ring-2 focus-within:ring-ring">
+            <div className="flex h-10 items-center justify-between gap-2 border-b border-border bg-surface-sunken/60 px-3">
+              <h2 className="text-sm font-semibold text-foreground">HTML Content</h2>
+              <p className="hidden truncate text-xs text-muted-foreground sm:block">
+                Write raw HTML. Use <code className="font-mono text-2xs">{"{{Variable_Name}}"}</code> tokens
+                as placeholders.
+              </p>
+            </div>
+            <Textarea
+              ref={textareaRef}
+              value={htmlContent}
+              onChange={(e) => setHtmlContent(e.target.value)}
+              className="min-h-105 resize-y rounded-none border-0 font-mono text-xs shadow-none focus-visible:ring-0"
+              placeholder="<h1>Hello {{Candidate_Name}}</h1>..."
+              aria-label="HTML Content"
+              spellCheck={false}
+            />
+          </Card>
+
+          {showPreview && (
+            <section aria-labelledby="tmpl-preview-heading" className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Eye className="size-4 text-muted-foreground" aria-hidden />
+                <h2 id="tmpl-preview-heading" className="text-sm font-semibold text-foreground">Live Preview</h2>
+                <span className="hidden text-xs text-muted-foreground sm:inline">
+                  Rendered with sample data. Tokens without a sample value remain as-is.
+                </span>
+              </div>
+              <div className="overflow-x-auto rounded-lg bg-surface-sunken p-3 sm:p-8">
+                <div
+                  className="tiptap mx-auto w-full max-w-[816px] rounded-xs bg-card p-6 shadow-sm sm:p-12"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml) }}
+                />
+              </div>
+            </section>
+          )}
+
+          {isEdit && versionHistory && versionHistory.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <History className="size-4 text-muted-foreground" aria-hidden />
+                  Version History
+                </CardTitle>
+                <CardDescription>Previous saved versions of this template.</CardDescription>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                  {versionHistory.map((v) => (
+                    <div
+                      key={v.id}
+                      className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-xs"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate"><span className="tabular-nums">v{v.version}</span> — {v.title}</p>
+                        <p className="text-muted-foreground truncate">{v.type}</p>
+                      </div>
+                      <div className="ml-3 shrink-0 text-muted-foreground tabular-nums">
+                        {v.archivedAt ? new Date(v.archivedAt).toLocaleDateString() : ""}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <aside className="min-w-0 space-y-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Variable Tokens</CardTitle>
@@ -346,7 +409,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                     key={token}
                     type="button"
                     onClick={() => insertToken(token)}
-                    className="inline-flex items-center px-2 py-1 rounded text-2xs font-mono bg-muted hover:bg-muted/80 border border-border/60 text-foreground transition-colors cursor-pointer"
+                    className="inline-flex cursor-pointer items-center rounded-xs border border-border bg-surface-sunken px-2 py-1 font-mono text-2xs text-foreground transition-colors hover:border-border-strong hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title={`Insert {{${token}}}`}
                   >
                     {`{{${token}}}`}
@@ -363,11 +426,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {detectedVariables.map((v) => (
-                        <Badge
-                          key={v}
-                          variant="outline"
-                          className="text-2xs font-mono px-1.5 bg-secondary border-secondary text-secondary"
-                        >
+                        <Badge key={v} variant="secondary" className="font-mono">
                           {`{{${v}}}`}
                         </Badge>
                       ))}
@@ -379,79 +438,7 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
           </Card>
 
           <OrgVariablesPanel onInsertToken={insertToken} onVariableDeleted={handleVariableDeleted} />
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">HTML Content</CardTitle>
-              <CardDescription>
-                Write raw HTML. Use <code className="text-2xs">{"{{Variable_Name}}"}</code> tokens
-                as placeholders.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-6">
-              <Textarea
-                ref={textareaRef}
-                value={htmlContent}
-                onChange={(e) => setHtmlContent(e.target.value)}
-                className="font-mono text-xs min-h-[420px] resize-y"
-                placeholder="<h1>Hello {{Candidate_Name}}</h1>..."
-                spellCheck={false}
-              />
-            </CardContent>
-          </Card>
-
-          {isEdit && versionHistory && versionHistory.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <History className="h-4 w-4 text-muted-foreground" />
-                  Version History
-                </CardTitle>
-                <CardDescription>Previous saved versions of this template.</CardDescription>
-              </CardHeader>
-              <CardContent className="pb-6">
-                <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
-                  {versionHistory.map((v) => (
-                    <div
-                      key={v.id}
-                      className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2 text-xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">v{v.version} — {v.title}</p>
-                        <p className="text-muted-foreground truncate">{v.type}</p>
-                      </div>
-                      <div className="ml-3 shrink-0 text-muted-foreground">
-                        {v.archivedAt ? new Date(v.archivedAt).toLocaleDateString() : ""}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {showPreview && (
-          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  Live Preview
-                </CardTitle>
-                <CardDescription>
-                  Rendered with sample data. Tokens without a sample value remain as-is.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-6">
-                <div
-                  className="max-h-[600px] overflow-y-auto rounded-md border bg-card p-5 tiptap"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml) }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        </aside>
       </div>
     </PageWrapper>
   );

@@ -17,7 +17,8 @@ import {
 import { Eye, Pencil, UserX, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { HrEmployeeListToolbar } from "./hr-employee-list-toolbar";
 import type { StatusFilter, RoleFilter } from "./hr-types";
-import { resolveImageUrl } from "@/lib/utils";
+import { cn, resolveImageUrl } from "@/lib/utils";
+import { StatusPill } from "@/components/ui/status-pill";
 import {
   canDeleteEmployee,
   getDisplayName,
@@ -38,20 +39,13 @@ function formatJoiningDate(value: string | null | undefined): string {
 function DepartmentCell({ department }: { department: Employee["department"] }) {
   if (department?.name) {
     return (
-      <Badge variant="secondary" className="text-2xs font-normal whitespace-nowrap">
+      <Badge variant="secondary" className="whitespace-nowrap">
         {department.name}
       </Badge>
     );
   }
 
-  return (
-    <Badge
-      variant="outline"
-      className="border-warning-300/60 bg-warning-soft text-2xs font-normal text-warning-strong"
-    >
-      Unassigned
-    </Badge>
-  );
+  return <StatusPill tone="warning" className="whitespace-nowrap">Unassigned</StatusPill>;
 }
 
 interface HrEmployeeTableProps {
@@ -78,6 +72,8 @@ interface HrEmployeeTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: PageSizeOption) => void;
   onRequestDelete: (employee: Employee) => void;
+  /** Render the toolbar elsewhere (e.g. the page `filters` slot). */
+  hideToolbar?: boolean;
 }
 
 export function HrEmployeeTable({
@@ -104,54 +100,60 @@ export function HrEmployeeTable({
   onPageChange,
   onPageSizeChange,
   onRequestDelete,
+  hideToolbar = false,
 }: HrEmployeeTableProps) {
-  const [goToPage, setGoToPage] = useState("");
-
-  const handleGoToPageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setGoToPage(e.target.value);
-  }, []);
-
-  const handleGoToPageKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        const num = parseInt(goToPage);
-        if (!isNaN(num) && num >= 1 && num <= totalPages) {
-          onPageChange(num);
-          setGoToPage("");
-        }
-      }
-    },
-    [goToPage, totalPages, onPageChange],
-  );
-
-  const handlePageSizeChange = useCallback(
-    (v: string) => {
-      onPageSizeChange(Number(v) as PageSizeOption);
-    },
-    [onPageSizeChange],
-  );
-
   return (
-    <Card className="border-border flex flex-col flex-1 min-h-0">
-      <CardContent className="p-0 flex flex-col flex-1 min-h-0">
-        <HrEmployeeListToolbar
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          deptFilter={deptFilter}
-          onDeptChange={onDeptChange}
-          departments={departments}
-          statusFilter={statusFilter}
-          onStatusChange={onStatusChange}
-          roleFilter={roleFilter}
-          onRoleChange={onRoleChange}
-          onClearFilters={onClearFilters}
-          hasSearchFilter={hasSearchFilter}
-          totalCount={totalCount}
+    <Card className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden py-0">
+      <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+        {!hideToolbar && (
+          <HrEmployeeListToolbar
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+            deptFilter={deptFilter}
+            onDeptChange={onDeptChange}
+            departments={departments}
+            statusFilter={statusFilter}
+            onStatusChange={onStatusChange}
+            roleFilter={roleFilter}
+            onRoleChange={onRoleChange}
+            onClearFilters={onClearFilters}
+            hasSearchFilter={hasSearchFilter}
+            totalCount={totalCount}
+            className="border-b px-4 py-3"
+          />
+        )}
+        <EmployeeTableBody
+          employees={employees}
+          currentUserRole={currentUserRole}
+          currentUserId={currentUserId}
+          onRequestDelete={onRequestDelete}
         />
-        <div className="overflow-auto flex-1 min-h-0" role="region" aria-label="Employee directory table">
+        <HrEmployeePagination
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          showFrom={showFrom}
+          showTo={showTo}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmployeeTableBody({
+  employees,
+  currentUserRole,
+  currentUserId,
+  onRequestDelete,
+}: Pick<HrEmployeeTableProps, "employees" | "currentUserRole" | "currentUserId" | "onRequestDelete">) {
+  return (
+        <div className="min-h-0 flex-1 overflow-auto" role="region" aria-label="Employee directory table">
           <div className="min-w-[900px]">
             <Table>
-              <TableHeader className="sticky top-0 z-10 bg-card">
+              <TableHeader className="sticky top-0 z-sticky bg-card">
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Name</TableHead>
                   <TableHead>Employee ID</TableHead>
@@ -181,20 +183,20 @@ export function HrEmployeeTable({
                       <TableCell>
                         <Link
                           href={`/hr/employees/${user.id}`}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-3 rounded-md outline-none focus-visible:focus-ring"
                         >
-                          <Avatar className="h-8 w-8 border border-border shrink-0">
+                          <Avatar className="size-8 shrink-0 border border-border">
                             <AvatarImage src={resolveImageUrl(user.image)} alt="" />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                            <AvatarFallback className="bg-brand-soft text-xs font-medium text-brand-soft-foreground">
                               {initials}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <span className="block text-sm font-medium text-foreground group-hover:text-primary transition-colors whitespace-nowrap">
+                            <span className="block whitespace-nowrap text-sm font-medium text-foreground transition-colors group-hover:text-brand-text">
                               {displayName}
                             </span>
                             {user.designation ? (
-                              <span className="block text-2xs text-muted-foreground truncate max-w-[180px]">
+                              <span className="block max-w-44 truncate text-2xs text-muted-foreground" title={user.designation}>
                                 {user.designation}
                               </span>
                             ) : null}
@@ -202,20 +204,20 @@ export function HrEmployeeTable({
                         </Link>
                       </TableCell>
 
-                      <TableCell className="text-sm font-mono text-muted-foreground whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap font-mono text-sm text-muted-foreground">
                         {user.employeeId?.trim() ? (
                           user.employeeId
                         ) : (
-                          <span className="text-warning-strong">Pending</span>
+                          <span className="font-sans text-warning-strong">Pending</span>
                         )}
                       </TableCell>
 
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {user.email}
                       </TableCell>
 
                       <TableCell>
-                        <Badge variant="outline" className="text-xs font-normal whitespace-nowrap">
+                        <Badge variant="outline" className="whitespace-nowrap">
                           {roleLabel}
                         </Badge>
                       </TableCell>
@@ -224,63 +226,50 @@ export function HrEmployeeTable({
                         <DepartmentCell department={user.department} />
                       </TableCell>
 
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
                         {formatJoiningDate(user.joiningDate)}
                       </TableCell>
 
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`text-xs gap-1.5 ${
-                            isActive
-                              ? "text-success-strong border-success-strong/25 bg-success-soft"
-                              : "text-muted-foreground border-border bg-neutral-soft"
-                          }`}
-                        >
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              isActive ? "bg-success-500" : "bg-ink-400"
-                            }`}
-                          />
+                        <StatusPill tone={isActive ? "success" : "neutral"} dot>
                           {isActive ? "Active" : "Inactive"}
-                        </Badge>
+                        </StatusPill>
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
+                            size="icon-sm"
                             aria-label={`View ${displayName}`}
                             title="View details"
                             asChild
                           >
                             <Link href={`/hr/employees/${user.id}`}>
-                              <Eye className="h-3.5 w-3.5" />
+                              <Eye className="size-4" aria-hidden="true" />
                             </Link>
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
+                            size="icon-sm"
                             aria-label={`Edit ${displayName}`}
                             title="Edit profile"
                             asChild
                           >
                             <Link href={`/hr/employees/${user.id}?tab=profile`}>
-                              <Pencil className="h-3.5 w-3.5" />
+                              <Pencil className="size-4" aria-hidden="true" />
                             </Link>
                           </Button>
                           {canTerminate && isActive && (
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              size="icon-sm"
+                              className="text-destructive hover:bg-danger-soft hover:text-destructive"
                               aria-label={`Terminate ${displayName}`}
+                              title="Terminate"
                               onClick={() => onRequestDelete(user)}
                             >
-                              <UserX className="h-3.5 w-3.5" />
+                              <UserX className="size-4" aria-hidden="true" />
                             </Button>
                           )}
                         </div>
@@ -292,12 +281,64 @@ export function HrEmployeeTable({
             </Table>
           </div>
         </div>
+  );
+}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 border-t border-border shrink-0">
+interface HrEmployeePaginationProps {
+  page: number;
+  pageSize: PageSizeOption;
+  totalPages: number;
+  totalCount: number;
+  showFrom: number;
+  showTo: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: PageSizeOption) => void;
+  className?: string;
+}
+
+export function HrEmployeePagination({
+  page,
+  pageSize,
+  totalPages,
+  totalCount,
+  showFrom,
+  showTo,
+  onPageChange,
+  onPageSizeChange,
+  className,
+}: HrEmployeePaginationProps) {
+  const [goToPage, setGoToPage] = useState("");
+
+  const handleGoToPageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGoToPage(e.target.value);
+  }, []);
+
+  const handleGoToPageKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        const num = parseInt(goToPage);
+        if (!isNaN(num) && num >= 1 && num <= totalPages) {
+          onPageChange(num);
+          setGoToPage("");
+        }
+      }
+    },
+    [goToPage, totalPages, onPageChange],
+  );
+
+  const handlePageSizeChange = useCallback(
+    (v: string) => {
+      onPageSizeChange(Number(v) as PageSizeOption);
+    },
+    [onPageSizeChange],
+  );
+
+  return (
+        <div className={cn("flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-2", className)}>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Rows per page</span>
             <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-              <SelectTrigger className="h-7 w-[64px] text-xs">
+              <SelectTrigger className="h-7 w-16 text-xs" aria-label="Rows per page">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -370,7 +411,5 @@ export function HrEmployeeTable({
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
   );
 }

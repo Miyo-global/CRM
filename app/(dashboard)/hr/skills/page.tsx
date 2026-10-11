@@ -6,7 +6,6 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { HrSheet } from "@/features/hr/hr-sheet";
@@ -27,16 +26,28 @@ import { useSkillSuggestions } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import {
   Plus, CheckCircle2, ChevronsUpDown, Check, Award,
-  Pencil, Trash2, Search, Filter,
+  Pencil, Trash2, Filter,
 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
-import { EmptyTeamIllustration } from "@/components/illustrations";
+import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import type { Tone } from "@/lib/design/tones";
 import { SKILLS_CATALOG, canonicalizeSkill } from "@/lib/hr/skills-catalog";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
 import {
-  getCertStatus, certBadgeClass, certStatusLabel, formatCertDate,
+  getCertStatus, certStatusLabel, formatCertDate, type CertStatus,
 } from "@/features/hr/skills/cert-status";
+
+const CERT_TONE: Record<CertStatus, Tone> = {
+  expired: "danger",
+  expiring: "warning",
+  valid: "success",
+  none: "neutral",
+};
 
 const LEVELS = [
   { value: "1", label: "Beginner" },
@@ -55,13 +66,32 @@ function levelLabel(level: number | null): string {
   return LEVELS.find((l) => l.value === String(level))?.label ?? "Unknown";
 }
 
+/** Proficiency heat scale (§8.8): 5 gold buckets, no level = muted. */
+const LEVEL_SCALE: Record<string, string> = {
+  "1": "bg-gold-200",
+  "2": "bg-gold-300",
+  "3": "bg-gold-400",
+  "4": "bg-gold-500",
+  "5": "bg-gold-700",
+};
+
 function levelColor(level: number | null): string {
-  if (level === null) return "bg-muted";
-  if (level >= 5) return "bg-plum-500";
-  if (level >= 4) return "bg-success-500";
-  if (level >= 3) return "bg-info-500";
-  if (level >= 2) return "bg-warning-500";
-  return "bg-muted-foreground";
+  if (level === null || level < 1) return "bg-muted";
+  return LEVEL_SCALE[String(Math.min(5, Math.floor(level)))] ?? "bg-muted";
+}
+
+function LevelLegend() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-muted-foreground" aria-label="Proficiency scale">
+      <span className="font-semibold uppercase tracking-wider">Proficiency</span>
+      {LEVELS.map((l) => (
+        <span key={l.value} className="inline-flex items-center gap-1">
+          <span className={cn("size-2.5 rounded-full", LEVEL_SCALE[l.value])} aria-hidden="true" />
+          {l.label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function getCategory(skillName: string): string {
@@ -155,7 +185,7 @@ function SkillCombobox({
 }
 
 export default function SkillsPage() {
-  const { data: skills, isLoading } = useEmployeeSkills();
+  const { data: skills, isLoading, isError, error, refetch } = useEmployeeSkills();
   const addSkill = useAddSkill();
   const verifySkill = useVerifySkill();
   const deleteSkill = useDeleteSkill();
@@ -308,8 +338,8 @@ export default function SkillsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Skills Matrix" subtitle="Track team competencies">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -321,61 +351,65 @@ export default function SkillsPage() {
       subtitle="Organisation-wide skill mapping and competency tracking"
       badge={`${uniqueSkillCount} skill${uniqueSkillCount !== 1 ? "s" : ""} · ${totalEntryCount} entries`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <ExportButton
             filename={`skills-${new Date().toISOString().slice(0, 10)}.xlsx`}
             sheets={skillExportSheets}
           />
           <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" />Add Skill
+            <Plus className="size-4" aria-hidden="true" />Add Skill
           </Button>
         </div>
       }
+      filters={
+        <ListToolbar
+          className="w-full"
+          search={{ value: search, onChange: setSearch, placeholder: "Search skills…" }}
+          filters={
+            <>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="h-9 w-40 text-sm">
+                  <Filter className="size-4 text-muted-foreground" aria-hidden="true" />
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {CATALOG_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              {(search || categoryFilter !== "all") && (
+                <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => { setSearch(""); setCategoryFilter("all"); }}>
+                  Clear
+                </Button>
+              )}
+            </>
+          }
+        />
+      }
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[180px] max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              className="pl-8 h-8 text-sm"
-              placeholder="Search skills…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-8 text-sm w-[160px]">
-              <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="All categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {CATALOG_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {(search || categoryFilter !== "all") && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setSearch(""); setCategoryFilter("all"); }}>
-              Clear
-            </Button>
-          )}
-        </div>
+        {!isError && skillGroups.length > 0 && <LevelLegend />}
 
-        {filteredGroups.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              {skillGroups.length === 0 ? (
-                <>
-                  <EmptyTeamIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-                  <p className="text-sm text-muted-foreground">No skills recorded yet. Add your first skill.</p>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">No skills match your filters.</p>
-              )}
-            </CardContent>
-          </Card>
+        {isError ? (
+          <QueryErrorState error={error} onRetry={() => void refetch()} />
+        ) : filteredGroups.length === 0 ? (
+          skillGroups.length === 0 ? (
+            <EmptyState
+              illustration={<EmptyTeamIllustration className="size-32" />}
+              title="No skills recorded yet. Add your first skill."
+              action={{ label: "Add Skill", onClick: () => setSheetOpen(true) }}
+            />
+          ) : (
+            <EmptyState
+              illustration={<EmptySearchIllustration className="size-32" />}
+              title="No results for these filters"
+              description="No skills match your filters."
+              action={{ label: "Clear filters", onClick: () => { setSearch(""); setCategoryFilter("all"); } }}
+            />
+          )
         ) : categoryFilter !== "all" ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {filteredGroups.map((g) => (
               <SkillCard
                 key={g.canonicalName}
@@ -393,11 +427,11 @@ export default function SkillsPage() {
           <div className="space-y-6">
             {Array.from(groupedByCategory.entries()).map(([cat, groups]) => (
               <div key={cat}>
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cat}</h3>
-                  <span className="text-2xs text-muted-foreground/60">({groups.length})</span>
+                <div className="mb-2 flex items-center gap-2">
+                  <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{cat}</h3>
+                  <span className="text-2xs tabular-nums text-subtle-foreground">({groups.length})</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {groups.map((g) => (
                     <SkillCard
                       key={g.canonicalName}
@@ -514,21 +548,21 @@ function SkillCard({
   const verifiedCount = entries.filter((s) => !!s.verifiedBy).length;
 
   return (
-    <Card className="hover:shadow-sm transition-shadow">
-      <CardContent className="p-4 space-y-2">
+    <Card>
+      <CardContent className="space-y-3 p-5">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold truncate leading-snug">{canonicalName}</h3>
-          <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+          <h3 className="truncate text-sm font-semibold leading-snug" title={canonicalName}>{canonicalName}</h3>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 tabular-nums">
             {expiredCount > 0 && (
-              <Badge variant="outline" className={cn("text-3xs px-1.5 py-0", certBadgeClass("expired"))}>{expiredCount} expired</Badge>
+              <StatusPill tone={CERT_TONE.expired}>{expiredCount} expired</StatusPill>
             )}
             {expiringCount > 0 && (
-              <Badge variant="outline" className={cn("text-3xs px-1.5 py-0", certBadgeClass("expiring"))}>{expiringCount} expiring</Badge>
+              <StatusPill tone={CERT_TONE.expiring}>{expiringCount} expiring</StatusPill>
             )}
             {verifiedCount > 0 && (
-              <Badge variant="outline" className="text-3xs px-1.5 py-0 bg-success-soft text-success-strong border-success-strong/25">{verifiedCount} verified</Badge>
+              <StatusPill tone="success">{verifiedCount} verified</StatusPill>
             )}
-            <Badge variant="outline" className="text-2xs">{entries.length} {entries.length === 1 ? "person" : "people"}</Badge>
+            <Badge variant="outline">{entries.length} {entries.length === 1 ? "person" : "people"}</Badge>
           </div>
         </div>
         <div className="space-y-1">
@@ -537,59 +571,57 @@ function SkillCard({
             const isCertified = !!s.certifiedAt;
             const canEdit = canVerify || s.userId === userId;
             return (
-              <div key={s.id} className="flex items-center gap-1.5 text-xs group/row">
-                <div className={`h-2 w-2 rounded-full shrink-0 ${levelColor(s.level)}`} title={`${LEVELS.find(l => l.value === String(s.level))?.label ?? ""}`} />
+              <div key={s.id} className="group/row flex min-h-7 items-center gap-1.5 text-xs">
+                <div className={cn("size-2.5 shrink-0 rounded-full", levelColor(s.level))} title={`${LEVELS.find(l => l.value === String(s.level))?.label ?? ""}`} />
                 <span className="flex-1 truncate min-w-0">{s.user?.name ?? "You"}</span>
                 {isCertified && (
                   <span
                     className="shrink-0"
                     title={s.certifiedAt ? `Certified ${formatCertDate(typeof s.certifiedAt === "string" ? s.certifiedAt : new Date(s.certifiedAt).toISOString())}` : "Certified"}
                   >
-                    <Award className="h-3 w-3 text-warning-strong" aria-label="Certified" />
+                    <Award className="size-3.5 text-brand-text" aria-label="Certified" />
                   </span>
                 )}
                 {certStatus !== "none" && (
-                  <Badge
-                    variant="outline"
-                    className={cn("shrink-0 px-1.5 py-0 text-3xs font-medium", certBadgeClass(certStatus))}
-                    title={`Valid until ${formatCertDate(s.validUntil)}`}
-                  >
-                    {certStatus === "valid" ? `Valid · ${formatCertDate(s.validUntil)}` : certStatusLabel(certStatus, s.validUntil)}
-                  </Badge>
+                  <span title={`Valid until ${formatCertDate(s.validUntil)}`} className="shrink-0">
+                    <StatusPill tone={CERT_TONE[certStatus]} className="tabular-nums">
+                      {certStatus === "valid" ? `Valid · ${formatCertDate(s.validUntil)}` : certStatusLabel(certStatus, s.validUntil)}
+                    </StatusPill>
+                  </span>
                 )}
-                <span className="text-2xs text-muted-foreground shrink-0">{LEVELS.find(l => l.value === String(s.level))?.label ?? ""}</span>
+                <span className="shrink-0 text-2xs text-muted-foreground">{LEVELS.find(l => l.value === String(s.level))?.label ?? ""}</span>
                 {canVerify && (
                   <button
                     type="button"
                     onClick={() => onVerify(s)}
                     disabled={verifyPending}
                     title={s.verifiedBy ? "Click to unverify" : "Click to verify"}
-                    className="shrink-0 disabled:opacity-50"
+                    className="shrink-0 rounded-full outline-none focus-visible:focus-ring disabled:opacity-50"
                     aria-label={s.verifiedBy ? "Unverify" : "Verify"}
                   >
-                    <CheckCircle2 className={cn("h-3.5 w-3.5 transition-colors", s.verifiedBy ? "text-success-strong" : "text-muted-foreground/30 hover:text-muted-foreground")} />
+                    <CheckCircle2 aria-hidden="true" className={cn("size-4 transition-colors", s.verifiedBy ? "text-success-strong" : "text-subtle-foreground hover:text-muted-foreground")} />
                   </button>
                 )}
                 {!canVerify && s.verifiedBy && (
-                  <CheckCircle2 className="h-3 w-3 text-success-strong shrink-0" />
+                  <CheckCircle2 className="size-3.5 shrink-0 text-success-strong" aria-label="Verified" />
                 )}
                 {canEdit && (
-                  <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/row:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
                     <button
                       type="button"
                       onClick={() => onEdit(s)}
-                      className="p-0.5 rounded hover:bg-muted"
+                      className="rounded-sm p-1 outline-none hover:bg-accent focus-visible:focus-ring"
                       aria-label="Edit skill"
                     >
-                      <Pencil className="h-3 w-3 text-muted-foreground" />
+                      <Pencil className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       onClick={() => onDelete(s)}
-                      className="p-0.5 rounded hover:bg-muted"
+                      className="rounded-sm p-1 outline-none hover:bg-accent focus-visible:focus-ring"
                       aria-label="Remove skill"
                     >
-                      <Trash2 className="h-3 w-3 text-destructive/70" />
+                      <Trash2 className="size-3.5 text-destructive" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -597,7 +629,7 @@ function SkillCard({
             );
           })}
           {entries.length > 5 && (
-            <p className="text-2xs text-muted-foreground pl-3.5">+{entries.length - 5} more</p>
+            <p className="pl-4 text-2xs tabular-nums text-muted-foreground">+{entries.length - 5} more</p>
           )}
         </div>
       </CardContent>

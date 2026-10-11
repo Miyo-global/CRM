@@ -18,16 +18,17 @@ import {
   Undo2,
 } from "lucide-react";
 import { ProgressTimeline } from "./progress-timeline";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 
-function statusBadge(
-  status: string | null
-): "default" | "secondary" | "outline" | "destructive" {
-  if (!status) return "outline";
-  if (status === "SUBMITTED" || status === "PENDING_HR") return "outline";
-  if (status === "HR_APPROVED") return "secondary";
-  if (status === "CEO_APPROVED" || status === "IN_PROGRESS" || status === "COMPLETED" || status === "APPROVED") return "default";
-  if (status === "REJECTED" || status === "WITHDRAWN") return "destructive";
-  return "outline";
+function statusTone(status: string | null): Tone {
+  if (!status) return "neutral";
+  if (status === "SUBMITTED" || status === "PENDING_HR") return "warning";
+  if (status === "HR_APPROVED") return "info";
+  if (status === "CEO_APPROVED" || status === "IN_PROGRESS" || status === "APPROVED") return "brand";
+  if (status === "COMPLETED") return "success";
+  if (status === "REJECTED" || status === "WITHDRAWN") return "danger";
+  return "neutral";
 }
 
 interface ResignationCardProps {
@@ -78,65 +79,66 @@ export function ResignationCard({
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-4 flex items-center gap-4">
-        <Avatar className="h-9 w-9 shrink-0">
+      <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Avatar className="size-9 shrink-0">
           <AvatarImage src={resolveImageUrl(r.user?.image ?? null)} />
-          <AvatarFallback className="text-xs bg-primary/10 text-primary">
+          <AvatarFallback className="bg-brand-soft text-xs text-brand-soft-foreground">
             {r.user?.name?.[0] ?? "?"}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold truncate">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-sm font-semibold">
               {r.user?.name ?? "Employee"}
             </p>
-            <Badge variant={statusBadge(r.status)} className="text-2xs">
+            <StatusPill tone={statusTone(r.status)} dot>
               {r.status}
-            </Badge>
+            </StatusPill>
             {r.reasonCategory && (
-              <Badge variant="outline" className="text-3xs hidden sm:inline-flex">
+              <Badge variant="outline" className="hidden sm:inline-flex">
                 {r.reasonCategory}
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-3 text-2xs text-muted-foreground mt-0.5 flex-wrap">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
             {r.user?.designation && <span>{r.user.designation}</span>}
             {r.lastWorkingDate && (
               <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+                <Calendar className="size-3.5" aria-hidden="true" />
                 LWD: {format(new Date(r.lastWorkingDate), "MMM d, yyyy")}
               </span>
             )}
             {daysLeft !== null && daysLeft > 0 && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="size-3.5" aria-hidden="true" />
                 {daysLeft} days left
               </span>
             )}
             <span>{r.noticePeriodDays}d notice</span>
           </div>
         </div>
+        </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
           {hrCanAct && (
             <>
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onHrApprove(r.id)}
               >
-                <CheckCircle2 className="h-3 w-3 mr-1" />
+                <CheckCircle2 aria-hidden="true" />
                 Approve
               </Button>
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive"
                 onClick={() => onHrReject(r.id)}
               >
-                <XCircle className="h-3 w-3 mr-1" />
+                <XCircle aria-hidden="true" />
                 Reject
               </Button>
             </>
@@ -145,21 +147,20 @@ export function ResignationCard({
           {ceoCanAct && (
             <>
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onCeoApprove(r.id)}
               >
-                <CheckCircle2 className="h-3 w-3 mr-1" />
+                <CheckCircle2 aria-hidden="true" />
                 Approve
               </Button>
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive"
                 onClick={() => onCeoReject(r.id)}
               >
-                <XCircle className="h-3 w-3 mr-1" />
+                <XCircle aria-hidden="true" />
                 Reject
               </Button>
             </>
@@ -167,34 +168,33 @@ export function ResignationCard({
 
           {canWithdraw && (
             <Button
-              size="sm"
+              size="xs"
               variant="outline"
-              className="h-7 text-xs"
               onClick={handleWithdraw}
             >
-              <Undo2 className="h-3 w-3 mr-1" />
+              <Undo2 aria-hidden="true" />
               Withdraw
             </Button>
           )}
 
           <Button
-            size="sm"
+            size="icon-sm"
             variant="ghost"
-            className="h-7 w-7 p-0"
+            className="ml-auto sm:ml-0"
             aria-label={isExpanded ? "Collapse progress" : "Expand progress"}
             onClick={handleToggle}
           >
             {isExpanded ? (
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="size-4" aria-hidden="true" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="size-4" aria-hidden="true" />
             )}
           </Button>
         </div>
       </CardContent>
 
       {isExpanded && (
-        <div className="border-t bg-muted/20">
+        <div className="border-t border-border bg-surface-sunken">
           <ProgressTimeline id={r.id} />
         </div>
       )}

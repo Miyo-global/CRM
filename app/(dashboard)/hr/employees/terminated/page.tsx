@@ -6,17 +6,18 @@ import { format } from "date-fns";
 import { useTerminatedEmployees } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { ListToolbar } from "@/components/shared/list-toolbar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptySearchIllustration } from "@/components/illustrations";
-import { Search, ArrowLeft, Download } from "lucide-react";
+import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
+import { ArrowLeft, Download } from "lucide-react";
 import { TerminatedEmployeeTable } from "@/features/hr/employees/terminated-employee-table";
 import { ROLE_LABELS } from "@/features/hr/employees/hr-types";
 import { toast } from "sonner";
 
 export default function TerminatedEmployeesPage() {
-  const { data, isLoading } = useTerminatedEmployees();
+  const { data, isLoading, isError, error, refetch } = useTerminatedEmployees();
   const [search, setSearch] = useState("");
 
   const employees = useMemo(() => data ?? [], [data]);
@@ -108,28 +109,26 @@ export default function TerminatedEmployeesPage() {
         </div>
       }
       filters={
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Search name, email, ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 h-8 w-[220px] text-sm"
-            aria-label="Search terminated employees"
-          />
-        </div>
+        <ListToolbar
+          className="w-full"
+          search={{ value: search, onChange: setSearch, placeholder: "Search name, email, ID..." }}
+        />
       }
     >
-      {filtered.length > 0 ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load terminated employees" error={error} onRetry={() => refetch()} />
+      ) : filtered.length > 0 ? (
         <TerminatedEmployeeTable employees={filtered} />
       ) : employees.length > 0 ? (
         <EmptyState
-          illustration={<EmptySearchIllustration className="mb-3" />}
+          illustration={<EmptySearchIllustration />}
           title="No results found"
           description="No terminated employees match your search."
+          action={{ label: "Clear filters", onClick: () => setSearch("") }}
         />
       ) : (
         <EmptyState
+          illustration={<EmptyTeamIllustration />}
           title="No terminated employees"
           description="Employees you terminate from the active directory will appear here for tracking."
           action={{ label: "View active employees", href: "/hr" }}

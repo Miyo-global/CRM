@@ -20,6 +20,13 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptySearchIllustration, EmptyTargetIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   IndianRupee, CheckCircle2, XCircle, Clock, Settings,
@@ -38,7 +45,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { type PageSizeOption } from "@/lib/pagination-constants";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { formatINRWhole as formatINR } from "@/lib/format-utils";
 import {
   incentiveRateInputError,
@@ -49,11 +55,11 @@ import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const BLOCKED_RATE_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-warning-soft text-warning-strong",
-  APPROVED: "bg-success-soft text-success-strong",
-  REJECTED: "bg-danger-soft text-danger-strong",
-  ADDED_TO_PAYROLL: "bg-info-soft text-info-strong",
+const STATUS_TONES: Record<string, Tone> = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "danger",
+  ADDED_TO_PAYROLL: "info",
 };
 
 export default function IncentivesPage() {
@@ -89,7 +95,7 @@ export default function IncentivesPage() {
   const [historyPageSize, setHistoryPageSize] = useState<PageSizeOption>(10);
 
   const { data: stats } = useHrIncentiveStats();
-  const { data, isLoading } = useHrIncentives({
+  const { data, isLoading, isError, error, refetch } = useHrIncentives({
     status: statusFilter !== "all" ? statusFilter as "PENDING" | "APPROVED" | "REJECTED" | "ADDED_TO_PAYROLL" : undefined,
     page,
     limit: 25,
@@ -189,74 +195,67 @@ export default function IncentivesPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => { setHistoryPage(1); setShowHistory(true); }}>
-            <History className="h-4 w-4 mr-1" /> Rate History
+            <History className="size-4" aria-hidden="true" /> Rate History
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowConfigSheet(true)}>
-            <Settings className="h-4 w-4 mr-1" /> Configure Rate
+            <Settings className="size-4" aria-hidden="true" /> Configure Rate
           </Button>
         </div>
       }
       filters={
         <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-          <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40" aria-label="Status"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">All Status</SelectItem>
-            <SelectItem value="PENDING" className="text-xs">Pending</SelectItem>
-            <SelectItem value="APPROVED" className="text-xs">Approved</SelectItem>
-            <SelectItem value="REJECTED" className="text-xs">Rejected</SelectItem>
-            <SelectItem value="ADDED_TO_PAYROLL" className="text-xs">Added to Payroll</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="APPROVED">Approved</SelectItem>
+            <SelectItem value="REJECTED">Rejected</SelectItem>
+            <SelectItem value="ADDED_TO_PAYROLL">Added to Payroll</SelectItem>
           </SelectContent>
         </Select>
       }
     >
       <div className="space-y-6">
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
-          {[
-            { label: "This Month", value: formatINR(stats?.thisMonth), icon: IndianRupee, color: "text-success-strong" },
-            { label: "Total Revenue", value: formatINR(stats?.totalRevenue), icon: TrendingUp, color: "text-info-strong" },
-            { label: "Avg / Conversion", value: formatINR(stats?.avgPerConversion), icon: Users, color: "text-plum-strong" },
-            { label: "Pending", value: stats?.pending ?? 0, icon: Clock, color: "text-warning-strong" },
-            { label: "Approved", value: stats?.approved ?? 0, icon: CheckCircle2, color: "text-success-strong" },
-          ].map(s => (
-            <Card key={s.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <s.icon className={cn("h-5 w-5", s.color)} />
-                  <span className={cn("text-xl font-bold tabular-nums", s.color)}>{s.value}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <StatsStrip
+          items={[
+            { label: "This Month", value: formatINR(stats?.thisMonth), icon: IndianRupee, tone: "success" },
+            { label: "Total Revenue", value: formatINR(stats?.totalRevenue), icon: TrendingUp },
+            { label: "Avg / Conversion", value: formatINR(stats?.avgPerConversion), icon: Users },
+            { label: "Pending", value: stats?.pending ?? 0, icon: Clock, tone: "warning" },
+            { label: "Approved", value: stats?.approved ?? 0, icon: CheckCircle2, tone: "success" },
+          ]}
+        />
 
         {currentConfig && (
-          <Card className="bg-brand-soft border-primary/40">
-            <CardContent className="p-4 flex items-center gap-3">
-              <Percent className="h-5 w-5 text-brand-text" />
+          <Card className="border-primary/40 bg-brand-soft">
+            <CardContent className="flex items-center gap-3 p-4">
+              <IconChip icon={Percent} className="bg-card" />
               <div>
                 <p className="text-sm font-medium">Current Incentive Rate: <span className="text-brand-text font-bold">{currentConfig.incentiveRate}%</span></p>
-                <p className="text-xs text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE)}</p>
+                <p className="text-xs tabular-nums text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE)}</p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <Card>
-          <ScrollArea className="w-full max-h-[60vh]" type="auto">
+        {isError ? (
+          <QueryErrorState title="Couldn't load incentives" error={error} onRetry={() => refetch()} />
+        ) : (
+        <Card className="gap-0 overflow-hidden py-0">
+          <ScrollArea className="max-h-[60vh] w-full" type="auto">
             <div className="min-w-max">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Sales Rep</TableHead>
-                  <TableHead className="text-xs">Client</TableHead>
-                  <TableHead className="text-xs">Investment</TableHead>
-                  <TableHead className="text-xs">Rate</TableHead>
-                  <TableHead className="text-xs">Calculated</TableHead>
-                  <TableHead className="text-xs">Approved</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs">Actions</TableHead>
+                  <TableHead>Sales Rep</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead className="text-right">Investment</TableHead>
+                  <TableHead className="text-right">Rate</TableHead>
+                  <TableHead className="text-right">Calculated</TableHead>
+                  <TableHead className="text-right">Approved</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -266,8 +265,14 @@ export default function IncentivesPage() {
                   ))
                 ) : incentivesList.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      No incentives found
+                    <TableCell colSpan={8} className="p-4">
+                      <EmptyState
+                        compact
+                        className="border-0 bg-transparent"
+                        illustration={statusFilter !== "all" ? <EmptySearchIllustration /> : <EmptyTargetIllustration />}
+                        title="No incentives found"
+                        action={statusFilter !== "all" ? { label: "Clear filters", onClick: () => handleStatusFilterChange("all") } : undefined}
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -276,21 +281,21 @@ export default function IncentivesPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarImage src={inc.salesRep?.image || ""} />
-                            <AvatarFallback className="text-3xs">{inc.salesRep?.name?.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={inc.salesRep?.image || ""} alt="" />
+                            <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{inc.salesRep?.name?.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <span className="text-sm">{inc.salesRep?.name || ""}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-sm">{inc.clientAccount?.clientName || ""}</TableCell>
-                      <TableCell className="text-xs font-mono">{formatINR(inc.investmentAmount)}</TableCell>
-                      <TableCell className="text-xs">{inc.incentiveRate}%</TableCell>
-                      <TableCell className="text-xs font-mono font-medium">{formatINR(inc.calculatedAmount)}</TableCell>
-                      <TableCell className="text-xs font-mono text-success-strong">{inc.approvedAmount ? formatINR(inc.approvedAmount) : ""}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatINR(inc.investmentAmount)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{inc.incentiveRate}%</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">{formatINR(inc.calculatedAmount)}</TableCell>
+                      <TableCell className="text-right tabular-nums text-success-strong">{inc.approvedAmount ? formatINR(inc.approvedAmount) : ""}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn("text-2xs border-0", STATUS_COLORS[inc.status])}>
+                        <StatusPill tone={STATUS_TONES[inc.status] ?? "neutral"} dot>
                           {inc.status}
-                        </Badge>
+                        </StatusPill>
                       </TableCell>
                       <TableCell>
                         {inc.status === "PENDING" && (
@@ -298,18 +303,18 @@ export default function IncentivesPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs text-success-strong hover:text-success-strong"
+                              className="text-success-strong hover:bg-success-soft hover:text-success-strong"
                               onClick={() => handleApproveOpen(inc.id, inc.calculatedAmount)}
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve
+                              <CheckCircle2 className="size-4" aria-hidden="true" /> Approve
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs text-danger-strong hover:text-danger-strong"
+                              className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
                               onClick={() => handleReject(inc.id)}
                             >
-                              <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
+                              <XCircle className="size-4" aria-hidden="true" /> Reject
                             </Button>
                           </div>
                         )}
@@ -333,6 +338,7 @@ export default function IncentivesPage() {
             </div>
           )}
         </Card>
+        )}
       </div>
 
       <Dialog open={!!approveModal} onOpenChange={(open) => !open && handleApproveClose()}>
@@ -390,7 +396,7 @@ export default function IncentivesPage() {
         submitDisabled={!canSetRate}
       >
         {currentConfig && (
-          <div className="p-3 bg-muted/50 rounded-lg">
+          <div className="rounded-lg bg-surface-sunken p-3">
             <p className="text-xs text-muted-foreground">Current Rate</p>
             <p className="text-lg font-bold">{currentConfig.incentiveRate}%</p>
           </div>

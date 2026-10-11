@@ -51,7 +51,11 @@ import {
 } from "lucide-react";
 import type { JobPosting, JobPostingStatus } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyJobPostingsIllustration } from "@/components/illustrations";
+import { EmptyJobPostingsIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import type { Tone } from "@/lib/design/tones";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 
@@ -160,22 +164,20 @@ function ShareJobDialog({ jobId, onClose }: { jobId: number; onClose: () => void
   );
 }
 
-function statusBadgeVariant(status: string | null): "default" | "secondary" | "outline" | "destructive" {
-  switch (status) {
-    case "OPEN": return "default";
-    case "DRAFT": return "secondary";
-    case "PAUSED": return "outline";
-    case "CLOSED": case "FILLED": return "destructive";
-    default: return "secondary";
-  }
-}
+const JOB_STATUS_TONE: Record<string, Tone> = {
+  OPEN: "success",
+  DRAFT: "neutral",
+  PAUSED: "warning",
+  CLOSED: "danger",
+  FILLED: "info",
+};
 
 export default function JobPostingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusFilter = searchParams.get("status") as JobPostingStatus | null;
 
-  const { data: jobs, isLoading } = useJobPostings(
+  const { data: jobs, isLoading, isError, error, refetch } = useJobPostings(
     statusFilter ? { status: statusFilter } : undefined
   );
   const { data: departments } = useHrDepartments();
@@ -336,24 +338,29 @@ export default function JobPostingsPage() {
         </div>
       }
       filters={
-        <div className="flex flex-wrap items-center gap-2 w-full">
-          <div className="relative flex-1 min-w-[220px] max-w-md">
+        <ListToolbar
+          className="w-full"
+          filters={
+        <>
+          <div className="relative w-full sm:w-64">
             <Search
-              className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
               aria-hidden
             />
             <Input
+              type="search"
+              data-page-search
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search jobs"
-              className="h-9 pl-8"
+              className="pl-9"
               aria-label="Search job postings"
               aria-describedby="jobs-search-hint"
             />
             <MinLengthHint id="jobs-search-hint" value={searchQuery} min={JOB_SEARCH_MIN_LENGTH} />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[140px] h-9">
+            <SelectTrigger className="w-36">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
@@ -365,7 +372,7 @@ export default function JobPostingsPage() {
             </SelectContent>
           </Select>
           <Select value={statusFilter ?? "ALL"} onValueChange={(v) => setFilter("status", v)}>
-            <SelectTrigger className="w-[140px] h-9">
+            <SelectTrigger className="w-36">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -377,14 +384,19 @@ export default function JobPostingsPage() {
             </SelectContent>
           </Select>
           {(hasClientFilters || hasUrlStatusFilter) && (
-            <Button type="button" variant="ghost" size="sm" className="h-9 gap-1" onClick={handleClearFilters}>
-              <X className="h-3.5 w-3.5" />
+            <Button type="button" variant="ghost" size="sm" onClick={handleClearFilters}>
+              <X aria-hidden="true" />
               Clear
             </Button>
           )}
-        </div>
+        </>
+          }
+        />
       }
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load job postings" error={error} onRetry={() => void refetch()} />
+      ) : (
       <Card>
         {searchQuery.trim().length > 0 && searchQuery.trim().length < JOB_SEARCH_MIN_LENGTH ? (
           <p className="px-4 pt-3 text-xs text-muted-foreground">
@@ -401,17 +413,16 @@ export default function JobPostingsPage() {
                     <TableHead>Department</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Openings</TableHead>
+                    <TableHead className="text-right">Openings</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-[50px]" />
+                    <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {!jobs?.length ? (
-                    <TableRow><TableCell colSpan={7} className="py-8">
+                    <TableRow className="hover:bg-transparent"><TableCell colSpan={7} className="py-8">
                       <EmptyState
-                        compact
-                        illustration={<EmptyJobPostingsIllustration className="h-20 w-20 opacity-95" />}
+                        illustration={<EmptyJobPostingsIllustration className="size-28" />}
                         title="No job postings yet"
                         description="Create your first job posting to start recruiting."
                         action={{ label: "New job", onClick: () => router.push("/hr/recruitment/jobs/new") }}
@@ -419,12 +430,12 @@ export default function JobPostingsPage() {
                       />
                     </TableCell></TableRow>
                   ) : filteredJobs.length === 0 ? (
-                    <TableRow>
+                    <TableRow className="hover:bg-transparent">
                       <TableCell colSpan={7} className="py-8">
                         <EmptyState
                           compact
-                          icon={Search}
-                          title="No matches"
+                          illustration={<EmptySearchIllustration className="size-20" />}
+                          title="No results for these filters"
                           description="Try adjusting your search or filters."
                           action={{ label: "Clear filters", onClick: handleClearFilters }}
                           className="border-0 bg-transparent"
@@ -436,7 +447,11 @@ export default function JobPostingsPage() {
                       <TableRow
                         key={job.id}
                         className="cursor-pointer"
+                        tabIndex={0}
                         onClick={() => openEditPage(job)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && e.target === e.currentTarget) openEditPage(job);
+                        }}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
@@ -444,24 +459,24 @@ export default function JobPostingsPage() {
                             {job.externalPostingIds && Object.keys(job.externalPostingIds as Record<string, string>).length > 0 && (
                               <div className="flex gap-1">
                                 {Object.keys(job.externalPostingIds as Record<string, string>).map((platform) => (
-                                  <Badge key={platform} variant="secondary" className="text-3xs px-1 py-0 h-4 uppercase">{platform}</Badge>
+                                  <Badge key={platform} variant="secondary" className="h-4 px-1 py-0 text-3xs uppercase">{platform}</Badge>
                                 ))}
                               </div>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{departmentName(job.departmentId)}</TableCell>
-                        <TableCell>{job.location ? formatJobPostingLocation(job.location) : ""}</TableCell>
-                        <TableCell className="text-sm">{formatJobTypeLabel(job.type)}</TableCell>
-                        <TableCell>{job.openings}</TableCell>
+                        <TableCell className="text-muted-foreground">{departmentName(job.departmentId)}</TableCell>
+                        <TableCell className="text-muted-foreground">{job.location ? formatJobPostingLocation(job.location) : ""}</TableCell>
+                        <TableCell className="text-muted-foreground">{formatJobTypeLabel(job.type)}</TableCell>
+                        <TableCell className="text-right tabular-nums">{job.openings}</TableCell>
                         <TableCell>
-                          <Badge variant={statusBadgeVariant(job.status)}>
+                          <StatusPill tone={JOB_STATUS_TONE[job.status ?? ""] ?? "neutral"} dot>
                             {formatJobPostingStatusLabel(job.status)}
-                          </Badge>
+                          </StatusPill>
                         </TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label="Job actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => openEditPage(job)}>
                                 <Pencil className="mr-2 h-4 w-4" />Edit
@@ -552,6 +567,7 @@ export default function JobPostingsPage() {
           </ScrollArea>
         </CardContent>
       </Card>
+      )}
     </PageWrapper>
     {shareJobId !== null && (
       <ShareJobDialog jobId={shareJobId} onClose={() => setShareJobId(null)} />

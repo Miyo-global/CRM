@@ -136,7 +136,7 @@ export function ImportValidationPreview({
             <ScrollArea className="h-48 rounded-md border">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b bg-muted/50">
+                  <tr className="border-b border-border bg-surface-sunken">
                     <th className="px-2 py-1.5 text-left font-medium">#</th>
                     <th className="px-2 py-1.5 text-left font-medium">Date</th>
                     <th className="px-2 py-1.5 text-left font-medium">Category</th>

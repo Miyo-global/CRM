@@ -1,5 +1,5 @@
 import type { CandidateStatus, JobPostingStatus } from "@/types/hr";
-import { toneDot, toneSoft } from "@/lib/design/tones";
+import { toneDot, toneSoft, type Tone } from "@/lib/design/tones";
 
 export const STATUSES: { value: CandidateStatus; label: string; color: string }[] = [
   { value: "NEW", label: "New", color: toneDot.info },
@@ -38,6 +38,28 @@ export const JOB_STATUS_LABELS: Record<JobPostingStatus, string> = {
   PAUSED: "Paused",
   CLOSED: "Closed",
   FILLED: "Filled",
+};
+
+export const CANDIDATE_STATUS_TONE: Record<CandidateStatus, Tone> = {
+  NEW: "info",
+  SCREENING: "teal",
+  INTERVIEW: "plum",
+  OFFER: "brand",
+  HIRED: "success",
+  REJECTED: "danger",
+};
+
+export function candidateStatusTone(status: string | null): Tone {
+  return CANDIDATE_STATUS_TONE[status as CandidateStatus] ?? "neutral";
+}
+
+export function candidateStatusLabel(status: string | null): string {
+  return STATUSES.find((s) => s.value === status)?.label ?? status ?? "—";
+}
+
+export const JOB_STATUS_TONE: Partial<Record<JobPostingStatus, Tone>> = {
+  OPEN: "success",
+  PAUSED: "warning",
 };
 
 export function statusBadgeVariant(status: string | null): "default" | "secondary" | "outline" | "destructive" {

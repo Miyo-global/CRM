@@ -8,8 +8,11 @@ import {
 } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
@@ -23,15 +26,15 @@ import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "APPROVED" || s === "PAID") return "default";
-  if (s === "REJECTED") return "destructive";
-  return "outline";
+function statusTone(s: string | null): Tone {
+  if (s === "APPROVED" || s === "PAID") return "success";
+  if (s === "REJECTED") return "danger";
+  return "warning";
 }
 
 export default function ReimbursementsPage() {
   const { data: session } = useSession();
-  const { data: items, isLoading } = useReimbursements();
+  const { data: items, isLoading, isError, error, refetch } = useReimbursements();
   const create = useCreateReimbursement();
   const process = useProcessReimbursement();
   const isAdmin = isAdminOrOwner(session?.user?.role);
@@ -78,7 +81,7 @@ export default function ReimbursementsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Reimbursements" subtitle="Expense reimbursement requests">
-        <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+        <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
   }
@@ -88,46 +91,69 @@ export default function ReimbursementsPage() {
       title="Reimbursements"
       subtitle="Submit and track expense reimbursements"
       badge={`${items?.length ?? 0} requests`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />New Request</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Request</Button>}
     >
-      {!items?.length ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load reimbursements" error={error} onRetry={() => refetch()} />
+      ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyExpensesIllustration />}
           title="No reimbursement requests yet"
           description="Submit an expense to start tracking reimbursement requests."
           action={{ label: "New Request", onClick: () => setSheetOpen(true) }}
         />
       ) : (
-        <div className="space-y-2">
-          {items.map((r: Reimbursement) => (
-            <Card key={r.id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{r.category}</p>
-                    <Badge variant={statusBadge(r.status)} className="text-2xs">{r.status}</Badge>
-                  </div>
-                  <div className="flex gap-3 text-2xs text-muted-foreground mt-0.5">
-                    <span className="font-medium text-foreground">${Number(r.amount).toLocaleString()}</span>
-                    {r.user?.name && <span>{r.user.name}</span>}
-                    {r.createdAt && <span>{format(new Date(r.createdAt), "MMM d, yyyy")}</span>}
-                  </div>
-                  {r.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{r.description}</p>}
-                </div>
-                {isAdmin && r.status === "PENDING" && (
-                  <div className="flex gap-1.5 shrink-0">
-                    <Button size="sm" className="h-7 text-xs" onClick={() => handleApprove(r.id)} disabled={process.isPending}>
-                      <CheckCircle2 className="h-3 w-3 mr-1" />Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setRejectId(r.id)}>
-                      <XCircle className="h-3 w-3 mr-1" />Reject
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table className="min-w-[680px] tabular-nums">
+            <caption className="sr-only">Reimbursement requests</caption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Request</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Submitted</TableHead>
+                {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((r: Reimbursement) => (
+                <TableRow key={r.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{r.category}</p>
+                        <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
+                          {[r.user?.name, r.description].filter(Boolean).join(" · ") || "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">${Number(r.amount).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <StatusPill tone={statusTone(r.status)} dot>{r.status}</StatusPill>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {r.createdAt ? format(new Date(r.createdAt), "MMM d, yyyy") : "—"}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell className="text-right">
+                      {r.status === "PENDING" ? (
+                        <div className="flex justify-end gap-1.5">
+                          <Button size="sm" onClick={() => handleApprove(r.id)} disabled={process.isPending}>
+                            <CheckCircle2 className="size-4" aria-hidden="true" />Approve
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setRejectId(r.id)}>
+                            <XCircle className="size-4" aria-hidden="true" />Reject
+                          </Button>
+                        </div>
+                      ) : null}
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -136,21 +162,18 @@ export default function ReimbursementsPage() {
         onOpenChange={setSheetOpen}
         title="Submit Reimbursement"
         showSubmit={false}
+        footer={
+          <div className="flex justify-end gap-2 py-1">
+            <Button variant="ghost" onClick={() => setSheetOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" form="reimbursement-request" loading={create.isPending}>
+              {create.isPending ? "Submitting..." : "Submit"}
+            </Button>
+          </div>
+        }
       >
         <ReimbursementRequestForm formId="reimbursement-request" onSubmit={handleCreate} />
-        <div className="flex gap-2 pt-4 border-t mt-4">
-          <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="reimbursement-request"
-            className="flex-1"
-            disabled={create.isPending}
-          >
-            {create.isPending ? "Submitting..." : "Submit"}
-          </Button>
-        </div>
       </HrSheet>
 
       <ConfirmActionDialog

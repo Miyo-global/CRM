@@ -8,7 +8,10 @@ import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { NotFoundIllustration } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Save, Globe, GlobeLock, ArrowLeft } from "lucide-react";
@@ -19,7 +22,7 @@ export default function DocumentEditorPage() {
   const router = useRouter();
   const documentId = Number(params.documentId);
 
-  const { data: doc, isLoading } = useRichDocument(documentId);
+  const { data: doc, isLoading, isError, error, refetch } = useRichDocument(documentId);
   const updateDoc = useUpdateRichDocument();
   const publishDoc = usePublishRichDocument();
 
@@ -84,8 +87,13 @@ export default function DocumentEditorPage() {
 
   if (Number.isNaN(documentId)) {
     return (
-      <PageWrapper title="Document Not Found" subtitle="The requested document could not be found.">
-        <Button asChild><Link href="/hr/documents">Back to Documents</Link></Button>
+      <PageWrapper title="Document Not Found">
+        <EmptyState
+          illustration={<NotFoundIllustration />}
+          title="Document Not Found"
+          description="The requested document could not be found."
+          action={{ label: "Back to Documents", href: "/hr/documents" }}
+        />
       </PageWrapper>
     );
   }
@@ -94,17 +102,30 @@ export default function DocumentEditorPage() {
     return (
       <PageWrapper title="Document Editor" subtitle="Loading...">
         <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-[400px] w-full" />
+          <Skeleton className="h-10 w-full max-w-xl" />
+          <Skeleton className="h-150 w-full rounded-lg" />
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Document Editor">
+        <QueryErrorState title="Couldn't load document" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
   }
 
   if (!doc) {
     return (
-      <PageWrapper title="Document Not Found" subtitle="The requested document could not be found.">
-        <Button asChild><Link href="/hr/documents">Back to Documents</Link></Button>
+      <PageWrapper title="Document Not Found">
+        <EmptyState
+          illustration={<NotFoundIllustration />}
+          title="Document Not Found"
+          description="The requested document could not be found."
+          action={{ label: "Back to Documents", href: "/hr/documents" }}
+        />
       </PageWrapper>
     );
   }
@@ -116,30 +137,32 @@ export default function DocumentEditorPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/hr/documents"><ArrowLeft className="mr-1 h-4 w-4" />Back</Link>
+            <Link href="/hr/documents"><ArrowLeft className="size-4" aria-hidden />Back</Link>
           </Button>
           {isDirty && (
-            <Badge variant="outline" className="text-warning-strong">Unsaved</Badge>
+            <StatusPill tone="warning" dot>Unsaved</StatusPill>
           )}
-          <Button variant="outline" size="sm" onClick={handlePublish} disabled={publishDoc.isPending}>
-            {doc.isPublished ? <GlobeLock className="mr-1 h-4 w-4" /> : <Globe className="mr-1 h-4 w-4" />}
+          <Button variant="outline" size="sm" onClick={handlePublish} loading={publishDoc.isPending}>
+            {publishDoc.isPending ? null : doc.isPublished ? <GlobeLock className="size-4" aria-hidden /> : <Globe className="size-4" aria-hidden />}
             {doc.isPublished ? "Unpublish" : "Publish"}
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={!isDirty || !title.trim() || updateDoc.isPending}>
-            <Save className="mr-1 h-4 w-4" />
+          <Button size="sm" onClick={handleSave} disabled={!isDirty || !title.trim()} loading={updateDoc.isPending}>
+            {!updateDoc.isPending && <Save className="size-4" aria-hidden />}
             {updateDoc.isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       }
     >
-      <div className="space-y-4 max-w-4xl mx-auto">
+      <div className="space-y-4">
         <Input
           value={title}
           onChange={handleTitleChange}
           placeholder="Document title"
-          className="text-lg font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0"
+          aria-label="Document title"
+          className="h-11 rounded-none border-0 border-b border-border bg-transparent px-0 font-display text-xl font-bold shadow-none focus-visible:border-primary focus-visible:ring-0"
         />
         <TiptapEditor
+          canvas
           content={contentJson}
           onChange={handleContentChange}
           placeholder="Start writing your document..."

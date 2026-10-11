@@ -26,7 +26,10 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyPersonIllustration, EmptyUploadIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,27 +123,23 @@ function useSubmitOnboardingDoc() {
 
 function docStatusIcon(status: OnboardingDoc["status"]) {
   const icons = {
-    "APPROVED": <CheckCircle2 className="h-4 w-4 text-success-strong" />,
-    "SUBMITTED": <Clock className="h-4 w-4 text-warning-strong" />,
-    "REJECTED": <AlertCircle className="h-4 w-4 text-destructive" />,
-    "RE_UPLOAD_REQUESTED": <RefreshCw className="h-4 w-4 text-warning-strong" />,
-    default: <FileText className="h-4 w-4 text-muted-foreground" />,
+    "APPROVED": <IconChip icon={CheckCircle2} tone="success" size="sm" />,
+    "SUBMITTED": <IconChip icon={Clock} tone="warning" size="sm" />,
+    "REJECTED": <IconChip icon={AlertCircle} tone="danger" size="sm" />,
+    "RE_UPLOAD_REQUESTED": <IconChip icon={RefreshCw} tone="warning" size="sm" />,
+    default: <IconChip icon={FileText} tone="neutral" size="sm" />,
   };
   return icons[status as keyof typeof icons] || icons.default;
 }
 
-function docStatusVariant(
-  status: OnboardingDoc["status"]
-): "default" | "secondary" | "outline" | "destructive" | "outline" {
-  const variants = {
-    "APPROVED": "default",
-    "SUBMITTED": "secondary",
-    "REJECTED": "destructive",
-    "RE_UPLOAD_REQUESTED": "outline",
-    default: "outline",
+function docStatusTone(status: OnboardingDoc["status"]): Tone {
+  const tones: Partial<Record<OnboardingDoc["status"], Tone>> = {
+    APPROVED: "success",
+    SUBMITTED: "warning",
+    REJECTED: "danger",
+    RE_UPLOAD_REQUESTED: "warning",
   };
-
-  return (variants[status as keyof typeof variants] || variants.default) as "default" | "secondary" | "outline" | "destructive" | "outline";
+  return tones[status] ?? "neutral";
 }
 
 function docStatusLabel(status: OnboardingDoc["status"]): string {
@@ -226,7 +225,7 @@ function UploadSheet({
       isPending={isPending}
     >
       {existingDoc?.status === "RE_UPLOAD_REQUESTED" && existingDoc.remarks && (
-        <div className="rounded-md border border-warning-strong/25 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
+        <div className="rounded-md bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
           <p className="font-medium mb-0.5">Reviewer remarks</p>
           <p>{existingDoc.remarks}</p>
         </div>
@@ -256,8 +255,8 @@ function UploadSheet({
 
 function EmployeeDocumentsTab() {
   const { data: session } = useSession();
-  const { data: myDocs, isLoading: docsLoading } = useMyOnboardingDocs();
-  const { data: docTypes, isLoading: typesLoading } = useDocumentTypes();
+  const { data: myDocs, isLoading: docsLoading, isError: docsError, error: docsErr, refetch: refetchDocs } = useMyOnboardingDocs();
+  const { data: docTypes, isLoading: typesLoading, isError: typesError, error: typesErr, refetch: refetchTypes } = useDocumentTypes();
   const submitDoc = useSubmitOnboardingDoc();
   const userRole = session?.user?.role ?? null;
 
@@ -322,16 +321,28 @@ function EmployeeDocumentsTab() {
     return (
       <div className="space-y-2 pt-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-16" />
+          <Skeleton key={i} className="h-16 rounded-lg" />
         ))}
       </div>
+    );
+  }
+
+  if (docsError || typesError) {
+    return (
+      <QueryErrorState
+        error={docsErr ?? typesErr}
+        onRetry={() => {
+          void refetchDocs();
+          void refetchTypes();
+        }}
+      />
     );
   }
 
   if (checklist.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyUploadIllustration className="h-24 w-24" />}
+        illustration={<EmptyUploadIllustration className="size-24" />}
         title="No documents required"
         description="Your HR team hasn't configured any required documents yet."
         compact
@@ -341,11 +352,11 @@ function EmployeeDocumentsTab() {
 
   return (
     <>
-      <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 mb-3">
-        <CheckCircle2 className="h-4 w-4 text-success-strong shrink-0" />
+      <div className="mb-3 flex items-center gap-3 rounded-lg border bg-surface-sunken/40 px-4 py-3">
+        <IconChip icon={CheckCircle2} tone="success" size="sm" />
         <p className="text-sm">
-          <span className="font-semibold">{approvedCount}</span> of{" "}
-          <span className="font-semibold">{requiredChecklist.length || checklist.length}</span>{" "}
+          <span className="font-semibold tabular-nums">{approvedCount}</span> of{" "}
+          <span className="font-semibold tabular-nums">{requiredChecklist.length || checklist.length}</span>{" "}
           required documents approved
         </p>
       </div>
@@ -353,9 +364,9 @@ function EmployeeDocumentsTab() {
       <div className="space-y-2">
         {checklist.map(({ docType, submission }) => (
           <Card key={docType.id}>
-            <CardContent className="p-3">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 shrink-0">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-start gap-3 sm:flex-nowrap">
+                <div className="shrink-0">
                   {docStatusIcon(submission?.status ?? "PENDING")}
                 </div>
 
@@ -363,25 +374,17 @@ function EmployeeDocumentsTab() {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <p className="text-sm font-medium">{docType.name}</p>
                     {docType.isMandatory && (
-                      <Badge
-                        variant="default"
-                        className="text-3xs py-0 h-4 shrink-0"
-                      >
-                        Required
-                      </Badge>
+                      <StatusPill tone="brand">Required</StatusPill>
                     )}
                     {submission && (
-                      <Badge
-                        variant={docStatusVariant(submission.status)}
-                        className="text-2xs shrink-0"
-                      >
+                      <StatusPill tone={docStatusTone(submission.status)} dot>
                         {docStatusLabel(submission.status)}
-                      </Badge>
+                      </StatusPill>
                     )}
                   </div>
 
                   {docType.description && (
-                    <p className="text-2xs text-muted-foreground mt-0.5">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
                       {docType.description}
                     </p>
                   )}
@@ -391,17 +394,17 @@ function EmployeeDocumentsTab() {
                       href={submission.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-2xs text-primary hover:underline mt-0.5"
+                      className="mt-1 inline-flex max-w-full items-center gap-1 text-xs text-brand-text hover:underline"
                       aria-label={`View ${submission.fileName}`}
                     >
-                      {submission.fileName}
-                      <ExternalLink className="h-2.5 w-2.5" />
+                      <span className="truncate">{submission.fileName}</span>
+                      <ExternalLink className="size-3 shrink-0" aria-hidden="true" />
                     </a>
                   )}
 
                   {submission?.status === "RE_UPLOAD_REQUESTED" &&
                     submission.remarks && (
-                      <p className="text-2xs text-warning-strong mt-0.5">
+                      <p className="mt-1 text-xs text-warning-strong">
                         Remarks: {submission.remarks}
                       </p>
                     )}
@@ -411,11 +414,11 @@ function EmployeeDocumentsTab() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs shrink-0"
+                    className="shrink-0"
                     onClick={() => handleOpenUpload(docType, submission)}
                     aria-label={`Upload ${docType.name}`}
                   >
-                    <Upload className="h-3.5 w-3.5 mr-1" />
+                    <Upload className="size-4" aria-hidden="true" />
                     {submission ? "Re-upload" : "Upload"}
                   </Button>
                 )}
@@ -512,7 +515,7 @@ function InitiateSheet({
             )}
           </SelectContent>
         </Select>
-        <p className="text-2xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Only active employees without an existing onboarding checklist are listed.
         </p>
       </div>
@@ -535,44 +538,47 @@ function isOnboardingTab(value: string | null): value is OnboardingTab {
 }
 
 function HrWorkflowTab() {
-  const { data, isLoading } = useOnboardingStatus();
+  const { data, isLoading, isError, error, refetch } = useOnboardingStatus();
   const [initiateOpen, setInitiateOpen] = useState(false);
 
   if (isLoading) {
     return (
       <div className="space-y-2 pt-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-16" />
+          <Skeleton key={i} className="h-16 rounded-lg" />
         ))}
       </div>
     );
+  }
+
+  if (isError) {
+    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
   }
 
   const rows = data ?? [];
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground rounded-md border bg-muted/30 px-3 py-2.5">
+      <p className="rounded-lg border bg-surface-sunken/40 px-4 py-3 text-sm text-muted-foreground">
         New hires are created under the <strong>Add Employee</strong> tab. Their onboarding
         checklist starts automatically after you submit that form. Use the action below only
         for an <strong>existing</strong> employee who still needs a checklist.
       </p>
-      <div className="flex items-center justify-center w-full gap-3">
+      <div className="flex w-full flex-wrap items-center justify-end gap-3">
         <Button
           size="sm"
           variant="outline"
-          className="h-8 gap-1.5"
           onClick={() => setInitiateOpen(true)}
           aria-label="Initiate onboarding checklist for an existing employee"
         >
-          <UserPlus className="h-3.5 w-3.5" />
+          <UserPlus className="size-4" aria-hidden="true" />
           Initiate checklist (existing employee)
         </Button>
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="h-24 w-24" />}
+          illustration={<EmptyPersonIllustration className="size-24" />}
           title="No onboardings in progress"
           description="Add a new employee first, or initiate a checklist for someone who already exists in the directory."
           compact
@@ -581,25 +587,28 @@ function HrWorkflowTab() {
         <div className="space-y-2">
           {rows.map((row) => (
             <Card key={row.userId}>
-              <CardContent className="p-3">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-3">
+                  <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
+                    {row.userName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
                       <p className="text-sm font-medium truncate">{row.userName}</p>
                       {row.percentComplete === 100 && (
-                        <Badge className="text-2xs shrink-0" variant="default">
+                        <StatusPill tone="success" dot>
                           Complete
-                        </Badge>
+                        </StatusPill>
                       )}
                       {stalledBadge(row) && (
-                        <Badge className="text-2xs shrink-0" variant="destructive">
+                        <StatusPill tone="danger" dot>
                           Stalled
-                        </Badge>
+                        </StatusPill>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress value={row.percentComplete} className="h-1.5 flex-1" />
-                      <span className="text-2xs text-muted-foreground shrink-0">
+                      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                         {row.completedTasks}/{row.totalTasks}
                       </span>
                     </div>
@@ -607,11 +616,11 @@ function HrWorkflowTab() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs shrink-0"
+                    className="shrink-0"
                     asChild
                   >
                     <Link href={`/hr/onboarding/${row.userId}`} aria-label={`View ${row.userName} onboarding`}>
-                      <TrendingUp className="h-3.5 w-3.5 mr-1" />
+                      <TrendingUp className="size-4" aria-hidden="true" />
                       View
                     </Link>
                   </Button>
@@ -636,16 +645,14 @@ function HrDocumentsTab() {
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card>
-          <CardContent className="p-4 flex items-start gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Settings className="h-5 w-5 text-primary" />
-            </div>
+          <CardContent className="flex items-start gap-3 p-5">
+            <IconChip icon={Settings} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Configure Document Types</p>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+              <p className="mt-0.5 mb-3 text-xs text-muted-foreground">
                 Define which documents employees must submit during onboarding.
               </p>
-              <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+              <Button size="sm" variant="outline" asChild>
                 <Link href="/hr/document-types">
                   Configure Document Types →
                 </Link>
@@ -655,16 +662,14 @@ function HrDocumentsTab() {
         </Card>
 
         <Card>
-          <CardContent className="p-4 flex items-start gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <ClipboardCheck className="h-5 w-5 text-primary" />
-            </div>
+          <CardContent className="flex items-start gap-3 p-5">
+            <IconChip icon={ClipboardCheck} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Review Documents</p>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+              <p className="mt-0.5 mb-3 text-xs text-muted-foreground">
                 View and approve documents submitted by employees during onboarding.
               </p>
-              <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+              <Button size="sm" variant="outline" asChild>
                 <Link href="/hr/document-review">
                   Review Documents →
                 </Link>
@@ -716,7 +721,7 @@ export default function OnboardingPage() {
         isHROrCEO ? (
           <Button variant="ghost" size="sm" asChild>
             <Link href="/hr">
-              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+              <ArrowLeft className="size-4" aria-hidden="true" />
               Back to Employees
             </Link>
           </Button>
@@ -725,14 +730,14 @@ export default function OnboardingPage() {
     >
       {isHROrCEO ? (
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="wizard" className="text-xs h-7 px-3">
+          <TabsList variant="underline">
+            <TabsTrigger value="wizard">
               Add Employee
             </TabsTrigger>
-            <TabsTrigger value="workflow" className="text-xs h-7 px-3">
+            <TabsTrigger value="workflow">
               Onboarding progress
             </TabsTrigger>
-            <TabsTrigger value="documents" className="text-xs h-7 px-3">
+            <TabsTrigger value="documents">
               Documents
             </TabsTrigger>
           </TabsList>
@@ -751,8 +756,8 @@ export default function OnboardingPage() {
         </Tabs>
       ) : (
         <Tabs defaultValue="checklist" className="flex flex-col flex-1 min-h-0">
-          <TabsList className="h-8 shrink-0">
-            <TabsTrigger value="checklist" className="text-xs h-7 px-3">
+          <TabsList variant="underline" className="shrink-0">
+            <TabsTrigger value="checklist">
               My Documents
             </TabsTrigger>
           </TabsList>

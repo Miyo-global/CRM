@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 
 interface ConfirmActionDialogProps {
   open: boolean;
@@ -47,9 +48,10 @@ export function ConfirmActionDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isPending}
-            className={variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            aria-busy={isPending || undefined}
+            className={variant === "destructive" ? buttonVariants({ variant: "destructive" }) : undefined}
           >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

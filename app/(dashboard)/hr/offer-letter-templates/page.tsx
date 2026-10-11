@@ -10,6 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -169,7 +174,7 @@ function TemplateFormFields({
             const defaultBody = HR_LETTER_DEFAULT_BODIES[e.target.value];
             if (defaultBody && !body.trim()) setBody(defaultBody);
           }}
-          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:focus-ring"
         >
           {HR_LETTER_DOCUMENT_TYPES.map((d) => (
             <option key={d.value} value={d.value}>{d.label}</option>
@@ -184,7 +189,7 @@ function TemplateFormFields({
             type="checkbox"
             checked={showSignatureBlock}
             onChange={(e) => setShowSignatureBlock(e.target.checked)}
-            className="h-4 w-4 accent-primary"
+            className="size-4 accent-primary"
           />
           <label htmlFor="showSigBlock" className="text-sm">
             Add employee signature block at bottom
@@ -218,10 +223,10 @@ function TemplateFormFields({
           <label className="text-sm font-medium">Body</label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="h-7 text-xs">
-                <Plus className="h-3 w-3 mr-1" />
+              <Button type="button" variant="outline" size="xs">
+                <Plus className="size-3" aria-hidden="true" />
                 Insert variable
-                <ChevronDown className="h-3 w-3 ml-1" />
+                <ChevronDown className="size-3" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto w-64">
@@ -232,7 +237,7 @@ function TemplateFormFields({
                   onSelect={() => insertToken(item.key)}
                   className="text-xs"
                 >
-                  <span className="font-mono text-2xs text-primary mr-2">{`{{${item.key}}}`}</span>
+                  <span className="font-mono text-2xs text-brand-text mr-2">{`{{${item.key}}}`}</span>
                   <span className="text-muted-foreground truncate">{item.label}</span>
                 </DropdownMenuItem>
               ))}
@@ -246,7 +251,7 @@ function TemplateFormFields({
                       onSelect={() => insertToken(cv.variableKey)}
                       className="text-xs"
                     >
-                      <span className="font-mono text-2xs text-primary mr-2">{`{{${cv.variableKey}}}`}</span>
+                      <span className="font-mono text-2xs text-brand-text mr-2">{`{{${cv.variableKey}}}`}</span>
                       <span className="text-muted-foreground truncate">{cv.label}</span>
                     </DropdownMenuItem>
                   ))}
@@ -255,14 +260,14 @@ function TemplateFormFields({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="rounded-md border border-dashed">
+        <div className="rounded-md border border-dashed bg-surface-sunken/40">
           <button
             type="button"
             className="flex w-full items-center justify-between px-3 py-2 text-2xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setVarGuideOpen((o) => !o)}
           >
             <span>Variable reference</span>
-            <ChevronDown className={`h-3 w-3 transition-transform ${varGuideOpen ? "rotate-180" : ""}`} />
+            <ChevronDown className={`size-3 transition-transform ${varGuideOpen ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {varGuideOpen && (
             <div className="border-t px-3 pb-3 pt-2 space-y-2">
@@ -271,7 +276,7 @@ function TemplateFormFields({
                 <div className="grid grid-cols-1 gap-0.5">
                   {BUILT_IN_INSERT_ITEMS.map((item) => (
                     <div key={item.key} className="flex items-center gap-2 py-0.5">
-                      <span className="font-mono text-2xs text-primary shrink-0">{`{{${item.key}}}`}</span>
+                      <span className="font-mono text-2xs text-brand-text shrink-0">{`{{${item.key}}}`}</span>
                       <span className="text-2xs text-muted-foreground truncate">{item.label}</span>
                     </div>
                   ))}
@@ -285,7 +290,7 @@ function TemplateFormFields({
                       const [token, ...rest] = line.split(" — ");
                       return (
                         <div key={i} className="flex items-center gap-2 py-0.5">
-                          <span className="font-mono text-2xs text-primary shrink-0">{token}</span>
+                          <span className="font-mono text-2xs text-brand-text shrink-0">{token}</span>
                           <span className="text-2xs text-muted-foreground truncate">{rest.join(" — ")}</span>
                         </div>
                       );
@@ -299,7 +304,7 @@ function TemplateFormFields({
                   <div className="grid grid-cols-1 gap-0.5">
                     {customVariables.map((cv) => (
                       <div key={cv.id} className="flex items-center gap-2 py-0.5">
-                        <span className="font-mono text-2xs text-primary shrink-0">{`{{${cv.variableKey}}}`}</span>
+                        <span className="font-mono text-2xs text-brand-text shrink-0">{`{{${cv.variableKey}}}`}</span>
                         <span className="text-2xs text-muted-foreground truncate">{cv.label}</span>
                       </div>
                     ))}
@@ -327,7 +332,7 @@ function TemplateFormFields({
           type="checkbox"
           checked={isDefault}
           onChange={(e) => setIsDefault(e.target.checked)}
-          className="h-4 w-4 accent-primary"
+          className="size-4 accent-primary"
         />
         <label htmlFor="isDefault" className="text-sm">
           Set as default template
@@ -426,7 +431,7 @@ function CustomVariablesManager() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3 rounded-md border p-3">
+      <div className="space-y-3 rounded-lg border bg-surface-sunken/40 p-4">
         <p className="text-xs font-medium">
           {editingId === null ? "Add custom variable" : "Edit custom variable"}
         </p>
@@ -469,6 +474,7 @@ function CustomVariablesManager() {
             size="sm"
             onClick={handleSubmit}
             disabled={create.isPending || update.isPending}
+            loading={create.isPending || update.isPending}
           >
             {editingId === null ? "Add" : "Save"}
           </Button>
@@ -487,25 +493,25 @@ function CustomVariablesManager() {
         {isLoading ? (
           <Skeleton className="h-16" />
         ) : list.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-4 text-center">No custom variables yet.</p>
+          <p className="rounded-md border border-dashed py-4 text-center text-xs text-muted-foreground">No custom variables yet.</p>
         ) : (
           <ScrollArea className="max-h-[40vh]">
             <div className="space-y-2 pr-2">
               {list.map((cv) => (
-                <div key={cv.id} className="flex items-start justify-between gap-2 rounded-md border p-2.5">
+                <div key={cv.id} className="flex items-start justify-between gap-2 rounded-md border bg-card p-2.5">
                   <div className="min-w-0">
-                    <p className="text-xs font-mono text-primary truncate">{`{{${cv.variableKey}}}`}</p>
+                    <p className="text-xs font-mono text-brand-text truncate">{`{{${cv.variableKey}}}`}</p>
                     <p className="text-sm font-medium leading-tight truncate">{cv.label}</p>
                     {cv.description && (
                       <p className="text-2xs text-muted-foreground truncate">{cv.description}</p>
                     )}
                   </div>
                   <div className="flex gap-0.5 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Edit" onClick={() => startEdit(cv)}>
-                      <Pencil className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon-xs" title="Edit" aria-label="Edit" onClick={() => startEdit(cv)}>
+                      <Pencil className="size-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Delete" onClick={() => setDeleteId(cv.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon-xs" className="text-destructive hover:text-destructive" title="Delete" aria-label="Delete" onClick={() => setDeleteId(cv.id)}>
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -533,7 +539,7 @@ function OfferLetterTemplatesContent() {
   const { data: session } = useSession();
   const isAdmin = ADMIN_ROLES.has(session?.user?.role ?? "");
 
-  const { data: templates, isLoading } = useOfferLetterTemplates();
+  const { data: templates, isLoading, isError, error, refetch } = useOfferLetterTemplates();
   const create = useCreateOfferLetterTemplate();
   const update = useUpdateOfferLetterTemplate();
   const remove = useDeleteOfferLetterTemplate();
@@ -672,11 +678,23 @@ function OfferLetterTemplatesContent() {
     return (
       <PageWrapper title="Offer Letter Templates" subtitle="Manage offer letter templates">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
   }
+
+  const templateFormFields = (
+    <TemplateFormFields
+      name={name} setName={setName}
+      description={description} setDescription={setDescription}
+      body={body} setBody={setBody}
+      isDefault={isDefault} setIsDefault={setIsDefault}
+      documentType={documentType} setDocumentType={setDocumentType}
+      showSignatureBlock={showSignatureBlock} setShowSignatureBlock={setShowSignatureBlock}
+      customVariables={customVars}
+    />
+  );
 
   return (
     <PageWrapper
@@ -684,22 +702,22 @@ function OfferLetterTemplatesContent() {
       subtitle="Create reusable templates with merge tokens for branded PDF offer letters"
       badge={`${templates?.length ?? 0} templates`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
             <Button size="sm" variant="outline" onClick={() => setManageOpen(true)}>
-              <Settings2 className="h-3.5 w-3.5 mr-1" />
+              <Settings2 className="size-3.5" aria-hidden="true" />
               Manage variables
             </Button>
           )}
           <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
+            <Plus className="size-3.5" aria-hidden="true" />
             New Template
           </Button>
         </div>
       }
     >
-      <Card className="mb-4 border-dashed">
-        <CardContent className="py-3 px-4 space-y-2">
+      <Card className="mb-4 border-dashed bg-surface-sunken/40 shadow-none">
+        <CardContent className="space-y-2 px-4 py-3">
           <p className="text-xs font-medium text-foreground">Merge tokens</p>
           <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-4">
             {OFFER_LETTER_TOKEN_LEGEND.map((line, i) => (
@@ -733,77 +751,77 @@ function OfferLetterTemplatesContent() {
         </CardContent>
       </Card>
 
-      {!templates?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">No offer letter templates yet.</p>
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !templates?.length ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="No offer letter templates yet."
+          action={{ label: "New Template", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {templates.map((t) => (
-            <Card key={t.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-2">
+            <Card key={t.id} interactive>
+              <CardContent className="space-y-2 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <FileText className="h-4 w-4 text-primary shrink-0" />
+                    <IconChip icon={FileSignature} tone="brand" size="sm" />
                     {t.isDefault && (
-                      <Star className="h-3.5 w-3.5 text-warning-strong shrink-0" />
+                      <Star className="size-3.5 shrink-0 fill-current text-warning-strong" aria-hidden="true" />
                     )}
                   </div>
                   <div className="flex gap-0.5">
                     {t.isDefault ? (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-warning-strong"
+                        size="icon-xs"
+                        className="text-warning-strong"
                         title="Remove default status"
                         onClick={() => handleUnsetDefault(t)}
                       >
-                        <StarOff className="h-3.5 w-3.5" />
+                        <StarOff className="size-3.5" />
                       </Button>
                     ) : (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-xs"
                         title="Set as default"
                         onClick={() => handleSetDefault(t)}
                       >
-                        <Star className="h-3.5 w-3.5" />
+                        <Star className="size-3.5" />
                       </Button>
                     )}
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-xs"
                       title="Preview"
                       onClick={() => setPreviewId(t.id)}
                     >
-                      <FileText className="h-3.5 w-3.5" />
+                      <FileText className="size-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-xs"
                       title="Edit"
                       onClick={() => startEdit(t)}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="size-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive"
+                      size="icon-xs"
+                      className="text-destructive hover:text-destructive"
+                      title="Delete"
+                      aria-label="Delete"
                       onClick={() => setDeleteId(t.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold leading-tight truncate" title={t.name}>{t.name}</h3>
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold leading-tight" title={t.name}>{t.name}</h3>
                   {t.description && (
                     <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>
                   )}
@@ -811,9 +829,7 @@ function OfferLetterTemplatesContent() {
                 <p className="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">{t.body}</p>
                 <div className="flex flex-wrap gap-1">
                   {t.isDefault && (
-                    <Badge variant="outline" className="text-2xs border-warning-400 text-warning-strong">
-                      Default
-                    </Badge>
+                    <StatusPill tone="warning" dot>Default</StatusPill>
                   )}
                   <Badge variant="secondary" className="text-2xs">
                     {HR_LETTER_DOCUMENT_TYPES.find((d) => d.value === (t.documentType ?? "OFFER_LETTER"))?.label ?? t.documentType}
@@ -836,15 +852,7 @@ function OfferLetterTemplatesContent() {
         submitLabel="Create"
         isPending={create.isPending}
       >
-        <TemplateFormFields
-          name={name} setName={setName}
-          description={description} setDescription={setDescription}
-          body={body} setBody={setBody}
-          isDefault={isDefault} setIsDefault={setIsDefault}
-          documentType={documentType} setDocumentType={setDocumentType}
-          showSignatureBlock={showSignatureBlock} setShowSignatureBlock={setShowSignatureBlock}
-          customVariables={customVars}
-        />
+        {templateFormFields}
       </HrSheet>
 
       <HrSheet
@@ -858,15 +866,7 @@ function OfferLetterTemplatesContent() {
         submitLabel="Save"
         isPending={update.isPending}
       >
-        <TemplateFormFields
-          name={name} setName={setName}
-          description={description} setDescription={setDescription}
-          body={body} setBody={setBody}
-          isDefault={isDefault} setIsDefault={setIsDefault}
-          documentType={documentType} setDocumentType={setDocumentType}
-          showSignatureBlock={showSignatureBlock} setShowSignatureBlock={setShowSignatureBlock}
-          customVariables={customVars}
-        />
+        {templateFormFields}
       </HrSheet>
 
       <HrSheet
@@ -881,7 +881,7 @@ function OfferLetterTemplatesContent() {
             <p className="text-xs text-muted-foreground">
               Sample data substituted — rendered with placeholder values.
             </p>
-            <ScrollArea className="h-[60vh] border rounded-md p-3 bg-muted/30">
+            <ScrollArea className="h-[60vh] rounded-md border bg-surface-sunken/40 p-3">
               <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed">
                 {applyPreviewVars(previewTemplate.body, customVars)}
               </pre>

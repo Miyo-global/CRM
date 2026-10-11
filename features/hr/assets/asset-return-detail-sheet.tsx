@@ -14,6 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import {
@@ -41,13 +43,11 @@ export type AssetReturnDetailRecord = {
   createdAt: string | null;
 };
 
-function statusBadgeVariant(
-  s: string | null,
-): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "RETURNED") return "default";
-  if (s === "PENDING") return "outline";
-  if (s === "MISSING" || s === "LOST") return "destructive";
-  return "secondary";
+export function assetReturnStatusTone(s: string | null): Tone {
+  if (s === "RETURNED") return "success";
+  if (s === "PENDING" || s === null) return "warning";
+  if (s === "MISSING" || s === "LOST") return "danger";
+  return "neutral";
 }
 
 function formatDetailDateTime(value: string | null | undefined): {
@@ -103,26 +103,23 @@ export function AssetReturnDetailSheet(props: {
       >
         {record && (
           <>
-            <SheetHeader className="shrink-0 space-y-3 border-b bg-muted/20 px-6 py-5 text-left">
+            <SheetHeader className="shrink-0 space-y-3 border-b px-6 py-5 text-left">
               <div className="flex items-start justify-between gap-3 pr-2">
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                     Asset return
                   </p>
-                  <SheetTitle className="text-left text-lg font-semibold leading-snug tracking-tight">
+                  <SheetTitle className="text-left font-display text-lg font-bold leading-snug">
                     {record.assetName}
                   </SheetTitle>
-                  <SheetDescription className="text-left text-xs text-muted-foreground">
+                  <SheetDescription className="text-left font-mono text-xs text-muted-foreground">
                     Record #{record.id}
                   </SheetDescription>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <Badge
-                    variant={statusBadgeVariant(record.status)}
-                    className="text-2xs font-medium tabular-nums"
-                  >
+                  <StatusPill tone={assetReturnStatusTone(record.status)} dot>
                     {record.status ?? "PENDING"}
-                  </Badge>
+                  </StatusPill>
                   {record.assetType ? (
                     <Badge variant="outline" className="text-2xs font-normal">
                       {record.assetType}
@@ -134,9 +131,9 @@ export function AssetReturnDetailSheet(props: {
 
             <ScrollArea className="min-h-0 flex-1">
               <div className="space-y-6 px-6 py-5">
-                <section className="rounded-lg border bg-card p-4 shadow-sm">
+                <section className="rounded-lg border bg-card p-4 shadow-xs">
                   <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    <User className="h-3.5 w-3.5" aria-hidden />
+                    <User className="size-3.5" aria-hidden />
                     Assigned to
                   </div>
                   <div className="space-y-1">
@@ -151,9 +148,9 @@ export function AssetReturnDetailSheet(props: {
                   </div>
                 </section>
 
-                <section className="rounded-lg border bg-card p-4 shadow-sm">
+                <section className="rounded-lg border bg-card p-4 shadow-xs">
                   <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Package className="h-3.5 w-3.5" aria-hidden />
+                    <Package className="size-3.5" aria-hidden />
                     Asset
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -170,9 +167,9 @@ export function AssetReturnDetailSheet(props: {
                 </section>
 
                 {record.handoverPhotoUrls && record.handoverPhotoUrls.length > 0 ? (
-                  <section className="rounded-lg border bg-card p-4 shadow-sm">
+                  <section className="rounded-lg border bg-card p-4 shadow-xs">
                     <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      <Camera className="h-3.5 w-3.5" aria-hidden />
+                      <Camera className="size-3.5" aria-hidden />
                       Handover photos
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -199,10 +196,10 @@ export function AssetReturnDetailSheet(props: {
 
                 <section>
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    <ClipboardList className="h-3.5 w-3.5" aria-hidden />
+                    <ClipboardList className="size-3.5" aria-hidden />
                     Remarks
                   </div>
-                  <div className="rounded-md border border-dashed bg-muted/30 px-3 py-3 text-sm leading-relaxed text-muted-foreground">
+                  <div className="rounded-md border border-dashed bg-surface-sunken/40 px-3 py-3 text-sm leading-relaxed text-muted-foreground">
                     {record.notes?.trim() ? (
                       <p className="whitespace-pre-wrap text-foreground">{record.notes}</p>
                     ) : (
@@ -215,7 +212,7 @@ export function AssetReturnDetailSheet(props: {
 
                 <section>
                   <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    <CalendarClock className="h-3.5 w-3.5" aria-hidden />
+                    <CalendarClock className="size-3.5" aria-hidden />
                     Timeline
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -224,7 +221,7 @@ export function AssetReturnDetailSheet(props: {
                       const label = key === "returnedAt" ? "Returned" : "Logged";
                       const { date, time } = formatDetailDateTime(raw);
                       return (
-                        <div key={key} className="rounded-lg border bg-muted/20 px-3 py-3">
+                        <div key={key} className="rounded-lg border bg-surface-sunken/40 px-3 py-3">
                           <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
                             {label}
                           </p>
@@ -240,7 +237,7 @@ export function AssetReturnDetailSheet(props: {
               </div>
             </ScrollArea>
 
-            <SheetFooter className="shrink-0 flex-col gap-2 border-t bg-muted/30 px-6 py-4 sm:flex-row sm:justify-end">
+            <SheetFooter className="shrink-0 flex-col gap-2 border-t bg-background px-6 py-4 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
@@ -257,16 +254,16 @@ export function AssetReturnDetailSheet(props: {
                     className="w-full sm:w-auto"
                     onClick={() => onEdit(record)}
                   >
-                    <Pencil className="mr-2 h-4 w-4" />
+                    <Pencil className="size-4" aria-hidden="true" />
                     Edit
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 sm:w-auto"
+                    variant="destructive"
+                    className="w-full sm:w-auto"
                     onClick={() => onDelete(record)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="size-4" aria-hidden="true" />
                     Delete
                   </Button>
                 </>

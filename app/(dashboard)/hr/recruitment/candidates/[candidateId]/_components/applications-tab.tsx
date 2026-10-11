@@ -1,13 +1,14 @@
 "use client";
 
 import { memo } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-const Briefcase = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="2" y="7" width="20" height="14" rx="2" /><path strokeLinecap="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
-);
+import { Briefcase } from "lucide-react";
 import { format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyJobPostingsIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 
 interface Application {
   id: number;
@@ -16,23 +17,36 @@ interface Application {
   jobPosting?: { title?: string | null } | null;
 }
 
+const STATUS_TONE: Record<string, Tone> = {
+  APPLIED: "info",
+  SHORTLISTED: "teal",
+  INTERVIEWING: "plum",
+  OFFERED: "brand",
+  ACCEPTED: "success",
+  REJECTED: "danger",
+  WITHDRAWN: "neutral",
+};
+
 interface ApplicationRowProps {
   app: Application;
 }
 
 const ApplicationRow = memo(function ApplicationRow({ app }: ApplicationRowProps) {
   return (
-    <div className="flex items-center justify-between py-2 border-b last:border-0">
-      <div>
-        <p className="text-sm font-medium">{app.jobPosting?.title ?? "Unknown Job"}</p>
-        <p className="text-xs text-muted-foreground">
+    <li className="flex min-h-14 items-center gap-3 py-2.5">
+      <IconChip icon={Briefcase} tone="neutral" size="sm" className="size-8" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{app.jobPosting?.title ?? "Unknown Job"}</p>
+        <p className="text-xs tabular-nums text-muted-foreground">
           {app.appliedAt ? format(new Date(app.appliedAt), "PPP") : ""}
         </p>
       </div>
-      <Badge variant="outline" className="text-2xs">
-        {app.status ?? ""}
-      </Badge>
-    </div>
+      {app.status && (
+        <StatusPill tone={STATUS_TONE[app.status.toUpperCase()] ?? "neutral"} dot>
+          {app.status}
+        </StatusPill>
+      )}
+    </li>
   );
 });
 
@@ -45,24 +59,24 @@ export const ApplicationsTab = memo(function ApplicationsTab({
 }: ApplicationsTabProps) {
   return (
     <Card>
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-sm">Applications</CardTitle>
+      <CardHeader>
+        <CardTitle className="text-base">Applications</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent>
         {!applications?.length ? (
           <EmptyState
             compact
-            illustration={<Briefcase className="h-8 w-8 text-muted-foreground" />}
+            illustration={<EmptyJobPostingsIllustration className="size-24" />}
             title="No applications yet"
             description="This candidate hasn't applied to any jobs yet."
             className="border-0 bg-transparent"
           />
         ) : (
-          <div className="space-y-2">
+          <ul className="divide-y divide-border">
             {applications.map((app) => (
               <ApplicationRow key={app.id} app={app} />
             ))}
-          </div>
+          </ul>
         )}
       </CardContent>
     </Card>

@@ -19,6 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
 import { format, parseISO } from "date-fns";
 import { Download, FileText, Loader2, ArrowLeft } from "lucide-react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
@@ -44,7 +49,7 @@ export default function MyPayslipsPage() {
     }, 200);
   }, [router]);
 
-  const { data: payslips, isLoading } = useHrEmployeePayslips({});
+  const { data: payslips, isLoading, isError, error, refetch } = useHrEmployeePayslips({});
 
   const selectedPayslip = payslips?.find((p) => p.month === selectedMonth);
 
@@ -138,9 +143,13 @@ export default function MyPayslipsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <PageWrapper title="My Payslips" subtitle="View and download your salary slips">
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-18 w-full rounded-lg" />
+          ))}
+        </div>
+      </PageWrapper>
     );
   }
 
@@ -155,16 +164,15 @@ export default function MyPayslipsPage() {
             variant="outline"
             size="icon"
             onClick={handleGoBack}
-            className="h-9 w-9"
             aria-label="Go back"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[200px]" aria-label="Select payslip month">
+            <SelectTrigger className="w-48" aria-label="Select payslip month">
               <SelectValue placeholder="Select month" />
             </SelectTrigger>
-            <SelectContent className="z-50">
+            <SelectContent>
               {availableMonths.length > 0 ? (
                 availableMonths.map((month) => (
                   <SelectItem key={month.value} value={month.value}>
@@ -182,17 +190,16 @@ export default function MyPayslipsPage() {
       }
     >
 
-      {!selectedMonth ? (
-        <Card>
-          <CardContent className="py-12 text-center space-y-2">
-            <EmptyDocumentsIllustration className="mb-3 mx-auto" />
-            <p className="text-muted-foreground font-medium">Select a month to view your payslip</p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Choose a month from the dropdown above, or open a recent payslip below. Only finalized
-              (PAID) payrolls can be downloaded.
-            </p>
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState title="Couldn't load payslips" error={error} onRetry={() => refetch()} />
+      ) : !selectedMonth ? (
+        <EmptyState
+          compact={!!payslips?.length}
+          className="mb-6"
+          illustration={<EmptyDocumentsIllustration />}
+          title="Select a month to view your payslip"
+          description="Choose a month from the dropdown above, or open a recent payslip below. Only finalized (PAID) payrolls can be downloaded."
+        />
       ) : selectedPayslip ? (
         <div className="space-y-4">
           <div className="flex justify-end">
@@ -203,7 +210,7 @@ export default function MyPayslipsPage() {
                 }}
                 aria-label="Download payslip as PDF"
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="size-4" aria-hidden="true" />
                 Download Payslip
               </Button>
             ) : (
@@ -215,45 +222,35 @@ export default function MyPayslipsPage() {
 
           {previewLoading && (
             <div
-              className="flex items-center justify-center rounded-lg border bg-muted/20"
-              style={{ minHeight: 400 }}
+              className="flex min-h-100 items-center justify-center rounded-lg border border-border bg-surface-sunken"
               role="status"
               aria-live="polite"
             >
-              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+              <Loader2 className="size-8 animate-spin text-brand-text motion-reduce:animate-none" aria-hidden="true" />
               <span className="sr-only">Loading payslip preview</span>
             </div>
           )}
           {previewError && !previewLoading && (
-            <Card className="border-destructive/40">
-              <CardContent className="py-8 text-center text-sm text-destructive">
-                {previewError}
-              </CardContent>
-            </Card>
+            <QueryErrorState title="Couldn't load the payslip preview" error={new Error(previewError)} className="min-h-0" />
           )}
           {previewHtml && !previewLoading && (
             <iframe
               srcDoc={previewHtml}
-              className="w-full border-0 rounded-lg shadow-md bg-card"
+              className="w-full rounded-lg border border-border bg-card shadow-sm"
               style={{ minHeight: "860px" }}
               title={`Payslip for ${format(parseISO(selectedPayslip.month + "-01"), "MMMM yyyy")}`}
             />
           )}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center space-y-2">
-            <EmptyDocumentsIllustration className="mb-3 mx-auto" />
-            <p className="text-muted-foreground font-medium">No finalized payslip for this month</p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Your payslip appears here only after payroll for that month has been marked PAID. If you
-              expected a slip, confirm with HR that processing is complete.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration />}
+          title="No finalized payslip for this month"
+          description="Your payslip appears here only after payroll for that month has been marked PAID. If you expected a slip, confirm with HR that processing is complete."
+        />
       )}
 
-      {payslips && payslips.length > 0 && !selectedMonth && (
+      {!isError && payslips && payslips.length > 0 && !selectedMonth && (
         <Card>
           <CardHeader>
             <CardTitle>Recent Payslips</CardTitle>
@@ -263,7 +260,7 @@ export default function MyPayslipsPage() {
               {payslips.slice(0, 6).map((payslip) => (
                 <div
                   key={payslip.id}
-                  className="flex items-center justify-between gap-3 p-4 rounded-lg border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 outline-none transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md focus-visible:focus-ring"
                   role="button"
                   tabIndex={0}
                   aria-label={`View payslip for ${format(parseISO(payslip.month + "-01"), "MMMM yyyy")}`}
@@ -276,21 +273,19 @@ export default function MyPayslipsPage() {
                   }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
+                    <IconChip icon={FileText} />
                     <div className="min-w-0">
                       <p className="font-medium">
                         {format(parseISO(payslip.month + "-01"), "MMMM yyyy")}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Status: {payslip.status}
-                      </p>
+                      <StatusPill tone={payslip.status === "PAID" ? "success" : payslip.status === "APPROVED" ? "info" : "neutral"} dot className="mt-1">
+                        {payslip.status}
+                      </StatusPill>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right hidden sm:block">
-                      <p className="font-semibold text-success-strong">
+                      <p className="font-semibold tabular-nums text-success-strong">
                         ₹{parseFloat(payslip.netSalary || "0").toLocaleString()}
                       </p>
                       <p className="text-xs text-muted-foreground">Net Salary</p>
@@ -300,14 +295,14 @@ export default function MyPayslipsPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-8 gap-1 text-xs"
+                        className="gap-1"
                         aria-label={`Download PDF for ${format(parseISO(payslip.month + "-01"), "MMMM yyyy")}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           void handleDownload(payslip);
                         }}
                       >
-                        <Download className="h-3.5 w-3.5" />
+                        <Download className="size-4" aria-hidden="true" />
                         PDF
                       </Button>
                     )}

@@ -10,7 +10,6 @@ import {
   Wrench,
   Pencil,
   Trash2,
-  Search,
   X,
   RotateCcw,
   Archive,
@@ -31,6 +30,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import type { Tone } from "@/lib/design/tones";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -41,7 +47,6 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { useHrAssets, useCreateAsset, useUpdateAsset, useDeleteAsset, useHrEmployees } from "@/lib/api/hooks";
@@ -62,7 +67,7 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import type { Asset, AssetStatus } from "@/types/hr";
-import { EmptyDevicesIllustration } from "@/components/illustrations";
+import { EmptyDevicesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import {
   buildAssetsCsvString,
   assetRowsToXlsxSheets,
@@ -98,11 +103,11 @@ function assetsToExportRows(
   }));
 }
 
-const STATUS_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  AVAILABLE: { label: "Available", variant: "outline" },
-  ASSIGNED: { label: "Assigned", variant: "default" },
-  MAINTENANCE: { label: "Maintenance", variant: "secondary" },
-  RETIRED: { label: "Retired", variant: "destructive" },
+const STATUS_BADGE: Record<string, { label: string; tone: Tone }> = {
+  AVAILABLE: { label: "Available", tone: "success" },
+  ASSIGNED: { label: "Assigned", tone: "brand" },
+  MAINTENANCE: { label: "Maintenance", tone: "warning" },
+  RETIRED: { label: "Retired", tone: "neutral" },
 };
 
 type ReturnAssetState = { assetId: number; assetName: string } | null;
@@ -192,7 +197,7 @@ export default function HrAssetsPage() {
   const [notes, setNotes] = useState("");
   const [reassignmentReason, setReassignmentReason] = useState("");
 
-  const { data, isLoading } = useHrAssets();
+  const { data, isLoading, isError, error, refetch } = useHrAssets();
   const { data: employeesData } = useHrEmployees();
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
@@ -506,6 +511,105 @@ export default function HrAssetsPage() {
     );
   }, [returnAsset, updateAsset]);
 
+  const assetDetailFields = (
+    <>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Asset Name</label>
+            <Input value={name} onChange={(e) => setName(sanitizeNameLikeInput(e.target.value, 120))} placeholder="e.g. MacBook Pro 16-inch" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Type</label>
+            <Select value={type} onValueChange={handleTypeSelectChange}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ASSET_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {type === "Other" ? (
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Specify type</label>
+              <Input
+                value={customType}
+                onChange={(e) => setCustomType(sanitizeNameLikeInput(e.target.value, 64))}
+                placeholder="e.g. Docking station"
+                maxLength={64}
+              />
+              <p className="text-xs text-muted-foreground text-right">{customType.length}/64</p>
+            </div>
+          ) : null}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Brand</label>
+              <Input
+                value={brand}
+                onChange={(e) => setBrand(sanitizeNameLikeInput(e.target.value, 64))}
+                placeholder="e.g. Apple"
+                maxLength={64}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Model</label>
+              <Input
+                value={model}
+                onChange={(e) => setModel(sanitizeNameLikeInput(e.target.value, 64))}
+                placeholder="e.g. MacBook Pro M3"
+                maxLength={64}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Serial Number</label>
+            <Input
+              value={serialNumber}
+              onChange={(e) => setSerialNumber(sanitizeAssetSerialInput(e.target.value))}
+              placeholder="Letters, numbers, hyphens"
+              maxLength={64}
+              className="font-mono"
+              autoCapitalize="none"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Purchase Date</label>
+              <DatePicker
+                value={purchaseDate}
+                onChange={setPurchaseDate}
+                placeholder="Pick date"
+                fromDate={ASSET_PURCHASE_FROM_DATE}
+                fromYear={2025}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Purchase Cost (₹)</label>
+              <Input
+                value={purchaseCost}
+                onChange={(e) => setPurchaseCost(sanitizePurchaseCostInput(e.target.value))}
+                type="text"
+                inputMode="decimal"
+                placeholder="Enter amount"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Notes (optional)</label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value.slice(0, ASSET_NOTES_MAX_CHARS))}
+              placeholder="Optional notes..."
+              rows={2}
+              maxLength={ASSET_NOTES_MAX_CHARS}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {notes.length}/{ASSET_NOTES_MAX_CHARS}
+            </p>
+          </div>
+    </>
+  );
+
   return (
     <PageWrapper
       title="Assets"
@@ -520,62 +624,82 @@ export default function HrAssetsPage() {
             onExportXlsx={() => void handleExportExcelLocal()}
           />
           <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="size-3.5" aria-hidden="true" />
             Add Asset
           </Button>
         </div>
       }
+      badge={isLoading ? undefined : counts.total}
       filters={
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search name, type, serial, assignee…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs"
-            />
-            {searchQuery ? (
-              <button
+        <ListToolbar
+          className="w-full"
+          search={{ value: searchQuery, onChange: setSearchQuery, placeholder: "Search name, type, serial, assignee…" }}
+          filters={
+            searchQuery ? (
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2"
                 aria-label="Clear search"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            ) : null}
-          </div>
-          <Tabs value={statusFilter ?? "all"} onValueChange={(v) => setStatusFilter(v === "all" ? undefined : v)}>
-            <TabsList className="h-8">
-              <TabsTrigger value="all" className="text-xs px-3 h-7">All</TabsTrigger>
-              <TabsTrigger value="AVAILABLE" className="text-xs px-3 h-7">Available</TabsTrigger>
-              <TabsTrigger value="ASSIGNED" className="text-xs px-3 h-7">Assigned</TabsTrigger>
-              <TabsTrigger value="MAINTENANCE" className="text-xs px-3 h-7">Maintenance</TabsTrigger>
-              <TabsTrigger value="RETIRED" className="text-xs px-3 h-7">Retired</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+                <X className="size-3.5" aria-hidden="true" />
+              </Button>
+            ) : null
+          }
+          view={
+            <Tabs value={statusFilter ?? "all"} onValueChange={(v) => setStatusFilter(v === "all" ? undefined : v)}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="AVAILABLE">Available</TabsTrigger>
+                <TabsTrigger value="ASSIGNED">Assigned</TabsTrigger>
+                <TabsTrigger value="MAINTENANCE">Maintenance</TabsTrigger>
+                <TabsTrigger value="RETIRED">Retired</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          }
+        />
       }
     >
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : (
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard label="Total Assets" value={counts.total} icon={Package} color="blue" />
-          <StatCard label="Available" value={counts.available} icon={CheckCircle2} color="green" />
-          <StatCard label="Assigned" value={counts.assigned} icon={Laptop} color="gold" />
-          <StatCard label="Maintenance" value={counts.maintenance} icon={Wrench} color="red" />
-          <StatCard label="Retired" value={counts.retired} icon={Archive} color="purple" />
-        </div>
+        <StatsStrip
+          items={[
+            { label: "Total Assets", value: counts.total, icon: Package },
+            { label: "Available", value: counts.available, icon: CheckCircle2, tone: "success" },
+            { label: "Assigned", value: counts.assigned, icon: Laptop, tone: "brand" },
+            { label: "Maintenance", value: counts.maintenance, icon: Wrench, tone: "warning" },
+            { label: "Retired", value: counts.retired, icon: Archive, tone: "neutral" },
+          ]}
+        />
 
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
+        {!isLoading && filteredItems.length === 0 ? (
+          hasActiveFilters ? (
+            <EmptyState
+              illustration={<EmptySearchIllustration className="size-32" />}
+              title="No results for these filters"
+              description="No assets match your filters."
+              action={{ label: "Clear filters", onClick: () => { setStatusFilter(undefined); setSearchQuery(""); } }}
+            />
+          ) : (
+            <EmptyState
+              illustration={<EmptyDevicesIllustration className="size-32" />}
+              title="No assets found."
+              action={{ label: "Add Asset", onClick: () => setSheetOpen(true) }}
+            />
+          )
+        ) : (
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
           <div className="flex items-center justify-between border-b border-border px-4 py-2">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs tabular-nums text-muted-foreground">
               {filteredItems.length} asset{filteredItems.length !== 1 ? "s" : ""}
               {hasActiveFilters ? " (filtered)" : ""}
             </p>
           </div>
           <ScrollArea className="w-full" type="auto">
-            <div className="min-w-[800px]">
+            <div className="min-w-200">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -586,30 +710,30 @@ export default function HrAssetsPage() {
                     <TableHead>Assigned To</TableHead>
                     <TableHead className="text-right">Cost</TableHead>
                     <TableHead>Purchased</TableHead>
-                    <TableHead className="text-right w-[88px]">Actions</TableHead>
+                    <TableHead className="w-22 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
-                  ) : filteredItems.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground"><div className="flex flex-col items-center justify-center gap-2 py-2">
-                      <EmptyDevicesIllustration className="h-36 w-36 opacity-95" />
-                      <p>{hasActiveFilters ? "No assets match your filters." : "No assets found."}</p>
-                    </div></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-8 text-center text-muted-foreground">Loading...</TableCell></TableRow>
                   ) : paginatedItems.map((a) => {
-                    const badge = STATUS_BADGE[a.status ?? "AVAILABLE"] ?? { label: a.status ?? "", variant: "secondary" as const };
+                    const badge = STATUS_BADGE[a.status ?? "AVAILABLE"] ?? { label: a.status ?? "", tone: "neutral" as const };
                     return (
                       <TableRow key={a.id}>
-                        <TableCell className="font-medium text-sm">{a.name}</TableCell>
-                        <TableCell className="text-sm"><Badge variant="outline" className="text-2xs">{a.type}</Badge></TableCell>
-                        <TableCell className="text-xs font-mono text-muted-foreground">{a.serialNumber ?? ""}</TableCell>
-                        <TableCell><Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge></TableCell>
+                        <TableCell>
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <IconChip icon={a.type?.toLowerCase().includes("laptop") ? Laptop : Package} tone="neutral" size="sm" />
+                            <span className="truncate text-sm font-medium" title={a.name ?? undefined}>{a.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm"><Badge variant="outline">{a.type}</Badge></TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{a.serialNumber ?? ""}</TableCell>
+                        <TableCell><StatusPill tone={badge.tone} dot>{badge.label}</StatusPill></TableCell>
                         <TableCell className="text-sm">
                           {a.assignedTo ? employeeList.find((e) => e.id === a.assignedTo)?.name ?? a.assignedTo : ""}
                         </TableCell>
-                        <TableCell className="text-right text-sm">{fmt(a.purchaseCost)}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
+                        <TableCell className="text-right text-sm tabular-nums">{fmt(a.purchaseCost)}</TableCell>
+                        <TableCell className="text-xs tabular-nums text-muted-foreground">
                           {a.purchaseDate ? format(new Date(a.purchaseDate), "dd MMM yyyy") : ""}
                         </TableCell>
                         <TableCell className="text-right">
@@ -617,38 +741,37 @@ export default function HrAssetsPage() {
                             {a.status === "ASSIGNED" ? (
                               <Button
                                 type="button"
-                                size="icon"
+                                size="icon-sm"
                                 variant="ghost"
-                                className="h-8 w-8 text-muted-foreground"
+                                className="text-muted-foreground"
                                 aria-label="Return asset to inventory"
                                 title="Return to inventory"
                                 onClick={() => setReturnAsset({ assetId: a.id, assetName: a.name ?? "Asset" })}
                               >
-                                <RotateCcw className="h-4 w-4" />
+                                <RotateCcw className="size-4" />
                               </Button>
                             ) : null}
                             <Button
                               type="button"
-                              size="icon"
+                              size="icon-sm"
                               variant="ghost"
-                              className="h-8 w-8"
                               aria-label="Edit asset"
                               onClick={() => {
                                 loadFormFromAsset(a);
                                 setEditAsset(a);
                               }}
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="size-4" />
                             </Button>
                             <Button
                               type="button"
-                              size="icon"
+                              size="icon-sm"
                               variant="ghost"
-                              className="h-8 w-8 text-destructive"
+                              className="text-destructive hover:text-destructive"
                               aria-label="Delete asset"
                               onClick={() => setDeleteAssetId(a.id)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="size-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -660,7 +783,7 @@ export default function HrAssetsPage() {
             </div>
           </ScrollArea>
           {!isLoading && filteredItems.length > 0 ? (
-            <div className="border-t border-border px-2 bg-muted/20">
+            <div className="border-t border-border bg-surface-sunken/40 px-2">
               <DataTablePagination
                 page={safePage}
                 totalPages={totalPages}
@@ -672,103 +795,12 @@ export default function HrAssetsPage() {
             </div>
           ) : null}
         </div>
+        )}
       </div>
+      )}
 
       <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Asset" description="Register asset details in inventory. Assign to an employee afterward from Edit." onSubmit={handleCreate} submitLabel="Add Asset" isPending={createAsset.isPending}>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Asset Name</label>
-          <Input value={name} onChange={(e) => setName(sanitizeNameLikeInput(e.target.value, 120))} placeholder="e.g. MacBook Pro 16-inch" />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Type</label>
-          <Select value={type} onValueChange={handleTypeSelectChange}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ASSET_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {type === "Other" ? (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Specify type</label>
-            <Input
-              value={customType}
-              onChange={(e) => setCustomType(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. Docking station"
-              maxLength={64}
-            />
-            <p className="text-xs text-muted-foreground text-right">{customType.length}/64</p>
-          </div>
-        ) : null}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Brand</label>
-            <Input
-              value={brand}
-              onChange={(e) => setBrand(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. Apple"
-              maxLength={64}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Model</label>
-            <Input
-              value={model}
-              onChange={(e) => setModel(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. MacBook Pro M3"
-              maxLength={64}
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Serial Number</label>
-          <Input
-            value={serialNumber}
-            onChange={(e) => setSerialNumber(sanitizeAssetSerialInput(e.target.value))}
-            placeholder="Letters, numbers, hyphens"
-            maxLength={64}
-            className="font-mono"
-            autoCapitalize="none"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Purchase Date</label>
-            <DatePicker
-              value={purchaseDate}
-              onChange={setPurchaseDate}
-              placeholder="Pick date"
-              fromDate={ASSET_PURCHASE_FROM_DATE}
-              fromYear={2025}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Purchase Cost (₹)</label>
-            <Input
-              value={purchaseCost}
-              onChange={(e) => setPurchaseCost(sanitizePurchaseCostInput(e.target.value))}
-              type="text"
-              inputMode="decimal"
-              placeholder="Enter amount"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Notes (optional)</label>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value.slice(0, ASSET_NOTES_MAX_CHARS))}
-            placeholder="Optional notes..."
-            rows={2}
-            maxLength={ASSET_NOTES_MAX_CHARS}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {notes.length}/{ASSET_NOTES_MAX_CHARS}
-          </p>
-        </div>
+        {assetDetailFields}
       </HrSheet>
 
       <HrSheet
@@ -785,100 +817,7 @@ export default function HrAssetsPage() {
         submitLabel="Save changes"
         isPending={updateAsset.isPending}
       >
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Asset Name</label>
-          <Input value={name} onChange={(e) => setName(sanitizeNameLikeInput(e.target.value, 120))} placeholder="e.g. MacBook Pro 16-inch" />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Type</label>
-          <Select value={type} onValueChange={handleTypeSelectChange}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ASSET_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {type === "Other" ? (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Specify type</label>
-            <Input
-              value={customType}
-              onChange={(e) => setCustomType(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. Docking station"
-              maxLength={64}
-            />
-            <p className="text-xs text-muted-foreground text-right">{customType.length}/64</p>
-          </div>
-        ) : null}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Brand</label>
-            <Input
-              value={brand}
-              onChange={(e) => setBrand(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. Apple"
-              maxLength={64}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Model</label>
-            <Input
-              value={model}
-              onChange={(e) => setModel(sanitizeNameLikeInput(e.target.value, 64))}
-              placeholder="e.g. MacBook Pro M3"
-              maxLength={64}
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Serial Number</label>
-          <Input
-            value={serialNumber}
-            onChange={(e) => setSerialNumber(sanitizeAssetSerialInput(e.target.value))}
-            placeholder="Letters, numbers, hyphens"
-            maxLength={64}
-            className="font-mono"
-            autoCapitalize="none"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Purchase Date</label>
-            <DatePicker
-              value={purchaseDate}
-              onChange={setPurchaseDate}
-              placeholder="Pick date"
-              fromDate={ASSET_PURCHASE_FROM_DATE}
-              fromYear={2025}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Purchase Cost (₹)</label>
-            <Input
-              value={purchaseCost}
-              onChange={(e) => setPurchaseCost(sanitizePurchaseCostInput(e.target.value))}
-              type="text"
-              inputMode="decimal"
-              placeholder="Enter amount"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Notes (optional)</label>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value.slice(0, ASSET_NOTES_MAX_CHARS))}
-            placeholder="Optional notes..."
-            rows={2}
-            maxLength={ASSET_NOTES_MAX_CHARS}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {notes.length}/{ASSET_NOTES_MAX_CHARS}
-          </p>
-        </div>
+        {assetDetailFields}
         <div className="border-t border-border pt-4 space-y-3">
           <div>
             <p className="text-sm font-medium">Assignment &amp; lifecycle</p>
