@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Breadcrumbs, useAutoBreadcrumbs, type Crumb } from "./breadcrumbs";
 
 interface PageWrapperProps {
   title: string;
@@ -13,8 +14,15 @@ interface PageWrapperProps {
   className?: string;
   contentClassName?: string;
   noInternalScroll?: boolean;
-  /** When true, title row (+ filters if any) stays visible inside the dashboard main scroll area. */
+  /**
+   * When true, title row (+ filters if any) stays visible inside the dashboard main scroll area.
+   * Sticks at `var(--page-sticky-top, 0px)` so a shell topbar can offset it.
+   */
   stickyHeader?: boolean;
+  /** Small uppercase label above the title. */
+  eyebrow?: React.ReactNode;
+  /** Explicit crumbs; defaults to crumbs derived from the pathname + nav labels. `false` hides them. */
+  breadcrumbs?: Crumb[] | false;
 }
 
 export function PageWrapper({
@@ -28,30 +36,37 @@ export function PageWrapper({
   contentClassName,
   noInternalScroll = false,
   stickyHeader = false,
+  eyebrow,
+  breadcrumbs,
 }: PageWrapperProps) {
+  const autoCrumbs = useAutoBreadcrumbs();
+  const crumbs = breadcrumbs === false ? [] : (breadcrumbs ?? (autoCrumbs.length > 1 ? autoCrumbs : []));
+
   const titleBlock = (
-    <div className="px-4 sm:px-6 pt-4 pb-2">
-      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-3">
+    <div className="px-4 sm:px-6 xl:px-8 pt-6 pb-4">
+      {crumbs.length > 0 && <Breadcrumbs items={crumbs} className="mb-2" />}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-lg font-semibold tracking-tight text-foreground leading-tight">
-              {title}
-            </h1>
+          {eyebrow && (
+            <p className="mb-1 text-2xs font-semibold uppercase tracking-[0.08em] text-brand-text">
+              {eyebrow}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold text-foreground">{title}</h1>
             {badge && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground text-[11px] font-medium tabular-nums border border-border/60">
+              <span className="inline-flex h-5 items-center rounded-full bg-neutral-soft px-2 text-2xs font-semibold tabular-nums text-neutral-strong">
                 {badge}
               </span>
             )}
           </div>
           {subtitle && (
-            <p className="mt-0.5 text-[13px] text-muted-foreground leading-snug">
-              {subtitle}
-            </p>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
 
         {actions && (
-          <div className="flex min-w-0 max-w-full items-center gap-2 flex-wrap lg:shrink-0 lg:justify-end [&>div]:flex-wrap [&>div]:max-w-full">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end [&>div]:flex-wrap [&>div]:max-w-full">
             {actions}
           </div>
         )}
@@ -60,13 +75,8 @@ export function PageWrapper({
   );
 
   const filtersBlock = filters ? (
-    <div
-      className={cn(
-        "shrink-0 bg-background",
-        stickyHeader ? "border-t border-border/60" : "border-b border-border/60",
-      )}
-    >
-      <div className="px-3 sm:px-4 py-2 flex items-center gap-3 overflow-x-auto overflow-y-visible overscroll-x-contain scrollbar-thin">
+    <div className="shrink-0 border-y border-border bg-background">
+      <div className="flex items-center gap-3 overflow-x-auto overflow-y-visible overscroll-x-contain px-4 py-2 sm:px-6 xl:px-8 mask-x-from-97%">
         {filters}
       </div>
     </div>
@@ -83,8 +93,8 @@ export function PageWrapper({
       {stickyHeader ? (
         <div
           className={cn(
-            "sticky top-0 z-10 shrink-0 border-b border-border",
-            "bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80",
+            "sticky top-[var(--page-sticky-top,0px)] z-sticky shrink-0 bg-background/90 backdrop-blur-md",
+            !filters && "border-b border-border",
           )}
         >
           {titleBlock}
@@ -94,16 +104,15 @@ export function PageWrapper({
         <>
           <div className="shrink-0">{titleBlock}</div>
           {filtersBlock}
-          {!filters && <div className="shrink-0 mx-4 sm:mx-6 h-px bg-border/60" />}
         </>
       )}
 
       {noInternalScroll ? (
-        <div className={cn("flex-1 min-h-0 overflow-hidden px-4 sm:px-6 pt-3 pb-4", contentClassName)}>
+        <div className={cn("flex-1 min-h-0 overflow-hidden px-4 sm:px-6 xl:px-8 pt-4 pb-4", contentClassName)}>
           {children}
         </div>
       ) : (
-        <div className={cn("px-4 sm:px-6 pt-3 pb-6", contentClassName)}>{children}</div>
+        <div className={cn("px-4 sm:px-6 xl:px-8 pt-4 pb-10", contentClassName)}>{children}</div>
       )}
     </div>
   );

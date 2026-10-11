@@ -1,33 +1,27 @@
-import { Card, CardContent } from "./card";
 import { Skeleton } from "./skeleton";
 
 export function KanbanColumnSkeleton() {
   return (
-    <div className="rounded-xl border border-border min-w-[240px] sm:min-w-[260px] md:min-w-[280px] lg:min-w-[300px] w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px] flex flex-col bg-muted/30 border-t-2 flex-shrink-0 h-full">
-
-      <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-t-xl bg-muted/50">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Skeleton className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" />
-          <Skeleton className="h-4 w-20" />
+    <div className="flex h-full w-72 shrink-0 flex-col rounded-lg bg-surface-sunken">
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex items-center gap-2">
+          <Skeleton className="size-2 rounded-full" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-5 w-6 rounded-full" />
         </div>
-        <Skeleton className="h-5 w-6 rounded-md" />
+        <Skeleton className="size-6" />
       </div>
 
-      <div className="flex-1 overflow-y-auto min-h-[120px] p-2 sm:p-2.5 space-y-2">
+      <div className="flex-1 space-y-2 overflow-hidden p-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="p-3 shadow-sm">
-            <CardContent className="p-0 space-y-2">
-
-              <Skeleton className="h-5 w-full" />
-
-              <Skeleton className="h-4 w-3/4" />
-
-              <div className="flex items-center justify-between mt-3">
-                <Skeleton className="h-6 w-6 rounded-full" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-            </CardContent>
-          </Card>
+          <div key={i} className="space-y-2.5 rounded-lg border border-border bg-card p-3 shadow-xs">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-3.5 w-3/4" />
+            <div className="flex items-center justify-between pt-1">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="size-6 rounded-full" />
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -36,7 +30,7 @@ export function KanbanColumnSkeleton() {
 
 export function KanbanBoardSkeleton() {
   return (
-    <div className="flex h-full gap-3 sm:gap-4 md:gap-4" style={{ minWidth: 'max-content' }}>
+    <div className="flex h-full min-w-max gap-4" role="status" aria-label="Loading">
       {Array.from({ length: 4 }).map((_, i) => (
         <KanbanColumnSkeleton key={i} />
       ))}

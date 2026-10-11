@@ -32,7 +32,7 @@ function ActionButton({
   action: ActionProps;
   size: "sm" | "default";
   className?: string;
-  variant?: "default" | "outline";
+  variant?: "default" | "ghost";
 }) {
   if (action.href) {
     return (
@@ -68,32 +68,27 @@ export function EmptyState({
       className={cn(
         "flex w-full flex-1 flex-col items-center justify-center text-center",
         compact ? "py-8 px-4" : "min-h-[min(50vh,28rem)] py-14 px-6",
-        "rounded-xl border border-dashed border-border/60 bg-muted/20",
+        "rounded-lg border border-dashed border-border bg-surface-sunken/40",
         className
       )}
     >
       {illustration ? (
-        <div className={cn("mb-4", compact ? "mb-3" : "mb-5")}>{illustration}</div>
+        <div className={compact ? "mb-3" : "mb-5"}>{illustration}</div>
       ) : Icon ? (
         <div
           className={cn(
-            "mb-4 rounded-xl bg-muted flex items-center justify-center",
-            compact ? "h-10 w-10 mb-3" : "h-12 w-12 mb-5"
+            "flex items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground",
+            compact ? "mb-3 size-10" : "mb-5 size-14"
           )}
         >
-          <Icon
-            className={cn(
-              "text-muted-foreground/60",
-              compact ? "h-5 w-5" : "h-6 w-6"
-            )}
-          />
+          <Icon aria-hidden="true" className={compact ? "size-5" : "size-6"} />
         </div>
       ) : null}
 
       <h3
         className={cn(
-          "font-semibold text-foreground",
-          compact ? "text-sm" : "text-[0.9375rem]"
+          "text-foreground",
+          compact ? "text-sm font-semibold" : "font-display text-lg font-bold"
         )}
       >
         {title}
@@ -102,7 +97,7 @@ export function EmptyState({
       {description && (
         <p
           className={cn(
-            "text-muted-foreground mt-1 max-w-xs leading-relaxed",
+            "mt-1 max-w-sm text-muted-foreground",
             compact ? "text-xs" : "text-sm"
           )}
         >
@@ -111,20 +106,13 @@ export function EmptyState({
       )}
 
       {(action || secondaryAction) && (
-        <div className={cn("flex items-center gap-2", compact ? "mt-3" : "mt-5")}>
-          {action && (
-            <ActionButton
-              action={action}
-              size={compact ? "sm" : "default"}
-              className={compact ? "h-7 text-xs" : undefined}
-            />
-          )}
+        <div className={cn("flex flex-wrap items-center justify-center gap-2", compact ? "mt-3" : "mt-5")}>
+          {action && <ActionButton action={action} size={compact ? "sm" : "default"} />}
           {secondaryAction && (
             <ActionButton
               action={secondaryAction}
               size={compact ? "sm" : "default"}
-              variant="outline"
-              className={compact ? "h-7 text-xs" : undefined}
+              variant="ghost"
             />
           )}
         </div>

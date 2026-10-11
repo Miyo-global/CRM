@@ -11,6 +11,7 @@ interface PageBackButtonProps {
   fallback: string;
   label?: string;
   allowedPrefix?: string;
+  /** Kept for compatibility; the ArrowLeft icon now always shows (§6.1). */
   showIcon?: boolean;
   className?: string;
 }
@@ -19,16 +20,15 @@ export function PageBackButton({
   fallback,
   label = "Back",
   allowedPrefix,
-  showIcon = false,
   className,
 }: PageBackButtonProps) {
   const searchParams = useSearchParams();
   const href = resolveBackHref(searchParams.get("returnTo"), fallback, allowedPrefix);
 
   return (
-    <Button variant="ghost" size="sm" asChild className={cn(className)}>
+    <Button variant="ghost" size="sm" asChild className={cn("text-muted-foreground hover:text-foreground", className)}>
       <Link href={href}>
-        {showIcon && <ArrowLeft className="mr-1 h-3.5 w-3.5" aria-hidden="true" />}
+        <ArrowLeft className="size-4" aria-hidden="true" />
         {label}
       </Link>
     </Button>

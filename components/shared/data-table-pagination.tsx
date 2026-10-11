@@ -43,56 +43,66 @@ export function DataTablePagination({
   if (total === 0) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-1">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Showing {start}-{end} of {total}</span>
+    <div
+      data-slot="data-table-pagination"
+      className="flex min-h-11 flex-col items-center justify-between gap-2 border-t border-border px-3 py-1.5 sm:flex-row"
+    >
+      <span className="text-xs text-muted-foreground tabular-nums">
+        Showing {start}–{end} of {total}
+      </span>
+
+      <div className="flex items-center gap-3">
         {onLimitChange && (
-          <Select value={String(limit)} onValueChange={(v) => onLimitChange(Number(v))}>
-            <SelectTrigger className="h-7 w-auto min-w-[4.5rem] gap-1 text-xs" aria-label="Rows per page">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_SIZE_OPTIONS.map((n) => (
-                <SelectItem key={n} value={String(n)} className="text-xs">{n}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="hidden sm:inline">Rows per page</span>
+            <Select value={String(limit)} onValueChange={(v) => onLimitChange(Number(v))}>
+              <SelectTrigger className="h-8 w-auto min-w-16 gap-1 text-xs tabular-nums" aria-label="Rows per page">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <SelectItem key={n} value={String(n)} className="text-xs tabular-nums">{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
-      </div>
 
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="icon" className="h-7 w-7" disabled={page <= 1} onClick={() => onPageChange(1)} aria-label="First page">
-          <ChevronsLeft className="h-3.5 w-3.5" />
-        </Button>
-        <Button variant="outline" size="icon" className="h-7 w-7" disabled={page <= 1} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
-          <ChevronLeft className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button variant="ghost" size="icon-sm" disabled={page <= 1} onClick={() => onPageChange(1)} aria-label="First page">
+            <ChevronsLeft />
+          </Button>
+          <Button variant="ghost" size="icon-sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
+            <ChevronLeft />
+          </Button>
 
-        <div className="hidden sm:flex items-center gap-1">
-          {getPageNumbers().map((p, i) =>
-            p === "..." ? (
-              <span key={`ellipsis-${i}`} className="px-1 text-xs text-muted-foreground">...</span>
-            ) : (
-              <Button
-                key={p}
-                variant={p === page ? "default" : "outline"}
-                size="icon"
-                className={`h-7 w-7 text-xs ${p === page ? "bg-gold hover:bg-gold/80 text-white" : ""}`}
-                onClick={() => onPageChange(p)}
-              >
-                {p}
-              </Button>
-            )
-          )}
+          <div className="hidden sm:flex items-center gap-0.5">
+            {getPageNumbers().map((p, i) =>
+              p === "..." ? (
+                <span key={`ellipsis-${i}`} className="px-1 text-xs text-subtle-foreground">…</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "ghost"}
+                  size="icon-sm"
+                  className="text-xs tabular-nums"
+                  aria-current={p === page ? "page" : undefined}
+                  onClick={() => onPageChange(p)}
+                >
+                  {p}
+                </Button>
+              )
+            )}
+          </div>
+          <span className="sm:hidden px-2 text-xs text-muted-foreground tabular-nums">{page}/{totalPages}</span>
+
+          <Button variant="ghost" size="icon-sm" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} aria-label="Next page">
+            <ChevronRight />
+          </Button>
+          <Button variant="ghost" size="icon-sm" disabled={page >= totalPages} onClick={() => onPageChange(totalPages)} aria-label="Last page">
+            <ChevronsRight />
+          </Button>
         </div>
-        <span className="sm:hidden text-xs text-muted-foreground px-2">{page}/{totalPages}</span>
-
-        <Button variant="outline" size="icon" className="h-7 w-7" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} aria-label="Next page">
-          <ChevronRight className="h-3.5 w-3.5" />
-        </Button>
-        <Button variant="outline" size="icon" className="h-7 w-7" disabled={page >= totalPages} onClick={() => onPageChange(totalPages)} aria-label="Last page">
-          <ChevronsRight className="h-3.5 w-3.5" />
-        </Button>
       </div>
     </div>
   );

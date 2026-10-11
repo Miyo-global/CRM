@@ -381,3 +381,6 @@
 /* Radix ScrollArea fix (keep: functional) */
 [data-radix-scroll-area-viewport] { overflow-x: auto !important; overflow-y: auto !important; }
 [data-radix-scroll-area-viewport] > div { display: block !important; min-height: 0 !important; }
+
+/* Skeleton shimmer (§6.1) */
+@utility skeleton-shimmer { background-image: linear-gradient(90deg, transparent, color-mix(in oklab, var(--foreground) 6%, transparent), transparent); background-size: 200% 100%; background-repeat: no-repeat; animation: var(--animate-shimmer); }

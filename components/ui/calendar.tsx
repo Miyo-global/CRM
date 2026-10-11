@@ -40,12 +40,12 @@ function CalendarCaption({ displayMonth }: CaptionProps) {
         onClick={() => previousMonth && goToMonth(previousMonth)}
         disabled={!previousMonth}
         className={cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 disabled:opacity-20"
+          buttonVariants({ variant: "ghost", size: "icon-sm" }),
+          "text-muted-foreground hover:text-foreground disabled:opacity-30"
         )}
         aria-label="Previous month"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft />
       </button>
 
       <div className="flex items-center gap-1">
@@ -53,12 +53,12 @@ function CalendarCaption({ displayMonth }: CaptionProps) {
           value={String(month)}
           onValueChange={(v) => goToMonth(setMonth(displayMonth, parseInt(v)))}
         >
-          <SelectTrigger className="h-7 w-[112px] text-xs border-0 bg-transparent shadow-none focus:ring-0 font-medium">
+          <SelectTrigger className="h-8 w-28 border-0 bg-transparent px-2 text-sm font-semibold shadow-none hover:bg-accent">
             <SelectValue>{MONTH_NAMES[month]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {MONTH_NAMES.map((name, i) => (
-              <SelectItem key={name} value={String(i)} className="text-xs">
+              <SelectItem key={name} value={String(i)}>
                 {name}
               </SelectItem>
             ))}
@@ -69,12 +69,12 @@ function CalendarCaption({ displayMonth }: CaptionProps) {
           value={String(year)}
           onValueChange={(v) => goToMonth(setYear(displayMonth, parseInt(v)))}
         >
-          <SelectTrigger className="h-7 min-w-[4.75rem] w-auto px-2 text-xs border-0 bg-transparent shadow-none focus:ring-0 font-medium tabular-nums [&_[data-slot=select-value]]:!line-clamp-none">
+          <SelectTrigger className="h-8 min-w-19 w-auto border-0 bg-transparent px-2 text-sm font-semibold tabular-nums shadow-none hover:bg-accent [&_[data-slot=select-value]]:!line-clamp-none">
             <SelectValue>{year}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {years.map((y) => (
-              <SelectItem key={y} value={String(y)} className="text-xs">
+              <SelectItem key={y} value={String(y)} className="tabular-nums">
                 {y}
               </SelectItem>
             ))}
@@ -87,12 +87,12 @@ function CalendarCaption({ displayMonth }: CaptionProps) {
         onClick={() => nextMonth && goToMonth(nextMonth)}
         disabled={!nextMonth}
         className={cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 disabled:opacity-20"
+          buttonVariants({ variant: "ghost", size: "icon-sm" }),
+          "text-muted-foreground hover:text-foreground disabled:opacity-30"
         )}
         aria-label="Next month"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight />
       </button>
     </div>
   )
@@ -110,32 +110,33 @@ function Calendar({
       className={cn("p-3", className)}
       captionLayout="dropdown-buttons"
       classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
+        months: "flex flex-col sm:flex-row gap-4 sm:gap-6",
+        month: "space-y-3",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "hidden",
         nav: "hidden",
         nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          buttonVariants({ variant: "ghost", size: "icon-sm" }),
+          "text-muted-foreground hover:text-foreground"
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
+        table: "w-full border-collapse",
         head_row: "flex",
-        head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        head_cell: "w-9 text-2xs font-semibold uppercase text-subtle-foreground",
+        row: "flex w-full mt-1",
+        cell: "relative size-9 p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected].day-range-middle)]:bg-brand-soft [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected].day-range-start)]:bg-brand-soft [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-end)]:bg-brand-soft",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+          "size-9 rounded-md p-0 text-sm font-normal tabular-nums aria-selected:opacity-100"
         ),
+        day_range_start: "day-range-start",
         day_range_end: "day-range-end",
-        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_selected: "bg-primary text-primary-foreground font-semibold hover:bg-primary-hover hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_today: "relative font-semibold text-brand-text after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-gold-400 aria-selected:after:bg-primary-foreground",
+        day_outside: "day-outside text-subtle-foreground aria-selected:bg-brand-soft aria-selected:text-subtle-foreground",
+        day_disabled: "text-subtle-foreground opacity-50",
+        day_range_middle: "day-range-middle aria-selected:rounded-none aria-selected:bg-brand-soft aria-selected:text-brand-soft-foreground aria-selected:font-normal",
         day_hidden: "invisible",
         ...classNames,
       }}

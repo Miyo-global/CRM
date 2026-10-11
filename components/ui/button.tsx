@@ -1,32 +1,38 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all press-scale disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform] duration-100 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-wait [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:focus-ring aria-invalid:border-destructive [&>[data-spinner]+svg]:hidden",
   {
     variants: {
       variant: {
-        default: "gold-gradient text-primary-foreground font-semibold hover:shadow-[0_0_20px_rgba(200,162,46,0.3)]",
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary-hover font-semibold shadow-xs",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:border-gold/30",
+          "border border-border-strong bg-card hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+        ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
+        link: "text-brand-text underline-offset-4 hover:underline",
+        soft: "bg-brand-soft text-brand-soft-foreground hover:bg-primary/15",
+        "outline-inverse":
+          "border border-sidebar-border text-sidebar-accent-foreground hover:bg-sidebar-accent",
       },
       size: {
+        xs: "h-7 gap-1.5 px-2.5 text-xs has-[>svg]:px-2",
+        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5",
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        lg: "h-11 px-5 text-base has-[>svg]:px-4",
         icon: "size-9",
+        "icon-xs": "size-7",
         "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        "icon-lg": "size-11",
       },
     },
     defaultVariants: {
@@ -41,10 +47,15 @@ function Button({
   variant,
   size,
   asChild = false,
+  loading = false,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    /** Shows a spinner in place of the leading icon and disables the button. */
+    loading?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
 
@@ -52,8 +63,20 @@ function Button({
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled || loading || undefined}
+      aria-busy={loading || undefined}
       {...props}
-    />
+    >
+      {/* Slot needs a single child, so the spinner is only rendered for real buttons. */}
+      {loading && !asChild ? (
+        <>
+          <Loader2 data-spinner="" className="animate-spin" aria-hidden="true" />
+          {children}
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   );
 }
 

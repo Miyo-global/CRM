@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import { toneSoft, type Tone } from "@/lib/design/tones";
 
 interface StatCardProps {
   label: string;
@@ -20,16 +21,36 @@ interface StatCardProps {
   className?: string;
   index?: number;
 
+  /** Legacy color name; mapped onto the tone system. Prefer `tone`. */
   color?: "gold" | "blue" | "green" | "red" | "purple";
+  /** Icon chip tone; overrides `color`. */
+  tone?: Tone;
+  /** Optional mini trend line (32px tall) under the value. */
+  sparkline?: number[];
 }
 
-const colorMap = {
-  gold:   { bg: "bg-gold/10",   icon: "text-gold",          bar: "bg-gold" },
-  blue:   { bg: "bg-blue/10",   icon: "text-blue",          bar: "bg-blue" },
-  green:  { bg: "bg-success/10", icon: "text-success",      bar: "bg-success" },
-  red:    { bg: "bg-destructive/10", icon: "text-destructive", bar: "bg-destructive" },
-  purple: { bg: "bg-violet-500/10", icon: "text-violet-600", bar: "bg-violet-500" },
+const colorTone: Record<NonNullable<StatCardProps["color"]>, Tone> = {
+  gold: "brand",
+  blue: "info",
+  green: "success",
+  red: "danger",
+  purple: "plum",
 };
+
+function Sparkline({ data }: { data: number[] }) {
+  if (data.length < 2) return null;
+  const min = Math.min(...data);
+  const range = Math.max(...data) - min || 1;
+  const step = 100 / (data.length - 1);
+  const points = data.map((v, i) => `${(i * step).toFixed(2)},${(30 - ((v - min) / range) * 28).toFixed(2)}`);
+  const line = `M${points.join(" L")}`;
+  return (
+    <svg viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true" className="mt-3 h-8 w-full text-chart-1">
+      <path d={`${line} L100,32 L0,32 Z`} fill="currentColor" fillOpacity={0.12} />
+      <path d={line} fill="none" stroke="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
 
 export function StatCard({
   label,
@@ -41,13 +62,15 @@ export function StatCard({
   className,
   index = 0,
   color = "gold",
+  tone,
+  sparkline,
 }: StatCardProps) {
-  const c = colorMap[color];
+  const chipTone = tone ?? colorTone[color];
 
   const valueNode = (
     <p title={String(value)} className={cn(
-      "font-semibold text-foreground mt-1 truncate leading-none",
-      typeof value === "string" && value.length > 8 ? "text-xl" : "text-2xl",
+      "mt-2 truncate font-display font-extrabold leading-none tabular-nums text-foreground",
+      typeof value === "string" && value.length > 8 ? "text-2xl" : "text-3xl",
       valueTooltip && "cursor-help"
     )}>
       {value}
@@ -57,18 +80,15 @@ export function StatCard({
   const content = (
     <div
       className={cn(
-        "relative group rounded-xl border border-border bg-card p-4 overflow-hidden transition-all duration-200",
-        href && "hover:border-gold/30 hover:shadow-soft cursor-pointer",
+        "group relative h-full animate-fade-up rounded-lg border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow] duration-150",
+        href && "cursor-pointer hover:border-border-strong hover:shadow-md",
         className
       )}
-      style={{ animation: `fade-up 0.3s ease-out ${index * 0.07}s both` }}
+      style={{ animationDelay: `${index * 40}ms` }}
     >
-
-      <div className={cn("absolute top-0 left-0 right-0 h-[2px]", c.bar, "opacity-60")} />
-
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium leading-snug text-muted-foreground line-clamp-2 break-words">{label}</p>
+          <p className="line-clamp-2 break-words text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
           {valueTooltip ? (
             <TooltipProvider delayDuration={150}>
               <Tooltip>
@@ -83,18 +103,18 @@ export function StatCard({
           )}
 
           {trend && (
-            <div className="flex items-center gap-1 mt-2">
-              {trend.isPositive ? (
-                <TrendingUp className="h-3 w-3 text-success" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-destructive" />
-              )}
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
               <span
                 className={cn(
-                  "text-2xs font-medium",
-                  trend.isPositive ? "text-success" : "text-destructive"
+                  "inline-flex h-5 items-center gap-1 rounded-full px-2 text-2xs font-semibold tabular-nums",
+                  toneSoft[trend.isPositive ? "success" : "danger"]
                 )}
               >
+                {trend.isPositive ? (
+                  <TrendingUp className="size-3" aria-hidden="true" />
+                ) : (
+                  <TrendingDown className="size-3" aria-hidden="true" />
+                )}
                 {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
               </span>
               {trend.label && (
@@ -105,16 +125,16 @@ export function StatCard({
         </div>
 
         <div className={cn(
-          "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200",
-          c.bg,
-          href && "group-hover:scale-110"
+          "flex size-9 shrink-0 items-center justify-center rounded-full",
+          toneSoft[chipTone]
         )}>
-          <Icon className={cn("h-4 w-4", c.icon)} />
+          <Icon className="size-4" aria-hidden="true" />
         </div>
       </div>
+      {sparkline && <Sparkline data={sparkline} />}
     </div>
   );
 
-  if (href) return <Link href={href}>{content}</Link>;
+  if (href) return <Link href={href} className="block rounded-lg focus-visible:focus-ring">{content}</Link>;
   return content;
 }

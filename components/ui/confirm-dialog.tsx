@@ -1,5 +1,7 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
@@ -36,18 +40,22 @@ export function ConfirmDialog({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
+        <div className="flex items-start gap-4">
+          <IconChip
+            icon={AlertTriangle}
+            tone={destructive ? "danger" : "warning"}
+            className="size-10"
+          />
+          <AlertDialogHeader className="min-w-0 pt-1.5 text-left sm:text-left">
+            <AlertDialogTitle className="text-lg">{title}</AlertDialogTitle>
+            <AlertDialogDescription>{description}</AlertDialogDescription>
+          </AlertDialogHeader>
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={cn(
-              destructive &&
-                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            )}
+            className={cn(destructive && buttonVariants({ variant: "destructive" }))}
           >
             {confirmLabel}
           </AlertDialogAction>

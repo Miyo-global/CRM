@@ -102,7 +102,7 @@ export function AvatarCropDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto p-0">
         <div className="px-6 pt-6">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -110,7 +110,7 @@ export function AvatarCropDialog({
           </DialogHeader>
         </div>
 
-        <div className="relative w-full aspect-square max-h-[50vh] bg-muted overflow-hidden">
+        <div className="relative w-full aspect-square max-h-[50vh] bg-ink-950 overflow-hidden">
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -126,7 +126,7 @@ export function AvatarCropDialog({
 
         <div className="px-6 pb-2">
           <div className="flex items-center gap-3">
-            <ZoomOut className="h-4 w-4 text-muted-foreground shrink-0" />
+            <ZoomOut className="size-4 text-muted-foreground shrink-0" />
             <Slider
               value={[zoom]}
               min={1}
@@ -134,20 +134,20 @@ export function AvatarCropDialog({
               step={0.05}
               onValueChange={(val) => setZoom(val[0])}
             />
-            <ZoomIn className="h-4 w-4 text-muted-foreground shrink-0" />
+            <ZoomIn className="size-4 text-muted-foreground shrink-0" />
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               onClick={handleReset}
               className="shrink-0"
               aria-label="Reset zoom"
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw />
             </Button>
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6">
+        <DialogFooter className="m-0">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -158,7 +158,7 @@ export function AvatarCropDialog({
           <Button onClick={handleSave} disabled={loading}>
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                <Loader2 className="animate-spin" />
                 Saving...
               </>
             ) : (
