@@ -39,7 +39,7 @@ export function OnboardingProgressRing({
           cy={center}
           r={radius}
           fill="none"
-          stroke="var(--ink-200)"
+          stroke="var(--border-strong)"
           strokeWidth={strokeWidth}
         />
         <circle

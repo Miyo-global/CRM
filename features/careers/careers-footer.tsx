@@ -38,7 +38,7 @@ export function CareersFooter() {
           </nav>
         </div>
         <p className="mt-6 text-center text-xs text-sidebar-muted">
-          &copy; 2025 Miyo Global. All rights reserved.
+          &copy; {new Date().getFullYear()} Miyo Global. All rights reserved.
         </p>
       </div>
     </footer>
