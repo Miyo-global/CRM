@@ -72,7 +72,7 @@ export const dailySalesDigest = inngest.createFunction(
             type: "INFO",
             title: "Daily Sales Digest",
             message,
-            link: "/sales",
+            link: "/crm/deals",
           });
           totalDigestsSent++;
         }

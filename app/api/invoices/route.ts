@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
         type: "INFO",
         title: "Invoice Created",
         message: `Invoice ${invoice.invoiceNumber} for ${input.currency} ${total.toLocaleString()} was created.`,
-        link: "/sales/invoices",
+        link: "/billing/invoices",
         metadata: { invoiceId: invoice.id },
         excludeUserId: session.user.id,
       }).catch(() => {});

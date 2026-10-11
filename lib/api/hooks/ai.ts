@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   LeadScoreResult, EmailTone, GeneratedEmail, DealPredictionResult,
-  NextActionResult, ChurnRiskResult, ConversationSummaryResult, LeadEnrichmentResult,
+  NextActionResult, ChurnRiskResult, LeadEnrichmentResult,
   CandidateScoreResult, ReviewDraftResult, HelpdeskReplyResult, AttritionRiskResult,
 } from "@/lib/ai/prompts";
 
@@ -56,16 +56,6 @@ export function useGenerateEmail() {
   });
 }
 
-export function useGenerateEmailVariations() {
-  return useMutation({
-    mutationFn: (input: Omit<GenerateEmailInput, "tone">) =>
-      apiClient.post<{ variations: Record<EmailTone, GeneratedEmail> }>(
-        "/ai/generate-email",
-        { ...input, allVariations: true },
-      ),
-  });
-}
-
 export function usePredictDeal() {
   const qc = useQueryClient();
   return useMutation({
@@ -93,13 +83,6 @@ export function useAnalyzeChurnRisk() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.clients.all });
     },
-  });
-}
-
-export function useSummarizeConversation() {
-  return useMutation({
-    mutationFn: (input: { activityType: string; subject?: string; notes: string; leadName?: string; dealName?: string }) =>
-      apiClient.post<ConversationSummaryResult>("/ai/summarize", input),
   });
 }
 
@@ -142,8 +125,6 @@ export function useAIAttritionRisk() {
   });
 }
 
-
-
 export interface ObjectionHandlerInput {
   objection: string;
   dealStage: string;
@@ -164,8 +145,6 @@ export function useObjectionHandler() {
   });
 }
 
-
-
 export interface SubjectLinesInput {
   campaignContext: string;
   targetAudience?: string;
@@ -183,8 +162,6 @@ export function useGenerateSubjectLines() {
       apiClient.post<SubjectLinesResult>("/ai/subject-lines", data),
   });
 }
-
-
 
 export interface ContentBrief {
   title: string;
@@ -207,8 +184,6 @@ export function useGenerateContentBrief() {
   });
 }
 
-
-
 export interface SentimentResult {
   sentiment: "positive" | "neutral" | "negative" | "critical";
   score: number;
@@ -224,8 +199,6 @@ export function useSentimentAnalysis() {
       apiClient.post<SentimentResult>("/ai/sentiment-analysis", data),
   });
 }
-
-
 
 export interface NLSearchLead {
   id: number;
@@ -254,36 +227,16 @@ export function useNLSearch() {
   });
 }
 
-
-
 export interface AccountSummaryResult {
   summary: string;
   clientName: string;
   generatedAt: string;
 }
 
-export function useAccountSummary() {
-  return useMutation({
-    mutationFn: (clientId: number) =>
-      apiClient.post<AccountSummaryResult>("/ai/account-summary", { clientId }),
-  });
-}
-
-
-
 export interface ReportNarratorResult {
   narrative: string;
   generatedAt: string;
 }
-
-export function useReportNarrator() {
-  return useMutation({
-    mutationFn: (data: { data: string; context?: string }) =>
-      apiClient.post<ReportNarratorResult>("/ai/report-narrator", data),
-  });
-}
-
-
 
 export interface MeetingPrepResult {
   brief: string;
@@ -303,8 +256,6 @@ export function useMeetingPrep() {
   });
 }
 
-
-
 export interface GenerateJdInput {
   title: string;
   requirements?: string;
@@ -322,8 +273,6 @@ export function useGenerateJobDescription() {
       apiClient.post<{ description?: string; requirements?: string }>("/ai/generate-jd", input),
   });
 }
-
-
 
 export interface OrgFeatureFlags {
   aiChat: boolean;
@@ -353,8 +302,6 @@ export function useUpdateFeatureFlag() {
     },
   });
 }
-
-
 
 interface AiUsageTotals {
   totalTokens: number;

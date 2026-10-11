@@ -64,7 +64,7 @@ export const overdueTaskAlerts = inngest.createFunction(
           type: "WARNING",
           title: info.count === 1 ? "Overdue Task" : `${info.count} Overdue Tasks`,
           message,
-          link: "/sales/activity",
+          link: "/tasks/overdue",
           metadata: { overdueTaskIds: info.taskIds, count: info.count },
         });
 
