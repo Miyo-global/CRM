@@ -28,7 +28,6 @@ const NOTIFICATION_CATEGORIES = [
   { key: "expense_approved", label: "Expense approved", description: "When your expense claim is approved or rejected." },
   { key: "payslip_generated", label: "Payslip generated", description: "When your monthly payslip is ready." },
   { key: "holiday_reminder", label: "Holiday reminders", description: "Reminders about upcoming holidays." },
-  { key: "chat_message", label: "Chat messages", description: "When you receive a direct message." },
   { key: "target_achieved", label: "Target achieved", description: "When you hit a sales or performance target." },
 ];
 

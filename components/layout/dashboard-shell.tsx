@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
@@ -11,11 +10,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 import Image from "next/image";
-
-const ChatUnreadNotifications = dynamic(
-  () => import("@/components/chat/chat-unread-notifications").then((m) => m.ChatUnreadNotifications),
-  { ssr: false }
-);
 
 const DESKTOP_SIDEBAR_MIN_WIDTH = 1024;
 const SIDEBAR_COOKIE = "sidebar-collapsed";
@@ -58,7 +52,6 @@ export function DashboardShell({
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] flex bg-background overflow-hidden">
-      {hasDashboardAccess && <ChatUnreadNotifications currentUserId={userId} />}
       <Link
         href="#dashboard-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium"

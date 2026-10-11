@@ -15,9 +15,6 @@ import { db } from "@/lib/db";
 import {
   organizationMembers,
   documents,
-  chatAttachments,
-  chatMessages,
-  chatChannels,
   candidateDocumentsVault,
   handbookVersions,
   candidates,
@@ -46,15 +43,6 @@ async function fileBelongsToOrg(
     columns: { id: true },
   });
   if (doc) return true;
-
-  const chatRows = await db
-    .select({ id: chatAttachments.id })
-    .from(chatAttachments)
-    .innerJoin(chatMessages, eq(chatAttachments.messageId, chatMessages.id))
-    .innerJoin(chatChannels, eq(chatMessages.channelId, chatChannels.id))
-    .where(and(eq(chatAttachments.fileKey, fileKey), eq(chatChannels.orgId, orgId)))
-    .limit(1);
-  if (chatRows.length > 0) return true;
 
   const vault = await db.query.candidateDocumentsVault.findFirst({
     where: and(

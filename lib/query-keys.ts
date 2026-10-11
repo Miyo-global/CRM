@@ -149,21 +149,6 @@ export const queryKeys = {
     watchers: (ticketId: number) => [...base, "projects", "watchers", ticketId] as const,
   },
 
-  chat: {
-    all: [...base, "chat"] as const,
-    myChannels: () => [...base, "chat", "myChannels"] as const,
-    channel: (id: number) => [...base, "chat", "channel", id] as const,
-    messages: (channelId: number, cursor?: number) => [...base, "chat", "messages", channelId, cursor] as const,
-    poll: (channelId: number, since: string) => [...base, "chat", "poll", channelId, since] as const,
-    unreadTotal: () => [...base, "chat", "unreadTotal"] as const,
-    onlineUsers: () => [...base, "chat", "onlineUsers"] as const,
-    orgUsers: () => [...base, "chat", "orgUsers"] as const,
-    search: (query: string) => [...base, "chat", "search", query] as const,
-    typing: (channelId: number) => [...base, "chat", "typing", channelId] as const,
-    messageReaders: (channelId: number, messageId: number) =>
-      [...base, "chat", "messageReaders", channelId, messageId] as const,
-  },
-
   dashboard: {
     all: [...base, "dashboard"] as const,
     stats: () => [...base, "dashboard", "stats"] as const,

@@ -22,12 +22,8 @@ describe("buildCsp", () => {
     expect(csp).not.toMatch(/(^|\s)(\*|https:|wss:)(\s|;|$)/);
   });
 
-  it("lets chat realtime reach Ably over https and wss", () => {
-    const connect = directive(buildCsp("production"), "connect-src");
-    for (const host of ["*.ably.io", "*.ably.net", "*.ably-realtime.com"]) {
-      expect(connect).toContain(`https://${host}`);
-      expect(connect).toContain(`wss://${host}`);
-    }
+  it("does not allow websocket hosts now that chat is gone", () => {
+    expect(directive(buildCsp("production"), "connect-src")).not.toContain("wss:");
   });
 
   it("keeps same-origin frames working for resume and offer-letter previews", () => {

@@ -46,7 +46,6 @@ const serverSchema = z.object({
   VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
 
-  ABLY_API_KEY: z.string().optional(),
 
   BIOMETRIC_API_KEY: z.string().optional(),
   SLACK_WEBHOOK_URL: z.string().optional(),

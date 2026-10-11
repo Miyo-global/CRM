@@ -14,7 +14,6 @@ interface SidebarSectionProps {
   isGroupCollapsed: boolean;
   onToggleGroup: () => void;
   pendingLeaves: number;
-  unreadChatCount: number;
   onNavigate?: () => void;
   longestMatchingNavPath: string | null;
 }
@@ -26,7 +25,6 @@ export function SidebarSection({
   isGroupCollapsed,
   onToggleGroup,
   pendingLeaves,
-  unreadChatCount,
   onNavigate,
   longestMatchingNavPath,
 }: SidebarSectionProps) {
@@ -65,12 +63,9 @@ export function SidebarSection({
             const isActive =
               longestMatchingNavPath !== null && routePath === longestMatchingNavPath;
 
-            const chatBadge =
-              route.href === "/chat" && unreadChatCount > 0 ? unreadChatCount : 0;
-            const leavesBadge =
+            const badgeCount =
               route.badge === "leaves" && pendingLeaves > 0 ? pendingLeaves : 0;
-            const hasBadge = chatBadge > 0 || leavesBadge > 0;
-            const badgeCount = chatBadge || leavesBadge;
+            const hasBadge = badgeCount > 0;
 
             const item = (
               <Link
@@ -107,12 +102,7 @@ export function SidebarSection({
 
                     {hasBadge && (
                       <span
-                        className={cn(
-                          "inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full text-[10px] font-bold tabular-nums leading-none",
-                          chatBadge > 0
-                            ? "bg-red-500 text-white"
-                            : "bg-amber-500 text-white"
-                        )}
+                        className="inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full text-[10px] font-bold tabular-nums leading-none bg-amber-500 text-white"
                       >
                         {badgeCount > 99 ? "99+" : badgeCount}
                       </span>

@@ -33,10 +33,6 @@ export const RATE_LIMIT_TIERS: Record<string, RateLimitTier> = {
     maxRequests: 10,
     windowMs: 60_000,
   },
-  chat: {
-    maxRequests: 120,
-    windowMs: 60_000,
-  },
   upload: {
     maxRequests: 20,
     windowMs: 60_000,
@@ -193,7 +189,6 @@ const ROUTE_RULES: RouteRule[] = [
   { prefix: "/api/trpc/organization.createOrganization", tier: "account-create" },
   { prefix: "/api/trpc/organization.inviteUser", tier: "account-create" },
   { prefix: "/api/trpc/hr.employee.onboardEmployee", tier: "account-create" },
-  { prefix: "/api/chat", tier: "chat" },
   { prefix: "/api/ai/", tier: "ai" },
   { prefix: "/api/storage/upload", tier: "upload" },
   { prefix: "/api/expenses/import", tier: "upload" },

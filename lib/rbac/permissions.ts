@@ -395,7 +395,6 @@ export const PERMISSIONS: Permission[] = [
   { name: "reports:generate", resource: "reports", action: "generate", description: "Generate reports" },
   { name: "reports:schedule", resource: "reports", action: "schedule", description: "Schedule reports" },
 
-  { name: "chat:submit_lead", resource: "chat", action: "submit_lead", description: "Submit leads via chat" },
 ];
 
 const EMPLOYEE_SELF_SERVICE = [

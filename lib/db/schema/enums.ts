@@ -132,7 +132,6 @@ export const interviewTypeEnum = pgEnum("interview_type", ["PHONE", "VIDEO", "ON
 export const interviewResultEnum = pgEnum("interview_result", ["PENDING", "PASSED", "FAILED", "NO_SHOW"]);
 export const applicationStatusEnum = pgEnum("application_status", ["APPLIED", "SHORTLISTED", "INTERVIEWING", "OFFERED", "ACCEPTED", "REJECTED", "WITHDRAWN"]);
 
-export const chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "lead_submission", "system"]);
 
 export const notificationTypeEnum = pgEnum("notification_type", ["INFO", "SUCCESS", "WARNING", "ERROR"]);
 

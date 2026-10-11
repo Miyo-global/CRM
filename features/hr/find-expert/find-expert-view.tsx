@@ -11,7 +11,6 @@ import {
   List,
   Mail,
   MapPin,
-  MessageSquare,
   Search,
   Star,
   Users,
@@ -187,12 +186,6 @@ function ExpertRow({
         <Button asChild variant="default" size="sm" className="h-8 text-xs bg-gold hover:bg-gold/90 text-white">
           <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
         </Button>
-        <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1 border-border">
-          <Link href={`/chat?userId=${expert.userId}`}>
-            <MessageSquare className="h-3.5 w-3.5" />
-            Message
-          </Link>
-        </Button>
         {expert.email ? (
           <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1 border-border">
             <a href={`mailto:${expert.email}`}>
@@ -272,11 +265,6 @@ function ExpertGridCard({
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm" variant="default" className="flex-1 h-8 text-xs bg-gold hover:bg-gold/90 text-white">
             <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline" className="h-8 px-2 text-xs border-border" aria-label="Message expert">
-            <Link href={`/chat?userId=${expert.userId}`}>
-              <MessageSquare className="h-3.5 w-3.5" />
-            </Link>
           </Button>
           {expert.email ? (
             <Button asChild size="sm" variant="outline" className="h-8 px-2 text-xs border-border" aria-label="Email expert">
@@ -878,7 +866,7 @@ export function FindExpertView() {
                   asChild
                   className="w-full bg-gold hover:bg-gold/90 text-white glow-gold"
                 >
-                  <Link href="/chat">Request Expert</Link>
+                  <Link href="/hr/helpdesk">Request Expert</Link>
                 </Button>
               </CardContent>
             </Card>

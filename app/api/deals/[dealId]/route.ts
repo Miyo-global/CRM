@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAuth, withAdmin, ok, err, parseBody } from "@/lib/api/helpers";
 import { getDeal } from "@/server/queries/crm";
 import { db } from "@/lib/db";
-import { deals, dealActivities, chatChannels, chatChannelMembers, users, commissions, dealApprovals } from "@/lib/db/schema";
+import { deals, dealActivities, users, commissions, dealApprovals } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
@@ -113,49 +113,6 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
           subject: `Stage changed from ${existing.stage} to ${input.stage}`,
           userId: session.user.id,
         });
-
-        if (input.stage === "NEGOTIATION") {
-          const alreadyLinked = await tx.query.chatChannels.findFirst({
-            where: eq(chatChannels.linkedDealId, dealId),
-            columns: { id: true },
-          });
-
-          if (!alreadyLinked) {
-            const dealRow = await tx.query.deals.findFirst({
-              where: and(eq(deals.id, dealId), eq(deals.orgId, session.orgId!)),
-              columns: { name: true, assignedToId: true },
-            });
-
-            const channelName = dealRow
-              ? `Deal: ${dealRow.name}`
-              : `Deal #${dealId}`;
-
-            const [newChannel] = await tx
-              .insert(chatChannels)
-              .values({
-                orgId: session.orgId!,
-                name: channelName,
-                type: "GROUP",
-                description: `Auto-created channel for deal #${dealId} entering Negotiation`,
-                createdBy: session.user.id,
-                linkedDealId: dealId,
-              })
-              .returning({ id: chatChannels.id });
-
-            const memberIds = [session.user.id];
-            if (dealRow?.assignedToId && dealRow.assignedToId !== session.user.id) {
-              memberIds.push(dealRow.assignedToId);
-            }
-
-            await tx.insert(chatChannelMembers).values(
-              memberIds.map((uid) => ({
-                channelId: newChannel.id,
-                userId: uid,
-                role: uid === session.user.id ? ("ADMIN" as const) : ("MEMBER" as const),
-              }))
-            );
-          }
-        }
       }
 
       const [row] = await tx.update(deals)

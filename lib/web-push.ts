@@ -1,8 +1,8 @@
 "server-only";
 import * as webpush from "web-push";
 import { db } from "@/lib/db";
-import { pushSubscriptions, chatChannelMembers } from "@/lib/db/schema";
-import { eq, and, ne, inArray } from "drizzle-orm";
+import { pushSubscriptions } from "@/lib/db/schema";
+import { eq, inArray } from "drizzle-orm";
 import { CRM_BASE_URL } from "@/lib/constants/company";
 
 function getVapidSubject(): string {
@@ -72,28 +72,4 @@ export async function sendPushToUser(
       .delete(pushSubscriptions)
       .where(inArray(pushSubscriptions.endpoint, expiredEndpoints));
   }
-}
-
-export async function sendPushToChannelMembers(
-  channelId: number,
-  senderUserId: string,
-  payload: { title: string; body: string; url?: string }
-): Promise<void> {
-  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) return;
-
-  const members = await db
-    .select({ userId: chatChannelMembers.userId })
-    .from(chatChannelMembers)
-    .where(
-      and(
-        eq(chatChannelMembers.channelId, channelId),
-        ne(chatChannelMembers.userId, senderUserId)
-      )
-    );
-
-  if (members.length === 0) return;
-
-  await Promise.allSettled(
-    members.map((m) => sendPushToUser(m.userId, payload))
-  );
 }
