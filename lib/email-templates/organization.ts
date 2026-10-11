@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getInvitationEmailTemplate(invitationUrl: string, organizationName: string, inviterName?: string): string {
   const safeOrgName = escapeHtml(organizationName);
@@ -20,10 +21,10 @@ export function getInvitationEmailTemplate(invitationUrl: string, organizationNa
       </a>
     </div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b; margin-top: 24px;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted}; margin-top: 24px;">
       If the button doesn't work, you can copy and paste this link into your browser:
     </p>
-    <p class="email-text" style="word-break: break-all; font-size: 13px; color: #0f2b7f;">
+    <p class="email-text" style="word-break: break-all; font-size: 13px; color: ${BRAND.ink};">
       ${invitationUrl}
     </p>
 
@@ -73,14 +74,14 @@ export function getHolidayAnnouncementEmailTemplate(
       </div>
       <div class="credential-item">
         <span class="credential-label">Status:</span>
-        <span style="color: #22c55e; font-weight: 700; margin-left: 8px;">OFFICE CLOSED</span>
+        <span style="color: ${BRAND.success}; font-weight: 700; margin-left: 8px;">OFFICE CLOSED</span>
       </div>
     </div>
 
     ${safeMessage ? `
-    <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #166534; font-size: 14px;">💬 Message:</p>
-      <p style="margin: 0; color: #15803d; font-size: 14px; line-height: 1.6;">${safeMessage}</p>
+    <div style="background: ${BRAND.successSoft}; border-left: 4px solid ${BRAND.success}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.success}; font-size: 14px;">💬 Message:</p>
+      <p style="margin: 0; color: ${BRAND.success}; font-size: 14px; line-height: 1.6;">${safeMessage}</p>
     </div>
     ` : ''}
 
@@ -121,13 +122,13 @@ export function getCompanyAnnouncementEmailTemplate(
     </p>
 
     <div class="credential-box">
-      <h3 style="margin: 0 0 16px 0; color: #0f172a; font-size: 18px;">${safeSubject}</h3>
-      <div style="color: #475569; font-size: 15px; line-height: 1.7; white-space: pre-wrap;">${safeMessage}</div>
+      <h3 style="margin: 0 0 16px 0; color: ${BRAND.ink}; font-size: 18px;">${safeSubject}</h3>
+      <div style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.7; white-space: pre-wrap;">${safeMessage}</div>
     </div>
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       For any questions or clarifications, please reach out to your manager or HR.
     </p>
   `;

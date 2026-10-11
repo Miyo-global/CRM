@@ -14,6 +14,7 @@ import { escapeHtml } from "@/lib/email-templates/base";
 import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const schema = z.object({
   leadIds: z.array(z.number()).min(1),
@@ -111,13 +112,13 @@ export async function POST(req: NextRequest) {
         const leadRows = assignedLeads
           .map(
             (l) =>
-              `<tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml(l.name)}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml(l.company || "N/A")}</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml(l.status)}</td></tr>`
+              `<tr><td style="padding:8px;border-bottom:1px solid ${BRAND.border};">${escapeHtml(l.name)}</td><td style="padding:8px;border-bottom:1px solid ${BRAND.border};">${escapeHtml(l.company || "N/A")}</td><td style="padding:8px;border-bottom:1px solid ${BRAND.border};">${escapeHtml(l.status)}</td></tr>`
           )
           .join("");
         await sendEmail({
           to: sp.email,
           subject: `${assignedLeads.length} New Lead${assignedLeads.length > 1 ? "s" : ""} Assigned — Miyo Global`,
-          html: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><div style="background:linear-gradient(135deg,#0f2b7f,#1e40af);padding:24px;text-align:center;border-radius:10px 10px 0 0;"><h1 style="color:#bd882c;margin:0;font-size:22px;">Miyo Global</h1></div><div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;"><h2 style="color:#1e40af;margin-top:0;">New Leads Assigned to You</h2><p>Hi <strong>${escapeHtml(sp.name || "Team Member")}</strong>,</p><p><strong>${assignerName}</strong> has distributed <strong>${assignedLeads.length}</strong> lead${assignedLeads.length > 1 ? "s" : ""} to you:</p><table style="width:100%;border-collapse:collapse;margin:16px 0;"><tr style="background:#f3f4f6;"><th style="padding:8px;text-align:left;">Name</th><th style="padding:8px;text-align:left;">Company</th><th style="padding:8px;text-align:left;">Status</th></tr>${leadRows}</table><div style="text-align:center;margin:24px 0;"><a href="${baseUrl}/crm/leads" style="background:#0f2b7f;color:#bd882c;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">View Leads</a></div></div></body></html>`,
+          html: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><div style="background:linear-gradient(135deg,${BRAND.ink},${BRAND.inkDeep});padding:24px;text-align:center;border-radius:10px 10px 0 0;"><h1 style="color:${BRAND.gold};margin:0;font-size:22px;">Miyo Global</h1></div><div style="background:${BRAND.white};padding:24px;border:1px solid ${BRAND.border};border-top:none;border-radius:0 0 10px 10px;"><h2 style="color:${BRAND.ink};margin-top:0;">New Leads Assigned to You</h2><p>Hi <strong>${escapeHtml(sp.name || "Team Member")}</strong>,</p><p><strong>${assignerName}</strong> has distributed <strong>${assignedLeads.length}</strong> lead${assignedLeads.length > 1 ? "s" : ""} to you:</p><table style="width:100%;border-collapse:collapse;margin:16px 0;"><tr style="background:${BRAND.sunken};"><th style="padding:8px;text-align:left;">Name</th><th style="padding:8px;text-align:left;">Company</th><th style="padding:8px;text-align:left;">Status</th></tr>${leadRows}</table><div style="text-align:center;margin:24px 0;"><a href="${baseUrl}/crm/leads" style="background:${BRAND.ink};color:${BRAND.gold};padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">View Leads</a></div></div></body></html>`,
         });
       } catch (emailErr) {
         logger.error("Failed to send lead distribution email", { salesPersonId: sp.id, error: emailErr });

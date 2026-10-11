@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function buildFeedbackEmailHtml(params: {
   candidateName: string;
@@ -22,11 +23,11 @@ function buildFeedbackEmailHtml(params: {
   return {
     subject: `How was your interview experience at ${params.orgName}?`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <div style="background: #0f2b7f; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 22px;">Thank you for interviewing with us</h1>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: ${BRAND.ink};">
+        <div style="background: ${BRAND.ink}; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: ${BRAND.white}; margin: 0; font-size: 22px;">Thank you for interviewing with us</h1>
         </div>
-        <div style="padding: 24px; background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+        <div style="padding: 24px; background: ${BRAND.white}; border: 1px solid ${BRAND.border}; border-top: none; border-radius: 0 0 8px 8px;">
           <p>Dear ${params.candidateName},</p>
           <p>
             Thank you for taking the time to interview for a position at <strong>${params.orgName}</strong>
@@ -35,9 +36,9 @@ function buildFeedbackEmailHtml(params: {
           <p>We value your perspective and would love to hear about your experience. Your feedback helps us
           continuously improve our hiring process.</p>
 
-          <div style="background: #f8f9fa; border-left: 4px solid #bd882c; padding: 16px; margin: 20px 0; border-radius: 4px;">
-            <p style="margin: 0; font-weight: 600; color: #0f2b7f;">How would you rate your interview experience?</p>
-            <p style="margin: 8px 0 0; font-size: 13px; color: #6b7280;">
+          <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.gold}; padding: 16px; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0; font-weight: 600; color: ${BRAND.ink};">How would you rate your interview experience?</p>
+            <p style="margin: 8px 0 0; font-size: 13px; color: ${BRAND.inkMuted};">
               Was the process clear and respectful? Did you feel heard? Any suggestions?
             </p>
           </div>
@@ -46,19 +47,19 @@ function buildFeedbackEmailHtml(params: {
             <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
               <tr>
                 <td style="padding: 4px;">
-                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Excellent&body=Hi, I would rate my experience as Excellent. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: #22c55e; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Excellent</a>
+                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Excellent&body=Hi, I would rate my experience as Excellent. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: ${BRAND.success}; color: ${BRAND.white}; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Excellent</a>
                 </td>
                 <td style="padding: 4px;">
-                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Good&body=Hi, I would rate my experience as Good. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Good</a>
+                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Good&body=Hi, I would rate my experience as Good. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: ${BRAND.info}; color: ${BRAND.white}; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Good</a>
                 </td>
                 <td style="padding: 4px;">
-                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Needs Improvement&body=Hi, I would rate my experience as Needs Improvement. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: #f59e0b; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Could be better</a>
+                  <a href="mailto:${HR_NOTIFICATION_EMAIL}?subject=Interview Feedback — Needs Improvement&body=Hi, I would rate my experience as Needs Improvement. (Add your feedback here)" style="display: inline-block; padding: 10px 18px; background: ${BRAND.warning}; color: ${BRAND.white}; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Could be better</a>
                 </td>
               </tr>
             </table>
           </div>
 
-          <p style="font-size: 13px; color: #6b7280;">
+          <p style="font-size: 13px; color: ${BRAND.inkMuted};">
             You can also reply to this email directly with any comments or suggestions.
             We read every response.
           </p>

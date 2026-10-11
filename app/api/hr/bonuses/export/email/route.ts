@@ -8,6 +8,7 @@ import { buildBonusCsvBuffer } from "@/lib/hr/bonus-export";
 import { getBonusExportRows } from "@/server/queries/hr/bonuses-export";
 import { sendEmail } from "@/lib/email/sender";
 import { format } from "date-fns";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function escapeHtml(s: string) {
   return s
@@ -50,8 +51,8 @@ export async function POST(req: NextRequest) {
       subject,
       html: `
         ${messageHtml}
-        <p style="color:#666;font-size:13px">Records: ${rows.length}</p>
-        <p style="margin-top:16px;font-size:12px;color:#888">Sent from Miyo Global HR Bonuses.</p>
+        <p style="color:${BRAND.inkMuted};font-size:13px">Records: ${rows.length}</p>
+        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Bonuses.</p>
       `,
       attachments: [
         {

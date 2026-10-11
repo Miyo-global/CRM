@@ -14,6 +14,7 @@ import {
 } from "@/server/queries/hr/attendance-export";
 import { buildAttendanceXlsxBuffer } from "@/lib/hr/build-attendance-xlsx";
 import { sendEmail } from "@/lib/email/sender";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function escapeHtml(s: string) {
   return s
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
     const messageHtml = body.message?.trim()
       ? `<p>${escapeHtml(body.message.trim()).replace(/\n/g, "<br/>")}</p>`
       : `<p>Please find attached the attendance report for <strong>${escapeHtml(scopeLabel)}</strong>.</p>`;
-    const summaryHtml = `<p style="color:#666;font-size:13px">Period: ${escapeHtml(
+    const summaryHtml = `<p style="color:${BRAND.inkMuted};font-size:13px">Period: ${escapeHtml(
       rangeLabel,
     )} · Records: ${rowCount}</p>`;
 
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
       html: `
         ${messageHtml}
         ${summaryHtml}
-        <p style="margin-top:16px;font-size:12px;color:#888">Sent from Miyo Global HR Attendance.</p>
+        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Attendance.</p>
       `,
       attachments: [
         {

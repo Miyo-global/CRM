@@ -11,15 +11,16 @@ import {
   StyleSheet,
   renderToBuffer,
 } from "@react-pdf/renderer";
+import { BRAND } from "@/lib/design/brand-hex";
 
 
-const NAVY = "#0f2b7f";
-const GOLD = "#bd882c";
-const MUTED = "#555555";
-const BORDER = "#dde3f0";
+const NAVY = BRAND.ink;
+const GOLD = BRAND.gold;
+const MUTED = BRAND.inkMuted;
+const BORDER = BRAND.border;
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 40, paddingHorizontal: 40, paddingBottom: 60, fontSize: 10, color: "#111", fontFamily: "Helvetica" },
+  page: { paddingTop: 40, paddingHorizontal: 40, paddingBottom: 60, fontSize: 10, color: BRAND.ink, fontFamily: "Helvetica" },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -38,10 +39,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
   },
-  logoLetter: { fontSize: 20, fontWeight: 700, color: GOLD },
+  logoLetter: { fontSize: 20, fontWeight: 700, color: BRAND.goldDark },
   headerCenter: { flex: 1, alignItems: "center" },
   orgName: { fontSize: 13, fontWeight: 700, color: NAVY, textAlign: "center" },
-  orgAddr: { fontSize: 9, color: "#666666", marginTop: 3, textAlign: "center" },
+  orgAddr: { fontSize: 9, color: BRAND.inkMuted, marginTop: 3, textAlign: "center" },
   titleBar: {
     backgroundColor: NAVY,
     paddingVertical: 8,
@@ -49,23 +50,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   titleText: {
-    color: "#ffffff",
+    color: BRAND.white,
     fontSize: 12,
     fontWeight: 700,
     textAlign: "center",
     letterSpacing: 1,
   },
   bodyContainer: { flex: 1, paddingHorizontal: 4 },
-  paragraph: { fontSize: 10, color: "#111111", marginBottom: 10, lineHeight: 1.6 },
+  paragraph: { fontSize: 10, color: BRAND.ink, marginBottom: 10, lineHeight: 1.6 },
   bullet: {
     fontSize: 10,
-    color: "#111111",
+    color: BRAND.ink,
     marginBottom: 6,
     flexDirection: "row",
     lineHeight: 1.6,
   },
   bulletDot: { width: 14, fontSize: 10, color: MUTED },
-  bulletText: { flex: 1, fontSize: 10, color: "#111111" },
+  bulletText: { flex: 1, fontSize: 10, color: BRAND.ink },
   signatureBlock: {
     marginTop: 32,
     borderTopWidth: 1,
@@ -78,8 +79,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   signatureLabel: { width: 130, fontSize: 10, color: MUTED },
-  signatureValue: { flex: 1, fontSize: 10, color: "#111111", borderBottomWidth: 1, borderBottomColor: "#cccccc", paddingBottom: 2 },
-  signatureSpace: { flex: 1, height: 32, borderBottomWidth: 1, borderBottomColor: "#cccccc" },
+  signatureValue: { flex: 1, fontSize: 10, color: BRAND.ink, borderBottomWidth: 1, borderBottomColor: BRAND.border, paddingBottom: 2 },
+  signatureSpace: { flex: 1, height: 32, borderBottomWidth: 1, borderBottomColor: BRAND.border },
   watermark: {
     position: "absolute",
     top: 281,
@@ -126,8 +127,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  footerText: { fontSize: 7.5, color: "#ffffff" },
-  footerIcon: { fontSize: 8, color: "#ffffff", marginRight: 4 },
+  footerText: { fontSize: 7.5, color: BRAND.white },
+  footerIcon: { fontSize: 8, color: BRAND.white, marginRight: 4 },
 });
 
 async function loadLogoPngBase64(): Promise<string | null> {

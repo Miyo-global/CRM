@@ -3,37 +3,38 @@
 import { useRef, useState, useCallback } from "react";
 import { formatCurrencyFull } from "@/lib/format-utils";
 import type { ExportResult } from "@/server/actions/expense-export";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export type PdfData = NonNullable<Extract<ExportResult, { format: "pdf" }>["data"]>;
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  PENDING: { bg: "#fef3c7", color: "#92400e" },
-  APPROVED: { bg: "#d1fae5", color: "#065f46" },
-  PAID: { bg: "#dbeafe", color: "#1e40af" },
-  REJECTED: { bg: "#fee2e2", color: "#991b1b" },
+  PENDING: { bg: BRAND.warningSoft, color: BRAND.warning },
+  APPROVED: { bg: BRAND.successSoft, color: BRAND.success },
+  PAID: { bg: BRAND.infoSoft, color: BRAND.info },
+  REJECTED: { bg: BRAND.dangerSoft, color: BRAND.danger },
 };
 
 const SUMMARY_BORDER_COLORS: Record<string, string> = {
-  total: "#0066cc",
-  pending: "#f59e0b",
-  approved: "#10b981",
-  paid: "#3b82f6",
-  rejected: "#ef4444",
+  total: BRAND.info,
+  pending: BRAND.warning,
+  approved: BRAND.success,
+  paid: BRAND.info,
+  rejected: BRAND.danger,
 };
 
 const formatInr = (amount: number) => formatCurrencyFull(amount);
 
 const cellStyle: React.CSSProperties = {
   padding: "10px 8px",
-  borderBottom: "1px solid #eee",
+  borderBottom: `1px solid ${BRAND.border}`,
   fontSize: "12px",
 };
 
 const thStyle: React.CSSProperties = {
   ...cellStyle,
-  background: "#f5f5f5",
+  background: BRAND.sunken,
   fontWeight: 600,
-  borderBottom: "2px solid #ddd",
+  borderBottom: `2px solid ${BRAND.border}`,
   textAlign: "left",
 };
 
@@ -51,15 +52,15 @@ function SummaryCard({
   return (
     <div
       style={{
-        background: "#f8f9fa",
+        background: BRAND.sunken,
         padding: "20px",
         borderRadius: "8px",
         borderLeft: `4px solid ${borderColor}`,
       }}
     >
-      <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>{label}</div>
+      <div style={{ fontSize: "12px", color: BRAND.inkMuted, marginBottom: "4px" }}>{label}</div>
       <div style={{ fontSize: "22px", fontWeight: 700 }}>{value}</div>
-      {count && <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>{count}</div>}
+      {count && <div style={{ fontSize: "12px", color: BRAND.inkSubtle, marginTop: "4px" }}>{count}</div>}
     </div>
   );
 }
@@ -70,19 +71,19 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
       style={{
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         padding: "40px",
-        color: "#1a1a1a",
+        color: BRAND.ink,
         width: "800px",
-        background: "#ffffff",
+        background: BRAND.white,
       }}
     >
-      <div style={{ borderBottom: "2px solid #333", paddingBottom: "20px", marginBottom: "30px" }}>
+      <div style={{ borderBottom: `2px solid ${BRAND.ink}`, paddingBottom: "20px", marginBottom: "30px" }}>
         <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>{data.title}</h1>
-        <p style={{ color: "#666", fontSize: "14px" }}>Generated on {data.generatedAt}</p>
+        <p style={{ color: BRAND.inkMuted, fontSize: "14px" }}>Generated on {data.generatedAt}</p>
       </div>
 
       <div
         style={{
-          background: "#f5f5f5",
+          background: BRAND.sunken,
           padding: "15px",
           borderRadius: "8px",
           marginBottom: "30px",
@@ -97,7 +98,7 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
             { label: "Total Records", value: String(data.summary.totalCount) },
           ].map((f) => (
             <div key={f.label}>
-              <div style={{ color: "#666", marginBottom: "2px" }}>{f.label}</div>
+              <div style={{ color: BRAND.inkMuted, marginBottom: "2px" }}>{f.label}</div>
               <div style={{ fontWeight: 600 }}>{f.value}</div>
             </div>
           ))}
@@ -148,7 +149,7 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
               fontWeight: 600,
               marginBottom: "15px",
               paddingBottom: "8px",
-              borderBottom: "1px solid #ddd",
+              borderBottom: `1px solid ${BRAND.border}`,
             }}
           >
             Expenses by Category
@@ -174,7 +175,7 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
                         style={{
                           height: "8px",
                           width: `${cat.percentage}%`,
-                          background: "#0066cc",
+                          background: BRAND.info,
                           borderRadius: "4px",
                         }}
                       />
@@ -195,7 +196,7 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
             fontWeight: 600,
             marginBottom: "15px",
             paddingBottom: "8px",
-            borderBottom: "1px solid #ddd",
+            borderBottom: `1px solid ${BRAND.border}`,
           }}
         >
           Expense Details
@@ -216,7 +217,7 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
             {data.expenses.map((exp, idx) => {
               const statusColor = STATUS_COLORS[exp.status] ?? STATUS_COLORS.PENDING;
               return (
-                <tr key={idx} style={idx % 2 === 1 ? { background: "#fafafa" } : undefined}>
+                <tr key={idx} style={idx % 2 === 1 ? { background: BRAND.sunken } : undefined}>
                   <td style={cellStyle}>{exp.date}</td>
                   <td style={cellStyle}>{exp.category}</td>
                   <td style={cellStyle}>{exp.description}</td>
@@ -249,9 +250,9 @@ function ExpensePdfContent({ data }: { data: PdfData }) {
         style={{
           marginTop: "40px",
           paddingTop: "20px",
-          borderTop: "1px solid #ddd",
+          borderTop: `1px solid ${BRAND.border}`,
           fontSize: "11px",
-          color: "#888",
+          color: BRAND.inkSubtle,
           textAlign: "center",
         }}
       >
@@ -297,7 +298,7 @@ export function usePdfRenderer() {
     try {
       const canvas = await html2canvas(container, {
         scale: 2,
-        backgroundColor: "#ffffff",
+        backgroundColor: BRAND.white,
         logging: false,
         allowTaint: true,
         foreignObjectRendering: false,

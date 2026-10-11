@@ -1,5 +1,6 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 
 export function getWorkLogApprovedEmailTemplate(
@@ -145,7 +146,7 @@ export function getTicketCreatedEmailTemplate(
   creatorName: string,
   ticketId: number
 ): string {
-  const priorityColor = priority === "URGENT" ? "#dc2626" : priority === "HIGH" ? "#ea580c" : priority === "MEDIUM" ? "#ca8a04" : "#65a30d";
+  const priorityColor = priority === "URGENT" ? BRAND.danger : priority === "HIGH" ? BRAND.warning : priority === "MEDIUM" ? BRAND.warning : BRAND.success;
   const content = `
     <h2 class="email-title">🎫 New Support Ticket Assigned</h2>
     <p class="email-text">
@@ -194,8 +195,8 @@ export function getTicketReplyEmailTemplate(
         <span class="credential-value">${escapeHtml(authorName)}</span>
       </div>
     </div>
-    <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin: 16px 0;">
-      <p style="color: #475569; font-size: 14px; margin: 0; font-style: italic;">"${escapeHtml(messagePreview.slice(0, 200))}${messagePreview.length > 200 ? "..." : ""}"</p>
+    <div style="background: ${BRAND.sunken}; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="color: ${BRAND.inkMuted}; font-size: 14px; margin: 0; font-style: italic;">"${escapeHtml(messagePreview.slice(0, 200))}${messagePreview.length > 200 ? "..." : ""}"</p>
     </div>
     <div style="text-align: center;">
       <a href="${baseUrl}/support/${ticketId}" class="email-button">View Full Conversation</a>
@@ -211,7 +212,7 @@ export function getTicketStatusEmailTemplate(
   newStatus: string,
   updatedBy: string
 ): string {
-  const statusColor = newStatus === "RESOLVED" || newStatus === "CLOSED" ? "#16a34a" : newStatus === "IN_PROGRESS" ? "#2563eb" : "#ca8a04";
+  const statusColor = newStatus === "RESOLVED" || newStatus === "CLOSED" ? BRAND.success : newStatus === "IN_PROGRESS" ? BRAND.info : BRAND.warning;
   const content = `
     <h2 class="email-title">🔄 Ticket Status Updated</h2>
     <p class="email-text">
@@ -293,7 +294,7 @@ export function getDealStageChangeEmailTemplate(
   changedBy: string,
   dealId: number
 ): string {
-  const stageColor = newStage === "WON" ? "#16a34a" : newStage === "LOST" ? "#dc2626" : "#2563eb";
+  const stageColor = newStage === "WON" ? BRAND.success : newStage === "LOST" ? BRAND.danger : BRAND.info;
   const content = `
     <h2 class="email-title">${newStage === "WON" ? "🎉" : newStage === "LOST" ? "😞" : "📊"} Deal Stage Updated</h2>
     <p class="email-text">
@@ -333,7 +334,7 @@ export function getLeadAssignedEmailTemplate(
   priority: string,
   assignedBy: string
 ): string {
-  const priorityColor = priority === "HOT" ? "#dc2626" : priority === "WARM" ? "#ea580c" : "#65a30d";
+  const priorityColor = priority === "HOT" ? BRAND.danger : priority === "WARM" ? BRAND.warning : BRAND.success;
   const content = `
     <h2 class="email-title">🎯 New Lead Assigned</h2>
     <p class="email-text">
@@ -437,7 +438,7 @@ export function getHelpdeskTicketEmailTemplate(
   priority: string,
   creatorName: string
 ): string {
-  const priorityColor = priority === "URGENT" ? "#dc2626" : priority === "HIGH" ? "#ea580c" : priority === "MEDIUM" ? "#ca8a04" : "#65a30d";
+  const priorityColor = priority === "URGENT" ? BRAND.danger : priority === "HIGH" ? BRAND.warning : priority === "MEDIUM" ? BRAND.warning : BRAND.success;
   const content = `
     <h2 class="email-title">🎫 New Helpdesk Ticket</h2>
     <p class="email-text">
@@ -565,10 +566,10 @@ const RECOGNITION_CATEGORY_LABEL: Record<string, string> = {
 
 function avatarHtml(name: string, imageUrl: string | null): string {
   if (imageUrl) {
-    return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" width="96" height="96" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0;display:block;margin:0 auto 12px;" />`;
+    return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" width="96" height="96" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid ${BRAND.border};display:block;margin:0 auto 12px;" />`;
   }
   const initials = name.split(" ").slice(0, 2).map((p) => p[0] ?? "").join("").toUpperCase() || "?";
-  return `<div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#0f2b7f,#1e40af);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px;font-weight:700;color:#fff;line-height:96px;text-align:center;">${escapeHtml(initials)}</div>`;
+  return `<div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,${BRAND.ink},${BRAND.inkDeep});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px;font-weight:700;color:${BRAND.white};line-height:96px;text-align:center;">${escapeHtml(initials)}</div>`;
 }
 
 export function getRecognitionRecipientEmailTemplate(
@@ -582,15 +583,15 @@ export function getRecognitionRecipientEmailTemplate(
   const content = `
     <div style="text-align:center;margin-bottom:24px;">
       ${avatarHtml(senderName, senderImageUrl)}
-      <p style="margin:0;font-size:13px;color:#64748b;">From <strong>${escapeHtml(senderName)}</strong></p>
+      <p style="margin:0;font-size:13px;color:${BRAND.inkMuted};">From <strong>${escapeHtml(senderName)}</strong></p>
     </div>
     <h2 class="email-title" style="text-align:center;">You've been recognised! 🎉</h2>
     <p class="email-text" style="text-align:center;">
       Hi <strong>${escapeHtml(recipientName)}</strong>, ${escapeHtml(senderName)} just gave you a recognition.
     </p>
     <div class="credential-box" style="text-align:center;">
-      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f2b7f;">${escapeHtml(categoryLabel)}</p>
-      <p style="margin:0;font-size:15px;color:#334155;font-style:italic;">"${escapeHtml(message)}"</p>
+      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:${BRAND.ink};">${escapeHtml(categoryLabel)}</p>
+      <p style="margin:0;font-size:15px;color:${BRAND.inkMuted};font-style:italic;">"${escapeHtml(message)}"</p>
     </div>
     <div style="text-align:center;">
       <a href="${baseUrl}/hr/recognition" class="email-button">View Recognition Wall</a>
@@ -611,15 +612,15 @@ export function getRecognitionShoutoutEmailTemplate(
   const content = `
     <div style="text-align:center;margin-bottom:24px;">
       ${avatarHtml(recipientName, recipientImageUrl)}
-      <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">${escapeHtml(recipientName)}</p>
+      <p style="margin:0;font-size:20px;font-weight:700;color:${BRAND.ink};">${escapeHtml(recipientName)}</p>
     </div>
     <h2 class="email-title" style="text-align:center;">Team Shoutout 🎉</h2>
     <p class="email-text" style="text-align:center;">
       Hi <strong>${escapeHtml(viewerName)}</strong>, ${escapeHtml(senderName)} just recognised <strong>${escapeHtml(recipientName)}</strong>!
     </p>
     <div class="credential-box" style="text-align:center;">
-      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f2b7f;">${escapeHtml(categoryLabel)}</p>
-      <p style="margin:0;font-size:15px;color:#334155;font-style:italic;">"${escapeHtml(message)}"</p>
+      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:${BRAND.ink};">${escapeHtml(categoryLabel)}</p>
+      <p style="margin:0;font-size:15px;color:${BRAND.inkMuted};font-style:italic;">"${escapeHtml(message)}"</p>
     </div>
     <div style="text-align:center;">
       <a href="${baseUrl}/hr/recognition" class="email-button">See Recognition Wall</a>

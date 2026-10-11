@@ -1,5 +1,6 @@
 import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getExpenseSubmittedEmailTemplate(
   approverName: string,
@@ -27,17 +28,17 @@ export function getExpenseSubmittedEmailTemplate(
     <div class="credential-box">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Category:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${sCategory}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Category:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 600;">${sCategory}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Amount:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sDescription ? `
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Description:</td>
-          <td style="padding: 8px 0; color: #475569;">${sDescription}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Description:</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted};">${sDescription}</td>
         </tr>
         ` : ''}
       </table>
@@ -51,7 +52,7 @@ export function getExpenseSubmittedEmailTemplate(
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       Please review and approve or reject this expense claim at your earliest convenience.
     </p>
   `;
@@ -80,29 +81,29 @@ export function getExpenseApprovedEmailTemplate(
     </p>
 
     <p class="email-text">
-      Great news! Your expense claim has been <strong style="color: #16a34a;">approved</strong> by <strong>${sApprover}</strong>.
+      Great news! Your expense claim has been <strong style="color: ${BRAND.success};">approved</strong> by <strong>${sApprover}</strong>.
     </p>
 
-    <div class="credential-box" style="border-left-color: #16a34a;">
+    <div class="credential-box" style="border-left-color: ${BRAND.success};">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Category:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${sCategory}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Category:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 600;">${sCategory}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #16a34a; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Amount:</td>
+          <td style="padding: 8px 0; color: ${BRAND.success}; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Status:</td>
-          <td style="padding: 8px 0;"><span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">APPROVED</span></td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Status:</td>
+          <td style="padding: 8px 0;"><span style="background: ${BRAND.successSoft}; color: ${BRAND.success}; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">APPROVED</span></td>
         </tr>
       </table>
     </div>
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       The reimbursement will be processed as per company policy. If you have any questions, please contact HR.
     </p>
   `;
@@ -133,34 +134,34 @@ export function getExpenseRejectedEmailTemplate(
     </p>
 
     <p class="email-text">
-      Unfortunately, your expense claim has been <strong style="color: #dc2626;">rejected</strong> by <strong>${sApprover}</strong>.
+      Unfortunately, your expense claim has been <strong style="color: ${BRAND.danger};">rejected</strong> by <strong>${sApprover}</strong>.
     </p>
 
-    <div class="credential-box" style="border-left-color: #dc2626;">
+    <div class="credential-box" style="border-left-color: ${BRAND.danger};">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Category:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${sCategory}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Category:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 600;">${sCategory}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount:</td>
-          <td style="padding: 8px 0; color: #dc2626; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Amount:</td>
+          <td style="padding: 8px 0; color: ${BRAND.danger}; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Status:</td>
-          <td style="padding: 8px 0;"><span style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">REJECTED</span></td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Status:</td>
+          <td style="padding: 8px 0;"><span style="background: ${BRAND.dangerSoft}; color: ${BRAND.danger}; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">REJECTED</span></td>
         </tr>
       </table>
     </div>
 
-    <div class="credential-box" style="margin-top: 16px; border-left-color: #f59e0b;">
-      <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px;">Reason for rejection:</p>
-      <p style="margin: 0; color: #0f172a; font-style: italic;">"${sReason}"</p>
+    <div class="credential-box" style="margin-top: 16px; border-left-color: ${BRAND.warning};">
+      <p style="margin: 0 0 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Reason for rejection:</p>
+      <p style="margin: 0; color: ${BRAND.ink}; font-style: italic;">"${sReason}"</p>
     </div>
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       If you believe this is an error or have questions, please contact your manager or HR.
     </p>
   `;
@@ -189,35 +190,35 @@ export function getExpensePaidEmailTemplate(
     </p>
 
     <p class="email-text">
-      Your expense claim has been <strong style="color: #2563eb;">reimbursed</strong>! The amount has been credited to your account.
+      Your expense claim has been <strong style="color: ${BRAND.info};">reimbursed</strong>! The amount has been credited to your account.
     </p>
 
-    <div class="credential-box" style="border-left-color: #2563eb;">
+    <div class="credential-box" style="border-left-color: ${BRAND.info};">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Category:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${sCategory}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Category:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 600;">${sCategory}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount Reimbursed:</td>
-          <td style="padding: 8px 0; color: #2563eb; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Amount Reimbursed:</td>
+          <td style="padding: 8px 0; color: ${BRAND.info}; font-weight: 700; font-size: 18px;">${CURRENCY_SYMBOL}${sAmount}</td>
         </tr>
         ${sRef ? `
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Transaction Ref:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-family: monospace;">${sRef}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Transaction Ref:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-family: monospace;">${sRef}</td>
         </tr>
         ` : ''}
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Status:</td>
-          <td style="padding: 8px 0;"><span style="background: #dbeafe; color: #2563eb; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">PAID</span></td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Status:</td>
+          <td style="padding: 8px 0;"><span style="background: ${BRAND.infoSoft}; color: ${BRAND.info}; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">PAID</span></td>
         </tr>
       </table>
     </div>
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       Please check your bank account for the credited amount. Contact HR if you don't receive the payment within 2-3 business days.
     </p>
   `;

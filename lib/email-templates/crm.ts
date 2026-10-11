@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getLeadWelcomeEmail(
   leadName: string,
@@ -16,7 +17,7 @@ export function getLeadWelcomeEmail(
     </p>
     <p class="email-text">
       In the meantime, feel free to reach us at
-      <a href="mailto:${escapeHtml(contactEmail)}" style="color:#bd882c;">${escapeHtml(contactEmail)}</a>.
+      <a href="mailto:${escapeHtml(contactEmail)}" style="color:${BRAND.goldDark};">${escapeHtml(contactEmail)}</a>.
     </p>
     ${websiteUrl ? `<div style="text-align:center;margin:32px 0;"><a href="${escapeHtml(websiteUrl)}" class="email-button">Visit Our Website</a></div>` : ""}
   `;
@@ -88,13 +89,13 @@ export function getSlaBreachAlertEmail(
   const sRep = escapeHtml(repName);
   const sLead = escapeHtml(leadName);
   const content = `
-    <h2 class="email-title" style="color:#ef4444;">⚠️ SLA Breach Alert</h2>
+    <h2 class="email-title" style="color:${BRAND.danger};">⚠️ SLA Breach Alert</h2>
     <p class="email-text">Hi <strong>${sRep}</strong>,</p>
     <p class="email-text">
       Lead <strong>${sLead}</strong> has breached its SLA by <strong>${hoursOverdue} hour${hoursOverdue !== 1 ? "s" : ""}</strong>. Immediate action is required.
     </p>
     <div style="text-align: center; margin: 32px 0;">
-      <a href="${leadUrl}" class="email-button" style="background:#ef4444;">View Lead Now</a>
+      <a href="${leadUrl}" class="email-button" style="background:${BRAND.danger};">View Lead Now</a>
     </div>
   `;
   return getEmailTemplate({

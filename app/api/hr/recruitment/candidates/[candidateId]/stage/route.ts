@@ -13,6 +13,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import type { NextRequest } from "next/server";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const CANDIDATE_STAGES = ["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"] as const;
 type CandidateStage = (typeof CANDIDATE_STAGES)[number];
@@ -208,13 +209,13 @@ export async function PATCH(
         subject: `Candidate Hired: ${candidateName}`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-            <h2 style="color:#0f2b7f">Candidate Hired</h2>
+            <h2 style="color:${BRAND.ink}">Candidate Hired</h2>
             <p><strong>${candidateName}</strong> has been marked as <strong>Hired</strong>.</p>
             <p>Please proceed with initiating the employee onboarding process in the HR module.</p>
             <div style="text-align:center;margin:24px 0">
-              <a href="/hr/recruitment/candidates/${candidateId}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a>
+              <a href="/hr/recruitment/candidates/${candidateId}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a>
             </div>
-            <p style="color:#666;font-size:12px">Recruitment Automation · Miyo Global</p>
+            <p style="color:${BRAND.inkMuted};font-size:12px">Recruitment Automation · Miyo Global</p>
           </div>
         `,
       }).catch((error) =>

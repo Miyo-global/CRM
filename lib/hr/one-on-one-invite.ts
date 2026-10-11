@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email/sender";
 import { logger } from "@/lib/logger";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export interface AdditionalAttendee {
   name: string;
@@ -93,14 +94,14 @@ export async function sendOneOnOneInvite(p: OneOnOneInviteParams): Promise<void>
   );
 
   const html = `
-    <div style="font-family:system-ui,sans-serif;font-size:14px;color:#111">
+    <div style="font-family:system-ui,sans-serif;font-size:14px;color:${BRAND.ink}">
       <p>Hi ${p.attendeeName},</p>
       <p>${p.organizerName} has scheduled a 1-on-1 with you.</p>
       <p style="margin:8px 0"><strong>When:</strong> ${when} · ${p.durationMinutes} min</p>
       ${linkRow}
       ${agendaRow}
       ${participantsRow}
-      <p style="margin-top:12px;color:#555">A calendar invite (.ics) is attached — open it to add this to Google Calendar, Outlook, or Apple Calendar.</p>
+      <p style="margin-top:12px;color:${BRAND.inkMuted}">A calendar invite (.ics) is attached — open it to add this to Google Calendar, Outlook, or Apple Calendar.</p>
     </div>`;
 
   try {
