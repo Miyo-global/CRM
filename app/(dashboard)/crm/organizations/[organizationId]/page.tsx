@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useCallback, type ElementType } from "react";
+import { useState, use, useCallback } from "react";
 import Link from "next/link";
 import {
   Building2, Globe, Users, Link2, Mail, Phone,
@@ -26,33 +26,26 @@ import { AccountTimeline } from "@/features/crm/organizations/detail/account-tim
 import { AccountNotes } from "@/features/crm/organizations/detail/account-notes";
 import { LinkParentDialog } from "@/features/crm/organizations/detail/link-parent-dialog";
 import { formatCurrency } from "@/lib/format-utils";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import type { Tone } from "@/lib/design/tones";
 
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  icon: ElementType;
-  color?: "gold" | "blue" | "green" | "red";
-}
+const LEAD_STATUS_TONE: Record<string, Tone> = { WON: "success", LOST: "danger" };
 
-function StatCard({ label, value, icon: Icon, color = "gold" }: StatCardProps) {
-  const colorMap = {
-    gold: "text-brand-text bg-brand-soft",
-    blue: "text-info-strong bg-info-soft",
-    green: "text-success-strong bg-success-soft",
-    red: "text-danger-strong bg-danger-soft",
-  };
+function TabCard({ icon, title, children, flush }: { icon: IconChipProps["icon"]; title: React.ReactNode; children: React.ReactNode; flush?: boolean }) {
   return (
-    <Card className="shadow-sm">
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", colorMap[color])}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground leading-none">{label}</p>
-          <p className="text-lg font-semibold leading-tight mt-0.5">{value}</p>
-        </div>
-      </CardContent>
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <IconChip icon={icon} tone="neutral" size="sm" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className={flush ? "p-0" : "p-5"}>{children}</CardContent>
     </Card>
   );
 }
@@ -78,12 +71,12 @@ export default function OrganizationDetailPage({
   if (orgLoading) {
     return (
       <PageWrapper title="Organization" subtitle="Loading...">
-        <div className="space-y-4">
-          <Skeleton className="h-24 w-full" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
+        <div className="space-y-6">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-64 w-full rounded-lg" />
           </div>
-          <Skeleton className="h-64 w-full" />
         </div>
       </PageWrapper>
     );
@@ -92,140 +85,118 @@ export default function OrganizationDetailPage({
   if (!org) {
     return (
       <PageWrapper title="Organization" subtitle="Not found">
-        <div className="text-center py-12 text-muted-foreground">
-          <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Organization not found.</p>
-          <Link href="/crm/organizations">
-            <Button variant="outline" size="sm" className="mt-4">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Back to Organizations
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          icon={Building2}
+          title="Organization not found."
+          action={{ label: "Back to Organizations", href: "/crm/organizations" }}
+        />
       </PageWrapper>
     );
   }
 
   const computedScore = rollup ? computeHealthScore(rollup) : null;
   const displayScore = org.healthScore ?? computedScore;
+  const rollupValue = (v: React.ReactNode) => (rollupLoading ? <Skeleton className="h-7 w-12" /> : v);
 
   return (
     <PageWrapper
       title={org.name}
-      subtitle={org.industry ?? org.domain ?? "Organization"}
-      badge={<AccountHealthBadge healthScore={displayScore} />}
+      subtitle={
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {org.industry ?? org.domain ?? "Organization"}
+          <AccountHealthBadge healthScore={displayScore} />
+        </span>
+      }
       actions={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={handleOpenParentDialog}
-          >
-            <GitBranch className="h-3.5 w-3.5" />
+        <>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/crm/organizations">
+              <ChevronLeft className="size-4" />
+              Back
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleOpenParentDialog}>
+            <GitBranch className="size-4" />
             {org.parentId ? "Change Parent" : "Link Parent"}
           </Button>
-          <Link href="/crm/organizations">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Back
-            </Button>
-          </Link>
-        </div>
+        </>
       }
     >
       <div className="space-y-6">
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-4 items-start">
-              <div className="h-12 w-12 rounded-xl bg-brand-soft flex items-center justify-center text-xl font-bold text-brand-text shrink-0">
-                {org.name[0]?.toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0 space-y-1.5">
-                <div className="flex flex-wrap gap-2 items-center">
-                  <h2 className="text-base font-semibold">{org.name}</h2>
-                  {org.size && <Badge variant="secondary" className="text-xs">{org.size} employees</Badge>}
-                  {org.industry && <Badge variant="outline" className="text-xs">{org.industry}</Badge>}
+        <StatsStrip
+          items={[
+            { label: "Contacts", value: rollupValue(rollup?.totalContacts ?? 0), icon: UserCircle, tone: "info" },
+            { label: "Open Deals", value: rollupValue(rollup?.openDeals ?? 0), icon: TrendingUp, tone: "brand" },
+            { label: "Total Deal Value", value: rollupValue(rollup ? formatCurrency(rollup.totalDealValue) : ""), icon: BarChart2, tone: "success" },
+            { label: "Related Leads", value: rollupValue(rollup?.totalLeads ?? 0), icon: Users, tone: "info" },
+          ]}
+        />
+
+        <DetailLayout
+          rail={
+            <Card>
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-xl font-bold text-brand-soft-foreground">
+                    {org.name[0]?.toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="truncate text-base font-semibold">{org.name}</h2>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {org.size && <Badge variant="secondary" className="tabular-nums">{org.size} employees</Badge>}
+                      {org.industry && <Badge variant="outline">{org.industry}</Badge>}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  {org.domain && (
-                    <span className="flex items-center gap-1">
-                      <Globe className="h-3 w-3" />{org.domain}
-                    </span>
-                  )}
-                  {org.website && (
-                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-text">
-                      <Link2 className="h-3 w-3" />Website
-                    </a>
-                  )}
-                  {org.linkedinUrl && (
-                    <a href={org.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-text">
-                      <Building2 className="h-3 w-3" />LinkedIn
-                    </a>
-                  )}
-                </div>
+                <PropertyList
+                  items={[
+                    { label: "Domain", value: org.domain ? <span className="inline-flex items-center gap-1.5"><Globe className="size-3.5 text-muted-foreground" aria-hidden="true" />{org.domain}</span> : null },
+                    {
+                      label: "Website",
+                      value: org.website ? (
+                        <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-text hover:underline">
+                          <Link2 className="size-3.5" aria-hidden="true" />Website
+                        </a>
+                      ) : null,
+                    },
+                    {
+                      label: "LinkedIn",
+                      value: org.linkedinUrl ? (
+                        <a href={org.linkedinUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-brand-text hover:underline">
+                          <Building2 className="size-3.5" aria-hidden="true" />LinkedIn
+                        </a>
+                      ) : null,
+                    },
+                  ]}
+                />
                 {org.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{org.description}</p>
+                  <p className="border-t pt-3 text-sm text-muted-foreground">{org.description}</p>
                 )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard
-            label="Contacts"
-            value={rollupLoading ? "..." : (rollup?.totalContacts ?? 0)}
-            icon={UserCircle}
-            color="blue"
-          />
-          <StatCard
-            label="Open Deals"
-            value={rollupLoading ? "..." : (rollup?.openDeals ?? 0)}
-            icon={TrendingUp}
-            color="gold"
-          />
-          <StatCard
-            label="Total Deal Value"
-            value={rollupLoading ? "..." : (rollup ? formatCurrency(rollup.totalDealValue) : "")}
-            icon={BarChart2}
-            color="green"
-          />
-          <StatCard
-            label="Related Leads"
-            value={rollupLoading ? "..." : (rollup?.totalLeads ?? 0)}
-            icon={Users}
-            color="blue"
-          />
-        </div>
-
+              </CardContent>
+            </Card>
+          }
+          main={
         <Tabs defaultValue="timeline" className="space-y-4">
-          <TabsList className="h-8 text-xs">
-            <TabsTrigger value="timeline" className="text-xs gap-1.5">
-              <Clock className="h-3.5 w-3.5" />Timeline
+          <TabsList variant="underline" className="w-full justify-start overflow-x-auto">
+            <TabsTrigger value="timeline" className="gap-1.5">
+              <Clock className="size-3.5" />Timeline
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="text-xs gap-1.5">
-              <UserCircle className="h-3.5 w-3.5" />UserCircles
+            <TabsTrigger value="contacts" className="gap-1.5">
+              <UserCircle className="size-3.5" />Contacts
             </TabsTrigger>
-            <TabsTrigger value="leads" className="text-xs gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5" />Related Leads
+            <TabsTrigger value="leads" className="gap-1.5">
+              <TrendingUp className="size-3.5" />Related Leads
             </TabsTrigger>
-            <TabsTrigger value="hierarchy" className="text-xs gap-1.5">
-              <GitBranch className="h-3.5 w-3.5" />Hierarchy
+            <TabsTrigger value="hierarchy" className="gap-1.5">
+              <GitBranch className="size-3.5" />Hierarchy
             </TabsTrigger>
-            <TabsTrigger value="notes" className="text-xs gap-1.5">
-              <FileText className="h-3.5 w-3.5" />Notes
+            <TabsTrigger value="notes" className="gap-1.5">
+              <FileText className="size-3.5" />Notes
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="timeline">
-            <Card className="shadow-sm">
-              <CardHeader className="px-4 py-3 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  Activity Timeline
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
+            <TabCard icon={Clock} title="Activity Timeline">
                 {timelineLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
@@ -233,115 +204,79 @@ export default function OrganizationDetailPage({
                 ) : (
                   <AccountTimeline events={timeline ?? []} />
                 )}
-              </CardContent>
-            </Card>
+            </TabCard>
           </TabsContent>
 
           <TabsContent value="contacts">
-            <Card className="shadow-sm">
-              <CardHeader className="px-4 py-3 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <UserCircle className="h-4 w-4 text-muted-foreground" />
-                  UserCircles ({org.contacts?.length ?? 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
+            <TabCard icon={UserCircle} title={<>Contacts <span className="tabular-nums text-muted-foreground">({org.contacts?.length ?? 0})</span></>} flush>
                 {(org.contacts?.length ?? 0) === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <UserCircle className="h-7 w-7 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No contacts linked to this organization</p>
-                  </div>
+                  <EmptyState compact icon={UserCircle} title="No contacts linked to this organization" className="border-0" />
                 ) : (
-                  <ul className="divide-y divide-border/60">
+                  <ul className="divide-y divide-border">
                     {org.contacts?.map((contact) => (
-                      <li key={contact.id} className="px-4 py-3 flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold shrink-0">
+                      <li key={contact.id} className="flex items-center gap-3 px-5 py-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-neutral-soft text-xs font-semibold text-neutral-strong">
                           {contact.name[0]?.toUpperCase()}
-                        </div>
+                        </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">{contact.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="truncate text-sm font-medium">{contact.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">
                             {[contact.title, contact.department].filter(Boolean).join(" · ")}
                           </p>
                         </div>
-                        <div className="flex gap-2 shrink-0">
+                        <div className="flex shrink-0 gap-1">
                           {contact.email && (
-                            <a href={`mailto:${contact.email}`} className="text-muted-foreground hover:text-brand-text">
-                              <Mail className="h-3.5 w-3.5" />
-                            </a>
+                            <Button variant="ghost" size="icon-sm" asChild>
+                              <a href={`mailto:${contact.email}`} aria-label={`Email ${contact.name}`}>
+                                <Mail className="size-3.5" />
+                              </a>
+                            </Button>
                           )}
                           {contact.phone && (
-                            <a href={`tel:${contact.phone}`} className="text-muted-foreground hover:text-brand-text">
-                              <Phone className="h-3.5 w-3.5" />
-                            </a>
+                            <Button variant="ghost" size="icon-sm" asChild>
+                              <a href={`tel:${contact.phone}`} aria-label={`Call ${contact.name}`}>
+                                <Phone className="size-3.5" />
+                              </a>
+                            </Button>
                           )}
                         </div>
                       </li>
                     ))}
                   </ul>
                 )}
-              </CardContent>
-            </Card>
+            </TabCard>
           </TabsContent>
 
           <TabsContent value="leads">
-            <Card className="shadow-sm">
-              <CardHeader className="px-4 py-3 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  Related Leads ({leadsLoading ? "..." : (relatedLeads?.length ?? 0)})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
+            <TabCard icon={TrendingUp} title={<>Related Leads <span className="tabular-nums text-muted-foreground">({leadsLoading ? "..." : (relatedLeads?.length ?? 0)})</span></>} flush>
                 {leadsLoading ? (
-                  <div className="p-4 space-y-2">
+                  <div className="space-y-2 p-5">
                     {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
                   </div>
                 ) : (relatedLeads?.length ?? 0) === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <TrendingUp className="h-7 w-7 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No leads found for this organization</p>
-                  </div>
+                  <EmptyState compact icon={TrendingUp} title="No leads found for this organization" className="border-0" />
                 ) : (
-                  <ul className="divide-y divide-border/60">
+                  <ul className="divide-y divide-border">
                     {relatedLeads?.map((lead) => (
-                      <li key={lead.id} className="px-4 py-3 flex items-center gap-3">
+                      <li key={lead.id} className="flex items-center gap-3 px-5 py-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">{lead.name ?? "Unnamed Lead"}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="truncate text-sm font-medium">{lead.name ?? "Unnamed Lead"}</p>
+                          <p className="truncate text-xs text-muted-foreground">
                             {lead.email ?? lead.phone ?? lead.company ?? "No contact info"}
                           </p>
                         </div>
-                        <div className="flex gap-1.5 shrink-0">
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "text-2xs",
-                              lead.status === "WON" ? "bg-success-soft text-success-strong" :
-                                lead.status === "LOST" ? "bg-danger-soft text-danger-strong" :
-                                  "bg-brand-soft text-brand-text",
-                            )}
-                          >
-                            {lead.status}
-                          </Badge>
-                        </div>
+                        <StatusPill tone={LEAD_STATUS_TONE[lead.status ?? ""] ?? "brand"} dot>
+                          {lead.status}
+                        </StatusPill>
                       </li>
                     ))}
                   </ul>
                 )}
-              </CardContent>
-            </Card>
+            </TabCard>
           </TabsContent>
 
           <TabsContent value="hierarchy">
-            <Card className="shadow-sm">
-              <CardHeader className="px-4 py-3 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <GitBranch className="h-4 w-4 text-muted-foreground" />
-                  Organizational Hierarchy
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
+            <TabCard icon={GitBranch} title="Organizational Hierarchy">
                 {hierarchyLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => <Skeleton key={i} className="h-9 w-full" />)}
@@ -353,29 +288,19 @@ export default function OrganizationDetailPage({
                     ancestors={[]}
                   />
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <GitBranch className="h-7 w-7 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No hierarchy data available</p>
-                  </div>
+                  <EmptyState compact icon={GitBranch} title="No hierarchy data available" className="border-0" />
                 )}
-              </CardContent>
-            </Card>
+            </TabCard>
           </TabsContent>
 
           <TabsContent value="notes">
-            <Card className="shadow-sm">
-              <CardHeader className="px-4 py-3 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  Account Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
+            <TabCard icon={FileText} title="Account Notes">
                 <AccountNotes organizationId={id} initialNotes={org.notes} />
-              </CardContent>
-            </Card>
+            </TabCard>
           </TabsContent>
         </Tabs>
+          }
+        />
       </div>
 
       <LinkParentDialog

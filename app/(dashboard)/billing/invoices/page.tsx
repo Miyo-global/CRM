@@ -11,7 +11,7 @@ import {
   useCreateInvoice,
 } from "@/lib/api/hooks/invoice";
 import { format } from "date-fns";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Plus,
@@ -20,14 +20,17 @@ import {
   Check,
   Clock,
   Ban,
-  Loader2,
   MoreHorizontal,
   Trash2,
   IndianRupee,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusPill } from "@/components/ui/status-pill";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { INVOICE_STATUS } from "../invoice-status";
 import {
   TableBody,
   TableCell,
@@ -66,17 +69,6 @@ import type { Invoice } from "@/types/invoice";
 
 const formatCurrency = (amount: number | string) => formatCurrencyFull(amount);
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof FileText }
-> = {
-  DRAFT: { label: "Draft", variant: "secondary", icon: FileText },
-  SENT: { label: "Sent", variant: "default", icon: Send },
-  PAID: { label: "Paid", variant: "default", icon: Check },
-  OVERDUE: { label: "Overdue", variant: "destructive", icon: Clock },
-  CANCELLED: { label: "Cancelled", variant: "outline", icon: Ban },
-};
-
 export default function InvoicesPage() {
   return (
     <DashboardGate allowedRoles={["CEO", "HR"]}>
@@ -91,6 +83,7 @@ function InvoicesContent() {
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const statusFilter = searchParams.get("status") || "all";
 
@@ -103,7 +96,7 @@ function InvoicesContent() {
     });
   }, [searchParams, router, pathname]);
 
-  const { data: invoicesData, isLoading } = useInvoices(
+  const { data: invoicesData, isLoading, error, refetch } = useInvoices(
     statusFilter !== "all" ? { status: statusFilter as InvoiceStatus } : undefined
   );
   const { data: stats } = useInvoiceStats();
@@ -130,7 +123,7 @@ function InvoicesContent() {
 
   const filtersBar = (
     <Select value={statusFilter} onValueChange={setStatusFilter}>
-      <SelectTrigger className="w-[160px]">
+      <SelectTrigger size="sm" className="w-40" aria-label="Filter status">
         <SelectValue placeholder="Filter status" />
       </SelectTrigger>
       <SelectContent>
@@ -149,64 +142,33 @@ function InvoicesContent() {
       title="Invoices"
       subtitle="Manage and track all invoices"
       actions={
-        <Button onClick={handleOpenCreate} className="gap-2 bg-primary hover:bg-brand-soft text-primary-foreground">
-          <Plus className="h-4 w-4" /> New Invoice
+        <Button size="sm" onClick={handleOpenCreate}>
+          <Plus aria-hidden="true" /> New Invoice
         </Button>
       }
       filters={filtersBar}
     >
       <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-            <IndianRupee className="h-4 w-4 text-warning-strong" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats?.totalOutstanding ?? 0)}</div>
-            <p className="text-xs text-muted-foreground">{(stats?.sent ?? 0) + (stats?.overdue ?? 0)} invoices</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Paid</CardTitle>
-            <Check className="h-4 w-4 text-success-strong" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats?.totalPaid ?? 0)}</div>
-            <p className="text-xs text-muted-foreground">{stats?.paid ?? 0} invoices</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <Clock className="h-4 w-4 text-danger-strong" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-danger-strong">{stats?.overdue ?? 0}</div>
-            <p className="text-xs text-muted-foreground">Need attention</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.draft ?? 0}</div>
-            <p className="text-xs text-muted-foreground">Ready to send</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatsStrip
+        items={[
+          { label: "Outstanding", value: formatCurrency(stats?.totalOutstanding ?? 0), hint: `${(stats?.sent ?? 0) + (stats?.overdue ?? 0)} invoices`, icon: IndianRupee, tone: "warning" },
+          { label: "Paid", value: formatCurrency(stats?.totalPaid ?? 0), hint: `${stats?.paid ?? 0} invoices`, icon: Check, tone: "success" },
+          { label: "Overdue", value: stats?.overdue ?? 0, hint: "Need attention", icon: Clock, tone: "danger" },
+          { label: "Drafts", value: stats?.draft ?? 0, hint: "Ready to send", icon: FileText },
+        ]}
+      />
 
-      <div className="border border-border rounded-lg overflow-auto h-[calc(100dvh-20rem)] min-h-[320px]">
-        <div className="min-w-[700px]">
+      {error ? (
+        <QueryErrorState error={error} onRetry={() => refetch()} />
+      ) : (
+      <div className="h-[calc(100dvh-20rem)] min-h-80 overflow-auto rounded-lg border border-border bg-card">
+        <div className="min-w-175">
           <table className="w-full caption-bottom text-sm">
-            <TableHeader className="sticky top-0 z-10 bg-card">
+            <TableHeader className="sticky top-0 z-sticky bg-card">
               <TableRow>
                 <TableHead>Invoice #</TableHead>
                 <TableHead>Client</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Created</TableHead>
@@ -215,9 +177,24 @@ function InvoicesContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={7}>
+                      <Skeleton className="h-6 w-full" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : invoices.length === 0 && statusFilter !== "all" ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                  <TableCell colSpan={7}>
+                    <EmptyState
+                      compact
+                      illustration={<EmptySearchIllustration className="h-24 w-24" />}
+                      title="No results for these filters"
+                      description="No invoices match this status."
+                      action={{ label: "Clear filters", onClick: () => setStatusFilter("all") }}
+                      className="border-0 bg-transparent"
+                    />
                   </TableCell>
                 </TableRow>
               ) : invoices.length === 0 ? (
@@ -239,7 +216,7 @@ function InvoicesContent() {
                     key={inv.id}
                     inv={inv}
                     onUpdateStatus={handleUpdateStatus}
-                    onDelete={handleDeleteInvoice}
+                    onDelete={setPendingDeleteId}
                   />
                 ))
               )}
@@ -247,6 +224,17 @@ function InvoicesContent() {
           </table>
         </div>
       </div>
+      )}
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(o) => { if (!o) setPendingDeleteId(null); }}
+        title="Delete invoice"
+        description="This will permanently delete the invoice. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => { if (pendingDeleteId !== null) handleDeleteInvoice(pendingDeleteId); setPendingDeleteId(null); }}
+      />
 
       <CreateInvoiceDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
@@ -261,7 +249,7 @@ interface InvoiceTableRowProps {
 }
 
 function InvoiceTableRow({ inv, onUpdateStatus, onDelete }: InvoiceTableRowProps) {
-  const config = STATUS_CONFIG[inv.status] ?? STATUS_CONFIG.DRAFT;
+  const status = INVOICE_STATUS[inv.status as InvoiceStatus] ?? INVOICE_STATUS.DRAFT;
   const handleMarkSent = useCallback(() => onUpdateStatus(inv.id, "SENT"), [inv.id, onUpdateStatus]);
   const handleMarkPaid = useCallback(() => onUpdateStatus(inv.id, "PAID"), [inv.id, onUpdateStatus]);
   const handleMarkCancelled = useCallback(() => onUpdateStatus(inv.id, "CANCELLED"), [inv.id, onUpdateStatus]);
@@ -269,22 +257,25 @@ function InvoiceTableRow({ inv, onUpdateStatus, onDelete }: InvoiceTableRowProps
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{inv.invoiceNumber}</TableCell>
-      <TableCell>{inv.client?.name ?? ""}</TableCell>
-      <TableCell className="font-semibold">{formatCurrency(inv.total)}</TableCell>
       <TableCell>
-        <Badge variant={config.variant} className="gap-1 text-xs">
-          <config.icon className="h-3 w-3" />
-          {config.label}
-        </Badge>
+        <Link href={`/billing/invoices/${inv.id}`} className="font-mono text-xs font-medium text-foreground hover:underline">
+          {inv.invoiceNumber}
+        </Link>
       </TableCell>
-      <TableCell>{inv.dueDate ? format(new Date(inv.dueDate), "MMM d, yyyy") : ""}</TableCell>
-      <TableCell className="text-muted-foreground text-xs">{inv.createdAt ? format(new Date(inv.createdAt), "MMM d") : ""}</TableCell>
+      <TableCell>{inv.client?.name ?? ""}</TableCell>
+      <TableCell className="text-right font-semibold tabular-nums">{formatCurrency(inv.total)}</TableCell>
+      <TableCell>
+        <StatusPill tone={status.tone} dot>
+          {status.label}
+        </StatusPill>
+      </TableCell>
+      <TableCell className="tabular-nums">{inv.dueDate ? format(new Date(inv.dueDate), "MMM d, yyyy") : ""}</TableCell>
+      <TableCell className="text-xs tabular-nums text-muted-foreground">{inv.createdAt ? format(new Date(inv.createdAt), "MMM d") : ""}</TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="More options">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant="ghost" size="icon-sm" aria-label="More options">
+              <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -293,22 +284,22 @@ function InvoiceTableRow({ inv, onUpdateStatus, onDelete }: InvoiceTableRowProps
             </DropdownMenuItem>
             {inv.status === "DRAFT" && (
               <DropdownMenuItem onClick={handleMarkSent}>
-                <Send className="h-3.5 w-3.5 mr-2" /> Mark as Sent
+                <Send /> Mark as Sent
               </DropdownMenuItem>
             )}
             {(inv.status === "SENT" || inv.status === "OVERDUE") && (
               <DropdownMenuItem onClick={handleMarkPaid}>
-                <Check className="h-3.5 w-3.5 mr-2" /> Mark as Paid
+                <Check /> Mark as Paid
               </DropdownMenuItem>
             )}
             {inv.status !== "PAID" && inv.status !== "CANCELLED" && (
-              <DropdownMenuItem onClick={handleMarkCancelled} className="text-destructive">
-                <Ban className="h-3.5 w-3.5 mr-2" /> Cancel
+              <DropdownMenuItem onClick={handleMarkCancelled}>
+                <Ban /> Cancel
               </DropdownMenuItem>
             )}
             {inv.status !== "PAID" && (
-              <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+              <DropdownMenuItem onClick={handleDelete} variant="destructive">
+                <Trash2 /> Delete
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -349,13 +340,13 @@ function LineItemRow({ item, idx, onUpdate, onRemove, disabled }: LineItemRowPro
   const handleRemove = useCallback(() => onRemove(idx), [idx, onRemove]);
 
   return (
-    <div className="grid grid-cols-12 gap-2 items-center">
-      <Input className="col-span-5 h-9 text-sm" placeholder="Description" value={item.description} onChange={handleDescChange} />
-      <Input className="col-span-2 h-9 text-sm text-right" type="number" placeholder="Qty" value={item.quantity || ""} onChange={handleQtyChange} />
-      <Input className="col-span-2 h-9 text-sm text-right" type="number" placeholder="Rate" value={item.rate || ""} onChange={handleRateChange} />
-      <div className="col-span-2 text-sm font-medium text-right pr-1">{formatCurrency(item.amount)}</div>
-      <Button variant="ghost" size="icon" className="col-span-1 h-8 w-8" onClick={handleRemove} disabled={disabled} aria-label="Remove line item">
-        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+    <div className="grid grid-cols-12 items-center gap-2">
+      <Input className="col-span-12 sm:col-span-5" placeholder="Description" value={item.description} onChange={handleDescChange} />
+      <Input className="col-span-3 text-right tabular-nums sm:col-span-2" type="number" placeholder="Qty" value={item.quantity || ""} onChange={handleQtyChange} />
+      <Input className="col-span-4 text-right tabular-nums sm:col-span-2" type="number" placeholder="Rate" value={item.rate || ""} onChange={handleRateChange} />
+      <div className="col-span-3 pr-1 text-right text-sm font-medium tabular-nums sm:col-span-2">{formatCurrency(item.amount)}</div>
+      <Button variant="ghost" size="icon-sm" className="col-span-2 justify-self-end text-muted-foreground sm:col-span-1" onClick={handleRemove} disabled={disabled} aria-label="Remove line item">
+        <Trash2 />
       </Button>
     </div>
   );
@@ -419,56 +410,56 @@ function CreateInvoiceDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent size="lg" className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Invoice</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label className="text-xs font-medium text-muted-foreground mb-2 block">Line Items</Label>
+            <Label className="mb-2 block text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Line Items</Label>
             <div className="space-y-2">
               {lineItems.map((item, idx) => (
                 <LineItemRow key={item.id} item={item} idx={idx} onUpdate={updateLineItem} onRemove={removeLineItem} disabled={lineItems.length === 1} />
               ))}
               <Button variant="outline" size="sm" onClick={handleAddLineItem}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> Add Item
+                <Plus aria-hidden="true" /> Add Item
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label className="text-xs">Tax Rate (%)</Label>
-              <Input type="number" value={taxRate} onChange={handleTaxRateChange} className="h-9 mt-1" />
+              <Label>Tax Rate (%)</Label>
+              <Input type="number" value={taxRate} onChange={handleTaxRateChange} className="mt-1.5" />
             </div>
             <div>
-              <Label className="text-xs">Discount</Label>
-              <Input type="number" value={discount} onChange={handleDiscountChange} className="h-9 mt-1" />
+              <Label>Discount</Label>
+              <Input type="number" value={discount} onChange={handleDiscountChange} className="mt-1.5" />
             </div>
           </div>
 
           <div>
-            <Label className="text-xs">Due Date</Label>
+            <Label>Due Date</Label>
             <DatePicker value={dueDate} onChange={setDueDate} placeholder="Select due date" />
           </div>
 
           <div>
-            <Label className="text-xs">Notes</Label>
-            <Input placeholder="Payment terms, bank details, etc." value={notes} onChange={handleNotesChange} className="h-9 mt-1" />
+            <Label>Notes</Label>
+            <Input placeholder="Payment terms, bank details, etc." value={notes} onChange={handleNotesChange} className="mt-1.5" />
           </div>
 
-          <div className="border-t pt-3 space-y-1 text-sm">
+          <div className="space-y-1 border-t border-border pt-3 text-sm tabular-nums">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{formatCurrency(taxAmount)}</span></div>
             {discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-danger-strong">-{formatCurrency(discount)}</span></div>}
-            <div className="flex justify-between font-bold text-base pt-1 border-t"><span>Total</span><span>{formatCurrency(total)}</span></div>
+            <div className="flex justify-between border-t border-border pt-1 text-base font-bold"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={createInvoice.isPending} className="bg-primary hover:bg-brand-soft text-primary-foreground">
-              {createInvoice.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <FileText className="h-4 w-4 mr-1" />}
+            <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
+            <Button onClick={handleSubmit} loading={createInvoice.isPending}>
+              {!createInvoice.isPending && <FileText aria-hidden="true" />}
               Create Invoice
             </Button>
           </div>

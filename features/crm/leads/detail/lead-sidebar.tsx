@@ -1,8 +1,7 @@
 "use client";
 
-import { CalendarDays } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { PropertyList } from "@/components/shared/property-list";
 import { formatDisplayDate } from "@/lib/date-utils";
 import { LeadActivityTimeline } from "./lead-activity-timeline";
 
@@ -27,6 +26,8 @@ interface LeadSidebarProps {
   };
   timeline: TimelineItem[] | undefined;
   timelineLoading: boolean;
+  /** Render the activity timeline below the rail cards (default true). */
+  showTimeline?: boolean;
 }
 
 function formatDate(val: Date | string | null | undefined): string {
@@ -38,6 +39,7 @@ export function LeadSidebar({
   lead,
   timeline,
   timelineLoading,
+  showTimeline = true,
 }: LeadSidebarProps) {
   const keyDates = [
     { label: "Created", value: lead.createdAt },
@@ -57,31 +59,21 @@ export function LeadSidebar({
   return (
     <div className="space-y-4">
       {lead.assignedTo && (
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">
-              Assigned To
-            </CardTitle>
+            <CardTitle className="font-sans text-sm font-semibold">Assigned To</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
               <div
-                className={cn(
-                  "h-11 w-11 rounded-full shrink-0",
-                  "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                  "bg-brand-soft flex items-center justify-center",
-                  "text-brand-text font-bold text-base select-none"
-                )}
+                aria-hidden="true"
+                className="flex size-10 shrink-0 select-none items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand-soft-foreground"
               >
                 {avatarInitials}
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-sm truncate">
-                  {lead.assignedTo.name ?? "Unknown"}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {lead.assignedTo.email ?? ""}
-                </p>
+                <p className="truncate text-sm font-semibold">{lead.assignedTo.name ?? "Unknown"}</p>
+                <p className="truncate text-xs text-muted-foreground">{lead.assignedTo.email ?? ""}</p>
               </div>
             </div>
           </CardContent>
@@ -89,44 +81,22 @@ export function LeadSidebar({
       )}
 
       {keyDates.length > 0 && (
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">
-              Key Dates
-            </CardTitle>
+            <CardTitle className="font-sans text-sm font-semibold">Key Dates</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative">
-              <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border/50" />
-              <div className="space-y-3">
-                {keyDates.map((d, idx) => (
-                  <div key={d.label} className="flex items-center gap-3 pl-5 relative">
-                    <div
-                      className={cn(
-                        "absolute left-0 h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center",
-                        idx === 0
-                          ? "border-primary/40 bg-brand-soft"
-                          : "border-border bg-background"
-                      )}
-                    />
-                    <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <div className="flex items-center justify-between w-full gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {d.label}
-                      </span>
-                      <span className="text-xs font-medium tabular-nums">
-                        {formatDate(d.value as Date | string | null)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <PropertyList
+              items={keyDates.map((d) => ({
+                label: d.label,
+                value: <span className="tabular-nums">{formatDate(d.value as Date | string | null)}</span>,
+              }))}
+            />
           </CardContent>
         </Card>
       )}
 
-      <LeadActivityTimeline timeline={timeline} isLoading={timelineLoading} />
+      {showTimeline && <LeadActivityTimeline timeline={timeline} isLoading={timelineLoading} />}
     </div>
   );
 }

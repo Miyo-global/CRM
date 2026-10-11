@@ -92,7 +92,7 @@ export function AIEmailDialog({
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent className="sm:max-w-lg overflow-y-auto">
+      <SheetContent size="md" className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-brand-text" />
@@ -137,7 +137,7 @@ export function AIEmailDialog({
           <Button
             onClick={handleGenerate}
             disabled={generateMutation.isPending}
-            className="w-full bg-primary hover:bg-brand-soft text-primary-foreground"
+            className="w-full"
           >
             {generateMutation.isPending ? (
               <>

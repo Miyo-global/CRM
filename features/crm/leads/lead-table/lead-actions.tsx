@@ -281,8 +281,8 @@ export function BulkActionsBar({
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-background border border-border shadow-lg rounded-lg px-4 py-2.5 flex items-center gap-3 animate-in slide-in-from-bottom-4">
-        <span className="text-sm font-medium">{selectedIds.size} selected</span>
+      <div role="toolbar" aria-label="Bulk actions" className="fixed bottom-4 left-1/2 z-dropdown flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center gap-2 rounded-2xl border border-border bg-popover px-4 py-2 text-popover-foreground shadow-lg animate-in slide-in-from-bottom-4 motion-reduce:animate-none sm:rounded-full">
+        <span className="text-sm font-semibold tabular-nums">{selectedIds.size} selected</span>
         <div className="h-4 w-px bg-border" />
 
         <Select
@@ -335,8 +335,8 @@ export function BulkActionsBar({
           </SelectContent>
         </Select>
 
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleExport}>
-          <Download className="h-3 w-3 mr-1" /> Export
+        <Button variant="outline" size="xs" onClick={handleExport}>
+          <Download /> Export
         </Button>
 
         <div className="flex items-center gap-1.5">
@@ -351,16 +351,15 @@ export function BulkActionsBar({
         {isAdmin && (
           <Button
             variant="destructive"
-            size="sm"
-            className="h-7 text-xs"
+            size="xs"
             onClick={handleOpenDeleteDialog}
           >
-            <Trash2 className="h-3 w-3 mr-1" /> Delete
+            <Trash2 /> Delete
           </Button>
         )}
 
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onClearSelection}>
-          <X className="h-3 w-3" />
+        <Button variant="ghost" size="icon-xs" aria-label="Clear selection" onClick={onClearSelection}>
+          <X />
         </Button>
       </div>
 

@@ -109,7 +109,7 @@ export function LeadExportDialog() {
           <Download className="h-4 w-4 mr-1" /> Export
         </Button>
       </SheetTrigger>
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent size="sm" className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Export Leads to Excel</SheetTitle>
         </SheetHeader>

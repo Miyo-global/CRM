@@ -16,8 +16,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptyMailIllustration } from "@/components/illustrations";
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form";
@@ -74,7 +82,7 @@ function interpolate(text: string, data: Record<string, string>) {
 }
 
 export default function EmailTemplatesPage() {
-  const { data: templates, isLoading } = useEmailTemplates({ limit: 50, offset: 0 });
+  const { data: templates, isLoading, isError, error, refetch } = useEmailTemplates({ limit: 50, offset: 0 });
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [previewId, setPreviewId] = useState<number | null>(null);
@@ -145,12 +153,11 @@ export default function EmailTemplatesPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40" />)}
+      <PageWrapper title="Email Templates" subtitle="Manage reusable email templates with dynamic variables" contentClassName="max-w-5xl">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -159,19 +166,20 @@ export default function EmailTemplatesPage() {
       title="Email Templates"
       subtitle="Manage reusable email templates with dynamic variables"
       actions={
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
-              <Plus className="h-4 w-4 mr-2" />
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetTrigger asChild>
+            <Button>
+              <Plus className="size-4" />
               New Template
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Email Template</DialogTitle>
-            </DialogHeader>
+          </SheetTrigger>
+          <SheetContent size="lg" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Create Email Template</SheetTitle>
+            </SheetHeader>
             <Form {...createForm}>
-              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 <FormField control={createForm.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Template Name</FormLabel>
@@ -201,22 +209,30 @@ export default function EmailTemplatesPage() {
                     ))}
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createTemplate.isPending}>
-                  {createTemplate.isPending ? "Creating..." : "Create Template"}
-                </Button>
+                </div>
+                <SheetFooter>
+                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button type="submit" loading={createTemplate.isPending} disabled={createTemplate.isPending}>
+                    {createTemplate.isPending ? "Creating..." : "Create Template"}
+                  </Button>
+                </SheetFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       }
+      contentClassName="max-w-5xl"
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load email templates" error={error} onRetry={() => refetch()} />
+      ) : (
       <motion.div
         className="space-y-6"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={fadeUp} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {templates && templates.length > 0 ? (
             templates.map(template => (
               <TemplateCard
@@ -229,25 +245,24 @@ export default function EmailTemplatesPage() {
               />
             ))
           ) : (
-            <Card className="col-span-full shadow-sm">
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No email templates</p>
-                <p className="text-xs mt-1">Create your first template</p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              className="col-span-full"
+              illustration={<EmptyMailIllustration className="size-32" />}
+              title="No email templates"
+              description="Create your first template"
+              action={{ label: "New Template", onClick: () => setCreateOpen(true) }}
+            />
           )}
         </motion.div>
 
-        {editingId !== null && (
-          <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-primary/40">
-              <CardHeader>
-                <CardTitle className="text-base">Edit Template</CardTitle>
-              </CardHeader>
-              <CardContent>
+        <Sheet open={editingId !== null} onOpenChange={(open) => { if (!open) handleCloseEdit(); }}>
+          <SheetContent size="lg" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Edit Template</SheetTitle>
+            </SheetHeader>
                 <Form {...editForm}>
-                  <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                  <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="flex min-h-0 flex-1 flex-col">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                     <FormField control={editForm.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Template Name</FormLabel>
@@ -277,48 +292,48 @@ export default function EmailTemplatesPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex justify-end gap-3">
-                      <Button type="button" variant="outline" onClick={handleCloseEdit}>Cancel</Button>
-                      <Button type="submit" className="bg-primary hover:bg-brand-soft text-primary-foreground" disabled={updateTemplate.isPending}>
+                    </div>
+                    <SheetFooter>
+                      <Button type="button" variant="ghost" onClick={handleCloseEdit}>Cancel</Button>
+                      <Button type="submit" loading={updateTemplate.isPending} disabled={updateTemplate.isPending}>
                         {updateTemplate.isPending ? "Saving..." : "Save Changes"}
                       </Button>
-                    </div>
+                    </SheetFooter>
                   </form>
                 </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+          </SheetContent>
+        </Sheet>
 
-        {previewTemplate && (
-          <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-success-strong/30">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-success-strong" />
-                    Preview: {previewTemplate.name}
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={handleClosePreview}>Close</Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3">
+        <Sheet open={previewTemplate !== null} onOpenChange={(open) => { if (!open) handleClosePreview(); }}>
+          <SheetContent size="md" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle className="flex items-center gap-2">
+                <IconChip icon={Eye} tone="success" size="sm" />
+                Preview: {previewTemplate?.name}
+              </SheetTitle>
+            </SheetHeader>
+            {previewTemplate && (
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                <div className="space-y-3 rounded-lg border bg-surface-sunken/40 p-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Subject</p>
                     <p className="text-sm font-medium">{interpolate(previewTemplate.subject, SAMPLE_DATA)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Body</p>
-                    <p className="text-sm whitespace-pre-wrap">{interpolate(previewTemplate.body, SAMPLE_DATA)}</p>
+                    <p className="whitespace-pre-wrap text-sm">{interpolate(previewTemplate.body, SAMPLE_DATA)}</p>
                   </div>
                 </div>
-                <p className="text-2xs text-muted-foreground mt-2">Preview uses sample data for variable interpolation</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+                <p className="mt-2 text-2xs text-muted-foreground">Preview uses sample data for variable interpolation</p>
+              </div>
+            )}
+            <SheetFooter>
+              <Button variant="ghost" onClick={handleClosePreview}>Close</Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </motion.div>
+      )}
     </PageWrapper>
   );
 }
@@ -344,20 +359,41 @@ function TemplateCard({ template, onPreviewToggle, onEdit, onDelete }: TemplateC
   const handleDelete = useCallback(() => onDelete(template.id), [template.id, onDelete]);
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-all">
+    <Card className="transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md">
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-sm truncate">{template.name}</CardTitle>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handlePreviewToggle} aria-label="View">
-              <Eye className="h-3.5 w-3.5" />
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <IconChip icon={Mail} size="sm" />
+            <CardTitle className="truncate text-sm" title={template.name}>{template.name}</CardTitle>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button variant="ghost" size="icon-sm" onClick={handlePreviewToggle} aria-label="View">
+              <Eye className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleEdit} aria-label="Edit">
-              <Pencil className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon-sm" onClick={handleEdit} aria-label="Edit">
+              <Pencil className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={handleDelete} aria-label="Delete">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-danger-soft hover:text-destructive" aria-label="Delete">
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete template?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    &quot;{template.name}&quot; will be permanently deleted. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </CardHeader>
@@ -386,7 +422,7 @@ interface VariableButtonProps {
 function VariableButton({ variable, formType, onInsert }: VariableButtonProps) {
   const handleClick = useCallback(() => onInsert(variable, formType), [variable, formType, onInsert]);
   return (
-    <Button type="button" variant="outline" size="sm" className="text-2xs h-6 px-2" onClick={handleClick}>
+    <Button type="button" variant="outline" size="xs" className="font-mono" onClick={handleClick}>
       {variable}
     </Button>
   );

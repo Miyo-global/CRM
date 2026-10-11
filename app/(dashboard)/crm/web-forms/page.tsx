@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Globe, Plus, Copy, Check, Trash2, Pencil, FormInput, FileText, BarChart3 } from "lucide-react";
+import { Globe, Plus, Copy, Check, Trash2, Pencil, FormInput, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,7 +69,7 @@ function EmbedDialog({ form, open, onClose }: { form: WebLeadForm; open: boolean
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Embed &quot;{form.name}&quot;</DialogTitle>
           <DialogDescription>
@@ -76,16 +81,17 @@ function EmbedDialog({ form, open, onClose }: { form: WebLeadForm; open: boolean
           <div>
             <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 block">iFrame Snippet</Label>
             <div className="relative">
-              <pre className="bg-muted rounded-md p-3 text-xs overflow-x-auto whitespace-pre-wrap break-all">
+              <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-md border bg-surface-sunken p-3 pr-12 font-mono text-xs">
                 {iframeSnippet}
               </pre>
               <Button
-                size="icon"
+                size="icon-sm"
                 variant="ghost"
                 className="absolute top-2 right-2"
+                aria-label="Copy iFrame snippet"
                 onClick={() => copy(iframeSnippet, setCopiedIframe)}
               >
-                {copiedIframe ? <Check className="h-4 w-4 text-success-strong" /> : <Copy className="h-4 w-4" />}
+                {copiedIframe ? <Check className="size-4 text-success-strong" /> : <Copy className="size-4" />}
               </Button>
             </div>
           </div>
@@ -93,16 +99,17 @@ function EmbedDialog({ form, open, onClose }: { form: WebLeadForm; open: boolean
           <div>
             <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 block">JavaScript Snippet</Label>
             <div className="relative">
-              <pre className="bg-muted rounded-md p-3 text-xs overflow-x-auto whitespace-pre-wrap break-all">
+              <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-md border bg-surface-sunken p-3 pr-12 font-mono text-xs">
                 {jsSnippet}
               </pre>
               <Button
-                size="icon"
+                size="icon-sm"
                 variant="ghost"
                 className="absolute top-2 right-2"
+                aria-label="Copy JavaScript snippet"
                 onClick={() => copy(jsSnippet, setCopiedJs)}
               >
-                {copiedJs ? <Check className="h-4 w-4 text-success-strong" /> : <Copy className="h-4 w-4" />}
+                {copiedJs ? <Check className="size-4 text-success-strong" /> : <Copy className="size-4" />}
               </Button>
             </div>
           </div>
@@ -200,12 +207,12 @@ function FormBuilderSheet({ open, onClose, existing }: FormBuilderProps) {
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader>
+      <SheetContent size="md" className="gap-0 p-0">
+        <SheetHeader className="border-b px-6">
           <SheetTitle>{existing ? "Edit Form" : "Create Web Form"}</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
           <div className="space-y-1">
             <Label htmlFor="form-name">Form Name <span className="text-destructive">*</span></Label>
             <Input id="form-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Contact Us" />
@@ -220,25 +227,25 @@ function FormBuilderSheet({ open, onClose, existing }: FormBuilderProps) {
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Form Fields</Label>
               <Button size="sm" variant="outline" onClick={addField}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> Add Field
+                <Plus className="size-3.5" /> Add Field
               </Button>
             </div>
 
             {fields.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded-md">
+              <p className="rounded-md border border-dashed border-border-strong bg-surface-sunken/40 py-4 text-center text-sm text-muted-foreground">
                 No fields yet. Click &quot;Add Field&quot; to start.
               </p>
             )}
 
             <div className="space-y-3">
               {fields.map((field, i) => (
-                <div key={i} className="border rounded-md p-3 space-y-2 bg-muted/30">
-                  <div className="flex items-center gap-2">
+                <div key={i} className="space-y-2 rounded-md border bg-surface-sunken/40 p-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                     <Input
                       placeholder="Field label"
                       value={field.label}
                       onChange={(e) => updateField(i, { label: e.target.value })}
-                      className="flex-1"
+                      className="min-w-40 flex-1"
                     />
                     <Select
                       value={field.type}
@@ -253,8 +260,8 @@ function FormBuilderSheet({ open, onClose, existing }: FormBuilderProps) {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button size="icon" variant="ghost" onClick={() => removeField(i)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button size="icon" variant="ghost" onClick={() => removeField(i)} aria-label="Remove field">
+                      <Trash2 className="size-4 text-destructive" />
                     </Button>
                   </div>
 
@@ -265,7 +272,7 @@ function FormBuilderSheet({ open, onClose, existing }: FormBuilderProps) {
                       onCheckedChange={(v) => updateField(i, { required: v })}
                     />
                     <Label htmlFor={`req-${i}`} className="text-xs">Required</Label>
-                    <span className="text-xs text-muted-foreground ml-auto">key: {field.name || ""}</span>
+                    <span className="ml-auto truncate font-mono text-xs text-muted-foreground">key: {field.name || ""}</span>
                   </div>
                 </div>
               ))}
@@ -288,9 +295,9 @@ function FormBuilderSheet({ open, onClose, existing }: FormBuilderProps) {
           </div>
         </div>
 
-        <SheetFooter className="flex-row gap-2 border-t pt-4">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" onClick={handleSubmit} disabled={isPending}>
+        <SheetFooter>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} loading={isPending} disabled={isPending}>
             {isPending ? "Saving..." : existing ? "Save Changes" : "Create Form"}
           </Button>
         </SheetFooter>
@@ -314,13 +321,16 @@ function WebFormCard({ form }: { form: WebLeadForm }) {
 
   return (
     <>
-      <Card className="flex flex-col">
+      <Card className="flex flex-col transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base leading-snug">{form.name}</CardTitle>
-            <Badge variant={form.isActive ? "default" : "secondary"} className="shrink-0">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <IconChip icon={FormInput} size="sm" tone={form.isActive ? "brand" : "neutral"} />
+              <CardTitle className="truncate text-base leading-snug" title={form.name}>{form.name}</CardTitle>
+            </div>
+            <StatusPill tone={form.isActive ? "success" : "neutral"} dot>
               {form.isActive ? "Active" : "Inactive"}
-            </Badge>
+            </StatusPill>
           </div>
           {form.description && (
             <CardDescription className="line-clamp-2">{form.description}</CardDescription>
@@ -329,21 +339,21 @@ function WebFormCard({ form }: { form: WebLeadForm }) {
 
         <CardContent className="flex-1 space-y-3">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span><span className="font-medium text-foreground">{form.fields?.length ?? 0}</span> fields</span>
-            <span><span className="font-medium text-foreground">{form.totalSubmissions ?? 0}</span> submissions</span>
+            <span><span className="font-medium tabular-nums text-foreground">{form.fields?.length ?? 0}</span> fields</span>
+            <span><span className="font-medium tabular-nums text-foreground">{form.totalSubmissions ?? 0}</span> submissions</span>
           </div>
 
           <div className="flex flex-wrap gap-2 pt-1">
             <Button size="sm" variant="outline" onClick={() => setEmbedOpen(true)}>
-              <Globe className="h-3.5 w-3.5 mr-1" /> Get Embed Code
+              <Globe className="size-3.5" /> Get Embed Code
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)}>
-              <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+              <Pencil className="size-3.5" /> Edit
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
-                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                <Button size="sm" variant="ghost" className="text-destructive hover:bg-danger-soft hover:text-destructive" loading={deleteForm.isPending}>
+                  <Trash2 className="size-3.5" /> Delete
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -374,7 +384,7 @@ function WebFormCard({ form }: { form: WebLeadForm }) {
 
 export default function WebFormsPage() {
   const [createOpen, setCreateOpen] = useState(false);
-  const { data: forms = [], isLoading } = useWebLeadForms();
+  const { data: forms = [], isLoading, isError, error, refetch } = useWebLeadForms();
 
   const totalSubmissions = forms.reduce((sum, f) => sum + (f.totalSubmissions ?? 0), 0);
 
@@ -384,32 +394,35 @@ export default function WebFormsPage() {
       subtitle="Create embeddable forms to capture leads from your website"
       actions={
         <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" /> New Form
+          <Plus className="size-4" /> New Form
         </Button>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <StatCard label="Total Forms" value={forms.length} icon={FormInput} color="blue" />
-        <StatCard label="Total Submissions" value={totalSubmissions} icon={BarChart3} color="gold" />
-      </div>
+      <StatsStrip
+        className="mb-6"
+        items={[
+          { label: "Total Forms", value: forms.length, icon: FormInput, tone: "info" },
+          { label: "Total Submissions", value: totalSubmissions, icon: BarChart3, tone: "brand" },
+        ]}
+      />
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {isError ? (
+        <QueryErrorState title="Couldn't load web forms" error={error} onRetry={() => refetch()} />
+      ) : isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="h-48 animate-pulse bg-muted/40" />
+            <Skeleton key={i} className="h-48 rounded-lg" />
           ))}
         </div>
       ) : forms.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="font-semibold text-lg mb-1">No forms yet</h3>
-          <p className="text-muted-foreground text-sm mb-4">Create your first web form to start capturing leads.</p>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" /> Create Form
-          </Button>
-        </Card>
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="No forms yet"
+          description="Create your first web form to start capturing leads."
+          action={{ label: "Create Form", onClick: () => setCreateOpen(true) }}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {forms.map((form) => (
             <WebFormCard key={form.id} form={form} />
           ))}

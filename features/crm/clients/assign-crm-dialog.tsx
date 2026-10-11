@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Zap, Users, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,11 +42,11 @@ export function AssignCrmDialog() {
       <Button
         variant="outline"
         size="sm"
-        className="h-9 gap-2"
         onClick={() => setOpen(true)}
         disabled={mutation.isPending}
+        aria-label="Assign CRM"
       >
-        <Zap className="h-4 w-4" />
+        <Zap className="size-4" />
         <span className="hidden sm:inline">Assign CRM</span>
       </Button>
 
@@ -62,7 +63,7 @@ export function AssignCrmDialog() {
           </DialogHeader>
 
           {!statsLoading && unassignedCount > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-warning-strong/30 bg-warning-soft p-3">
+            <div className="flex items-center gap-2 rounded-lg border border-warning-500/40 bg-warning-soft p-3">
               <AlertCircle className="h-4 w-4 text-warning-strong shrink-0" />
               <p className="text-sm text-warning-strong">
                 <span className="font-semibold">{unassignedCount}</span> client{unassignedCount !== 1 ? "s" : ""} unassigned
@@ -71,7 +72,7 @@ export function AssignCrmDialog() {
           )}
 
           {!statsLoading && unassignedCount === 0 && members.length > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-success-strong/30 bg-success-soft p-3">
+            <div className="flex items-center gap-2 rounded-lg border border-success-500/40 bg-success-soft p-3">
               <Zap className="h-4 w-4 text-success-strong shrink-0" />
               <p className="text-sm text-success-strong">
                 All clients are assigned
@@ -98,21 +99,20 @@ export function AssignCrmDialog() {
                 ))}
               </div>
             ) : members.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-6 text-center">
-                <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
-                <p className="text-sm font-medium">No CRM representatives found</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Add members with CUSTOMER_SUPPORT role to enable assignment.
-                </p>
-              </div>
+              <EmptyState
+                compact
+                icon={Users}
+                title="No CRM representatives found"
+                description="Add members with CUSTOMER_SUPPORT role to enable assignment."
+              />
             ) : (
-              <div className="rounded-lg border divide-y max-h-[280px] overflow-y-auto">
+              <div className="max-h-70 divide-y overflow-y-auto rounded-lg border">
                 {[...members]
                   .sort((a, b) => a.activeCount - b.activeCount)
                   .map((member) => (
                     <div
                       key={member.userId}
-                      className="flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors"
+                      className="flex items-center gap-3 p-3 transition-colors hover:bg-accent/50"
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={member.image || ""} />
@@ -145,7 +145,7 @@ export function AssignCrmDialog() {
 
             {!statsLoading && members.length > 0 && (
               <div className="flex items-center justify-between px-1 pt-1 text-xs text-muted-foreground">
-                <span>{totalActive} active across {members.length} reps</span>
+                <span className="tabular-nums">{totalActive} active across {members.length} reps</span>
                 {members.length > 0 && (
                   <span>
                     Avg: {(totalActive / members.length).toFixed(1)} per rep
@@ -161,6 +161,7 @@ export function AssignCrmDialog() {
             </Button>
             <Button
               onClick={handleAssign}
+              loading={mutation.isPending}
               disabled={mutation.isPending || members.length === 0 || unassignedCount === 0}
             >
               {mutation.isPending ? "Assigning..." : `Assign ${unassignedCount} Client${unassignedCount !== 1 ? "s" : ""}`}

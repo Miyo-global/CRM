@@ -10,12 +10,20 @@ import {
   Check,
   Ban,
   Plus,
-  Loader2,
   Pencil,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { INVOICE_STATUS } from "../../invoice-status";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -46,14 +54,6 @@ import { useInvoice, useUpdateInvoice, useRecordPayment } from "@/lib/api/hooks/
 import type { InvoiceStatus, PaymentMethod } from "@/types/invoice";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const STATUS_BADGE: Record<InvoiceStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  DRAFT: { label: "Draft", variant: "secondary" },
-  SENT: { label: "Sent", variant: "default" },
-  PAID: { label: "Paid", variant: "outline" },
-  OVERDUE: { label: "Overdue", variant: "destructive" },
-  CANCELLED: { label: "Cancelled", variant: "secondary" },
-};
-
 function fmt(amount: string | number) {
   return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -83,7 +83,7 @@ export default function InvoiceDetailPage({
   const { invoiceId } = use(params);
   const id = Number(invoiceId);
 
-  const { data: invoice, isLoading } = useInvoice(id);
+  const { data: invoice, isLoading, error, refetch } = useInvoice(id);
   const updateInvoice = useUpdateInvoice();
   const recordPayment = useRecordPayment();
 
@@ -97,6 +97,7 @@ export default function InvoiceDetailPage({
   });
 
   const [editOpen, setEditOpen] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [editLineItems, setEditLineItems] = useState<{ description: string; quantity: number; rate: number; amount: number }[]>([]);
   const [editTaxRate, setEditTaxRate] = useState(0);
   const [editDiscount, setEditDiscount] = useState(0);
@@ -130,9 +131,18 @@ export default function InvoiceDetailPage({
   if (isLoading) {
     return (
       <PageWrapper title="Invoice">
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <DetailLayout
+          main={<Skeleton className="h-80 rounded-lg" />}
+          rail={<Skeleton className="h-64 rounded-lg" />}
+        />
+      </PageWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageWrapper title="Invoice">
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -140,12 +150,16 @@ export default function InvoiceDetailPage({
   if (!invoice) {
     return (
       <PageWrapper title="Invoice">
-        <p className="text-muted-foreground py-8 text-center">Invoice not found.</p>
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
+          title="Invoice not found."
+          action={{ label: "Back", href: "/billing/invoices" }}
+        />
       </PageWrapper>
     );
   }
 
-  const badge = STATUS_BADGE[invoice.status];
+  const status = INVOICE_STATUS[invoice.status];
   const totalPaid = (invoice.payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
   const outstanding = Number(invoice.total) - totalPaid;
 
@@ -177,7 +191,7 @@ export default function InvoiceDetailPage({
       if (invoice.dueDate) {
         doc.text(`Due: ${format(new Date(invoice.dueDate), "dd MMM yyyy")}`, 20, 54);
       }
-      doc.setDrawColor(189, 136, 44);
+      doc.setDrawColor(212, 175, 55);
       doc.line(20, 60, 190, 60);
       if (invoice.client) {
         doc.setTextColor(0);
@@ -253,82 +267,71 @@ export default function InvoiceDetailPage({
   return (
     <PageWrapper
       title={invoice.invoiceNumber}
-      subtitle={invoice.client?.name ?? "No client"}
-      badge={<Badge variant={badge.variant}>{badge.label}</Badge>}
+      subtitle={
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <StatusPill tone={status.tone} dot>{status.label}</StatusPill>
+          {invoice.client?.name ?? "No client"}
+        </span>
+      }
       actions={
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="ghost" asChild>
+            <Link href="/billing/invoices">
+              <ArrowLeft aria-hidden="true" /> Back
+            </Link>
+          </Button>
           {invoice.status === "DRAFT" && (
             <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
-              <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+              <Pencil aria-hidden="true" /> Edit
             </Button>
           )}
           {invoice.status === "DRAFT" && (
-            <Button size="sm" variant="outline" onClick={() => handleStatusUpdate("SENT")} disabled={updateInvoice.isPending}>
-              <Send className="h-3.5 w-3.5 mr-1.5" /> Mark Sent
+            <Button size="sm" variant="outline" onClick={() => handleStatusUpdate("SENT")} loading={updateInvoice.isPending}>
+              {!updateInvoice.isPending && <Send aria-hidden="true" />} Mark Sent
             </Button>
           )}
           {(invoice.status === "SENT" || invoice.status === "OVERDUE") && (
-            <Button size="sm" variant="outline" onClick={() => setPaymentOpen(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" /> Record Payment
+            <Button size="sm" onClick={() => setPaymentOpen(true)}>
+              <Plus aria-hidden="true" /> Record Payment
             </Button>
           )}
           {invoice.status !== "CANCELLED" && invoice.status !== "PAID" && (
-            <Button size="sm" variant="outline" onClick={() => handleStatusUpdate("CANCELLED")} disabled={updateInvoice.isPending}>
-              <Ban className="h-3.5 w-3.5 mr-1.5" /> Cancel
+            <Button size="sm" variant="outline" onClick={() => setConfirmCancelOpen(true)} disabled={updateInvoice.isPending}>
+              <Ban aria-hidden="true" /> Cancel
             </Button>
           )}
           {invoice.status === "PAID" && outstanding <= 0 && (
-            <div className="flex items-center gap-1.5 text-sm text-success-strong font-medium">
-              <Check className="h-4 w-4" /> Fully Paid
-            </div>
+            <StatusPill tone="success">
+              <Check className="size-3" aria-hidden="true" /> Fully Paid
+            </StatusPill>
           )}
           <Button size="sm" variant="outline" onClick={handleDownloadPdf}>
-            <Download className="h-3.5 w-3.5 mr-1.5" /> Download PDF
+            <Download aria-hidden="true" /> Download PDF
           </Button>
-          <Link href="/billing/invoices">
-            <Button size="sm" variant="ghost">
-              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back
-            </Button>
-          </Link>
         </div>
       }
     >
-      <div className="space-y-6 max-w-3xl">
-
-        <div className="rounded-lg border border-border bg-card p-5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Invoice #</p>
-            <p className="font-mono font-medium">{invoice.invoiceNumber}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Created</p>
-            <p>{format(new Date(invoice.createdAt), "dd MMM yyyy")}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Due Date</p>
-            <p>{invoice.dueDate ? format(new Date(invoice.dueDate), "dd MMM yyyy") : ""}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Currency</p>
-            <p>{invoice.currency}</p>
-          </div>
-          {invoice.client && (
-            <div className="col-span-2">
-              <p className="text-xs text-muted-foreground mb-0.5">Client</p>
-              <p className="font-medium">{invoice.client.name}</p>
-            </div>
-          )}
-          {invoice.project && (
-            <div className="col-span-2">
-              <p className="text-xs text-muted-foreground mb-0.5">Project</p>
-              <p>{invoice.project.name}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-semibold">Line Items</p>
+      <DetailLayout
+        rail={
+          <Card className="gap-4 p-5">
+            <h2 className="font-sans text-sm font-semibold tracking-normal">Details</h2>
+            <PropertyList
+              items={[
+                { label: "Invoice #", value: <span className="font-mono">{invoice.invoiceNumber}</span> },
+                { label: "Created", value: <span className="tabular-nums">{format(new Date(invoice.createdAt), "dd MMM yyyy")}</span> },
+                { label: "Due Date", value: invoice.dueDate ? <span className="tabular-nums">{format(new Date(invoice.dueDate), "dd MMM yyyy")}</span> : null },
+                { label: "Currency", value: invoice.currency },
+                ...(invoice.client ? [{ label: "Client", value: <span className="font-medium">{invoice.client.name}</span> }] : []),
+                ...(invoice.project ? [{ label: "Project", value: invoice.project.name }] : []),
+              ]}
+            />
+          </Card>
+        }
+        main={
+      <div className="space-y-6">
+        <Card className="gap-0 overflow-hidden">
+          <div className="border-b border-border px-5 py-3">
+            <h2 className="font-sans text-sm font-semibold tracking-normal">Line Items</h2>
           </div>
           <Table>
             <TableHeader>
@@ -343,14 +346,14 @@ export default function InvoiceDetailPage({
               {invoice.lineItems.map((item, i) => (
                 <TableRow key={`${i}-${item.description}-${item.rate}-${item.quantity}`}>
                   <TableCell className="text-sm">{item.description}</TableCell>
-                  <TableCell className="text-right text-sm">{item.quantity}</TableCell>
-                  <TableCell className="text-right text-sm">{fmt(item.rate)}</TableCell>
-                  <TableCell className="text-right text-sm font-medium">{fmt(item.amount)}</TableCell>
+                  <TableCell className="text-right text-sm tabular-nums">{item.quantity}</TableCell>
+                  <TableCell className="text-right text-sm tabular-nums">{fmt(item.rate)}</TableCell>
+                  <TableCell className="text-right text-sm font-medium tabular-nums">{fmt(item.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <div className="px-4 py-3 border-t border-border space-y-1.5 text-sm">
+          <div className="space-y-1.5 border-t border-border bg-surface-sunken/40 px-5 py-4 text-sm tabular-nums">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span><span>{fmt(invoice.subtotal)}</span>
             </div>
@@ -364,7 +367,7 @@ export default function InvoiceDetailPage({
                 <span>Discount</span><span className="text-destructive">-{fmt(invoice.discount ?? 0)}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-base pt-1.5 border-t border-border">
+            <div className="flex justify-between border-t border-border pt-1.5 font-display text-lg font-bold text-foreground">
               <span>Total</span><span>{fmt(invoice.total)}</span>
             </div>
             {totalPaid > 0 && (
@@ -378,22 +381,22 @@ export default function InvoiceDetailPage({
               </>
             )}
           </div>
-        </div>
+        </Card>
 
         {invoice.notes && (
-          <div className="rounded-lg border border-border bg-card px-4 py-3">
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Notes</p>
-            <p className="text-sm text-muted-foreground">{invoice.notes}</p>
-          </div>
+          <Card className="gap-1 px-5 py-4">
+            <h2 className="font-sans text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Notes</h2>
+            <p className="text-sm text-foreground">{invoice.notes}</p>
+          </Card>
         )}
 
         {(invoice.payments ?? []).length > 0 && (
-          <div className="rounded-lg border border-border bg-card overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <p className="text-sm font-semibold">Payment History</p>
+          <Card className="gap-0 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border px-5 py-3">
+              <h2 className="font-sans text-sm font-semibold tracking-normal">Payment History</h2>
               {(invoice.status === "SENT" || invoice.status === "OVERDUE") && (
                 <Button size="sm" variant="outline" onClick={() => setPaymentOpen(true)}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Payment
+                  <Plus aria-hidden="true" /> Add Payment
                 </Button>
               )}
             </div>
@@ -409,7 +412,7 @@ export default function InvoiceDetailPage({
               <TableBody>
                 {(invoice.payments ?? []).map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell className="text-sm">
+                    <TableCell className="text-sm tabular-nums">
                       {format(new Date(p.paymentDate), "dd MMM yyyy")}
                     </TableCell>
                     <TableCell className="text-sm capitalize">
@@ -418,21 +421,33 @@ export default function InvoiceDetailPage({
                     <TableCell className="text-sm text-muted-foreground font-mono">
                       {p.referenceNumber ?? ""}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-medium text-success-strong">
+                    <TableCell className="text-right text-sm font-medium tabular-nums text-success-strong">
                       {fmt(p.amount)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         )}
       </div>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmCancelOpen}
+        onOpenChange={setConfirmCancelOpen}
+        title="Cancel invoice"
+        description="This marks the invoice as cancelled. This action cannot be undone."
+        confirmLabel="Cancel invoice"
+        destructive
+        onConfirm={() => { setConfirmCancelOpen(false); handleStatusUpdate("CANCELLED"); }}
+      />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sm">Edit Invoice</DialogTitle>
+            <DialogTitle>Edit Invoice</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-1">
             <div className="rounded-lg border border-border overflow-hidden">
@@ -440,7 +455,7 @@ export default function InvoiceDetailPage({
                 <p className="text-xs font-semibold">Line Items</p>
               </div>
               <div className="p-3 space-y-2">
-                <div className="grid grid-cols-12 gap-2 text-xs text-muted-foreground px-1">
+                <div className="hidden grid-cols-12 gap-2 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
                   <span className="col-span-5">Description</span>
                   <span className="col-span-2 text-right">Qty</span>
                   <span className="col-span-2 text-right">Rate</span>
@@ -449,13 +464,13 @@ export default function InvoiceDetailPage({
                 {editLineItems.map((item, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2 items-center">
                     <Input
-                      className="col-span-5 h-8 text-sm"
+                      className="col-span-12 sm:col-span-5"
                       placeholder="Description"
                       value={item.description}
                       onChange={(e) => setEditLineItems((prev) => prev.map((li, i) => i === idx ? { ...li, description: e.target.value } : li))}
                     />
                     <Input
-                      className="col-span-2 h-8 text-sm text-right"
+                      className="col-span-4 text-right tabular-nums sm:col-span-2"
                       type="number" min={1}
                       value={item.quantity || ""}
                       onChange={(e) => setEditLineItems((prev) => prev.map((li, i) => {
@@ -466,7 +481,7 @@ export default function InvoiceDetailPage({
                       aria-label={`Quantity for item ${idx + 1}`}
                     />
                     <Input
-                      className="col-span-2 h-8 text-sm text-right"
+                      className="col-span-4 text-right tabular-nums sm:col-span-2"
                       type="number" min={0}
                       value={item.rate || ""}
                       onChange={(e) => setEditLineItems((prev) => prev.map((li, i) => {
@@ -476,17 +491,17 @@ export default function InvoiceDetailPage({
                       }))}
                       aria-label={`Rate for item ${idx + 1}`}
                     />
-                    <div className="col-span-2 text-sm font-medium text-right pr-1">
+                    <div className="col-span-2 pr-1 text-right text-sm font-medium tabular-nums">
                       {fmt(item.amount)}
                     </div>
                     <Button
                       variant="ghost" size="icon"
-                      className="col-span-1 h-8 w-8 text-muted-foreground hover:text-destructive"
+                      className="col-span-2 justify-self-end text-muted-foreground hover:text-destructive sm:col-span-1"
                       onClick={() => setEditLineItems((p) => p.filter((_, i) => i !== idx))}
                       disabled={editLineItems.length === 1}
                       aria-label={`Remove item ${idx + 1}`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 />
                     </Button>
                   </div>
                 ))}
@@ -494,7 +509,7 @@ export default function InvoiceDetailPage({
                   variant="outline" size="sm" className="mt-1"
                   onClick={() => setEditLineItems((p) => [...p, { description: "", quantity: 1, rate: 0, amount: 0 }])}
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Item
+                  <Plus aria-hidden="true" /> Add Item
                 </Button>
               </div>
               <div className="px-4 py-3 border-t border-border space-y-1 text-sm">
@@ -514,34 +529,33 @@ export default function InvoiceDetailPage({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label className="text-xs">Tax Rate (%)</Label>
-                <Input type="number" min={0} max={100} value={editTaxRate} onChange={(e) => setEditTaxRate(Number(e.target.value))} className="h-8 text-sm" />
+                <Label>Tax Rate (%)</Label>
+                <Input type="number" min={0} max={100} value={editTaxRate} onChange={(e) => setEditTaxRate(Number(e.target.value))} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Discount (₹)</Label>
-                <Input type="number" min={0} value={editDiscount} onChange={(e) => setEditDiscount(Number(e.target.value))} className="h-8 text-sm" />
+                <Label>Discount (₹)</Label>
+                <Input type="number" min={0} value={editDiscount} onChange={(e) => setEditDiscount(Number(e.target.value))} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Due Date</Label>
+                <Label>Due Date</Label>
                 <DatePicker value={editDueDate} onChange={setEditDueDate} placeholder="Select due date" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Currency</Label>
-                <Input value={editCurrency} onChange={(e) => setEditCurrency(e.target.value)} className="h-8 text-sm" placeholder="INR" />
+                <Label>Currency</Label>
+                <Input value={editCurrency} onChange={(e) => setEditCurrency(e.target.value)} placeholder="INR" />
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Notes / Payment Terms</Label>
-              <Input value={editNotes} onChange={(e) => setEditNotes(e.target.value)} className="h-8 text-sm" placeholder="e.g. Payment due within 30 days" />
+              <Label>Notes / Payment Terms</Label>
+              <Input value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="e.g. Payment due within 30 days" />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
             <Button
-              size="sm"
-              disabled={updateInvoice.isPending}
+              loading={updateInvoice.isPending}
               onClick={() => {
                 const validItems = editLineItems.filter((i) => i.description.trim() && i.amount > 0);
                 if (validItems.length === 0) { toast.error("Add at least one line item"); return; }
@@ -566,7 +580,7 @@ export default function InvoiceDetailPage({
                 );
               }}
             >
-              {updateInvoice.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+              {!updateInvoice.isPending && <Check aria-hidden="true" />}
               Save Changes
             </Button>
           </div>
@@ -574,13 +588,13 @@ export default function InvoiceDetailPage({
       </Dialog>
 
       <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent size="sm">
           <DialogHeader>
-            <DialogTitle className="text-sm">Record Payment</DialogTitle>
+            <DialogTitle>Record Payment</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-1">
             <div className="space-y-1">
-              <Label htmlFor="pay-amount" className="text-xs">
+              <Label htmlFor="pay-amount">
                 Amount <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -590,12 +604,12 @@ export default function InvoiceDetailPage({
                 placeholder={`Max: ${fmt(Math.max(0, outstanding))}`}
                 value={paymentForm.amount}
                 onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
-                className="h-8 text-sm"
+               
                 autoFocus
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="pay-date" className="text-xs">Payment Date</Label>
+              <Label htmlFor="pay-date">Payment Date</Label>
               <DatePicker
                 id="pay-date"
                 value={paymentForm.paymentDate}
@@ -604,12 +618,12 @@ export default function InvoiceDetailPage({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Payment Method</Label>
+              <Label>Payment Method</Label>
               <Select
                 value={paymentForm.paymentMethod}
                 onValueChange={(v) => setPaymentForm((p) => ({ ...p, paymentMethod: v as PaymentMethod }))}
               >
-                <SelectTrigger className="h-8 text-xs" aria-label="Payment method">
+                <SelectTrigger className="w-full" aria-label="Payment method">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -622,36 +636,30 @@ export default function InvoiceDetailPage({
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="pay-ref" className="text-xs">Reference Number</Label>
+              <Label htmlFor="pay-ref">Reference Number</Label>
               <Input
                 id="pay-ref"
                 placeholder="UTR, cheque #, etc."
                 value={paymentForm.referenceNumber}
                 onChange={(e) => setPaymentForm((p) => ({ ...p, referenceNumber: e.target.value }))}
-                className="h-8 text-sm"
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="pay-notes" className="text-xs">Notes</Label>
+              <Label htmlFor="pay-notes">Notes</Label>
               <Input
                 id="pay-notes"
                 placeholder="Optional"
                 value={paymentForm.notes}
                 onChange={(e) => setPaymentForm((p) => ({ ...p, notes: e.target.value }))}
-                className="h-8 text-sm"
               />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button variant="outline" size="sm" onClick={() => setPaymentOpen(false)}>
+            <Button variant="ghost" onClick={() => setPaymentOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={handleRecordPayment} disabled={recordPayment.isPending}>
-              {recordPayment.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-              ) : (
-                <Check className="h-3.5 w-3.5 mr-1" />
-              )}
+            <Button onClick={handleRecordPayment} loading={recordPayment.isPending}>
+              {!recordPayment.isPending && <Check aria-hidden="true" />}
               Record Payment
             </Button>
           </div>

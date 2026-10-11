@@ -24,10 +24,8 @@ export function MiniAreaChart({
   const gradientId = `area-grad-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return null;
 
-  const paddingLeft = 50;
-  const paddingRight = 16;
-  const paddingTop = 16;
-  const paddingBottom = 28;
+  const paddingTop = 8;
+  const paddingBottom = 4;
   const plotHeight = height - paddingTop - paddingBottom;
 
   const values = data.map((d) => d.value);
@@ -36,7 +34,7 @@ export function MiniAreaChart({
   const range = maxVal - minVal || 1;
 
   const points = data.map((d, i) => {
-    const x = paddingLeft + (i / (data.length - 1)) * (100 - paddingLeft - paddingRight);
+    const x = (i / (data.length - 1)) * 100;
     const y = paddingTop + ((maxVal - d.value) / range) * plotHeight;
     return { x, y, ...d };
   });
@@ -44,43 +42,22 @@ export function MiniAreaChart({
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${paddingTop + plotHeight} L ${points[0].x} ${paddingTop + plotHeight} Z`;
 
-  const yTicks = Array.from({ length: 4 }, (_, i) => {
-    const val = minVal + (range * i) / 3;
-    return { val, y: paddingTop + ((maxVal - val) / range) * plotHeight };
-  });
-
   return (
-    <svg width="100%" height={height} viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="overflow-visible" role="img" aria-label="Area chart">
+    <svg
+      width="100%"
+      height={height}
+      viewBox={`0 0 100 ${height}`}
+      preserveAspectRatio="none"
+      className="overflow-visible"
+      role="img"
+      aria-label={`Area chart: ${data.map((d) => `${d.month} ${formatValue(d.value)}`).join(", ")}`}
+    >
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor={color} stopOpacity={0.24} />
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-
-      {yTicks.map((tick, i) => (
-        <g key={i}>
-          <line
-            x1={paddingLeft}
-            y1={tick.y}
-            x2={100 - paddingRight}
-            y2={tick.y}
-            stroke="var(--chart-grid)"
-            strokeDasharray="3 3"
-            vectorEffect="non-scaling-stroke"
-          />
-          <text
-            x={paddingLeft - 4}
-            y={tick.y + 1}
-            textAnchor="end"
-            className="fill-muted-foreground"
-            fontSize="3"
-            dominantBaseline="middle"
-          >
-            {formatValue(Math.round(tick.val))}
-          </text>
-        </g>
-      ))}
 
       <motion.path
         d={areaPath}
@@ -94,7 +71,7 @@ export function MiniAreaChart({
         d={linePath}
         fill="none"
         stroke={color}
-        strokeWidth="0.6"
+        strokeWidth={1.5}
         vectorEffect="non-scaling-stroke"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -103,33 +80,6 @@ export function MiniAreaChart({
         transition={{ duration: 1, ease: "easeInOut" }}
       />
 
-      {points.map((p, i) => (
-        <motion.circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r="1.2"
-          fill={color}
-          stroke="var(--card)"
-          strokeWidth="0.4"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.3, delay: 0.8 + i * 0.05 }}
-        />
-      ))}
-
-      {points.map((p, i) => (
-        <text
-          key={`label-${i}`}
-          x={p.x}
-          y={height - 6}
-          textAnchor="middle"
-          className="fill-muted-foreground"
-          fontSize="3"
-        >
-          {p.month}
-        </text>
-      ))}
     </svg>
   );
 }

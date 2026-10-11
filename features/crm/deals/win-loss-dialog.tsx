@@ -42,7 +42,7 @@ export const WinLossDialog = memo(function WinLossDialog({
 
   return (
     <Sheet open={dialog !== null} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent size="sm">
         <SheetHeader>
           <SheetTitle>
             {dialog?.stage === "WON" ? "Mark Deal as Won" : "Mark Deal as Lost"}
@@ -118,7 +118,7 @@ export const WinLossDialog = memo(function WinLossDialog({
                 : "bg-destructive hover:bg-destructive/90 text-destructive-foreground",
             )}
             onClick={onConfirm}
-            disabled={isPending}
+            loading={isPending}
           >
             Confirm
           </Button>

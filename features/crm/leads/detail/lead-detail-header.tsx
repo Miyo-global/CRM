@@ -3,7 +3,9 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   Building2,
+  Check,
   Flame,
   Clock,
   Edit2,
@@ -14,6 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
+import { StatusPill } from "@/components/ui/status-pill";
+import { DetailHeader } from "@/components/shared/detail-header";
 import { AIScoreButton } from "../ai-score-button";
 import { AIEmailDialog } from "../ai-email-dialog";
 import { AINextActionButton } from "../ai-next-action-button";
@@ -53,6 +58,15 @@ interface PipelineStepProps {
   onStatusChange: (status: PipelineStatus) => void;
 }
 
+const STATUS_TONE: Record<string, Tone> = {
+  NEW: "info",
+  CONTACTED: "teal",
+  INTERESTED: "plum",
+  QUALIFIED: "brand",
+  CONVERTED: "success",
+  LOST: "danger",
+};
+
 const STATUS_LABELS: Record<PipelineStatus, string> = {
   NEW: "New",
   CONTACTED: "Contacted",
@@ -78,45 +92,39 @@ function PipelineStep({
   const isLost = status === "LOST";
 
   return (
-    <div className="flex items-center flex-1 min-w-0">
+    <li className="flex min-w-24 flex-1 items-start" aria-current={isActive ? "step" : undefined}>
       <button
         onClick={handleClick}
         disabled={isPending || isActive}
-        className="flex flex-col items-center gap-1.5 group shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="group flex shrink-0 flex-col items-center gap-1.5 rounded-md px-1 outline-none focus-visible:focus-ring disabled:cursor-not-allowed"
         title={`Move to ${STATUS_LABELS[status]}`}
       >
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-full transition-all duration-200",
-            isActive
-              ? cn(
-                  "h-5 w-5 border-2 border-primary/40 bg-brand-soft",
-                  isLost && "border-danger-400 bg-danger-soft"
-                )
-              : isPast
-                ? cn("h-3 w-3", isLost ? "bg-danger-400" : "bg-primary")
-                : "h-3 w-3 rounded-full border border-border bg-background group-hover:border-muted-foreground"
-          )}
-        >
-          {isActive && (
-            <div
-              className={cn(
-                "h-2 w-2 rounded-full",
-                isLost ? "bg-danger-400" : "bg-primary"
-              )}
-            />
-          )}
-        </div>
         <span
           className={cn(
-            "text-2xs font-medium whitespace-nowrap leading-none",
+            "flex size-6 items-center justify-center rounded-full transition-colors",
+            isActive
+              ? isLost
+                ? "bg-card ring-2 ring-danger-500"
+                : "bg-card ring-2 ring-primary"
+              : isPast
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted ring-1 ring-border group-hover:ring-border-strong"
+          )}
+        >
+          {isActive ? (
+            <span className={cn("size-2.5 rounded-full", isLost ? "bg-danger-500" : "bg-primary")} />
+          ) : isPast ? (
+            <Check className="size-3.5" aria-hidden="true" />
+          ) : null}
+        </span>
+        <span
+          className={cn(
+            "whitespace-nowrap text-xs font-medium leading-none",
             isActive
               ? isLost
                 ? "text-danger-strong"
-                : "text-brand-text"
-              : isPast
-                ? "text-muted-foreground"
-                : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
+                : "text-foreground"
+              : "text-muted-foreground group-hover:text-foreground"
           )}
         >
           {STATUS_LABELS[status]}
@@ -124,14 +132,12 @@ function PipelineStep({
       </button>
 
       {!isLast && (
-        <div
-          className={cn(
-            "flex-1 h-px mx-2 mb-3.5",
-            isPast ? "bg-brand-soft" : "bg-border/50"
-          )}
+        <span
+          aria-hidden="true"
+          className={cn("mx-1 mt-3 h-px flex-1", isPast ? "bg-primary" : "bg-border")}
         />
       )}
-    </div>
+    </li>
   );
 }
 
@@ -168,151 +174,111 @@ export function LeadDetailHeader({
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
 
+  const status = STATUS_STYLES[lead.status];
+  const statusTone = STATUS_TONE[lead.status] ?? "neutral";
+
   return (
-    <Card className="shadow-sm border-t-2 border-t-primary/40 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="flex items-start gap-4 p-4 pb-3">
-          <div className="shrink-0 h-12 w-12 rounded-full ring-2 ring-ring bg-brand-soft flex items-center justify-center text-brand-text font-bold text-lg select-none">
+    <div className="space-y-4">
+      <DetailHeader
+        back={
+          <Button variant="ghost" size="sm" className="-ml-2" onClick={handleBack}>
+            <ArrowLeft />
+            Back to Pipeline
+          </Button>
+        }
+        avatar={
+          <div
+            aria-hidden="true"
+            className="flex size-16 shrink-0 select-none items-center justify-center rounded-full bg-brand-soft font-display text-xl font-bold text-brand-soft-foreground ring-2 ring-primary/40"
+          >
             {initials || "?"}
           </div>
-
-          <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-xl font-bold truncate leading-tight">
-                {lead.name}
-              </h2>
-              {typeof lead.id === "number" && (
-                <span className="text-xs font-mono text-muted-foreground/60 shrink-0">
-                  LD-{String(lead.id).padStart(5, "0")}
+        }
+        title={lead.name}
+        status={
+          <>
+            <StatusPill tone={statusTone} dot>
+              {status ? STATUS_LABELS[lead.status as PipelineStatus] ?? lead.status : lead.status}
+            </StatusPill>
+            {typeof lead.id === "number" && (
+              <span className="font-mono text-xs tabular-nums text-subtle-foreground">
+                LD-{String(lead.id).padStart(5, "0")}
+              </span>
+            )}
+          </>
+        }
+        subtitle={
+          lead.company || lead.designation ? (
+            <span className="flex flex-wrap items-center gap-1.5">
+              {lead.company && (
+                <span className="flex items-center gap-1">
+                  <Building2 className="size-3.5 shrink-0" aria-hidden="true" />
+                  {lead.company}
                 </span>
               )}
-            </div>
-            {(lead.company || lead.designation) && (
-              <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5 flex-wrap">
-                {lead.company && (
-                  <span className="flex items-center gap-1">
-                    <Building2 className="h-3.5 w-3.5 shrink-0" />
-                    {lead.company}
-                  </span>
-                )}
-                {lead.company && lead.designation && (
-                  <span className="text-muted-foreground/40">·</span>
-                )}
-                {lead.designation && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
-                    {lead.designation}
-                  </span>
-                )}
-              </p>
+              {lead.company && lead.designation && <span className="text-subtle-foreground">·</span>}
+              {lead.designation && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                  {lead.designation}
+                </span>
+              )}
+            </span>
+          ) : undefined
+        }
+        meta={
+          <>
+            <Badge className={cn(priorityStyle.bg, priorityStyle.color)}>{priorityStyle.label}</Badge>
+            <Badge className={cn("tabular-nums", scoreBadge.bg, scoreBadge.color)}>
+              <Flame className="size-3" aria-hidden="true" />
+              {String((lead as Record<string, unknown>).score ?? 0)} · {scoreBadge.label}
+            </Badge>
+            {sla && (
+              <Badge className={cn("tabular-nums", sla.color)}>
+                <Clock className="size-3" aria-hidden="true" />
+                {sla.label}
+              </Badge>
             )}
-          </div>
-
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            <div className="flex items-center gap-1.5 flex-wrap justify-end">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs px-2 py-0.5 font-semibold",
-                  priorityStyle.bg,
-                  priorityStyle.color
-                )}
-              >
-                {priorityStyle.label}
-              </Badge>
-
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs px-2 py-0.5 font-semibold",
-                  STATUS_STYLES[lead.status]?.bg,
-                  STATUS_STYLES[lead.status]?.color
-                )}
-              >
-                {lead.status}
-              </Badge>
-
-              <Badge
-                variant="outline"
-                className={cn("text-xs px-2 py-0.5 font-semibold", scoreBadge.bg, scoreBadge.color)}
-              >
-                <Flame className="h-3 w-3 mr-1" />
-                {String(
-                  (lead as Record<string, unknown>).score ?? 0
-                )}{" "}
-                · {scoreBadge.label}
-              </Badge>
-
-              {sla && (
-                <Badge variant="outline" className={cn("text-xs px-2 py-0.5 font-semibold", sla.color)}>
-                  <Clock className="h-3 w-3 mr-1" />
-                  {sla.label}
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1 flex-wrap justify-end">
-              <AIScoreButton
-                leadId={(lead as Record<string, unknown>).id as number}
-                currentScore={
-                  (lead as Record<string, unknown>).score as number | null
-                }
-                compact
-              />
-              <AIEmailDialog
-                leadName={lead.name}
-                company={lead.company}
-                designation={lead.designation}
-                potentialValue={
-                  (lead as Record<string, unknown>).potentialValue as
-                    | string
-                    | undefined
-                }
-              />
-              <AINextActionButton
-                leadId={(lead as Record<string, unknown>).id as number}
-                compact
-              />
-              <AIEnrichLeadButton
-                leadName={lead.name}
-                company={lead.company}
-                email={
-                  (lead as Record<string, unknown>).email as
-                    | string
-                    | null
-                    | undefined
-                }
-                designation={lead.designation}
-                city={
-                  (lead as Record<string, unknown>).city as
-                    | string
-                    | null
-                    | undefined
-                }
-              />
-
-              <Button variant="outline" size="sm" onClick={onToggleEdit}>
-                <Edit2 className="h-3.5 w-3.5 mr-1" />
-                {isEditing ? "Cancel" : "Edit"}
+          </>
+        }
+        actions={
+          <>
+            <AIScoreButton
+              leadId={(lead as Record<string, unknown>).id as number}
+              currentScore={(lead as Record<string, unknown>).score as number | null}
+              compact
+            />
+            <AIEmailDialog
+              leadName={lead.name}
+              company={lead.company}
+              designation={lead.designation}
+              potentialValue={(lead as Record<string, unknown>).potentialValue as string | undefined}
+            />
+            <AINextActionButton leadId={(lead as Record<string, unknown>).id as number} compact />
+            <AIEnrichLeadButton
+              leadName={lead.name}
+              company={lead.company}
+              email={(lead as Record<string, unknown>).email as string | null | undefined}
+              designation={lead.designation}
+              city={(lead as Record<string, unknown>).city as string | null | undefined}
+            />
+            <Button variant="outline" size="sm" onClick={onToggleEdit}>
+              <Edit2 />
+              {isEditing ? "Cancel" : "Edit"}
+            </Button>
+            {lead.status !== "CONVERTED" && lead.status !== "LOST" && (
+              <Button size="sm" onClick={handleConvert} loading={isStatusPending}>
+                {!isStatusPending && <ArrowRightCircle />}
+                {isStatusPending ? "Updating..." : "Convert"}
               </Button>
+            )}
+          </>
+        }
+      />
 
-              {lead.status !== "CONVERTED" && lead.status !== "LOST" && (
-                <Button
-                  size="sm"
-                  className="bg-success hover:bg-success-700 text-success-foreground"
-                  onClick={handleConvert}
-                  disabled={isStatusPending}
-                >
-                  <ArrowRightCircle className="h-3.5 w-3.5 mr-1" />
-                  {isStatusPending ? "Updating..." : "Convert"}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 pb-4 pt-1">
-          <div className="flex items-start px-2 py-2.5 rounded-xl bg-muted/30 border border-border/50 overflow-x-auto">
+      <Card>
+        <CardContent className="p-4">
+          <ol aria-label="Lead pipeline" className="flex items-start overflow-x-auto pb-1">
             {STATUS_PIPELINE.map((status, i) => (
               <PipelineStep
                 key={status}
@@ -325,9 +291,9 @@ export function LeadDetailHeader({
                 onStatusChange={onStatusChange}
               />
             ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          </ol>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

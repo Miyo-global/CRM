@@ -26,7 +26,7 @@ interface MeetingsCardProps {
 
 export function MeetingsCard({ meetings, onAddMeeting, onDeleteMeeting }: MeetingsCardProps) {
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base">Meetings</CardTitle>
         <Button size="sm" variant="outline" onClick={onAddMeeting}>

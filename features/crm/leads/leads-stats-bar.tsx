@@ -1,7 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { formatINRCompact } from "@/lib/format-utils";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { cn } from "@/lib/utils";
+import { toneDot } from "@/lib/design/tones";
 import { STATUS_CONFIG } from "./leads-constants";
 
 interface LeadsStatsBarProps {
@@ -18,38 +20,24 @@ interface LeadsStatsBarProps {
 export function LeadsStatsBar({ stats }: LeadsStatsBarProps) {
   return (
     <div className="space-y-2">
-
-      <div className="flex items-center gap-3 flex-wrap text-2xs px-1">
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">Total</span>
-          <span className="font-bold tabular-nums text-foreground">{stats.total}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">New/Mo</span>
-          <span className="font-bold tabular-nums text-success-strong">{stats.thisMonth}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">Conv%</span>
-          <span className="font-bold tabular-nums text-warning-strong">{stats.conversionRate}%</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">Pipeline</span>
-          <span className="font-bold tabular-nums text-brand-text">{formatINRCompact(stats.totalPotentialValue)}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">Unassigned</span>
-          <span className={cn("font-bold tabular-nums", stats.unassigned > 0 ? "text-danger-strong" : "text-muted-foreground")}>{stats.unassigned}</span>
-        </div>
-        <div className="border-l border-border/50 h-3" />
-
+      <StatsStrip
+        items={[
+          { label: "Total", value: stats.total },
+          { label: "New/Mo", value: stats.thisMonth, tone: "success" },
+          { label: "Conv%", value: `${stats.conversionRate}%` },
+          { label: "Pipeline", value: formatINRCompact(stats.totalPotentialValue), tone: "brand" },
+          { label: "Unassigned", value: stats.unassigned, tone: stats.unassigned > 0 ? "danger" : undefined },
+        ]}
+      />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs">
         {Object.entries(stats.byStatus).map(([status, count]) => {
           const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
           if (!config) return null;
           return (
-            <div key={status} className="flex items-center gap-1">
-              <div className={cn("w-1.5 h-1.5 rounded-full", config.bg.replace("/10", ""))} />
+            <div key={status} className="flex items-center gap-1.5">
+              <span aria-hidden="true" className={cn("size-2 rounded-full", toneDot[config.tone])} />
               <span className="text-muted-foreground">{config.label}</span>
-              <span className="font-bold tabular-nums">{count}</span>
+              <span className="font-semibold tabular-nums">{count}</span>
             </div>
           );
         })}

@@ -1,10 +1,13 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
+import { LeaveRing } from "@/components/dashboard/widgets/leave-balance-widget";
 import { resolveImageUrl } from "@/lib/utils";
+import { toneBar } from "@/lib/design/tones";
 import { format } from "date-fns";
 import {
   CalendarOff, CalendarClock, CalendarHeart, TreePalm,
@@ -18,12 +21,14 @@ import {
   type LeaveBalance, type PendingRequest, type BirthdayEntry,
 } from "@/lib/api/hooks/dashboard";
 
+const MAX_ROWS = 6;
+
 function WidgetSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-full" />
+        <div key={i} className="flex h-11 items-center gap-3">
+          <Skeleton className="size-8 rounded-full" />
           <div className="flex-1 space-y-1">
             <Skeleton className="h-3.5 w-3/4" />
             <Skeleton className="h-3 w-1/2" />
@@ -36,287 +41,212 @@ function WidgetSkeleton({ rows = 3 }: { rows?: number }) {
 
 function EmptyWidget({ message }: { message: string }) {
   return (
-    <p className="text-xs text-muted-foreground text-center py-6">{message}</p>
+    <p className="rounded-md bg-surface-sunken/40 py-6 text-center text-xs text-muted-foreground">{message}</p>
+  );
+}
+
+function PersonAvatar({ src, name }: { src?: string | null; name?: string | null }) {
+  return (
+    <Avatar className="size-8">
+      <AvatarImage src={resolveImageUrl(src)} alt={name ?? ""} />
+      <AvatarFallback className="text-2xs">{name?.[0]}</AvatarFallback>
+    </Avatar>
   );
 }
 
 export function LeavesTodayWidget() {
   const { data, isLoading } = useLeavesToday();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <CalendarOff className="h-4 w-4 text-warning-strong" />
-          Who&apos;s On Leave Today
-          {data?.length ? <Badge variant="secondary" className="ml-auto text-2xs">{data.length}</Badge> : null}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="Everyone is in today!" /> : (
-          <div className="space-y-2.5 max-h-60 overflow-y-auto">
-            {data.map((l: LeaveToday) => (
-              <div key={l.id} className="flex items-center gap-2.5">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={resolveImageUrl(l.employeeImage)} />
-                  <AvatarFallback className="text-2xs bg-primary/10">{l.employeeName?.[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{l.employeeName}</p>
-                  <p className="text-2xs text-muted-foreground">Leave · back {format(new Date(l.endDate), "MMM d")}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="Who's On Leave Today" icon={CalendarOff} tone="warning" count={data?.length || undefined}>
+      {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="Everyone is in today!" /> : (
+        <ul className="-mx-2">
+          {data.slice(0, MAX_ROWS).map((l: LeaveToday) => (
+            <li key={l.id}>
+              <WidgetListRow
+                leading={<PersonAvatar src={l.employeeImage} name={l.employeeName} />}
+                title={l.employeeName}
+                meta={<span className="tabular-nums">Leave · back {format(new Date(l.endDate), "MMM d")}</span>}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function UpcomingLeavesWidget() {
   const { data, isLoading } = useUpcomingLeaves();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-info-strong" />
-          Upcoming Leaves
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="No upcoming leaves this week." /> : (
-          <div className="space-y-2.5 max-h-60 overflow-y-auto">
-            {data.map((l: UpcomingLeave) => (
-              <div key={l.id} className="flex items-center gap-2.5">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={resolveImageUrl(l.userImage)} />
-                  <AvatarFallback className="text-2xs bg-primary/10">{l.userName?.[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{l.userName}</p>
-                  <p className="text-2xs text-muted-foreground">{l.leaveType} · {format(new Date(l.startDate), "MMM d")} – {format(new Date(l.endDate), "MMM d")}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="Upcoming Leaves" icon={CalendarClock} tone="info">
+      {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="No upcoming leaves this week." /> : (
+        <ul className="-mx-2">
+          {data.slice(0, MAX_ROWS).map((l: UpcomingLeave) => (
+            <li key={l.id}>
+              <WidgetListRow
+                leading={<PersonAvatar src={l.userImage} name={l.userName} />}
+                title={l.userName}
+                meta={
+                  <span className="tabular-nums">
+                    {l.leaveType} · {format(new Date(l.startDate), "MMM d")} – {format(new Date(l.endDate), "MMM d")}
+                  </span>
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function UpcomingHolidaysWidget() {
   const { data, isLoading } = useUpcomingHolidays();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <TreePalm className="h-4 w-4 text-success-strong" />
-          Upcoming Holidays
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton rows={2} /> : !data?.length ? <EmptyWidget message="No upcoming holidays." /> : (
-          <div className="space-y-2.5">
-            {data.map((h: UpcomingHoliday) => (
-              <div key={h.id} className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-success-soft flex items-center justify-center shrink-0">
-                  <CalendarHeart className="h-4 w-4 text-success-strong" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">{h.name}</p>
-                  <p className="text-2xs text-muted-foreground">{format(new Date(h.date), "EEEE, MMM d")}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="Upcoming Holidays" icon={TreePalm} tone="success">
+      {isLoading ? <WidgetSkeleton rows={2} /> : !data?.length ? <EmptyWidget message="No upcoming holidays." /> : (
+        <ul className="-mx-2">
+          {data.slice(0, MAX_ROWS).map((h: UpcomingHoliday) => (
+            <li key={h.id}>
+              <WidgetListRow
+                leading={<IconChip icon={CalendarHeart} tone="success" size="sm" className="size-8" />}
+                title={h.name}
+                meta={<span className="tabular-nums">{format(new Date(h.date), "EEEE, MMM d")}</span>}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function LeaveBalanceWidget() {
   const { data, isLoading } = useMyLeaveBalance();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Clock className="h-4 w-4 text-plum-strong" />
-          My Leave Balance
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton rows={2} /> : !data?.length ? <EmptyWidget message="No leave balances found." /> : (
-          <div className="grid grid-cols-2 gap-2">
-            {data.map((b: LeaveBalance) => {
-              const balance = Number(b.balance) || 0;
-              const used = (b.daysPerYear ?? 0) - balance;
-              const pct = b.daysPerYear ? (balance / b.daysPerYear) * 100 : 0;
-              return (
-                <div key={b.id} className="rounded-lg border p-2.5">
-                  <p className="text-2xs text-muted-foreground truncate">{b.leaveTypeName}</p>
-                  <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className="text-lg font-bold">{balance}</span>
-                    <span className="text-2xs text-muted-foreground">/ {b.daysPerYear}</span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-plum-500 transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="My Leave Balance" icon={Clock} tone="plum">
+      {isLoading ? (
+        <div className="grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="mx-auto size-14 rounded-full" />)}
+        </div>
+      ) : !data?.length ? <EmptyWidget message="No leave balances found." /> : (
+        <ul className="grid grid-cols-3 gap-x-3 gap-y-4">
+          {data.slice(0, MAX_ROWS).map((b: LeaveBalance) => (
+            <li key={b.id} className="min-w-0">
+              <LeaveRing value={Number(b.balance) || 0} total={b.daysPerYear ?? 0} label={b.leaveTypeName ?? ""} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function PendingRequestsWidget() {
   const { data, isLoading } = usePendingRequests();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Clock className="h-4 w-4 text-warning-strong" />
-          My Pending Requests
-          {data?.length ? <Badge variant="outline" className="ml-auto text-2xs">{data.length}</Badge> : null}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton rows={2} /> : !data?.length ? <EmptyWidget message="No pending requests." /> : (
-          <div className="space-y-2">
-            {data.map((r: PendingRequest) => (
-              <div key={r.id} className="flex items-center gap-2 p-2 rounded-md border text-xs">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{r.leaveTypeName ?? "Leave"}</p>
-                  <p className="text-2xs text-muted-foreground">{format(new Date(r.startDate), "MMM d")} – {format(new Date(r.endDate), "MMM d")}</p>
-                </div>
-                <Badge variant="outline" className="text-2xs text-warning-strong">Pending</Badge>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="My Pending Requests" icon={Clock} tone="warning" count={data?.length || undefined}>
+      {isLoading ? <WidgetSkeleton rows={2} /> : !data?.length ? <EmptyWidget message="No pending requests." /> : (
+        <ul className="-mx-2">
+          {data.slice(0, MAX_ROWS).map((r: PendingRequest) => (
+            <li key={r.id}>
+              <WidgetListRow
+                title={r.leaveTypeName ?? "Leave"}
+                meta={
+                  <span className="tabular-nums">
+                    {format(new Date(r.startDate), "MMM d")} – {format(new Date(r.endDate), "MMM d")}
+                  </span>
+                }
+                trailing={<StatusPill tone="warning" dot>Pending</StatusPill>}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function BirthdaysWidget() {
   const { data, isLoading } = useBirthdays();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Cake className="h-4 w-4 text-plum-strong" />
-          Birthdays & Anniversaries
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="No celebrations this week." /> : (
-          <div className="space-y-2.5 max-h-60 overflow-y-auto">
-            {data.map((b: BirthdayEntry) => (
-              <div key={b.id} className="flex items-center gap-2.5">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={resolveImageUrl(b.image)} />
-                  <AvatarFallback className="text-2xs bg-plum-soft">{b.name?.[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{b.name}</p>
-                  <div className="flex items-center gap-1.5">
-                    {b.type === "birthday" && (
-                      <span className="text-2xs text-plum-strong flex items-center gap-0.5">
-                        <Cake className="h-3 w-3" /> Birthday {b.date ? format(new Date(b.date), "MMM d") : ""}
-                      </span>
-                    )}
-                    {b.type === "anniversary" && (
-                      <span className="text-2xs text-info-strong flex items-center gap-0.5">
-                        <Award className="h-3 w-3" /> {b.yearsCompleted}yr anniversary
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="Birthdays & Anniversaries" icon={Cake} tone="plum">
+      {isLoading ? <WidgetSkeleton /> : !data?.length ? <EmptyWidget message="No celebrations this week." /> : (
+        <ul className="-mx-2">
+          {data.slice(0, MAX_ROWS).map((b: BirthdayEntry) => (
+            <li key={b.id}>
+              <WidgetListRow
+                leading={<PersonAvatar src={b.image} name={b.name} />}
+                title={b.name}
+                meta={
+                  b.type === "birthday" ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Cake className="size-3" aria-hidden="true" /> Birthday {b.date ? format(new Date(b.date), "MMM d") : ""}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
+                      <Award className="size-3" aria-hidden="true" /> {b.yearsCompleted}yr anniversary
+                    </span>
+                  )
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 
 export function PendingApprovalsWidget() {
   const { data, isLoading } = usePendingApprovals();
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-danger-strong" />
-          Pending Approvals
-          {data?.total ? <Badge variant="destructive" className="ml-auto text-2xs">{data.total}</Badge> : null}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-2.5 rounded-lg border">
-              <span className="text-xs text-muted-foreground">Leave Requests</span>
-              <span className="text-sm font-bold">{data.pendingLeaves}</span>
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-lg border">
-              <span className="text-xs text-muted-foreground">Resignations</span>
-              <span className="text-sm font-bold">{data.pendingResignations}</span>
-            </div>
+    <WidgetCard title="Pending Approvals" icon={AlertCircle} tone="danger" count={data?.total || undefined}>
+      {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
+        <dl className="divide-y divide-border">
+          <div className="flex h-11 items-center justify-between">
+            <dt className="text-sm text-muted-foreground">Leave Requests</dt>
+            <dd className="text-sm font-semibold tabular-nums">{data.pendingLeaves}</dd>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex h-11 items-center justify-between">
+            <dt className="text-sm text-muted-foreground">Resignations</dt>
+            <dd className="text-sm font-semibold tabular-nums">{data.pendingResignations}</dd>
+          </div>
+        </dl>
+      )}
+    </WidgetCard>
   );
 }
 
 export function TeamAttendanceWidget() {
   const { data, isLoading } = useTeamAttendance();
+  const rate = data?.total ? Math.round((data.present / data.total) * 100) : 0;
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Users className="h-4 w-4 text-info-strong" />
-          Team Attendance
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
-          <div>
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="rounded-lg border p-2 text-center">
-                <UserCheck className="h-3.5 w-3.5 mx-auto text-success-strong mb-0.5" />
-                <p className="text-lg font-bold">{data.present}</p>
-                <p className="text-2xs text-muted-foreground">Present</p>
+    <WidgetCard title="Team Attendance" icon={Users} tone="info">
+      {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
+        <div>
+          <dl className="mb-3 grid grid-cols-3 gap-2 text-center">
+            {[
+              { label: "Present", value: data.present, icon: UserCheck, tone: "success" as const },
+              { label: "Absent", value: data.absent, icon: UserX, tone: "danger" as const },
+              { label: "Total", value: data.total, icon: Users, tone: "neutral" as const },
+            ].map((s) => (
+              <div key={s.label} className="flex flex-col items-center gap-1 rounded-md bg-surface-sunken/40 py-2">
+                <IconChip icon={s.icon} tone={s.tone} size="sm" />
+                <dt className="order-last text-2xs text-muted-foreground">{s.label}</dt>
+                <dd className="font-display text-lg font-bold tabular-nums">{s.value}</dd>
               </div>
-              <div className="rounded-lg border p-2 text-center">
-                <UserX className="h-3.5 w-3.5 mx-auto text-danger-strong mb-0.5" />
-                <p className="text-lg font-bold">{data.absent}</p>
-                <p className="text-2xs text-muted-foreground">Absent</p>
-              </div>
-              <div className="rounded-lg border p-2 text-center">
-                <Users className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-0.5" />
-                <p className="text-lg font-bold">{data.total}</p>
-                <p className="text-2xs text-muted-foreground">Total</p>
-              </div>
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-success-500 transition-all"
-                style={{ width: `${data.total ? (data.present / data.total) * 100 : 0}%` }}
-              />
-            </div>
-            <p className="text-2xs text-muted-foreground mt-1 text-center">
-              {data.total ? Math.round((data.present / data.total) * 100) : 0}% attendance rate
-            </p>
+            ))}
+          </dl>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className={`h-full rounded-full transition-all ${toneBar.success}`}
+              style={{ width: `${data.total ? (data.present / data.total) * 100 : 0}%` }}
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <p className="mt-1 text-center text-2xs tabular-nums text-muted-foreground">{rate}% attendance rate</p>
+        </div>
+      )}
+    </WidgetCard>
   );
 }

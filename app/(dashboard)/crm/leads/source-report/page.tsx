@@ -2,12 +2,16 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Users, Target, DollarSign } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptySearchIllustration } from "@/components/illustrations";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { TAG_TONE_CYCLE, toneBar, toneSoft } from "@/lib/design/tones";
@@ -31,7 +35,7 @@ const SOURCE_COLORS = TAG_TONE_CYCLE.map((t) => ({
 }));
 
 export default function LeadSourceReportPage() {
-  const { data, isLoading } = useLeadSourceReport();
+  const { data, isLoading, isError, error, refetch } = useLeadSourceReport();
 
   const maxCount = useMemo(
     () => Math.max(1, ...(data?.sources.map((s) => s.count) ?? [])),
@@ -57,11 +61,17 @@ export default function LeadSourceReportPage() {
     return (
       <PageWrapper title="Lead Source Report" subtitle="Attribution analysis across all lead sources">
         <div className="space-y-6">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28" />)}
-          </div>
+          <Skeleton className="h-20" />
           <Skeleton className="h-80" />
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Lead Source Report" subtitle="Attribution analysis across all lead sources">
+        <QueryErrorState title="Couldn't load the source report" error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -77,46 +87,33 @@ export default function LeadSourceReportPage() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <StatCard
-            label="Total Leads"
-            value={data?.total ?? 0}
-            color="blue"
-            icon={Users}
-          />
-          <StatCard
-            label="Sources Tracked"
-            value={data?.sources.length ?? 0}
-            color="gold"
-            icon={BarChart3}
-          />
-          <StatCard
-            label="Total Converted"
-            value={totalConverted}
-            color="green"
-            icon={TrendingUp}
-          />
-          <StatCard
-            label="Best Conversion"
-            value={bestConversionSource ? `${bestConversionSource.conversionRate}% — ${SOURCE_LABELS[bestConversionSource.source] ?? bestConversionSource.source}` : ""}
-            color="purple"
-            icon={Target}
+        <motion.div variants={fadeUp}>
+          <StatsStrip
+            items={[
+              { label: "Total Leads", value: data?.total ?? 0, icon: Users },
+              { label: "Sources Tracked", value: data?.sources.length ?? 0, icon: BarChart3 },
+              { label: "Total Converted", value: totalConverted, icon: TrendingUp, tone: "success" },
+              {
+                label: "Best Conversion",
+                value: bestConversionSource ? `${bestConversionSource.conversionRate}%` : "—",
+                hint: bestConversionSource ? SOURCE_LABELS[bestConversionSource.source] ?? bestConversionSource.source : undefined,
+                icon: Target,
+              },
+            ]}
           />
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-brand-text" />
+              <CardTitle className="flex items-center gap-2 font-sans text-sm font-semibold">
+                <IconChip icon={BarChart3} size="sm" />
                 Source Attribution
               </CardTitle>
             </CardHeader>
             <CardContent>
               {(!data?.sources || data.sources.length === 0) ? (
-                <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-                  No lead source data available
-                </div>
+                <EmptyState compact illustration={<EmptySearchIllustration />} title="No lead source data available" className="border-0 bg-transparent" />
               ) : (
                 <div className="space-y-5">
                   {data.sources.map((s, i) => {
@@ -133,14 +130,9 @@ export default function LeadSourceReportPage() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              className={cn("text-xs font-medium border", color.badge)}
-                            >
-                              {label}
-                            </Badge>
+                            <Badge className={color.badge}>{label}</Badge>
                             {topSource?.source === s.source && (
-                              <Badge variant="secondary" className="text-2xs">Top</Badge>
+                              <Badge variant="solid">Top</Badge>
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-sm">
@@ -164,8 +156,7 @@ export default function LeadSourceReportPage() {
                             </div>
                             <div className="text-center hidden sm:block">
                               <div className="font-semibold tabular-nums text-xs">
-                                <DollarSign className="h-3 w-3 inline mr-0.5 text-brand-text" />
-                                {formatINRCompact(s.totalValue)}
+                                                                {formatINRCompact(s.totalValue)}
                               </div>
                               <div className="text-2xs text-muted-foreground">value</div>
                             </div>
@@ -190,17 +181,17 @@ export default function LeadSourceReportPage() {
 
         {data && data.sources.length > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-success-strong" />
+                <CardTitle className="flex items-center gap-2 font-sans text-sm font-semibold">
+                  <IconChip icon={TrendingUp} tone="success" size="sm" />
                   Conversion Rate by Source
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="w-full">
                   <div className="min-w-[400px]">
-                    <div className="flex items-end gap-3 h-36">
+                    <div role="img" aria-label="Conversion rate by source" className="flex h-36 items-end gap-3">
                       {[...data.sources]
                         .sort((a, b) => b.conversionRate - a.conversionRate)
                         .map((s, i) => {
@@ -211,11 +202,11 @@ export default function LeadSourceReportPage() {
                           const label = SOURCE_LABELS[s.source] ?? s.source;
                           return (
                             <div key={s.source} className="flex flex-col items-center gap-1 flex-1">
-                              <span className="text-xs font-semibold text-muted-foreground">
+                              <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                                 {s.conversionRate}%
                               </span>
                               <motion.div
-                                className={cn("w-full rounded-t-md", color.bar)}
+                                className={cn("w-full max-w-7 rounded-t-sm", color.bar)}
                                 style={{ height: `${barH}px` }}
                                 initial={{ height: 0 }}
                                 animate={{ height: `${barH}px` }}

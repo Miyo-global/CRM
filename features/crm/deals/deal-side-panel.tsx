@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -8,10 +7,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { DEAL_STAGE_TONE } from "./deal-stage-tone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
   useDealDetail,
   useUpdateDeal,
@@ -69,7 +68,8 @@ export function DealSidePanel({ dealId, onClose }: DealSidePanelProps) {
       <Sheet open={isOpen} onOpenChange={(o) => { if (!o) onClose(); }}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-3xl p-0 flex flex-col"
+          size="lg"
+          className="w-full gap-0 p-0"
         >
           {dealLoading ? (
             <div className="p-6 space-y-3">
@@ -79,35 +79,32 @@ export function DealSidePanel({ dealId, onClose }: DealSidePanelProps) {
             </div>
           ) : deal ? (
             <>
-              <SheetHeader className="px-6 pt-5 pb-4 border-b shrink-0">
-                <div className="flex items-center justify-between">
+              <SheetHeader className="shrink-0 border-b border-border px-6 pt-5 pb-4">
+                <div className="flex items-center justify-between gap-3 pr-8">
                   <div className="space-y-1 min-w-0">
-                    <SheetTitle className="text-base truncate">{deal.name}</SheetTitle>
+                    <SheetTitle className="truncate font-display text-lg">{deal.name}</SheetTitle>
                     <div className="flex items-center gap-2">
                       {stage && (
-                        <Badge
-                          variant="secondary"
-                          className={`text-2xs ${stage.bg}`}
-                        >
+                        <StatusPill tone={DEAL_STAGE_TONE[stage.key] ?? "neutral"} dot>
                           {stage.label}
-                        </Badge>
+                        </StatusPill>
                       )}
-                      <span className="text-sm font-semibold text-brand-text">
+                      <span className="text-sm font-semibold tabular-nums text-foreground">
                         {formatINRCompact(Number(deal.value ?? 0))}
                       </span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" asChild className="shrink-0">
+                  <Button variant="outline" size="sm" asChild className="shrink-0">
                     <Link href={`/crm/deals/${deal.id}`} onClick={onClose}>
-                      <ExternalLink className="h-4 w-4 mr-1" />
+                      <ExternalLink />
                       Full Page
                     </Link>
                   </Button>
                 </div>
               </SheetHeader>
 
-              <div className="flex flex-1 min-h-0 divide-x">
-                <ScrollArea className="flex-1 min-w-0">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:divide-x md:divide-border md:overflow-hidden">
+                <ScrollArea className="min-w-0 md:flex-1">
                   <div className="p-6">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                       Deal Details
@@ -121,10 +118,8 @@ export function DealSidePanel({ dealId, onClose }: DealSidePanelProps) {
                   </div>
                 </ScrollArea>
 
-                <Separator orientation="vertical" />
-
-                <div className="w-72 shrink-0 flex flex-col min-h-0">
-                  <div className="px-4 pt-4 pb-3 border-b shrink-0">
+                <div className="flex min-h-0 w-full shrink-0 flex-col border-t border-border bg-surface-sunken/40 md:w-72 md:border-t-0">
+                  <div className="shrink-0 border-b border-border px-4 pt-4 pb-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Activity
                     </h3>

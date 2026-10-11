@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Calendar, User, Edit2, Trophy, XCircle,
-  ChevronRight, Clock, Phone, Mail, StickyNote, PhoneCall, Video,
-  Copy, FolderKanban,
+  Check, Clock, Phone, Mail, StickyNote, PhoneCall, Video,
+  Copy, FolderKanban, Briefcase,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageWrapper } from "@/components/ui/page-wrapper";
 import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import {
@@ -27,20 +25,25 @@ import { DealEditForm, type EditFormValues } from "@/features/crm/deals/detail/d
 import { ActivityTimeline } from "@/features/crm/deals/detail/activity-timeline";
 import { LogActivityDialog } from "@/features/crm/deals/detail/log-activity-dialog";
 import { AIPredictDealButton } from "@/features/crm/deals/ai-predict-deal-button";
-import Image from "next/image";
 import { MeetingsCard } from "@/features/crm/deals/detail/meetings-card";
 import { MeetingDialog, CreateProjectDialog } from "@/features/crm/deals/detail/deal-dialogs";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
-import { toneSoft } from "@/lib/design/tones";
+import type { Tone } from "@/lib/design/tones";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { NotFoundIllustration } from "@/components/illustrations";
+import { DetailHeader, DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { StatsStrip } from "@/components/shared/stats-strip";
 
 const STAGES = [
-  { key: "LEAD", label: "Lead", bg: toneSoft.info },
-  { key: "CONTACTED", label: "Contacted", bg: toneSoft.teal },
-  { key: "PROPOSAL", label: "Proposal", bg: toneSoft.warning },
-  { key: "NEGOTIATION", label: "Negotiation", bg: toneSoft.plum },
-  { key: "WON", label: "Won", bg: toneSoft.success },
-  { key: "LOST", label: "Lost", bg: toneSoft.danger },
-] as const;
+  { key: "LEAD", label: "Lead", tone: "info" },
+  { key: "CONTACTED", label: "Contacted", tone: "teal" },
+  { key: "PROPOSAL", label: "Proposal", tone: "warning" },
+  { key: "NEGOTIATION", label: "Negotiation", tone: "plum" },
+  { key: "WON", label: "Won", tone: "success" },
+  { key: "LOST", label: "Lost", tone: "danger" },
+] as const satisfies readonly { key: string; label: string; tone: Tone }[];
 
 type DealStage = typeof STAGES[number]["key"];
 
@@ -199,11 +202,18 @@ export default function DealDetailPage({
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-6 lg:grid-cols-5">
-          <Skeleton className="h-[500px] lg:col-span-3" />
-          <Skeleton className="h-[500px] lg:col-span-2" />
+      <div className="space-y-6 px-4 pt-6 pb-10 sm:px-6 xl:px-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-16 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-56" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+        <Skeleton className="h-16 w-full" />
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     );
@@ -211,285 +221,286 @@ export default function DealDetailPage({
 
   if (!deal) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <p className="text-muted-foreground">Deal not found</p>
-        <Button variant="outline" onClick={handleBackToDeals}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Deals
-        </Button>
+      <div className="px-4 pt-6 pb-10 sm:px-6 xl:px-8">
+        <EmptyState
+          illustration={<NotFoundIllustration />}
+          title="Deal not found"
+          action={{ label: "Back to Deals", onClick: handleBackToDeals }}
+        />
       </div>
     );
   }
 
   const stageConfig = STAGES.find(s => s.key === deal.stage) ?? STAGES[0];
   const dealValue = Number(deal.value ?? 0);
+  const isClosed = deal.stage === "WON" || deal.stage === "LOST";
 
   return (
-    <PageWrapper
-      title={deal.name}
-      subtitle={
-        <span className="flex items-center gap-2">
-          <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded select-all">{formatDealId(dealId)}</span>
-          <span>{formatINR(dealValue)}</span>
-        </span>
-      }
-      badge={
-        <Badge className={cn("text-sm px-3 py-1 border-transparent", stageConfig.bg)}>
-          {stageConfig.label}
-        </Badge>
-      }
-      actions={
-        <>
-          <Button variant="ghost" size="icon" onClick={handleBackToDeals} aria-label="Back to deals">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          {deal.probability !== null && (
-            <Badge variant="secondary" className="text-xs">{deal.probability}% probability</Badge>
-          )}
-          <AIPredictDealButton dealId={dealId} compact />
-          <Button variant="outline" size="sm" onClick={handleClone} disabled={cloneDeal.isPending}>
-            <Copy className="h-4 w-4 mr-1" />
-            Clone
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleToggleEdit}>
-            <Edit2 className="h-4 w-4 mr-1" />
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
-          {deal.stage !== "WON" && deal.stage !== "LOST" && (
-            <>
-              <Button size="sm" className="bg-success hover:bg-success-700 text-success-foreground" onClick={handleMarkWon}>
-                <Trophy className="h-4 w-4 mr-1" />
-                Mark Won
-              </Button>
-              <Button size="sm" variant="destructive" onClick={handleMarkLost}>
-                <XCircle className="h-4 w-4 mr-1" />
-                Mark Lost
-              </Button>
-            </>
-          )}
-          {(deal.stage === "WON" || deal.stage === "NEGOTIATION") && (
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setCreateProjectOpen(true)}>
-              <FolderKanban className="h-4 w-4 mr-1" />
-              Create Project
-            </Button>
-          )}
-        </>
-      }
-    >
+    <div className="px-4 pt-6 pb-10 sm:px-6 xl:px-8">
       <motion.div className="space-y-6" variants={staggerContainer} initial="hidden" animate="visible">
-        <motion.div variants={fadeUp} className="flex items-center gap-1 p-2 rounded-xl bg-muted/30 border border-border/50 overflow-x-auto">
-          {STAGES.map((stage, i) => {
-            const isActive = stage.key === deal.stage;
-            const isPast = i < currentStageIndex;
-            return (
-              <button
-                key={stage.key}
-                data-stage={stage.key}
-                onClick={handleStagePipelineClick}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                  isActive ? cn(stage.bg, "ring-1 ring-current/20") :
-                  isPast ? "bg-muted/50 text-muted-foreground" :
-                  "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30",
+        <motion.div variants={fadeUp}>
+          <DetailHeader
+            back={
+              <Button variant="ghost" size="sm" className="-ml-2" onClick={handleBackToDeals} aria-label="Back to deals">
+                <ArrowLeft />
+                Deals
+              </Button>
+            }
+            icon={Briefcase}
+            iconTone={stageConfig.tone}
+            title={deal.name}
+            status={<StatusPill tone={stageConfig.tone} dot>{stageConfig.label}</StatusPill>}
+            meta={
+              <>
+                <span className="select-all font-mono text-xs tabular-nums">{formatDealId(dealId)}</span>
+                {deal.assignedTo?.name && (
+                  <span className="flex items-center gap-1">
+                    <User className="size-3.5" aria-hidden="true" />
+                    {deal.assignedTo.name}
+                  </span>
                 )}
-              >
-                {stage.label}
-                {i < STAGES.length - 1 && <ChevronRight className="h-3 w-3 ml-1 text-muted-foreground/30" />}
-              </button>
-            );
-          })}
+              </>
+            }
+            actions={
+              <>
+                <AIPredictDealButton dealId={dealId} compact />
+                <Button variant="outline" size="sm" onClick={handleClone} loading={cloneDeal.isPending}>
+                  {!cloneDeal.isPending && <Copy />}
+                  Clone
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleToggleEdit}>
+                  <Edit2 />
+                  {isEditing ? "Cancel" : "Edit"}
+                </Button>
+                {!isClosed && (
+                  <>
+                    <Button size="sm" variant="outline" className="text-destructive hover:bg-danger-soft hover:text-danger-strong" onClick={handleMarkLost} disabled={updateStage.isPending}>
+                      <XCircle />
+                      Mark Lost
+                    </Button>
+                    <Button size="sm" onClick={handleMarkWon} loading={updateStage.isPending}>
+                      {!updateStage.isPending && <Trophy />}
+                      Mark Won
+                    </Button>
+                  </>
+                )}
+                {(deal.stage === "WON" || deal.stage === "NEGOTIATION") && (
+                  <Button size="sm" variant={isClosed ? "default" : "secondary"} onClick={() => setCreateProjectOpen(true)}>
+                    <FolderKanban />
+                    Create Project
+                  </Button>
+                )}
+              </>
+            }
+          />
         </motion.div>
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <motion.div variants={fadeUp} className="lg:col-span-3 space-y-6">
-            {isEditing ? (
-              <DealEditForm
-                deal={deal}
-                isPending={updateDeal.isPending}
-                onSubmit={onEditSubmit}
-                onCancel={handleCancelEdit}
-              />
-            ) : (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Deal Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
-                      { icon: User, label: "Contact Person", value: deal.contactPerson },
-                      { icon: Mail, label: "Contact Email", value: deal.contactEmail, href: deal.contactEmail ? `mailto:${deal.contactEmail}` : undefined },
-                      { icon: Phone, label: "Contact Phone", value: deal.contactPhone, href: deal.contactPhone ? `tel:${deal.contactPhone}` : undefined },
-                      { icon: Calendar, label: "Expected Close", value: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
-                      { icon: Calendar, label: "Actual Close", value: deal.actualCloseDate ? new Date(deal.actualCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
-                      { icon: Clock, label: "Probability", value: `${deal.probability ?? 0}%` },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-start gap-2">
-                        <item.icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">{item.label}</p>
-                          {item.href ? (
-                            <a href={item.href} className="text-sm text-brand-text hover:underline">{item.value || ""}</a>
-                          ) : (
-                            <p className="text-sm">{item.value || ""}</p>
+        <motion.div variants={fadeUp}>
+          <Card>
+            <CardContent className="p-4">
+              <ol aria-label="Deal stages" className="flex items-start overflow-x-auto pb-1">
+                {STAGES.map((stage, i) => {
+                  const isActive = stage.key === deal.stage;
+                  const isPast = i < currentStageIndex;
+                  const isLost = stage.key === "LOST";
+                  return (
+                    <li key={stage.key} className="flex min-w-24 flex-1 items-start" aria-current={isActive ? "step" : undefined}>
+                      <button
+                        data-stage={stage.key}
+                        onClick={handleStagePipelineClick}
+                        disabled={updateStage.isPending || isActive}
+                        title={`Move to ${stage.label}`}
+                        className="group flex shrink-0 flex-col items-center gap-1.5 rounded-md px-1 outline-none focus-visible:focus-ring disabled:cursor-not-allowed"
+                      >
+                        <span
+                          className={cn(
+                            "flex size-6 items-center justify-center rounded-full transition-colors",
+                            isActive
+                              ? isLost ? "bg-card ring-2 ring-danger-500" : "bg-card ring-2 ring-primary"
+                              : isPast
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted ring-1 ring-border group-hover:ring-border-strong",
                           )}
-                        </div>
+                        >
+                          {isActive ? (
+                            <span className={cn("size-2.5 rounded-full", isLost ? "bg-danger-500" : "bg-primary")} />
+                          ) : isPast ? (
+                            <Check className="size-3.5" aria-hidden="true" />
+                          ) : null}
+                        </span>
+                        <span className={cn("whitespace-nowrap text-xs font-medium leading-none", isActive ? (isLost ? "text-danger-strong" : "text-foreground") : "text-muted-foreground group-hover:text-foreground")}>
+                          {stage.label}
+                        </span>
+                      </button>
+                      {i < STAGES.length - 1 && (
+                        <span aria-hidden="true" className={cn("mx-1 mt-3 h-px flex-1", isPast ? "bg-primary" : "bg-border")} />
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <StatsStrip
+            items={[
+              { label: "Deal Value", value: formatINR(dealValue), tone: "brand" },
+              {
+                label: "Weighted",
+                value: deal.probability ? formatINR(Math.round(dealValue * (deal.probability / 100))) : "—",
+              },
+              { label: "Probability", value: `${deal.probability ?? 0}%` },
+              {
+                label: "Expected Close",
+                value: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE) : "—",
+              },
+            ]}
+          />
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <DetailLayout
+            main={
+              <div className="space-y-6">
+                {isEditing ? (
+                  <DealEditForm
+                    deal={deal}
+                    isPending={updateDeal.isPending}
+                    onSubmit={onEditSubmit}
+                    onCancel={handleCancelEdit}
+                  />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="font-sans text-base font-semibold">Deal Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                        {[
+                          { icon: User, label: "Contact Person", value: deal.contactPerson },
+                          { icon: Mail, label: "Contact Email", value: deal.contactEmail, href: deal.contactEmail ? `mailto:${deal.contactEmail}` : undefined },
+                          { icon: Phone, label: "Contact Phone", value: deal.contactPhone, href: deal.contactPhone ? `tel:${deal.contactPhone}` : undefined },
+                          { icon: Calendar, label: "Expected Close", value: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
+                          { icon: Calendar, label: "Actual Close", value: deal.actualCloseDate ? new Date(deal.actualCloseDate).toLocaleDateString(DEFAULT_LOCALE) : null },
+                          { icon: Clock, label: "Probability", value: `${deal.probability ?? 0}%` },
+                        ].map(item => (
+                          <div key={item.label} className="flex min-w-0 items-start gap-2">
+                            <item.icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">{item.label}</p>
+                              {item.href ? (
+                                <a href={item.href} className="block truncate text-sm text-brand-text hover:underline">{item.value || ""}</a>
+                              ) : (
+                                <p className="truncate text-sm tabular-nums">{item.value || ""}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="p-4 rounded-xl bg-brand-soft border border-border/50">
-                    <p className="text-xs text-muted-foreground">Deal Value</p>
-                    <p className="text-3xl font-bold text-brand-text">{formatINR(dealValue)}</p>
-                    {deal.probability !== null && deal.probability > 0 && (
-                      <div className="mt-2">
-                        <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${deal.probability}%` }} />
+                      {deal.probability !== null && deal.probability > 0 && (
+                        <div>
+                          <div className="h-2 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${deal.probability}%` }} />
+                          </div>
+                          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                            Weighted: {formatINR(Math.round(dealValue * (deal.probability / 100)))}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Weighted: {formatINR(Math.round(dealValue * (deal.probability / 100)))}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      )}
 
-                  {deal.notes && (
-                    <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                      <p className="text-xs text-muted-foreground mb-1">Notes</p>
-                      <p className="text-sm whitespace-pre-wrap">{deal.notes}</p>
+                      {deal.notes && (
+                        <div className="rounded-lg border border-border bg-surface-sunken p-3">
+                          <p className="mb-1 text-xs text-muted-foreground">Notes</p>
+                          <p className="whitespace-pre-wrap text-sm">{deal.notes}</p>
+                        </div>
+                      )}
+
+                      {deal.lostReason && (
+                        <div className="rounded-lg bg-danger-soft p-3">
+                          <p className="mb-1 text-xs font-medium text-danger-strong">Lost Reason</p>
+                          <p className="text-sm">{deal.lostReason}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                <Card>
+                  <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+                    <CardTitle className="font-sans text-base font-semibold">Activity Timeline</CardTitle>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "Log Call", icon: PhoneCall, type: "call" as const },
+                        { label: "Add Note", icon: StickyNote, type: "note" as const },
+                        { label: "Log Email", icon: Mail, type: "email" as const },
+                        { label: "Log Meeting", icon: Video, type: "meeting" as const },
+                      ].map(action => (
+                        <Button
+                          key={action.type}
+                          variant="outline"
+                          size="xs"
+                          data-action-type={action.type}
+                          data-action-label={action.label}
+                          onClick={handleQuickActionClick}
+                        >
+                          <action.icon />
+                          {action.label}
+                        </Button>
+                      ))}
                     </div>
-                  )}
+                  </CardHeader>
+                  <CardContent>
+                    <ActivityTimeline activities={activities ?? []} />
+                  </CardContent>
+                </Card>
+              </div>
+            }
+            rail={
+              <>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="font-sans text-sm font-semibold">Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <PropertyList
+                      items={[
+                        { label: "Assigned To", value: deal.assignedTo?.name || null },
+                        {
+                          label: "Linked Lead",
+                          value: deal.lead ? (
+                            <Link href={`/crm/leads/${deal.lead.id}`} className="text-brand-text hover:underline">
+                              {deal.lead.name}
+                            </Link>
+                          ) : null,
+                        },
+                        { label: "Linked Client", value: deal.client?.name || null },
+                        ...[
+                          { label: "Created", value: deal.createdAt },
+                          { label: "Updated", value: deal.updatedAt },
+                          { label: "Actual Close", value: deal.actualCloseDate },
+                        ]
+                          .filter(d => d.value)
+                          .map(d => ({
+                            label: d.label,
+                            value: <span className="tabular-nums">{new Date(d.value!).toLocaleDateString(DEFAULT_LOCALE)}</span>,
+                          })),
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
 
-                  {deal.lostReason && (
-                    <div className="p-3 rounded-lg bg-danger-soft border border-danger-strong/20">
-                      <p className="text-xs text-danger-strong mb-1">Lost Reason</p>
-                      <p className="text-sm">{deal.lostReason}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="lg:col-span-2 space-y-6">
-            {deal.assignedTo && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Assigned To</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-brand-soft flex items-center justify-center text-sm font-semibold text-brand-text">
-                      {deal.assignedTo.name?.[0] ?? "?"}
-                    </div>
-                    <p className="text-sm font-medium">{deal.assignedTo.name}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {deal.lead && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Linked Lead</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Link href={`/crm/leads/${deal.lead.id}`} className="flex items-center gap-3 group">
-                    <div className="h-10 w-10 rounded-full bg-info-soft flex items-center justify-center text-sm font-semibold text-info-strong">
-                      {deal.lead.name?.[0] ?? "?"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium group-hover:text-brand-text transition-colors">{deal.lead.name}</p>
-                      {deal.lead.email && <p className="text-xs text-muted-foreground">{deal.lead.email}</p>}
-                      {deal.lead.phone && <p className="text-xs text-muted-foreground">{deal.lead.phone}</p>}
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-
-            {deal.client && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Linked Client</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-success-soft flex items-center justify-center text-sm font-semibold text-success-strong">
-                      {deal.client.name?.[0] ?? "?"}
-                    </div>
-                    <p className="text-sm font-medium">{deal.client.name}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Key Dates</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { label: "Created", value: deal.createdAt },
-                  { label: "Updated", value: deal.updatedAt },
-                  { label: "Expected Close", value: deal.expectedCloseDate },
-                  { label: "Actual Close", value: deal.actualCloseDate },
-                ]
-                  .filter(d => d.value)
-                  .map(d => (
-                    <div key={d.label} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{d.label}</span>
-                      <span>{new Date(d.value!).toLocaleDateString(DEFAULT_LOCALE)}</span>
-                    </div>
-                  ))}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: "Log Call", icon: PhoneCall, type: "call" as const },
-                    { label: "Add Note", icon: StickyNote, type: "note" as const },
-                    { label: "Log Email", icon: Mail, type: "email" as const },
-                    { label: "Log Meeting", icon: Video, type: "meeting" as const },
-                  ].map(action => (
-                    <Button
-                      key={action.type}
-                      variant="outline"
-                      size="sm"
-                      className="justify-start gap-2 text-xs"
-                      data-action-type={action.type}
-                      data-action-label={action.label}
-                      onClick={handleQuickActionClick}
-                    >
-                      <action.icon className="h-3.5 w-3.5" />
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <MeetingsCard
-              meetings={meetings}
-              onAddMeeting={() => setMeetingDialogOpen(true)}
-              onDeleteMeeting={handleDeleteMeeting}
-            />
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Activity Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ActivityTimeline activities={activities ?? []} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+                <MeetingsCard
+                  meetings={meetings}
+                  onAddMeeting={() => setMeetingDialogOpen(true)}
+                  onDeleteMeeting={handleDeleteMeeting}
+                />
+              </>
+            }
+          />
+        </motion.div>
       </motion.div>
 
       <MeetingDialog
@@ -514,6 +525,6 @@ export default function DealDetailPage({
         onClose={handleCloseLogDialog}
         onSubmit={handleLogActivity}
       />
-    </PageWrapper>
+    </div>
   );
 }

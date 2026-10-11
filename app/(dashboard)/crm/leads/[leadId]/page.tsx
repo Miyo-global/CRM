@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageWrapper } from "@/components/ui/page-wrapper";
+import { EmptyState } from "@/components/ui/empty-state";
+import { NotFoundIllustration } from "@/components/illustrations";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { LeadActivityTimeline } from "@/features/crm/leads/detail/lead-activity-timeline";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useLeadDetail, useLeadTimeline, useUpdateLead, useUpdateLeadStatus, useLogLeadActivity } from "@/lib/api/hooks/leads";
 import { useCreateTask } from "@/lib/api/hooks/tasks";
@@ -47,6 +49,7 @@ export default function LeadDetailPage({
 
   const [isEditing, setIsEditing] = useState(false);
   const [activeAction, setActiveAction] = useState<QuickAction>(null);
+  const [tab, setTab] = useState("activity");
 
   const updateLeadMutation = useUpdateLead();
   const updateStatusMutation = useUpdateLeadStatus();
@@ -193,11 +196,18 @@ export default function LeadDetailPage({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 p-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 lg:grid-cols-5">
-          <Skeleton className="h-[600px] lg:col-span-3" />
-          <Skeleton className="h-[600px] lg:col-span-2" />
+      <div className="space-y-6 px-4 pt-6 pb-10 sm:px-6 xl:px-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-16 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-56" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+        <Skeleton className="h-16 w-full" />
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     );
@@ -205,84 +215,86 @@ export default function LeadDetailPage({
 
   if (!lead) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <p className="text-muted-foreground">Lead not found</p>
-        <Button variant="outline" onClick={handleBackToPipeline}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Pipeline
-        </Button>
+      <div className="px-4 pt-6 pb-10 sm:px-6 xl:px-8">
+        <EmptyState
+          illustration={<NotFoundIllustration />}
+          title="Lead not found"
+          action={{ label: "Back to Pipeline", onClick: handleBackToPipeline }}
+        />
       </div>
     );
   }
 
   return (
-    <PageWrapper
-      title={lead.name}
-      actions={
-        <Button variant="outline" size="sm" onClick={handleBackToPipeline}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Pipeline
-        </Button>
-      }
+    <motion.div
+      className="space-y-6 px-4 pt-6 pb-10 sm:px-6 xl:px-8"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
     >
-      <motion.div
-        className="space-y-4"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div variants={fadeUp}>
-          <LeadDetailHeader
-            lead={lead as unknown as Parameters<typeof LeadDetailHeader>[0]["lead"]}
-            isEditing={isEditing}
-            onToggleEdit={handleToggleEdit}
-            onStatusChange={handleStatusChange}
-            isStatusPending={updateStatusMutation.isPending}
-          />
-        </motion.div>
+      <motion.div variants={fadeUp}>
+        <LeadDetailHeader
+          lead={lead as unknown as Parameters<typeof LeadDetailHeader>[0]["lead"]}
+          isEditing={isEditing}
+          onToggleEdit={handleToggleEdit}
+          onStatusChange={handleStatusChange}
+          isStatusPending={updateStatusMutation.isPending}
+        />
+      </motion.div>
 
-        <motion.div variants={fadeUp} className="grid gap-4 lg:grid-cols-5">
-          <div className="lg:col-span-3 space-y-4">
-            <LeadInfoCard
-              lead={lead as unknown as Parameters<typeof LeadInfoCard>[0]["lead"]}
-              isEditing={isEditing}
-              editForm={editForm}
-              isUpdatePending={updateLeadMutation.isPending}
-              onEditSubmit={onEditSubmit}
-              onCancelEdit={handleCancelEdit}
-            />
-
-            <LeadQuickActions
-              activeAction={activeAction}
-              onSetActiveAction={setActiveAction}
-              noteForm={noteForm}
-              taskForm={taskForm}
-              emailForm={emailForm}
-              callForm={callForm}
-              onNoteSubmit={onNoteSubmit}
-              onTaskSubmit={onTaskSubmit}
-              onEmailSubmit={onEmailSubmit}
-              onCallSubmit={onCallSubmit}
-              isNotePending={logActivityMutation.isPending}
-              isTaskPending={createTaskMutation.isPending}
-              isEmailPending={logActivityMutation.isPending}
-              isCallPending={logActivityMutation.isPending}
-              leadName={lead.name}
-              leadEmail={lead.email ?? ""}
-              leadContext={[lead.status, lead.priority, lead.potentialValue].filter(Boolean).join(", ")}
-              onDraftEmail={handleDraftEmail}
-            />
-          </div>
-
-          <div className="lg:col-span-2">
+      <motion.div variants={fadeUp}>
+        <DetailLayout
+          main={
+            <Tabs value={isEditing ? "details" : tab} onValueChange={setTab} className="gap-4">
+              <TabsList variant="underline">
+                <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+              </TabsList>
+              <TabsContent value="activity" className="space-y-4">
+                <LeadQuickActions
+                  activeAction={activeAction}
+                  onSetActiveAction={setActiveAction}
+                  noteForm={noteForm}
+                  taskForm={taskForm}
+                  emailForm={emailForm}
+                  callForm={callForm}
+                  onNoteSubmit={onNoteSubmit}
+                  onTaskSubmit={onTaskSubmit}
+                  onEmailSubmit={onEmailSubmit}
+                  onCallSubmit={onCallSubmit}
+                  isNotePending={logActivityMutation.isPending}
+                  isTaskPending={createTaskMutation.isPending}
+                  isEmailPending={logActivityMutation.isPending}
+                  isCallPending={logActivityMutation.isPending}
+                  leadName={lead.name}
+                  leadEmail={lead.email ?? ""}
+                  leadContext={[lead.status, lead.priority, lead.potentialValue].filter(Boolean).join(", ")}
+                  onDraftEmail={handleDraftEmail}
+                />
+                <LeadActivityTimeline timeline={timeline} isLoading={timelineLoading} />
+              </TabsContent>
+              <TabsContent value="details">
+                <LeadInfoCard
+                  lead={lead as unknown as Parameters<typeof LeadInfoCard>[0]["lead"]}
+                  isEditing={isEditing}
+                  editForm={editForm}
+                  isUpdatePending={updateLeadMutation.isPending}
+                  onEditSubmit={onEditSubmit}
+                  onCancelEdit={handleCancelEdit}
+                />
+              </TabsContent>
+            </Tabs>
+          }
+          rail={
             <LeadSidebar
               lead={lead as unknown as Parameters<typeof LeadSidebar>[0]["lead"]}
               timeline={timeline}
               timelineLoading={timelineLoading}
+              showTimeline={false}
             />
-          </div>
-        </motion.div>
+          }
+        />
       </motion.div>
-    </PageWrapper>
+    </motion.div>
   );
 }

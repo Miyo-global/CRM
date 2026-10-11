@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { toneDot, toneText, type Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 import type { OrgRollup } from "@/types/crm";
 
@@ -21,10 +22,10 @@ export function computeHealthScore(rollup: OrgRollup): number {
   return Math.min(score, 100);
 }
 
-export function getHealthLabel(score: number): { label: string; color: string; dot: string } {
-  if (score >= 70) return { label: "Healthy", color: "text-success-strong", dot: "bg-success-400" };
-  if (score >= 40) return { label: "At Risk", color: "text-warning-strong", dot: "bg-warning-400" };
-  return { label: "Critical", color: "text-danger-strong", dot: "bg-danger-400" };
+export function getHealthLabel(score: number): { label: string; color: string; dot: string; tone: Tone } {
+  if (score >= 70) return { label: "Healthy", color: toneText.success, dot: toneDot.success, tone: "success" };
+  if (score >= 40) return { label: "At Risk", color: toneText.warning, dot: toneDot.warning, tone: "warning" };
+  return { label: "Critical", color: toneText.danger, dot: toneDot.danger, tone: "danger" };
 }
 
 export function AccountHealthBadge({ healthScore, rollup, showComputed = false, className }: AccountHealthBadgeProps) {
@@ -37,25 +38,17 @@ export function AccountHealthBadge({ healthScore, rollup, showComputed = false, 
 
   if (score === null) {
     return (
-      <Badge className={cn("text-xs bg-muted/50 text-muted-foreground border-0", className)}>
+      <StatusPill tone="neutral" className={className}>
         N/A
-      </Badge>
+      </StatusPill>
     );
   }
 
-  const { label, color, dot } = getHealthLabel(score);
+  const { label, tone } = getHealthLabel(score);
 
   return (
-    <Badge
-      className={cn(
-        "text-xs border-0 flex items-center gap-1.5 px-2 py-0.5",
-        score >= 70 ? "bg-success-soft" : score >= 40 ? "bg-warning-soft" : "bg-danger-soft",
-        color,
-        className,
-      )}
-    >
-      <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", dot)} />
+    <StatusPill tone={tone} dot className={cn("tabular-nums", className)}>
       {label} · {score}%
-    </Badge>
+    </StatusPill>
   );
 }

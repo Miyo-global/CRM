@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Pencil, Save, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateCrmOrganization } from "@/lib/api/hooks/crm";
 import { toast } from "sonner";
@@ -47,7 +48,7 @@ export function AccountNotes({ organizationId, initialNotes }: AccountNotesProps
           <p className="text-sm text-foreground whitespace-pre-wrap">{notes}</p>
         ) : (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <FileText className="h-7 w-7 text-muted-foreground/40 mb-1.5" />
+            <IconChip icon={FileText} tone="neutral" className="mb-2" />
             <p className="text-sm text-muted-foreground">No notes yet</p>
           </div>
         )}
@@ -77,11 +78,10 @@ export function AccountNotes({ organizationId, initialNotes }: AccountNotesProps
       <div className="flex gap-2">
         <Button
           size="sm"
-          className="gap-1.5 bg-primary hover:bg-brand-soft text-primary-foreground"
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          loading={updateMutation.isPending}
         >
-          <Save className="h-3 w-3" />
+          <Save className="size-3.5" />
           Save
         </Button>
         <Button

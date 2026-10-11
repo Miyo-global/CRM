@@ -122,7 +122,7 @@ function ChurnDetails({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className={cn("h-12 w-12 rounded-lg flex flex-col items-center justify-center font-bold", riskBg(result.riskLevel), riskColor(result.riskLevel))}>
+        <div className={cn("size-12 rounded-full flex flex-col items-center justify-center font-bold tabular-nums", riskBg(result.riskLevel), riskColor(result.riskLevel))}>
           <span className="text-base leading-none">{result.churnRiskScore}</span>
           <span className="text-3xs uppercase tracking-wider mt-0.5">risk</span>
         </div>

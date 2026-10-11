@@ -34,6 +34,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import { useDealApprovals, useResolveDealApproval } from "@/lib/api/hooks/crm";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
@@ -44,10 +50,10 @@ function fmt(amount: string | number) {
   return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-const STATUS_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pending", variant: "secondary" },
-  approved: { label: "Approved", variant: "default" },
-  rejected: { label: "Rejected", variant: "destructive" },
+const STATUS_BADGE: Record<string, { label: string; tone: Tone }> = {
+  pending: { label: "Pending", tone: "warning" },
+  approved: { label: "Approved", tone: "success" },
+  rejected: { label: "Rejected", tone: "danger" },
 };
 
 interface Approval {
@@ -60,7 +66,7 @@ export default function DealApprovalsPage() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>("pending");
   const [confirmAction, setConfirmAction] = useState<{ id: number; action: "approve" | "reject" } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const { data, isLoading } = useDealApprovals({ status: statusFilter });
+  const { data, isLoading, isError, error, refetch } = useDealApprovals({ status: statusFilter });
   const resolve = useResolveDealApproval();
 
   const items: Approval[] = Array.isArray(data) ? (data as unknown as Approval[]) : [];
@@ -82,16 +88,19 @@ export default function DealApprovalsPage() {
       subtitle="Review and approve high-value deals"
       filters={
         <Tabs value={statusFilter ?? "all"} onValueChange={(v) => setStatusFilter(v === "all" ? undefined : v)}>
-          <TabsList className="h-8">
-            <TabsTrigger value="pending" className="text-xs px-3 h-7">Pending</TabsTrigger>
-            <TabsTrigger value="approved" className="text-xs px-3 h-7">Approved</TabsTrigger>
-            <TabsTrigger value="rejected" className="text-xs px-3 h-7">Rejected</TabsTrigger>
-            <TabsTrigger value="all" className="text-xs px-3 h-7">All</TabsTrigger>
+          <TabsList>
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="approved">Approved</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
         </Tabs>
       }
     >
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
+      {isError ? (
+        <QueryErrorState title="Couldn't load approvals" error={error} onRetry={() => refetch()} />
+      ) : (
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <ScrollArea className="w-full" type="auto">
           <div className="min-w-[750px]">
             <Table>
@@ -108,30 +117,31 @@ export default function DealApprovalsPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}><TableCell colSpan={7} className="h-12"><Skeleton className="h-4 w-full" /></TableCell></TableRow>
+                  ))
                 ) : items.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground"><div className="flex flex-col items-center justify-center gap-2 py-2">
-                      <EmptyApprovalIllustration className="h-36 w-36 opacity-95" />
-                      <p>No approvals found.</p>
-                    </div></TableCell></TableRow>
+                  <TableRow className="hover:bg-transparent"><TableCell colSpan={7} className="p-4">
+                    <EmptyState compact illustration={<EmptyApprovalIllustration />} title="No approvals found." className="border-0 bg-transparent" />
+                  </TableCell></TableRow>
                 ) : items.map((a) => {
-                  const badge = STATUS_BADGE[a.status] ?? { label: a.status, variant: "secondary" as const };
+                  const badge = STATUS_BADGE[a.status] ?? { label: a.status, tone: "neutral" as const };
                   return (
                     <TableRow key={a.id}>
-                      <TableCell className="font-medium text-sm">{a.dealName ?? `Deal #${a.dealId}`}</TableCell>
-                      <TableCell className="text-right text-sm">{a.dealValue ? fmt(a.dealValue) : ""}</TableCell>
+                      <TableCell className="text-sm font-medium"><Link href={`/crm/deals/${a.dealId}`} className="hover:text-brand-text hover:underline">{a.dealName ?? `Deal #${a.dealId}`}</Link></TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">{a.dealValue ? fmt(a.dealValue) : ""}</TableCell>
                       <TableCell className="text-sm">{a.requesterName ?? ""}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-2xs">{a.requestedStage}</Badge></TableCell>
-                      <TableCell><Badge variant={badge.variant} className="text-2xs">{badge.label}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{a.createdAt ? format(new Date(a.createdAt), "dd MMM yyyy") : ""}</TableCell>
+                      <TableCell><Badge variant="secondary">{a.requestedStage}</Badge></TableCell>
+                      <TableCell><StatusPill tone={badge.tone} dot>{badge.label}</StatusPill></TableCell>
+                      <TableCell className="text-xs tabular-nums text-muted-foreground">{a.createdAt ? format(new Date(a.createdAt), "dd MMM yyyy") : ""}</TableCell>
                       <TableCell className="text-right">
                         {a.status === "pending" && (
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-success-strong hover:text-success-strong" onClick={() => setConfirmAction({ id: a.id, action: "approve" })}>
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Approve
+                            <Button size="xs" variant="ghost" className="text-success-strong hover:text-success-strong" onClick={() => setConfirmAction({ id: a.id, action: "approve" })}>
+                              <CheckCircle2 />Approve
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setConfirmAction({ id: a.id, action: "reject" })}>
-                              <XCircle className="h-3.5 w-3.5 mr-1" />Reject
+                            <Button size="xs" variant="ghost" className="text-danger-strong hover:text-danger-strong" onClick={() => setConfirmAction({ id: a.id, action: "reject" })}>
+                              <XCircle />Reject
                             </Button>
                           </div>
                         )}
@@ -147,6 +157,7 @@ export default function DealApprovalsPage() {
           </div>
         </ScrollArea>
       </div>
+      )}
 
       <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
         <AlertDialogContent>

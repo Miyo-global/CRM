@@ -82,7 +82,7 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
     <div>
       <motion.div variants={staggerVariants} initial="hidden" animate="visible">
         <motion.div variants={fadeUpVariants} className="mb-5">
-          <h2 className="text-xl font-semibold text-foreground">Welcome to Miyo Global!</h2>
+          <h2 className="font-display text-xl font-bold text-foreground">Welcome to Miyo Global!</h2>
           <p className="text-sm text-muted-foreground mt-1">Tell us a bit about yourself to get started.</p>
         </motion.div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
@@ -176,7 +176,7 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
               {errors.skills && <p role="alert" className="text-xs text-destructive">{errors.skills.message}</p>}
             </motion.div>
 
-            <motion.div variants={fadeUpVariants}>
+            <motion.div variants={fadeUpVariants} className="sticky bottom-0 z-sticky">
               <FormNavButtons isLoading={isLoading} />
             </motion.div>
         </form>

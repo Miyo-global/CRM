@@ -3,7 +3,9 @@
 import { useCallback, useState } from "react";
 import { Plus, ArrowRight, X, GripVertical, Building2, Clock, AlertTriangle, Info } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { kanbanCardClass } from "@/components/shared/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, resolveImageUrl } from "@/lib/utils";
@@ -23,12 +25,6 @@ interface KanbanCardProps {
   onOpen: (id: number) => void;
   onMoveStatus: (leadId: number, status: LeadStatus, expectedStatus?: LeadStatus) => void;
 }
-
-const PRIORITY_BORDER: Record<string, string> = {
-  HOT: "border-l-danger-500",
-  WARM: "border-l-warning-500",
-  COLD: "border-l-info-400",
-};
 
 function SlaCountdown({ deadline }: { deadline: string | Date }) {
   const d = new Date(deadline);
@@ -136,10 +132,6 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
     if (nextIdx < STATUSES.length - 1) onMoveStatus(lead.id, STATUSES[nextIdx], status);
   }, [lead.id, status, onMoveStatus]);
 
-  const priorityBorder = lead.priority
-    ? PRIORITY_BORDER[lead.priority] ?? ""
-    : "";
-
   return (
     <Draggable key={lead.id} draggableId={String(lead.id)} index={index}>
       {(dragProvided, dragSnapshot) => (
@@ -148,80 +140,72 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
           {...dragProvided.draggableProps}
           className="group"
         >
-          <Card
-            className={cn(
-              "cursor-pointer transition-all border-l-[3px]",
-              priorityBorder || "border-l-transparent",
-              dragSnapshot.isDragging
-                ? "shadow-xl ring-2 ring-ring rotate-[2deg] scale-105"
-                : "hover:shadow-md hover:border-primary/40",
-            )}
+          <div
+            className={cn(kanbanCardClass(dragSnapshot.isDragging), "cursor-pointer")}
             onClick={handleOpen}
           >
-            <CardContent className="p-3">
               <div className="flex items-start gap-2">
 
                 <div
                   {...dragProvided.dragHandleProps}
-                  className="mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+                  className="-ml-1 mt-0.5 shrink-0 rounded-sm text-subtle-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:focus-ring cursor-grab active:cursor-grabbing"
                 >
-                  <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                  <GripVertical className="size-4" aria-hidden="true" />
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{lead.name}</p>
-                      <p className="text-2xs font-mono text-muted-foreground/50 leading-none mt-0.5">
+                      <p className="line-clamp-2 text-sm font-medium" title={lead.name}>{lead.name}</p>
+                      <p className="mt-0.5 font-mono text-2xs leading-none text-subtle-foreground tabular-nums">
                         LD-{String(lead.id).padStart(5, "0")}
                       </p>
                     </div>
                     {lead.assignedTo ? (
-                      <Avatar className="h-6 w-6 shrink-0">
+                      <Avatar className="size-5 shrink-0" title={lead.assignedTo.name ?? undefined}>
                         <AvatarImage src={resolveImageUrl(lead.assignedTo.image)} />
-                        <AvatarFallback className="text-2xs">
+                        <AvatarFallback className="text-3xs">
                           {getInitials(lead.assignedTo.name ?? "")}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
                       <button
                         onClick={handleSelfAssign}
-                        className="h-6 w-6 shrink-0 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-primary/40 transition-colors"
+                        disabled={selfAssign.isPending}
+                        className="flex size-6 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong text-muted-foreground transition-colors hover:border-primary hover:text-brand-text focus-visible:focus-ring disabled:opacity-50"
                         aria-label="Self-assign this lead"
                       >
-                        <Plus className="h-3 w-3 text-muted-foreground" />
+                        <Plus className="size-3" />
                       </button>
                     )}
                   </div>
 
-                  {lead.company && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <Building2 className="h-3 w-3" />
-                      {lead.company}
-                    </p>
+                  {(lead.company || (lead.potentialValue && Number(lead.potentialValue) > 0)) && (
+                    <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                      {lead.company && (
+                        <span className="flex min-w-0 items-center gap-1 truncate" title={lead.company}>
+                          <Building2 className="size-3 shrink-0" aria-hidden="true" />
+                          <span className="truncate">{lead.company}</span>
+                        </span>
+                      )}
+                      {lead.potentialValue && Number(lead.potentialValue) > 0 && (
+                        <span className="ml-auto shrink-0 font-semibold tabular-nums text-foreground">
+                          {formatINRCompact(lead.potentialValue)}
+                        </span>
+                      )}
+                    </div>
                   )}
 
-                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {lead.priority && (
-                      <span className={cn(
-                        "text-2xs px-1.5 py-0.5 rounded-full border font-semibold",
-                        PRIORITY_CONFIG[lead.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.WARM,
-                      )}>
+                      <Badge className={cn("h-5 px-1.5 text-2xs", PRIORITY_CONFIG[lead.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.WARM)}>
                         {lead.priority}
-                      </span>
+                      </Badge>
                     )}
                     {lead.source && (
-                      <span className={cn(
-                        "text-2xs px-1.5 py-0.5 rounded-full border",
-                        SOURCE_COLORS[lead.source] || SOURCE_COLORS.other,
-                      )}>
+                      <Badge className={cn("h-5 px-1.5 text-2xs font-normal capitalize", SOURCE_COLORS[lead.source] || SOURCE_COLORS.other)}>
                         {lead.source.replace("_", " ")}
-                      </span>
-                    )}
-                    {lead.potentialValue && Number(lead.potentialValue) > 0 && (
-                      <span className="text-2xs text-brand-text font-semibold">
-                        {formatINRCompact(lead.potentialValue)}
-                      </span>
+                      </Badge>
                     )}
                     {lead.slaDeadline && (
                       <span onClick={(e) => e.stopPropagation()}>
@@ -230,9 +214,9 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+                  <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-2xs text-muted-foreground">
+                      <span className="text-2xs tabular-nums text-muted-foreground">
                         {lead.createdAt ? timeAgo(lead.createdAt) : ""}
                       </span>
                       {lead.score != null && lead.score > 0 ? (
@@ -243,31 +227,34 @@ export function KanbanCard({ lead, index, status, onOpen, onMoveStatus }: Kanban
                         </div>
                       )}
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                       {status !== "CONVERTED" && status !== "LOST" && (
                         <>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
                             onClick={handleMarkLost}
-                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-danger-soft transition-colors"
+                            className="text-danger-strong hover:bg-danger-soft"
                             aria-label="Mark as lost"
                           >
-                            <X className="h-3 w-3 text-danger-strong" />
-                          </button>
-                          <button
+                            <X className="size-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
                             onClick={handleMoveNext}
-                            className="h-5 w-5 rounded flex items-center justify-center hover:bg-brand-soft transition-colors"
+                            className="text-brand-text hover:bg-brand-soft"
                             aria-label="Move to next stage"
                           >
-                            <ArrowRight className="h-3 w-3 text-brand-text" />
-                          </button>
+                            <ArrowRight className="size-3" />
+                          </Button>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       )}
     </Draggable>

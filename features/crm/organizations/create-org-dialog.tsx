@@ -4,7 +4,6 @@ import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,7 +79,7 @@ export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
                   <FormMessage />
                 </FormItem>
               )} />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField control={form.control} name="domain" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Domain</FormLabel>
@@ -143,8 +142,7 @@ export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)} disabled={createOrgMutation.isPending}>
             Cancel
           </Button>
-          <Button type="submit" form="create-org-form" className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createOrgMutation.isPending}>
-            {createOrgMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" form="create-org-form" className="flex-1" loading={createOrgMutation.isPending} disabled={createOrgMutation.isPending}>
             Create Organization
           </Button>
         </SheetFooter>

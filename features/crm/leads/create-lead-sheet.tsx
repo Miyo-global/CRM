@@ -47,16 +47,16 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="bg-primary hover:bg-brand-soft text-primary-foreground shadow-lg">
+        <Button>
           <Plus className="h-4 w-4 mr-2" />
           New Lead
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col p-0 sm:max-w-[480px]">
+      <SheetContent size="md" className="flex flex-col p-0">
 
         <SheetHeader className="px-6 pt-5 pb-3 border-b shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-brand-soft flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-brand-soft flex items-center justify-center">
               <UserPlus className="h-5 w-5 text-brand-text" />
             </div>
             <div>
@@ -300,7 +300,7 @@ export function CreateLeadSheet({ open, onOpenChange, onSubmit, isPending }: Cre
           <Button type="button" variant="outline" className="flex-1 h-9" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="create-lead-form" className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground h-9" disabled={isPending}>
+          <Button type="submit" form="create-lead-form" className="flex-1" loading={isPending}>
             {isPending ? "Creating..." : "Create Lead"}
           </Button>
         </SheetFooter>

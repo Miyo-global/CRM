@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Plus, Trash2, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, FileText } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -90,36 +91,38 @@ export default function NewInvoicePage() {
       title="New Invoice"
       subtitle="Create a new invoice for a client"
       actions={
-        <Link href="/billing/invoices">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back
-          </Button>
-        </Link>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/billing/invoices">
+            <ArrowLeft aria-hidden="true" /> Back
+          </Link>
+        </Button>
       }
     >
-      <div className="max-w-3xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
 
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-semibold">Line Items</p>
+        <section className="grid gap-4 lg:grid-cols-[240px_1fr]">
+          <div>
+            <h2 className="font-sans text-base font-semibold tracking-normal text-foreground">Line Items</h2>
+            <p className="mt-1 text-sm text-muted-foreground">What you are billing for.</p>
           </div>
-          <div className="p-4 space-y-2">
-            <div className="grid grid-cols-12 gap-2 text-xs text-muted-foreground px-1">
+        <Card className="gap-0 overflow-hidden">
+          <div className="space-y-2 p-5">
+            <div className="hidden grid-cols-12 gap-2 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
               <span className="col-span-5">Description</span>
               <span className="col-span-2 text-right">Qty</span>
               <span className="col-span-2 text-right">Rate</span>
               <span className="col-span-2 text-right">Amount</span>
             </div>
             {lineItems.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+              <div key={idx} className="grid grid-cols-12 items-center gap-2">
                 <Input
-                  className="col-span-5 h-8 text-sm"
+                  className="col-span-12 sm:col-span-5"
                   placeholder="Description"
                   value={item.description}
                   onChange={(e) => updateItem(idx, "description", e.target.value)}
                 />
                 <Input
-                  className="col-span-2 h-8 text-sm text-right"
+                  className="col-span-3 text-right tabular-nums sm:col-span-2"
                   type="number"
                   min={1}
                   placeholder="1"
@@ -128,7 +131,7 @@ export default function NewInvoicePage() {
                   aria-label={`Quantity for item ${idx + 1}`}
                 />
                 <Input
-                  className="col-span-2 h-8 text-sm text-right"
+                  className="col-span-4 text-right tabular-nums sm:col-span-2"
                   type="number"
                   min={0}
                   placeholder="0"
@@ -136,18 +139,18 @@ export default function NewInvoicePage() {
                   onChange={(e) => updateItem(idx, "rate", Number(e.target.value))}
                   aria-label={`Rate for item ${idx + 1}`}
                 />
-                <div className="col-span-2 text-sm font-medium text-right pr-1">
+                <div className="col-span-3 pr-1 text-right text-sm font-medium tabular-nums sm:col-span-2">
                   {fmt(item.amount)}
                 </div>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="col-span-1 h-8 w-8 text-muted-foreground hover:text-destructive"
+                  size="icon-sm"
+                  className="col-span-2 justify-self-end text-muted-foreground hover:text-destructive sm:col-span-1"
                   onClick={() => setLineItems((p) => p.filter((_, i) => i !== idx))}
                   disabled={lineItems.length === 1}
                   aria-label={`Remove item ${idx + 1}`}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 />
                 </Button>
               </div>
             ))}
@@ -162,10 +165,10 @@ export default function NewInvoicePage() {
                 ])
               }
             >
-              <Plus className="h-3.5 w-3.5 mr-1" /> Add Item
+              <Plus aria-hidden="true" /> Add Item
             </Button>
           </div>
-          <div className="px-4 py-3 border-t border-border space-y-1.5 text-sm">
+          <div className="space-y-1.5 border-t border-border bg-surface-sunken/40 px-5 py-4 text-sm tabular-nums">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span>
               <span>{fmt(subtotal)}</span>
@@ -180,18 +183,23 @@ export default function NewInvoicePage() {
                 <span className="text-destructive">-{fmt(discount)}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-base pt-1.5 border-t border-border">
+            <div className="flex justify-between border-t border-border pt-1.5 font-display text-lg font-bold text-foreground">
               <span>Total</span>
               <span>{fmt(total)}</span>
             </div>
           </div>
-        </div>
+        </Card>
+        </section>
 
-        <div className="rounded-lg border border-border bg-card p-4 space-y-4">
-          <p className="text-sm font-semibold">Invoice Settings</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label htmlFor="tax-rate" className="text-xs">Tax Rate (%)</Label>
+        <section className="grid gap-4 lg:grid-cols-[240px_1fr]">
+          <div>
+            <h2 className="font-sans text-base font-semibold tracking-normal text-foreground">Invoice Settings</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Tax, discount, due date and currency.</p>
+          </div>
+        <Card className="gap-4 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="tax-rate">Tax Rate (%)</Label>
               <Input
                 id="tax-rate"
                 type="number"
@@ -199,11 +207,10 @@ export default function NewInvoicePage() {
                 max={100}
                 value={taxRate}
                 onChange={(e) => setTaxRate(Number(e.target.value))}
-                className="h-8 text-sm"
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="discount" className="text-xs">Discount (₹)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="discount">Discount (₹)</Label>
               <Input
                 id="discount"
                 type="number"
@@ -211,17 +218,16 @@ export default function NewInvoicePage() {
                 max={subtotal + taxAmount}
                 value={discount}
                 onChange={(e) => setDiscount(Number(e.target.value))}
-                className="h-8 text-sm"
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="due-date" className="text-xs">Due Date</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="due-date">Due Date</Label>
               <DatePicker id="due-date" value={dueDate} onChange={setDueDate} placeholder="Select due date" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="currency" className="text-xs">Currency</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="currency">Currency</Label>
               <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger id="currency" className="h-8 text-sm">
+                <SelectTrigger id="currency" className="w-full">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
@@ -234,31 +240,27 @@ export default function NewInvoicePage() {
               </Select>
             </div>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="notes" className="text-xs">Notes / Payment Terms</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes / Payment Terms</Label>
             <Input
               id="notes"
               placeholder="e.g. Payment due within 30 days. Bank: HDFC, A/C: 1234567890"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="h-8 text-sm"
             />
           </div>
-        </div>
+        </Card>
+        </section>
+      </div>
 
-        <div className="flex justify-end gap-2">
-          <Link href="/billing/invoices">
-            <Button variant="outline" size="sm">Cancel</Button>
-          </Link>
-          <Button size="sm" onClick={handleSubmit} disabled={createInvoice.isPending}>
-            {createInvoice.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-            ) : (
-              <FileText className="h-3.5 w-3.5 mr-1" />
-            )}
-            Create Invoice
-          </Button>
-        </div>
+      <div className="sticky bottom-0 z-sticky -mx-4 mt-6 flex justify-end gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 xl:-mx-8 xl:px-8">
+        <Button variant="ghost" asChild>
+          <Link href="/billing/invoices">Cancel</Link>
+        </Button>
+        <Button onClick={handleSubmit} loading={createInvoice.isPending}>
+          {!createInvoice.isPending && <FileText aria-hidden="true" />}
+          Create Invoice
+        </Button>
       </div>
     </PageWrapper>
   );

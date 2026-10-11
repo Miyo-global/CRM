@@ -64,31 +64,31 @@ const ACTION_BUTTONS = [
     key: "call" as const,
     label: "Log Call",
     icon: Phone,
-    color: "bg-info-soft text-info-strong hover:bg-info-soft",
+    color: "text-info-strong",
   },
   {
     key: "email" as const,
     label: "Send Email",
     icon: Mail,
-    color: "bg-plum-soft text-plum-strong hover:bg-plum-soft",
+    color: "text-plum-strong",
   },
   {
     key: "note" as const,
     label: "Add Note",
     icon: StickyNote,
-    color: "bg-warning-soft text-warning-strong hover:bg-warning-soft",
+    color: "text-warning-strong",
   },
   {
     key: "task" as const,
     label: "New Task",
     icon: ListTodo,
-    color: "bg-success-soft text-success-strong hover:bg-success-soft",
+    color: "text-success-strong",
   },
   {
     key: "draft" as const,
     label: "Draft Email",
     icon: Wand2,
-    color: "bg-plum-soft text-plum-strong hover:bg-plum-soft",
+    color: "text-plum-strong",
   },
 ] as const;
 
@@ -104,12 +104,12 @@ function ActionToggleButton({ action, isActive, onSetActiveAction }: ActionToggl
   const handleClick = useCallback(() => onSetActiveAction(isActive ? null : action.key), [isActive, action.key, onSetActiveAction]);
   return (
     <Button
-      variant="ghost"
+      variant={isActive ? "soft" : "outline"}
       size="sm"
-      className={cn(action.color, isActive && "ring-2 ring-current/30")}
+      aria-pressed={isActive}
       onClick={handleClick}
     >
-      <action.icon className="h-4 w-4 mr-1.5" />
+      <action.icon className={cn(!isActive && action.color)} />
       {action.label}
     </Button>
   );
@@ -172,9 +172,9 @@ export function LeadQuickActions({
   }, [leadName, leadContext, onDraftEmail, generateEmailMutation]);
 
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-base">Quick Actions</CardTitle>
+        <CardTitle className="font-sans text-base font-semibold">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
 
@@ -190,7 +190,7 @@ export function LeadQuickActions({
         </div>
 
         {activeAction === "draft" && (
-          <div className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/30">
+          <div className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4">
             <div className="flex items-start gap-3">
               <div className="flex-1">
                 <p className="text-sm font-medium mb-1">AI Email Draft</p>
@@ -236,7 +236,7 @@ export function LeadQuickActions({
           <Form {...noteForm}>
             <form
               onSubmit={noteForm.handleSubmit(onNoteSubmit)}
-              className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/30"
+              className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4"
             >
               <FormField
                 control={noteForm.control}
@@ -267,7 +267,7 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isNotePending}
+                  loading={isNotePending}
                 >
                   {isNotePending ? "Saving..." : "Save Note"}
                 </Button>
@@ -280,7 +280,7 @@ export function LeadQuickActions({
           <Form {...taskForm}>
             <form
               onSubmit={taskForm.handleSubmit(onTaskSubmit)}
-              className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/30"
+              className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4"
             >
               <FormField
                 control={taskForm.control}
@@ -320,7 +320,7 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isTaskPending}
+                  loading={isTaskPending}
                 >
                   {isTaskPending ? "Creating..." : "Create Task"}
                 </Button>
@@ -333,7 +333,7 @@ export function LeadQuickActions({
           <Form {...emailForm}>
             <form
               onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-              className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/30"
+              className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4"
             >
               {emailTemplates && emailTemplates.length > 0 && (
                 <div className="flex items-center gap-2">
@@ -407,7 +407,7 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isEmailPending}
+                  loading={isEmailPending}
                 >
                   {isEmailPending ? "Sending..." : "Send Email"}
                 </Button>
@@ -420,7 +420,7 @@ export function LeadQuickActions({
           <Form {...callForm}>
             <form
               onSubmit={callForm.handleSubmit(onCallSubmit)}
-              className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/30"
+              className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4"
             >
               <FormField
                 control={callForm.control}
@@ -488,7 +488,7 @@ export function LeadQuickActions({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isCallPending}
+                  loading={isCallPending}
                 >
                   {isCallPending ? "Logging..." : "Log Call"}
                 </Button>

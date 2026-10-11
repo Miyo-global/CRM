@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StickyNote, ListTodo, Mail, Phone } from "lucide-react";
+import { StickyNote, ListTodo, Mail, Phone, type LucideIcon } from "lucide-react";
 import { toneSoft, toneText, type Tone } from "@/lib/design/tones";
 
 // Soft pill (no border): callers render `bg` + `color` on an outline Badge.
@@ -36,7 +36,7 @@ export const PRIORITY_STYLES: Record<
 
 export const TIMELINE_ICONS: Record<
   string,
-  { icon: React.ElementType; color: string }
+  { icon: LucideIcon; color: string }
 > = {
   note: { icon: StickyNote, color: toneSoft.warning },
   task: { icon: ListTodo, color: toneSoft.plum },

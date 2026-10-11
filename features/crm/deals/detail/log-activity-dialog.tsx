@@ -49,7 +49,7 @@ export function LogActivityDialog({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent size="sm">
         <SheetHeader>
           <SheetTitle>{actionLabel}</SheetTitle>
         </SheetHeader>
@@ -69,8 +69,8 @@ export function LogActivityDialog({
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-brand-soft text-primary-foreground"
-              disabled={isPending || !notes.trim()}
+              disabled={!notes.trim()}
+              loading={isPending}
             >
               {isPending ? "Logging..." : "Log Activity"}
             </Button>

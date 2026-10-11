@@ -19,9 +19,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import {
   Phone, Mail, MessageSquare, IndianRupee, CalendarDays,
-  ClipboardList, FileCheck, Search, CheckCircle2,
-  ArrowRight, Plus, User,
+  Check, Plus, User, FileText, StickyNote,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { Timeline } from "@/components/shared/timeline";
+import type { Tone } from "@/lib/design/tones";
 import { useClientAccount, useUpdateClientAccount, useLogClientActivity } from "@/lib/api/hooks/crm";
 import { AIChurnRiskButton } from "@/features/crm/clients/ai-churn-risk-button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,12 +40,35 @@ import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as const;
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; step: number }> = {
-  ACCOUNT_OPENING: { label: "Account Opening", color: "text-info-strong", bg: "bg-info-500", step: 0 },
-  QUERIES: { label: "Queries", color: "text-warning-strong", bg: "bg-warning-500", step: 1 },
-  PLAN_SELECTED: { label: "Plan Selected", color: "text-plum-strong", bg: "bg-plum-500", step: 2 },
-  INVESTED: { label: "Invested", color: "text-success-strong", bg: "bg-success-500", step: 3 },
+const STATUS_CONFIG: Record<string, { label: string; tone: Tone; step: number }> = {
+  ACCOUNT_OPENING: { label: "Account Opening", tone: "info", step: 0 },
+  QUERIES: { label: "Queries", tone: "warning", step: 1 },
+  PLAN_SELECTED: { label: "Plan Selected", tone: "plum", step: 2 },
+  INVESTED: { label: "Invested", tone: "success", step: 3 },
 };
+
+const ACTIVITY_ICONS: Record<string, { icon: IconChipProps["icon"]; tone: Tone }> = {
+  call: { icon: Phone, tone: "info" },
+  query: { icon: MessageSquare, tone: "warning" },
+  document: { icon: FileText, tone: "plum" },
+  meeting: { icon: CalendarDays, tone: "teal" },
+  note: { icon: StickyNote, tone: "neutral" },
+};
+
+function PersonRow({ person }: { person: { name: string | null; email?: string | null; image: string | null } }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <Avatar className="size-6">
+        <AvatarImage src={person.image || ""} />
+        <AvatarFallback className="text-3xs">{person.name?.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{person.name}</p>
+        {person.email && <p className="truncate text-xs text-muted-foreground">{person.email}</p>}
+      </div>
+    </div>
+  );
+}
 
 const ACTIVITY_TYPES = [
   { value: "call", label: "Call" },
@@ -104,10 +133,10 @@ export default function ClientAccountDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
+      <div className="space-y-6 px-4 pt-6 sm:px-6 xl:px-8">
         <Skeleton className="h-10 w-64" />
-        <div className="grid gap-6 md:grid-cols-3">
-          <Skeleton className="h-64 md:col-span-2" />
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <Skeleton className="h-64" />
           <Skeleton className="h-64" />
         </div>
       </div>
@@ -116,24 +145,33 @@ export default function ClientAccountDetailPage() {
 
   if (!account) {
     return (
-      <div className="p-6 text-center text-muted-foreground">
-        Client account not found.
+      <div className="px-4 pt-6 sm:px-6 xl:px-8">
+        <EmptyState
+          illustration={<EmptyPersonIllustration className="size-32" />}
+          title="Client account not found."
+        />
       </div>
     );
   }
 
   const currentStep = STATUS_CONFIG[account.status]?.step ?? 0;
+  const currentStatus = STATUS_CONFIG[account.status] ?? STATUS_CONFIG.ACCOUNT_OPENING;
 
   return (
     <PageWrapper
       title={account.clientName}
-      subtitle={`Client Account #${account.id}`}
+      subtitle={
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="font-mono tabular-nums">Client Account #{account.id}</span>
+          <StatusPill tone={currentStatus.tone} dot>{currentStatus.label}</StatusPill>
+        </span>
+      }
       actions={
         <>
           <AIChurnRiskButton clientId={clientId} compact />
           {account.status !== "INVESTED" && (
-            <Select onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[180px] h-8 text-xs">
+            <Select onValueChange={handleStatusChange} disabled={updateStatusMutation.isPending}>
+              <SelectTrigger className="h-8 w-44 text-xs">
                 <SelectValue placeholder="Change stage..." />
               </SelectTrigger>
               <SelectContent>
@@ -148,177 +186,140 @@ export default function ClientAccountDetailPage() {
     >
 
       <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">Account Pipeline</h3>
-          </div>
-          <div className="flex items-center gap-2">
+        <CardContent className="p-5">
+          <h3 className="mb-4 text-sm font-semibold">Account Pipeline</h3>
+          <ol className="flex items-start overflow-x-auto pb-1">
             {STATUSES.map((status, idx) => {
               const config = STATUS_CONFIG[status];
               const isComplete = idx < currentStep;
               const isCurrent = idx === currentStep;
               return (
-                <div key={status} className="flex items-center flex-1">
-                  <div className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg flex-1 text-xs font-medium transition-colors",
-                    isComplete && `${config.bg}/20 ${config.color}`,
-                    isCurrent && `${config.bg}/30 ${config.color} ring-1 ring-current`,
-                    !isComplete && !isCurrent && "bg-muted/30 text-muted-foreground",
-                  )}>
-                    {isComplete ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    ) : (
-                      <span className={cn("h-4 w-4 rounded-full border-2 shrink-0", isCurrent ? "border-current" : "border-muted-foreground/30")} />
-                    )}
-                    <span className="truncate">{config.label}</span>
+                <li key={status} className="flex min-w-28 flex-1 flex-col items-center gap-2 text-center" aria-current={isCurrent ? "step" : undefined}>
+                  <div className="flex w-full items-center">
+                    <span className={cn("h-px flex-1", idx === 0 ? "bg-transparent" : idx <= currentStep ? "bg-primary" : "bg-border")} />
+                    <span
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
+                        isComplete && "bg-primary text-primary-foreground",
+                        isCurrent && "bg-card text-foreground ring-2 ring-primary",
+                        !isComplete && !isCurrent && "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {isComplete ? <Check className="size-4" aria-hidden="true" /> : idx + 1}
+                    </span>
+                    <span className={cn("h-px flex-1", idx === STATUSES.length - 1 ? "bg-transparent" : idx < currentStep ? "bg-primary" : "bg-border")} />
                   </div>
-                  {idx < STATUSES.length - 1 && (
-                    <ArrowRight className={cn("h-4 w-4 shrink-0 mx-1", idx < currentStep ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                  )}
-                </div>
+                  <span className={cn("text-xs font-medium", isCurrent ? "text-foreground" : "text-muted-foreground")}>
+                    {config.label}
+                  </span>
+                </li>
               );
             })}
-          </div>
+          </ol>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-3">
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Client Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Email</p>
-                <p className="text-sm flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-muted-foreground" /> {account.clientEmail || ""}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Phone</p>
-                <p className="text-sm flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-muted-foreground" /> {account.clientPhone || ""}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">WhatsApp</p>
-                <p className="text-sm flex items-center gap-1.5"><MessageSquare className="h-3.5 w-3.5 text-muted-foreground" /> {account.clientWhatsapp || ""}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Converted</p>
-                <p className="text-sm flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-muted-foreground" /> {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE)}</p>
-              </div>
-            </div>
-
-            {account.conversionNotes && (
-              <div className="space-y-1 pt-2 border-t">
-                <p className="text-xs text-muted-foreground">Conversion Notes</p>
-                <p className="text-sm">{account.conversionNotes}</p>
-              </div>
-            )}
-
+      <DetailLayout
+        main={
+          <div className="space-y-6">
             {account.status === "INVESTED" && (
-              <div className="p-4 bg-success-soft border border-success-strong/20 rounded-lg space-y-2">
-                <h4 className="text-sm font-medium text-success-strong flex items-center gap-1.5">
-                  <IndianRupee className="h-4 w-4" /> Investment Details
-                </h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Amount:</span> <span className="font-medium">{formatINR(account.investmentAmount)}</span></div>
-                  <div><span className="text-xs text-muted-foreground">Plan:</span> {account.planName || ""}</div>
-                  <div><span className="text-xs text-muted-foreground">Date:</span> {account.investmentDate ? new Date(account.investmentDate).toLocaleDateString(DEFAULT_LOCALE) : ""}</div>
-                  <div><span className="text-xs text-muted-foreground">Ref:</span> {account.transactionRef || ""}</div>
-                </div>
-              </div>
+              <Card className="border-success-500/40 bg-success-soft">
+                <CardContent className="space-y-3 p-5">
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-success-strong">
+                    <IconChip icon={IndianRupee} tone="success" size="sm" /> Investment Details
+                  </h4>
+                  <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                    <div><dt className="text-xs text-muted-foreground">Amount</dt><dd className="font-semibold tabular-nums">{formatINR(account.investmentAmount)}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">Plan</dt><dd>{account.planName || ""}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">Date</dt><dd className="tabular-nums">{account.investmentDate ? new Date(account.investmentDate).toLocaleDateString(DEFAULT_LOCALE) : ""}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">Ref</dt><dd className="font-mono text-xs">{account.transactionRef || ""}</dd></div>
+                  </dl>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Team</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Sales Rep</p>
-              {account.salesRep ? (
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={account.salesRep.image || ""} />
-                    <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{account.salesRep.name}</p>
-                    <p className="text-2xs text-muted-foreground">{account.salesRep.email}</p>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">CRM Rep</p>
-              {account.assignedCrm ? (
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={account.assignedCrm.image || ""} />
-                    <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{account.assignedCrm.name}</p>
-                    <p className="text-2xs text-muted-foreground">{account.assignedCrm.email}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center py-2">
-                  <EmptyPersonIllustration className="h-24 w-24 opacity-95 mb-2" />
-                  <p className="text-sm text-muted-foreground text-center">Not assigned</p>
-                </div>
-              )}
-            </div>
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground mb-1">Estimated Investment</p>
-              <p className="text-lg font-bold">{formatINR(account.estimatedInvestment)}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Activity Timeline</CardTitle>
-            <Button size="sm" variant="outline" onClick={() => setShowActivityForm(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Log Activity
-            </Button>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
+                <CardTitle className="text-base">Activity Timeline</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => setShowActivityForm(true)}>
+                  <Plus className="size-4" /> Log Activity
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <Timeline
+                  emptyLabel="No activities logged yet."
+                  items={(account.activities ?? []).map((activity) => {
+                    const meta = ACTIVITY_ICONS[activity.activityType] ?? { icon: User, tone: "neutral" as Tone };
+                    return {
+                      id: String(activity.id),
+                      icon: meta.icon,
+                      tone: meta.tone,
+                      actor: activity.user?.name || "Unknown",
+                      title: (
+                        <>
+                          {activity.title}{" "}
+                          <Badge variant="outline" className="ml-1 align-middle capitalize">{activity.activityType}</Badge>
+                        </>
+                      ),
+                      body: activity.description || undefined,
+                      timestamp: activity.createdAt,
+                    };
+                  })}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-        <CardContent>
-          {account.activities?.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No activities logged yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {(account.activities ?? []).map((activity) => (
-                <div key={activity.id} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="w-px flex-1 bg-border mt-1" />
+        }
+        rail={
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Client Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <PropertyList
+                  items={[
+                    { label: "Email", value: account.clientEmail ? <span className="inline-flex items-center gap-1.5"><Mail className="size-3.5 text-muted-foreground" aria-hidden="true" />{account.clientEmail}</span> : null },
+                    { label: "Phone", value: account.clientPhone ? <span className="inline-flex items-center gap-1.5 tabular-nums"><Phone className="size-3.5 text-muted-foreground" aria-hidden="true" />{account.clientPhone}</span> : null },
+                    { label: "WhatsApp", value: account.clientWhatsapp ? <span className="inline-flex items-center gap-1.5 tabular-nums"><MessageSquare className="size-3.5 text-muted-foreground" aria-hidden="true" />{account.clientWhatsapp}</span> : null },
+                    { label: "Converted", value: <span className="tabular-nums">{new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE)}</span> },
+                    { label: "Est. Investment", value: <span className="font-semibold tabular-nums">{formatINR(account.estimatedInvestment)}</span> },
+                  ]}
+                />
+                {account.conversionNotes && (
+                  <div className="space-y-1 border-t pt-3">
+                    <p className="text-xs text-muted-foreground">Conversion Notes</p>
+                    <p className="text-sm">{account.conversionNotes}</p>
                   </div>
-                  <div className="pb-4 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{activity.title}</p>
-                      <Badge variant="outline" className="text-3xs">{activity.activityType}</Badge>
-                    </div>
-                    {activity.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{activity.description}</p>
-                    )}
-                    <p className="text-2xs text-muted-foreground mt-1">
-                      {activity.user?.name || "Unknown"} • {new Date(activity.createdAt).toLocaleString(DEFAULT_LOCALE)}
-                    </p>
-                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Team</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Sales Rep</p>
+                  {account.salesRep ? <PersonRow person={account.salesRep} /> : null}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">CRM Rep</p>
+                  {account.assignedCrm ? (
+                    <PersonRow person={account.assignedCrm} />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <IconChip icon={User} tone="neutral" size="sm" />
+                      <p className="text-sm text-muted-foreground">Not assigned</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        }
+      />
 
       <Dialog open={showActivityForm} onOpenChange={setShowActivityForm}>
         <DialogContent className="sm:max-w-md">
@@ -347,6 +348,7 @@ export default function ClientAccountDetailPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowActivityForm(false)}>Cancel</Button>
             <Button
+              loading={logActivityMutation.isPending}
               disabled={!activityTitle.trim() || logActivityMutation.isPending}
               onClick={() => logActivityMutation.mutate(
                 { clientAccountId: clientId, activityType, title: activityTitle, description: activityDescription || undefined },
@@ -389,7 +391,7 @@ export default function ClientAccountDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowInvestmentModal(false)}>Cancel</Button>
-            <Button onClick={handleInvestmentSubmit} className="bg-success-600 hover:bg-success-700">
+            <Button onClick={handleInvestmentSubmit} loading={updateStatusMutation.isPending}>
               Record Investment
             </Button>
           </DialogFooter>

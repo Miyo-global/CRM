@@ -92,7 +92,7 @@ function CopyChip({
 
   if (!value) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/20 border border-border/30 opacity-40 select-none">
+      <div className="flex select-none items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-subtle-foreground">
         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <div className="min-w-0">
           <p className="text-2xs text-muted-foreground leading-none mb-0.5">
@@ -114,7 +114,7 @@ function CopyChip({
       </div>
       <button
         onClick={handleCopy}
-        className="shrink-0 p-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+        className="shrink-0 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:focus-ring"
         title={`Copy ${label}`}
       >
         {copied ? (
@@ -129,12 +129,12 @@ function CopyChip({
   return href ? (
     <a
       href={href}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/40 hover:bg-brand-soft transition-all group"
+      className="group flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 transition-colors hover:border-border-strong hover:bg-accent"
     >
       {content}
     </a>
   ) : (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/40 hover:bg-brand-soft transition-all">
+    <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 transition-colors hover:border-border-strong">
       {content}
     </div>
   );
@@ -150,9 +150,9 @@ export function LeadInfoCard({
 }: LeadInfoCardProps) {
   if (isEditing) {
     return (
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base">Edit Lead</CardTitle>
+          <CardTitle className="font-sans text-base font-semibold">Edit Lead</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...editForm}>
@@ -160,7 +160,7 @@ export function LeadInfoCard({
               onSubmit={editForm.handleSubmit(onEditSubmit)}
               className="space-y-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={editForm.control}
                   name="name"
@@ -281,7 +281,7 @@ export function LeadInfoCard({
                     </FormItem>
                   )}
                 />
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <FormField
                     control={editForm.control}
                     name="notes"
@@ -298,15 +298,11 @@ export function LeadInfoCard({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={onCancelEdit}>
+              <div className="flex justify-end gap-2 border-t border-border pt-4">
+                <Button type="button" variant="ghost" onClick={onCancelEdit}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-brand-soft text-primary-foreground"
-                  disabled={isUpdatePending}
-                >
+                <Button type="submit" loading={isUpdatePending}>
                   {isUpdatePending ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
@@ -348,9 +344,9 @@ export function LeadInfoCard({
   ];
 
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Lead Information</CardTitle>
+        <CardTitle className="font-sans text-base font-semibold">Lead Information</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -368,11 +364,10 @@ export function LeadInfoCard({
         {(lead.potentialValue || lead.investmentInterest) && (
           <div
             className={cn(
-              "grid gap-4 p-4 rounded-xl border border-border/40",
+              "grid gap-4 rounded-lg border border-border bg-surface-sunken p-4",
               lead.potentialValue && lead.investmentInterest
                 ? "grid-cols-2"
-                : "grid-cols-1",
-              "bg-gradient-to-r from-success-500/5 via-transparent to-gold-400"
+                : "grid-cols-1"
             )}
           >
             {lead.potentialValue && (
@@ -380,7 +375,7 @@ export function LeadInfoCard({
                 <p className="text-2xs uppercase tracking-wide text-muted-foreground font-medium">
                   Potential Value
                 </p>
-                <p className="text-2xl font-bold text-success-strong tabular-nums">
+                <p className="font-display text-2xl font-bold tabular-nums text-success-strong">
                   ₹
                   {Number.isFinite(Number(lead.potentialValue))
                     ? Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)
@@ -393,7 +388,7 @@ export function LeadInfoCard({
                 <p className="text-2xs uppercase tracking-wide text-muted-foreground font-medium">
                   Investment Interest
                 </p>
-                <p className="text-2xl font-bold text-brand-text tabular-nums">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">
                   ₹
                   {Number.isFinite(Number(lead.investmentInterest))
                     ? Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)
@@ -405,13 +400,13 @@ export function LeadInfoCard({
         )}
 
         {lead.notes && (
-          <div className="rounded-lg bg-muted/20 border border-border/30 overflow-hidden">
-            <div className="px-3 py-1.5 bg-muted/30 border-b border-border/20">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <div className="border-b border-border bg-surface-sunken px-3 py-1.5">
               <p className="text-2xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Notes
               </p>
             </div>
-            <p className="text-sm whitespace-pre-wrap px-3 py-2.5 font-mono leading-relaxed text-muted-foreground">
+            <p className="whitespace-pre-wrap px-3 py-2.5 text-sm leading-relaxed text-foreground">
               {lead.notes}
             </p>
           </div>

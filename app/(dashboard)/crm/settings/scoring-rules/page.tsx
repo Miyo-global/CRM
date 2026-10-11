@@ -14,8 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { toneSoft } from "@/lib/design/tones";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -77,7 +81,7 @@ const SAMPLE_LEAD = {
 };
 
 export default function ScoringRulesPage() {
-  const { data: rules, isLoading } = useScoringRules();
+  const { data: rules, isLoading, isError, error, refetch } = useScoringRules();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -165,10 +169,12 @@ export default function ScoringRulesPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64" />
-      </div>
+      <PageWrapper title="Lead Scoring Rules" subtitle="Define rules to automatically score leads" contentClassName="max-w-5xl">
+        <div className="space-y-6">
+          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-40 rounded-lg" />
+        </div>
+      </PageWrapper>
     );
   }
 
@@ -177,19 +183,20 @@ export default function ScoringRulesPage() {
       title="Lead Scoring Rules"
       subtitle="Define rules to automatically score leads"
       actions={
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="size-4" />
               New Rule
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create Scoring Rule</DialogTitle>
-            </DialogHeader>
+          </SheetTrigger>
+          <SheetContent size="sm" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Create Scoring Rule</SheetTitle>
+            </SheetHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onCreateSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onCreateSubmit)} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 <FormField control={form.control} name="field" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Field</FormLabel>
@@ -232,15 +239,23 @@ export default function ScoringRulesPage() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full" disabled={createRule.isPending}>
-                  {createRule.isPending ? "Creating..." : "Create Rule"}
-                </Button>
+                </div>
+                <SheetFooter>
+                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button type="submit" loading={createRule.isPending} disabled={createRule.isPending}>
+                    {createRule.isPending ? "Creating..." : "Create Rule"}
+                  </Button>
+                </SheetFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       }
+      contentClassName="max-w-5xl"
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load scoring rules" error={error} onRetry={() => refetch()} />
+      ) : (
       <motion.div
         className="space-y-6"
         variants={staggerContainer}
@@ -248,11 +263,11 @@ export default function ScoringRulesPage() {
         animate="visible"
       >
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
-            <CardHeader>
+          <Card>
+            <CardHeader className="border-b">
               <CardTitle className="text-base">Rules</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {rules && rules.length > 0 ? (
                 <Table>
                   <TableHeader>
@@ -281,48 +296,51 @@ export default function ScoringRulesPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <EmptyTargetIllustration className="mx-auto mb-4 w-40 h-40" />
-                  <p className="text-sm font-medium text-foreground">No scoring rules defined</p>
-                  <p className="text-xs mt-1">Create your first rule to start scoring leads automatically.</p>
-                </div>
+                <EmptyState
+                  className="border-0"
+                  illustration={<EmptyTargetIllustration className="size-32" />}
+                  title="No scoring rules defined"
+                  description="Create your first rule to start scoring leads automatically."
+                  action={{ label: "New Rule", onClick: () => setCreateOpen(true) }}
+                />
               )}
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="h-4 w-4 text-brand-text" />
+              <CardTitle className="flex items-center gap-2 text-base">
+                <IconChip icon={Zap} size="sm" />
                 Live Preview - Sample Lead
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2 md:grid-cols-4">
                 {Object.entries(SAMPLE_LEAD).map(([key, value]) => (
                   <div key={key}>
                     <span className="text-muted-foreground capitalize">{key}: </span>
-                    <span className="font-medium">{value}</span>
+                    <span className="break-words font-medium">{value}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 p-4 rounded-xl bg-surface-sunken border border-border flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between rounded-lg border bg-surface-sunken p-4">
                 <span className="text-sm font-medium">Calculated Score</span>
-                <Badge className={cn(
-                  "text-lg px-4 py-1 font-bold",
-                  sampleScore <= 30 ? "bg-danger-soft text-danger-strong" :
-                  sampleScore <= 60 ? "bg-warning-soft text-warning-strong" :
-                  "bg-success-soft text-success-strong"
+                <span className={cn(
+                  "inline-flex h-9 items-center rounded-full px-4 font-display text-lg font-bold tabular-nums",
+                  sampleScore <= 30 ? toneSoft.danger :
+                  sampleScore <= 60 ? toneSoft.warning :
+                  toneSoft.success
                 )}>
                   {sampleScore} pts
-                </Badge>
+                </span>
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </motion.div>
+      )}
     </PageWrapper>
   );
 }
@@ -350,7 +368,7 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
         <>
           <TableCell colSpan={4}>
             <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="flex items-end gap-2">
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="flex flex-wrap items-end gap-2">
                 <FormField control={editForm.control} name="field" render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
@@ -369,8 +387,8 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
                 <FormField control={editForm.control} name="points" render={({ field }) => (
                   <Input type="number" {...field} className="h-8 w-16 text-xs" />
                 )} />
-                <Button type="submit" size="sm" className="h-8 text-xs" disabled={updatePending}>Save</Button>
-                <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={onCancelEdit}>Cancel</Button>
+                <Button type="submit" size="sm" loading={updatePending} disabled={updatePending}>Save</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>Cancel</Button>
               </form>
             </Form>
           </TableCell>
@@ -380,21 +398,21 @@ function ScoringRuleRow({ rule, isEditing, editForm, onEditSubmit, onEdit, onDel
         <>
           <TableCell className="text-xs capitalize">{FIELDS.find(f => f.value === rule.field)?.label ?? rule.field}</TableCell>
           <TableCell className="text-xs">{OPERATORS.find(o => o.value === rule.operator)?.label ?? rule.operator}</TableCell>
-          <TableCell className="text-xs">{rule.value}</TableCell>
+          <TableCell className="font-mono text-xs">{rule.value}</TableCell>
           <TableCell className="text-xs text-right">
-            <Badge variant={rule.points >= 0 ? "default" : "destructive"} className="text-2xs">
+            <Badge variant={rule.points >= 0 ? "success" : "destructive"} className="tabular-nums">
               {rule.points > 0 ? "+" : ""}{rule.points}
             </Badge>
           </TableCell>
           <TableCell className="text-right">
             <div className="flex items-center justify-end gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleEdit} aria-label="Edit">
-                <Pencil className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon-sm" onClick={handleEdit} aria-label="Edit">
+                <Pencil className="size-3.5" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" aria-label="Delete">
-                    <Trash2 className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-danger-soft hover:text-destructive" aria-label="Delete">
+                    <Trash2 className="size-3.5" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

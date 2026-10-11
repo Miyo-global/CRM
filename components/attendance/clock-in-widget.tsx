@@ -9,7 +9,9 @@ import {
   useHrCheckOut,
 } from "../../lib/hooks/trpc-hooks";
 import { toast } from "sonner";
-import { Clock, Loader2, Timer } from "lucide-react";
+import { Clock, Timer } from "lucide-react";
+import { cn } from "../../lib/utils";
+import { toneDot } from "../../lib/design/tones";
 
 export function ClockInWidget() {
   const [now, setNow] = useState(new Date());
@@ -72,9 +74,6 @@ export function ClockInWidget() {
     }
   }, [hasActivePunch, isInCooldown, checkOutMutation, checkInMutation]);
 
-  const isPending =
-    checkInMutation.isPending || checkOutMutation.isPending || isLoading;
-
   const formatCooldown = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -93,53 +92,52 @@ export function ClockInWidget() {
 
   const dailyStats = statusData?.dailyStats;
 
+  const isActive = hasActivePunch || isOnBreak;
+  const mutating = checkInMutation.isPending || checkOutMutation.isPending;
+
   return (
-    <div className="flex items-center gap-6">
-      <div className="flex flex-col items-end">
-        <div className="text-muted-foreground font-bold text-sm tracking-wide">
-          {format(now, "hh:mm a - EEE dd, MMM yyyy").toUpperCase()}
-        </div>
+    <div className="inline-flex max-w-full items-center gap-3 rounded-full border border-border bg-card py-1 pr-1 pl-3 shadow-xs">
+      <span className="relative flex size-2 shrink-0" aria-hidden="true">
+        {isActive && (
+          <span className="absolute inline-flex size-full rounded-full bg-success-500 opacity-60 motion-safe:animate-ping" />
+        )}
+        <span className={cn("relative inline-flex size-2 rounded-full", isActive ? toneDot.success : toneDot.neutral)} />
+      </span>
 
-        <div className="flex items-center gap-4 mt-1">
-          {(hasActivePunch || isOnBreak) && sessionTime && (
-            <div className="flex items-center gap-1.5 text-sm">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="font-mono font-bold text-primary">
-                {String(sessionTime.hours).padStart(2, "0")}:
-                {String(sessionTime.minutes).padStart(2, "0")}:
-                {String(sessionTime.seconds).padStart(2, "0")}
-              </span>
-            </div>
-          )}
-
-          {dailyStats && parseFloat(dailyStats.workHours) > 0 && (
-            <div className="text-xs text-muted-foreground">
-              {parseFloat(dailyStats.workHours).toFixed(1)}h worked
-              {parseFloat(dailyStats.breakHours) > 0 && ` · ${parseFloat(dailyStats.breakHours).toFixed(1)}h break`}
-            </div>
-          )}
-        </div>
+      <div className="flex min-w-0 flex-col leading-tight">
+        {isActive && sessionTime ? (
+          <span className="flex items-center gap-1.5 font-mono text-sm font-medium tabular-nums text-foreground">
+            <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+            {String(sessionTime.hours).padStart(2, "0")}:
+            {String(sessionTime.minutes).padStart(2, "0")}:
+            {String(sessionTime.seconds).padStart(2, "0")}
+          </span>
+        ) : (
+          <span className="truncate text-xs font-medium tabular-nums text-foreground">
+            {format(now, "hh:mm a - EEE dd, MMM yyyy")}
+          </span>
+        )}
+        {dailyStats && parseFloat(dailyStats.workHours) > 0 && (
+          <span className="truncate text-2xs tabular-nums text-muted-foreground">
+            {parseFloat(dailyStats.workHours).toFixed(1)}h worked
+            {parseFloat(dailyStats.breakHours) > 0 && ` · ${parseFloat(dailyStats.breakHours).toFixed(1)}h break`}
+          </span>
+        )}
       </div>
 
       <Button
-        variant={hasActivePunch ? "outline" : isInCooldown ? "secondary" : "destructive"}
-        disabled={isPending || (!hasActivePunch && isInCooldown)}
+        size="sm"
+        variant={hasActivePunch ? "secondary" : isInCooldown ? "outline" : "default"}
+        loading={mutating}
+        disabled={isLoading || (!hasActivePunch && isInCooldown)}
         onClick={handleClockAction}
-        className={`font-bold px-6 py-2 h-auto text-xs tracking-wider rounded-sm shadow-lg ${
-          hasActivePunch
-            ? "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
-            : isInCooldown
-            ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "bg-destructive hover:bg-danger-700 text-destructive-foreground shadow-danger-900/20"
-        }`}
+        className="shrink-0 rounded-full"
       >
-        {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : hasActivePunch ? (
+        {hasActivePunch ? (
           "WEB CLOCK-OUT"
         ) : isInCooldown ? (
-          <span className="flex items-center gap-2">
-            <Timer className="h-3.5 w-3.5" />
+          <span className="flex items-center gap-1.5 tabular-nums">
+            <Timer className="size-3.5" aria-hidden="true" />
             {formatCooldown(localCooldown)}
           </span>
         ) : (

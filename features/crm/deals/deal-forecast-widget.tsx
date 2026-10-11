@@ -104,8 +104,8 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm flex items-center gap-1.5">
-            <Target className="h-4 w-4 text-primary" />
+          <CardTitle className="flex items-center gap-1.5 font-sans text-sm font-semibold">
+            <Target className="size-4 text-brand-text" aria-hidden="true" />
             Stage Probability View
           </CardTitle>
           <p className="text-xs text-muted-foreground">
@@ -136,8 +136,8 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
 
       <Card>
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm flex items-center gap-1.5">
-            <TrendingUp className="h-4 w-4 text-primary" />
+          <CardTitle className="flex items-center gap-1.5 font-sans text-sm font-semibold">
+            <TrendingUp className="size-4 text-brand-text" aria-hidden="true" />
             Monthly Forecast
           </CardTitle>
           <p className="text-xs text-muted-foreground">
@@ -146,7 +146,7 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
         </CardHeader>
         <CardContent className="p-4 pt-0">
           <div className="flex items-end gap-2 mb-4">
-            <span className="text-3xl font-bold text-foreground">
+            <span className="font-display text-3xl font-bold tabular-nums text-foreground">
               {formatINRCompact(monthlyForecast)}
             </span>
             <span className="text-xs text-muted-foreground pb-1">weighted expected</span>
@@ -155,7 +155,7 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex justify-between">
               <span>Deals closing this month</span>
-              <span className="font-medium text-foreground">
+              <span className="font-medium tabular-nums text-foreground">
                 {deals.filter((d) => {
                   if (!d.expectedCloseDate || d.stage === "LOST") return false;
                   const c = new Date(d.expectedCloseDate);
@@ -165,11 +165,11 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
             </div>
             <div className="flex justify-between">
               <span>Total weighted pipeline</span>
-              <span className="font-medium text-foreground">{formatINRCompact(weightedTotal)}</span>
+              <span className="font-medium tabular-nums text-foreground">{formatINRCompact(weightedTotal)}</span>
             </div>
             <div className="flex justify-between">
               <span>Win rate (weighted/raw)</span>
-              <span className="font-medium text-foreground">
+              <span className="font-medium tabular-nums text-foreground">
                 {deals.filter((d) => d.stage !== "LOST").reduce((s, d) => s + Number(d.value ?? 0), 0) > 0
                   ? `${Math.round((weightedTotal / deals.filter((d) => d.stage !== "LOST").reduce((s, d) => s + Number(d.value ?? 0), 0)) * 100)}%`
                   : ""}
@@ -177,7 +177,7 @@ export function DealForecastWidget({ deals }: DealForecastWidgetProps) {
             </div>
           </div>
 
-          <div className="mt-4 p-3 rounded-lg bg-muted/40 border">
+          <div className="mt-4 rounded-md border border-border bg-surface-sunken p-3">
             <p className="text-2xs text-muted-foreground">
               Weighted values use deal probability if set, otherwise stage defaults:
               Lead 10% · Contacted 25% · Proposal 50% · Negotiation 75% · Won 100%

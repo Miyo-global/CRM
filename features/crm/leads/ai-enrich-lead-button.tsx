@@ -51,7 +51,7 @@ export function AIEnrichLeadButton({ leadName, company, email, designation, city
           Enrich
         </Button>
       </SheetTrigger>
-      <SheetContent className="sm:max-w-lg flex flex-col p-0 gap-0">
+      <SheetContent size="md" className="flex flex-col p-0 gap-0">
         <SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b">
           <SheetTitle className="text-base flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-brand-text" />

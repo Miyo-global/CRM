@@ -3,9 +3,9 @@
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { User, Calendar, MoreHorizontal, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { kanbanCardClass } from "@/components/shared/kanban";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -32,9 +32,9 @@ function DealHealthBadge({ expectedCloseDate }: { expectedCloseDate: string | nu
 
   if (!status) return null;
   if (status === "overdue") {
-    return <Badge variant="destructive" className="text-2xs px-1.5 py-0 h-4">Overdue</Badge>;
+    return <StatusPill tone="danger" className="h-5 px-1.5 text-2xs">Overdue</StatusPill>;
   }
-  return <Badge className="text-2xs px-1.5 py-0 h-4 bg-warning hover:bg-warning-500 text-warning-foreground">Due soon</Badge>;
+  return <StatusPill tone="warning" className="h-5 px-1.5 text-2xs">Due soon</StatusPill>;
 }
 
 interface DealKanbanCardProps {
@@ -42,6 +42,8 @@ interface DealKanbanCardProps {
   onStageChange: (id: number, stage: string) => void;
   onDelete: (id: number) => void;
   onOpen?: (id: number) => void;
+  /** Set by the board while the card is being dragged. */
+  isDragging?: boolean;
 }
 
 function StageMenuItem({
@@ -59,7 +61,7 @@ function StageMenuItem({
   );
 }
 
-export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKanbanCardProps) {
+export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen, isDragging }: DealKanbanCardProps) {
   const router = useRouter();
   const handleDelete = useCallback(() => onDelete(deal.id), [deal.id, onDelete]);
   const handleNavigate = useCallback(() => {
@@ -71,20 +73,20 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
   }, [deal.id, onOpen, router]);
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={handleNavigate}>
-      <CardContent className="p-3">
+    <div className={cn(kanbanCardClass(isDragging), "cursor-pointer")} onClick={handleNavigate}>
+      <div>
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 mr-1">
-            <h4 className="text-sm font-medium line-clamp-1">{deal.name}</h4>
+            <h4 className="line-clamp-2 font-sans text-sm font-medium" title={deal.name}>{deal.name}</h4>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="font-mono text-2xs text-muted-foreground/70 select-all">{formatDealId(deal.id)}</span>
+              <span className="select-all font-mono text-2xs tabular-nums text-subtle-foreground">{formatDealId(deal.id)}</span>
               <DealHealthBadge expectedCloseDate={deal.expectedCloseDate} />
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 -mr-1 -mt-0.5" aria-label="More options">
-                <MoreHorizontal className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon-xs" className="-mr-1 -mt-1" aria-label="More options" onClick={(e) => e.stopPropagation()}>
+                <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -106,7 +108,7 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
           </DropdownMenu>
         </div>
 
-        <p className="text-lg font-bold text-brand-text mt-1">
+        <p className="mt-1 font-display text-lg font-semibold tabular-nums text-foreground">
           {formatINRCompact(deal.value || 0)}
         </p>
 
@@ -126,12 +128,12 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
                   {deal.assignedTo.name?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground">{deal.assignedTo.name}</span>
+              <span className="max-w-32 truncate text-xs text-muted-foreground">{deal.assignedTo.name}</span>
             </div>
           ) : <span />}
 
           {deal.expectedCloseDate && (
-            <span className="text-2xs text-muted-foreground flex items-center gap-0.5">
+            <span className="flex items-center gap-1 text-2xs tabular-nums text-muted-foreground">
               <Calendar className="h-2.5 w-2.5" />
               {new Date(deal.expectedCloseDate).toLocaleDateString(DEFAULT_LOCALE, { month: "short", day: "numeric" })}
             </span>
@@ -143,14 +145,14 @@ export function DealKanbanCard({ deal, onStageChange, onDelete, onOpen }: DealKa
             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
               <div className="h-full rounded-full bg-primary" style={{ width: `${deal.probability}%` }} />
             </div>
-            <span className="text-2xs text-muted-foreground">{deal.probability}% probability</span>
+            <span className="text-2xs tabular-nums text-muted-foreground">{deal.probability}% probability</span>
           </div>
         )}
 
-        <div className="mt-2 pt-2 border-t border-border/30 flex justify-end" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-2 flex justify-end border-t border-border pt-2" onClick={(e) => e.stopPropagation()}>
           <AIPredictDealButton dealId={deal.id} compact />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

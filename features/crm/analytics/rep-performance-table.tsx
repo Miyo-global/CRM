@@ -36,28 +36,28 @@ export function RepPerformanceTable({ leaderboard }: RepPerformanceTableProps) {
           className="border-0 bg-transparent"
         />
       ) : (
-        <div className="max-h-[280px] overflow-y-auto">
+        <div className="max-h-70 overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="text-xs">Rep</TableHead>
-                <TableHead className="text-xs text-right">Leads</TableHead>
-                <TableHead className="text-xs text-right">Converted</TableHead>
-                <TableHead className="text-xs text-right">Calls</TableHead>
-                <TableHead className="text-xs text-right">Score</TableHead>
+                <TableHead className="text-xs text-right tabular-nums">Leads</TableHead>
+                <TableHead className="text-xs text-right tabular-nums">Converted</TableHead>
+                <TableHead className="text-xs text-right tabular-nums">Calls</TableHead>
+                <TableHead className="text-xs text-right tabular-nums">Score</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {leaderboard.map((rep, i) => (
                 <TableRow key={rep.userId}>
                   <TableCell className="text-xs font-medium">
-                    <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
+                    <span className="mr-1.5 tabular-nums text-muted-foreground">{i + 1}.</span>
                     {rep.name}
                   </TableCell>
-                  <TableCell className="text-xs text-right">{rep.leadsAssigned}</TableCell>
-                  <TableCell className="text-xs text-right text-success">{rep.leadsConverted}</TableCell>
-                  <TableCell className="text-xs text-right">{rep.totalCalls}</TableCell>
-                  <TableCell className="text-xs text-right font-semibold">{rep.score}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{rep.leadsAssigned}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums text-success-strong">{rep.leadsConverted}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{rep.totalCalls}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums font-semibold">{rep.score}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

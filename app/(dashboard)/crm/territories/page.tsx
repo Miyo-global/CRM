@@ -13,7 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import {
   Sheet,
   SheetContent,
@@ -40,7 +44,6 @@ import {
   type Territory,
   type CreateTerritoryInput,
 } from "@/lib/api/hooks/crm";
-import { cn } from "@/lib/utils";
 
 
 interface TagInputProps {
@@ -88,20 +91,20 @@ function TagInput({ label, tags, onChange, placeholder }: TagInputProps) {
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <div
-        className="flex flex-wrap gap-1.5 min-h-[38px] px-3 py-2 rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring cursor-text"
+        className="flex min-h-9 cursor-text flex-wrap gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 focus-within:focus-ring"
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag, idx) => (
           <Badge
             key={idx}
             variant="secondary"
-            className="flex items-center gap-1 text-xs h-5 pr-1"
+            className="pr-0.5"
           >
             {tag}
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); removeTag(idx); }}
-              className="ml-0.5 rounded-full hover:bg-muted p-0.5"
+              className="ml-0.5 inline-flex size-4 items-center justify-center rounded-full hover:bg-accent focus-visible:focus-ring"
               aria-label={`Remove ${tag}`}
             >
               ×
@@ -115,7 +118,7 @@ function TagInput({ label, tags, onChange, placeholder }: TagInputProps) {
           onKeyDown={handleKeyDown}
           onBlur={() => { if (inputValue.trim()) addTag(inputValue); }}
           placeholder={tags.length === 0 ? placeholder : ""}
-          className="flex-1 min-w-[80px] text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+          className="min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
       <p className="text-xs text-muted-foreground">Press Enter to add each item</p>
@@ -160,26 +163,19 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
   const extraCities = (t.cities ?? []).length - MAX_CITIES;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2 pt-4 px-4">
+    <Card className="transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="font-semibold text-sm text-foreground truncate">{t.name}</p>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <IconChip icon={Map} size="sm" tone={t.isActive ? "brand" : "neutral"} />
+            <p className="truncate text-sm font-semibold text-foreground" title={t.name}>{t.name}</p>
           </div>
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-2xs shrink-0",
-              t.isActive
-                ? "bg-success-soft text-success-strong border-success-strong/25"
-                : "bg-muted text-muted-foreground border-border"
-            )}
-          >
+          <StatusPill tone={t.isActive ? "success" : "neutral"} dot>
             {t.isActive ? "Active" : "Inactive"}
-          </Badge>
+          </StatusPill>
         </div>
       </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-3">
+      <CardContent className="space-y-3 px-5 pb-5">
         {(t.states ?? []).length > 0 && (
           <div className="flex items-start gap-2">
             <Building2 className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
@@ -194,12 +190,12 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
             <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex flex-wrap gap-1">
               {visibleCities.map((city) => (
-                <Badge key={city} variant="outline" className="text-2xs h-4 px-1.5">
+                <Badge key={city} variant="outline">
                   {city}
                 </Badge>
               ))}
               {extraCities > 0 && (
-                <Badge variant="outline" className="text-2xs h-4 px-1.5 text-muted-foreground">
+                <Badge variant="outline" className="text-muted-foreground">
                   +{extraCities} more
                 </Badge>
               )}
@@ -208,8 +204,8 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
         )}
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Users className="h-3.5 w-3.5" />
-          <span>{(t.assignedReps ?? []).length} assigned rep{(t.assignedReps ?? []).length !== 1 ? "s" : ""}</span>
+          <Users className="size-3.5" aria-hidden="true" />
+          <span className="tabular-nums">{(t.assignedReps ?? []).length} assigned rep{(t.assignedReps ?? []).length !== 1 ? "s" : ""}</span>
         </div>
 
         {t.description && (
@@ -220,23 +216,23 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-7 text-xs"
+            className="flex-1"
             onClick={() => onEdit(t)}
             aria-label={`Edit ${t.name}`}
           >
-            <Pencil className="h-3 w-3 mr-1" />
+            <Pencil className="size-3.5" />
             Edit
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="flex-1 h-7 text-xs text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
-                disabled={isDeleting}
+                className="flex-1 text-destructive hover:bg-danger-soft hover:text-destructive"
+                loading={isDeleting}
                 aria-label={`Delete ${t.name}`}
               >
-                <Trash2 className="h-3 w-3 mr-1" />
+                <Trash2 className="size-3.5" />
                 Delete
               </Button>
             </AlertDialogTrigger>
@@ -266,7 +262,7 @@ function TerritoryCard({ territory: t, onEdit, onDelete, isDeleting }: Territory
 
 
 export default function TerritoriesPage() {
-  const { data: territories = [], isLoading } = useTerritories();
+  const { data: territories = [], isLoading, isError, error, refetch } = useTerritories();
   const { mutate: createTerritory, isPending: isCreating } = useCreateTerritory();
   const { mutate: updateTerritory, isPending: isUpdating } = useUpdateTerritory();
   const { mutate: deleteTerritory, variables: deletingVars } = useDeleteTerritory();
@@ -317,11 +313,9 @@ export default function TerritoriesPage() {
         subtitle="Define geographic territories and assign sales reps"
       >
         <div className="space-y-6">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}
-          </div>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-52" />)}
+          <Skeleton className="h-20 rounded-lg" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-52 rounded-lg" />)}
           </div>
         </div>
       </PageWrapper>
@@ -334,47 +328,32 @@ export default function TerritoriesPage() {
       subtitle="Define geographic territories and assign sales reps"
       actions={
         <Button size="sm" onClick={openCreate} aria-label="Create territory">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="size-4" />
           Add Territory
         </Button>
       }
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load territories" error={error} onRetry={() => refetch()} />
+      ) : (
       <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <StatCard
-            label="Total Territories"
-            value={totalTerritories}
-            color="blue"
-            icon={Map}
-          />
-          <StatCard
-            label="Active Territories"
-            value={activeTerritories}
-            color="green"
-            icon={CheckCircle2}
-          />
-          <StatCard
-            label="Cities Covered"
-            value={totalCities}
-            color="gold"
-            icon={MapPin}
-          />
-        </div>
+        <StatsStrip
+          items={[
+            { label: "Total Territories", value: totalTerritories, icon: Map, tone: "info" },
+            { label: "Active Territories", value: activeTerritories, icon: CheckCircle2, tone: "success" },
+            { label: "Cities Covered", value: totalCities, icon: MapPin, tone: "brand" },
+          ]}
+        />
 
         {territories.length === 0 ? (
-          <div className="py-16 text-center space-y-3">
-            <Map className="h-12 w-12 mx-auto text-muted-foreground/40" />
-            <p className="font-medium text-muted-foreground">No territories yet</p>
-            <p className="text-sm text-muted-foreground">
-              Create your first territory to start assigning sales reps to geographic regions.
-            </p>
-            <Button onClick={openCreate} className="mt-2" aria-label="Create first territory">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Territory
-            </Button>
-          </div>
+          <EmptyState
+            icon={Map}
+            title="No territories yet"
+            description="Create your first territory to start assigning sales reps to geographic regions."
+            action={{ label: "Add Territory", onClick: openCreate }}
+          />
         ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {territories.map((t) => (
               <TerritoryCard
                 key={t.id}
@@ -387,14 +366,15 @@ export default function TerritoriesPage() {
           </div>
         )}
       </div>
+      )}
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
+        <SheetContent size="md" className="gap-0 p-0">
+          <SheetHeader className="border-b px-6">
             <SheetTitle>{editTarget ? "Edit Territory" : "Create Territory"}</SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-5 py-4">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
             <div className="space-y-1.5">
               <Label htmlFor="territory-name">Name *</Label>
               <Input
@@ -440,16 +420,15 @@ export default function TerritoriesPage() {
             </div>
           </div>
 
-          <SheetFooter className="flex-row gap-2 border-t pt-4">
+          <SheetFooter>
             <Button
-              variant="outline"
-              className="flex-1"
+              variant="ghost"
               onClick={() => setSheetOpen(false)}
             >
               Cancel
             </Button>
             <Button
-              className="flex-1"
+              loading={isCreating || isUpdating}
               disabled={!form.name.trim() || isCreating || isUpdating}
               onClick={handleSubmit}
             >

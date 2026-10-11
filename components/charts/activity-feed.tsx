@@ -10,7 +10,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   Ticket,
+  type LucideIcon,
 } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { useCrmPeopleSlugs } from "@/lib/hooks/trpc-hooks";
 
 type ActivityType = "deal_won" | "meeting" | "proposal" | "call" | "email" | "ticket" | "escalation";
@@ -26,71 +29,62 @@ interface ActivityFeedProps {
   items: ActivityItem[];
 }
 
-const typeConfig: Record<ActivityType, { icon: React.ElementType; color: string; bg: string }> = {
-  deal_won: { icon: CheckCircle2, color: "text-success-strong", bg: "bg-success-soft" },
-  meeting: { icon: Calendar, color: "text-info-strong", bg: "bg-info-soft" },
-  proposal: { icon: FileText, color: "text-plum-strong", bg: "bg-plum-soft" },
-  call: { icon: Phone, color: "text-warning-strong", bg: "bg-warning-soft" },
-  email: { icon: Mail, color: "text-muted-foreground", bg: "bg-neutral-soft" },
-  ticket: { icon: Ticket, color: "text-info-strong", bg: "bg-info-soft" },
-  escalation: { icon: AlertTriangle, color: "text-danger-strong", bg: "bg-danger-soft" },
+const typeConfig: Record<ActivityType, { icon: LucideIcon; tone: Tone }> = {
+  deal_won: { icon: CheckCircle2, tone: "success" },
+  meeting: { icon: Calendar, tone: "info" },
+  proposal: { icon: FileText, tone: "plum" },
+  call: { icon: Phone, tone: "warning" },
+  email: { icon: Mail, tone: "neutral" },
+  ticket: { icon: Ticket, tone: "info" },
+  escalation: { icon: AlertTriangle, tone: "danger" },
 };
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
   const { data: slugMap } = useCrmPeopleSlugs();
 
   return (
-    <div className="space-y-0">
+    <ol className="relative">
       {items.map((item, i) => {
         const config = typeConfig[item.type];
-        const Icon = config.icon;
         const personSlug = item.person && slugMap ? slugMap[item.person] ?? null : null;
 
         return (
-          <motion.div
+          <motion.li
             key={i}
-            className="flex gap-3 py-3 first:pt-0"
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
+            className="relative flex gap-3 pb-4 last:pb-0"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18, delay: i * 0.04 }}
           >
+            {i < items.length - 1 && (
+              <span className="absolute top-7 bottom-0 left-3.5 w-px -translate-x-1/2 bg-border" aria-hidden="true" />
+            )}
+            <IconChip icon={config.icon} tone={config.tone} size="sm" className="relative ring-4 ring-card" />
 
-            <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center shrink-0`}>
-                <Icon className={`h-3.5 w-3.5 ${config.color}`} />
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="text-sm leading-snug text-foreground">{item.message}</p>
+              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                {item.person && (
+                  <>
+                    {personSlug ? (
+                      <Link
+                        href={`/sales/person/${personSlug}`}
+                        className="font-semibold text-brand-text hover:underline"
+                      >
+                        {item.person}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold text-foreground">{item.person}</span>
+                    )}
+                    <span aria-hidden="true">·</span>
+                  </>
+                )}
+                <span className="tabular-nums">{item.time}</span>
               </div>
-              {i < items.length - 1 && (
-                <div className="w-px flex-1 bg-border mt-1" />
-              )}
             </div>
-
-            <div className="flex-1 min-w-0 pb-1">
-              <p className="text-sm text-foreground leading-snug">{item.message}</p>
-              {item.person && (
-                <div className="flex items-center gap-2 mt-0.5">
-                  {personSlug ? (
-                    <Link
-                      href={`/sales/person/${personSlug}`}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      {item.person}
-                    </Link>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">{item.person}</span>
-                  )}
-                  <span className="text-xs text-muted-foreground/50">·</span>
-                  <span className="text-xs text-muted-foreground">{item.time}</span>
-                </div>
-              )}
-              {!item.person && (
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-muted-foreground">{item.time}</span>
-                </div>
-              )}
-            </div>
-          </motion.div>
+          </motion.li>
         );
       })}
-    </div>
+    </ol>
   );
 }

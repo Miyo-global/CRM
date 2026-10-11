@@ -1,8 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { PIPELINE_STAGES } from "@/features/crm/shared/constants";
 
 interface CrmPipelineMiniProps {
@@ -10,43 +7,39 @@ interface CrmPipelineMiniProps {
   total: number;
 }
 
+/** Lead funnel as one horizontal stage bar (stage tones) + per-stage rows. Renders inside a WidgetCard. */
 export function CrmPipelineMini({ byStatus, total }: CrmPipelineMiniProps) {
-  const maxCount = Math.max(1, ...Object.values(byStatus));
+  const stages = PIPELINE_STAGES.map((stage) => {
+    const count = byStatus[stage.key] ?? 0;
+    return { ...stage, count, pct: total > 0 ? Math.round((count / total) * 100) : 0 };
+  });
+  const summary = stages.map((s) => `${s.label} ${s.count}`).join(", ");
 
   return (
-    <Card className="shadow-sm h-full">
-      <CardHeader className="pb-2 px-3 pt-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pipeline Funnel</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 px-3 pb-3">
-        {PIPELINE_STAGES.filter(s => s.key !== "LOST").map((stage, i) => {
-          const count = byStatus[stage.key] ?? 0;
-          const pct = total > 0 ? ((count / total) * 100).toFixed(0) : "0";
-          return (
-            <div key={stage.key} className="space-y-0.5">
-              <div className="flex items-center justify-between text-2xs">
-                <div className="flex items-center gap-1.5">
-                  <div className={cn("w-1.5 h-1.5 rounded-full", stage.dot)} />
-                  <span className="font-medium">{stage.label}</span>
-                </div>
-                <div className="flex items-center gap-1.5 tabular-nums">
-                  <span className="font-bold">{count}</span>
-                  <span className="text-muted-foreground w-6 text-right">{pct}%</span>
-                </div>
-              </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: stage.color }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(count / maxCount) * 100}%` }}
-                  transition={{ duration: 0.5, delay: i * 0.06 }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div role="img" aria-label={`Leads by stage: ${summary}`} className="flex h-3 w-full gap-0.5 overflow-hidden rounded-full bg-muted">
+        {stages.map((s) =>
+          s.count > 0 ? (
+            <div
+              key={s.key}
+              className="h-full first:rounded-l-full last:rounded-r-full"
+              style={{ width: `${(s.count / Math.max(total, 1)) * 100}%`, backgroundColor: s.color }}
+              title={`${s.label}: ${s.count}`}
+            />
+          ) : null
+        )}
+      </div>
+
+      <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        {stages.map((s) => (
+          <li key={s.key} className="flex items-center gap-2 text-sm">
+            <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+            <span className="min-w-0 flex-1 truncate text-muted-foreground">{s.label}</span>
+            <span className="font-semibold tabular-nums">{s.count}</span>
+            <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">{s.pct}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

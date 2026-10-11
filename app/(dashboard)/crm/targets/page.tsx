@@ -24,6 +24,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
 import { cn, resolveImageUrl } from "@/lib/utils";
 import { staggerContainer, fadeUp, slideInLeft } from "@/lib/motion-variants";
 import { useMyTargets, useTargetLeaderboard, useCreateTarget, useTargetHistory } from "@/lib/api/hooks/crm";
@@ -35,13 +38,13 @@ import { formatDistanceToNow } from "date-fns";
 import { CreateTargetSheet } from "@/features/crm/targets/create-target-sheet";
 import { getInitials } from "@/lib/format-utils";
 import { rankStyles } from "@/lib/theme-constants";
-import { toneBar } from "@/lib/design/tones";
-const METRIC_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
-  calls: { icon: Phone, color: "text-info-strong" },
-  leads_converted: { icon: UserCheck, color: "text-success-strong" },
-  revenue: { icon: TrendingUp, color: "text-brand-text" },
-  meetings: { icon: Calendar, color: "text-plum-strong" },
-  deals: { icon: Zap, color: "text-warning-strong" },
+import { toneBar, type Tone } from "@/lib/design/tones";
+const METRIC_ICONS: Record<string, { icon: IconChipProps["icon"]; tone: Tone }> = {
+  calls: { icon: Phone, tone: "info" },
+  leads_converted: { icon: UserCheck, tone: "success" },
+  revenue: { icon: TrendingUp, tone: "brand" },
+  meetings: { icon: Calendar, tone: "plum" },
+  deals: { icon: Zap, tone: "warning" },
 };
 
 // Gold / silver / bronze from the shared rank palette.
@@ -60,8 +63,8 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="View history">
-          <History className="h-3.5 w-3.5 text-muted-foreground" />
+        <Button variant="ghost" size="icon-sm" aria-label="View history">
+          <History className="size-3.5 text-muted-foreground" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -79,10 +82,11 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
             </div>
           )}
           {history && history.length === 0 && (
-            <div className="py-6">
-              <EmptyCalendarIllustration className="mx-auto mb-4 h-32 w-32 opacity-95" />
-              <p className="text-sm text-muted-foreground text-center">No changes recorded yet.</p>
-            </div>
+            <EmptyState
+              compact
+              illustration={<EmptyCalendarIllustration className="size-28" />}
+              title="No changes recorded yet."
+            />
           )}
           {history?.map((h) => (
             <div key={h.id} className="flex items-start gap-3 text-sm border-b pb-2 last:border-0">
@@ -98,7 +102,7 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
                   to <span className="font-medium">{h.newValue ?? ""}</span>
                 </p>
                 {h.createdAt && (
-                  <p className="text-2xs text-muted-foreground mt-0.5">
+                  <p className="text-2xs text-muted-foreground mt-0.5" title={new Date(h.createdAt).toLocaleString()}>
                     {formatDistanceToNow(new Date(h.createdAt), { addSuffix: true })}
                   </p>
                 )}
@@ -113,8 +117,8 @@ function TargetHistoryDialog({ targetId, metricType }: { targetId: number; metri
 
 export default function TargetsPage() {
   const { data: session } = useSession();
-  const { data: myTargets, isLoading: targetsLoading } = useMyTargets();
-  const { data: leaderboard, isLoading: leaderboardLoading } = useTargetLeaderboard();
+  const { data: myTargets, isLoading: targetsLoading, isError: targetsError, error: targetsErr, refetch: refetchTargets } = useMyTargets();
+  const { data: leaderboard, isLoading: leaderboardLoading, isError: leaderboardError, error: leaderboardErr, refetch: refetchLeaderboard } = useTargetLeaderboard();
   const { data: rawEmployees } = useHrEmployees();
   const employees = Array.isArray(rawEmployees) ? rawEmployees : rawEmployees?.data ?? [];
   const createTarget = useCreateTarget();
@@ -155,41 +159,42 @@ export default function TargetsPage() {
     }
   }, [createTarget]);
 
+  const pageActions = canSetTargets ? (
+    <CreateTargetSheet
+      assignableEmployees={assignableEmployees}
+      isPending={createTarget.isPending}
+      onSubmit={handleCreateTarget}
+    />
+  ) : undefined;
+
   if (targetsLoading || leaderboardLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
-            <Skeleton className="h-8 w-52" />
-            <Skeleton className="h-4 w-72" />
-          </div>
-          <Skeleton className="h-10 w-28" />
-        </div>
-        <div className="space-y-3">
-          <Skeleton className="h-6 w-28" />
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <PageWrapper title="Targets & Leaderboard" subtitle="Track daily targets and team performance rankings">
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4 space-y-3">
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-7 w-1/2" />
-                  <Skeleton className="h-2 w-full rounded-full" />
-                </CardContent>
-              </Card>
+              <Skeleton key={i} className="h-40 rounded-lg" />
+            ))}
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
             ))}
           </div>
         </div>
-        <div className="space-y-3">
-          <Skeleton className="h-6 w-36" />
-          <Card>
-            <CardContent className="p-4 space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-xl" />
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      </PageWrapper>
+    );
+  }
+
+  if (targetsError || leaderboardError) {
+    return (
+      <PageWrapper title="Targets & Leaderboard" subtitle="Track daily targets and team performance rankings" actions={pageActions}>
+        <QueryErrorState
+          title="Couldn't load targets"
+          error={targetsErr ?? leaderboardErr}
+          onRetry={() => { refetchTargets(); refetchLeaderboard(); }}
+        />
+      </PageWrapper>
     );
   }
 
@@ -197,36 +202,27 @@ export default function TargetsPage() {
     <PageWrapper
       title="Targets & Leaderboard"
       subtitle="Track daily targets and team performance rankings"
-      actions={canSetTargets ? (
-        <CreateTargetSheet
-          assignableEmployees={assignableEmployees}
-          isPending={createTarget.isPending}
-          onSubmit={handleCreateTarget}
-        />
-      ) : undefined}
+      actions={pageActions}
     >
-      <motion.div className="space-y-4" variants={staggerContainer} initial="hidden" animate="visible">
+      <motion.div className="space-y-8" variants={staggerContainer} initial="hidden" animate="visible">
         {myTargets && myTargets.length > 0 && (
           <motion.div variants={fadeUp}>
-            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Target className="h-5 w-5 text-brand-text" />
+            <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
+              <IconChip icon={Target} size="sm" />
               My Targets
             </h2>
-            <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {myTargets.map((target) => {
                 const progress = Number(target.targetValue) > 0
                   ? Math.min(100, Math.round((Number(target.currentValue ?? 0) / Number(target.targetValue)) * 100))
                   : 0;
-                const config = METRIC_ICONS[target.metricType] || { icon: BarChart3, color: "text-muted-foreground" };
-                const MetricIcon = config.icon;
+                const config = METRIC_ICONS[target.metricType] || { icon: BarChart3, tone: "neutral" as Tone };
                 return (
-                  <Card key={target.id} className="shadow-sm overflow-hidden">
-                    <CardContent className="p-4">
+                  <Card key={target.id} className="overflow-hidden">
+                    <CardContent className="p-5">
                       <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-muted/50">
-                            <MetricIcon className={cn("h-4 w-4", config.color)} />
-                          </div>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <IconChip icon={config.icon} tone={config.tone} />
                           <div>
                             <p className="text-sm font-medium capitalize">{target.metricType.replace(/_/g, " ")}</p>
                             <p className="text-2xs text-muted-foreground uppercase">{target.period}</p>
@@ -234,12 +230,12 @@ export default function TargetsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <TargetHistoryDialog targetId={target.id} metricType={target.metricType} />
-                          <Badge variant="outline" className="text-xs">{progress}%</Badge>
+                          <Badge variant="outline" className="tabular-nums">{progress}%</Badge>
                         </div>
                       </div>
                       <div className="flex items-end justify-between mb-2">
-                        <span className="text-2xl font-bold tabular-nums">{Number(target.currentValue ?? 0)}</span>
-                        <span className="text-sm text-muted-foreground">/ {Number(target.targetValue)}</span>
+                        <span className="font-display text-3xl font-extrabold tabular-nums">{Number(target.currentValue ?? 0)}</span>
+                        <span className="text-sm tabular-nums text-muted-foreground">/ {Number(target.targetValue)}</span>
                       </div>
                       <div
                         className="h-2 rounded-full bg-muted overflow-hidden"
@@ -261,7 +257,7 @@ export default function TargetsPage() {
                           transition={{ duration: 0.8, ease: "easeOut" }}
                         />
                       </div>
-                      <div className="flex items-center justify-between mt-2 text-2xs text-muted-foreground">
+                      <div className="flex items-center justify-between mt-2 text-2xs tabular-nums text-muted-foreground">
                         <span>{target.startDate}</span>
                         <span>{target.endDate}</span>
                       </div>
@@ -280,31 +276,23 @@ export default function TargetsPage() {
 
         {myTargets && myTargets.length === 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm">
-              <CardContent className="py-12">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <EmptyTargetIllustration className="w-40 h-40" />
-                  <div>
-                    <p className="text-base font-medium text-foreground">No targets assigned yet</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1 max-w-md mx-auto">
-                      {canSetTargets
-                        ? "Use the Set Target button above to add daily, weekly, or monthly goals for your team."
-                        : "Your admin will set targets for you. Once they do, you'll see your progress visualized here."}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <EmptyState
+              illustration={<EmptyTargetIllustration className="size-36" />}
+              title="No targets assigned yet"
+              description={canSetTargets
+                ? "Use the Set Target button above to add daily, weekly, or monthly goals for your team."
+                : "Your admin will set targets for you. Once they do, you'll see your progress visualized here."}
+            />
           </motion.div>
         )}
 
         <motion.div variants={fadeUp}>
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-brand-text" />
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
+            <IconChip icon={Trophy} size="sm" />
             Team Leaderboard
           </h2>
           {leaderboard && leaderboard.length > 0 ? (
-            <Card className="shadow-sm">
+            <Card>
               <CardContent className="p-4">
                 <div className="space-y-2">
                   {leaderboard.map((member, i) => {
@@ -314,14 +302,14 @@ export default function TargetsPage() {
                       <motion.div
                         key={member.userId}
                         className={cn(
-                          "relative rounded-xl p-4 transition-colors",
+                          "relative rounded-lg p-3 transition-colors sm:p-4",
                           isTop3
                             ? cn("border", style?.bg, style?.border, "ring-1", style?.ring)
                             : "border border-border/50 bg-muted/30",
                         )}
                         variants={slideInLeft}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
                           <div className={cn(
                             "relative flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shrink-0",
                             isTop3 ? cn(style?.bg, style?.text) : "bg-muted text-muted-foreground",
@@ -350,7 +338,7 @@ export default function TargetsPage() {
                                 <span className={cn("text-sm font-bold tabular-nums", isTop3 ? style?.text : "text-foreground")}>
                                   {member.progress}%
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="hidden text-xs tabular-nums text-muted-foreground sm:inline">
                                   ({member.totalCurrent}/{member.totalTarget})
                                 </span>
                               </div>
@@ -379,20 +367,11 @@ export default function TargetsPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="shadow-sm">
-              <CardContent className="py-12">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <EmptyLeaderboardIllustration className="w-40 h-40" />
-                  <div>
-                    <p className="text-base font-medium text-foreground">No leaderboard data yet</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1 max-w-md mx-auto">
-                      Targets need to be set for team members first. Once your team starts tracking activity,
-                      their rankings will appear here.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <EmptyState
+              illustration={<EmptyLeaderboardIllustration className="size-36" />}
+              title="No leaderboard data yet"
+              description="Targets need to be set for team members first. Once your team starts tracking activity, their rankings will appear here."
+            />
           )}
         </motion.div>
       </motion.div>

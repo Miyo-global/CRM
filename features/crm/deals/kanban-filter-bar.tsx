@@ -51,14 +51,14 @@ export const KanbanFilterBar = memo(function KanbanFilterBar({
   );
 
   return (
-    <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg border border-border/50 bg-muted/20">
-      <Filter className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
+    <div className="flex flex-wrap items-end gap-2 rounded-lg border border-border bg-card p-3">
+      <Filter className="mb-2 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <div className="flex flex-col gap-1">
         <label className="text-xs text-muted-foreground">Assignee</label>
         <select
           value={filterAssignee}
           onChange={handleAssigneeChange}
-          className="h-8 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+          className="h-8 rounded-md border border-input bg-card px-2 text-xs outline-none focus-visible:focus-ring"
           aria-label="Filter by assignee"
         >
           <option value="all">All assignees</option>
@@ -91,12 +91,12 @@ export const KanbanFilterBar = memo(function KanbanFilterBar({
           aria-label="Maximum deal value"
         />
       </div>
-      <Button size="sm" className="h-8 bg-primary hover:bg-brand-soft text-primary-foreground" onClick={onApply}>
+      <Button size="sm" onClick={onApply}>
         Apply
       </Button>
       {hasActiveFilters && (
-        <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={onClear}>
-          <X className="h-3 w-3 mr-1" />
+        <Button size="sm" variant="ghost" onClick={onClear}>
+          <X />
           Clear
         </Button>
       )}

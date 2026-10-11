@@ -142,7 +142,7 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
     <div>
       <motion.div variants={staggerContainer} initial="hidden" animate="visible">
         <motion.div variants={fadeUp} className="mb-5">
-          <h2 className="text-xl font-semibold text-foreground">Documents</h2>
+          <h2 className="font-display text-xl font-bold text-foreground">Documents</h2>
           <p className="text-sm text-muted-foreground mt-1">Please upload the necessary documents.</p>
         </motion.div>
         <form onSubmit={handleFormSubmit}>
@@ -155,23 +155,23 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                   <motion.div
                     key={doc.type}
                     variants={fadeUp}
-                    className={`border border-dashed rounded-lg p-5 flex flex-col items-center text-center space-y-2 transition ${
-                      isUploaded ? "border-success-500/50 bg-success-soft" : "border-border hover:bg-muted/50"
+                    className={`flex flex-col items-center space-y-2 rounded-lg border-2 border-dashed p-5 text-center transition-colors ${
+                      isUploaded ? "border-success-500/50 bg-success-soft" : "border-border-strong bg-surface-sunken/40 hover:border-primary hover:bg-brand-soft"
                     }`}
                   >
                     {isUploaded ? (
-                      <CheckCircle className="h-7 w-7 text-success-strong" aria-hidden="true" />
+                      <CheckCircle className="size-7 text-success-strong" aria-hidden="true" />
                     ) : isThisLoading ? (
-                      <Loader2 className="h-7 w-7 text-muted-foreground animate-spin" aria-hidden="true" />
+                      <Loader2 className="size-7 animate-spin text-muted-foreground" aria-hidden="true" />
                     ) : (
-                      <Upload className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+                      <Upload className="size-7 text-muted-foreground" aria-hidden="true" />
                     )}
                     <Label htmlFor={`${doc.type}-upload`} className="font-medium text-sm cursor-pointer">
                       {doc.label}
                       {isRequired && <span className="text-destructive ml-1">*</span>}
                     </Label>
                     <span className="text-xs text-muted-foreground">{doc.hint}</span>
-                    <span className="text-xs text-muted-foreground/60">Max {MAX_FILE_SIZE_MB}MB · {FILE_HINT}</span>
+                    <span className="text-xs text-subtle-foreground">Max {MAX_FILE_SIZE_MB}MB · {FILE_HINT}</span>
                     {uploadedFiles[doc.type] && (
                       <span className="text-xs text-success-strong font-medium truncate max-w-full">{uploadedFiles[doc.type]}</span>
                     )}
@@ -192,7 +192,7 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                       size="sm"
                       data-doc-type={doc.type}
                       onClick={handleSelectClick}
-                      disabled={isThisLoading}
+                      loading={isThisLoading}
                     >
                       {isUploaded ? "Replace File" : "Select File"}
                     </Button>
@@ -205,7 +205,7 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                 {validationError}
               </motion.p>
             )}
-            <motion.div variants={fadeUp} className="mt-5">
+            <motion.div variants={fadeUp} className="sticky bottom-0 z-sticky">
               <FormNavButtons onBack={onBack} isLoading={loadingDoc !== null} submitLabel="Continue to Review" />
             </motion.div>
         </form>

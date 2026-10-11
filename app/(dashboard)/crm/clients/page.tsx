@@ -6,16 +6,22 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
-  Search, Users, IndianRupee, FileCheck, ClipboardList,
+  Users, IndianRupee, FileCheck, ClipboardList,
   ChevronRight, LayoutGrid, List, MessageSquare,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StatsStrip, type StatsStripItem } from "@/components/shared/stats-strip";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import { KanbanCanvas, KanbanColumnShell, KanbanEmptyDrop, kanbanCardClass } from "@/components/shared/kanban";
+import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -35,11 +41,11 @@ import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 const STATUSES = ["ACCOUNT_OPENING", "QUERIES", "PLAN_SELECTED", "INVESTED"] as const;
 type ClientStatus = typeof STATUSES[number];
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; textColor: string; icon: React.ElementType }> = {
-  ACCOUNT_OPENING: { label: "Account Opening", color: "border-info-500", bg: "bg-info-soft", textColor: "text-info-strong", icon: ClipboardList },
-  QUERIES: { label: "Queries", color: "border-warning-500", bg: "bg-warning-soft", textColor: "text-warning-strong", icon: MessageSquare },
-  PLAN_SELECTED: { label: "Plan Selected", color: "border-plum-500", bg: "bg-plum-soft", textColor: "text-plum-strong", icon: FileCheck },
-  INVESTED: { label: "Invested", color: "border-success-500", bg: "bg-success-soft", textColor: "text-success-strong", icon: IndianRupee },
+const STATUS_CONFIG: Record<string, { label: string; tone: Tone; icon: React.ComponentType<{ className?: string }> }> = {
+  ACCOUNT_OPENING: { label: "Account Opening", tone: "info", icon: ClipboardList },
+  QUERIES: { label: "Queries", tone: "warning", icon: MessageSquare },
+  PLAN_SELECTED: { label: "Plan Selected", tone: "plum", icon: FileCheck },
+  INVESTED: { label: "Invested", tone: "success", icon: IndianRupee },
 };
 
 function formatINR(val: string | number | null | undefined): string {
@@ -63,97 +69,55 @@ interface ClientAccount {
   assignedCrm: { name: string | null; image: string | null } | null;
 }
 
-function KanbanCard({ account }: { account: ClientAccount }) {
+function RepChip({ rep }: { rep: { name: string | null; image: string | null } }) {
   return (
-    <Link href={`/crm/clients/${account.id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer">
-        <CardContent className="p-3 space-y-2">
-          <div>
-            <p className="text-sm font-semibold truncate">{account.clientName}</p>
-            {account.clientEmail && (
-              <p className="text-2xs text-muted-foreground truncate">{account.clientEmail}</p>
-            )}
-          </div>
-
-          {account.estimatedInvestment && parseFloat(account.estimatedInvestment) > 0 && (
-            <p className="text-xs font-mono text-muted-foreground">
-              Est: {formatINR(account.estimatedInvestment)}
-            </p>
-          )}
-
-          {account.status === "INVESTED" && account.investmentAmount && (
-            <p className="text-xs font-mono font-semibold text-success-strong">
-              {formatINR(account.investmentAmount)}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between gap-2 pt-1">
-            {account.salesRep ? (
-              <div className="flex items-center gap-1">
-                <Avatar className="h-4 w-4">
-                  <AvatarImage src={account.salesRep.image || ""} />
-                  <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-2xs text-muted-foreground truncate max-w-[60px]">{account.salesRep.name}</span>
-              </div>
-            ) : <span />}
-
-            {account.assignedCrm ? (
-              <div className="flex items-center gap-1">
-                <Avatar className="h-4 w-4">
-                  <AvatarImage src={account.assignedCrm.image || ""} />
-                  <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-2xs text-muted-foreground truncate max-w-[60px]">{account.assignedCrm.name}</span>
-              </div>
-            ) : (
-              <span className="text-2xs text-muted-foreground">No CRM</span>
-            )}
-          </div>
-
-          {account.convertedAt && (
-            <p className="text-2xs text-muted-foreground">
-              {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
+    <div className="flex min-w-0 items-center gap-1.5">
+      <Avatar className="size-5">
+        <AvatarImage src={rep.image || ""} />
+        <AvatarFallback className="text-3xs">{rep.name?.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <span className="max-w-24 truncate text-xs text-muted-foreground">{rep.name}</span>
+    </div>
   );
 }
 
-
-function KanbanColumn({
-  status,
-  accounts,
-  count,
-}: {
-  status: ClientStatus;
-  accounts: ClientAccount[];
-  count: number;
-}) {
-  const config = STATUS_CONFIG[status];
-  const Icon = config.icon;
-
+function KanbanCard({ account }: { account: ClientAccount }) {
   return (
-    <div className="flex flex-col min-w-[280px] max-w-[320px] flex-1">
-      <div className={cn("flex items-center gap-2 px-3 py-2 rounded-t-lg border-t-2", config.color, config.bg)}>
-        <Icon className={cn("h-4 w-4", config.textColor)} />
-        <span className="text-sm font-semibold">{config.label}</span>
-        <Badge variant="secondary" className="ml-auto text-2xs h-5 min-w-5 px-1.5">
-          {count}
-        </Badge>
-      </div>
-      <div className="flex-1 space-y-2 p-2 bg-muted/30 rounded-b-lg border border-t-0 min-h-[200px] max-h-[calc(100vh-22rem)] overflow-y-auto">
-        {accounts.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-8">No clients</p>
-        ) : (
-          accounts.map((account) => (
-            <KanbanCard key={account.id} account={account} />
-          ))
+    <Link href={`/crm/clients/${account.id}`} className={cn(kanbanCardClass(), "space-y-2")}>
+      <div>
+        <p className="line-clamp-2 text-sm font-medium">{account.clientName}</p>
+        {account.clientEmail && (
+          <p className="truncate text-xs text-muted-foreground">{account.clientEmail}</p>
         )}
       </div>
-    </div>
+
+      {account.estimatedInvestment && parseFloat(account.estimatedInvestment) > 0 && (
+        <p className="text-xs tabular-nums text-muted-foreground">
+          Est: {formatINR(account.estimatedInvestment)}
+        </p>
+      )}
+
+      {account.status === "INVESTED" && account.investmentAmount && (
+        <p className="text-xs font-semibold tabular-nums text-success-strong">
+          {formatINR(account.investmentAmount)}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between gap-2 pt-1">
+        {account.salesRep ? <RepChip rep={account.salesRep} /> : <span />}
+        {account.assignedCrm ? (
+          <RepChip rep={account.assignedCrm} />
+        ) : (
+          <span className="text-xs text-subtle-foreground">No CRM</span>
+        )}
+      </div>
+
+      {account.convertedAt && (
+        <p className="text-xs tabular-nums text-muted-foreground">
+          {new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })}
+        </p>
+      )}
+    </Link>
   );
 }
 
@@ -213,7 +177,7 @@ export default function ClientAccountsPage() {
         limit: 25,
       };
 
-  const { data, isLoading } = useClientAccounts(queryFilters);
+  const { data, isLoading, isError, error, refetch } = useClientAccounts(queryFilters);
   const accounts = (data?.accounts ?? []) as ClientAccount[];
 
   const kanbanAccounts = viewMode === "kanban" ? accounts : allAccounts;
@@ -230,214 +194,180 @@ export default function ClientAccountsPage() {
     <PageWrapper
       title="Client Accounts"
       subtitle="Post-conversion client management — track account opening through investment"
-      actions={
-        <div className="flex items-center gap-2">
-          <AssignCrmDialog />
-          <div className="flex items-center gap-1 border rounded-md p-0.5">
-            <Button
-              variant={viewMode === "kanban" ? "default" : "ghost"}
-              size="sm"
-              className="h-7 px-2.5 gap-1.5"
-              onClick={() => handleViewMode("kanban")}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline text-xs">Board</span>
-            </Button>
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="sm"
-              className="h-7 px-2.5 gap-1.5"
-              onClick={() => handleViewMode("table")}
-            >
-              <List className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline text-xs">Table</span>
-            </Button>
-          </div>
-        </div>
-      }
+      actions={<AssignCrmDialog />}
       filters={
-        <>
-          <div className="relative flex-1 max-w-sm min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search clients..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          {viewMode === "table" && (
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px] h-9 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">All Stages</SelectItem>
-                {STATUSES.map(s => (
-                  <SelectItem key={s} value={s} className="text-xs">{STATUS_CONFIG[s].label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </>
+        <ListToolbar
+          className="w-full"
+          search={{ value: search, onChange: setSearch, placeholder: "Search clients..." }}
+          filters={
+            viewMode === "table" && (
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 w-40 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="text-xs">All Stages</SelectItem>
+                  {STATUSES.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{STATUS_CONFIG[s].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )
+          }
+          view={
+            <Tabs value={viewMode} onValueChange={(v) => handleViewMode(v as "kanban" | "table")}>
+              <TabsList>
+                <TabsTrigger value="kanban" className="gap-1.5">
+                  <LayoutGrid className="size-3.5" aria-hidden="true" />
+                  <span className="hidden sm:inline">Board</span>
+                </TabsTrigger>
+                <TabsTrigger value="table" className="gap-1.5">
+                  <List className="size-3.5" aria-hidden="true" />
+                  <span className="hidden sm:inline">Table</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          }
+        />
       }
     >
       <motion.div className="space-y-6" variants={staggerContainer} initial="hidden" animate="visible">
 
-      <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-5">
-        {[
-          { label: "Total", value: stats?.total ?? 0, icon: Users, color: "text-foreground" },
-          { label: "Account Opening", value: stats?.accountOpening ?? 0, icon: ClipboardList, color: "text-info-strong" },
-          { label: "Queries", value: stats?.queries ?? 0, icon: MessageSquare, color: "text-warning-strong" },
-          { label: "Plan Selected", value: stats?.planSelected ?? 0, icon: FileCheck, color: "text-plum-strong" },
-          { label: "Invested", value: stats?.invested ?? 0, icon: IndianRupee, color: "text-success-strong" },
-        ].map(s => (
-          <Card key={s.label}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <s.icon className={cn("h-5 w-5", s.color)} />
-                <span className={cn("text-2xl font-bold tabular-nums", s.color)}>
-                  {statsLoading ? <Skeleton className="h-7 w-8" /> : s.value}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <motion.div variants={fadeUp}>
+        <StatsStrip
+          items={([
+            { label: "Total", value: stats.total, icon: Users },
+            { label: "Account Opening", value: stats.accountOpening, icon: ClipboardList, tone: "info" },
+            { label: "Queries", value: stats.queries, icon: MessageSquare, tone: "warning" },
+            { label: "Plan Selected", value: stats.planSelected, icon: FileCheck, tone: "plum" },
+            { label: "Invested", value: stats.invested, icon: IndianRupee, tone: "success" },
+          ] satisfies StatsStripItem[]).map((s) => ({ ...s, value: statsLoading ? <Skeleton className="h-7 w-8" /> : s.value }))}
+        />
       </motion.div>
 
       {viewMode === "kanban" && (
         <motion.div variants={fadeUp}>
-          {isLoading ? (
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {STATUSES.map((s) => (
-                <div key={s} className="min-w-[280px] flex-1">
-                  <Skeleton className="h-10 mb-2 rounded-t-lg" />
-                  <div className="space-y-2 p-2">
-                    <Skeleton className="h-24" />
-                    <Skeleton className="h-24" />
-                  </div>
-                </div>
-              ))}
-            </div>
+          {isError ? (
+            <QueryErrorState title="Couldn't load client accounts" error={error} onRetry={() => refetch()} />
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {kanbanColumns.map(({ status, accounts: colAccounts, count }) => (
-                <KanbanColumn
-                  key={status}
-                  status={status}
-                  accounts={colAccounts}
-                  count={count}
-                />
-              ))}
-            </div>
+            <KanbanCanvas className="-mx-4 sm:-mx-6 xl:-mx-8">
+              {kanbanColumns.map(({ status, accounts: colAccounts, count }) => {
+                const config = STATUS_CONFIG[status];
+                return (
+                  <KanbanColumnShell key={status} title={config.label} tone={config.tone} count={count}>
+                    {isLoading ? (
+                      <>
+                        <Skeleton className="h-24 rounded-md" />
+                        <Skeleton className="h-24 rounded-md" />
+                      </>
+                    ) : colAccounts.length === 0 ? (
+                      <KanbanEmptyDrop label="No clients" />
+                    ) : (
+                      colAccounts.map((account) => <KanbanCard key={account.id} account={account} />)
+                    )}
+                  </KanbanColumnShell>
+                );
+              })}
+            </KanbanCanvas>
           )}
         </motion.div>
       )}
 
       {viewMode === "table" && (
         <motion.div variants={fadeUp}>
-          <div className="border border-border rounded-md flex flex-col h-[calc(100dvh-18rem)] min-h-[320px]">
-            <div className="flex-1 min-h-0 overflow-auto">
-              <div className="min-w-max">
-              <table className="w-full caption-bottom text-2xs">
-                <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
-                  <TableRow className="border-b-2 border-border">
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Client</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Phone</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Stage</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Sales Rep</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">CRM Rep</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Est. Inv.</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Investment</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">Converted</TableHead>
-                    <TableHead className="text-2xs uppercase tracking-wider font-bold px-2 py-1.5">AI</TableHead>
-                    <TableHead className="text-2xs w-8 px-2"></TableHead>
+          {isError ? (
+            <QueryErrorState title="Couldn't load client accounts" error={error} onRetry={() => refetch()} />
+          ) : (
+          <div className="space-y-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Stage</TableHead>
+                    <TableHead>Sales Rep</TableHead>
+                    <TableHead>CRM Rep</TableHead>
+                    <TableHead className="text-right">Est. Inv.</TableHead>
+                    <TableHead className="text-right">Investment</TableHead>
+                    <TableHead>Converted</TableHead>
+                    <TableHead>AI</TableHead>
+                    <TableHead className="w-10"><span className="sr-only">Open</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
-                        <TableCell colSpan={10} className="h-12">
+                        <TableCell colSpan={10}>
                           <Skeleton className="h-4 w-full" />
                         </TableCell>
                       </TableRow>
                     ))
                   ) : accounts.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
-                        <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm font-medium text-foreground">No client accounts</p>
-                        <p className="text-xs mt-1">Convert leads to CONVERTED status to create client accounts.</p>
-                      </TableCell>
-                    </TableRow>
+                    <TableEmpty colSpan={10}>
+                      {search || statusFilter !== "all" ? (
+                        <EmptyState
+                          compact
+                          illustration={<EmptySearchIllustration className="size-24" />}
+                          title="No results for these filters"
+                          action={{ label: "Clear filters", onClick: () => updateParams({ q: null, status: null, page: null }) }}
+                        />
+                      ) : (
+                        <EmptyState
+                          compact
+                          illustration={<EmptyTeamIllustration className="size-24" />}
+                          title="No client accounts"
+                          description="Convert leads to CONVERTED status to create client accounts."
+                        />
+                      )}
+                    </TableEmpty>
                   ) : (
                     accounts.map((account) => {
                       const config = STATUS_CONFIG[account.status] || STATUS_CONFIG.ACCOUNT_OPENING;
                       return (
-                        <TableRow key={account.id} className="h-8 hover:bg-muted/30 transition-colors">
-                          <TableCell className="px-2 py-1">
-                            <div>
-                              <p className="text-xs font-medium truncate max-w-[140px]">{account.clientName}</p>
-                              <p className="text-2xs text-muted-foreground truncate max-w-[140px]">{account.clientEmail || ""}</p>
-                            </div>
+                        <TableRow key={account.id}>
+                          <TableCell>
+                            <p className="max-w-40 truncate font-medium" title={account.clientName}>{account.clientName}</p>
+                            <p className="max-w-40 truncate text-xs text-muted-foreground">{account.clientEmail || ""}</p>
                           </TableCell>
-                          <TableCell className="text-2xs text-muted-foreground font-mono px-2 py-1">
+                          <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
                             {account.clientPhone || ""}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={cn("text-2xs border-0", config.bg, config.textColor)}>
-                              {config.label}
-                            </Badge>
+                            <StatusPill tone={config.tone} dot>{config.label}</StatusPill>
                           </TableCell>
                           <TableCell>
-                            {account.salesRep ? (
-                              <div className="flex items-center gap-1.5">
-                                <Avatar className="h-5 w-5">
-                                  <AvatarImage src={account.salesRep.image || ""} />
-                                  <AvatarFallback className="text-3xs">{account.salesRep.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <span className="text-xs truncate max-w-[80px]">{account.salesRep.name}</span>
-                              </div>
-                            ) : null}
+                            {account.salesRep ? <RepChip rep={account.salesRep} /> : null}
                           </TableCell>
                           <TableCell>
-                            {account.assignedCrm ? (
-                              <div className="flex items-center gap-1.5">
-                                <Avatar className="h-5 w-5">
-                                  <AvatarImage src={account.assignedCrm.image || ""} />
-                                  <AvatarFallback className="text-3xs">{account.assignedCrm.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <span className="text-xs truncate max-w-[80px]">{account.assignedCrm.name}</span>
-                              </div>
-                            ) : <span className="text-xs text-muted-foreground">Unassigned</span>}
+                            {account.assignedCrm ? <RepChip rep={account.assignedCrm} /> : <span className="text-xs text-subtle-foreground">Unassigned</span>}
                           </TableCell>
-                          <TableCell className="text-xs font-mono">
+                          <TableCell className="text-right tabular-nums">
                             {formatINR(account.estimatedInvestment)}
                           </TableCell>
-                          <TableCell className="text-xs font-mono text-success-strong">
+                          <TableCell className="text-right font-medium tabular-nums text-success-strong">
                             {account.status === "INVESTED" ? formatINR(account.investmentAmount) : ""}
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
+                          <TableCell
+                            className="text-xs tabular-nums text-muted-foreground"
+                            title={account.convertedAt ? new Date(account.convertedAt).toLocaleString(DEFAULT_LOCALE) : undefined}
+                          >
                             {account.convertedAt ? new Date(account.convertedAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" }) : ""}
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             <AIChurnRiskButton clientId={account.id} compact />
                           </TableCell>
                           <TableCell>
-                            <Link href={`/crm/clients/${account.id}`}>
-                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
-                            </Link>
+                            <Button variant="ghost" size="icon-sm" asChild>
+                              <Link href={`/crm/clients/${account.id}`} aria-label={`Open ${account.clientName}`}>
+                                <ChevronRight className="size-4" />
+                              </Link>
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
                     })
                   )}
                 </TableBody>
-              </table>
-              </div>
-            </div>
+              </Table>
             {(data?.totalCount ?? 0) > 0 && (
               <DataTablePagination
                 page={data?.page ?? page}
@@ -448,6 +378,7 @@ export default function ClientAccountsPage() {
               />
             )}
           </div>
+          )}
         </motion.div>
       )}
 

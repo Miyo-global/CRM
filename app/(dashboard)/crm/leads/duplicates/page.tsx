@@ -9,7 +9,11 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { STATUS_CONFIG } from "@/features/crm/leads/leads-constants";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptySearchIllustration } from "@/components/illustrations";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +28,8 @@ import { cn } from "@/lib/utils";
 import { formatDisplayDate } from "@/lib/date-utils";
 
 
-function scoreColor(score: number): string {
-  if (score >= 80) return "bg-danger-soft text-danger-strong border-danger-strong/20";
-  if (score >= 60) return "bg-warning-soft text-warning-strong border-warning-strong/20";
-  return "bg-warning-soft text-warning-strong border-warning-strong/20";
+function scoreTone(score: number): Tone {
+  return score >= 80 ? "danger" : "warning";
 }
 
 function formatDate(val: string | null): string {
@@ -35,16 +37,9 @@ function formatDate(val: string | null): string {
   return formatDisplayDate(val, { day: "numeric", month: "short", year: "numeric" }) || "";
 }
 
-function statusBadgeClass(status: string): string {
-  const map: Record<string, string> = {
-    NEW: "bg-info-soft text-info-strong border-info-strong/20",
-    CONTACTED: "bg-teal-soft text-teal-strong border-teal-strong/20",
-    INTERESTED: "bg-plum-soft text-plum-strong border-plum-strong/20",
-    QUALIFIED: "bg-success-soft text-success-strong border-success-strong/20",
-    CONVERTED: "bg-success-soft text-success-strong border-success-strong/20",
-    LOST: "bg-danger-soft text-danger-strong border-danger-strong/20",
-  };
-  return map[status] ?? "bg-muted text-muted-foreground border-border";
+function StatusCell({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
+  return cfg ? <StatusPill tone={cfg.tone} dot>{cfg.label}</StatusPill> : <Badge variant="secondary">{status}</Badge>;
 }
 
 
@@ -72,25 +67,28 @@ function DuplicateGroupCard({
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-muted-foreground">Group #{index + 1}</span>
+          <span className="text-sm font-semibold tabular-nums">Group #{index + 1}</span>
 
-          <Badge variant="outline" className={cn("font-semibold text-xs", scoreColor(group.score))}>
+          <StatusPill tone={scoreTone(group.score)} className="tabular-nums">
             Score: {group.score}
-          </Badge>
+          </StatusPill>
 
           {group.matchReason.map((reason) => (
-            <Badge key={reason} variant="outline" className="text-xs">
+            <Badge key={reason} variant="secondary">
               {reason}
             </Badge>
           ))}
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setExpanded((p) => !p)}
-            className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
+            className="ml-auto"
             aria-label={expanded ? "Collapse group" : "Expand group"}
+            aria-expanded={expanded}
           >
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
+            {expanded ? <ChevronUp /> : <ChevronDown />}
+          </Button>
         </div>
       </CardHeader>
 
@@ -117,15 +115,11 @@ function DuplicateGroupCard({
                     <TableCell className="text-muted-foreground">{leadA.phone ?? ""}</TableCell>
                     <TableCell className="text-muted-foreground">{leadA.company ?? ""}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("text-xs", statusBadgeClass(leadA.status))}>
-                        {leadA.status}
-                      </Badge>
+<StatusCell status={leadA.status} />
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(leadA.createdAt)}</TableCell>
+                    <TableCell className="tabular-nums text-muted-foreground">{formatDate(leadA.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      <Badge variant="outline" className="text-xs bg-success-soft text-success-strong border-success-strong/20">
-                        Keep
-                      </Badge>
+                      <StatusPill tone="success">Keep</StatusPill>
                     </TableCell>
                   </TableRow>
 
@@ -135,16 +129,13 @@ function DuplicateGroupCard({
                     <TableCell className="text-muted-foreground">{leadB.phone ?? ""}</TableCell>
                     <TableCell className="text-muted-foreground">{leadB.company ?? ""}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("text-xs", statusBadgeClass(leadB.status))}>
-                        {leadB.status}
-                      </Badge>
+<StatusCell status={leadB.status} />
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(leadB.createdAt)}</TableCell>
+                    <TableCell className="tabular-nums text-muted-foreground">{formatDate(leadB.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <Button
-                        size="sm"
+                        size="xs"
                         variant="destructive"
-                        className="h-7 text-xs"
                         onClick={() =>
                           onMerge({
                             keepLeadId: leadA.id,
@@ -171,10 +162,7 @@ function DuplicateGroupCard({
 function DuplicatesSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 grid-cols-2">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-      </div>
+      <Skeleton className="h-20" />
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-48" />
@@ -186,7 +174,7 @@ function DuplicatesSkeleton() {
 
 
 export default function DuplicateLeadsPage() {
-  const { data, isLoading, isFetching, refetch } = useDuplicateLeads();
+  const { data, isLoading, isFetching, isError, error, refetch } = useDuplicateLeads();
   const { mutate: mergeLead, isPending: isMerging } = useMergeLead();
 
   const [pendingMerge, setPendingMerge] = useState<MergeTarget | null>(null);
@@ -212,12 +200,11 @@ export default function DuplicateLeadsPage() {
   const refreshButton = (
     <Button
       variant="outline"
-      size="sm"
       onClick={() => refetch()}
       disabled={isFetching}
       aria-label="Refresh duplicate scan"
     >
-      <RefreshCw className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")} />
+      <RefreshCw className={cn(isFetching && "animate-spin motion-reduce:animate-none")} />
       {isFetching ? "Scanning…" : "Refresh Scan"}
     </Button>
   );
@@ -230,26 +217,20 @@ export default function DuplicateLeadsPage() {
     >
       {isLoading ? (
         <DuplicatesSkeleton />
+      ) : isError ? (
+        <QueryErrorState title="Couldn't scan for duplicates" error={error} onRetry={() => refetch()} />
       ) : (
         <div className="space-y-6">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-2">
-            <StatCard
-              label="Duplicate Groups Found"
-              value={data?.total ?? 0}
-              color="red"
-              icon={AlertTriangle}
-            />
-            <StatCard
-              label="Leads at Risk"
-              value={totalLeadsAtRisk}
-              color="gold"
-              icon={Users}
-            />
-          </div>
+          <StatsStrip
+            items={[
+              { label: "Duplicate Groups Found", value: data?.total ?? 0, icon: AlertTriangle, tone: (data?.total ?? 0) > 0 ? "danger" : undefined },
+              { label: "Leads at Risk", value: totalLeadsAtRisk, icon: Users },
+            ]}
+          />
 
           {!data?.groups.length ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="h-40 w-40" />}
+              illustration={<EmptySearchIllustration />}
               title="No Duplicates Found"
               description="Great news — no potential duplicate leads were detected across your pipeline."
             />

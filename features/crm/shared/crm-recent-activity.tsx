@@ -1,9 +1,7 @@
 "use client";
 
-import { TrendingUp, DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { timeAgo } from "@/lib/date-utils";
+import { TrendingUp, TrendingDown, IndianRupee } from "lucide-react";
+import { Timeline } from "@/components/shared/timeline";
 import type { Deal } from "@/types/crm";
 
 interface CrmRecentActivityProps {
@@ -18,52 +16,30 @@ const STAGE_LABELS: Record<string, string> = {
   CONTACTED: "Contact made",
 };
 
+/** Latest deal movements as a compact timeline. Renders inside a WidgetCard. */
 export function CrmRecentActivity({ deals }: CrmRecentActivityProps) {
   const recentDeals = [...(deals || [])]
+    .filter((d) => d.updatedAt ?? d.createdAt)
     .sort((a, b) => new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime())
     .slice(0, 6);
 
   return (
-    <Card className="shadow-sm h-full">
-      <CardHeader className="pb-2 px-3 pt-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Activity</CardTitle>
-      </CardHeader>
-      <CardContent className="px-3 pb-3">
-        {recentDeals.length === 0 ? (
-          <p className="text-2xs text-muted-foreground text-center py-4">No recent activity</p>
-        ) : (
-          <div className="space-y-2">
-            {recentDeals.map((deal) => {
-              const isWon = deal.stage === "WON";
-              const isLost = deal.stage === "LOST";
-              return (
-                <div key={deal.id} className="flex items-start gap-2">
-                  <div className={cn(
-                    "h-6 w-6 rounded flex items-center justify-center shrink-0 mt-0.5",
-                    isWon ? "bg-success-soft text-success-strong" :
-                    isLost ? "bg-danger-soft text-danger-strong" :
-                    "bg-brand-soft text-brand-text",
-                  )}>
-                    {isWon ? <TrendingUp className="h-3 w-3" /> : <DollarSign className="h-3 w-3" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-2xs font-medium truncate">{deal.name}</p>
-                    <p className="text-2xs text-muted-foreground">
-                      {STAGE_LABELS[deal.stage] ?? deal.stage}
-                      {deal.assignedTo?.name && ` · ${deal.assignedTo.name}`}
-                    </p>
-                  </div>
-                  <span className="text-3xs text-muted-foreground shrink-0 tabular-nums">
-                    {deal.updatedAt ?? deal.createdAt
-                      ? timeAgo((deal.updatedAt ?? deal.createdAt) as string)
-                      : ""}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <Timeline
+      groupByDay={false}
+      emptyLabel="No recent activity"
+      items={recentDeals.map((deal) => ({
+        id: String(deal.id),
+        icon: deal.stage === "WON" ? TrendingUp : deal.stage === "LOST" ? TrendingDown : IndianRupee,
+        tone: deal.stage === "WON" ? "success" : deal.stage === "LOST" ? "danger" : "brand",
+        title: <span className="font-medium">{deal.name}</span>,
+        body: (
+          <span className="text-xs">
+            {STAGE_LABELS[deal.stage] ?? deal.stage}
+            {deal.assignedTo?.name && ` · ${deal.assignedTo.name}`}
+          </span>
+        ),
+        timestamp: (deal.updatedAt ?? deal.createdAt) as string,
+      }))}
+    />
   );
 }

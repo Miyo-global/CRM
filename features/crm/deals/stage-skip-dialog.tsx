@@ -23,7 +23,7 @@ export const StageSkipDialog = memo(function StageSkipDialog({
 }: StageSkipDialogProps) {
   return (
     <Sheet open={dialog !== null} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-sm">
+      <SheetContent size="sm">
         <SheetHeader>
           <SheetTitle>Skip stages?</SheetTitle>
           <SheetDescription>
@@ -38,8 +38,8 @@ export const StageSkipDialog = memo(function StageSkipDialog({
             Cancel
           </Button>
           <Button
-            className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground"
-            disabled={isPending}
+            className="flex-1"
+            loading={isPending}
             onClick={onConfirm}
           >
             Confirm Skip

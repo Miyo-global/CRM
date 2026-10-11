@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import type { DropResult } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { CsvUploadDialog } from "@/features/crm/leads/csv-upload-dialog";
 import { LeadTableView } from "@/features/crm/leads/lead-table-view";
 import { LeadExportDialog } from "@/features/crm/leads/lead-export-dialog";
@@ -28,7 +28,7 @@ import { isLeadSource, isLeadPriority, STATUS_CONFIG } from "@/features/crm/lead
 import type { BoardLead, LeadStatus } from "@/features/crm/leads/leads-types";
 
 export default function LeadsPipelinePage() {
-  const { data: board, isLoading: boardLoading } = useLeadBoard();
+  const { data: board, isLoading: boardLoading, isError: boardError, error: boardErr, refetch: refetchBoard } = useLeadBoard();
   const { data: stats, isLoading: statsLoading } = useLeadStats();
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
@@ -299,15 +299,19 @@ export default function LeadsPipelinePage() {
         />
       }
     >
-      <div className="flex flex-col h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col gap-4">
         {stats && (
           <div className="shrink-0">
             <LeadsStatsBar stats={stats} />
           </div>
         )}
 
+        {boardError && (
+          <QueryErrorState title="Couldn't load leads" error={boardErr} onRetry={() => refetchBoard()} />
+        )}
+
         {view === "table" && (
-          <div className="flex-1 min-h-0 mt-2">
+          <div className="min-h-0 flex-1">
             <LeadTableView
               leads={tableData?.leads || []}
               totalCount={tableData?.totalCount || 0}
@@ -331,8 +335,8 @@ export default function LeadsPipelinePage() {
           </div>
         )}
 
-        {view === "kanban" && (
-          <div className="flex-1 min-h-0 mt-2 overflow-auto">
+        {view === "kanban" && !boardError && (
+          <div className="min-h-0 flex-1 overflow-auto">
             <LeadsKanban
               filteredBoard={filteredBoard as Record<string, BoardLead[]> | null}
               onDragEnd={handleDragEnd}

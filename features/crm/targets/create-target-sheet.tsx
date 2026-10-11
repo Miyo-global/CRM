@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,18 +104,16 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button className="shadow-lg">
+        <Button>
           <Plus className="h-4 w-4 mr-2" />
           Set Target
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col p-0 sm:max-w-[440px]">
+      <SheetContent size="sm" className="flex flex-col gap-0 p-0">
 
         <SheetHeader className="px-6 pt-5 pb-3 border-b shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
-              <Target className="h-4.5 w-4.5 text-brand-text" />
-            </div>
+            <IconChip icon={Target} />
             <div>
               <SheetTitle className="text-lg font-semibold">Set New Target</SheetTitle>
               <p className="text-xs text-muted-foreground mt-0.5">Assign performance targets to team members</p>
@@ -203,7 +202,7 @@ export function CreateTargetSheet({ assignableEmployees, isPending, onSubmit }: 
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Start Date</Label>
                 <DatePicker value={startDate} onChange={setStartDate} placeholder="Start date" />

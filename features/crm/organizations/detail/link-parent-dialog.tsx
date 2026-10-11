@@ -123,9 +123,9 @@ export function LinkParentDialog({
             <X className="h-4 w-4 mr-1" /> Cancel
           </Button>
           <Button
-            className="flex-1 bg-primary hover:bg-brand-soft text-primary-foreground"
+            className="flex-1"
             onClick={handleConfirm}
-            disabled={updateMutation.isPending}
+            loading={updateMutation.isPending} disabled={updateMutation.isPending}
           >
             <Check className="h-4 w-4 mr-1" />
             {selectedId ? "Link Parent" : "Remove Parent"}

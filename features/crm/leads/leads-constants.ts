@@ -2,7 +2,7 @@ import {
   Phone, Target, UserCheck, X, Zap, Eye,
 } from "lucide-react";
 import type React from "react";
-import { toneSoft, toneText } from "@/lib/design/tones";
+import { toneSoft, toneText, type Tone } from "@/lib/design/tones";
 
 export const STATUSES = ["NEW", "CONTACTED", "INTERESTED", "QUALIFIED", "CONVERTED", "LOST"] as const;
 
@@ -17,14 +17,14 @@ export const ACTIVITY_TYPES = ["call", "email", "whatsapp", "meeting", "site_vis
 // move-button outline, so it stays neutral rather than tinted.
 export const STATUS_CONFIG: Record<
   (typeof STATUSES)[number],
-  { label: string; color: string; bg: string; border: string; icon: React.ElementType }
+  { label: string; color: string; bg: string; border: string; icon: React.ElementType; tone: Tone }
 > = {
-  NEW: { label: "New", color: toneText.info, bg: "bg-info-soft", border: "border-border", icon: Zap },
-  CONTACTED: { label: "Contacted", color: toneText.teal, bg: "bg-teal-soft", border: "border-border", icon: Phone },
-  INTERESTED: { label: "Interested", color: toneText.plum, bg: "bg-plum-soft", border: "border-border", icon: Eye },
-  QUALIFIED: { label: "Qualified", color: toneText.brand, bg: "bg-brand-soft", border: "border-border", icon: Target },
-  CONVERTED: { label: "Converted", color: toneText.success, bg: "bg-success-soft", border: "border-border", icon: UserCheck },
-  LOST: { label: "Lost", color: toneText.danger, bg: "bg-danger-soft", border: "border-border", icon: X },
+  NEW: { label: "New", color: toneText.info, bg: "bg-info-soft", border: "border-border", icon: Zap, tone: "info" },
+  CONTACTED: { label: "Contacted", color: toneText.teal, bg: "bg-teal-soft", border: "border-border", icon: Phone, tone: "teal" },
+  INTERESTED: { label: "Interested", color: toneText.plum, bg: "bg-plum-soft", border: "border-border", icon: Eye, tone: "plum" },
+  QUALIFIED: { label: "Qualified", color: toneText.brand, bg: "bg-brand-soft", border: "border-border", icon: Target, tone: "brand" },
+  CONVERTED: { label: "Converted", color: toneText.success, bg: "bg-success-soft", border: "border-border", icon: UserCheck, tone: "success" },
+  LOST: { label: "Lost", color: toneText.danger, bg: "bg-danger-soft", border: "border-border", icon: X, tone: "danger" },
 };
 
 // Lead source is free categorical → TAG_TONE_CYCLE order; `other` neutral.

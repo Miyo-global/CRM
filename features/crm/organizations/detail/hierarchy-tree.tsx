@@ -14,13 +14,14 @@ interface HierarchyNodeProps {
 function HierarchyNodeCard({ node, currentId, depth = 0 }: HierarchyNodeProps) {
   const isCurrent = node.id === currentId;
   return (
-    <div className={cn("flex flex-col gap-1", depth > 0 && "ml-5 border-l border-border/60 pl-4")}>
+    <div className={cn("flex flex-col gap-1", depth > 0 && "ml-5 border-l border-border pl-4")}>
       <Link
         href={`/crm/organizations/${node.id}`}
+        aria-current={isCurrent ? "page" : undefined}
         className={cn(
-          "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+          "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none transition-colors focus-visible:focus-ring",
           isCurrent
-            ? "bg-brand-soft text-brand-text font-medium pointer-events-none"
+            ? "bg-brand-soft text-brand-soft-foreground font-medium pointer-events-none"
             : "hover:bg-accent text-foreground",
         )}
       >

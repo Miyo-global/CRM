@@ -58,7 +58,7 @@ export function MeetingDialog({ open, onOpenChange, onSubmit, isPending }: Meeti
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="max-w-lg">
+      <SheetContent size="md">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" /> Log Meeting
@@ -102,7 +102,7 @@ export function MeetingDialog({ open, onOpenChange, onSubmit, isPending }: Meeti
         </div>
         <SheetFooter className="mt-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} loading={isPending}>
             {isPending ? "Saving..." : "Save Meeting"}
           </Button>
         </SheetFooter>
@@ -144,7 +144,7 @@ export function CreateProjectDialog({ open, onOpenChange, defaultName, onSubmit,
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="max-w-md">
+      <SheetContent size="sm">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <FolderKanban className="h-5 w-5 text-primary" /> Create Project from Deal
@@ -168,7 +168,7 @@ export function CreateProjectDialog({ open, onOpenChange, defaultName, onSubmit,
         </div>
         <SheetFooter className="mt-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} loading={isPending}>
             {isPending ? "Creating..." : "Create Project"}
           </Button>
         </SheetFooter>

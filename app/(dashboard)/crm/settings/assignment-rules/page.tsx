@@ -16,8 +16,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Switch } from "@/components/ui/switch";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -90,38 +96,56 @@ function RuleCard({ rule, index, totalRules, onMove, onToggle, onDelete }: RuleC
   const handleDelete = useCallback(() => onDelete(rule.id), [rule.id, onDelete]);
 
   return (
-    <Card className={cn("shadow-sm transition-all", !rule.isActive && "opacity-60")}>
+    <Card className={cn("transition-opacity", !rule.isActive && "opacity-60")}>
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className="flex flex-col gap-0.5">
-            <Button variant="ghost" size="icon" className="h-5 w-5" disabled={index === 0} onClick={handleMoveUp} aria-label="Move rule up">
-              <ChevronUp className="h-3 w-3" />
+            <Button variant="ghost" size="icon-xs" disabled={index === 0} onClick={handleMoveUp} aria-label="Move rule up">
+              <ChevronUp className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-5 w-5" disabled={index === totalRules - 1} onClick={handleMoveDown} aria-label="Move rule down">
-              <ChevronDown className="h-3 w-3" />
+            <Button variant="ghost" size="icon-xs" disabled={index === totalRules - 1} onClick={handleMoveDown} aria-label="Move rule down">
+              <ChevronDown className="size-3.5" />
             </Button>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium truncate">{rule.name}</h3>
-              <Badge variant="secondary" className="text-2xs">Priority {rule.priority}</Badge>
-              <Badge variant={rule.assignmentType === "round_robin" ? "default" : "secondary"} className="text-2xs">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-sm font-semibold">{rule.name}</h3>
+              <Badge variant="secondary" className="tabular-nums">Priority {rule.priority}</Badge>
+              <Badge variant={rule.assignmentType === "round_robin" ? "default" : "secondary"}>
                 {rule.assignmentType === "round_robin" ? "Round Robin" : "Direct Assign"}
               </Badge>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {conditions.map((c, ci) => (
-                <Badge key={ci} variant="outline" className="text-2xs">
+                <Badge key={ci} variant="outline" className="font-mono">
                   {FIELDS.find(f => f.value === c.field)?.label ?? c.field} {c.operator} {c.value}
                 </Badge>
               ))}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Switch checked={rule.isActive} onCheckedChange={handleToggle} />
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={handleDelete} aria-label="Delete rule">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <Switch checked={rule.isActive} onCheckedChange={handleToggle} aria-label={`${rule.isActive ? "Disable" : "Enable"} ${rule.name}`} />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-danger-soft hover:text-destructive" aria-label="Delete rule">
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete assignment rule?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    &quot;{rule.name}&quot; will be permanently deleted. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </CardContent>
@@ -140,7 +164,7 @@ interface ConditionRowProps {
 function ConditionRow({ cField: _, index: i, control, showRemove, onRemove }: ConditionRowProps) {
   const handleRemove = useCallback(() => onRemove(i), [i, onRemove]);
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
       <FormField control={control} name={`conditions.${i}.field`} render={({ field }) => (
         <Select onValueChange={field.onChange} value={field.value}>
           <SelectTrigger className="h-8 w-28 text-xs"><SelectValue placeholder="Field" /></SelectTrigger>
@@ -154,11 +178,11 @@ function ConditionRow({ cField: _, index: i, control, showRemove, onRemove }: Co
         </Select>
       )} />
       <FormField control={control} name={`conditions.${i}.value`} render={({ field }) => (
-        <Input {...field} className="h-8 text-xs flex-1" placeholder="Value" />
+        <Input {...field} className="h-8 min-w-24 flex-1 text-xs" placeholder="Value" />
       )} />
       {showRemove && (
-        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={handleRemove} aria-label="Remove condition">
-          <Trash2 className="h-3.5 w-3.5" />
+        <Button type="button" variant="ghost" size="icon-sm" className="shrink-0 text-destructive hover:bg-danger-soft hover:text-destructive" onClick={handleRemove} aria-label="Remove condition">
+          <Trash2 className="size-3.5" />
         </Button>
       )}
     </div>
@@ -166,7 +190,7 @@ function ConditionRow({ cField: _, index: i, control, showRemove, onRemove }: Co
 }
 
 export default function AssignmentRulesPage() {
-  const { data: rules, isLoading } = useAssignmentRules();
+  const { data: rules, isLoading, isError, error, refetch } = useAssignmentRules();
   const { data: rawEmployees } = useHrEmployees();
   const employees = Array.isArray(rawEmployees) ? rawEmployees : rawEmployees?.data ?? [];
   const [createOpen, setCreateOpen] = useState(false);
@@ -245,12 +269,11 @@ export default function AssignmentRulesPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-10 w-48" />
+      <PageWrapper title="Assignment Rules" subtitle="Auto-assign leads based on conditions" contentClassName="max-w-5xl">
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-lg" />)}
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -259,19 +282,20 @@ export default function AssignmentRulesPage() {
       title="Assignment Rules"
       subtitle="Auto-assign leads based on conditions"
       actions={
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
-              <Plus className="h-4 w-4 mr-2" />
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetTrigger asChild>
+            <Button>
+              <Plus className="size-4" />
               New Rule
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Assignment Rule</DialogTitle>
-            </DialogHeader>
+          </SheetTrigger>
+          <SheetContent size="md" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Create Assignment Rule</SheetTitle>
+            </SheetHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onCreateSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onCreateSubmit)} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Rule Name</FormLabel>
@@ -294,8 +318,8 @@ export default function AssignmentRulesPage() {
                     />
                   ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" className="mt-2 text-xs" onClick={handleAddCondition}>
-                    <Plus className="h-3 w-3 mr-1" /> Add Condition
+                  <Button type="button" variant="outline" size="xs" className="mt-2" onClick={handleAddCondition}>
+                    <Plus className="size-3.5" /> Add Condition
                   </Button>
                 </div>
 
@@ -344,15 +368,23 @@ export default function AssignmentRulesPage() {
                   )} />
                 )}
 
-                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createRule.isPending}>
-                  {createRule.isPending ? "Creating..." : "Create Rule"}
-                </Button>
+                </div>
+                <SheetFooter>
+                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button type="submit" loading={createRule.isPending} disabled={createRule.isPending}>
+                    {createRule.isPending ? "Creating..." : "Create Rule"}
+                  </Button>
+                </SheetFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       }
+      contentClassName="max-w-5xl"
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load assignment rules" error={error} onRetry={() => refetch()} />
+      ) : (
       <motion.div
         className="space-y-3"
         variants={staggerContainer}
@@ -373,16 +405,16 @@ export default function AssignmentRulesPage() {
               />
             ))
           ) : (
-            <Card className="shadow-sm">
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No assignment rules defined</p>
-                <p className="text-xs mt-1">Create rules to auto-assign leads</p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Settings}
+              title="No assignment rules defined"
+              description="Create rules to auto-assign leads"
+              action={{ label: "New Rule", onClick: () => setCreateOpen(true) }}
+            />
           )}
         </motion.div>
       </motion.div>
+      )}
     </PageWrapper>
   );
 }

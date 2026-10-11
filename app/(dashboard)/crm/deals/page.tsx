@@ -11,14 +11,14 @@ import {
 } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, Download, LayoutGrid, TableIcon } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Plus, Download, LayoutGrid, TableIcon, ChevronRight } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { KanbanCanvas } from "@/components/shared/kanban";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DealTableView } from "@/features/crm/deals/deal-table-view";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import {
@@ -85,6 +85,9 @@ function ConfettiOverlay({ onDone }: { onDone: () => void }) {
           pointer-events: none;
           animation: confetti-fall linear forwards;
           z-index: 9999;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .confetti-dot { display: none; }
         }
       `}</style>
       {dots.map((d) => (
@@ -471,39 +474,18 @@ export default function DealsPage() {
         subtitle="Track and manage your deals across stages"
         actions={
           <>
-            <div className="flex items-center border border-border rounded-md">
-              <Button
-                variant={view === "table" ? "default" : "ghost"}
-                size="sm"
-                className={cn(
-                  "rounded-r-none",
-                  view === "table" && "bg-primary hover:bg-brand-soft text-primary-foreground",
-                )}
-                onClick={handleViewTable}
-              >
-                <TableIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={view === "kanban" ? "default" : "ghost"}
-                size="sm"
-                className={cn(
-                  "rounded-l-none",
-                  view === "kanban" && "bg-primary hover:bg-brand-soft text-primary-foreground",
-                )}
-                onClick={handleViewKanban}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+            <Tabs value={view} onValueChange={(v) => (v === "table" ? handleViewTable() : handleViewKanban())}>
+              <TabsList aria-label="View">
+                <TabsTrigger value="table" aria-label="Table view"><TableIcon /></TabsTrigger>
+                <TabsTrigger value="kanban" aria-label="Board view"><LayoutGrid /></TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button variant="outline" onClick={handleExport}>
+              <Download />
               Export
             </Button>
-            <Button
-              className="bg-primary hover:bg-brand-soft text-primary-foreground"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus />
               New Deal
             </Button>
             <DealsCreateSheet
@@ -516,21 +498,22 @@ export default function DealsPage() {
         }
       >
         <motion.div
-          className="space-y-6"
+          className="space-y-4"
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
         >
-          <motion.div
-            variants={fadeUp}
-            className="sticky top-0 z-10 bg-background pb-2"
-          >
+          <motion.div variants={fadeUp}>
             <DealsStatsBar {...stats} />
           </motion.div>
 
-          <motion.div variants={fadeUp}>
+          <motion.details variants={fadeUp} open className="group">
+            <summary className="mb-3 flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm text-sm font-semibold text-muted-foreground outline-none hover:text-foreground focus-visible:focus-ring [&::-webkit-details-marker]:hidden">
+              <ChevronRight className="size-4 transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden="true" />
+              Forecast
+            </summary>
             <DealForecastWidget deals={filteredDeals} />
-          </motion.div>
+          </motion.details>
 
           {view === "table" && (
             <motion.div variants={fadeUp} className="space-y-0">
@@ -570,8 +553,7 @@ export default function DealsPage() {
                 onClear={handleClearFilters}
               />
               <DragDropContext onDragEnd={handleDragEnd}>
-                <ScrollArea className="w-full" type="auto">
-                  <div className="inline-flex gap-3 sm:gap-4 pb-4">
+                <KanbanCanvas className="-mx-4 sm:mx-0 sm:rounded-lg">
                     {DEAL_STAGES.map((stage) => (
                       <KanbanColumn
                         key={stage.key}
@@ -582,8 +564,7 @@ export default function DealsPage() {
                         onOpen={setSidePanelDealId}
                       />
                     ))}
-                  </div>
-                </ScrollArea>
+                </KanbanCanvas>
               </DragDropContext>
             </motion.div>
           )}

@@ -4,7 +4,12 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useDebouncedValue } from "@/hooks/use-debounce";
 import { EmptyTasksIllustration } from "@/components/illustrations";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { STATUS_CONFIG } from "@/features/crm/leads/leads-constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,15 +44,18 @@ function DistributeLeadRow({ lead, isSelected, onToggle }: DistributeLeadRowProp
       </TableCell>
       <TableCell className="text-sm font-medium">{lead.name}</TableCell>
       <TableCell className="text-xs text-muted-foreground">{lead.email || ""}</TableCell>
-      <TableCell className="text-xs text-muted-foreground font-mono">{lead.phone || ""}</TableCell>
+      <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">{lead.phone || ""}</TableCell>
       <TableCell>
-        <Badge variant="outline" className="text-2xs">{lead.source || ""}</Badge>
+        {lead.source && <Badge variant="secondary" className="capitalize">{lead.source.replace("_", " ")}</Badge>}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="text-2xs">{lead.status}</Badge>
+        {(() => {
+          const cfg = STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG];
+          return cfg ? <StatusPill tone={cfg.tone} dot>{cfg.label}</StatusPill> : <Badge variant="secondary">{lead.status}</Badge>;
+        })()}
       </TableCell>
       <TableCell className="text-xs">
-        {lead.assignedTo?.name || <span className="text-muted-foreground">Unassigned</span>}
+        {lead.assignedTo?.name || <span className="text-subtle-foreground">Unassigned</span>}
       </TableCell>
     </TableRow>
   );
@@ -63,7 +71,7 @@ export default function LeadDistributionPage() {
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const effectiveSearch = debouncedSearch.trim().length >= 2 ? debouncedSearch.trim() : undefined;
 
-  const { data, isLoading } = useLeads({
+  const { data, isLoading, isError, error } = useLeads({
     status: statusFilter as "NEW" | "CONTACTED" | "INTERESTED" | "QUALIFIED" | "CONVERTED" | "LOST" | undefined,
     search: effectiveSearch,
     sortBy: "createdAt",
@@ -114,9 +122,12 @@ export default function LeadDistributionPage() {
       subtitle="Upload leads and distribute to your sales team via round-robin"
       filters={
         <>
-          <div className="relative flex-1 max-w-sm min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full min-w-48 sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
             <Input
+              type="search"
+              data-page-search
+              aria-label="Search leads"
               placeholder="Search leads..."
               value={searchQuery}
               onChange={handleSearchChange}
@@ -124,7 +135,7 @@ export default function LeadDistributionPage() {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[130px] text-xs" aria-label="Status"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="NEW" className="text-xs">New</SelectItem>
               <SelectItem value="CONTACTED" className="text-xs">Contacted</SelectItem>
@@ -143,49 +154,28 @@ export default function LeadDistributionPage() {
         <>
           <CsvUploadDialog onSuccess={handleRefetch} />
           <Button
-            size="sm"
-            variant="outline"
             disabled={selectedIds.size === 0}
             onClick={handleShowDistribute}
           >
-            <Users className="h-4 w-4 mr-1" /> Distribute ({selectedIds.size})
+            <Users /> Distribute ({selectedIds.size})
           </Button>
         </>
       }
     >
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
-              <span className="text-2xl font-bold tabular-nums">{data?.totalCount || 0}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Total Leads</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <Users className="h-5 w-5 text-warning-strong" />
-              <span className="text-2xl font-bold tabular-nums">{unassignedCount}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Unassigned</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <ArrowRight className="h-5 w-5 text-info-strong" />
-              <span className="text-2xl font-bold tabular-nums">{selectedIds.size}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Selected</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatsStrip
+        className="mb-4"
+        items={[
+          { label: "Total Leads", value: data?.totalCount || 0, icon: FileSpreadsheet },
+          { label: "Unassigned", value: unassignedCount, icon: Users, tone: unassignedCount > 0 ? "warning" : undefined },
+          { label: "Selected", value: selectedIds.size, icon: ArrowRight, tone: selectedIds.size > 0 ? "brand" : undefined },
+        ]}
+      />
 
-      <Card>
-        <ScrollArea className="w-full max-h-[60vh]" type="auto">
+      {isError && <QueryErrorState title="Couldn't load leads" error={error} onRetry={handleRefetch} className="mb-4" />}
+
+      <Card className="overflow-hidden p-0">
+        <ScrollArea className="max-h-[60vh] w-full" type="auto">
           <div className="min-w-max">
           <Table>
             <TableHeader>
@@ -193,12 +183,12 @@ export default function LeadDistributionPage() {
                 <TableHead className="w-10 px-3">
                   <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
                 </TableHead>
-                <TableHead className="text-xs">Name</TableHead>
-                <TableHead className="text-xs">Email</TableHead>
-                <TableHead className="text-xs">Phone</TableHead>
-                <TableHead className="text-xs">Source</TableHead>
-                <TableHead className="text-xs">Status</TableHead>
-                <TableHead className="text-xs">Assigned To</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Assigned To</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -211,12 +201,9 @@ export default function LeadDistributionPage() {
                   </TableRow>
                 ))
               ) : filteredLeads.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <EmptyTasksIllustration className="h-36 w-36 opacity-95" />
-                      <p>No leads found. Upload leads or adjust filters.</p>
-                    </div>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="p-4">
+                    <EmptyState compact illustration={<EmptyTasksIllustration />} title="No leads found. Upload leads or adjust filters." className="border-0 bg-transparent" />
                   </TableCell>
                 </TableRow>
               ) : (

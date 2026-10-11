@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/select";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptySearchIllustration } from "@/components/illustrations";
 import { formatDealId, formatINRCompact } from "@/lib/format-utils";
 import { formatDisplayDate, timeAgo } from "@/lib/date-utils";
 import { AIPredictDealButton } from "./ai-predict-deal-button";
@@ -87,19 +90,19 @@ export function DealTableView({
   return (
     <div className="flex flex-col h-[calc(100dvh-18rem)] min-h-[320px]">
       <div className="shrink-0 flex items-center px-1 pb-1.5">
-        <span className="text-2xs text-muted-foreground tabular-nums">{deals.length} deals</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{deals.length} deals</span>
       </div>
 
-      <div className="flex-1 min-h-0 border border-border rounded-md overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-border bg-card">
         <div className="min-w-max">
-          <table className="w-full caption-bottom text-2xs">
-            <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
-              <TableRow className="hover:bg-muted/80 border-b-2 border-border">
+          <table className="w-full caption-bottom text-xs">
+            <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
+              <TableRow className="border-b border-border hover:bg-transparent">
                 {columns.map(col => (
                   <TableHead
                     key={col.key}
                     className={cn(
-                      "text-2xs uppercase tracking-wider font-bold px-2 py-1.5 whitespace-nowrap",
+                      "whitespace-nowrap px-3 py-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground",
                       col.sortable && "cursor-pointer select-none hover:text-foreground",
                     )}
                     onClick={() => col.sortable && onSort(col.key)}
@@ -116,31 +119,31 @@ export function DealTableView({
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={columns.length} className="h-7 px-2">
-                      <div className="h-3 w-full bg-muted/50 rounded animate-pulse" />
+                    <TableCell colSpan={columns.length} className="h-10 px-3">
+                      <Skeleton className="h-3 w-full" />
                     </TableCell>
                   </TableRow>
                 ))
               ) : deals.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-12 text-muted-foreground text-xs">
-                    No deals found
+                  <TableCell colSpan={columns.length} className="p-4 hover:bg-transparent">
+                    <EmptyState compact illustration={<EmptySearchIllustration />} title="No deals found" className="border-0 bg-transparent" />
                   </TableCell>
                 </TableRow>
               ) : (
-                deals.map((deal, idx) => {
+                deals.map((deal) => {
                   const isEditingStage = editingCell?.dealId === deal.id && editingCell?.column === "stage";
                   return (
                     <TableRow
                       key={deal.id}
-                      className={cn("h-8", idx % 2 === 1 && "bg-muted/10", "hover:bg-muted/30 transition-colors")}
+                      className="h-10 transition-colors hover:bg-accent/60"
                     >
-                      <TableCell className="px-2 py-1">
+                      <TableCell className="px-3 py-1.5">
                         <span className="font-mono text-2xs text-muted-foreground select-all">
                           {formatDealId(deal.id)}
                         </span>
                       </TableCell>
-                      <TableCell className="px-2 py-1">
+                      <TableCell className="px-3 py-1.5">
                         <button
                           className="font-medium text-xs hover:text-brand-text hover:underline text-left truncate max-w-[160px] block"
                           onClick={() => router.push(`/crm/deals/${deal.id}`)}
@@ -148,10 +151,10 @@ export function DealTableView({
                           {deal.name}
                         </button>
                       </TableCell>
-                      <TableCell className="px-2 py-1 font-mono tabular-nums text-brand-text font-medium">
+                      <TableCell className="px-3 py-1.5 font-mono tabular-nums text-brand-text font-medium">
                         {formatINR(deal.value)}
                       </TableCell>
-                      <TableCell className="px-2 py-1">
+                      <TableCell className="px-3 py-1.5">
                         {isEditingStage ? (
                           <Select defaultValue={deal.stage} onValueChange={(v) => { onStageChange(deal.id, v); setEditingCell(null); }}>
                             <SelectTrigger className="h-6 text-2xs w-[100px]"><SelectValue /></SelectTrigger>
@@ -169,16 +172,16 @@ export function DealTableView({
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="px-2 py-1 tabular-nums">
+                      <TableCell className="px-3 py-1.5 tabular-nums">
                         {deal.probability != null ? `${deal.probability}%` : ""}
                       </TableCell>
-                      <TableCell className="px-2 py-1" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
                         <AIPredictDealButton dealId={deal.id} compact />
                       </TableCell>
-                      <TableCell className="px-2 py-1 truncate max-w-[100px]">
+                      <TableCell className="px-3 py-1.5 truncate max-w-[100px]">
                         {deal.contactPerson || ""}
                       </TableCell>
-                      <TableCell className="px-2 py-1">
+                      <TableCell className="px-3 py-1.5">
                         {deal.assignedTo?.name ? (
                           <div className="flex items-center gap-1">
                             <Avatar className="h-4 w-4">
@@ -189,10 +192,10 @@ export function DealTableView({
                           </div>
                         ) : null}
                       </TableCell>
-                      <TableCell className="px-2 py-1 text-muted-foreground tabular-nums">
+                      <TableCell className="px-3 py-1.5 text-muted-foreground tabular-nums">
                         {deal.expectedCloseDate ? formatDate(deal.expectedCloseDate) : ""}
                       </TableCell>
-                      <TableCell className="px-2 py-1 text-muted-foreground tabular-nums">
+                      <TableCell className="px-3 py-1.5 text-muted-foreground tabular-nums">
                         {timeAgo(deal.createdAt)}
                       </TableCell>
                     </TableRow>

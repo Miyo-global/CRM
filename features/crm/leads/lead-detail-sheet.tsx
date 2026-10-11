@@ -4,14 +4,16 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Phone, Mail, MapPin, Building2, Target, ArrowRight, Calendar, Clock, MessageSquare, Edit3,
-  CalendarClock, CheckCircle2, Plus, Loader2, AlarmClock,
+  CalendarClock, CheckCircle2, Plus, AlarmClock,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Timeline } from "@/components/shared/timeline";
+import type { Tone } from "@/lib/design/tones";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +26,7 @@ import { cn, resolveImageUrl } from "@/lib/utils";
 import { useLeadDetail, useLogLeadActivity } from "@/lib/hooks/trpc-hooks";
 import { useTasks, useCreateTask, useCompleteTask, type TaskType } from "@/lib/api/hooks/tasks";
 import { toast } from "sonner";
-import { STATUSES, STATUS_CONFIG, isActivityType, timeAgo, getInitials } from "./leads-constants";
+import { STATUSES, STATUS_CONFIG, isActivityType, getInitials } from "./leads-constants";
 import type { LeadStatus, LeadActivity } from "./leads-types";
 import { ActivityForm } from "./activity-form";
 import { AIScoreButton } from "./ai-score-button";
@@ -32,6 +34,20 @@ import { AIEmailDialog } from "./ai-email-dialog";
 import { AINextActionButton } from "./ai-next-action-button";
 import { AIEnrichLeadButton } from "./ai-enrich-lead-button";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+
+const ACTIVITY_ICON: Record<string, typeof Phone> = {
+  call: Phone,
+  email: Mail,
+  whatsapp: MessageSquare,
+  meeting: Calendar,
+};
+
+const ACTIVITY_TONE: Record<string, Tone> = {
+  call: "info",
+  email: "plum",
+  whatsapp: "success",
+  meeting: "warning",
+};
 
 interface LeadDetailSheetProps {
   leadId: number | null;
@@ -176,7 +192,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
   return (
     <Sheet open={open} onOpenChange={() => onClose()}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-0">
+      <SheetContent size="md" className="w-full gap-0 overflow-y-auto p-0">
         {isLoading || !lead ? (
           <div className="space-y-4 p-6">
             <Skeleton className="h-8 w-48" />
@@ -186,43 +202,32 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
         ) : (
           <>
 
-            <div className="px-6 pt-6 pb-5 border-b border-border/50">
-              <div className="flex items-start justify-between gap-3">
+            <div className="sticky top-0 z-sticky border-b border-border bg-background px-6 pt-6 pb-4">
+              <div className="flex items-start justify-between gap-3 pr-8">
                 <div className="min-w-0 flex-1">
                   <SheetHeader className="p-0">
-                    <SheetTitle className="text-xl font-semibold">{lead.name}</SheetTitle>
+                    <SheetTitle className="font-display text-xl">{lead.name}</SheetTitle>
                   </SheetHeader>
                   {lead.company && (
                     <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1.5">
                       <Building2 className="h-3.5 w-3.5 shrink-0" />
                       <span className="truncate">{lead.company}</span>
                       {lead.designation && (
-                        <span className="text-muted-foreground/60">· {lead.designation}</span>
+                        <span className="text-subtle-foreground">· {lead.designation}</span>
                       )}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEditLead}
-                    className="h-8 text-xs gap-1.5"
-                  >
-                    <Edit3 className="h-3.5 w-3.5" />
+                  {STATUS_CONFIG[lead.status as LeadStatus] && (
+                    <StatusPill tone={STATUS_CONFIG[lead.status as LeadStatus].tone} dot className="shrink-0">
+                      {STATUS_CONFIG[lead.status as LeadStatus].label}
+                    </StatusPill>
+                  )}
+                  <Button variant="outline" size="sm" onClick={handleEditLead}>
+                    <Edit3 />
                     Edit
                   </Button>
-                  <Badge
-                    className={cn(
-                      "shrink-0",
-                      STATUS_CONFIG[lead.status as LeadStatus]?.bg,
-                      STATUS_CONFIG[lead.status as LeadStatus]?.color,
-                      STATUS_CONFIG[lead.status as LeadStatus]?.border,
-                      "border",
-                    )}
-                  >
-                    {STATUS_CONFIG[lead.status as LeadStatus]?.label}
-                  </Badge>
                 </div>
               </div>
             </div>
@@ -304,17 +309,17 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Financials</p>
                   <div className="grid grid-cols-2 gap-3">
                     {lead.potentialValue && (
-                      <div className="p-3.5 rounded-xl bg-success-soft border border-success-strong/15">
+                      <div className="rounded-lg border border-border bg-card p-3.5">
                         <p className="text-2xs text-muted-foreground mb-1">Potential Value</p>
-                        <p className="text-lg font-bold text-success-strong">
+                        <p className="font-display text-lg font-semibold tabular-nums text-success-strong">
                           ₹{Number(lead.potentialValue).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
                     )}
                     {lead.investmentInterest && (
-                      <div className="p-3.5 rounded-xl bg-brand-soft border border-primary/40">
+                      <div className="rounded-lg border border-border bg-card p-3.5">
                         <p className="text-2xs text-muted-foreground mb-1">Investment Interest</p>
-                        <p className="text-lg font-bold text-brand-text">
+                        <p className="font-display text-lg font-semibold tabular-nums text-foreground">
                           ₹{Number(lead.investmentInterest).toLocaleString(DEFAULT_LOCALE)}
                         </p>
                       </div>
@@ -326,7 +331,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
               {lead.assignedTo && (
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Assigned To</p>
-                  <div className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/30 border border-border/50">
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3.5">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={resolveImageUrl(lead.assignedTo.image)} />
                       <AvatarFallback className="text-xs">
@@ -344,7 +349,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
               {lead.notes && (
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Notes</p>
-                  <div className="p-3.5 rounded-xl bg-muted/20 border border-border/30">
+                  <div className="rounded-lg border border-border bg-surface-sunken p-3.5">
                     <p className="text-sm leading-relaxed">{lead.notes}</p>
                   </div>
                 </div>
@@ -352,7 +357,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
               <div className="pt-2">
                 <Tabs value={activityTab} onValueChange={setActivityTab}>
-                  <TabsList className="w-full h-10">
+                  <TabsList variant="underline">
                     <TabsTrigger value="details" className="flex-1 text-xs">Details</TabsTrigger>
                     <TabsTrigger value="activity" className="flex-1 text-xs">Activity</TabsTrigger>
                     <TabsTrigger value="new-activity" className="flex-1 text-xs">Log</TabsTrigger>
@@ -394,62 +399,25 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   </TabsContent>
 
                   <TabsContent value="activity" className="mt-5">
-                    <ScrollArea className="h-[300px]">
-                      {lead.activities && lead.activities.length > 0 ? (
-                        <div className="space-y-3">
-                          {lead.activities.map((activity: LeadActivity) => (
-                            <div
-                              key={activity.id}
-                              className="flex gap-3 p-3.5 rounded-xl bg-muted/20 border border-border/30"
-                            >
-                              <div className={cn(
-                                "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                                activity.type === "call" ? "bg-info-soft text-info-strong" :
-                                activity.type === "email" ? "bg-plum-soft text-plum-strong" :
-                                activity.type === "whatsapp" ? "bg-success-soft text-success-strong" :
-                                activity.type === "meeting" ? "bg-warning-soft text-warning-strong" :
-                                "bg-teal-soft text-teal-strong",
-                              )}>
-                                {activity.type === "call" ? <Phone className="h-4 w-4" /> :
-                                 activity.type === "email" ? <Mail className="h-4 w-4" /> :
-                                 activity.type === "whatsapp" ? <MessageSquare className="h-4 w-4" /> :
-                                 activity.type === "meeting" ? <Calendar className="h-4 w-4" /> :
-                                 <MapPin className="h-4 w-4" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  <p className="text-sm font-medium capitalize">
-                                    {activity.type.replace("_", " ")}
-                                  </p>
-                                  <span className="text-2xs text-muted-foreground">
-                                    {timeAgo(activity.date)}
-                                  </span>
-                                </div>
-                                {activity.subject && (
-                                  <p className="text-xs text-muted-foreground mt-0.5">{activity.subject}</p>
-                                )}
-                                {activity.notes && (
-                                  <p className="text-xs mt-1.5 leading-relaxed">{activity.notes}</p>
-                                )}
-                                {activity.outcome && (
-                                  <Badge variant="outline" className="text-2xs mt-2">{activity.outcome}</Badge>
-                                )}
-                                {activity.user && (
-                                  <p className="text-2xs text-muted-foreground mt-1.5">
-                                    by {activity.user.name}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-12 text-muted-foreground/50">
-                          <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm">No activities yet</p>
-                        </div>
-                      )}
-                    </ScrollArea>
+                    <Timeline
+                      groupByDay={false}
+                      emptyLabel="No activities yet"
+                      items={(lead.activities ?? []).map((activity: LeadActivity) => ({
+                        id: String(activity.id),
+                        icon: ACTIVITY_ICON[activity.type] ?? MapPin,
+                        tone: ACTIVITY_TONE[activity.type] ?? "teal",
+                        actor: activity.user?.name,
+                        title: <span className="capitalize">{activity.type.replace("_", " ")}</span>,
+                        body: (activity.subject || activity.notes || activity.outcome) ? (
+                          <>
+                            {activity.subject && <p className="text-xs">{activity.subject}</p>}
+                            {activity.notes && <p className="mt-1 text-xs leading-relaxed text-foreground">{activity.notes}</p>}
+                            {activity.outcome && <Badge variant="secondary" className="mt-2">{activity.outcome}</Badge>}
+                          </>
+                        ) : undefined,
+                        timestamp: activity.date,
+                      }))}
+                    />
                   </TabsContent>
 
                   <TabsContent value="new-activity" className="mt-5">
@@ -457,7 +425,7 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
                   </TabsContent>
 
                   <TabsContent value="follow-up" className="mt-4 space-y-5">
-                    <div className="rounded-xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
                       <p className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                         <Plus className="h-3.5 w-3.5 text-brand-text" />
                         Schedule Follow-up
@@ -525,14 +493,11 @@ export function LeadDetailSheet({ leadId, open, onClose, onMoveStatus }: LeadDet
 
                       <Button
                         size="sm"
-                        className="w-full h-8 text-xs bg-primary hover:bg-brand-soft text-primary-foreground gap-1.5"
+                        className="w-full"
                         onClick={handleScheduleFollowUp}
-                        disabled={createTask.isPending}
+                        loading={createTask.isPending}
                       >
-                        {createTask.isPending
-                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : <CalendarClock className="h-3.5 w-3.5" />
-                        }
+                        {!createTask.isPending && <CalendarClock />}
                         Schedule Follow-up
                       </Button>
                     </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, Users, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Users, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useDistributeLeads } from "@/lib/api/hooks/leads";
 import { toast } from "sonner";
 
@@ -53,7 +53,7 @@ export function LeadDistributionDialog({ open, onOpenChange, leadIds, onSuccess 
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
-      <SheetContent className="sm:max-w-lg overflow-y-auto">
+      <SheetContent size="md" className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Distribute Leads</SheetTitle>
           <SheetDescription>
@@ -94,8 +94,7 @@ export function LeadDistributionDialog({ open, onOpenChange, leadIds, onSuccess 
 
             <SheetFooter>
               <Button variant="outline" onClick={handleClose}>Cancel</Button>
-              <Button onClick={handleDistribute} disabled={distributeMutation.isPending}>
-                {distributeMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button onClick={handleDistribute} loading={distributeMutation.isPending}>
                 Distribute Now
               </Button>
             </SheetFooter>

@@ -16,8 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -31,7 +37,6 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import {
   useSlaPolicies, useSlaReport, useSlaBreachedLeads,
@@ -39,11 +44,11 @@ import {
 } from "@/lib/api/hooks/crm-settings";
 import { toast } from "sonner";
 
-const PRIORITY_COLORS: Record<string, { color: string; bg: string }> = {
-  low: { color: "text-info-strong", bg: "bg-info-soft" },
-  medium: { color: "text-warning-strong", bg: "bg-warning-soft" },
-  high: { color: "text-warning-strong", bg: "bg-warning-soft" },
-  urgent: { color: "text-danger-strong", bg: "bg-danger-soft" },
+const PRIORITY_TONES: Record<string, Tone> = {
+  low: "info",
+  medium: "warning",
+  high: "warning",
+  urgent: "danger",
 };
 
 const policySchema = z.object({
@@ -56,7 +61,7 @@ const policySchema = z.object({
 type PolicyForm = z.infer<typeof policySchema>;
 
 export default function SlaPage() {
-  const { data: policies, isLoading } = useSlaPolicies();
+  const { data: policies, isLoading, isError, error, refetch } = useSlaPolicies();
   const { data: slaReport, isLoading: reportLoading } = useSlaReport();
   const { data: breachedLeads } = useSlaBreachedLeads({ limit: 10 });
   const [createOpen, setCreateOpen] = useState(false);
@@ -120,13 +125,12 @@ export default function SlaPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
+      <PageWrapper title="SLA Policies" subtitle="Service Level Agreement policies for leads and deals" contentClassName="max-w-5xl">
+        <div className="space-y-6">
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
         </div>
-        <Skeleton className="h-64" />
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -135,19 +139,20 @@ export default function SlaPage() {
       title="SLA Policies"
       subtitle="Service Level Agreement policies for leads and deals"
       actions={
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
-              <Plus className="h-4 w-4 mr-2" />
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetTrigger asChild>
+            <Button>
+              <Plus className="size-4" />
               New Policy
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create SLA Policy</DialogTitle>
-            </DialogHeader>
+          </SheetTrigger>
+          <SheetContent size="md" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Create SLA Policy</SheetTitle>
+            </SheetHeader>
             <Form {...createForm}>
-              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 <FormField control={createForm.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Policy Name</FormLabel>
@@ -155,7 +160,7 @@ export default function SlaPage() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <FormField control={createForm.control} name="appliesTo" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Applies To</FormLabel>
@@ -200,15 +205,23 @@ export default function SlaPage() {
                     </FormItem>
                   )} />
                 </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createPolicy.isPending}>
-                  {createPolicy.isPending ? "Creating..." : "Create Policy"}
-                </Button>
+                </div>
+                <SheetFooter>
+                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button type="submit" loading={createPolicy.isPending} disabled={createPolicy.isPending}>
+                    {createPolicy.isPending ? "Creating..." : "Create Policy"}
+                  </Button>
+                </SheetFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       }
+      contentClassName="max-w-5xl"
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load SLA policies" error={error} onRetry={() => refetch()} />
+      ) : (
       <motion.div
         className="space-y-6"
         variants={staggerContainer}
@@ -216,37 +229,29 @@ export default function SlaPage() {
         animate="visible"
       >
         {slaReport && (
-          <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {[
-              { label: "Total with SLA", value: slaReport.total, icon: Shield, color: "text-info-strong" },
-              { label: "Compliant", value: slaReport.compliant, icon: CheckCircle2, color: "text-success-strong" },
-              { label: "Breached", value: slaReport.breached, icon: XCircle, color: "text-danger-strong" },
-              {
-                label: "Compliance Rate",
-                value: `${slaReport.complianceRate}%`,
-                icon: Clock,
-                color: slaReport.complianceRate >= 80 ? "text-success-strong" : slaReport.complianceRate >= 50 ? "text-warning-strong" : "text-danger-strong",
-              },
-            ].map(stat => (
-              <Card key={stat.label} className="shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <stat.icon className={cn("h-5 w-5", stat.color)} />
-                    <span className="text-2xl font-bold tabular-nums">{stat.value}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <motion.div variants={fadeUp}>
+            <StatsStrip
+              items={[
+                { label: "Total with SLA", value: slaReport.total, icon: Shield, tone: "info" },
+                { label: "Compliant", value: slaReport.compliant, icon: CheckCircle2, tone: "success" },
+                { label: "Breached", value: slaReport.breached, icon: XCircle, tone: "danger" },
+                {
+                  label: "Compliance Rate",
+                  value: `${slaReport.complianceRate}%`,
+                  icon: Clock,
+                  tone: slaReport.complianceRate >= 80 ? "success" : slaReport.complianceRate >= 50 ? "warning" : "danger",
+                },
+              ]}
+            />
           </motion.div>
         )}
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
-            <CardHeader>
+          <Card>
+            <CardHeader className="border-b">
               <CardTitle className="text-base">Policies</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {policies && policies.length > 0 ? (
                 <Table>
                   <TableHeader>
@@ -271,24 +276,26 @@ export default function SlaPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No SLA policies defined</p>
-                </div>
+                <EmptyState
+                  compact
+                  icon={Shield}
+                  title="No SLA policies defined"
+                  className="border-0"
+                  action={{ label: "New Policy", onClick: () => setCreateOpen(true) }}
+                />
               )}
             </CardContent>
           </Card>
         </motion.div>
 
-        {editingId !== null && (
-          <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-primary/40">
-              <CardHeader>
-                <CardTitle className="text-base">Edit Policy</CardTitle>
-              </CardHeader>
-              <CardContent>
+        <Sheet open={editingId !== null} onOpenChange={(open) => { if (!open) handleCancelEdit(); }}>
+          <SheetContent size="md" className="gap-0 p-0">
+            <SheetHeader className="border-b px-6">
+              <SheetTitle>Edit Policy</SheetTitle>
+            </SheetHeader>
                 <Form {...editForm}>
-                  <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                  <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="flex min-h-0 flex-1 flex-col">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                     <FormField control={editForm.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Policy Name</FormLabel>
@@ -296,7 +303,7 @@ export default function SlaPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
                       <FormField control={editForm.control} name="appliesTo" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Applies To</FormLabel>
@@ -341,29 +348,28 @@ export default function SlaPage() {
                         </FormItem>
                       )} />
                     </div>
-                    <div className="flex justify-end gap-3">
-                      <Button type="button" variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-                      <Button type="submit" className="bg-primary hover:bg-brand-soft text-primary-foreground" disabled={updatePolicy.isPending}>
+                    </div>
+                    <SheetFooter>
+                      <Button type="button" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                      <Button type="submit" loading={updatePolicy.isPending} disabled={updatePolicy.isPending}>
                         {updatePolicy.isPending ? "Saving..." : "Save Changes"}
                       </Button>
-                    </div>
+                    </SheetFooter>
                   </form>
                 </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+          </SheetContent>
+        </Sheet>
 
         {breachedLeads && breachedLeads.length > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-danger-strong/20">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-danger-strong" />
-                  SLA Breached Leads ({breachedLeads.length})
+            <Card className="border-danger-500/40">
+              <CardHeader className="border-b">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <IconChip icon={AlertTriangle} tone="danger" size="sm" />
+                  SLA Breached Leads <span className="tabular-nums text-muted-foreground">({breachedLeads.length})</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -379,7 +385,7 @@ export default function SlaPage() {
                         <TableCell>
                           <Badge variant="secondary" className="text-2xs">{lead.status}</Badge>
                         </TableCell>
-                        <TableCell className="text-xs text-right text-danger-strong">
+                        <TableCell className="text-xs text-right tabular-nums text-danger-strong">
                           {lead.slaDeadline ? new Date(lead.slaDeadline).toLocaleDateString() : "N/A"}
                         </TableCell>
                       </TableRow>
@@ -391,6 +397,7 @@ export default function SlaPage() {
           </motion.div>
         )}
       </motion.div>
+      )}
     </PageWrapper>
   );
 }
@@ -411,7 +418,7 @@ interface SlaTableRowProps {
 }
 
 function SlaTableRow({ policy, onEdit, onDelete }: SlaTableRowProps) {
-  const pColor = PRIORITY_COLORS[policy.priority] ?? PRIORITY_COLORS.medium;
+  const tone = PRIORITY_TONES[policy.priority] ?? PRIORITY_TONES.medium;
   const handleEdit = useCallback(() => onEdit(policy), [policy, onEdit]);
   const handleDelete = useCallback(() => onDelete(policy.id), [policy.id, onDelete]);
 
@@ -422,19 +429,19 @@ function SlaTableRow({ policy, onEdit, onDelete }: SlaTableRowProps) {
         <Badge variant="secondary" className="text-2xs capitalize">{policy.appliesTo}</Badge>
       </TableCell>
       <TableCell>
-        <Badge className={cn("text-2xs capitalize", pColor.bg, pColor.color)}>{policy.priority}</Badge>
+        <StatusPill tone={tone} dot className="capitalize">{policy.priority}</StatusPill>
       </TableCell>
-      <TableCell className="text-xs text-right">{policy.firstResponseHours}h</TableCell>
-      <TableCell className="text-xs text-right">{policy.resolutionHours}h</TableCell>
+      <TableCell className="text-xs text-right tabular-nums">{policy.firstResponseHours}h</TableCell>
+      <TableCell className="text-xs text-right tabular-nums">{policy.resolutionHours}h</TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleEdit} aria-label="Edit">
-            <Pencil className="h-3.5 w-3.5" />
+          <Button variant="ghost" size="icon-sm" onClick={handleEdit} aria-label="Edit">
+            <Pencil className="size-3.5" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" aria-label="Delete">
-                <Trash2 className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-danger-soft hover:text-destructive" aria-label="Delete">
+                <Trash2 className="size-3.5" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

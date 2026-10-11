@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { FileSpreadsheet, FileText, Download, Loader2 } from "lucide-react";
+import { FileSpreadsheet, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 
@@ -101,40 +102,33 @@ export default function ReportsPage() {
       title="Report Center"
       subtitle="Generate and download Excel and PDF reports"
     >
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-12 gap-4 xl:gap-6">
         {REPORTS.map(report => (
-          <Card key={report.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                  <report.icon className="h-5 w-5 text-brand-text" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">{report.title}</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">{report.description}</p>
-                </div>
+          <Card key={report.id} className="col-span-12 gap-4 p-5 md:col-span-6">
+            <div className="flex items-start gap-3">
+              <IconChip icon={report.icon} tone={report.formats.includes("xlsx") ? "success" : "danger"} />
+              <div className="min-w-0">
+                <h2 className="font-sans text-base font-semibold tracking-normal text-foreground">{report.title}</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">{report.description}</p>
               </div>
-            </CardHeader>
-            <CardContent className="pb-4">
-              <div className="flex gap-2">
-                {report.formats.map(format => (
+            </div>
+            <div className="mt-auto flex flex-wrap gap-2 border-t border-border pt-4">
+              {report.formats.map(format => {
+                const busy = downloading === `${report.id}-${format}`;
+                return (
                   <Button
                     key={format}
                     size="sm"
                     variant="outline"
-                    disabled={downloading === `${report.id}-${format}`}
+                    loading={busy}
                     onClick={() => handleDownload(report.id, format)}
                   >
-                    {downloading === `${report.id}-${format}` ? (
-                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                    ) : (
-                      <Download className="h-3.5 w-3.5 mr-1" />
-                    )}
+                    {!busy && <Download aria-hidden="true" />}
                     {format.toUpperCase()}
                   </Button>
-                ))}
-              </div>
-            </CardContent>
+                );
+              })}
+            </div>
           </Card>
         ))}
       </div>

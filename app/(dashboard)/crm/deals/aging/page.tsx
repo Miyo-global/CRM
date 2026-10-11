@@ -5,7 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Clock, AlertTriangle, TrendingDown, DollarSign, ArrowLeft, ExternalLink } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -15,7 +18,6 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,49 +55,32 @@ function useDealAging() {
 }
 
 
-const STAGE_BADGE: Record<string, { label: string; className: string }> = {
-  LEAD:        { label: "Lead",        className: "bg-muted text-muted-foreground border-border" },
-  CONTACTED:   { label: "Contacted",   className: "bg-secondary text-secondary border-secondary" },
-  PROPOSAL:    { label: "Proposal",    className: "bg-plum-soft text-plum-strong border-plum-strong/20" },
-  NEGOTIATION: { label: "Negotiation", className: "bg-warning-soft text-warning-strong border-warning-strong/20" },
+const STAGE_BADGE: Record<string, { label: string; tone: Tone }> = {
+  LEAD:        { label: "Lead",        tone: "info" },
+  CONTACTED:   { label: "Contacted",   tone: "teal" },
+  PROPOSAL:    { label: "Proposal",    tone: "warning" },
+  NEGOTIATION: { label: "Negotiation", tone: "plum" },
 };
 
 function getStageBadge(stage: string) {
-  return STAGE_BADGE[stage] ?? { label: stage, className: "bg-muted text-muted-foreground" };
+  return STAGE_BADGE[stage] ?? { label: stage, tone: "neutral" as const };
 }
 
 function getDayColor(days: number) {
-  if (days > 30) return "text-destructive font-semibold";
+  if (days > 30) return "text-danger-strong font-semibold";
   if (days >= 15) return "text-warning-strong font-medium";
   return "text-muted-foreground";
 }
 
 function getSeverityChip(days: number) {
-  if (days > 30)
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-danger-soft text-danger-strong border border-danger-strong/20">
-        <span className="h-1.5 w-1.5 rounded-full bg-danger-500 inline-block" />
-        Critical
-      </span>
-    );
-  if (days >= 15)
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-warning-soft text-warning-strong border border-warning-strong/20">
-        <span className="h-1.5 w-1.5 rounded-full bg-warning-500 inline-block" />
-        Warning
-      </span>
-    );
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold bg-success-soft text-success-strong border border-success-strong/20">
-      <span className="h-1.5 w-1.5 rounded-full bg-success-500 inline-block" />
-      Healthy
-    </span>
-  );
+  if (days > 30) return <StatusPill tone="danger" dot>Critical</StatusPill>;
+  if (days >= 15) return <StatusPill tone="warning" dot>Warning</StatusPill>;
+  return <StatusPill tone="success" dot>Healthy</StatusPill>;
 }
 
 
 export default function DealAgingPage() {
-  const { data, isLoading } = useDealAging();
+  const { data, isLoading, isError, error, refetch } = useDealAging();
 
   const sortedDeals = useMemo(() => {
     if (!data?.deals) return [];
@@ -115,9 +100,9 @@ export default function DealAgingPage() {
   }, [data]);
 
   const backAction = (
-    <Button variant="outline" size="sm" asChild>
+    <Button variant="outline" asChild>
       <Link href="/crm/deals">
-        <ArrowLeft className="h-4 w-4 mr-2" />
+        <ArrowLeft />
         Back to Deals
       </Link>
     </Button>
@@ -131,12 +116,8 @@ export default function DealAgingPage() {
         actions={backAction}
       >
         <div className="space-y-6">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
-          <Skeleton className="h-96 rounded-xl" />
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-96 rounded-lg" />
         </div>
       </PageWrapper>
     );
@@ -148,43 +129,25 @@ export default function DealAgingPage() {
       subtitle="Deals stuck in pipeline stages"
       actions={backAction}
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load deal aging" error={error} onRetry={() => refetch()} />
+      ) : (
       <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <StatCard
-            label="Total Stale Deals"
-            value={stats.totalStale}
-            icon={AlertTriangle}
-            color="red"
-            index={0}
-          />
-          <StatCard
-            label="Avg Days Stuck"
-            value={`${stats.avgDays}d`}
-            icon={Clock}
-            color="gold"
-            index={1}
-          />
-          <StatCard
-            label="Oldest Deal"
-            value={`${stats.oldestDays}d`}
-            icon={TrendingDown}
-            color="purple"
-            index={2}
-          />
-          <StatCard
-            label="Total Value at Risk"
-            value={formatINR(stats.totalValue)}
-            icon={DollarSign}
-            color="blue"
-            index={3}
-          />
-        </div>
+        <StatsStrip
+          items={[
+            { label: "Total Stale Deals", value: stats.totalStale, icon: AlertTriangle, tone: stats.totalStale > 0 ? "danger" : undefined },
+            { label: "Avg Days Stuck", value: `${stats.avgDays}d`, icon: Clock },
+            { label: "Oldest Deal", value: `${stats.oldestDays}d`, icon: TrendingDown },
+            { label: "Total Value at Risk", value: formatINR(stats.totalValue), icon: DollarSign, tone: "brand" },
+          ]}
+        />
 
         <Card>
           <CardContent className="p-0">
             {sortedDeals.length === 0 ? (
               <EmptyState
-                illustration={<EmptyTargetIllustration className="h-36 w-36" />}
+                illustration={<EmptyTargetIllustration />}
+                className="border-0"
                 title="All deals are moving smoothly"
                 description="No deals are currently stuck in any pipeline stage. Keep it up!"
               />
@@ -199,7 +162,7 @@ export default function DealAgingPage() {
                         <TableHead>Assignee</TableHead>
                         <TableHead>Days in Stage</TableHead>
                         <TableHead>Severity</TableHead>
-                        <TableHead>Deal Value</TableHead>
+                        <TableHead className="text-right">Deal Value</TableHead>
                         <TableHead>Created</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
@@ -219,17 +182,12 @@ export default function DealAgingPage() {
                             </TableCell>
 
                             <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn("text-xs", badge.className)}
-                              >
-                                {badge.label}
-                              </Badge>
+                              <StatusPill tone={badge.tone}>{badge.label}</StatusPill>
                             </TableCell>
 
                             <TableCell className="text-sm text-muted-foreground">
                               {deal.assigneeName ?? (
-                                <span className="italic text-muted-foreground/60">Unassigned</span>
+                                <span className="text-subtle-foreground">Unassigned</span>
                               )}
                             </TableCell>
 
@@ -241,7 +199,7 @@ export default function DealAgingPage() {
 
                             <TableCell>{getSeverityChip(deal.daysInStage)}</TableCell>
 
-                            <TableCell className="text-sm tabular-nums">
+                            <TableCell className="text-right text-sm tabular-nums">
                               {deal.value ? formatINR(deal.value) : (
                                 null
                               )}
@@ -258,9 +216,9 @@ export default function DealAgingPage() {
                             </TableCell>
 
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" asChild>
+                              <Button variant="ghost" size="xs" asChild>
                                 <Link href={`/crm/deals/${deal.id}`}>
-                                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                                  <ExternalLink />
                                   View Deal
                                 </Link>
                               </Button>
@@ -276,6 +234,7 @@ export default function DealAgingPage() {
           </CardContent>
         </Card>
       </div>
+      )}
     </PageWrapper>
   );
 }

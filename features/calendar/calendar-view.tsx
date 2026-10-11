@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect, memo, type CSSProperties } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, type CSSProperties } from "react";
 import { toneVar } from "@/lib/design/tones";
 import { RSVP_TONES, eventColorTone, eventToneStyle } from "./event-tones";
 import dynamic from "next/dynamic";
@@ -21,6 +21,7 @@ import {
   startOfDay,
 } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -102,33 +103,6 @@ const BigCalendarWrapper = dynamic(
 
 
 const VIEWS: View[] = ["month", "week", "day"];
-
-interface ViewButtonProps {
-  v: View;
-  current: View;
-  onSelect: (v: View) => void;
-}
-
-const ViewButton = memo(function ViewButton({
-  v,
-  current,
-  onSelect,
-}: ViewButtonProps) {
-  const handleClick = useCallback(() => onSelect(v), [v, onSelect]);
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={`px-3 text-xs capitalize transition-colors ${
-        current === v
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted text-muted-foreground"
-      }`}
-    >
-      {v}
-    </button>
-  );
-});
 
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -285,31 +259,36 @@ export function CalendarView() {
 
   return (
     <div className="flex flex-col gap-3 h-full">
-      <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            aria-label="Previous"
-            onClick={handlePrev}
-          >
-            <ChevronLeft className="h-4 w-4" />
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleToday}>
+            Today
           </Button>
+          <div className="flex items-center">
+            <Button variant="ghost" size="icon-sm" aria-label="Previous" onClick={handlePrev}>
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Next" onClick={handleNext}>
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
           {view === "month" ? (
-            <>
+            <h2 className="flex items-center">
               <Select
                 value={String(calMonth)}
                 onValueChange={(v) =>
                   setCurrentDate(new Date(calYear, parseInt(v), 1))
                 }
               >
-                <SelectTrigger className="h-9 w-[128px] text-sm font-medium">
+                <SelectTrigger
+                  aria-label="Select month"
+                  className="h-9 w-auto gap-1 border-0 bg-transparent px-1.5 font-display text-xl font-bold shadow-none hover:bg-accent"
+                >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-72 min-w-[var(--radix-select-trigger-width)]">
+                <SelectContent className="max-h-72 min-w-(--radix-select-trigger-width)">
                   {MONTHS.map((m, i) => (
-                    <SelectItem key={m} value={String(i)} className="text-sm py-2.5">
+                    <SelectItem key={m} value={String(i)} className="py-2.5 text-sm">
                       {m}
                     </SelectItem>
                   ))}
@@ -322,64 +301,46 @@ export function CalendarView() {
                 }
               >
                 <SelectTrigger
-                  className="h-9 min-w-[96px] w-[96px] text-sm font-medium tabular-nums"
+                  className="h-9 w-auto gap-1 border-0 bg-transparent px-1.5 font-display text-xl font-bold tabular-nums shadow-none hover:bg-accent"
                   aria-label="Select year"
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-72 min-w-[var(--radix-select-trigger-width)]">
+                <SelectContent className="max-h-72 min-w-(--radix-select-trigger-width)">
                   {yearOptions.map((y) => (
                     <SelectItem
                       key={y}
                       value={String(y)}
-                      className="text-sm py-2.5 tabular-nums focus:bg-accent"
+                      className="py-2.5 text-sm tabular-nums"
                     >
                       {y}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </>
+            </h2>
           ) : (
-            <span className="text-sm font-semibold min-w-[140px] text-center">
+            <h2 className="px-1.5 font-display text-xl font-bold tabular-nums text-foreground">
               {view === "week" &&
                 `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d, yyyy")}`}
               {view === "day" && format(currentDate, "EEE, MMM d, yyyy")}
-            </span>
+            </h2>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            aria-label="Next"
-            onClick={handleNext}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs"
-            onClick={handleToday}
-          >
-            Today
-          </Button>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex rounded-md border border-border overflow-hidden h-8">
-            {VIEWS.map((v) => (
-              <ViewButton key={v} v={v} current={view} onSelect={setView} />
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs value={view} onValueChange={(v) => setView(v as View)}>
+            <TabsList aria-label="Calendar view">
+              {VIEWS.map((v) => (
+                <TabsTrigger key={v} value={v} className="capitalize">
+                  {v}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs"
-                aria-label="Export calendar"
-              >
-                <Download className="h-3.5 w-3.5 mr-1" />
+              <Button variant="outline" size="sm" aria-label="Export calendar">
+                <Download className="size-4" />
                 Export
               </Button>
             </DropdownMenuTrigger>
@@ -388,22 +349,19 @@ export function CalendarView() {
                 Export to CSV
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-xs" onClick={handleExportMonth}>
+              <DropdownMenuItem onClick={handleExportMonth}>
                 This month
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-xs"
-                onClick={handleExport3Months}
-              >
+              <DropdownMenuItem onClick={handleExport3Months}>
                 Next 3 months
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-xs" onClick={handleExportYear}>
+              <DropdownMenuItem onClick={handleExportYear}>
                 This year
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" className="h-8 text-xs" onClick={handleOpenCreate}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
+          <Button size="sm" onClick={handleOpenCreate}>
+            <Plus className="size-4" />
             Add Event
           </Button>
         </div>

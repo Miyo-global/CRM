@@ -13,12 +13,17 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { cn } from "@/lib/utils";
 import { staggerContainer, fadeUp, scaleIn } from "@/lib/motion-variants";
 import { useLeadStats, useSlaAlerts } from "@/lib/api/hooks/leads";
 import { toast } from "sonner";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
-import { toneVar } from "@/lib/design/tones";
+import { toneVar, type Tone } from "@/lib/design/tones";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+
+const PRIORITY_TONES: Record<string, Tone> = { HOT: "danger", WARM: "warning", COLD: "info" };
 
 const PIPELINE_COLORS: Record<string, { color: string; bg: string }> = {
   NEW: { color: toneVar.info, bg: "bg-info-soft" },
@@ -43,7 +48,7 @@ export default function CrmReportsPage() {
     };
   }, [appliedFrom, appliedTo]);
 
-  const { data: stats, isLoading } = useLeadStats(statsInput);
+  const { data: stats, isLoading, isError, error, refetch } = useLeadStats(statsInput);
   const { data: slaData } = useSlaAlerts();
 
   const handleApplyFilter = useCallback(() => {
@@ -149,14 +154,15 @@ export default function CrmReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-16 w-full" />
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32" />)}
+      <PageWrapper title="CRM Reports" subtitle="Analytics, pipeline insights, and exportable reports">
+        <div className="space-y-6">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Skeleton className="h-80 rounded-lg" />
+            <Skeleton className="h-80 rounded-lg" />
+          </div>
         </div>
-        <Skeleton className="h-80" />
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -165,7 +171,7 @@ export default function CrmReportsPage() {
       title="CRM Reports"
       subtitle="Analytics, pipeline insights, and exportable reports"
       filters={
-        <>
+        <div className="flex flex-wrap items-end gap-2">
           <div>
             <Label htmlFor="dateFrom" className="text-xs text-muted-foreground">From</Label>
             <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="From date" />
@@ -180,30 +186,33 @@ export default function CrmReportsPage() {
             />
           </div>
           <Button variant="outline" size="sm" onClick={handleApplyFilter}>
-            <Filter className="h-4 w-4 mr-1" />
+            <Filter className="size-4" />
             Apply
           </Button>
           {(appliedFrom || appliedTo) && (
             <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setAppliedFrom(""); setAppliedTo(""); }}>
-              <X className="h-4 w-4 mr-1" />
+              <X className="size-4" />
               Clear
             </Button>
           )}
-        </>
+        </div>
       }
       actions={
         <>
-          <Button variant="outline" onClick={handleExportExcel}>
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleExportExcel} disabled={!stats}>
+            <FileSpreadsheet className="size-4" />
             Excel
           </Button>
-          <Button variant="outline" onClick={handleExportPDF}>
-            <FileDown className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={!stats}>
+            <FileDown className="size-4" />
             PDF
           </Button>
         </>
       }
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load report data" error={error} onRetry={() => refetch()} />
+      ) : (
       <motion.div
         className="space-y-6"
         variants={staggerContainer}
@@ -212,30 +221,26 @@ export default function CrmReportsPage() {
       >
         {slaData && slaData.total > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className="shadow-sm border-danger-strong/20">
+            <Card className="border-danger-500/40">
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2 text-danger-strong">
-                  <AlertTriangle className="h-4 w-4" />
+                <CardTitle className="flex items-center gap-2 text-base text-danger-strong">
+                  <IconChip icon={AlertTriangle} tone="danger" size="sm" />
                   SLA Breached — {slaData.total} leads not contacted in 24h+
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                <div className="max-h-52 space-y-2 overflow-y-auto">
                   {slaData.leads.slice(0, 10).map((lead) => (
-                    <div key={lead.leadId} className="flex items-center justify-between p-2 rounded-lg bg-danger-soft border border-danger-strong/10">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-sm font-medium">{lead.leadName}</div>
-                        <Badge variant="outline" className="text-2xs">{lead.status}</Badge>
+                    <div key={lead.leadId} className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-surface-sunken/40 p-2.5">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-medium">{lead.leadName}</span>
+                        <Badge variant="outline">{lead.status}</Badge>
                         {lead.priority && (
-                          <Badge variant="outline" className={cn("text-2xs",
-                            lead.priority === "HOT" && "border-danger-500/50 text-danger-strong",
-                            lead.priority === "WARM" && "border-warning-500/50 text-warning-strong",
-                            lead.priority === "COLD" && "border-info-400/50 text-info-strong",
-                          )}>{lead.priority}</Badge>
+                          <StatusPill tone={PRIORITY_TONES[lead.priority] ?? "neutral"} dot>{lead.priority}</StatusPill>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
+                      <div className="flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                        <Clock className="size-3.5" aria-hidden="true" />
                         {lead.hoursSinceUpdate}h overdue
                         {lead.assignedTo && <span>· {lead.assignedTo}</span>}
                       </div>
@@ -249,31 +254,24 @@ export default function CrmReportsPage() {
 
         {stats && (
           <>
-            <motion.div variants={fadeUp} className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-              {[
-                { label: "Total Leads", value: stats.total, icon: Users, color: "text-info-strong" },
-                { label: "Conversion Rate", value: `${stats.conversionRate}%`, icon: TrendingUp, color: "text-success-strong" },
-                { label: "Potential Value", value: `${CURRENCY_SYMBOL}${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, color: "text-brand-text" },
-                { label: "Unassigned", value: stats.unassigned, icon: UserCheck, color: "text-danger-strong" },
-                { label: "New This Month", value: stats.thisMonth, icon: Calendar, color: "text-plum-strong" },
-              ].map(s => (
-                <Card key={s.label} className="shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <s.icon className={cn("h-5 w-5", s.color)} />
-                      <span className="text-2xl font-bold tabular-nums">{s.value}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            <motion.div variants={fadeUp}>
+              <StatsStrip
+                items={[
+                  { label: "Total Leads", value: stats.total, icon: Users, tone: "info" },
+                  { label: "Conversion Rate", value: `${stats.conversionRate}%`, icon: TrendingUp, tone: "success" },
+                  { label: "Potential Value", value: `${CURRENCY_SYMBOL}${(stats.totalPotentialValue / 100000).toFixed(1)}L`, icon: Target, tone: "brand" },
+                  { label: "Unassigned", value: stats.unassigned, icon: UserCheck, tone: "danger" },
+                  { label: "New This Month", value: stats.thisMonth, icon: Calendar, tone: "plum" },
+                ]}
+              />
             </motion.div>
 
+            <div className="grid gap-4 lg:grid-cols-2">
             <motion.div variants={fadeUp}>
-              <Card className="shadow-sm">
+              <Card className="h-full">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-brand-text" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <IconChip icon={BarChart3} size="sm" />
                     Pipeline Breakdown
                   </CardTitle>
                 </CardHeader>
@@ -287,16 +285,16 @@ export default function CrmReportsPage() {
                         <motion.div key={status} variants={scaleIn}>
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: config.color }} />
+                              <div aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: config.color }} />
                               <span className="text-sm font-medium">{status}</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-bold tabular-nums">{count}</span>
-                              <span className="text-xs text-muted-foreground w-12 text-right">{pct.toFixed(1)}%</span>
+                              <span className="w-12 text-right text-xs tabular-nums text-muted-foreground">{pct.toFixed(1)}%</span>
                             </div>
                           </div>
                           <div
-                            className="h-3 rounded-full bg-muted overflow-hidden"
+                            className="h-2 rounded-full bg-muted overflow-hidden"
                             role="progressbar"
                             aria-valuenow={count}
                             aria-valuemin={0}
@@ -320,10 +318,10 @@ export default function CrmReportsPage() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <Card className="shadow-sm">
+              <Card className="h-full">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-brand-text" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <IconChip icon={TrendingUp} size="sm" />
                     Conversion Funnel
                   </CardTitle>
                 </CardHeader>
@@ -344,7 +342,7 @@ export default function CrmReportsPage() {
                           transition={{ delay: i * 0.1 }}
                         >
                           <div
-                            className="h-12 rounded-lg flex items-center justify-center gap-2 transition-all"
+                            className="flex h-11 items-center justify-center gap-2 rounded-md"
                             style={{
                               width: `${widthPct}%`,
                               backgroundColor: `color-mix(in oklab, ${config.color} 12%, transparent)`,
@@ -354,10 +352,10 @@ export default function CrmReportsPage() {
                             <span className="text-sm font-semibold text-foreground">
                               {status}
                             </span>
-                            <Badge variant="secondary" className="text-xs">{count}</Badge>
+                            <Badge variant="secondary" className="tabular-nums">{count}</Badge>
                           </div>
                           {i < arr.length - 1 && (
-                            <ArrowDown className="h-4 w-4 text-muted-foreground/30 my-1" />
+                            <ArrowDown className="my-1 size-4 text-subtle-foreground" aria-hidden="true" />
                           )}
                         </motion.div>
                       );
@@ -366,9 +364,11 @@ export default function CrmReportsPage() {
                 </CardContent>
               </Card>
             </motion.div>
+            </div>
           </>
         )}
       </motion.div>
+      )}
     </PageWrapper>
   );
 }

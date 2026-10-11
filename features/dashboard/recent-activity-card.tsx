@@ -1,19 +1,21 @@
 "use client";
 
 import { memo } from "react";
-import Link from "next/link";
 import { Activity, GitBranch } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
+import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyActivityIllustration } from "@/components/illustrations";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
-import { formatDistanceToNow } from "date-fns";
-import { isTicketType, typeIcons, DEFAULT_TICKET_ICON } from "./ticket-types";
+import { format, formatDistanceToNow } from "date-fns";
+import { isTicketType, typeIcons, typeTones, DEFAULT_TICKET_ICON } from "./ticket-types";
+
+const MAX_ROWS = 6;
 
 export interface ActivityItem {
   id: string | number;
@@ -40,104 +42,105 @@ interface RecentActivityCardProps {
   error: unknown;
 }
 
+function RelativeTime({ value }: { value: string | Date }) {
+  const d = new Date(value);
+  return (
+    <time dateTime={d.toISOString()} title={format(d, "PPpp")}>
+      {formatDistanceToNow(d, { addSuffix: true })}
+    </time>
+  );
+}
+
 export const RecentActivityCard = memo(function RecentActivityCard({ items, isLoading, error }: RecentActivityCardProps) {
   return (
-    <Card className="bg-card border-border shadow-sm flex flex-col h-full w-full">
-      <CardHeader className="flex-shrink-0 px-4 py-3">
-        <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Activity className="h-4 w-4 text-brand-text" aria-hidden="true" />
-          Recent Activity
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden px-4 pt-0 pb-4" aria-live="polite">
+    <WidgetCard title="Recent Activity" icon={Activity} tone="teal">
+      <div aria-live="polite">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={`activity-skel-${i}`} className="h-14 w-full" />
+              <Skeleton key={`activity-skel-${i}`} className="h-11 w-full rounded-md" />
             ))}
           </div>
         ) : error ? (
-          <p role="alert" className="text-sm text-destructive">Failed to load activity.</p>
+          <WidgetError error={error} />
         ) : items && items.length > 0 ? (
-          <ScrollArea className="h-full pr-2">
-            <div className="space-y-1.5">
-              {items.map((item) => {
-                if (item.activityKind === "org" || item.type === "branch") {
-                  return (
-                    <Link key={item.id} href="/dashboard/branches">
-                      <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                        <GitBranch className="h-4 w-4 text-info-strong mt-0.5 flex-shrink-0" aria-hidden="true" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-2xs px-1.5 py-0 text-info-strong border-info-strong/25">
-                              Branch
-                            </Badge>
-                          </div>
-                          <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {item.actorName && (
-                              <span className="text-xs text-muted-foreground">by {item.actorName}</span>
-                            )}
-                            {item.updatedAt && (
-                              <span className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                }
-
-                const TypeIcon = isTicketType(item.type) ? typeIcons[item.type] : DEFAULT_TICKET_ICON;
+          <ul className="-mx-2">
+            {items.slice(0, MAX_ROWS).map((item) => {
+              if (item.activityKind === "org" || item.type === "branch") {
                 return (
-                  <Link key={item.id} href={item.projectId ? `/projects/${item.projectId}` : "/projects"}>
-                    <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                      <TypeIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" aria-hidden="true" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          {item.projectKey && item.ticketNumber != null && (
-                            <span className="text-xs text-muted-foreground font-mono">
-                              {item.projectKey}-{item.ticketNumber}
-                            </span>
-                          )}
-                          <Badge variant="outline" className="text-2xs px-1.5 py-0">
-                            {item.status?.replaceAll("_", " ")}
-                          </Badge>
-                        </div>
-                        <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{item.projectName}</span>
-                          {item.updatedAt && (
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {item.assignee && (
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarImage src={resolveImageUrl(item.assignee.image)} />
-                          <AvatarFallback className="text-2xs">
-                            {getInitials(null, item.assignee.firstName, item.assignee.lastName)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  </Link>
+                  <li key={item.id}>
+                    <WidgetListRow
+                      href="/dashboard/branches"
+                      leading={<IconChip icon={GitBranch} tone="info" size="sm" className="size-8" />}
+                      title={item.title}
+                      meta={
+                        <>
+                          Branch
+                          {item.actorName && <> · by {item.actorName}</>}
+                          {item.updatedAt && <> · <RelativeTime value={item.updatedAt} /></>}
+                        </>
+                      }
+                    />
+                  </li>
                 );
-              })}
-            </div>
-          </ScrollArea>
+              }
+
+              const type = isTicketType(item.type) ? item.type : null;
+              const TypeIcon = type ? typeIcons[type] : DEFAULT_TICKET_ICON;
+              return (
+                <li key={item.id}>
+                  <WidgetListRow
+                    href={item.projectId ? `/projects/${item.projectId}` : "/projects"}
+                    leading={
+                      <IconChip icon={TypeIcon} tone={type ? typeTones[type] : "neutral"} size="sm" className="size-8" />
+                    }
+                    title={
+                      <>
+                        {item.projectKey && item.ticketNumber != null && (
+                          <span className="mr-1.5 font-mono text-xs font-normal text-muted-foreground">
+                            {item.projectKey}-{item.ticketNumber}
+                          </span>
+                        )}
+                        {item.title}
+                      </>
+                    }
+                    meta={
+                      <>
+                        {item.projectName}
+                        {item.updatedAt && <> · <RelativeTime value={item.updatedAt} /></>}
+                      </>
+                    }
+                    trailing={
+                      <>
+                        {item.status && (
+                          <StatusPill tone="neutral" className="hidden sm:inline-flex">
+                            {item.status.replaceAll("_", " ")}
+                          </StatusPill>
+                        )}
+                        {item.assignee && (
+                          <Avatar className="size-6">
+                            <AvatarImage src={resolveImageUrl(item.assignee.image)} />
+                            <AvatarFallback className="text-3xs">
+                              {getInitials(null, item.assignee.firstName, item.assignee.lastName)}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                      </>
+                    }
+                  />
+                </li>
+              );
+            })}
+          </ul>
         ) : (
           <EmptyState
-            illustration={<EmptyActivityIllustration />}
+            compact
+            illustration={<EmptyActivityIllustration className="h-20 w-20" />}
             title="No recent activity"
             description="Ticket updates and branch changes will appear here."
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </WidgetCard>
   );
 });

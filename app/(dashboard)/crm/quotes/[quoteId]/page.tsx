@@ -4,7 +4,14 @@ import { use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,19 +22,21 @@ import { ArrowLeft, Send, CheckCircle, XCircle, Trash2, Download, FileText } fro
 import { format } from "date-fns";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-muted text-foreground",
-  SENT: "bg-info-soft text-info-strong",
-  ACCEPTED: "bg-success-soft text-success-strong",
-  REJECTED: "bg-danger-soft text-danger-strong",
-  EXPIRED: "bg-warning-soft text-warning-strong",
+const STATUS_TONES: Record<string, Tone> = {
+  DRAFT: "neutral",
+  SENT: "info",
+  ACCEPTED: "success",
+  REJECTED: "danger",
+  EXPIRED: "warning",
 };
+
+const fmtDate = (d: string | Date | null | undefined, pattern = "dd MMM yyyy") => (d ? format(new Date(d), pattern) : "");
 
 export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId: string }> }) {
   const { quoteId } = use(params);
   const id = Number(quoteId);
   const router = useRouter();
-  const { data: quote, isLoading } = useQuoteDetail(id);
+  const { data: quote, isLoading, isError, error, refetch } = useQuoteDetail(id);
   const sendQuote = useSendQuote();
   const updateQuote = useUpdateQuote();
   const deleteQuote = useDeleteQuote();
@@ -39,8 +48,19 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       <PageWrapper title="Quote">
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 w-full" />
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Quote">
+        <QueryErrorState title="Couldn't load this quote" error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -48,7 +68,12 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
   if (!quote) {
     return (
       <PageWrapper title="Quote Not Found">
-        <p className="text-muted-foreground">This quote does not exist or you don&apos;t have access.</p>
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="Quote Not Found"
+          description="This quote does not exist or you don't have access."
+          action={{ label: "Back", onClick: handleGoBack }}
+        />
       </PageWrapper>
     );
   }
@@ -90,7 +115,7 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       const doc = new jsPDF();
 
       doc.setFontSize(20);
-      doc.setTextColor(15, 43, 127);
+      doc.setTextColor(32, 30, 31);
       doc.text("QUOTE", 20, 25);
 
       doc.setFontSize(10);
@@ -100,7 +125,7 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       doc.text(`Valid Until: ${quote.validUntil ? format(new Date(quote.validUntil), "dd MMM yyyy") : ""}`, 20, 49);
       doc.text(`Status: ${quote.status}`, 20, 56);
 
-      doc.setDrawColor(189, 136, 44);
+      doc.setDrawColor(212, 175, 55);
       doc.setLineWidth(0.5);
       doc.line(20, 62, 190, 62);
 
@@ -145,7 +170,7 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
       doc.text(`Tax: ${quote.currency} ${Number(quote.taxAmount).toLocaleString(DEFAULT_LOCALE)}`, 130, y);
       y += 7;
       doc.setFontSize(12);
-      doc.setTextColor(189, 136, 44);
+      doc.setTextColor(121, 96, 1);
       doc.text(`Net Total: ${quote.currency} ${Number(quote.netAmount).toLocaleString(DEFAULT_LOCALE)}`, 130, y);
 
       if (quote.termsAndConditions) {
@@ -163,37 +188,44 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
     }
   };
 
+  const money = (v: string | number | null | undefined) => `${quote.currency} ${Number(v).toLocaleString(DEFAULT_LOCALE)}`;
+
   return (
     <PageWrapper
       title={quote.quoteNumber}
-      subtitle={quote.subject}
+      subtitle={
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {quote.subject}
+          <StatusPill tone={STATUS_TONES[quote.status] ?? "neutral"} dot>{quote.status}</StatusPill>
+        </span>
+      }
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleGoBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        <>
+          <Button variant="ghost" size="sm" onClick={handleGoBack}>
+            <ArrowLeft className="size-4" /> Back
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-            <Download className="mr-2 h-4 w-4" /> PDF
+            <Download className="size-4" /> PDF
           </Button>
           {quote.status === "DRAFT" && (
-            <Button size="sm" onClick={handleSend} disabled={sendQuote.isPending}>
-              <Send className="mr-2 h-4 w-4" /> Send Quote
+            <Button size="sm" onClick={handleSend} loading={sendQuote.isPending} disabled={sendQuote.isPending}>
+              <Send className="size-4" /> Send Quote
             </Button>
           )}
           {quote.status === "SENT" && (
             <>
               <Button size="sm" variant="default" onClick={handleAccept} disabled={updateQuote.isPending}>
-                <CheckCircle className="mr-2 h-4 w-4" /> Accept
+                <CheckCircle className="size-4" /> Accept
               </Button>
               <Button size="sm" variant="destructive" onClick={handleReject} disabled={updateQuote.isPending}>
-                <XCircle className="mr-2 h-4 w-4" /> Reject
+                <XCircle className="size-4" /> Reject
               </Button>
             </>
           )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="sm" variant="ghost" className="text-destructive">
-                <Trash2 className="h-4 w-4" />
+              <Button size="icon-sm" variant="ghost" className="text-destructive hover:bg-danger-soft hover:text-destructive" aria-label="Delete quote" loading={deleteQuote.isPending}>
+                <Trash2 className="size-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -211,138 +243,102 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ quoteId:
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
+        </>
       }
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <FileText className="h-5 w-5" />
-                Line Items
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead className="text-right">Tax %</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(quote.lineItems ?? []).map((item, idx) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{idx + 1}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right">{Number(item.unitPrice).toLocaleString(DEFAULT_LOCALE)}</TableCell>
-                      <TableCell className="text-right">{item.taxRate}%</TableCell>
-                      <TableCell className="text-right font-medium">{Number(item.amount).toLocaleString(DEFAULT_LOCALE)}</TableCell>
+      <DetailLayout
+        main={
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <IconChip icon={FileText} size="sm" />
+                  Line Items
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10">#</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead className="text-right">Unit Price</TableHead>
+                      <TableHead className="text-right">Tax %</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="mt-4 border-t pt-4 space-y-1 text-right">
-                <p className="text-sm text-muted-foreground">
-                  Subtotal: {quote.currency} {Number(quote.totalAmount).toLocaleString(DEFAULT_LOCALE)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Tax: {quote.currency} {Number(quote.taxAmount).toLocaleString(DEFAULT_LOCALE)}
-                </p>
-                <p className="text-lg font-bold text-brand-text">
-                  Net Total: {quote.currency} {Number(quote.netAmount).toLocaleString(DEFAULT_LOCALE)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {quote.termsAndConditions && (
-            <Card>
-              <CardHeader><CardTitle>Terms & Conditions</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{quote.termsAndConditions}</p>
+                  </TableHeader>
+                  <TableBody>
+                    {(quote.lineItems ?? []).map((item, idx) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="tabular-nums text-muted-foreground">{idx + 1}</TableCell>
+                        <TableCell>{item.description}</TableCell>
+                        <TableCell className="text-right tabular-nums">{item.quantity}</TableCell>
+                        <TableCell className="text-right tabular-nums">{Number(item.unitPrice).toLocaleString(DEFAULT_LOCALE)}</TableCell>
+                        <TableCell className="text-right tabular-nums">{item.taxRate}%</TableCell>
+                        <TableCell className="text-right font-medium tabular-nums">{Number(item.amount).toLocaleString(DEFAULT_LOCALE)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <dl className="ml-auto mt-4 max-w-xs space-y-1 border-t pt-4 text-sm tabular-nums">
+                  <div className="flex justify-between gap-4 text-muted-foreground">
+                    <dt>Subtotal</dt><dd>{money(quote.totalAmount)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 text-muted-foreground">
+                    <dt>Tax</dt><dd>{money(quote.taxAmount)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 pt-1 font-display text-lg font-bold">
+                    <dt>Net Total</dt><dd>{money(quote.netAmount)}</dd>
+                  </div>
+                </dl>
               </CardContent>
             </Card>
-          )}
-        </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader><CardTitle>Details</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status</span>
-                <Badge variant="secondary" className={STATUS_COLORS[quote.status]}>{quote.status}</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Quote #</span>
-                <span className="font-mono">{quote.quoteNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Currency</span>
-                <span>{quote.currency}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Valid Until</span>
-                <span>{quote.validUntil ? format(new Date(quote.validUntil), "dd MMM yyyy") : ""}</span>
-              </div>
-              {quote.deal && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Deal</span>
-                  <span>{quote.deal.name}</span>
-                </div>
-              )}
-              {quote.client && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Client</span>
-                  <span>{quote.client.clientName}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created By</span>
-                <span>{quote.createdBy?.name || ""}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created</span>
-                <span>{quote.createdAt ? format(new Date(quote.createdAt), "dd MMM yyyy") : ""}</span>
-              </div>
-              {quote.sentAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sent</span>
-                  <span>{format(new Date(quote.sentAt), "dd MMM yyyy HH:mm")}</span>
-                </div>
-              )}
-              {quote.acceptedAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Accepted</span>
-                  <span>{format(new Date(quote.acceptedAt), "dd MMM yyyy HH:mm")}</span>
-                </div>
-              )}
-              {quote.rejectedAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rejected</span>
-                  <span>{format(new Date(quote.rejectedAt), "dd MMM yyyy HH:mm")}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {quote.notes && (
+            {quote.termsAndConditions && (
+              <Card>
+                <CardHeader><CardTitle className="text-base">Terms & Conditions</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap text-sm">{quote.termsAndConditions}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        }
+        rail={
+          <>
             <Card>
-              <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Details</CardTitle></CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{quote.notes}</p>
+                <PropertyList
+                  items={[
+                    { label: "Status", value: <StatusPill tone={STATUS_TONES[quote.status] ?? "neutral"} dot>{quote.status}</StatusPill> },
+                    { label: "Quote #", value: <span className="font-mono">{quote.quoteNumber}</span> },
+                    { label: "Currency", value: quote.currency },
+                    { label: "Valid Until", value: <span className="tabular-nums">{fmtDate(quote.validUntil)}</span> },
+                    ...(quote.deal ? [{ label: "Deal", value: quote.deal.name }] : []),
+                    ...(quote.client ? [{ label: "Client", value: quote.client.clientName }] : []),
+                    { label: "Created By", value: quote.createdBy?.name || "" },
+                    { label: "Created", value: <span className="tabular-nums">{fmtDate(quote.createdAt)}</span> },
+                    ...(quote.sentAt ? [{ label: "Sent", value: <span className="tabular-nums">{fmtDate(quote.sentAt, "dd MMM yyyy HH:mm")}</span> }] : []),
+                    ...(quote.acceptedAt ? [{ label: "Accepted", value: <span className="tabular-nums">{fmtDate(quote.acceptedAt, "dd MMM yyyy HH:mm")}</span> }] : []),
+                    ...(quote.rejectedAt ? [{ label: "Rejected", value: <span className="tabular-nums">{fmtDate(quote.rejectedAt, "dd MMM yyyy HH:mm")}</span> }] : []),
+                  ]}
+                />
               </CardContent>
             </Card>
-          )}
-        </div>
-      </div>
+
+            {quote.notes && (
+              <Card>
+                <CardHeader><CardTitle className="text-base">Notes</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap text-sm">{quote.notes}</p>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        }
+      />
     </PageWrapper>
   );
 }

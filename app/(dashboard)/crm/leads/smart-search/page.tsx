@@ -4,6 +4,11 @@ import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Search, Sparkles, ArrowRight, X } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { STATUS_CONFIG } from "@/features/crm/leads/leads-constants";
+import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,19 +35,10 @@ const EXAMPLE_QUERIES = [
   "Cold leads from Mumbai",
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  NEW: "bg-info-soft text-info-strong border-info-strong/20",
-  CONTACTED: "bg-warning-soft text-warning-strong border-warning-strong/20",
-  INTERESTED: "bg-plum-soft text-plum-strong border-plum-strong/20",
-  QUALIFIED: "bg-success-soft text-success-strong border-success-strong/20",
-  CONVERTED: "bg-success-soft text-success-strong border-success-strong/20",
-  LOST: "bg-danger-soft text-danger-strong border-danger-strong/20",
-};
-
-const PRIORITY_STYLES: Record<string, string> = {
-  HOT: "bg-danger-soft text-danger-strong border-danger-strong/20",
-  WARM: "bg-warning-soft text-warning-strong border-warning-strong/20",
-  COLD: "bg-teal-soft text-teal-strong border-teal-strong/20",
+const PRIORITY_TONE: Record<string, Tone> = {
+  HOT: "danger",
+  WARM: "warning",
+  COLD: "info",
 };
 
 function formatValue(val: number | null) {
@@ -88,7 +84,7 @@ function FilterBadges({ filters }: { filters: Record<string, unknown> }) {
     <div className="flex flex-wrap gap-2 items-center">
       <span className="text-sm text-muted-foreground font-medium">Interpreted as:</span>
       {entries.map(([key, val]) => (
-        <Badge key={key} variant="outline" className="text-xs gap-1">
+        <Badge key={key} variant="secondary" className="gap-1">
           <span className="text-muted-foreground">{label(key)}:</span>
           <span className="font-medium">{format(key, val)}</span>
         </Badge>
@@ -101,7 +97,7 @@ function ResultsTable({ leads }: { leads: NLSearchLead[] }) {
   if (!leads.length) {
     return (
       <EmptyState
-        illustration={<EmptySearchIllustration className="h-40 w-40" />}
+        illustration={<EmptySearchIllustration />}
         title="No leads match your search"
         description="Try adjusting your query or use different keywords."
       />
@@ -125,7 +121,7 @@ function ResultsTable({ leads }: { leads: NLSearchLead[] }) {
           </TableHeader>
           <TableBody>
             {leads.map((lead) => (
-              <TableRow key={lead.id} className="cursor-pointer hover:bg-muted/50">
+              <TableRow key={lead.id}>
                 <TableCell>
                   <Link
                     href={`/crm/leads/${lead.id}`}
@@ -141,21 +137,15 @@ function ResultsTable({ leads }: { leads: NLSearchLead[] }) {
                   {lead.company ?? ""}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs", STATUS_STYLES[lead.status] ?? "")}
-                  >
+                  <StatusPill tone={STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG]?.tone ?? "neutral"} dot>
                     {capitalize(lead.status)}
-                  </Badge>
+                  </StatusPill>
                 </TableCell>
                 <TableCell>
                   {lead.priority ? (
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", PRIORITY_STYLES[lead.priority] ?? "")}
-                    >
+                    <StatusPill tone={PRIORITY_TONE[lead.priority] ?? "neutral"}>
                       {capitalize(lead.priority)}
-                    </Badge>
+                    </StatusPill>
                   ) : (
                     null
                   )}
@@ -191,7 +181,7 @@ function LoadingSkeleton() {
 export default function SmartLeadSearchPage() {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { mutate, data, isPending, reset } = useNLSearch();
+  const { mutate, data, isPending, isError, error, reset } = useNLSearch();
 
   const handleSearch = useCallback(() => {
     const q = inputValue.trim();
@@ -220,50 +210,51 @@ export default function SmartLeadSearchPage() {
       title="Smart Lead Search"
       subtitle='Search leads using natural language — "hot leads from Mumbai above 5L"'
       badge={
-        <Badge variant="outline" className="gap-1.5 text-xs">
-          <Sparkles className="h-3 w-3 text-brand-text" />
+        <>
+          <Sparkles className="size-3" aria-hidden="true" />
           AI-Powered
-        </Badge>
+        </>
       }
     >
       <div className="space-y-6">
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
               <Input
                 ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="Describe the leads you want"
-                className="pl-9 pr-9 h-11 text-sm"
+                className="h-11 pl-9 pr-11"
+                data-page-search
                 aria-label="Natural language lead search"
               />
               {inputValue && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={handleClear}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2"
                   aria-label="Clear search"
                 >
-                  <X className="h-4 w-4" />
-                </button>
+                  <X />
+                </Button>
               )}
             </div>
             <Button
+              size="lg"
               onClick={handleSearch}
-              disabled={!inputValue.trim() || isPending}
-              className="h-11 px-5 gap-2"
+              disabled={!inputValue.trim()}
+              loading={isPending}
             >
               {isPending ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
-                  Searching...
-                </span>
+                "Searching..."
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles />
                   Search
                 </>
               )}
@@ -277,12 +268,12 @@ export default function SmartLeadSearchPage() {
                 type="button"
                 onClick={() => handleChipClick(q)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
-                  "border-border text-muted-foreground hover:border-primary hover:text-brand-text hover:bg-brand-soft",
-                  inputValue === q && "border-primary text-brand-text bg-brand-soft",
+                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-3 text-xs outline-none transition-colors focus-visible:focus-ring",
+                  "border-border text-muted-foreground hover:border-border-strong hover:bg-accent hover:text-foreground",
+                  inputValue === q && "border-primary/50 bg-brand-soft text-brand-soft-foreground",
                 )}
               >
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="size-3" aria-hidden="true" />
                 {q}
               </button>
             ))}
@@ -291,13 +282,15 @@ export default function SmartLeadSearchPage() {
 
         {isPending ? (
           <LoadingSkeleton />
+        ) : isError ? (
+          <QueryErrorState title="Search failed" error={error} onRetry={handleSearch} />
         ) : hasResult ? (
           <div className="space-y-4">
             <FilterBadges filters={data.parsedFilters} />
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{data.total}</span>{" "}
+                <span className="font-semibold tabular-nums text-foreground">{data.total}</span>{" "}
                 {data.total === 1 ? "result" : "results"} found
               </p>
             </div>
@@ -306,12 +299,10 @@ export default function SmartLeadSearchPage() {
           </div>
         ) : (
           
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-            <div className="rounded-full bg-brand-soft p-5">
-              <Sparkles className="h-10 w-10 text-brand-text" />
-            </div>
+          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-surface-sunken/40 px-6 py-16 text-center">
+            <IconChip icon={Sparkles} size="lg" />
             <div className="space-y-1">
-              <h3 className="font-semibold text-lg">Ask anything about your leads</h3>
+              <h2 className="font-display text-lg font-semibold">Ask anything about your leads</h2>
               <p className="text-muted-foreground text-sm max-w-sm">
                 Use plain English to search leads by status, priority, city, value, source, and more.
               </p>
@@ -322,9 +313,9 @@ export default function SmartLeadSearchPage() {
                   key={q}
                   type="button"
                   onClick={() => handleChipClick(q)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-text transition-colors group"
+                  className="group flex items-center gap-2 rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-brand-text focus-visible:focus-ring"
                 >
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
                   {q}
                 </button>
               ))}

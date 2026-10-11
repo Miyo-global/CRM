@@ -7,7 +7,9 @@ import {
   BarChart, Bar, AreaChart, Area, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { toneBar } from "@/lib/design/tones";
+import { cn } from "@/lib/utils";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -27,6 +29,18 @@ import { ConversionChart } from "@/features/crm/analytics/conversion-chart";
 import { DealValueChart } from "@/features/crm/analytics/deal-value-chart";
 import { AnalyticsChartCard } from "@/features/crm/analytics/analytics-chart-card";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+
+function trendHint(current: number, prev: number, relative: boolean) {
+  if (prev <= 0) return undefined;
+  const delta = relative ? Math.round(((current - prev) / prev) * 100) : Math.abs(current - prev);
+  const up = current >= prev;
+  return (
+    <span className={up ? "text-success-strong" : "text-danger-strong"}>
+      {up ? "▲" : "▼"} <span className="tabular-nums">{Math.abs(delta)}%</span>
+      <span className="text-muted-foreground"> vs prev period</span>
+    </span>
+  );
+}
 
 export default function CrmAnalyticsPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -137,11 +151,12 @@ export default function CrmAnalyticsPage() {
     return (
       <PageWrapper title="CRM Analytics" subtitle="Pipeline insights and performance metrics">
         <div className="space-y-6">
-          <div className="grid gap-3 md:grid-cols-2">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <div className="grid gap-4 lg:grid-cols-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="shadow-sm">
+              <Card key={i}>
                 <CardHeader className="pb-2"><Skeleton className="h-4 w-36" /></CardHeader>
-                <CardContent><Skeleton className="h-[280px] w-full" /></CardContent>
+                <CardContent><Skeleton className="h-70 w-full" /></CardContent>
               </Card>
             ))}
           </div>
@@ -154,7 +169,7 @@ export default function CrmAnalyticsPage() {
     <PageWrapper
       title="CRM Analytics"
       subtitle="Pipeline insights and performance metrics"
-      filters={
+      actions={
         <DateRangePicker
           from={dateFrom}
           to={dateTo}
@@ -163,39 +178,40 @@ export default function CrmAnalyticsPage() {
         />
       }
     >
-      <motion.div className="space-y-4" variants={staggerContainer} initial="hidden" animate="visible">
+      <motion.div className="space-y-6" variants={staggerContainer} initial="hidden" animate="visible">
         {analyticsSummary && (
-          <motion.div variants={fadeUp} className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Total Leads" value={analyticsSummary.totalLeads} icon={Users} index={0}
-              trend={analyticsSummary.totalLeadsPrevPeriod > 0 ? {
-                value: Math.round(((analyticsSummary.totalLeads - analyticsSummary.totalLeadsPrevPeriod) / analyticsSummary.totalLeadsPrevPeriod) * 100),
-                isPositive: analyticsSummary.totalLeads >= analyticsSummary.totalLeadsPrevPeriod,
-              } : undefined}
+          <motion.div variants={fadeUp}>
+            <StatsStrip
+              items={[
+                {
+                  label: "Total Leads",
+                  value: analyticsSummary.totalLeads,
+                  icon: Users,
+                  hint: trendHint(analyticsSummary.totalLeads, analyticsSummary.totalLeadsPrevPeriod, true),
+                },
+                {
+                  label: "Conversion Rate",
+                  value: `${analyticsSummary.conversionRate}%`,
+                  icon: Percent,
+                  hint: trendHint(analyticsSummary.conversionRate, analyticsSummary.conversionRatePrevPeriod, false),
+                },
+                { label: "Total Revenue", value: `${CURRENCY_SYMBOL}${(analyticsSummary.totalRevenue / 100000).toFixed(1)}L`, icon: DollarSign },
+                { label: "Active Reps", value: analyticsSummary.assignmentDistribution.length, icon: Target },
+              ]}
             />
-            <StatCard
-              label="Conversion Rate" value={`${analyticsSummary.conversionRate}%`} icon={Percent} index={1}
-              trend={analyticsSummary.conversionRatePrevPeriod > 0 ? {
-                value: Math.abs(analyticsSummary.conversionRate - analyticsSummary.conversionRatePrevPeriod),
-                isPositive: analyticsSummary.conversionRate >= analyticsSummary.conversionRatePrevPeriod,
-              } : undefined}
-            />
-            <StatCard label="Total Revenue" value={`${CURRENCY_SYMBOL}${(analyticsSummary.totalRevenue / 100000).toFixed(1)}L`} icon={DollarSign} index={2} />
-            <StatCard label="Active Reps" value={analyticsSummary.assignmentDistribution.length} icon={Target} index={3} />
           </motion.div>
         )}
 
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <PipelineFunnelChart data={funnelData} />
           <LeadVolumeChart data={leadVolumeTrend} />
           <SourceBreakdownChart data={sourceBreakdown} />
-          <RepPerformanceTable leaderboard={leaderboard} />
           <ConversionChart data={wonLostReasons} />
           <DealValueChart data={dealsByStageValue} />
 
           <AnalyticsChartCard title="SLA Compliance Rate" data={[]} filename="sla-compliance">
             {slaReport && (
-              <div className="flex flex-col items-center justify-center h-[280px]">
+              <div className="flex h-70 flex-col items-center justify-center">
                 <div className="relative h-40 w-40">
                   <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                     <circle cx="50" cy="50" r="42" fill="none" stroke="var(--muted)" strokeWidth="8" />
@@ -208,11 +224,11 @@ export default function CrmAnalyticsPage() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold">{slaReport.complianceRate}%</span>
+                    <span className="font-display text-3xl font-extrabold tabular-nums">{slaReport.complianceRate}%</span>
                     <span className="text-xs text-muted-foreground">Compliant</span>
                   </div>
                 </div>
-                <div className="flex gap-4 mt-4 text-xs">
+                <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs tabular-nums">
                   <span className="text-muted-foreground">Total: {slaReport.total}</span>
                   <span className="text-success-strong">Met: {slaReport.compliant}</span>
                   <span className="text-danger-strong">Breached: {slaReport.breached}</span>
@@ -285,47 +301,55 @@ export default function CrmAnalyticsPage() {
             </AnalyticsChartCard>
           )}
         </div>
-      </motion.div>
+
+        <RepPerformanceTable leaderboard={leaderboard} />
 
       {taskAnalytics && (
         <motion.div variants={fadeUp}>
           <Card>
-            <CardHeader className="px-4 py-3 border-b">
+            <CardHeader className="border-b">
               <h3 className="text-sm font-semibold">Task Analytics (Last 30 Days)</h3>
             </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+            <CardContent className="p-5">
+              <dl className="mb-5 grid grid-cols-3 divide-x divide-border text-center">
                 <div>
-                  <p className="text-2xl font-bold">{taskAnalytics.completionRate}%</p>
-                  <p className="text-xs text-muted-foreground">Completion Rate</p>
+                  <dd className="font-display text-2xl font-bold tabular-nums">{taskAnalytics.completionRate}%</dd>
+                  <dt className="text-xs text-muted-foreground">Completion Rate</dt>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-destructive">{taskAnalytics.overdue}</p>
-                  <p className="text-xs text-muted-foreground">Overdue</p>
+                  <dd className="font-display text-2xl font-bold tabular-nums text-danger-strong">{taskAnalytics.overdue}</dd>
+                  <dt className="text-xs text-muted-foreground">Overdue</dt>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{taskAnalytics.total}</p>
-                  <p className="text-xs text-muted-foreground">Total Tasks</p>
+                  <dd className="font-display text-2xl font-bold tabular-nums">{taskAnalytics.total}</dd>
+                  <dt className="text-xs text-muted-foreground">Total Tasks</dt>
                 </div>
-              </div>
+              </dl>
               {taskAnalytics.perRep.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Per Rep</p>
+                <div className="space-y-2.5">
+                  <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Per Rep</p>
                   {taskAnalytics.perRep.slice(0, 8).map((rep) => (
                     <div key={rep.assigneeId} className="flex items-center gap-3">
-                      <p className="text-xs font-medium w-32 truncate shrink-0">{rep.name}</p>
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                      <p className="w-24 shrink-0 truncate text-xs font-medium sm:w-32" title={rep.name}>{rep.name}</p>
+                      <div
+                        className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
+                        role="progressbar"
+                        aria-valuenow={rep.completionRate}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${rep.name} task completion`}
+                      >
                         <div
-                          className="h-full rounded-full bg-primary"
+                          className={cn("h-full rounded-full", toneBar.brand)}
                           style={{ width: `${rep.completionRate}%` }}
                         />
                       </div>
-                      <span className="text-xs tabular-nums w-10 text-right shrink-0">{rep.completionRate}%</span>
-                      <span className="text-xs text-muted-foreground tabular-nums w-12 text-right shrink-0">
+                      <span className="w-10 shrink-0 text-right text-xs tabular-nums">{rep.completionRate}%</span>
+                      <span className="hidden w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:inline">
                         {rep.completed}/{rep.total}
                       </span>
                       {rep.overdue > 0 && (
-                        <span className="text-2xs text-destructive shrink-0">{rep.overdue} late</span>
+                        <span className="shrink-0 text-2xs tabular-nums text-danger-strong">{rep.overdue} late</span>
                       )}
                     </div>
                   ))}
@@ -335,6 +359,7 @@ export default function CrmAnalyticsPage() {
           </Card>
         </motion.div>
       )}
+      </motion.div>
     </PageWrapper>
   );
 }

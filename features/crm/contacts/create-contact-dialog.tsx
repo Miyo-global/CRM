@@ -74,20 +74,20 @@ export function CreateContactDialog({ open, onOpenChange }: CreateContactDialogP
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="bg-primary hover:bg-brand-soft text-primary-foreground">
-          <Plus className="h-4 w-4 mr-2" />New Contact
+        <Button>
+          <Plus className="size-4" />New Contact
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="sm:max-w-md flex flex-col p-0 gap-0">
-        <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
+      <SheetContent side="right" size="sm" className="flex flex-col gap-0 p-0">
+        <SheetHeader className="shrink-0 border-b px-6">
           <SheetTitle className="text-base">Create Contact</SheetTitle>
         </SheetHeader>
         <ScrollArea className="flex-1 min-h-0">
-          <div className="px-4 py-4">
+          <div className="px-6 py-5">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
                     <FormField control={form.control} name="name" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Name *</FormLabel>
@@ -162,7 +162,7 @@ export function CreateContactDialog({ open, onOpenChange }: CreateContactDialogP
                     </FormItem>
                   )} />
                 </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-brand-soft text-primary-foreground" disabled={createContactMutation.isPending}>
+                <Button type="submit" className="w-full" loading={createContactMutation.isPending} disabled={createContactMutation.isPending}>
                   {createContactMutation.isPending ? "Creating..." : "Create Contact"}
                 </Button>
               </form>
