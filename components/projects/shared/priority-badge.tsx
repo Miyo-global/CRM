@@ -1,7 +1,9 @@
 "use client";
 
-import { AlertTriangle, ArrowUp, Minus, ArrowDown } from "lucide-react";
+import { ChevronsUp, ChevronUp, Equal, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toneText, type Tone } from "@/lib/design/tones";
+import { StatusPill } from "@/components/ui/status-pill";
 import {
   Tooltip,
   TooltipContent,
@@ -10,31 +12,11 @@ import {
 } from "@/components/ui/tooltip";
 
 const config = {
-  URGENT: {
-    label: "Urgent",
-    icon: AlertTriangle,
-    color: "text-danger-strong",
-    bg: "bg-danger-soft",
-  },
-  HIGH: {
-    label: "High",
-    icon: ArrowUp,
-    color: "text-warning-strong",
-    bg: "bg-warning-soft",
-  },
-  MEDIUM: {
-    label: "Medium",
-    icon: Minus,
-    color: "text-warning-strong",
-    bg: "bg-warning-soft",
-  },
-  LOW: {
-    label: "Low",
-    icon: ArrowDown,
-    color: "text-info-strong",
-    bg: "bg-info-soft",
-  },
-} as const;
+  URGENT: { label: "Urgent", icon: ChevronsUp, tone: "danger" },
+  HIGH: { label: "High", icon: ChevronUp, tone: "warning" },
+  MEDIUM: { label: "Medium", icon: Equal, tone: "brand" },
+  LOW: { label: "Low", icon: ChevronDown, tone: "neutral" },
+} as const satisfies Record<string, { label: string; icon: unknown; tone: Tone }>;
 
 interface PriorityBadgeProps {
   priority: string | null | undefined;
@@ -52,21 +34,14 @@ export function PriorityBadge({
   const key = (priority ?? "MEDIUM") as keyof typeof config;
   const c = config[key] ?? config.MEDIUM;
   const Icon = c.icon;
-  const iconSize = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
+  const iconSize = size === "sm" ? "size-3.5" : "size-4";
 
   if (showLabel) {
     return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium",
-          c.bg,
-          c.color,
-          className
-        )}
-      >
-        <Icon className={iconSize} />
+      <StatusPill tone={c.tone} className={className}>
+        <Icon aria-hidden="true" />
         {c.label}
-      </span>
+      </StatusPill>
     );
   }
 
@@ -74,8 +49,12 @@ export function PriorityBadge({
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={cn("inline-flex", c.color, className)}>
-            <Icon className={iconSize} />
+          <span
+            role="img"
+            aria-label={`${c.label} Priority`}
+            className={cn("inline-flex shrink-0", toneText[c.tone], className)}
+          >
+            <Icon className={iconSize} aria-hidden="true" />
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">

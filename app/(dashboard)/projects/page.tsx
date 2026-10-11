@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useProjects } from "@/lib/api/hooks/projects";
@@ -15,6 +15,8 @@ import { EmptySearchIllustration } from "@/components/illustrations";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useDebouncedValue } from "@/hooks/use-expense-filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
 type ViewMode = "grid" | "list";
@@ -24,6 +26,7 @@ export default function ProjectsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
+  const [createOpen, setCreateOpen] = useState(false);
 
   const search = searchParams.get("q") || "";
   const status = (searchParams.get("status") as StatusFilter) || "ALL";
@@ -65,7 +68,7 @@ export default function ProjectsPage() {
     [updateParams],
   );
 
-  const { data, isLoading } = useProjects({
+  const { data, isLoading, isError, error, refetch } = useProjects({
     page,
     limit: 12,
     search: apiSearch || undefined,
@@ -81,7 +84,7 @@ export default function ProjectsPage() {
     <PageWrapper
       title="Projects"
       badge={pagination?.total ? String(pagination.total) : undefined}
-      actions={<NewProjectDialog />}
+      actions={<NewProjectDialog open={createOpen} onOpenChange={setCreateOpen} />}
       filters={
         <ProjectFilterBar
           search={search}
@@ -95,20 +98,20 @@ export default function ProjectsPage() {
     >
       {isLoading ? (
         viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-lg border p-4 space-y-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3 rounded-lg border border-border bg-card p-5">
                 <div className="flex justify-between">
-                  <Skeleton className="h-5 w-14 rounded" />
+                  <Skeleton className="h-5 w-14 rounded-xs" />
                   <Skeleton className="h-5 w-16 rounded-full" />
                 </div>
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-1 w-full rounded-full" />
-                <div className="flex justify-between pt-2 border-t">
+                <div className="flex justify-between border-t border-border pt-3">
                   <div className="flex -space-x-1.5">
                     {[1, 2, 3].map((j) => (
-                      <Skeleton key={j} className="h-6 w-6 rounded-full" />
+                      <Skeleton key={j} className="size-6 rounded-full" />
                     ))}
                   </div>
                   <Skeleton className="h-3 w-16" />
@@ -119,11 +122,11 @@ export default function ProjectsPage() {
         ) : (
           <div className="space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-lg border p-3">
+              <div key={i} className="rounded-lg border border-border bg-card px-4 py-3">
                 <div className="flex items-center gap-3">
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <Skeleton className="h-5 w-14 rounded" />
+                      <Skeleton className="h-5 w-14 rounded-xs" />
                       <Skeleton className="h-5 w-20 rounded-full" />
                     </div>
                     <Skeleton className="h-4 w-56 max-w-[70%]" />
@@ -135,7 +138,7 @@ export default function ProjectsPage() {
                   </div>
                   <div className="flex -space-x-1.5 shrink-0">
                     {[1, 2, 3].map((j) => (
-                      <Skeleton key={j} className="h-6 w-6 rounded-full" />
+                      <Skeleton key={j} className="size-6 rounded-full" />
                     ))}
                   </div>
                 </div>
@@ -143,24 +146,23 @@ export default function ProjectsPage() {
             ))}
           </div>
         )
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       ) : projects.length === 0 && !debouncedSearch && status === "ALL" ? (
-        <ProjectsEmptyState />
+        <ProjectsEmptyState onCreate={() => setCreateOpen(true)} />
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <EmptySearchIllustration className="mb-4 h-36 w-36 opacity-95" />
-          <p className="text-muted-foreground text-sm">
-            No projects match your filters.
-          </p>
-          <button
-            onClick={() => updateParams({ q: null, status: null, page: null })}
-            className="text-primary text-sm mt-2 hover:underline"
-          >
-            Clear all filters
-          </button>
-        </div>
+        <EmptyState
+          illustration={<EmptySearchIllustration className="size-36" />}
+          title="No results for these filters"
+          description="No projects match your filters."
+          action={{
+            label: "Clear filters",
+            onClick: () => updateParams({ q: null, status: null, page: null }),
+          }}
+        />
       ) : viewMode === "grid" ? (
         <motion.div
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
           role="list"
           aria-label="Projects grid"
           variants={staggerContainer}

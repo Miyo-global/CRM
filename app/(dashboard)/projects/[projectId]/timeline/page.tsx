@@ -80,7 +80,7 @@ export default function TimelinePage({ params }: PageProps) {
   if (isLoading) {
     return (
       <PageWrapper title="Timeline">
-        <div className="p-4 space-y-4">
+        <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-[400px] w-full" />
         </div>
@@ -92,7 +92,7 @@ export default function TimelinePage({ params }: PageProps) {
 
   return (
     <PageWrapper title="Timeline" subtitle={`${tickets.length} tickets`}>
-      <div className="h-full overflow-auto px-4 pb-4">
+      <div className="h-full overflow-auto">
         <GanttView
           key={projectId}
           tickets={tickets}

@@ -7,12 +7,14 @@ import { z } from "zod";
 import { Pencil, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { IconChip } from "@/components/ui/icon-chip";
 import {
   Form,
   FormControl,
@@ -102,22 +104,22 @@ export function EditEpicDialog({ epic, projectId, trigger }: EditEpicDialogProps
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         {trigger || (
           <Button variant="ghost" size="sm">
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil className="size-4" />
             Edit
           </Button>
         )}
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-plum-strong" />
+      </DialogTrigger>
+      <DialogContent size="md" className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2.5 text-lg">
+            <IconChip icon={Zap} tone="plum" size="sm" />
             Edit Epic
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -144,7 +146,7 @@ export function EditEpicDialog({ epic, projectId, trigger }: EditEpicDialogProps
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="priority"
@@ -183,15 +185,15 @@ export function EditEpicDialog({ epic, projectId, trigger }: EditEpicDialogProps
                 )}
               />
             </div>
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={updateTicket.isPending}>
+              <Button type="submit" disabled={updateTicket.isPending} loading={updateTicket.isPending}>
                 {updateTicket.isPending ? "Saving..." : "Save Changes"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -8,54 +8,20 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { EmptyTimeIllustration } from "@/components/illustrations";
 import { DollarSign, Clock, TrendingUp, Pencil } from "lucide-react";
 import { useProjectBudget, useUpdateProjectBudget } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  subtext,
-  highlight,
-}: {
-  title: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  subtext?: string;
-  highlight?: "danger" | "success";
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p
-              className={`text-2xl font-bold mt-1 ${
-                highlight === "danger"
-                  ? "text-destructive"
-                  : highlight === "success"
-                  ? "text-success-strong"
-                  : ""
-              }`}
-            >
-              {value}
-            </p>
-            {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
-          </div>
-          <Icon className="h-5 w-5 text-muted-foreground" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function BudgetPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId: projectIdStr } = use(params);
   const projectId = Number(projectIdStr);
-  const { data: budget, isLoading } = useProjectBudget(projectId);
+  const { data: budget, isLoading, isError, error, refetch } = useProjectBudget(projectId);
   const updateBudget = useUpdateProjectBudget(projectId);
 
   const [editMode, setEditMode] = useState(false);
@@ -73,9 +39,15 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
   if (isLoading) {
     return (
       <PageWrapper title="Budget">
-        <div className="grid sm:grid-cols-3 gap-4 mb-6">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
-        </div>
+        <Skeleton className="h-20 w-full rounded-lg" />
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Budget" subtitle="Planned budget vs actual cost from billable timesheets">
+        <QueryErrorState error={error} onRetry={refetch} />
       </PageWrapper>
     );
   }
@@ -86,24 +58,27 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
   const overBudget = (budget?.remaining ?? 0) < 0;
 
   return (
-    <PageWrapper title="Budget" subtitle="Planned budget vs actual cost from billable timesheets">
-      <div className="flex items-center justify-between mb-6">
-        {editMode ? (
-          <div className="flex items-center gap-2">
-            <Label className="text-sm shrink-0">Planned Budget (₹)</Label>
+    <PageWrapper
+      title="Budget"
+      subtitle="Planned budget vs actual cost from billable timesheets"
+      actions={
+        editMode ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Label htmlFor="planned-budget" className="shrink-0 text-sm">Planned Budget (₹)</Label>
             <Input
+              id="planned-budget"
               type="number"
               min={0}
               max={1000000000}
-              className="w-36"
+              className="w-36 tabular-nums"
               value={newBudget}
               onChange={(e) => setNewBudget(e.target.value)}
               placeholder={String(budget?.plannedBudget ?? "")}
             />
-            <Button size="sm" onClick={handleSaveBudget} disabled={updateBudget.isPending}>
-              {updateBudget.isPending ? "Saving…" : "Save"}
+            <Button size="sm" onClick={handleSaveBudget} loading={updateBudget.isPending}>
+              Save
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setEditMode(false)}>Cancel</Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditMode(false)}>Cancel</Button>
           </div>
         ) : (
           <Button
@@ -111,48 +86,52 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
             variant="outline"
             onClick={() => { setNewBudget(String(budget?.plannedBudget ?? "")); setEditMode(true); }}
           >
-            <Pencil className="h-4 w-4 mr-1" />
+            <Pencil className="size-4" aria-hidden="true" />
             {budget?.plannedBudget ? "Update Budget" : "Set Budget"}
           </Button>
-        )}
-      </div>
-
-      <div className="grid sm:grid-cols-3 gap-4 mb-6">
-        <StatCard
-          title="Planned Budget"
-          value={fmt(budget?.plannedBudget ?? 0)}
-          icon={DollarSign}
-          subtext={budget?.plannedBudget ? "Project budget" : "Not set"}
-        />
-        <StatCard
-          title="Actual Cost"
-          value={fmt(budget?.actualCost ?? 0)}
-          icon={TrendingUp}
-          subtext={`${(budget?.totalHours ?? 0).toFixed(1)} billable hours`}
-          highlight={overBudget ? "danger" : undefined}
-        />
-        <StatCard
-          title="Remaining"
-          value={fmt(Math.abs(budget?.remaining ?? 0))}
-          icon={DollarSign}
-          subtext={overBudget ? "Over budget" : "Available"}
-          highlight={overBudget ? "danger" : "success"}
-        />
-      </div>
+        )
+      }
+    >
+      <div className="space-y-6">
+      <StatsStrip
+        items={[
+          {
+            label: "Planned Budget",
+            value: fmt(budget?.plannedBudget ?? 0),
+            icon: DollarSign,
+            hint: budget?.plannedBudget ? "Project budget" : "Not set",
+          },
+          {
+            label: "Actual Cost",
+            value: fmt(budget?.actualCost ?? 0),
+            icon: TrendingUp,
+            hint: `${(budget?.totalHours ?? 0).toFixed(1)} billable hours`,
+            tone: overBudget ? "danger" : undefined,
+          },
+          {
+            label: "Remaining",
+            value: fmt(Math.abs(budget?.remaining ?? 0)),
+            icon: DollarSign,
+            hint: overBudget ? "Over budget" : "Available",
+            tone: overBudget ? "danger" : "success",
+          },
+        ]}
+      />
 
       {(budget?.plannedBudget ?? 0) > 0 && (
-        <Card className="mb-6">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Budget Utilization</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+          <CardContent className="pb-5">
+            <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground tabular-nums">
               <span>{budget?.utilizationPct ?? 0}% used</span>
               <span>{fmt(budget?.plannedBudget ?? 0)} planned</span>
             </div>
             <Progress
               value={Math.min(budget?.utilizationPct ?? 0, 100)}
-              className={`h-3 ${overBudget ? "[&>div]:bg-destructive" : ""}`}
+              className="h-2.5"
+              tone={overBudget ? "danger" : undefined}
             />
           </CardContent>
         </Card>
@@ -163,30 +142,42 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Member Cost Breakdown</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="divide-y">
-              {budget.memberBreakdown.map((m) => (
-                <div key={m.userId} className="flex items-center justify-between py-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground font-mono text-xs">{m.userId.substring(0, 8)}…</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs">
-                    <span className="text-muted-foreground">{m.hours.toFixed(1)} hrs</span>
-                    <span className="font-medium">{fmt(m.cost)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="px-0 pb-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-5">Member</TableHead>
+                  <TableHead className="text-right">Hours</TableHead>
+                  <TableHead className="pr-5 text-right">Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {budget.memberBreakdown.map((m) => (
+                  <TableRow key={m.userId}>
+                    <TableCell className="pl-5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                        <span className="font-mono text-xs text-muted-foreground" title={m.userId}>{m.userId.substring(0, 8)}…</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground tabular-nums">{m.hours.toFixed(1)} hrs</TableCell>
+                    <TableCell className="pr-5 text-right font-medium tabular-nums">{fmt(m.cost)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}
 
       {(budget?.memberBreakdown?.length ?? 0) === 0 && !isLoading && (
-        <div className="text-center py-8 text-sm text-muted-foreground">
-          No billable time entries logged yet.
-        </div>
+        <EmptyState
+          compact
+          illustration={<EmptyTimeIllustration className="h-24 w-24 opacity-95" />}
+          title="No billable time entries logged yet."
+        />
       )}
+      </div>
     </PageWrapper>
   );
 }

@@ -8,6 +8,7 @@ import { TicketTypeIcon } from "./shared/ticket-type-icon";
 import { PriorityBadge } from "./shared/priority-badge";
 import type { KanbanTicket } from "./shared/types";
 import { motion } from "framer-motion";
+import { kanbanCardClass } from "@/components/shared/kanban";
 
 interface KanbanTicketCardProps {
   ticket: KanbanTicket;
@@ -53,75 +54,72 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
   const primaryAssignee =
     ticket.assignees?.[0]?.user ?? ticket.assignee ?? null;
 
+  const points = ticket.points ?? ticket.storyPoints;
+  const labels = (ticket.labels ?? []).filter((l) => l.label);
+
   return (
     <motion.div
       layoutId={`ticket-${ticket.id}`}
       className={cn(
-        "rounded-lg border bg-card px-3 py-2.5 transition-shadow",
-        "cursor-grab active:cursor-grabbing",
-        "hover:shadow-md hover:border-border/80",
-        isDragging && "shadow-xl ring-1 ring-primary/20 scale-[1.02]"
+        kanbanCardClass(isDragging),
+        "cursor-grab space-y-2 active:cursor-grabbing"
       )}
       onMouseDown={handleMouseDown}
       onClick={handleClick}
     >
-
-      <div className="flex items-start gap-1.5">
-        <TicketTypeIcon type={ticket.type} className="mt-0.5 shrink-0" />
-        <p className="text-sm font-medium leading-snug line-clamp-2 flex-1">
-          {ticket.title}
-        </p>
+      <div className="flex items-center gap-1.5">
+        <TicketTypeIcon type={ticket.type} />
+        <span className="truncate font-mono text-2xs text-muted-foreground">
+          {ticketKey}
+        </span>
+        {points != null && points > 0 && (
+          <Badge variant="secondary" className="ml-auto font-mono tabular-nums">
+            {points}
+          </Badge>
+        )}
       </div>
 
-      <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xs font-mono text-muted-foreground">
-            {ticketKey}
-          </span>
-          <PriorityBadge priority={ticket.priority} />
+      <p className="line-clamp-2 text-sm font-medium leading-snug">
+        {ticket.title}
+      </p>
 
-          {ticket.labels && ticket.labels.length > 0 && (
-            <div className="flex items-center gap-0.5">
-              {ticket.labels.slice(0, 3).map(({ label }) =>
-                label ? (
-                  <span
-                    key={label.id}
-                    className="h-2 w-2 rounded-full shrink-0"
-                    style={{ backgroundColor: label.color || "var(--info-500)" }}
-                    title={label.name}
-                  />
-                ) : null
-              )}
-              {ticket.labels.length > 3 && (
-                <span className="text-3xs text-muted-foreground ml-0.5">
-                  +{ticket.labels.length - 3}
-                </span>
-              )}
-            </div>
-          )}
-
-          {(ticket.points ?? ticket.storyPoints) != null &&
-            (ticket.points ?? ticket.storyPoints)! > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-3xs px-1 py-0 h-4 font-mono"
-              >
-                {ticket.points ?? ticket.storyPoints}
-              </Badge>
-            )}
-        </div>
-
+      <div className="flex items-center gap-1.5">
         {primaryAssignee ? (
-          <Avatar className="h-6 w-6 border border-background shrink-0">
+          <Avatar className="size-5 shrink-0">
             <AvatarImage src={resolveImageUrl(primaryAssignee.image)} />
-            <AvatarFallback className="text-3xs bg-primary/10 text-primary font-medium">
+            <AvatarFallback className="bg-brand-soft text-3xs font-medium text-brand-soft-foreground">
               {primaryAssignee.firstName?.[0]}
               {primaryAssignee.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div className="h-6 w-6 rounded-full bg-muted border border-dashed border-muted-foreground/30 flex items-center justify-center shrink-0">
+          <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-muted">
             <span className="text-3xs text-muted-foreground">?</span>
+          </div>
+        )}
+        <PriorityBadge priority={ticket.priority} />
+
+        {labels.length > 0 && (
+          <div className="flex min-w-0 items-center gap-1">
+            {labels.slice(0, 2).map(({ label }) => (
+              <span
+                key={label!.id}
+                title={label!.name}
+                className="inline-flex h-5 min-w-0 max-w-24 items-center gap-1 rounded-full border border-border px-1.5 text-2xs text-muted-foreground"
+              >
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: label!.color || "var(--info-500)" }}
+                />
+                <span className="truncate">{label!.name}</span>
+              </span>
+            ))}
+            {labels.length > 2 && (
+              <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
+                +{labels.length - 2}
+              </span>
+            )}
           </div>
         )}
       </div>

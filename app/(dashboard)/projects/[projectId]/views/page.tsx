@@ -10,7 +10,9 @@ import {
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -54,12 +56,20 @@ const createViewSchema = z.object({
 });
 type CreateViewForm = z.infer<typeof createViewSchema>;
 
+const layoutIconComponents: Record<string, typeof Kanban> = {
+  board: Kanban,
+  list: List,
+  table: LayoutGrid,
+  calendar: LayoutGrid,
+  gantt: LayoutGrid,
+};
+
 const layoutIcons: Record<string, React.ReactNode> = {
-  board: <Kanban className="h-4 w-4" />,
-  list: <List className="h-4 w-4" />,
-  table: <LayoutGrid className="h-4 w-4" />,
-  calendar: <LayoutGrid className="h-4 w-4" />,
-  gantt: <LayoutGrid className="h-4 w-4" />,
+  board: <Kanban className="size-4" aria-hidden="true" />,
+  list: <List className="size-4" aria-hidden="true" />,
+  table: <LayoutGrid className="size-4" aria-hidden="true" />,
+  calendar: <LayoutGrid className="size-4" aria-hidden="true" />,
+  gantt: <LayoutGrid className="size-4" aria-hidden="true" />,
 };
 
 interface ViewItem {
@@ -97,16 +107,17 @@ const ViewCard = memo(function ViewCard({
 
   return (
     <Card
-      className="hover:border-primary/50 transition-colors cursor-pointer"
+      interactive
+      className="flex-row items-center justify-between gap-3 px-4 py-3"
       onClick={handleNavigate}
     >
-      <CardContent className="py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="shrink-0 text-muted-foreground">
-            {layoutIcons[view.layoutType] ?? layoutIcons.board}
-          </div>
+        <div className="flex min-w-0 items-center gap-3">
+          <IconChip
+            icon={layoutIconComponents[view.layoutType] ?? layoutIconComponents.board}
+            tone="neutral"
+          />
           <div className="min-w-0">
-            <p className="font-medium truncate">{view.name}</p>
+            <p className="truncate text-sm font-medium" title={view.name}>{view.name}</p>
             <p className="text-xs text-muted-foreground">
               {view.layoutType.charAt(0).toUpperCase() +
                 view.layoutType.slice(1)}{" "}
@@ -116,30 +127,32 @@ const ViewCard = memo(function ViewCard({
           </div>
         </div>
         <div
-          className="flex items-center gap-1 shrink-0"
+          className="flex shrink-0 items-center gap-1"
           onClick={handleStopPropagation}
         >
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
             onClick={handleTogglePin}
+            aria-label={isPinned ? "Unpin view" : "Pin view"}
           >
             {isPinned ? (
-              <PinOff className="h-3.5 w-3.5" />
+              <PinOff className="size-3.5" aria-hidden="true" />
             ) : (
-              <Pin className="h-3.5 w-3.5" />
+              <Pin className="size-3.5" aria-hidden="true" />
             )}
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-destructive"
             onClick={handleDelete}
+            aria-label="Delete view"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="size-3.5" aria-hidden="true" />
           </Button>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          <ArrowRight className="size-4 text-subtle-foreground" aria-hidden="true" />
         </div>
-      </CardContent>
     </Card>
   );
 });
@@ -154,7 +167,7 @@ export default function ViewsPage({
   const [createOpen, setCreateOpen] = useState(false);
   const router = useRouter();
 
-  const { data: views, isLoading } = useViews(projectId);
+  const { data: views, isLoading, isError, error, refetch } = useViews(projectId);
   const createMutation = useCreateView();
   const togglePinMutation = useUpdateView();
   const deleteMutation = useDeleteView();
@@ -223,7 +236,7 @@ export default function ViewsPage({
       <PageWrapper title="Views">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
           ))}
         </div>
       </PageWrapper>
@@ -233,14 +246,15 @@ export default function ViewsPage({
   return (
     <PageWrapper
       title="Views"
-           actions={
+      badge={views?.length ? String(views.length) : undefined}
+      actions={
         <Sheet open={createOpen} onOpenChange={setCreateOpen}>
           <SheetTrigger asChild>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-1" /> New View
+            <Button>
+              <Plus className="size-4" aria-hidden="true" /> New View
             </Button>
           </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetContent side="right" size="md" className="overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Create View</SheetTitle>
               </SheetHeader>
@@ -248,7 +262,7 @@ export default function ViewsPage({
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4 p-4"
               >
-                <div>
+                <div className="space-y-1.5">
                   <Label htmlFor="view-name">Name</Label>
                   <Input id="view-name" {...form.register("name")} />
                   {form.formState.errors.name && (
@@ -257,7 +271,7 @@ export default function ViewsPage({
                     </p>
                   )}
                 </div>
-                <div>
+                <div className="space-y-1.5">
                   <Label>Layout</Label>
                   <Controller
                     control={form.control}
@@ -289,7 +303,7 @@ export default function ViewsPage({
                 </p>
                 <Button
                   type="submit"
-                  disabled={createMutation.isPending}
+                  loading={createMutation.isPending}
                   className="w-full"
                 >
                   {createMutation.isPending ? "Creating..." : "Create View"}
@@ -300,9 +314,11 @@ export default function ViewsPage({
       }
     >
       <div className="space-y-6">
-        {!views?.length ? (
+        {isError ? (
+          <QueryErrorState error={error} onRetry={() => refetch()} />
+        ) : !views?.length ? (
           <EmptyState
-            illustration={<EmptySearchIllustration className="h-32 w-32 opacity-95" />}
+            illustration={<EmptySearchIllustration />}
             title="No saved views"
             description="Create custom views with saved filters and layouts."
             action={{ label: "Create First View", onClick: handleOpenCreate }}
@@ -311,7 +327,7 @@ export default function ViewsPage({
           <>
             {pinnedViews.length > 0 && (
               <section>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                <h2 className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Pinned
                 </h2>
                 <div className="space-y-2">
@@ -332,7 +348,7 @@ export default function ViewsPage({
             {unpinnedViews.length > 0 && (
               <section>
                 {pinnedViews.length > 0 && (
-                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  <h2 className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                     All Views
                   </h2>
                 )}

@@ -85,8 +85,10 @@ interface TicketSidebarProps {
   onAutoSave: (field: Record<string, unknown>) => void;
 }
 
+/** dt/dd pair styled like PropertyList (§6.3), sized for the 280px rail. */
 function PropertyRow({
   label,
+  icon,
   children,
 }: {
   label: string;
@@ -94,14 +96,17 @@ function PropertyRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[100px_1fr] items-center gap-2 min-h-[36px]">
-      <span className="text-xs text-muted-foreground font-medium truncate">
+    <>
+      <dt className="flex min-h-8 items-center gap-1 truncate text-xs text-muted-foreground">
+        {icon}
         {label}
-      </span>
-      <div className="min-w-0">{children}</div>
-    </div>
+      </dt>
+      <dd className="flex min-h-8 min-w-0 flex-col justify-center text-sm text-foreground">{children}</dd>
+    </>
   );
 }
+
+const fieldClass = "h-8 w-full border-transparent bg-transparent px-2 text-xs shadow-none hover:border-border hover:bg-background";
 
 export function TicketSidebar({
   ticket,
@@ -158,18 +163,14 @@ export function TicketSidebar({
   }, [members, currentAssigneeIds, assigneeSearch]);
 
   return (
-    <div className="px-4 py-3 space-y-1 bg-muted/10">
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            Status
-          </span>
+    <div className="space-y-5">
+      <dl className="grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1">
+        <PropertyRow label="Status">
           <Select
             value={ticket.status || "TODO"}
             onValueChange={(v) => onAutoSave({ status: v })}
           >
-            <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <SelectTrigger className={fieldClass}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -203,16 +204,14 @@ export function TicketSidebar({
               )}
             </SelectContent>
           </Select>
-        </div>
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            Priority
-          </span>
+        </PropertyRow>
+
+        <PropertyRow label="Priority">
           <Select
             value={ticket.priority || "MEDIUM"}
             onValueChange={(v) => onAutoSave({ priority: v })}
           >
-            <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <SelectTrigger className={fieldClass}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -222,19 +221,14 @@ export function TicketSidebar({
               <SelectItem value="URGENT">Urgent</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </PropertyRow>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            Type
-          </span>
+        <PropertyRow label="Type">
           <Select
             value={ticket.type || "TASK"}
             onValueChange={(v) => onAutoSave({ type: v })}
           >
-            <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <SelectTrigger className={fieldClass}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -245,11 +239,9 @@ export function TicketSidebar({
               <SelectItem value="SUBTASK">Subtask</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            Points
-          </span>
+        </PropertyRow>
+
+        <PropertyRow label="Points">
           <Input
             type="number"
             min={0}
@@ -258,25 +250,19 @@ export function TicketSidebar({
               const val = e.target.value === "" ? undefined : parseInt(e.target.value);
               onAutoSave({ points: val });
             }}
-            className="h-8 text-xs bg-background w-full"
+            className={`${fieldClass} tabular-nums`}
             placeholder="0"
           />
-        </div>
-      </div>
+        </PropertyRow>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            <Target className="h-3 w-3 inline mr-0.5" />
-            Sprint
-          </span>
+        <PropertyRow label="Sprint" icon={<Target className="h-3 w-3 shrink-0" />}>
           <Select
             value={ticket.sprintId?.toString() || "none"}
             onValueChange={(v) =>
               onAutoSave({ sprintId: v === "none" ? undefined : parseInt(v) })
             }
           >
-            <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <SelectTrigger className={fieldClass}>
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>
@@ -289,19 +275,16 @@ export function TicketSidebar({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div>
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-            <Zap className="h-3 w-3 inline mr-0.5" />
-            Epic
-          </span>
+        </PropertyRow>
+
+        <PropertyRow label="Epic" icon={<Zap className="h-3 w-3 shrink-0" />}>
           <Select
             value={ticket.epicId?.toString() || "none"}
             onValueChange={(v) =>
               onAutoSave({ epicId: v === "none" ? undefined : parseInt(v) })
             }
           >
-            <SelectTrigger className="h-8 text-xs bg-background w-full">
+            <SelectTrigger className={fieldClass}>
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>
@@ -313,15 +296,11 @@ export function TicketSidebar({
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </PropertyRow>
 
-      <div className="pt-1">
-        <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide mb-1 block">
-          Assignees
-        </span>
+        <PropertyRow label="Assignees">
         {displayedAssignees.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-1.5">
+          <div className="flex flex-wrap gap-1 py-1">
             {displayedAssignees.map(
               (person: {
                 id: string;
@@ -371,13 +350,13 @@ export function TicketSidebar({
               variant="outline"
               role="combobox"
               aria-expanded={assigneeOpen}
-              className="h-8 text-xs bg-background w-full justify-between font-normal px-2 border-dashed hover:border-solid hover:bg-muted/30"
+              className="h-8 w-full justify-between border-transparent bg-transparent px-2 text-xs font-normal shadow-none hover:border-border hover:bg-background"
             >
               <span className="truncate text-muted-foreground">+ Add assignee</span>
               <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-40" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 shadow-lg" align="start">
+          <PopoverContent className="w-64 p-0" align="end">
             <Command shouldFilter={false}>
               <div className="border-b border-border">
                 <CommandInput
@@ -408,7 +387,7 @@ export function TicketSidebar({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Avatar className="h-6 w-6 shrink-0">
                           <AvatarImage src={resolveImageUrl(member.image)} />
-                          <AvatarFallback className="text-3xs bg-primary/10 text-primary font-semibold">
+                          <AvatarFallback className="text-3xs bg-brand-soft text-brand-text font-semibold">
                             {member.firstName?.[0]}{member.lastName?.[0]}
                           </AvatarFallback>
                         </Avatar>
@@ -428,9 +407,50 @@ export function TicketSidebar({
             </Command>
           </PopoverContent>
         </Popover>
-      </div>
+        </PropertyRow>
 
-      <div className="pt-1">
+        {(timeSpent > 0 || originalEstimate > 0) && (
+          <PropertyRow label="Time">
+            <div className="flex items-center gap-1.5 text-xs tabular-nums">
+              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span>{timeSpent}h logged</span>
+              {originalEstimate > 0 && (
+                <span className="text-muted-foreground">/ {originalEstimate}h est</span>
+              )}
+            </div>
+            {originalEstimate > 0 && <Progress value={timeProgress} className="h-1 mt-1" />}
+          </PropertyRow>
+        )}
+
+        {ticket.reporter && (
+          <PropertyRow label="Reporter" icon={<User className="h-3 w-3 shrink-0" />}>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={resolveImageUrl(ticket.reporter.image)} />
+                <AvatarFallback className="text-3xs bg-brand-soft text-brand-text">
+                  {ticket.reporter.firstName?.[0]}{ticket.reporter.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs truncate">
+                {ticket.reporter.firstName} {ticket.reporter.lastName}
+              </span>
+            </div>
+          </PropertyRow>
+        )}
+
+        <PropertyRow label="Created" icon={<Calendar className="h-3 w-3 shrink-0" />}>
+          <span className="text-xs tabular-nums">
+            {ticket.createdAt ? format(new Date(ticket.createdAt), "MMM d, yyyy") : ""}
+          </span>
+        </PropertyRow>
+        <PropertyRow label="Updated" icon={<Clock className="h-3 w-3 shrink-0" />}>
+          <span className="text-xs tabular-nums">
+            {ticket.updatedAt ? format(new Date(ticket.updatedAt), "MMM d, yyyy") : ""}
+          </span>
+        </PropertyRow>
+      </dl>
+
+      <div>
         <LabelPicker
           ticketId={ticketId}
           projectId={projectId}
@@ -442,50 +462,6 @@ export function TicketSidebar({
         />
       </div>
 
-      {(timeSpent > 0 || originalEstimate > 0) && (
-        <div className="pt-1">
-          <PropertyRow label="Time">
-            <div className="flex items-center gap-2 text-xs">
-              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span>{timeSpent}h logged</span>
-              {originalEstimate > 0 && (
-                <span className="text-muted-foreground">/ {originalEstimate}h est</span>
-              )}
-            </div>
-            {originalEstimate > 0 && <Progress value={timeProgress} className="h-1 mt-1" />}
-          </PropertyRow>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-          <Calendar className="h-3 w-3 shrink-0" />
-          {ticket.createdAt ? format(new Date(ticket.createdAt), "MMM d, yyyy") : ""}
-        </div>
-        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-          <Clock className="h-3 w-3 shrink-0" />
-          {ticket.updatedAt ? format(new Date(ticket.updatedAt), "MMM d, yyyy") : ""}
-        </div>
-      </div>
-
-      {ticket.reporter && (
-        <div className="flex items-center gap-2 pt-1">
-          <span className="text-2xs text-muted-foreground font-medium uppercase tracking-wide shrink-0">
-            <User className="h-3 w-3 inline mr-0.5" />Reporter
-          </span>
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={resolveImageUrl(ticket.reporter.image)} />
-              <AvatarFallback className="text-3xs bg-primary/10 text-primary">
-                {ticket.reporter.firstName?.[0]}{ticket.reporter.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs truncate">
-              {ticket.reporter.firstName} {ticket.reporter.lastName}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

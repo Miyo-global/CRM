@@ -7,12 +7,14 @@ import { z } from "zod";
 import { Plus, Calendar, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { IconChip } from "@/components/ui/icon-chip";
 import {
   Form,
   FormControl,
@@ -81,22 +83,22 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         {trigger || (
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="size-4" />
             Create Sprint
           </Button>
         )}
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+      </DialogTrigger>
+      <DialogContent size="md" className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2.5 text-lg">
+            <IconChip icon={Calendar} tone="brand" size="sm" />
             Create New Sprint
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -113,7 +115,7 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -150,7 +152,7 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
                 <FormItem>
                   <FormLabel>
                     <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4" />
+                      <Target className="size-4" aria-hidden="true" />
                       Sprint Goal (Optional)
                     </div>
                   </FormLabel>
@@ -167,7 +169,7 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
               )}
             />
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -175,13 +177,13 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createSprint.isPending}>
+              <Button type="submit" disabled={createSprint.isPending} loading={createSprint.isPending}>
                 {createSprint.isPending ? "Creating..." : "Create Sprint"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

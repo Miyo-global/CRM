@@ -5,13 +5,14 @@ import { formatDistanceToNow } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Loader2, ShieldCheck, Monitor, Smartphone, Trash2 } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Monitor, Smartphone, Trash2 } from "lucide-react";
 import { useChangePassword } from "@/lib/api/hooks/hr";
 import { useSessions, useRevokeSession, useRevokeAllSessions, useRevokeSessions } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PASSWORD_RULES } from "@/lib/utils/password-validation";
 
@@ -75,19 +76,19 @@ function PasswordInput({
           placeholder={placeholder}
           maxLength={maxLength}
           autoComplete={autoComplete}
-          className={cn("h-9 text-sm pr-9", error && "border-destructive")}
+          className={cn("pr-9", error && "border-destructive")}
         />
         <button
           type="button"
           onClick={handleToggleShow}
           tabIndex={-1}
           aria-label={show ? "Hide" : "Show"}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 transition-colors"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:focus-ring"
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
-      {error && <p className="text-2xs text-destructive">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -195,15 +196,13 @@ function SessionsSection() {
   const revokePending = revokeOne.isPending || revokeMany.isPending || revokeAll.isPending;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+    <div className="rounded-lg border border-border bg-card p-5 space-y-4 shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-            <Monitor className="h-4 w-4 text-muted-foreground" />
-          </div>
+        <div className="flex items-center gap-3">
+          <IconChip icon={Monitor} tone="neutral" />
           <div>
             <p className="text-sm font-semibold text-foreground">Active sessions</p>
-            <p className="text-2xs text-muted-foreground">Manage where you are signed in.</p>
+            <p className="text-xs text-muted-foreground">Manage where you are signed in.</p>
           </div>
         </div>
         {otherSessions.length > 0 && (
@@ -211,17 +210,13 @@ function SessionsSection() {
             {selectedCount > 0 && (
               <>
                 <Button
-                  variant="default"
+                  variant="destructive"
                   size="sm"
-                  className="h-8 text-xs"
                   disabled={revokePending}
+                  loading={revokeMany.isPending}
                   onClick={handleOpenRevokeSelected}
                 >
-                  {revokeMany.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    `Sign out selected (${selectedCount})`
-                  )}
+                  {`Sign out selected (${selectedCount})`}
                 </Button>
                 <ConfirmDialog
                   open={revokeSelectedOpen}
@@ -236,15 +231,11 @@ function SessionsSection() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs"
               disabled={revokePending}
+              loading={revokeAll.isPending}
               onClick={handleOpenRevokeAll}
             >
-              {revokeAll.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                "Sign out all others"
-              )}
+              Sign out all others
             </Button>
             <ConfirmDialog
               open={revokeAllOpen}
@@ -263,7 +254,7 @@ function SessionsSection() {
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="h-14 rounded-md bg-muted/50 animate-pulse" />
+            <div key={i} className="h-14 rounded-md bg-muted animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
       ) : !sessions?.length ? (
@@ -330,20 +321,18 @@ export function SettingsSecurity() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card p-5 space-y-5">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-          </div>
+      <div className="rounded-lg border border-border bg-card p-5 space-y-5 shadow-xs">
+        <div className="flex items-center gap-3">
+          <IconChip icon={ShieldCheck} tone="neutral" />
           <div>
             <p className="text-sm font-semibold text-foreground">Change password</p>
-            <p className="text-2xs text-muted-foreground">Use a unique, strong password.</p>
+            <p className="text-xs text-muted-foreground">Use a unique, strong password.</p>
           </div>
         </div>
 
         <div className="h-px bg-border" />
 
-        <div className="space-y-4">
+        <div className="space-y-4 sm:max-w-md">
           <PasswordInput
             id="current-pw"
             label="Current password"
@@ -382,7 +371,7 @@ export function SettingsSecurity() {
                     <p
                       key={r.label}
                       className={cn(
-                        "text-2xs leading-snug",
+                        "text-xs leading-snug",
                         r.test(next) ? "text-success-strong" : "text-muted-foreground"
                       )}
                     >
@@ -392,7 +381,7 @@ export function SettingsSecurity() {
                 </div>
                 <span
                   className={cn(
-                    "text-2xs font-semibold self-start",
+                    "text-xs font-semibold self-start",
                     strength.level === 1 && "text-danger-strong",
                     strength.level === 2 && "text-warning-strong",
                     strength.level >= 3 && "text-success-strong"
@@ -420,13 +409,9 @@ export function SettingsSecurity() {
             size="sm"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="h-8 px-4 text-xs"
+            loading={changePassword.isPending}
           >
-            {changePassword.isPending ? (
-              <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Changing…</>
-            ) : (
-              "Update password"
-            )}
+            {changePassword.isPending ? "Changing…" : "Update password"}
           </Button>
         </div>
       </div>
@@ -468,8 +453,8 @@ function SessionRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-md border bg-muted/30",
-        selected && "border-primary/40 bg-primary/5",
+        "flex items-center gap-3 p-3 rounded-md border border-border bg-card transition-colors",
+        selected && "border-primary bg-brand-soft",
       )}
     >
       {!s.isCurrent ? (
@@ -482,17 +467,17 @@ function SessionRow({
       ) : (
         <span className="size-4 shrink-0" aria-hidden />
       )}
-      <span className="text-muted-foreground flex-shrink-0">{getDeviceIcon(s.userAgent)}</span>
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">{getDeviceIcon(s.userAgent)}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{parseDeviceName(s.userAgent)}</p>
           {s.isCurrent && (
-            <Badge variant="outline" className="text-2xs h-4 px-1.5 border-success-strong/25 text-success-strong bg-success-soft">
+            <StatusPill tone="success" dot>
               Current
-            </Badge>
+            </StatusPill>
           )}
         </div>
-        <p className="text-2xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground tabular-nums">
           {s.ipAddress ? `${s.ipAddress} · ` : ""}
           Active {formatDistanceToNow(new Date(s.lastActive), { addSuffix: true })}
         </p>
@@ -500,13 +485,13 @@ function SessionRow({
       {!s.isCurrent && (
         <Button
           variant="ghost"
-          size="icon"
-          className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive"
+          size="icon-sm"
+          className="shrink-0 text-muted-foreground hover:text-destructive"
           onClick={handleRevoke}
           disabled={revokePending}
           aria-label="Revoke session"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 aria-hidden />
         </Button>
       )}
     </div>

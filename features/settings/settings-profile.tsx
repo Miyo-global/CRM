@@ -168,9 +168,9 @@ export function SettingsProfile() {
   return (
     <>
 
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col gap-4 border-b border-border pb-5 mb-5 sm:flex-row sm:items-center">
         <div className="relative group shrink-0">
-          <Avatar className="h-16 w-16 ring-2 ring-border">
+          <Avatar className="size-16 ring-2 ring-border">
             <AvatarImage src={displayImage} />
             <AvatarFallback className="text-xl font-bold bg-brand-soft text-brand-text">
               {initials}
@@ -181,7 +181,7 @@ export function SettingsProfile() {
             disabled={isBusy}
             onClick={handleOpenFileInput}
             aria-label="Change profile photo"
-            className="absolute inset-0 flex items-center justify-center bg-overlay rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+            className="absolute inset-0 flex items-center justify-center bg-overlay rounded-full opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:focus-ring transition-opacity cursor-pointer disabled:cursor-not-allowed"
           >
             {isBusy ? (
               <Loader2 className="h-5 w-5 text-ink-50 animate-spin" />
@@ -200,31 +200,30 @@ export function SettingsProfile() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground truncate">{name || ""}</p>
+          <p className="font-display text-lg font-bold text-foreground truncate">{name || ""}</p>
           <p className="text-xs text-muted-foreground truncate">{email}</p>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-3">
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-xs"
               disabled={isBusy}
               onClick={handleOpenFileInput}
             >
               {isBusy ? (
-                <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Uploading…</>
+                <><Loader2 className="animate-spin" aria-hidden />Uploading…</>
               ) : (
-                <><Camera className="h-3 w-3 mr-1" />Change photo</>
+                <><Camera aria-hidden />Change photo</>
               )}
             </Button>
             {session?.user?.image && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive"
                 disabled={isBusy}
                 onClick={handleRemovePhoto}
               >
-                <Trash2 className="h-3 w-3 mr-1" />Remove
+                <Trash2 aria-hidden />Remove
               </Button>
             )}
           </div>
@@ -244,27 +243,26 @@ export function SettingsProfile() {
                 onKeyDown={handleNameKeyDown}
                 placeholder="Your full name"
                 autoFocus
-                className="h-9 text-sm flex-1"
+                className="flex-1"
               />
               <Button
                 size="icon"
-                className="h-9 w-9 shrink-0"
+                className="shrink-0"
                 onClick={handleSaveName}
                 disabled={updateProfile.isPending || !editName.trim()}
+                loading={updateProfile.isPending}
+                aria-label="Save name"
               >
-                {updateProfile.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Check className="h-3.5 w-3.5" />
-                )}
+                <Check aria-hidden />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 shrink-0"
+                className="shrink-0"
                 onClick={handleCancelEditName}
+                aria-label="Cancel"
               >
-                <X className="h-3.5 w-3.5" />
+                <X aria-hidden />
               </Button>
             </div>
           ) : (
@@ -273,7 +271,7 @@ export function SettingsProfile() {
               onClick={handleStartEditName}
               className={cn(
                 "flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 text-sm",
-                "text-left cursor-pointer hover:border-border/80 hover:bg-muted/40 transition-colors",
+                "text-left cursor-pointer hover:border-border-strong hover:bg-accent transition-colors focus-visible:focus-ring",
                 !name && "text-muted-foreground"
               )}
               aria-label="Click to edit name"
@@ -290,9 +288,9 @@ export function SettingsProfile() {
             type="email"
             value={email}
             disabled
-            className="h-9 text-sm bg-muted/40"
+            className="bg-muted/40"
           />
-          <p className="text-2xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Contact your admin to change email.
           </p>
         </div>

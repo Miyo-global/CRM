@@ -11,8 +11,14 @@ import {
   Gauge,
   MessageSquareReply,
   Inbox,
+  Activity,
+  Users,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import { MetricCard } from "@/components/charts/metric-card";
 import { MiniAreaChart } from "@/components/charts/mini-area-chart";
 import { MiniDonutChart } from "@/components/charts/mini-donut-chart";
@@ -25,12 +31,11 @@ import { staggerContainer, fadeUp, slideInLeft } from "@/lib/motion-variants";
 import { safeMax, calcPercent } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors, sparkColors } from "@/lib/theme-constants";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formatTicketValue = (v: number) => v.toLocaleString();
 
 export default function SupportDashboardPage() {
-  const { data, isLoading } = useSupportDashboard();
+  const { data, isLoading, isError, error, refetch } = useSupportDashboard();
 
   const ticketStatusBreakdown = data?.ticketStatusBreakdown ?? [];
   const ticketVolumeTimeline = data?.ticketVolumeTimeline ?? [];
@@ -56,6 +61,17 @@ export default function SupportDashboardPage() {
     [ticketVolumeTimeline],
   );
 
+  if (isError && !data) {
+    return (
+      <PageWrapper
+        title="Support Analytics"
+        subtitle="Real-time insights into customer support performance across all channels"
+      >
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      </PageWrapper>
+    );
+  }
+
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
@@ -76,13 +92,13 @@ export default function SupportDashboardPage() {
       subtitle="Real-time insights into customer support performance across all channels"
     >
     <motion.div
-      className="space-y-6"
+      className="grid grid-cols-12 gap-4 xl:gap-6"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
     >
 
-      <motion.div variants={fadeUp} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <motion.div variants={fadeUp} className="col-span-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-6">
         <MetricCard
           label="Open Tickets"
           value={supportDashboardStats.openTickets.value}
@@ -113,358 +129,283 @@ export default function SupportDashboardPage() {
         />
       </motion.div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-12">
-        <motion.div className="lg:col-span-5" variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4 text-brand-text" />
-                Ticket Status Breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center py-4">
-              {totalTickets > 0 ? (
-                <MiniDonutChart
-                  data={ticketStatusBreakdown}
-                  centerValue={totalTickets}
-                  centerLabel="Total"
-                />
-              ) : (
-                <EmptyState
-                  compact
-                  icon={Inbox}
-                  title="No tickets yet"
-                  description="Ticket status will appear here once your team starts receiving support requests."
-                />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div className="lg:col-span-7" variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-brand-text" />
-                Ticket Volume Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {hasVolume ? (
-                <MiniAreaChart
-                  data={ticketVolumeTimeline}
-                  color={sparkColors.blue}
-                  height={240}
-                  formatValue={formatTicketValue}
-                />
-              ) : (
-                <EmptyState
-                  compact
-                  icon={Ticket}
-                  title="No ticket volume yet"
-                  description="Monthly ticket trends populate as tickets are created over time."
-                  className="h-[240px] justify-center"
-                />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-12">
-        <motion.div className="lg:col-span-5" variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Gauge className="h-4 w-4 text-brand-text" />
-                SLA Compliance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {slaCompliance && slaCompliance.totalTickets > 0 ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center py-2">
-                    <MiniDonutChart
-                      data={[
-                        { label: "Within SLA", value: slaCompliance.withinSla, color: "var(--chart-7)" },
-                        { label: "Breached", value: slaCompliance.breached, color: "var(--chart-8)" },
-                      ]}
-                      centerValue={`${slaCompliance.compliancePct}%`}
-                      centerLabel="On-time"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-border p-3">
-                      <p className="text-xs text-muted-foreground">Within SLA</p>
-                      <p className="text-lg font-semibold text-success-strong tabular-nums">
-                        {slaCompliance.withinSla}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-border p-3">
-                      <p className="text-xs text-muted-foreground">Breached</p>
-                      <p className="text-lg font-semibold text-danger-strong tabular-nums">
-                        {slaCompliance.breached}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <EmptyState
-                  compact
-                  icon={Gauge}
-                  title="No SLA data yet"
-                  description="SLA compliance is tracked against priority-based targets once tickets exist."
-                />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div className="lg:col-span-7" variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <MessageSquareReply className="h-4 w-4 text-brand-text" />
-                Response &amp; Resolution SLA by Priority
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {slaCompliance && slaCompliance.totalTickets > 0 ? (
-                <div className="space-y-4">
-                  <div className="rounded-xl border border-border p-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Response Rate</p>
-                      <p className="text-sm text-muted-foreground/80">
-                        {slaCompliance.respondedTickets} of {slaCompliance.totalTickets} tickets answered
-                      </p>
-                    </div>
-                    <span className="text-2xl font-bold tabular-nums text-foreground">
-                      {slaCompliance.responseRate}%
-                    </span>
-                  </div>
-                  <table className="w-full text-sm">
-                    <caption className="sr-only">Average resolution time versus SLA target by ticket priority</caption>
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th scope="col" className="text-left font-medium text-muted-foreground pb-2">Priority</th>
-                        <th scope="col" className="text-right font-medium text-muted-foreground pb-2">Tickets</th>
-                        <th scope="col" className="text-right font-medium text-muted-foreground pb-2">Avg Resolve</th>
-                        <th scope="col" className="text-right font-medium text-muted-foreground pb-2">Target</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {slaCompliance.byPriority.map((row) => {
-                        const overTarget =
-                          row.avgResolutionHours > 0 && row.avgResolutionHours > row.slaTargetHours;
-                        return (
-                          <tr key={row.priority} className="border-b border-border/50 last:border-0">
-                            <td className="py-2.5">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className="w-2.5 h-2.5 rounded-full"
-                                  style={{ backgroundColor: row.color }}
-                                />
-                                <span className="font-medium text-foreground">{row.priority}</span>
-                              </div>
-                            </td>
-                            <td className="py-2.5 text-right tabular-nums text-muted-foreground">{row.total}</td>
-                            <td
-                              className={cn(
-                                "py-2.5 text-right tabular-nums font-medium",
-                                overTarget ? "text-danger-strong" : "text-foreground",
-                              )}
-                            >
-                              {row.avgResolutionHours > 0 ? `${row.avgResolutionHours}h` : ""}
-                            </td>
-                            <td className="py-2.5 text-right tabular-nums text-muted-foreground">
-                              {row.slaTargetHours}h
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <EmptyState
-                  compact
-                  icon={MessageSquareReply}
-                  title="No response data yet"
-                  description="Response rate and per-priority resolution times appear once tickets are handled."
-                />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <motion.div variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-y-auto pr-1 max-h-[380px]">
-                {supportActivityFeed.length > 0 ? (
-                  <ActivityFeed items={supportActivityFeed} />
-                ) : (
-                  <EmptyState
-                    compact
-                    icon={Inbox}
-                    title="No recent activity"
-                    description="Ticket events like new requests, replies, and resolutions will show up here."
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div className="lg:col-span-2" variants={fadeUp}>
-          <Card className="h-full shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Team Access</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {supportTeamMembers.length === 0 ? (
-                <EmptyState
-                  compact
-                  icon={Shield}
-                  title="No support team members"
-                  description="Add team members to manage support coverage and access levels."
-                />
-              ) : (
-              <ScrollArea className="w-full max-h-[60vh]" type="auto">
-              <div className="min-w-[400px]">
-                <table className="w-full text-sm">
-                  <caption className="sr-only">Support team members with roles, access levels, and online status</caption>
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2">Name</th>
-                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2">Role</th>
-                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2">Access</th>
-                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {supportTeamMembers.map((member, idx) => (
-                      <motion.tr
-                        key={`member-${idx}`}
-                        className="border-b border-border/50 last:border-0"
-                        variants={fadeUp}
-                      >
-                        <td className="py-2.5">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-brand-soft flex items-center justify-center shrink-0">
-                              <span className="text-xs font-semibold text-brand-text">
-                                {member.avatar}
-                              </span>
-                            </div>
-                            <span className="font-medium text-foreground">{member.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 text-muted-foreground">{member.role}</td>
-                        <td className="py-2.5">
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                            {member.access}
-                          </span>
-                        </td>
-                        <td className="py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={cn(
-                                "w-2 h-2 rounded-full",
-                                getColorSafe(onlineStatusColors, member.status)
-                              )}
-                            />
-                            <span className="text-xs capitalize text-muted-foreground">
-                              {member.status}
-                            </span>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      <motion.div variants={fadeUp}>
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4 text-brand-text" />
-              Tickets by Priority
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {totalPriority === 0 ? (
-              <EmptyState
-                compact
-                icon={Shield}
-                title="No tickets to prioritize"
-                description="Priority distribution appears once tickets are created."
+      <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
+        <WidgetCard title="Ticket Status Breakdown" icon={Shield}>
+          <div className="flex items-center justify-center py-4">
+            {totalTickets > 0 ? (
+              <MiniDonutChart
+                data={ticketStatusBreakdown}
+                centerValue={totalTickets}
+                centerLabel="Total"
               />
             ) : (
-            <div className="space-y-4">
-              {ticketsByPriority.map((priority) => {
-                const percentage = calcPercent(priority.value, totalPriority);
-
-                return (
-                  <motion.div
-                    key={priority.label}
-                    className="relative overflow-hidden rounded-xl border border-border p-4"
-                    variants={slideInLeft}
-                  >
-                    <div
-                      className="absolute inset-0 opacity-[0.04]"
-                      style={{ backgroundColor: priority.color }}
-                    />
-                    <div className="relative">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{ backgroundColor: priority.color }}
-                          />
-                          <span className="text-sm font-medium text-foreground">
-                            {priority.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-foreground">
-                            {priority.value}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {percentage}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: priority.color }}
-                          initial={{ width: 0 }}
-                          animate={{
-                            width: `${(priority.value / maxPriorityValue) * 100}%`,
-                          }}
-                          transition={{ duration: 0.6, delay: 0.4 }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+              <EmptyState
+                compact
+                icon={Inbox}
+                title="No tickets yet"
+                description="Ticket status will appear here once your team starts receiving support requests."
+              />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
+        <WidgetCard title="Ticket Volume Trend" icon={Ticket} tone="info">
+          {hasVolume ? (
+            <MiniAreaChart
+              data={ticketVolumeTimeline}
+              color={sparkColors.blue}
+              height={240}
+              formatValue={formatTicketValue}
+            />
+          ) : (
+            <EmptyState
+              compact
+              icon={Ticket}
+              title="No ticket volume yet"
+              description="Monthly ticket trends populate as tickets are created over time."
+              className="h-60 justify-center"
+            />
+          )}
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
+        <WidgetCard title="SLA Compliance" icon={Gauge} tone="success">
+          {slaCompliance && slaCompliance.totalTickets > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center py-2">
+                <MiniDonutChart
+                  data={[
+                    { label: "Within SLA", value: slaCompliance.withinSla, color: "var(--chart-7)" },
+                    { label: "Breached", value: slaCompliance.breached, color: "var(--chart-8)" },
+                  ]}
+                  centerValue={`${slaCompliance.compliancePct}%`}
+                  centerLabel="On-time"
+                />
+              </div>
+              <StatsStrip
+                className="shadow-none"
+                items={[
+                  { label: "Within SLA", value: slaCompliance.withinSla, tone: "success" },
+                  { label: "Breached", value: slaCompliance.breached, tone: "danger" },
+                ]}
+              />
+            </div>
+          ) : (
+            <EmptyState
+              compact
+              icon={Gauge}
+              title="No SLA data yet"
+              description="SLA compliance is tracked against priority-based targets once tickets exist."
+            />
+          )}
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
+        <WidgetCard title="Response & Resolution SLA by Priority" icon={MessageSquareReply} tone="plum">
+          {slaCompliance && slaCompliance.totalTickets > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-sunken p-3">
+                <div>
+                  <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Response Rate</p>
+                  <p className="text-sm text-muted-foreground tabular-nums">
+                    {slaCompliance.respondedTickets} of {slaCompliance.totalTickets} tickets answered
+                  </p>
+                </div>
+                <span className="font-display text-3xl font-extrabold tabular-nums text-foreground">
+                  {slaCompliance.responseRate}%
+                </span>
+              </div>
+              <Table>
+                <caption className="sr-only">Average resolution time versus SLA target by ticket priority</caption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead scope="col">Priority</TableHead>
+                    <TableHead scope="col" className="text-right">Tickets</TableHead>
+                    <TableHead scope="col" className="text-right">Avg Resolve</TableHead>
+                    <TableHead scope="col" className="text-right">Target</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {slaCompliance.byPriority.map((row) => {
+                    const overTarget =
+                      row.avgResolutionHours > 0 && row.avgResolutionHours > row.slaTargetHours;
+                    return (
+                      <TableRow key={row.priority}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="size-2.5 rounded-full"
+                              style={{ backgroundColor: row.color }}
+                              aria-hidden
+                            />
+                            <span className="font-medium text-foreground">{row.priority}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-muted-foreground">{row.total}</TableCell>
+                        <TableCell
+                          className={cn(
+                            "text-right tabular-nums font-medium",
+                            overTarget ? "text-danger-strong" : "text-foreground",
+                          )}
+                        >
+                          {row.avgResolutionHours > 0 ? `${row.avgResolutionHours}h` : ""}
+                          {overTarget && <span className="sr-only"> (over target)</span>}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-muted-foreground">
+                          {row.slaTargetHours}h
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <EmptyState
+              compact
+              icon={MessageSquareReply}
+              title="No response data yet"
+              description="Response rate and per-priority resolution times appear once tickets are handled."
+            />
+          )}
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12 lg:col-span-4" variants={fadeUp}>
+        <WidgetCard title="Recent Activity" icon={Activity} tone="neutral">
+          <div className="max-h-96 overflow-y-auto pr-1">
+            {supportActivityFeed.length > 0 ? (
+              <ActivityFeed items={supportActivityFeed} />
+            ) : (
+              <EmptyState
+                compact
+                icon={Inbox}
+                title="No recent activity"
+                description="Ticket events like new requests, replies, and resolutions will show up here."
+              />
+            )}
+          </div>
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12 lg:col-span-8" variants={fadeUp}>
+        <WidgetCard title="Team Access" icon={Users} tone="teal" count={supportTeamMembers.length || undefined}>
+          {supportTeamMembers.length === 0 ? (
+            <EmptyState
+              compact
+              icon={Shield}
+              title="No support team members"
+              description="Add team members to manage support coverage and access levels."
+            />
+          ) : (
+            <Table className="min-w-100">
+              <caption className="sr-only">Support team members with roles, access levels, and online status</caption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Name</TableHead>
+                  <TableHead scope="col">Role</TableHead>
+                  <TableHead scope="col">Access</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {supportTeamMembers.map((member, idx) => (
+                  <TableRow key={`member-${idx}`}>
+                    <TableCell>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
+                          {member.avatar}
+                        </span>
+                        <span className="font-medium text-foreground">{member.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{member.role}</TableCell>
+                    <TableCell>
+                      <StatusPill tone="neutral">{member.access}</StatusPill>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={cn(
+                            "size-2 rounded-full",
+                            getColorSafe(onlineStatusColors, member.status)
+                          )}
+                          aria-hidden
+                        />
+                        <span className="text-xs capitalize text-muted-foreground">
+                          {member.status}
+                        </span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </WidgetCard>
+      </motion.div>
+
+      <motion.div className="col-span-12" variants={fadeUp}>
+        <WidgetCard title="Tickets by Priority" icon={Shield} tone="warning">
+          {totalPriority === 0 ? (
+            <EmptyState
+              compact
+              icon={Shield}
+              title="No tickets to prioritize"
+              description="Priority distribution appears once tickets are created."
+            />
+          ) : (
+          <div className="space-y-3">
+            {ticketsByPriority.map((priority) => {
+              const percentage = calcPercent(priority.value, totalPriority);
+
+              return (
+                <motion.div
+                  key={priority.label}
+                  className="rounded-lg border border-border p-3"
+                  variants={slideInLeft}
+                >
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="size-2.5 rounded-full"
+                        style={{ backgroundColor: priority.color }}
+                        aria-hidden
+                      />
+                      <span className="text-sm font-medium text-foreground">
+                        {priority.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 tabular-nums">
+                      <span className="text-sm font-semibold text-foreground">
+                        {priority.value}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {percentage}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: priority.color }}
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${(priority.value / maxPriorityValue) * 100}%`,
+                      }}
+                      transition={{ duration: 0.6, delay: 0.4 }}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+          )}
+        </WidgetCard>
       </motion.div>
     </motion.div>
     </PageWrapper>

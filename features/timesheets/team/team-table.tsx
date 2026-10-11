@@ -5,6 +5,8 @@ import { Clock, Download, MoreVertical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,12 +27,11 @@ type TimesheetEntry = TimeEntryWithUser;
 
 const ITEMS_PER_PAGE = 10;
 
-const statusBadgeStyles: Record<string, string> = {
-  APPROVED: "bg-success-soft text-success-strong",
-  PENDING: "bg-warning-soft text-warning-strong",
-  REJECTED: "bg-muted text-muted-foreground",
+const statusTones: Record<string, Tone> = {
+  APPROVED: "success",
+  PENDING: "warning",
+  REJECTED: "danger",
 };
-
 
 interface EntryRowProps {
   entry: TimesheetEntry;
@@ -45,61 +46,54 @@ const EntryRow = memo(function EntryRow({ entry, onEntryClick }: EntryRowProps) 
   }, [onEntryClick, entry]);
 
   return (
-    <TableRow
-      className="cursor-pointer hover:bg-muted/50 transition-colors"
-      onClick={handleRowClick}
-    >
-      <TableCell className="px-6 py-4 whitespace-nowrap">
+    <TableRow className="cursor-pointer" onClick={handleRowClick}>
+      <TableCell className="whitespace-nowrap px-4 sm:px-6">
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
+          <Avatar className="size-8">
             <AvatarImage src={resolveImageUrl(entry.user?.image)} />
-            <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+            <AvatarFallback className="bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
               {entry.user?.firstName?.[0]}
               {entry.user?.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-semibold">
+          <span className="text-sm font-medium">
             {entry.user?.firstName} {entry.user?.lastName}
           </span>
         </div>
       </TableCell>
-      <TableCell className="px-6 py-4 whitespace-nowrap">
+      <TableCell className="whitespace-nowrap px-4 sm:px-6">
         {entry.ticket?.project?.name ? (
-          <Badge variant="secondary" className="font-medium text-xs">
-            {entry.ticket.project.name}
-          </Badge>
+          <Badge variant="secondary">{entry.ticket.project.name}</Badge>
         ) : (
           <span className="text-sm text-muted-foreground">N/A</span>
         )}
       </TableCell>
-      <TableCell className="px-6 py-4 max-w-xs">
-        <p className="text-sm text-muted-foreground truncate">
+      <TableCell className="max-w-xs px-4 sm:px-6">
+        <p className="truncate text-sm text-muted-foreground" title={entry.description || undefined}>
           {entry.description || "No description provided"}
         </p>
       </TableCell>
-      <TableCell className="px-6 py-4 whitespace-nowrap">
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm font-bold">{entry.hours || "0"}h</span>
-        </div>
+      <TableCell className="whitespace-nowrap px-4 text-right sm:px-6">
+        <span className="inline-flex items-center gap-1.5 text-sm font-medium tabular-nums">
+          <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+          {entry.hours || "0"}h
+        </span>
       </TableCell>
-      <TableCell className="px-6 py-4 text-center">
-        <Badge
-          className={`text-2xs font-bold uppercase tracking-wide border-0 ${
-            statusBadgeStyles[entry.status || "PENDING"]
-          }`}
-        >
+      <TableCell className="px-4 text-center sm:px-6">
+        <StatusPill tone={statusTones[entry.status || "PENDING"] ?? "neutral"} dot>
           {entry.status || "PENDING"}
-        </Badge>
+        </StatusPill>
       </TableCell>
-      <TableCell className="px-6 py-4 text-right">
-        <button
+      <TableCell className="px-4 text-right sm:px-6">
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={handleDetailClick}
-          className="p-1 hover:text-primary transition-colors"
+          className="text-muted-foreground"
           aria-label="View details"
         >
-          <MoreVertical className="h-4 w-4" />
-        </button>
+          <MoreVertical className="size-4" aria-hidden="true" />
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -132,18 +126,17 @@ export const TeamTable = memo(function TeamTable({
 
   return (
     <Card>
-      <CardHeader className="pb-3 border-b">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-base font-bold">Recent Log Entries</CardTitle>
+      <CardHeader className="border-b pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-lg font-semibold">Recent Log Entries</CardTitle>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs"
               onClick={onExportCSV}
               disabled={!timesheets || timesheets.length === 0}
             >
-              <Download className="h-3.5 w-3.5 mr-1.5" />
+              <Download className="size-4" aria-hidden="true" />
               Export CSV
             </Button>
           </div>
@@ -162,117 +155,58 @@ export const TeamTable = memo(function TeamTable({
               className="w-full"
               type="auto"
             >
-              <div className="min-w-[700px]">
+              <div className="min-w-176">
               <Table>
                 <caption className="sr-only">Team timesheet entries</caption>
-                <TableHeader>
-                  <TableRow className="border-b">
+                <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
+                  <TableRow>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="px-4 sm:px-6"
                     >
                       Employee
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="px-4 sm:px-6"
                     >
                       Project
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="px-4 sm:px-6"
                     >
                       Task Description
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4"
+                      className="px-4 text-right sm:px-6"
                     >
                       Duration
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 text-center"
+                      className="px-4 text-center sm:px-6"
                     >
                       Status
                     </TableHead>
                     <TableHead
                       scope="col"
-                      className="text-2xs font-bold text-muted-foreground uppercase tracking-widest px-6 py-4 w-10"
+                      className="w-10 px-4 sm:px-6"
                     />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedEntries.length > 0 ? (
                     paginatedEntries.map((entry) => (
-                      <TableRow
-                        key={entry.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => onEntryClick(entry)}
-                      >
-                        <TableCell className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={resolveImageUrl(entry.user?.image)} />
-                              <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                                {entry.user?.firstName?.[0]}
-                                {entry.user?.lastName?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-semibold">
-                              {entry.user?.firstName} {entry.user?.lastName}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 whitespace-nowrap">
-                          {entry.ticket?.project?.name ? (
-                            <Badge variant="secondary" className="font-medium text-xs">
-                              {entry.ticket.project.name}
-                            </Badge>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="px-6 py-4 max-w-xs">
-                          <p className="text-sm text-muted-foreground truncate">
-                            {entry.description || "No description provided"}
-                          </p>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-sm font-bold">{entry.hours || "0"}h</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 text-center">
-                          <Badge
-                            className={`text-2xs font-bold uppercase tracking-wide border-0 ${
-                              statusBadgeStyles[entry.status || "PENDING"]
-                            }`}
-                          >
-                            {entry.status || "PENDING"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 text-right">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEntryClick(entry);
-                            }}
-                            className="p-1 hover:text-primary transition-colors"
-                            aria-label="View details"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                        </TableCell>
-                      </TableRow>
+                      <EntryRow key={entry.id} entry={entry} onEntryClick={onEntryClick} />
                     ))
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="py-8">
                         <EmptyState
-                          illustration={<EmptyTimeIllustration className="h-28 w-28 opacity-95" />}
+                          compact
+                          illustration={<EmptyTimeIllustration className="size-28" />}
                           title="No time entries"
                           description="No time was logged by the team for the selected period."
                           className="border-0 bg-transparent"
@@ -286,8 +220,8 @@ export const TeamTable = memo(function TeamTable({
             </ScrollArea>
 
             {timesheets && timesheets.length > 0 && (
-              <div className="px-6 py-4 border-t flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3 sm:px-6">
+                <span className="text-xs tabular-nums text-muted-foreground">
                   Showing {(page - 1) * ITEMS_PER_PAGE + 1}-
                   {Math.min(page * ITEMS_PER_PAGE, timesheets.length)} of {timesheets.length} logs
                 </span>
@@ -295,18 +229,16 @@ export const TeamTable = memo(function TeamTable({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs"
                     disabled={page <= 1}
-                    onClick={() => onPageChange((p) => Math.max(1, p - 1))}
+                    onClick={handlePrevPage}
                   >
                     Previous
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs"
                     disabled={page >= totalPages}
-                    onClick={() => onPageChange((p) => p + 1)}
+                    onClick={handleNextPage}
                   >
                     Next
                   </Button>

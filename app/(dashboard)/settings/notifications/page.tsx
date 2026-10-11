@@ -3,17 +3,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Bell, Mail, Smartphone, Monitor, Moon, Save } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/lib/api/hooks/hr/leaves-expenses";
 import { toast } from "sonner";
+import { SettingsSection, SettingRow } from "@/features/settings/settings-row";
 
 const CATEGORIES = [
   { key: "leaves", label: "Leave Requests", description: "Approvals, rejections, and new requests" },
@@ -96,71 +95,74 @@ export default function NotificationPreferencesPage() {
     );
   }
 
+  const iconChip = (Icon: React.ElementType) => (
+    <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <Icon className="size-4" aria-hidden />
+    </span>
+  );
+
   return (
     <PageWrapper
       title="Notification Preferences"
       subtitle="Choose how and when you receive notifications"
       actions={
-        <Button onClick={handleSave} disabled={!dirty || updatePrefs.isPending}>
-          <Save className="h-4 w-4 mr-2" />
-          {updatePrefs.isPending ? "Saving..." : "Save Changes"}
-        </Button>
+        <>
+          {dirty && <span className="text-xs text-warning-strong">Unsaved changes</span>}
+          <Button onClick={handleSave} disabled={!dirty || updatePrefs.isPending} loading={updatePrefs.isPending}>
+            {!updatePrefs.isPending && <Save aria-hidden />}
+            {updatePrefs.isPending ? "Saving..." : "Save Changes"}
+          </Button>
+        </>
       }
     >
-      <motion.div className="space-y-6 max-w-2xl" variants={staggerContainer} initial="hidden" animate="visible">
+      <motion.div className="space-y-6" variants={staggerContainer} initial="hidden" animate="visible">
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4 text-brand-text" />
+          <SettingsSection
+            title={
+              <span className="flex items-center gap-2">
+                <Bell className="size-4 text-brand-text" aria-hidden />
                 Notification Channels
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { icon: Monitor, label: "In-App Notifications", desc: "Notification bell in the sidebar", value: inAppEnabled, setter: handleChannelToggle(setInAppEnabled) },
-                { icon: Mail, label: "Email Notifications", desc: "Receive notifications to your email address", value: emailEnabled, setter: handleChannelToggle(setEmailEnabled) },
-                { icon: Smartphone, label: "Push Notifications", desc: "Browser and mobile push notifications", value: pushEnabled, setter: handleChannelToggle(setPushEnabled) },
-                { icon: Smartphone, label: "SMS Notifications", desc: "Text message alerts for urgent events", value: smsEnabled, setter: handleChannelToggle(setSmsEnabled) },
-              ].map((ch, i) => (
-                <div key={i}>
-                  {i > 0 && <Separator className="mb-4" />}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <ch.icon className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">{ch.label}</p>
-                        <p className="text-xs text-muted-foreground">{ch.desc}</p>
-                      </div>
-                    </div>
-                    <Switch checked={ch.value} onCheckedChange={ch.setter} aria-label={ch.label} />
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+              </span>
+            }
+          >
+            {[
+              { id: "channel-in-app", icon: Monitor, label: "In-App Notifications", desc: "Notification bell in the sidebar", value: inAppEnabled, setter: handleChannelToggle(setInAppEnabled) },
+              { id: "channel-email", icon: Mail, label: "Email Notifications", desc: "Receive notifications to your email address", value: emailEnabled, setter: handleChannelToggle(setEmailEnabled) },
+              { id: "channel-push", icon: Smartphone, label: "Push Notifications", desc: "Browser and mobile push notifications", value: pushEnabled, setter: handleChannelToggle(setPushEnabled) },
+              { id: "channel-sms", icon: Smartphone, label: "SMS Notifications", desc: "Text message alerts for urgent events", value: smsEnabled, setter: handleChannelToggle(setSmsEnabled) },
+            ].map((ch) => (
+              <SettingRow
+                key={ch.id}
+                htmlFor={ch.id}
+                icon={iconChip(ch.icon)}
+                title={ch.label}
+                description={ch.desc}
+                control={<Switch id={ch.id} checked={ch.value} onCheckedChange={ch.setter} aria-label={ch.label} />}
+              />
+            ))}
+          </SettingsSection>
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Moon className="h-4 w-4 text-plum-strong" />
+          <SettingsSection
+            title={
+              <span className="flex items-center gap-2">
+                <Moon className="size-4 text-plum-strong" aria-hidden />
                 Quiet Hours
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Suppress non-urgent notifications during these hours. Urgent alerts (security, critical) will still be delivered.
-              </p>
-              <div className="grid grid-cols-2 gap-4">
+              </span>
+            }
+            description="Suppress non-urgent notifications during these hours. Urgent alerts (security, critical) will still be delivered."
+          >
+            <div className="px-5 py-4">
+              <div className="grid gap-4 sm:max-w-md sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="quiet-start">Start time</Label>
                   <Input
                     id="quiet-start"
                     type="time"
                     value={quietStart}
+                    className="tabular-nums"
                     onChange={e => { setQuietStart(e.target.value); markDirty(); }}
                   />
                 </div>
@@ -170,46 +172,46 @@ export default function NotificationPreferencesPage() {
                     id="quiet-end"
                     type="time"
                     value={quietEnd}
+                    className="tabular-nums"
                     onChange={e => { setQuietEnd(e.target.value); markDirty(); }}
                   />
                 </div>
               </div>
               {quietStart && quietEnd && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground mt-2 tabular-nums">
                   Notifications suppressed from {quietStart} to {quietEnd}
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </SettingsSection>
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Bell className="h-4 w-4 text-secondary" />
+          <SettingsSection
+            title={
+              <span className="flex items-center gap-2">
+                <Bell className="size-4 text-muted-foreground" aria-hidden />
                 Notification Categories
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {CATEGORIES.map((cat, i) => (
-                <div key={cat.key}>
-                  {i > 0 && <Separator className="mb-4" />}
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium">{cat.label}</p>
-                      <p className="text-xs text-muted-foreground">{cat.description}</p>
-                    </div>
-                    <Switch
-                      checked={categories[cat.key] ?? true}
-                      onCheckedChange={handleCategoryToggle(cat.key)}
-                      aria-label={cat.label}
-                    />
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+              </span>
+            }
+          >
+            {CATEGORIES.map((cat) => (
+              <SettingRow
+                key={cat.key}
+                htmlFor={`category-${cat.key}`}
+                title={cat.label}
+                description={cat.description}
+                control={
+                  <Switch
+                    id={`category-${cat.key}`}
+                    checked={categories[cat.key] ?? true}
+                    onCheckedChange={handleCategoryToggle(cat.key)}
+                    aria-label={cat.label}
+                  />
+                }
+              />
+            ))}
+          </SettingsSection>
         </motion.div>
       </motion.div>
     </PageWrapper>

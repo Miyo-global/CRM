@@ -10,7 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { useOverdueTasks } from "@/lib/api/hooks/tasks";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function overdueByDays(dueDate: string | null): number {
@@ -30,7 +33,7 @@ function formatDate(value: string | null): string {
 
 export default function OverdueTasksPage() {
   const router = useRouter();
-  const { data, isLoading } = useOverdueTasks();
+  const { data, isLoading, isError, error, refetch } = useOverdueTasks();
   const tasks = data?.tasks ?? [];
 
   const handleGoBack = useCallback(() => {
@@ -58,10 +61,10 @@ export default function OverdueTasksPage() {
           variant="outline"
           size="icon"
           onClick={handleGoBack}
-          className="h-9 w-9 shrink-0"
+          className="shrink-0"
           aria-label="Go back"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          <ArrowLeft className="size-4" aria-hidden="true" />
         </Button>
       }
     >
@@ -71,35 +74,20 @@ export default function OverdueTasksPage() {
             <Skeleton key={i} className="h-14 rounded-lg" />
           ))}
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       ) : tasks.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-soft">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-success-strong"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </span>
-            <div>
-              <p className="font-medium">No overdue tasks</p>
-              <p className="text-sm text-muted-foreground">Everything is on track.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={CheckCircle2}
+          title="No overdue tasks"
+          description="Everything is on track."
+        />
       ) : (
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
                   <TableRow>
                     <TableHead>Task</TableHead>
                     <TableHead>Type</TableHead>
@@ -113,14 +101,14 @@ export default function OverdueTasksPage() {
                     const days = overdueByDays(task.dueDate);
                     return (
                       <TableRow key={task.id}>
-                        <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell className="max-w-xs truncate font-medium" title={task.title}>{task.title}</TableCell>
                         <TableCell>
                           <Badge variant="secondary">{task.type}</Badge>
                         </TableCell>
                         <TableCell>
                           {task.assignee ? (
                             <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
+                              <Avatar className="size-6">
                                 <AvatarImage src={task.assignee.image ?? undefined} />
                                 <AvatarFallback className="text-2xs">
                                   {task.assignee.name?.charAt(0) ?? "?"}
@@ -132,11 +120,11 @@ export default function OverdueTasksPage() {
                             <span className="text-sm text-muted-foreground">Unassigned</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{formatDate(task.dueDate)}</TableCell>
+                        <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">{formatDate(task.dueDate)}</TableCell>
                         <TableCell className="text-right">
-                          <span className="font-medium text-warning-strong">
+                          <StatusPill tone="danger" dot className="tabular-nums">
                             {days} {days === 1 ? "day" : "days"}
-                          </span>
+                          </StatusPill>
                         </TableCell>
                       </TableRow>
                     );

@@ -3,7 +3,7 @@
 import { toneVar } from "@/lib/design/tones";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
   SelectContent,
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MS_PER_DAY = 86400000;
 
@@ -81,9 +81,11 @@ interface GanttViewProps {
 const statusColors: Record<string, string> = {
   TODO: toneVar.neutral,
   IN_PROGRESS: toneVar.info,
-  IN_REVIEW: toneVar.plum,
+  IN_REVIEW: toneVar.warning,
   DONE: toneVar.success,
 };
+
+const HEADER_H = 40;
 
 export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -207,15 +209,19 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
   const displayMonth = displayDate.getMonth();
   const displayYear = displayDate.getFullYear();
 
+  const gridWidth = labelWidth + days.length * dayWidth;
+  const bodyHeight = Math.max(datedTickets.length * rowHeight, 160);
+  const titleMax = labelWidth < 180 ? 12 : 25;
+
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <div className="space-y-3 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Select
             value={String(displayMonth)}
             onValueChange={(v) => jumpToMonth(displayYear, parseInt(v))}
           >
-            <SelectTrigger className="h-8 w-[120px] text-xs">
+            <SelectTrigger size="sm" className="w-32 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -228,7 +234,7 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
             value={String(displayYear)}
             onValueChange={(v) => jumpToMonth(parseInt(v), displayMonth)}
           >
-            <SelectTrigger className="h-8 w-[80px] text-xs">
+            <SelectTrigger size="sm" className="w-24 text-xs tabular-nums">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -239,27 +245,26 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
           </Select>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((w) => w - 1)} aria-label="Previous week">
-            <ChevronLeft className="h-4 w-4" />
+          <Button variant="ghost" size="icon-sm" onClick={() => setWeekOffset((w) => w - 1)} aria-label="Previous week">
+            <ChevronLeft />
           </Button>
-          <Button variant="outline" size="sm" className="h-8" onClick={() => setWeekOffset(0)}>
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
             Today
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((w) => w + 1)} aria-label="Next week">
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="ghost" size="icon-sm" onClick={() => setWeekOffset((w) => w + 1)} aria-label="Next week">
+            <ChevronRight />
           </Button>
         </div>
       </div>
 
-      <ScrollArea className="w-full border rounded-lg" type="auto">
+      <div className="relative max-h-[70vh] overflow-auto rounded-lg border border-border bg-card">
+        {/* Sticky date header */}
         <svg
-          width={labelWidth + days.length * dayWidth}
-          height={Math.max(datedTickets.length * rowHeight + 40, 200)}
-          className="text-foreground"
+          width={gridWidth}
+          height={HEADER_H}
+          className="sticky top-0 z-sticky block bg-surface-sunken text-foreground"
         >
-          <rect x={0} y={0} width={labelWidth} height={40} className="fill-muted/50" />
-          <text x={12} y={26} className="fill-muted-foreground text-xs" fontSize={12}>Work Item</text>
-
+          <text x={12} y={25} className="fill-muted-foreground" fontSize={11} fontWeight={600}>Work Item</text>
           {days.map((day, i) => {
             const x = labelWidth + i * dayWidth;
             const isWeekend = day.getDay() === 0 || day.getDay() === 6;
@@ -267,38 +272,49 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
             return (
               <g key={i}>
                 {isWeekend && (
-                  <rect
-                    x={x}
-                    y={40}
-                    width={dayWidth}
-                    height={datedTickets.length * rowHeight}
-                    className="fill-muted/30"
-                  />
+                  <rect x={x} y={0} width={dayWidth} height={HEADER_H} className="fill-surface-sunken/60" />
                 )}
-                {isToday && (
-                  <rect
-                    x={x}
-                    y={40}
-                    width={dayWidth}
-                    height={datedTickets.length * rowHeight}
-                    className="fill-primary/10"
-                  />
-                )}
-                <line x1={x} y1={0} x2={x} y2={datedTickets.length * rowHeight + 40} className="stroke-border" strokeWidth={0.5} />
+                <line x1={x} y1={0} x2={x} y2={HEADER_H} className="stroke-border" strokeWidth={0.5} />
                 <text x={x + dayWidth / 2} y={16} textAnchor="middle" className="fill-muted-foreground" fontSize={10}>
                   {day.toLocaleDateString("en-US", { weekday: "short" })}
                 </text>
-                <text x={x + dayWidth / 2} y={32} textAnchor="middle" className="fill-muted-foreground" fontSize={10}>
+                <text
+                  x={x + dayWidth / 2}
+                  y={32}
+                  textAnchor="middle"
+                  className={isToday ? "fill-brand-text tabular-nums" : "fill-muted-foreground tabular-nums"}
+                  fontSize={10}
+                  fontWeight={isToday ? 700 : 400}
+                >
                   {day.getDate()}
                 </text>
               </g>
             );
           })}
+          <line x1={0} y1={HEADER_H - 0.5} x2={gridWidth} y2={HEADER_H - 0.5} className="stroke-border" />
+        </svg>
 
-          <line x1={labelWidth} y1={40} x2={labelWidth + days.length * dayWidth} y2={40} className="stroke-border" />
+        <svg width={gridWidth} height={bodyHeight} className="block text-foreground">
+          {days.map((day, i) => {
+            const x = labelWidth + i * dayWidth;
+            const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+            const isToday = localYyyyMmDd(day) === today;
+            return (
+              <g key={i}>
+                {isWeekend && (
+                  <rect x={x} y={0} width={dayWidth} height={bodyHeight} className="fill-surface-sunken/60" />
+                )}
+                <line x1={x} y1={0} x2={x} y2={bodyHeight} className="stroke-border" strokeWidth={0.5} />
+                {isToday && (
+                  <rect x={x + dayWidth / 2} y={0} width={1} height={bodyHeight} className="fill-primary" />
+                )}
+              </g>
+            );
+          })}
+          <line x1={labelWidth} y1={0} x2={labelWidth} y2={bodyHeight} className="stroke-border" />
 
           {datedTickets.map((ticket, rowIdx) => {
-            const y = 40 + rowIdx * rowHeight;
+            const y = rowIdx * rowHeight;
             const start = localMidnightFromDay(ticket.startDate);
             const end = localMidnightFromDay(ticket.dueDate);
 
@@ -317,35 +333,41 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
             const barWidth = Math.max(dayWidth - 4, (endDay - startDay + 1) * dayWidth - 4);
 
             return (
-              <g key={ticket.id} onClick={() => onTicketClick(ticket.id)} className="cursor-pointer">
-                <line x1={0} y1={y} x2={labelWidth + days.length * dayWidth} y2={y} className="stroke-border" strokeWidth={0.5} />
-                <text x={8} y={y + rowHeight / 2 + 4} className="fill-foreground" fontSize={labelWidth < 180 ? 9 : 11}>
-                  {(ticket.sequenceId ?? `#${ticket.ticketNumber}`)} {ticket.title.slice(0, labelWidth < 180 ? 12 : 25)}{ticket.title.length > (labelWidth < 180 ? 12 : 25) ? "…" : ""}
+              <g key={ticket.id} onClick={() => onTicketClick(ticket.id)} className="group cursor-pointer">
+                <rect x={0} y={y} width={gridWidth} height={rowHeight} className="fill-transparent group-hover:fill-accent/60" />
+                <line x1={0} y1={y + rowHeight} x2={gridWidth} y2={y + rowHeight} className="stroke-border" strokeWidth={0.5} />
+                <text x={12} y={y + rowHeight / 2 + 4} className="fill-foreground" fontSize={labelWidth < 180 ? 10 : 12}>
+                  <tspan className="fill-muted-foreground font-mono">{ticket.sequenceId ?? `#${ticket.ticketNumber}`}</tspan>
+                  {" "}{ticket.title.slice(0, titleMax)}{ticket.title.length > titleMax ? "…" : ""}
+                  <title>{ticket.title}</title>
                 </text>
                 {startDay <= days.length - 1 && endDay >= 0 && (
                   <rect
                     x={barX}
-                    y={y + 6}
+                    y={y + (rowHeight - 24) / 2}
                     width={barWidth}
-                    height={rowHeight - 12}
-                    rx={4}
+                    height={24}
+                    rx={6}
                     fill={statusColors[ticket.status] ?? toneVar.neutral}
-                    opacity={0.8}
-                  />
+                    className="transition-opacity group-hover:opacity-90"
+                  >
+                    <title>{`${ticket.title} · ${ticket.status.replace(/_/g, " ")}`}</title>
+                  </rect>
                 )}
               </g>
             );
           })}
         </svg>
-      </ScrollArea>
+      </div>
 
       {datedTickets.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground text-sm max-w-md mx-auto space-y-1">
-          <p>No work items with dates found.</p>
-          <p className="text-xs">
-            Set start or due dates on tickets, or ensure items have created timestamps so they can appear using those dates.
-          </p>
-        </div>
+        <EmptyState
+          compact
+          icon={CalendarRange}
+          title="No work items with dates found."
+          description="Set start or due dates on tickets, or ensure items have created timestamps so they can appear using those dates."
+          className="mx-auto max-w-md border-0 bg-transparent"
+        />
       )}
     </div>
   );

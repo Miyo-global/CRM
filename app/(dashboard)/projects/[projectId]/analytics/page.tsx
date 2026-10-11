@@ -2,11 +2,15 @@
 
 import { use, useMemo, useState } from "react";
 import { useProjectAnalytics, useSprints, useSprintBurndown } from "@/lib/api/hooks/projects";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyActivityIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip, type StatsStripItem } from "@/components/shared/stats-strip";
+import { AnalyticsChartCard } from "@/features/crm/analytics/analytics-chart-card";
+import { motion } from "framer-motion";
+import { staggerContainer } from "@/lib/motion-variants";
 import type { Sprint, SprintBurndownPoint } from "@/types/projects";
 import {
   BarChart,
@@ -25,7 +29,7 @@ import {
   ScatterChart,
   Scatter,
 } from "recharts";
-import { toneVar } from "@/lib/design/tones";
+import { toneVar, type Tone } from "@/lib/design/tones";
 import { CHART_AXIS, CHART_COLORS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/features/crm/shared/constants";
 
 const STATE_COLORS: Record<string, string> = {
@@ -45,6 +49,22 @@ const PRIORITY_COLORS: Record<string, string> = {
   none: toneVar.neutral,
 };
 
+const HEALTH_TONE: Record<string, Tone> = {
+  EXCELLENT: "success",
+  GOOD: "info",
+  AT_RISK: "warning",
+};
+
+type ChartRows = Record<string, unknown>[];
+
+function ChartEmpty({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-70 items-center justify-center rounded-md bg-surface-sunken/40 text-sm text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
 export default function AnalyticsPage({
   params,
 }: {
@@ -53,7 +73,7 @@ export default function AnalyticsPage({
   const { projectId: projectIdStr } = use(params);
   const projectId = parseInt(projectIdStr);
 
-  const { data: analytics, isLoading } = useProjectAnalytics(projectId);
+  const { data: analytics, isLoading, isError, error, refetch } = useProjectAnalytics(projectId);
   const { data: sprints } = useSprints(projectId);
   const [selectedSprintId, setSelectedSprintId] = useState<number | null>(null);
 
@@ -155,11 +175,22 @@ export default function AnalyticsPage({
   if (isLoading) {
     return (
       <PageWrapper title="Analytics">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Array.from({ length: 6 }).map((_: unknown, i: number) => (
-            <Skeleton key={i} className="h-72 w-full" />
-          ))}
+        <div className="space-y-4">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            {Array.from({ length: 6 }).map((_: unknown, i: number) => (
+              <Skeleton key={i} className="h-80 w-full rounded-lg" />
+            ))}
+          </div>
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Analytics">
+        <QueryErrorState error={error} onRetry={refetch} />
       </PageWrapper>
     );
   }
@@ -180,252 +211,185 @@ export default function AnalyticsPage({
   const healthStatus = (analytics as { healthStatus?: string } | undefined)?.healthStatus;
   const healthBreakdown = (analytics as { healthBreakdown?: { completionPct: number; onTimePct: number; velocityScore: number; overdueTickets: number; totalTickets: number } } | undefined)?.healthBreakdown;
 
-  const healthColor =
-    healthStatus === "EXCELLENT" ? "text-success-strong"
-    : healthStatus === "GOOD" ? "text-info-strong"
-    : healthStatus === "AT_RISK" ? "text-warning-strong"
-    : "text-destructive";
+  const healthTone: Tone = HEALTH_TONE[healthStatus ?? ""] ?? "danger";
+
+  const healthItems: StatsStripItem[] =
+    healthScore != null && healthBreakdown
+      ? [
+          { label: "Project Health Score", value: healthScore, tone: healthTone, hint: healthStatus?.replace("_", " ") },
+          { label: "Completion Rate", value: `${healthBreakdown.completionPct}%`, hint: "50% weight" },
+          { label: "On-Time Rate", value: `${healthBreakdown.onTimePct}%`, hint: "30% weight" },
+          { label: "Velocity Score", value: `${healthBreakdown.velocityScore}%`, hint: "20% weight" },
+          { label: "Overdue tickets", value: healthBreakdown.overdueTickets, tone: healthBreakdown.overdueTickets > 0 ? "danger" : undefined },
+          { label: "Total tickets", value: healthBreakdown.totalTickets },
+        ]
+      : [];
 
   return (
     <PageWrapper title="Analytics">
-      {healthScore != null && healthBreakdown && (
-        <Card className="mb-8">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Project Health Score</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-1 pb-8">
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="text-center">
-                <p className={`text-5xl font-bold tabular-nums ${healthColor}`}>{healthScore}</p>
-                <p className={`text-sm font-medium mt-1 ${healthColor}`}>{healthStatus?.replace("_", " ")}</p>
-              </div>
-              <div className="flex-1 space-y-3 min-w-48">
-                {[
-                  { label: "Completion Rate", value: healthBreakdown.completionPct, weight: "50%" },
-                  { label: "On-Time Rate", value: healthBreakdown.onTimePct, weight: "30%" },
-                  { label: "Velocity Score", value: healthBreakdown.velocityScore, weight: "20%" },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{item.label} <span className="opacity-60">({item.weight} weight)</span></span>
-                      <span className="font-medium">{item.value}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${item.value}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p><span className="font-medium text-foreground">{healthBreakdown.overdueTickets}</span> overdue tickets</p>
-                <p><span className="font-medium text-foreground">{healthBreakdown.totalTickets}</span> total tickets</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">State Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stateData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={stateData}>
-                    <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      dataKey="state"
-                      {...CHART_AXIS}
-                    />
-                    <YAxis
-                      {...CHART_AXIS}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                    />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={28}>
-                      {stateData.map((entry: { fill: string }, index: number) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No state data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      <motion.div className="space-y-4" variants={staggerContainer} initial="hidden" animate="visible">
+        {healthItems.length > 0 && <StatsStrip items={healthItems} />}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Priority Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {priorityData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie
-                      data={priorityData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={3}
-                      stroke="var(--card)"
-                      dataKey="value"
-                    >
-                      {priorityData.map((entry: { fill: string }, index: number) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No priority data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AnalyticsChartCard title="State Distribution" data={stateData as ChartRows} filename="state-distribution">
+            {stateData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={stateData}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="state" {...CHART_AXIS} />
+                  <YAxis {...CHART_AXIS} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={28}>
+                    {stateData.map((entry: { fill: string }, index: number) => (
+                      <Cell key={index} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No state data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Volume Over Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {volumeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={volumeData}>
-                    <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      dataKey="date"
-                      {...CHART_AXIS}
-                    />
-                    <YAxis
-                      {...CHART_AXIS}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                    />
-                    <defs>
-                      <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.24} />
-                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <Area
-                      type="monotone"
-                      dataKey="created"
-                      stroke="var(--chart-1)"
-                      fill="url(#volumeGrad)"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 4 }}
-                      name="Created"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No volume data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AnalyticsChartCard title="Priority Breakdown" data={priorityData as ChartRows} filename="priority-breakdown">
+            {priorityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={priorityData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    stroke="var(--card)"
+                    dataKey="value"
+                  >
+                    {priorityData.map((entry: { fill: string }, index: number) => (
+                      <Cell key={index} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No priority data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Completion Rate by Assignee</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {assigneeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={assigneeData} layout="vertical">
-                    <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      type="number"
-                      {...CHART_AXIS}
-                      domain={[0, 100]}
-                      unit="%"
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      {...CHART_AXIS}
-                      width={100}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                      formatter={((value: string | number) => [`${value}%`, "Completion Rate"]) as never}
-                    />
-                    <Bar dataKey="rate" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                      {assigneeData.map((_: unknown, index: number) => (
-                        <Cell
-                          key={index}
-                          fill={CHART_COLORS[index % CHART_COLORS.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No assignee data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AnalyticsChartCard title="Volume Over Time" data={volumeData as ChartRows} filename="volume-over-time">
+            {volumeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={volumeData}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="date" {...CHART_AXIS} />
+                  <YAxis {...CHART_AXIS} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <defs>
+                    <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.24} />
+                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="created"
+                    stroke="var(--chart-1)"
+                    fill="url(#volumeGrad)"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                    name="Created"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No volume data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Cycle Velocity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {velocityData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={velocityData}>
-                    <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      dataKey="cycle"
-                      {...CHART_AXIS}
-                    />
-                    <YAxis
-                      {...CHART_AXIS}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                    />
-                    <Bar
-                      dataKey="points"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={28}
-                      name="Completed Points"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No velocity data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AnalyticsChartCard title="Completion Rate by Assignee" data={assigneeData as ChartRows} filename="assignee-completion">
+            {assigneeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={assigneeData} layout="vertical">
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis type="number" {...CHART_AXIS} domain={[0, 100]} unit="%" />
+                  <YAxis type="category" dataKey="name" {...CHART_AXIS} width={100} />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    formatter={((value: string | number) => [`${value}%`, "Completion Rate"]) as never}
+                  />
+                  <Bar dataKey="rate" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {assigneeData.map((_: unknown, index: number) => (
+                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No assignee data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
 
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <CardTitle className="text-base">Sprint Burndown</CardTitle>
-                {sprints && sprints.length > 0 && (
+          <AnalyticsChartCard title="Cycle Velocity" data={velocityData as ChartRows} filename="cycle-velocity">
+            {velocityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={velocityData}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="cycle" {...CHART_AXIS} />
+                  <YAxis {...CHART_AXIS} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Bar dataKey="points" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={28} name="Completed Points" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No velocity data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
+
+          <AnalyticsChartCard title="Estimate vs Actual" data={estimateData as ChartRows} filename="estimate-vs-actual">
+            {estimateData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <ScatterChart>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis
+                    dataKey="estimate"
+                    name="Estimate"
+                    {...CHART_AXIS}
+                    label={{ value: "Estimate", position: "bottom", fill: "var(--chart-axis)", fontSize: 11 }}
+                  />
+                  <YAxis
+                    dataKey="actual"
+                    name="Actual"
+                    {...CHART_AXIS}
+                    label={{ value: "Actual", angle: -90, position: "insideLeft", fill: "var(--chart-axis)", fontSize: 11 }}
+                  />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    formatter={((value: string | number, name: string) => [value, name]) as never}
+                  />
+                  <Scatter data={estimateData} fill="var(--chart-1)" shape="circle">
+                    {estimateData.map((_: unknown, index: number) => (
+                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Scatter>
+                </ScatterChart>
+              </ResponsiveContainer>
+            ) : (
+              <ChartEmpty>No estimate data available</ChartEmpty>
+            )}
+          </AnalyticsChartCard>
+
+          <div className="lg:col-span-2">
+            <AnalyticsChartCard
+              title="Sprint Burndown"
+              data={burndownChartData as ChartRows}
+              filename="sprint-burndown"
+              actions={
+                sprints && sprints.length > 0 ? (
                   <select
-                    className="text-xs rounded-md border border-border bg-background px-2 py-1 text-foreground"
+                    className="h-8 max-w-48 truncate rounded-md border border-input bg-background px-2 text-xs text-foreground focus-visible:focus-ring"
                     value={sprintId}
                     onChange={(e) => setSelectedSprintId(Number(e.target.value))}
                     aria-label="Select sprint for burndown chart"
@@ -436,24 +400,16 @@ export default function AnalyticsPage({
                       </option>
                     ))}
                   </select>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
+                ) : undefined
+              }
+            >
               {burndownChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={burndownChartData}>
                     <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      dataKey="date"
-                      {...CHART_AXIS}
-                    />
-                    <YAxis
-                      {...CHART_AXIS}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                    />
+                    <XAxis dataKey="date" {...CHART_AXIS} />
+                    <YAxis {...CHART_AXIS} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                     <Legend />
                     <Area
                       type="monotone"
@@ -484,73 +440,16 @@ export default function AnalyticsPage({
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
+                <ChartEmpty>
                   {sprints && sprints.length === 0
                     ? "No sprints found for this project"
                     : "No burndown data available for this sprint"}
-                </div>
+                </ChartEmpty>
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Estimate vs Actual</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {estimateData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <ScatterChart>
-                    <CartesianGrid {...CHART_GRID} />
-                    <XAxis
-                      dataKey="estimate"
-                      name="Estimate"
-                      {...CHART_AXIS}
-                      label={{
-                        value: "Estimate",
-                        position: "bottom",
-                        fill: "var(--chart-axis)",
-                        fontSize: 12,
-                      }}
-                    />
-                    <YAxis
-                      dataKey="actual"
-                      name="Actual"
-                      {...CHART_AXIS}
-                      label={{
-                        value: "Actual",
-                        angle: -90,
-                        position: "insideLeft",
-                        fill: "var(--chart-axis)",
-                        fontSize: 12,
-                      }}
-                    />
-                    <Tooltip
-                      contentStyle={CHART_TOOLTIP_STYLE}
-                      formatter={((value: string | number, name: string) => [value, name]) as never}
-                    />
-                    <Scatter
-                      data={estimateData}
-                      fill="var(--chart-1)"
-                      shape="circle"
-                    >
-                      {estimateData.map((_: unknown, index: number) => (
-                        <Cell
-                          key={index}
-                          fill={CHART_COLORS[index % CHART_COLORS.length]}
-                        />
-                      ))}
-                    </Scatter>
-                  </ScatterChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                  No estimate data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </AnalyticsChartCard>
+          </div>
         </div>
+      </motion.div>
     </PageWrapper>
   );
 }

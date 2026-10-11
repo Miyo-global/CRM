@@ -11,6 +11,12 @@ import { CreateEpicDialog } from "@/components/projects/create-epic-dialog";
 import { EditEpicDialog } from "@/components/projects/edit-epic-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { toneBar, toneDot, type Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +27,6 @@ import {
   AlertCircle,
   Loader2,
   BookOpen,
-  Bug,
   Wrench,
   Pencil,
   Trash2,
@@ -39,15 +44,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+
+const STORY_STATUS_TONE: Record<string, Tone> = {
+  DONE: "success",
+  IN_PROGRESS: "info",
+  IN_REVIEW: "plum",
+  BLOCKED: "danger",
+};
+
+function storyStatusTone(status: string | null): Tone {
+  return STORY_STATUS_TONE[status ?? ""] ?? "neutral";
+}
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -57,7 +66,7 @@ export default function EpicsPage({ params }: PageProps) {
   const { projectId: projectIdStr } = use(params);
   const projectId = parseInt(projectIdStr);
 
-  const { data: project, isLoading } = useProject(projectId);
+  const { data: project, isLoading, isError, error, refetch } = useProject(projectId);
 
   const updateTicket = useUpdateTicket(projectId);
   const deleteTicket = useDeleteTicket(projectId);
@@ -66,9 +75,17 @@ export default function EpicsPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <PageWrapper title="Epics">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex h-64 items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden="true" />
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Epics">
+        <QueryErrorState error={error} onRetry={refetch} />
       </PageWrapper>
     );
   }
@@ -106,56 +123,16 @@ export default function EpicsPage({ params }: PageProps) {
     >
       <div className="space-y-6" aria-live="polite" aria-atomic="true">
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-6 border-b border-border/60">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-plum-strong" />
-              <div>
-                <p className="text-2xl font-bold">{epics.length}</p>
-                <p className="text-sm text-muted-foreground">Epics</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-info-strong" />
-              <div>
-                <p className="text-2xl font-bold">{stories.length}</p>
-                <p className="text-sm text-muted-foreground">Stories</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-2xl font-bold">{tasks.length}</p>
-                <p className="text-sm text-muted-foreground">Tasks</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success-strong" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {tickets.filter(t => t.status === "DONE").length}
-                </p>
-                <p className="text-sm text-muted-foreground">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatsStrip
+        items={[
+          { label: "Epics", value: epics.length, tone: "plum", icon: Layers },
+          { label: "Stories", value: stories.length, tone: "info", icon: BookOpen },
+          { label: "Tasks", value: tasks.length, icon: Wrench },
+          { label: "Completed", value: tickets.filter(t => t.status === "DONE").length, tone: "success", icon: CheckCircle2 },
+        ]}
+      />
 
-      <div className="space-y-4 mt-6">
+      <div className="space-y-4">
         {epics.length === 0 ? (
           <div className="flex flex-col items-center gap-4">
             <EmptyState
@@ -187,29 +164,30 @@ export default function EpicsPage({ params }: PageProps) {
                 )
               }
               isDeleting={deleteTicket.isPending}
+              isCreatingStory={createTicket.isPending}
             />
           ))
         )}
       </div>
 
       {stories.filter(s => !s.epicId).length > 0 && (
-        <section className="mt-8 pt-2 space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-warning-strong" />
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 font-display text-xl font-bold">
+            <IconChip icon={AlertCircle} tone="warning" size="sm" />
             Stories without Epic
           </h2>
           <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-2">
+            <CardContent className="py-4">
+              <div className="divide-y divide-border">
                 {stories.filter(s => !s.epicId).map((story) => (
                   <div
                     key={story.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    className="flex items-center justify-between gap-3 py-2.5"
                   >
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="h-4 w-4 text-info-strong" />
-                      <span className="font-medium">{story.title}</span>
-                      <Badge variant="outline" className="text-xs">{story.status}</Badge>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <BookOpen className="size-4 shrink-0 text-info-strong" aria-hidden="true" />
+                      <span className="truncate font-medium" title={story.title}>{story.title}</span>
+                      <StatusPill tone={storyStatusTone(story.status)}>{story.status}</StatusPill>
                     </div>
                     <Link href={`/projects/${projectId}?ticket=${story.id}`}>
                       <Button variant="ghost" size="sm">View</Button>
@@ -256,9 +234,10 @@ interface EpicCardProps {
   onLinkStory: (storyId: number) => void;
   onCreateStory: (title: string) => void;
   isDeleting?: boolean;
+  isCreatingStory?: boolean;
 }
 
-function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onLinkStory, onCreateStory, isDeleting }: EpicCardProps) {
+function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onLinkStory, onCreateStory, isDeleting, isCreatingStory }: EpicCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [newStoryTitle, setNewStoryTitle] = useState("");
@@ -277,7 +256,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
   return (
     <Card className="overflow-hidden">
       <CardHeader
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
+        className="cursor-pointer rounded-t-lg transition-colors hover:bg-muted/50 focus-visible:focus-ring"
         onClick={() => setIsExpanded(!isExpanded)}
         role="button"
         aria-expanded={isExpanded}
@@ -285,51 +264,47 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsExpanded(!isExpanded); } }}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 mt-0.5" aria-label={isExpanded ? "Collapse epic" : "Expand epic"}>
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="flex min-w-0 items-start gap-3">
+            <Button variant="ghost" size="icon-xs" className="mt-0.5 shrink-0" aria-label={isExpanded ? "Collapse epic" : "Expand epic"}>
+              {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
             </Button>
-            <div className="space-y-1">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Layers className="h-5 w-5 text-plum-strong" />
-                {epic.title}
+            <div className="min-w-0 space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="size-5 shrink-0 text-plum-strong" aria-hidden="true" />
+                <span className="truncate">{epic.title}</span>
               </CardTitle>
               {epic.description && (
                 <p className="text-sm text-muted-foreground line-clamp-2">{epic.description}</p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Badge variant="outline" className={getColorSafe(priorityColors, epic.priority || "MEDIUM")}>
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+            <Badge variant="outline" className={cn("border-transparent", getColorSafe(priorityColors, epic.priority || "MEDIUM"))}>
               {epic.priority || "MEDIUM"}
             </Badge>
             <EditEpicDialog epic={epic} projectId={projectId} trigger={
-              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Edit ${epic.title}`}>
-                <Pencil className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon-xs" aria-label={`Edit ${epic.title}`}>
+                <Pencil className="size-3.5" />
               </Button>
             } />
-            <Popover open={deleteConfirm} onOpenChange={setDeleteConfirm}>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" aria-label={`Delete ${epic.title}`}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64" align="end">
-                <p className="text-sm mb-3">Delete this epic? Child stories will be unlinked.</p>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(false)}>Cancel</Button>
-                  <Button variant="destructive" size="sm" onClick={onDeleteEpic} disabled={isDeleting}>
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <Button variant="ghost" size="icon-xs" className="text-muted-foreground hover:text-destructive" aria-label={`Delete ${epic.title}`} onClick={() => setDeleteConfirm(true)} loading={isDeleting}>
+              <Trash2 className="size-3.5" />
+            </Button>
+            <ConfirmDialog
+              open={deleteConfirm}
+              onOpenChange={setDeleteConfirm}
+              title="Delete epic?"
+              description="Delete this epic? Child stories will be unlinked."
+              confirmLabel="Delete"
+              destructive
+              onConfirm={onDeleteEpic}
+            />
           </div>
         </div>
 
         <div className="ml-9 mt-4 space-y-2">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 text-sm tabular-nums">
             <span className="text-muted-foreground">
               {completedItems} of {totalItems} stories completed
             </span>
@@ -338,7 +313,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             </span>
           </div>
           <div
-            className="w-full h-2 bg-secondary rounded-full flex overflow-hidden"
+            className="flex h-2 w-full overflow-hidden rounded-full bg-muted"
             role="progressbar"
             aria-valuenow={totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0}
             aria-valuemin={0}
@@ -349,25 +324,25 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             {totalItems > 0 && (
               <>
                 <div
-                  className="bg-success-500 h-full transition-all"
+                  className={cn("h-full transition-all", toneBar.success)}
                   style={{ width: `${(completedItems / totalItems) * 100}%` }}
                 />
                 <div
-                  className="bg-info-500 h-full transition-all"
+                  className={cn("h-full transition-all", toneBar.info)}
                   style={{ width: `${(inProgressItems / totalItems) * 100}%` }}
                 />
                 <div
-                  className="bg-ink-200 h-full transition-all"
+                  className={cn("h-full transition-all", toneBar.neutral)}
                   style={{ width: `${(todoItems / totalItems) * 100}%` }}
                 />
               </>
             )}
           </div>
           {totalItems > 0 && (
-            <div className="flex gap-3 text-2xs text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-success-500 rounded-full" /> Done ({completedItems})</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-info-500 rounded-full" /> In Progress ({inProgressItems})</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-ink-200 rounded-full" /> To Do ({todoItems})</span>
+            <div className="flex flex-wrap gap-3 text-2xs text-muted-foreground tabular-nums">
+              <span className="flex items-center gap-1"><span className={cn("size-2 rounded-full", toneDot.success)} /> Done ({completedItems})</span>
+              <span className="flex items-center gap-1"><span className={cn("size-2 rounded-full", toneDot.info)} /> In Progress ({inProgressItems})</span>
+              <span className="flex items-center gap-1"><span className={cn("size-2 rounded-full", toneDot.neutral)} /> To Do ({todoItems})</span>
             </div>
           )}
         </div>
@@ -375,26 +350,23 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
 
       {isExpanded && (
         <CardContent className="pt-0 pb-4" id={epicCardId} role="region" aria-label={`Stories for ${epic.title}`}>
-          <div className="ml-9 space-y-2 border-l-2 border-muted pl-4">
+          <div className="space-y-2 border-l border-border pl-4 sm:ml-9">
             {stories.map((story) => (
               <div
                 key={story.id}
-                className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between gap-3 rounded-md px-3 py-2 transition-colors hover:bg-muted/50"
               >
-                <div className="flex items-center gap-3">
-                  <BookOpen className="h-4 w-4 text-info-strong" />
-                  <span className="font-medium">{story.title}</span>
+                <div className="flex min-w-0 items-center gap-3">
+                  <BookOpen className="size-4 shrink-0 text-info-strong" aria-hidden="true" />
+                  <span className="truncate font-medium" title={story.title}>{story.title}</span>
                   {story.points != null && story.points > 0 && (
-                    <Badge variant="secondary" className="text-xs">{story.points} pts</Badge>
+                    <Badge variant="secondary" className="tabular-nums">{story.points} pts</Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs", story.status === "DONE" && "border-success-500 text-success-strong")}
-                  >
+                <div className="flex shrink-0 items-center gap-2">
+                  <StatusPill tone={storyStatusTone(story.status)}>
                     {story.status || "TODO"}
-                  </Badge>
+                  </StatusPill>
                   <Link href={`/projects/${projectId}?ticket=${story.id}`}>
                     <Button variant="ghost" size="sm">View</Button>
                   </Link>
@@ -403,19 +375,20 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             ))}
 
             {stories.length === 0 && (
-              <div className="p-4 flex flex-col items-center">
-                <EmptyTasksIllustration className="mx-auto mb-4 h-36 w-36 opacity-95" />
-                <p className="text-sm text-muted-foreground text-center">No stories linked yet</p>
-              </div>
+              <EmptyState
+                compact
+                illustration={<EmptyTasksIllustration className="h-24 w-24 opacity-95" />}
+                title="No stories linked yet"
+              />
             )}
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               <Input
                 value={newStoryTitle}
                 onChange={(e) => setNewStoryTitle(e.target.value)}
                 placeholder="New story title..."
                 aria-label={`Add new story to ${epic.title}`}
-                className="h-8 text-sm flex-1"
+                className="h-8 min-w-40 flex-1 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && newStoryTitle.trim()) {
                     onCreateStory(newStoryTitle.trim());
@@ -425,7 +398,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
               />
               <Button
                 size="sm"
-                className="h-8"
+                loading={isCreatingStory}
                 onClick={() => {
                   if (newStoryTitle.trim()) {
                     onCreateStory(newStoryTitle.trim());
@@ -434,14 +407,14 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
                 }}
                 disabled={!newStoryTitle.trim()}
               >
-                <Plus className="h-3.5 w-3.5 mr-1" />
+                <Plus className="size-3.5" />
                 Add
               </Button>
               {unlinkedStories.length > 0 && (
                 <Popover open={linkOpen} onOpenChange={setLinkOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8">
-                      <Link2 className="h-3.5 w-3.5 mr-1" />
+                    <Button variant="outline" size="sm">
+                      <Link2 className="size-3.5" />
                       Link
                     </Button>
                   </PopoverTrigger>
@@ -454,7 +427,7 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
                             onLinkStory(s.id);
                             setLinkOpen(false);
                           }}
-                          className="w-full text-left p-2 text-sm rounded hover:bg-muted transition-colors truncate"
+                          className="w-full truncate rounded-sm p-2 text-left text-sm transition-colors hover:bg-muted focus-visible:focus-ring"
                         >
                           {s.title}
                         </button>

@@ -3,13 +3,18 @@
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyProjectsIllustration } from "@/components/illustrations";
 
-export function ProjectsEmptyState() {
+interface ProjectsEmptyStateProps {
+  /** Opens the create dialog; omit to render without a primary action. */
+  onCreate?: () => void;
+}
+
+export function ProjectsEmptyState({ onCreate }: ProjectsEmptyStateProps = {}) {
   return (
     <EmptyState
       illustration={<EmptyProjectsIllustration />}
       title="No projects found"
       description="Create your first project to start organizing work."
+      action={onCreate ? { label: "New Project", onClick: onCreate } : undefined}
     />
   );
 }
-

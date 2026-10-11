@@ -17,6 +17,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { IconChip } from "@/components/ui/icon-chip";
 import { ExternalLink, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -233,24 +234,38 @@ export function TicketDetailsDialog({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[50vw] overflow-hidden p-0 flex flex-col"
+        size="lg"
+        className="gap-0 overflow-hidden p-0"
       >
-
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <TicketHeader
           ticketId={ticketId}
           ticketNumber={ticket?.ticketNumber}
           priority={ticket?.priority || "MEDIUM"}
           status={ticket?.status || "TODO"}
           title={ticket?.title || ""}
+          type={ticket?.type}
           isLoading={isLoading}
           saving={saving}
           isDeleting={deleteTicketMutation.isPending}
           onDelete={() =>
             deleteTicketMutation.mutate({ ticketId: ticketId! })
           }
+          titleEditor={
+            ticket ? (
+              <Input
+                value={localTitle}
+                onChange={(e) => {
+                  setLocalTitle(e.target.value);
+                  debouncedSave({ title: e.target.value });
+                }}
+                className="-mx-2 h-auto border-transparent bg-transparent px-2 py-1 font-display text-xl font-semibold shadow-none hover:border-border focus-visible:border-input"
+                placeholder="Ticket title"
+              />
+            ) : undefined
+          }
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
           {isLoading ? (
             <div className="py-16 text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-brand-text mb-4" />
@@ -259,18 +274,16 @@ export function TicketDetailsDialog({
           ) : ticketError?.message?.includes("don't have access") ||
             ticketError?.message?.includes("FORBIDDEN") ? (
             <div className="py-16 text-center">
-              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="h-6 w-6 text-muted-foreground" />
-              </div>
+              <IconChip icon={AlertCircle} tone="neutral" className="mx-auto mb-4 size-12" />
               <p className="font-medium text-foreground mb-1">Restricted Access</p>
               <p className="text-sm text-muted-foreground">
                 You can only view details of tickets assigned to you.
               </p>
             </div>
           ) : ticket ? (
-            <>
-
-              <div className="border-b">
+            <div className="flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_280px]">
+              {/* Property rail: above content on narrow screens, right column from md. */}
+              <aside className="space-y-6 border-b border-border bg-surface-sunken/50 p-4 md:order-last md:border-b-0 md:border-l">
                 <TicketSidebar
                   ticket={ticket}
                   ticketId={ticketId!}
@@ -280,69 +293,6 @@ export function TicketDetailsDialog({
                   epics={epicOptions}
                   statuses={statuses}
                   onAutoSave={autoSave}
-                />
-              </div>
-
-              <div className="p-4 space-y-5">
-
-                <Input
-                  value={localTitle}
-                  onChange={(e) => {
-                    setLocalTitle(e.target.value);
-                    debouncedSave({ title: e.target.value });
-                  }}
-                  className="text-base font-semibold border-0 bg-transparent px-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
-                  placeholder="Ticket title"
-                />
-
-                <Textarea
-                  value={localDescription}
-                  onChange={(e) => {
-                    setLocalDescription(e.target.value);
-                    debouncedSave({ description: e.target.value });
-                  }}
-                  className="min-h-[80px] text-sm border-0 bg-muted/30 focus-visible:bg-background focus-visible:ring-1 resize-none rounded-lg"
-                  placeholder="Add a description..."
-                />
-
-                <TicketSubtasks
-                  ticketId={ticketId!}
-                  projectId={projectId}
-                  subtasks={subtasks || []}
-                />
-
-                {ticket.attachments && ticket.attachments.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-medium text-muted-foreground mb-2">
-                      Attachments
-                    </h4>
-                    <div className="grid grid-cols-3 gap-2">
-                      {ticket.attachments.map((att) => (
-                        <button
-                          key={att.id}
-                          type="button"
-                          onClick={() => viewFile(att.fileUrl)}
-                          className="group relative aspect-video rounded-md overflow-hidden bg-muted border hover:border-primary/50 transition-all text-left"
-                        >
-                          {att.mimeType?.startsWith("image/") ? (
-                            <AttachmentImage fileUrl={att.fileUrl} fileName={att.fileName} />
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground text-2xs p-1 text-center">
-                              {att.fileName}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-overlay opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <ExternalLink className="h-4 w-4 text-ink-50" />
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <TicketRelations
-                  ticketId={ticketId!}
-                  projectId={projectId}
                 />
 
                 <TicketTimeTracker
@@ -357,6 +307,63 @@ export function TicketDetailsDialog({
                   members={members}
                   canRemoveOtherWatchers={canRemoveOtherWatchers}
                 />
+              </aside>
+
+              <div className="min-w-0 space-y-7 p-5">
+                <section className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Description
+                  </h4>
+                  <Textarea
+                    value={localDescription}
+                    onChange={(e) => {
+                      setLocalDescription(e.target.value);
+                      debouncedSave({ description: e.target.value });
+                    }}
+                    className="min-h-28 resize-y border-transparent bg-surface-sunken text-sm shadow-none hover:border-border focus-visible:border-input focus-visible:bg-background"
+                    placeholder="Add a description..."
+                  />
+                </section>
+
+                {ticket.attachments && ticket.attachments.length > 0 && (
+                  <section className="space-y-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Attachments
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {ticket.attachments.map((att) => (
+                        <button
+                          key={att.id}
+                          type="button"
+                          onClick={() => viewFile(att.fileUrl)}
+                          className="group relative aspect-video overflow-hidden rounded-md border border-border bg-muted text-left transition-colors hover:border-primary focus-visible:focus-ring"
+                        >
+                          {att.mimeType?.startsWith("image/") ? (
+                            <AttachmentImage fileUrl={att.fileUrl} fileName={att.fileName} />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground text-2xs p-1 text-center">
+                              {att.fileName}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-overlay opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <ExternalLink className="h-4 w-4 text-ink-50" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                <TicketSubtasks
+                  ticketId={ticketId!}
+                  projectId={projectId}
+                  subtasks={subtasks || []}
+                />
+
+                <TicketRelations
+                  ticketId={ticketId!}
+                  projectId={projectId}
+                />
 
                 <ActivityFeed
                   ticketId={ticketId!}
@@ -364,10 +371,10 @@ export function TicketDetailsDialog({
                   comments={ticket.comments || []}
                 />
               </div>
-            </>
+            </div>
           ) : (
             <div className="py-16 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
+              <IconChip icon={AlertCircle} tone="danger" className="mx-auto mb-4 size-12" />
               <p className="text-destructive font-medium">Ticket not found</p>
             </div>
           )}

@@ -8,14 +8,15 @@ import {
 import { EmptyApprovalIllustration } from "@/components/illustrations";
 import {
   Plus,
-  Loader2,
   Trash2,
   Shield,
   Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -106,30 +107,34 @@ function RolesContent() {
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setTemplateOpen(true)} className="gap-2">
-            <Copy className="h-4 w-4" /> Use Template
+          <Button variant="outline" onClick={() => setTemplateOpen(true)}>
+            <Copy aria-hidden /> Use Template
           </Button>
-          <Button onClick={handleOpenCreate} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Plus className="h-4 w-4" /> New Role
+          <Button onClick={handleOpenCreate}>
+            <Plus aria-hidden /> New Role
           </Button>
         </div>
       }
     >
       <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:h-full lg:min-h-0">
-        <Card className="flex flex-col lg:min-h-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Shield className="h-4 w-4" /> Roles ({roles?.length ?? 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 lg:flex-1 lg:min-h-0">
+        <Card className="flex flex-col overflow-hidden lg:min-h-0">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+            <Shield className="size-4 text-muted-foreground" aria-hidden />
+            <h2 className="text-sm font-semibold">Roles</h2>
+            <span className="ml-auto inline-flex h-5 items-center rounded-full bg-neutral-soft px-2 text-2xs font-semibold tabular-nums text-neutral-strong">
+              {roles?.length ?? 0}
+            </span>
+          </div>
+          <div className="lg:flex-1 lg:min-h-0">
             {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <div className="space-y-2 p-3" aria-busy="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
               </div>
             ) : (
               <ScrollArea className="max-h-[45vh] lg:max-h-none lg:h-full" type="auto">
-                <div className="divide-y divide-border/30">
+                <div className="divide-y divide-border">
                   {(roles ?? []).map((role) => (
                     <RoleListItem
                       key={role.id}
@@ -142,7 +147,7 @@ function RolesContent() {
                 </div>
               </ScrollArea>
             )}
-          </CardContent>
+          </div>
         </Card>
 
         {selectedRole ? (
@@ -152,13 +157,12 @@ function RolesContent() {
             onUpdate={handleUpdateRole}
           />
         ) : (
-          <Card className="flex items-center justify-center min-h-[260px] lg:min-h-0 lg:h-full">
-            <div className="text-center px-6">
-              <EmptyApprovalIllustration className="mx-auto mb-3 w-40 h-40" />
-              <p className="text-sm font-medium text-foreground">Select a role</p>
-              <p className="text-xs text-muted-foreground mt-1">Choose a role from the list to view and edit permissions</p>
-            </div>
-          </Card>
+          <EmptyState
+            className="min-h-64 lg:min-h-0 lg:h-full"
+            illustration={<EmptyApprovalIllustration className="size-40" />}
+            title="Select a role"
+            description="Choose a role from the list to view and edit permissions"
+          />
         )}
       </div>
 
@@ -191,26 +195,34 @@ function RoleListItem({ role, isSelected, onSelect, onDelete }: RoleListItemProp
   const handleDelete = useCallback((e: React.MouseEvent) => { e.stopPropagation(); onDelete(role); }, [role, onDelete]);
 
   return (
-    <button
-      onClick={handleSelect}
+    <div
       className={cn(
-        "w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors flex items-center justify-between",
-        isSelected && "bg-muted/50 border-l-2 border-primary"
+        "group relative flex items-center gap-2 pr-3 transition-colors hover:bg-accent",
+        isSelected && "bg-brand-soft hover:bg-brand-soft"
       )}
     >
-      <div>
-        <p className="text-sm font-medium">{role.name}</p>
-        <p className="text-2xs text-muted-foreground">{role.permissions?.length ?? 0} permissions</p>
-      </div>
-      <div className="flex items-center gap-2">
-        {role.isSystem && <Badge variant="outline" className="text-3xs px-1.5">System</Badge>}
-        {!role.isSystem && (
-          <button onClick={handleDelete} className="p-1 hover:bg-danger-soft rounded text-muted-foreground hover:text-danger-strong transition-colors" aria-label="Delete">
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-    </button>
+      {isSelected && <span className="absolute inset-y-0 left-0 w-0.5 bg-primary" aria-hidden />}
+      <button
+        type="button"
+        onClick={handleSelect}
+        aria-current={isSelected ? "true" : undefined}
+        className="min-w-0 flex-1 px-4 py-3 text-left focus-visible:focus-ring"
+      >
+        <p className={cn("truncate text-sm font-medium", isSelected && "text-brand-soft-foreground")}>{role.name}</p>
+        <p className="text-xs text-muted-foreground tabular-nums">{role.permissions?.length ?? 0} permissions</p>
+      </button>
+      {role.isSystem && <StatusPill tone="neutral">System</StatusPill>}
+      {!role.isSystem && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={handleDelete}
+          className="text-muted-foreground hover:bg-danger-soft hover:text-danger-strong"
+          aria-label="Delete"
+        >
+          <Trash2 aria-hidden />
+        </Button>
+      )}
+    </div>
   );
 }
-

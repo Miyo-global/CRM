@@ -166,27 +166,26 @@ export default function ProjectBoardPage({ params }: PageProps) {
       filters={
         <>
           <ViewSwitcher activeView={view} onViewChange={handleViewChange} />
-          <div className="w-px h-5 bg-border/60 shrink-0 hidden sm:block" />
+          <div aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-border sm:block" />
           <TicketFilterBar
             members={members}
             showSprintFilter={false}
           />
-          <div className="w-px h-5 bg-border/60 shrink-0 hidden sm:block" />
-          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <div aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-border sm:block" />
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <Switch
               id="hide-done"
               checked={hideCompleted}
               onCheckedChange={setHideCompleted}
-              className="scale-90"
             />
             <Label
               htmlFor="hide-done"
-              className="text-2xs font-normal cursor-pointer flex items-center gap-1 whitespace-nowrap"
+              className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-xs font-normal"
             >
-              <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
+              <CheckCircle2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
               Done
               {hideCompleted && doneCount > 0 && (
-                <span className="text-muted-foreground">({doneCount})</span>
+                <span className="tabular-nums text-muted-foreground">({doneCount})</span>
               )}
             </Label>
           </div>
@@ -195,7 +194,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
     >
 
       {view === "board" && (
-        <div className="h-full w-full px-3 pt-2 pb-1">
+        <div className="h-full w-full bg-surface-sunken sm:px-2 xl:px-4">
           <KanbanBoard
             tickets={filteredTickets}
             projectId={projectId}
@@ -207,7 +206,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
       )}
 
       {view === "list" && (
-        <div className="h-full overflow-y-auto px-4 py-2">
+        <div className="h-full overflow-y-auto px-4 py-4 sm:px-6 xl:px-8">
           <ListView
             tickets={filteredTickets}
             onTicketClick={handleTicketSelect}
@@ -217,7 +216,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
       )}
 
       {view === "table" && (
-        <div className="h-full overflow-y-auto px-4 py-2">
+        <div className="h-full overflow-y-auto px-4 py-4 sm:px-6 xl:px-8">
           <TableView
             tickets={filteredTickets}
             onTicketClick={handleTicketSelect}
@@ -226,7 +225,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
       )}
 
       {view === "calendar" && (
-        <div className="h-full overflow-y-auto px-4 py-2">
+        <div className="h-full overflow-y-auto px-4 py-4 sm:px-6 xl:px-8">
           <CalendarView
             tickets={filteredTickets}
             onTicketClick={handleTicketSelect}
@@ -235,7 +234,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
       )}
 
       {view === "gantt" && (
-        <div className="h-full overflow-auto px-4 py-2">
+        <div className="h-full overflow-auto px-4 py-4 sm:px-6 xl:px-8">
           <GanttView
             tickets={filteredTickets}
             onTicketClick={handleTicketSelect}

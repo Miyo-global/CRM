@@ -4,9 +4,14 @@ import { useState, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Monitor,  Mail, Bell, BellOff, Smartphone, Moon } from "lucide-react";
+import { Monitor, Mail, Bell, BellOff, Smartphone, Moon, Rows3 } from "lucide-react";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/lib/api/hooks/hr";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioCard } from "@/components/ui/radio-group";
+import { THEME_OPTIONS, useMountedTheme, type ThemeValue } from "@/components/layout/theme-toggle";
+import { cn } from "@/lib/utils";
+import { SettingsSection, SettingRow } from "./settings-row";
 
 interface PrefRowProps {
   id: string;
@@ -33,31 +38,61 @@ const NOTIFICATION_CATEGORIES = [
 
 function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange, disabled }: PrefRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="mt-0.5 h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="min-w-0">
-          <Label htmlFor={id} className="text-sm font-medium text-foreground cursor-pointer">
-            {label}
-          </Label>
-          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{description}</p>
-        </div>
+    <SettingRow
+      htmlFor={id}
+      title={label}
+      description={description}
+      icon={
+        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Icon className="size-4" aria-hidden />
+        </span>
+      }
+      control={
+        <Switch
+          id={id}
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          disabled={disabled}
+          aria-label={label}
+        />
+      }
+    />
+  );
+}
+
+/** Mini app preview for a theme option; fixed ink/gold scale so it previews the target theme, not the current one. */
+function ThemePreview({ value }: { value: ThemeValue }) {
+  const pane = (dark: boolean) => (
+    <div className={cn("flex h-full flex-1", dark ? "bg-ink-950" : "bg-ink-50")}>
+      <div className="flex w-1/4 flex-col gap-1 bg-ink-900 p-1.5">
+        <span className="size-1.5 rounded-full bg-gold-400" />
+        <span className="h-1 w-full rounded-full bg-ink-700" />
+        <span className="h-1 w-3/4 rounded-full bg-ink-700" />
       </div>
-      <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        disabled={disabled}
-        aria-label={label}
-      />
+      <div className="flex flex-1 flex-col gap-1.5 p-2">
+        <span className={cn("h-1.5 w-1/2 rounded-full", dark ? "bg-ink-600" : "bg-ink-300")} />
+        <div className={cn("flex-1 rounded-sm border", dark ? "border-ink-800 bg-ink-900" : "border-ink-200 bg-ink-100")} />
+        <span className="h-1.5 w-1/3 rounded-full bg-gold-400" />
+      </div>
+    </div>
+  );
+  return (
+    <div aria-hidden className="flex h-20 overflow-hidden rounded-md border border-border">
+      {value === "system" ? (
+        <>
+          {pane(false)}
+          {pane(true)}
+        </>
+      ) : (
+        pane(value === "dark")
+      )}
     </div>
   );
 }
 
 export function SettingsPreferences() {
   const [compactView, setCompactView] = useState(false);
+  const { theme, setTheme } = useMountedTheme();
 
   const { data: prefs } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -116,115 +151,122 @@ export function SettingsPreferences() {
 
   return (
     <div className="space-y-6">
+      <SettingsSection title="Appearance" description="Theme and density for this device.">
+        <div className="px-5 py-4">
+          <p id="theme-label" className="text-sm font-medium text-foreground">Theme</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Light, dark, or follow your system setting.</p>
+          <RadioGroup
+            aria-labelledby="theme-label"
+            value={theme ?? ""}
+            onValueChange={(v) => setTheme(v as ThemeValue)}
+            className="mt-3 grid-cols-1 sm:grid-cols-3"
+          >
+            {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+              <RadioCard key={value} value={value} aria-label={`${label} theme`} className="space-y-2 p-2">
+                <ThemePreview value={value} />
+                <span className="flex items-center gap-1.5 px-1 pb-0.5 text-sm font-medium text-foreground">
+                  <Icon className="size-4 text-muted-foreground" aria-hidden />
+                  {label}
+                </span>
+              </RadioCard>
+            ))}
+          </RadioGroup>
+        </div>
+        <PrefRow
+          id="compact-view"
+          icon={Rows3}
+          label="Compact view"
+          description="Tighter rows and cards to fit more on screen."
+          checked={compactView}
+          onCheckedChange={handleCompactToggle}
+        />
+      </SettingsSection>
 
-      <div className="divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 bg-muted/30">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notification Channels</p>
-        </div>
-        <div className="px-4">
-          <PrefRow
-            id="in-app-notifications"
-            icon={Bell}
-            label="In-app notifications"
-            description="Show notifications in the notification bell."
-            checked={prefs?.inAppEnabled ?? true}
-            onCheckedChange={handleInAppChange}
-            disabled={isPending}
-          />
-          <PrefRow
-            id="email-notifications"
-            icon={Mail}
-            label="Email notifications"
-            description="Receive important updates and alerts via email."
-            checked={prefs?.emailEnabled ?? true}
-            onCheckedChange={handleEmailChange}
-            disabled={isPending}
-          />
-          <PrefRow
-            id="push-notifications"
-            icon={Monitor}
-            label="Desktop push notifications"
-            description="Receive browser push notifications even when the tab is inactive."
-            checked={prefs?.pushEnabled ?? true}
-            onCheckedChange={handlePushChange}
-            disabled={isPending}
-          />
-          <PrefRow
-            id="sms-notifications"
-            icon={Smartphone}
-            label="SMS notifications"
-            description="Receive critical alerts via SMS (charges may apply)."
-            checked={prefs?.smsEnabled ?? false}
-            onCheckedChange={handleSmsChange}
-            disabled={isPending}
-          />
-        </div>
-      </div>
+      <SettingsSection title="Notification Channels">
+        <PrefRow
+          id="in-app-notifications"
+          icon={Bell}
+          label="In-app notifications"
+          description="Show notifications in the notification bell."
+          checked={prefs?.inAppEnabled ?? true}
+          onCheckedChange={handleInAppChange}
+          disabled={isPending}
+        />
+        <PrefRow
+          id="email-notifications"
+          icon={Mail}
+          label="Email notifications"
+          description="Receive important updates and alerts via email."
+          checked={prefs?.emailEnabled ?? true}
+          onCheckedChange={handleEmailChange}
+          disabled={isPending}
+        />
+        <PrefRow
+          id="push-notifications"
+          icon={Monitor}
+          label="Desktop push notifications"
+          description="Receive browser push notifications even when the tab is inactive."
+          checked={prefs?.pushEnabled ?? true}
+          onCheckedChange={handlePushChange}
+          disabled={isPending}
+        />
+        <PrefRow
+          id="sms-notifications"
+          icon={Smartphone}
+          label="SMS notifications"
+          description="Receive critical alerts via SMS (charges may apply)."
+          checked={prefs?.smsEnabled ?? false}
+          onCheckedChange={handleSmsChange}
+          disabled={isPending}
+        />
+      </SettingsSection>
 
-      <div className="divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 bg-muted/30">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Do Not Disturb</p>
-        </div>
-        <div className="px-4 py-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              <Moon className="h-4 w-4 text-muted-foreground" />
+      <SettingsSection title="Do Not Disturb">
+        <SettingRow
+          title="Quiet hours"
+          description="Push and SMS notifications are silenced during these hours."
+          icon={
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Moon className="size-4" aria-hidden />
+            </span>
+          }
+        >
+          <div className="mt-3 flex flex-wrap items-center gap-3 sm:pl-11">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="qh-start" className="text-xs text-muted-foreground whitespace-nowrap">From</Label>
+              <Input
+                id="qh-start"
+                type="time"
+                value={qhStart}
+                onChange={handleQhStartChange}
+                className="h-8 w-28 text-xs tabular-nums"
+                aria-label="Quiet hours start time"
+              />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Quiet hours</p>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-                Push and SMS notifications are silenced during these hours.
-              </p>
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="qh-start" className="text-xs text-muted-foreground whitespace-nowrap">From</Label>
-                  <Input
-                    id="qh-start"
-                    type="time"
-                    value={qhStart}
-                    onChange={handleQhStartChange}
-                    className="h-8 w-28 text-xs"
-                    aria-label="Quiet hours start time"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="qh-end" className="text-xs text-muted-foreground whitespace-nowrap">To</Label>
-                  <Input
-                    id="qh-end"
-                    type="time"
-                    value={qhEnd}
-                    onChange={handleQhEndChange}
-                    className="h-8 w-28 text-xs"
-                    aria-label="Quiet hours end time"
-                  />
-                </div>
-                <button
-                  onClick={saveQuietHours}
-                  disabled={isPending}
-                  className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                >
-                  Save
-                </button>
-                {(qhStart || qhEnd) && (
-                  <button
-                    onClick={handleClearQuietHours}
-                    disabled={isPending}
-                    className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-50 transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="qh-end" className="text-xs text-muted-foreground whitespace-nowrap">To</Label>
+              <Input
+                id="qh-end"
+                type="time"
+                value={qhEnd}
+                onChange={handleQhEndChange}
+                className="h-8 w-28 text-xs tabular-nums"
+                aria-label="Quiet hours end time"
+              />
             </div>
+            <Button size="sm" onClick={saveQuietHours} disabled={isPending} loading={isPending}>
+              Save
+            </Button>
+            {(qhStart || qhEnd) && (
+              <Button size="sm" variant="outline" onClick={handleClearQuietHours} disabled={isPending}>
+                Clear
+              </Button>
+            )}
           </div>
-        </div>
-      </div>
+        </SettingRow>
+      </SettingsSection>
 
-      <div className="divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 bg-muted/30 flex items-center justify-between">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notification Categories</p>
-          <p className="text-xs text-muted-foreground">Toggle specific event types</p>
-        </div>
+      <SettingsSection title="Notification Categories" description="Toggle specific event types">
         {NOTIFICATION_CATEGORIES.map(({ key, label, description }) => (
           <CategoryPrefRow
             key={key}
@@ -236,7 +278,7 @@ export function SettingsPreferences() {
             disabled={isPending}
           />
         ))}
-      </div>
+      </SettingsSection>
     </div>
   );
 }
@@ -253,16 +295,14 @@ interface CategoryPrefRowProps {
 function CategoryPrefRow({ categoryKey, label, description, checked, onUpdate, disabled }: CategoryPrefRowProps) {
   const handleChange = useCallback((v: boolean) => onUpdate(categoryKey, v), [categoryKey, onUpdate]);
   return (
-    <div className="px-4">
-      <PrefRow
-        id={`cat-${categoryKey}`}
-        icon={BellOff}
-        label={label}
-        description={description}
-        checked={checked}
-        onCheckedChange={handleChange}
-        disabled={disabled}
-      />
-    </div>
+    <PrefRow
+      id={`cat-${categoryKey}`}
+      icon={BellOff}
+      label={label}
+      description={description}
+      checked={checked}
+      onCheckedChange={handleChange}
+      disabled={disabled}
+    />
   );
 }

@@ -4,7 +4,9 @@ import { use, useState, useCallback } from "react";
 import { useCycles, useCreateCycle } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -41,7 +43,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
   const projectId = parseInt(projectIdStr);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: cycles, isLoading } = useCycles(projectId);
+  const { data: cycles, isLoading, isError, error, refetch } = useCycles(projectId);
   const activeCycles = cycles?.filter((c) => c.status === "active") ?? [];
   const upcomingCycles = cycles?.filter((c) => c.status === "draft") ?? [];
   const completedCycles = cycles?.filter((c) => c.status === "completed") ?? [];
@@ -123,10 +125,10 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
         <Sheet open={createOpen} onOpenChange={setCreateOpen}>
           <SheetTrigger asChild>
             <Button size="sm">
-              <Plus className="h-4 w-4 mr-1" /> New Cycle
+              <Plus className="size-4" aria-hidden="true" /> New Cycle
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+          <SheetContent side="right" size="sm" className="overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Create Cycle</SheetTitle>
             </SheetHeader>
@@ -142,7 +144,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" placeholder="Optional description..." {...form.register("description")} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="startDate">Start Date</Label>
                   <DatePicker id="startDate" value={form.watch("startDate") || ""} onChange={(v) => form.setValue("startDate", v)} placeholder="Start date" />
@@ -158,7 +160,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                   )}
                 </div>
               </div>
-              <Button type="submit" disabled={createMutation.isPending} className="w-full">
+              <Button type="submit" loading={createMutation.isPending} className="w-full">
                 {createMutation.isPending ? "Creating..." : "Create Cycle"}
               </Button>
             </form>
@@ -167,102 +169,116 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
       }
     >
       <div className="space-y-6">
-        {activeCycles.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Active</h2>
-            {activeCycles.map((cycle) => (
-              <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`}>
-                <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{cycle.name}</CardTitle>
-                      <Badge variant="default">Active</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        {cycle.completedItems}/{cycle.totalItems} done
-                      </span>
-                    </div>
-                    <Progress value={cycle.progress} className="h-2" />
-                    <span className="text-xs text-muted-foreground mt-1 block">{cycle.progress}% complete</span>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </section>
-        )}
-
-        {upcomingCycles.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Upcoming</h2>
-            <div className="space-y-3">
-              {upcomingCycles.map((cycle) => (
-                <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`}>
-                  <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                    <CardContent className="py-4 flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{cycle.name}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">Draft</Badge>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {completedCycles.length > 0 && (
-          <section>
-            <button
-              onClick={handleToggleCompleted}
-              className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 hover:text-foreground transition-colors"
-            >
-              Completed ({completedCycles.length}) {showCompleted ? "▼" : "▶"}
-            </button>
-            {showCompleted && (
-              <div className="space-y-3">
-                {completedCycles.map((cycle) => (
-                  <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`}>
-                    <Card className="opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
-                      <CardContent className="py-4 flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{cycle.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {cycle.completedItems}/{cycle.totalItems} items completed
-                          </p>
-                        </div>
-                        <Badge variant="outline">Completed</Badge>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {!cycles?.length && (
+        {isError ? (
+          <QueryErrorState error={error} onRetry={refetch} />
+        ) : !cycles?.length ? (
           <EmptyState
             illustration={<EmptyCalendarIllustration className="h-32 w-32 opacity-95" />}
             title="No cycles yet"
             description="Create your first cycle to start planning work in time-boxed iterations."
             action={{ label: "Create First Cycle", onClick: handleOpenCreate }}
           />
+        ) : (
+          <>
+            <StatsStrip
+              items={[
+                { label: "Active", value: activeCycles.length, tone: "brand", icon: Clock },
+                { label: "Upcoming", value: upcomingCycles.length, icon: Calendar },
+                { label: "Completed", value: completedCycles.length, tone: "success", icon: CheckCircle2 },
+              ]}
+            />
+
+            {activeCycles.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Active</h2>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {activeCycles.map((cycle) => (
+                    <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`} className="rounded-lg focus-visible:focus-ring">
+                      <Card interactive className="h-full">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <CardTitle className="truncate">{cycle.name}</CardTitle>
+                            <StatusPill tone="brand" dot>Active</StatusPill>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground tabular-nums">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="size-3.5" aria-hidden="true" />
+                              {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="size-3.5" aria-hidden="true" />
+                              {cycle.completedItems}/{cycle.totalItems} done
+                            </span>
+                          </div>
+                          <Progress value={cycle.progress} className="h-2" />
+                          <span className="mt-1 block text-xs text-muted-foreground tabular-nums">{cycle.progress}% complete</span>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {upcomingCycles.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Upcoming</h2>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {upcomingCycles.map((cycle) => (
+                    <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`} className="rounded-lg focus-visible:focus-ring">
+                      <Card interactive className="h-full">
+                        <CardContent className="flex items-center justify-between gap-3 py-4">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{cycle.name}</p>
+                            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                              <Clock className="size-3" aria-hidden="true" />
+                              {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <StatusPill tone="neutral">Draft</StatusPill>
+                            <ArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {completedCycles.length > 0 && (
+              <section>
+                <button
+                  onClick={handleToggleCompleted}
+                  className="mb-3 flex items-center gap-1 rounded-sm text-2xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:focus-ring"
+                >
+                  Completed ({completedCycles.length}) {showCompleted ? "▼" : "▶"}
+                </button>
+                {showCompleted && (
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {completedCycles.map((cycle) => (
+                      <Link key={cycle.id} href={`/projects/${projectId}/cycles/${cycle.id}`} className="rounded-lg focus-visible:focus-ring">
+                        <Card interactive className="h-full">
+                          <CardContent className="flex items-center justify-between gap-3 py-4">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{cycle.name}</p>
+                              <p className="text-xs text-muted-foreground tabular-nums">
+                                {cycle.completedItems}/{cycle.totalItems} items completed
+                              </p>
+                            </div>
+                            <StatusPill tone="success">Completed</StatusPill>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+          </>
         )}
       </div>
     </PageWrapper>

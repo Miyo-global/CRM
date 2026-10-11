@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { formatHoursMinutes } from "@/lib/format-utils";
 import type { TimeEntryWithUser } from "@/types/projects";
 
@@ -53,39 +53,39 @@ export const WeeklyProductivityChart = memo(function WeeklyProductivityChart({
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-base font-bold">Weekly Productivity Summary</CardTitle>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-2xl font-black tracking-tight">
+            <CardTitle className="text-lg font-semibold">Weekly Productivity Summary</CardTitle>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              <span className="font-display text-3xl font-extrabold tabular-nums">
                 {formatHoursMinutes(totalHours)}
               </span>
               {percentChange !== null && (
-                <Badge
-                  variant="secondary"
-                  className={`text-xs font-semibold ${
-                    parseFloat(percentChange) >= 0
-                      ? "bg-success-soft text-success-strong"
-                      : "bg-danger-soft text-danger-strong"
-                  }`}
+                <StatusPill
+                  tone={parseFloat(percentChange) >= 0 ? "success" : "danger"}
+                  className="tabular-nums"
                 >
                   {parseFloat(percentChange) >= 0 ? "+" : ""}
                   {percentChange}% vs last week
-                </Badge>
+                </StatusPill>
               )}
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-end justify-between h-48 px-2 gap-3 mt-2">
+        <div
+          role="img"
+          aria-label={`Hours per day: ${dailyHours.map((d) => `${d.label} ${d.hours.toFixed(1)}h`).join(", ")}`}
+          className="mt-2 flex h-48 items-end justify-between gap-2 px-1 sm:gap-3 sm:px-2"
+        >
           {dailyHours.map((day) => (
             <div key={day.label} className="flex flex-col items-center flex-1 gap-2 group">
-              <div className="w-full bg-muted rounded-t relative h-40">
+              <div className="relative h-40 w-full rounded-t-sm bg-muted" title={`${day.hours.toFixed(1)}h`}>
                 <div
-                  className="absolute bottom-0 w-full bg-primary/30 group-hover:bg-primary transition-all duration-200 rounded-t"
+                  className="absolute bottom-0 w-full rounded-t-sm bg-gold-400/40 transition-colors duration-200 group-hover:bg-gold-400 motion-reduce:transition-none"
                   style={{ height: `${Math.max(day.percent, 2)}%` }}
                 />
               </div>
-              <span className="text-2xs font-bold text-muted-foreground uppercase tracking-widest">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {day.label}
               </span>
             </div>

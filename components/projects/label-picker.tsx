@@ -11,7 +11,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Plus, X, Tag } from "lucide-react";
+import { Plus, X, Tag, Search, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   useLabels,
   useCreateOrgLabel,
@@ -63,99 +64,122 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
   });
 
   const currentLabelIds = new Set(currentLabels.map(l => l.label.id));
-  const availableLabels = allLabels?.filter(l => !currentLabelIds.has(l.id)) || [];
+  const query = newLabelName.trim().toLowerCase();
+  const visibleLabels = (allLabels ?? []).filter(
+    (l) => !query || l.name.toLowerCase().includes(query)
+  );
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        <Tag className="h-3.5 w-3.5" />
+      <div className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Tag className="size-3.5" aria-hidden="true" />
         Labels
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {currentLabels.map(({ label }) => (
-          <Badge
-            key={label.id}
-            variant="secondary"
-            className="gap-1 pl-1.5 pr-1 py-0.5 text-xs cursor-default"
-            style={{ borderLeft: `3px solid ${label.color || toneVar.neutral}` }}
-          >
+          <Badge key={label.id} variant="secondary" className="cursor-default gap-1.5 pr-0.5">
+            <span
+              aria-hidden="true"
+              className="size-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: label.color || toneVar.neutral }}
+            />
             {label.name}
             <button
+              type="button"
+              aria-label={`Remove ${label.name}`}
               onClick={() => removeLabel.mutate({ ticketId, projectId, labelId: label.id })}
-              className="hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              className="inline-flex size-4 items-center justify-center rounded-full transition-colors hover:bg-danger-soft hover:text-danger-strong focus-visible:focus-ring"
             >
-              <X className="h-2.5 w-2.5" />
+              <X className="size-2.5" aria-hidden="true" />
             </button>
           </Badge>
         ))}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-full">
-              <Plus className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon-xs" className="rounded-full" aria-label="Add label">
+              <Plus className="size-3.5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-3" align="start">
-            <div className="space-y-3">
-              {availableLabels.length > 0 && (
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {availableLabels.map((label) => (
+          <PopoverContent className="w-64 p-0" align="start">
+            <div className="relative border-b border-border p-2">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                value={newLabelName}
+                onChange={(e) => setNewLabelName(e.target.value)}
+                placeholder="Label name"
+                className="h-8 pl-8 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newLabelName.trim()) {
+                    createLabel.mutate({ name: newLabelName.trim(), color: selectedColor });
+                  }
+                }}
+              />
+            </div>
+            {visibleLabels.length > 0 && (
+              <div className="max-h-48 space-y-0.5 overflow-y-auto p-1" role="listbox" aria-multiselectable="true">
+                {visibleLabels.map((label) => {
+                  const selected = currentLabelIds.has(label.id);
+                  return (
                     <button
                       key={label.id}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
                       onClick={() => {
-                        addLabel.mutate({ ticketId, projectId, labelId: label.id });
+                        if (selected) {
+                          removeLabel.mutate({ ticketId, projectId, labelId: label.id });
+                        } else {
+                          addLabel.mutate({ ticketId, projectId, labelId: label.id });
+                        }
                       }}
-                      className="flex items-center gap-2 w-full p-1.5 text-sm rounded hover:bg-muted transition-colors text-left"
+                      className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent focus-visible:focus-ring"
                     >
                       <span
-                        className="w-3 h-3 rounded-full shrink-0"
+                        aria-hidden="true"
+                        className="size-2.5 shrink-0 rounded-full"
                         style={{ backgroundColor: label.color || toneVar.neutral }}
                       />
-                      {label.name}
+                      <span className="min-w-0 flex-1 truncate">{label.name}</span>
+                      {selected && <Check className="size-3.5 text-brand-text" aria-hidden="true" />}
                     </button>
-                  ))}
-                </div>
-              )}
-              <div className="border-t pt-2 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Create new label</p>
-                <Input
-                  value={newLabelName}
-                  onChange={(e) => setNewLabelName(e.target.value)}
-                  placeholder="Label name"
-                  className="h-7 text-sm"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newLabelName.trim()) {
-                      createLabel.mutate({ name: newLabelName.trim(), color: selectedColor });
-                    }
-                  }}
-                />
-                <div className="flex gap-1">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setSelectedColor(c)}
-                      className="w-5 h-5 rounded-full transition-transform"
-                      style={{
-                        backgroundColor: c,
-                        transform: selectedColor === c ? "scale(1.2)" : "scale(1)",
-                        outline: selectedColor === c ? "2px solid currentColor" : "none",
-                        outlineOffset: "2px",
-                      }}
-                    />
-                  ))}
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full h-7 text-xs"
-                  disabled={!newLabelName.trim() || createLabel.isPending}
-                  onClick={() => {
-                    if (newLabelName.trim()) {
-                      createLabel.mutate({ name: newLabelName.trim(), color: selectedColor });
-                    }
-                  }}
-                >
-                  Create & Add
-                </Button>
+                  );
+                })}
               </div>
+            )}
+            <div className="space-y-2 border-t border-border p-3">
+              <p className="text-xs font-medium text-muted-foreground">Create new label</p>
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={c}
+                    aria-pressed={selectedColor === c}
+                    onClick={() => setSelectedColor(c)}
+                    className={cn(
+                      "size-5 rounded-full transition-transform focus-visible:focus-ring",
+                      selectedColor === c && "scale-110 ring-2 ring-ring ring-offset-2 ring-offset-popover"
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <Button
+                size="sm"
+                className="w-full"
+                disabled={!newLabelName.trim() || createLabel.isPending}
+                loading={createLabel.isPending}
+                onClick={() => {
+                  if (newLabelName.trim()) {
+                    createLabel.mutate({ name: newLabelName.trim(), color: selectedColor });
+                  }
+                }}
+              >
+                Create & Add
+              </Button>
             </div>
           </PopoverContent>
         </Popover>

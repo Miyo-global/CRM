@@ -173,10 +173,10 @@ export function TicketSubtasks({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="pt-2">
+      <section>
         <div className="flex items-center gap-2 mb-3">
-          <ListChecks className="h-4 w-4 text-primary" />
-          <h4 className="text-sm font-semibold">Subtasks</h4>
+          <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subtasks</h4>
           {subtasksTotal > 0 && (
             <Badge variant="secondary" className="text-xs">
               {subtasksDone}/{subtasksTotal}
@@ -318,13 +318,14 @@ export function TicketSubtasks({
             size="sm"
             className="h-8"
             onClick={handleAddSubtask}
-            disabled={!subtaskTitle.trim() || createSubtask.isPending}
+            disabled={!subtaskTitle.trim()}
+            loading={createSubtask.isPending}
             aria-label="Add subtask"
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
-      </div>
+      </section>
 
       <AlertDialog
         open={!!deleteTarget}

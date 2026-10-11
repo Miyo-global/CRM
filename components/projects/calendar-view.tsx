@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toneBorder, toneSoft, type Tone } from "@/lib/design/tones";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -35,11 +35,11 @@ interface CalendarViewProps {
   onTicketClick: (ticketId: number) => void;
 }
 
-const statusColors: Record<string, string> = {
-  TODO: "bg-ink-400",
-  IN_PROGRESS: "bg-info-500",
-  IN_REVIEW: "bg-plum-500",
-  DONE: "bg-success-500",
+const statusTones: Record<string, Tone> = {
+  TODO: "neutral",
+  IN_PROGRESS: "info",
+  IN_REVIEW: "warning",
+  DONE: "success",
 };
 
 export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
@@ -74,19 +74,19 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
   for (let i = 1; i <= daysInMonth; i++) days.push(i);
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <div className="space-y-3 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Select
             value={String(month)}
             onValueChange={(v) => setCurrentDate(new Date(year, parseInt(v), 1))}
           >
-            <SelectTrigger className="h-9 w-[128px] text-sm font-medium">
+            <SelectTrigger size="sm" className="w-32 font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="max-h-72 min-w-[var(--radix-select-trigger-width)]">
+            <SelectContent className="max-h-72 min-w-(--radix-select-trigger-width)">
               {MONTHS.map((m, i) => (
-                <SelectItem key={m} value={String(i)} className="text-sm py-2.5">{m}</SelectItem>
+                <SelectItem key={m} value={String(i)}>{m}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -95,80 +95,94 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
             onValueChange={(v) => setCurrentDate(new Date(parseInt(v), month, 1))}
           >
             <SelectTrigger
-              className="h-9 min-w-[96px] w-[96px] text-sm font-medium tabular-nums"
+              size="sm"
+              className="w-24 font-medium tabular-nums"
               aria-label="Select year"
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="max-h-72 min-w-[var(--radix-select-trigger-width)]">
+            <SelectContent className="max-h-72 min-w-(--radix-select-trigger-width)">
               {yearOptions.map((y) => (
-                <SelectItem key={y} value={String(y)} className="text-sm py-2.5 tabular-nums focus:bg-accent">{y}</SelectItem>
+                <SelectItem key={y} value={String(y)} className="tabular-nums">{y}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevMonth} aria-label="Previous month">
-            <ChevronLeft className="h-4 w-4" />
+          <Button variant="ghost" size="icon-sm" onClick={prevMonth} aria-label="Previous month">
+            <ChevronLeft />
           </Button>
-          <Button variant="outline" size="sm" className="h-8" onClick={() => setCurrentDate(new Date())}>
+          <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
             Today
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextMonth} aria-label="Next month">
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="ghost" size="icon-sm" onClick={nextMonth} aria-label="Next month">
+            <ChevronRight />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border rounded-lg overflow-hidden">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div key={day} className="px-2 py-1.5 text-xs font-medium text-muted-foreground text-center bg-muted/50 border-b sticky top-0 z-10">
-            {day}
-          </div>
-        ))}
-        {days.map((day, idx) => {
-          if (day === null) {
-            return <div key={`empty-${idx}`} className="min-h-[100px] border-b border-r bg-muted/20" />;
-          }
-
-          const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const dayTickets = ticketsByDate.get(dateKey) ?? [];
-          const isToday = dateKey === today;
-
-          return (
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <div className="grid min-w-[640px] grid-cols-7">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div
-              key={dateKey}
-              className={cn(
-                "min-h-[100px] border-b border-r p-1",
-                isToday ? "bg-primary/5" : "bg-background"
-              )}
+              key={day}
+              className="sticky top-0 z-sticky flex h-9 items-center justify-center border-b border-border bg-surface-sunken text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
             >
-              <span
+              {day}
+            </div>
+          ))}
+          {days.map((day, idx) => {
+            if (day === null) {
+              return <div key={`empty-${idx}`} className="min-h-28 border-b border-r border-border bg-surface-sunken/60" />;
+            }
+
+            const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const dayTickets = ticketsByDate.get(dateKey) ?? [];
+            const isToday = dateKey === today;
+
+            return (
+              <div
+                key={dateKey}
                 className={cn(
-                  "inline-flex items-center justify-center h-6 w-6 text-xs rounded-full mb-1",
-                  isToday ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground"
+                  "min-h-28 border-b border-r border-border p-1.5",
+                  isToday && "bg-brand-soft/40"
                 )}
               >
-                {day}
-              </span>
-              <div className="flex flex-col gap-0.5">
-                {dayTickets.slice(0, 3).map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => onTicketClick(t.id)}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-left hover:bg-muted transition-colors"
-                  >
-                    <div className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", statusColors[t.status] ?? "bg-ink-400")} />
-                    <span className="text-2xs text-foreground truncate">{t.title}</span>
-                  </button>
-                ))}
-                {dayTickets.length > 3 && (
-                  <span className="text-2xs text-muted-foreground px-1.5">+{dayTickets.length - 3} more</span>
-                )}
+                <span
+                  className={cn(
+                    "mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs tabular-nums",
+                    isToday ? "bg-primary font-bold text-primary-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {day}
+                </span>
+                <div className="flex flex-col gap-0.5">
+                  {dayTickets.slice(0, 3).map((t) => {
+                    const tone = statusTones[t.status] ?? "neutral";
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        title={t.title}
+                        onClick={() => onTicketClick(t.id)}
+                        className={cn(
+                          "truncate rounded-sm border-l-2 px-1.5 py-0.5 text-left text-2xs font-medium transition-opacity hover:opacity-80 focus-visible:focus-ring",
+                          toneSoft[tone],
+                          toneBorder[tone]
+                        )}
+                      >
+                        {t.title}
+                      </button>
+                    );
+                  })}
+                  {dayTickets.length > 3 && (
+                    <span className="px-1.5 text-2xs font-medium text-brand-text">+{dayTickets.length - 3} more</span>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

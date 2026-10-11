@@ -40,7 +40,7 @@ import {
   useProject,
   useLogTime,
 } from "@/lib/api/hooks/projects";
-import { Plus, Loader2, Link as LinkIcon, Upload, X, FileText } from "lucide-react";
+import { Plus, Link as LinkIcon, Upload, X, FileText } from "lucide-react";
 import { addTimeEntryInputSchema } from "@/lib/validations/project";
 import type { ProjectListItem, Ticket } from "@/types/projects";
 import { ScrollArea } from "../ui/scroll-area";
@@ -177,15 +177,15 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
       <SheetTrigger asChild>
         {trigger || (
           <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="size-4" aria-hidden="true" />
             Log Time
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 gap-0">
-        <SheetHeader className="px-4 py-3 border-b">
-          <SheetTitle className="text-sm">Log Time</SheetTitle>
-          <SheetDescription className="text-xs">
+      <SheetContent side="right" size="md" className="gap-0 p-0">
+        <SheetHeader className="border-b px-6 py-4">
+          <SheetTitle>Log Time</SheetTitle>
+          <SheetDescription>
             Record your work hours on a ticket.
           </SheetDescription>
         </SheetHeader>
@@ -193,7 +193,8 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
             <ScrollArea className="flex-1 min-h-0">
-              <div className="px-4 py-4 space-y-6">
+              <div className="space-y-5 px-6 py-5">
+                <div className="grid gap-5 sm:grid-cols-2">
                 <FormItem>
                   <FormLabel>Project</FormLabel>
                   <Select
@@ -252,8 +253,9 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                     </FormItem>
                   )}
                 />
+                </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="date"
@@ -303,7 +305,7 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                       <FormControl>
                         <Textarea
                           placeholder="What did you work on?"
-                          className="min-h-[100px]"
+                          className="min-h-24"
                           {...field}
                         />
                       </FormControl>
@@ -320,7 +322,7 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                       <FormLabel>Work Link</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <LinkIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                           <Input
                             type="url"
                             placeholder="https://example.com/work-done"
@@ -348,9 +350,9 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                               variant="outline"
                               size="sm"
                               onClick={() => fileInputRef.current?.click()}
-                              disabled={uploading}
+                              loading={uploading}
                             >
-                              <Upload className="h-4 w-4 mr-2" />
+                              {!uploading && <Upload className="size-4" aria-hidden="true" />}
                               {uploading ? "Uploading..." : "Upload file"}
                             </Button>
                             <Input
@@ -364,7 +366,7 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                           {attachmentFiles.length > 0 && (
                             <div className="space-y-2">
                               {attachmentFiles.map((file, index) => (
-                                <div key={`${file.name}-${index}`} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+                                <div key={`${file.name}-${index}`} className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken/40 p-3">
                                   {attachmentPreviews[index] ? (
                                     <Image
                                       src={attachmentPreviews[index]!}
@@ -372,33 +374,33 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
                                       width={48}
                                       height={48}
                                       unoptimized
-                                      className="h-12 w-12 object-cover rounded"
+                                      className="size-12 rounded-md object-cover"
                                     />
                                   ) : file.type === "application/pdf" ? (
-                                    <div className="h-12 w-12 rounded bg-danger-soft flex items-center justify-center">
-                                      <FileText className="h-6 w-6 text-danger-strong" />
+                                    <div className="flex size-12 items-center justify-center rounded-md bg-danger-soft">
+                                      <FileText className="size-6 text-danger-strong" aria-hidden="true" />
                                     </div>
                                   ) : (
-                                    <div className="h-12 w-12 rounded bg-muted flex items-center justify-center">
-                                      <FileText className="h-6 w-6 text-muted-foreground" />
+                                    <div className="flex size-12 items-center justify-center rounded-md bg-muted">
+                                      <FileText className="size-6 text-muted-foreground" aria-hidden="true" />
                                     </div>
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <span className="text-sm truncate block">
                                       {file.name}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs tabular-nums text-muted-foreground">
                                       {(file.size / 1024).toFixed(1)} KB
                                     </span>
                                   </div>
                                   <Button
                                     type="button"
                                     variant="ghost"
-                                    size="icon"
+                                    size="icon-sm"
                                     onClick={() => removeAttachment(index)}
                                     aria-label={`Remove ${file.name}`}
                                   >
-                                    <X className="h-4 w-4" />
+                                    <X className="size-4" aria-hidden="true" />
                                   </Button>
                                 </div>
                               ))}
@@ -416,9 +418,8 @@ export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
               </div>
             </ScrollArea>
 
-            <SheetFooter className="px-4 py-3">
-              <Button type="submit" className="flex-1" disabled={mutation.isPending || uploading}>
-                {(mutation.isPending || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <SheetFooter>
+              <Button type="submit" className="w-full sm:w-auto" loading={mutation.isPending || uploading}>
                 Log Time
               </Button>
             </SheetFooter>

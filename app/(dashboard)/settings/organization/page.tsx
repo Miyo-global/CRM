@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Shield, Clock, Globe, DollarSign, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
+import { Shield, Clock, Globe, DollarSign, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -247,7 +247,7 @@ export default function OrganizationSettingsPage() {
     return (
       <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="No Organization Found"
           description="Please contact your administrator to set up an organization."
         />
@@ -258,7 +258,7 @@ export default function OrganizationSettingsPage() {
   return (
     <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
       <div className="space-y-6">
-        <Card className="rounded-xl border shadow-sm">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Organization Details</CardTitle>
             <CardDescription>
@@ -302,15 +302,8 @@ export default function OrganizationSettingsPage() {
               )}
               {isEditing && (
                 <>
-                  <Button onClick={handleSave} disabled={isUpdatingOrg || !editName.trim()}>
-                    {isUpdatingOrg ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Changes"
-                    )}
+                  <Button onClick={handleSave} disabled={isUpdatingOrg || !editName.trim()} loading={isUpdatingOrg}>
+                    {isUpdatingOrg ? "Saving..." : "Save Changes"}
                   </Button>
                   <Button variant="ghost" onClick={handleCancelEdit} disabled={isUpdatingOrg}>
                     Cancel
@@ -325,9 +318,9 @@ export default function OrganizationSettingsPage() {
         </Card>
 
         {canEdit && (
-          <Card className="rounded-xl border shadow-sm">
+          <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Globe className="h-4 w-4 text-brand-text" />
                   App Configuration
@@ -365,13 +358,10 @@ export default function OrganizationSettingsPage() {
                         size="sm"
                         className="shrink-0"
                         disabled={logoUploading}
+                        loading={logoUploading}
                         onClick={() => logoInputRef.current?.click()}
                       >
-                        {logoUploading ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="h-3.5 w-3.5 mr-1" />
-                        )}
+                        {!logoUploading && <Upload aria-hidden />}
                         Upload
                       </Button>
                       <input
@@ -383,13 +373,13 @@ export default function OrganizationSettingsPage() {
                       />
                     </div>
                     {logoUrl && (
-                      <img src={logoUrl} alt="Logo preview" className="h-10 w-auto rounded border border-border object-contain" />
+                      <img src={logoUrl} alt="Logo preview" className="h-10 w-auto rounded-sm border border-border bg-card object-contain" />
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
                     {org.logo && (
-                      <img src={org.logo} alt="Org logo" className="h-8 w-auto rounded border border-border object-contain" />
+                      <img src={org.logo} alt="Org logo" className="h-8 w-auto rounded-sm border border-border bg-card object-contain" />
                     )}
                     <Input
                       id="logo-url"
@@ -496,10 +486,10 @@ export default function OrganizationSettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <div className="space-y-0.5">
-                  <Label className="text-sm flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Label htmlFor="directory-public" className="text-sm flex items-center gap-1.5">
+                    <Users className="size-3.5 text-muted-foreground" aria-hidden />
                     Public Employee Directory
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -507,6 +497,7 @@ export default function OrganizationSettingsPage() {
                   </p>
                 </div>
                 <Switch
+                  id="directory-public"
                   checked={isEditingConfig ? directoryPublic : (org.directoryPublic ?? false)}
                   onCheckedChange={isEditingConfig ? setDirectoryPublic : () => undefined}
                   disabled={!isEditingConfig}
@@ -535,14 +526,14 @@ export default function OrganizationSettingsPage() {
                           aria-label="Primary brand color"
                         />
                         {primaryColor && /^#[0-9a-fA-F]{6}$/.test(primaryColor) && (
-                          <div className="h-8 w-8 rounded border border-border shrink-0" style={{ backgroundColor: primaryColor }} />
+                          <div className="size-8 rounded-sm border border-border shrink-0" aria-hidden style={{ backgroundColor: primaryColor }} />
                         )}
                       </div>
                     ) : (
                       <div className="flex gap-2 items-center">
                         <Input value={org.primaryColor ?? ""} disabled className="bg-muted flex-1 font-mono text-sm" placeholder="Not set" />
                         {org.primaryColor && (
-                          <div className="h-8 w-8 rounded border border-border shrink-0" style={{ backgroundColor: org.primaryColor }} />
+                          <div className="size-8 rounded-sm border border-border shrink-0" aria-hidden style={{ backgroundColor: org.primaryColor }} />
                         )}
                       </div>
                     )}
@@ -566,15 +557,8 @@ export default function OrganizationSettingsPage() {
 
               {isEditingConfig && (
                 <div className="flex gap-2 pt-1">
-                  <Button onClick={handleSaveConfig} disabled={isUpdatingOrg} size="sm">
-                    {isUpdatingOrg ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Configuration"
-                    )}
+                  <Button onClick={handleSaveConfig} disabled={isUpdatingOrg} loading={isUpdatingOrg} size="sm">
+                    {isUpdatingOrg ? "Saving..." : "Save Configuration"}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleCancelEditConfig} disabled={isUpdatingOrg}>
                     Cancel
@@ -586,7 +570,7 @@ export default function OrganizationSettingsPage() {
         )}
 
         {canEdit && (
-          <Card className="rounded-xl border shadow-sm">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Shield className="h-4 w-4 text-brand-text" />
@@ -597,14 +581,15 @@ export default function OrganizationSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">Require MFA for all members</Label>
+                  <Label htmlFor="mfa-enforced" className="text-sm font-medium">Require MFA for all members</Label>
                   <p className="text-sm text-muted-foreground">
                     Members without MFA enabled will be redirected to set it up on their next login.
                   </p>
                 </div>
                 <Switch
+                  id="mfa-enforced"
                   checked={mfaEnforced}
                   onCheckedChange={setMfaEnforced}
                   aria-label="Require MFA for all members"
@@ -653,10 +638,10 @@ export default function OrganizationSettingsPage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveDomain(domain)}
-                        className="ml-0.5 rounded-full hover:bg-muted p-0.5"
+                        className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 focus-visible:focus-ring"
                         aria-label={`Remove ${domain}`}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" aria-hidden />
                       </button>
                     </Badge>
                   ))}
@@ -672,22 +657,15 @@ export default function OrganizationSettingsPage() {
                     aria-label="Email domain to add"
                   />
                   <Button type="button" variant="outline" size="sm" onClick={handleAddDomain}>
-                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    <Plus aria-hidden />
                     Add
                   </Button>
                 </div>
               </div>
 
               <div className="pt-1">
-                <Button onClick={handleSaveSecurity} disabled={isUpdatingSecurity} size="sm">
-                  {isUpdatingSecurity ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Security Settings"
-                  )}
+                <Button onClick={handleSaveSecurity} disabled={isUpdatingSecurity} loading={isUpdatingSecurity} size="sm">
+                  {isUpdatingSecurity ? "Saving..." : "Save Security Settings"}
                 </Button>
               </div>
             </CardContent>
@@ -697,7 +675,7 @@ export default function OrganizationSettingsPage() {
         {canEdit && <PayPolicyCard minMonthlySalary={org.minMonthlySalary} />}
 
         {canEdit && (
-          <Card className="rounded-xl border shadow-sm">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Network className="h-4 w-4 text-brand-text" />
@@ -716,10 +694,10 @@ export default function OrganizationSettingsPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveIp(ip)}
-                      className="ml-0.5 rounded-full hover:bg-muted p-0.5"
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 focus-visible:focus-ring"
                       aria-label={`Remove ${ip}`}
                     >
-                      <X className="h-3 w-3" />
+                      <X className="size-3" aria-hidden />
                     </button>
                   </Badge>
                 ))}
@@ -737,20 +715,13 @@ export default function OrganizationSettingsPage() {
                   aria-label="IP address or prefix to add"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={handleAddIp}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  <Plus aria-hidden />
                   Add
                 </Button>
               </div>
               <div className="pt-1">
-                <Button onClick={handleSaveIpAllowlist} disabled={isUpdatingOrg} size="sm">
-                  {isUpdatingOrg ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save IP Allowlist"
-                  )}
+                <Button onClick={handleSaveIpAllowlist} disabled={isUpdatingOrg} loading={isUpdatingOrg} size="sm">
+                  {isUpdatingOrg ? "Saving..." : "Save IP Allowlist"}
                 </Button>
               </div>
             </CardContent>

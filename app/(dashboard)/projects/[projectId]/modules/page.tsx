@@ -12,7 +12,10 @@ import {
 } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyTasksIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -70,13 +73,13 @@ const createModuleSchema = z.object({
 });
 type CreateModuleForm = z.infer<typeof createModuleSchema>;
 
-const statusColors: Record<string, string> = {
-  backlog: "bg-muted text-neutral-strong",
-  planned: "bg-info-soft text-info-strong",
-  "in-progress": "bg-warning-soft text-warning-strong",
-  paused: "bg-warning-soft text-warning-strong",
-  completed: "bg-success-soft text-success-strong",
-  cancelled: "bg-danger-soft text-danger-strong",
+const statusTones: Record<string, Tone> = {
+  backlog: "neutral",
+  planned: "info",
+  "in-progress": "brand",
+  paused: "warning",
+  completed: "success",
+  cancelled: "danger",
 };
 
 function ProgressRing({ value, size = 40 }: { value: number; size?: number }) {
@@ -86,7 +89,7 @@ function ProgressRing({ value, size = 40 }: { value: number; size?: number }) {
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <svg width={size} height={size} className="rotate-[-90deg]">
+    <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -94,7 +97,7 @@ function ProgressRing({ value, size = 40 }: { value: number; size?: number }) {
         fill="none"
         stroke="currentColor"
         strokeWidth={stroke}
-        className="text-muted/30"
+        className="text-muted"
       />
       <circle
         cx={size / 2}
@@ -125,7 +128,7 @@ export default function ModulesPage({
   const [deleteModule, setDeleteModule] = useState<Module | null>(null);
 
   const { data: session } = useSession();
-  const { data: modules, isLoading } = useModules(projectId);
+  const { data: modules, isLoading, isError, error, refetch } = useModules(projectId);
   const { data: members } = useProjectMembers(projectId);
   const { data: project } = useProject(projectId);
 
@@ -216,7 +219,7 @@ export default function ModulesPage({
   if (isLoading) {
     return (
       <PageWrapper title="Modules">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-48 w-full" />
           ))}
@@ -233,10 +236,10 @@ export default function ModulesPage({
           <Sheet open={createOpen} onOpenChange={setCreateOpen}>
             <SheetTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" /> New Module
+                <Plus className="size-4" aria-hidden="true" /> New Module
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetContent side="right" size="sm" className="overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Create Module</SheetTitle>
               </SheetHeader>
@@ -323,8 +326,8 @@ export default function ModulesPage({
                 </div>
                 <Button
                   type="submit"
-                  disabled={createMutation.isPending}
-                  className="mt-1 h-9 w-full"
+                  loading={createMutation.isPending}
+                  className="mt-1 w-full"
                 >
                   {createMutation.isPending ? "Creating..." : "Create Module"}
                 </Button>
@@ -334,7 +337,7 @@ export default function ModulesPage({
         ) : null
       }
     >
-      <div>
+      <div className="space-y-6">
         <ModulePreviewSheet
           module={previewModule}
           projectId={projectId}
@@ -364,7 +367,9 @@ export default function ModulesPage({
           onConfirm={handleDeleteConfirm}
         />
 
-        {!modules?.length ? (
+        {isError ? (
+          <QueryErrorState error={error} onRetry={refetch} />
+        ) : !modules?.length ? (
           <div className="flex flex-col items-center gap-3">
             <EmptyState
               illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
@@ -383,71 +388,76 @@ export default function ModulesPage({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <>
+          <StatsStrip
+            items={[
+              { label: "Modules", value: modules.length, icon: Layers },
+              { label: "In progress", value: modules.filter((m) => m.status === "in-progress").length, tone: "brand" },
+              { label: "Completed", value: modules.filter((m) => m.status === "completed").length, tone: "success" },
+            ]}
+          />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {modules.map((mod) => (
               <Card key={mod.id} className="h-full flex flex-col">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-snug line-clamp-2">
+                    <CardTitle className="line-clamp-2 text-base leading-snug">
                       {mod.name}
                     </CardTitle>
                     <div className="flex shrink-0 items-center gap-0.5">
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
+                        size="icon-sm"
                         aria-label="Preview module"
                         onClick={() => setPreviewModule(mod)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="size-4" />
                       </Button>
                       {canManage && (
                         <>
                           <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
+                            size="icon-sm"
                             aria-label="Edit module"
                             onClick={() => setEditModule(mod)}
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="size-4" />
                           </Button>
                           <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-destructive"
                             aria-label="Delete module"
                             onClick={() => setDeleteModule(mod)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="size-4" />
                           </Button>
                         </>
                       )}
                     </div>
                   </div>
-                  <Badge
-                    className={
-                      statusColors[mod.status ?? "backlog"] ?? statusColors.backlog
-                    }
+                  <StatusPill
+                    dot
+                    tone={statusTones[mod.status ?? "backlog"] ?? statusTones.backlog}
                   >
                     {(mod.status ?? "backlog")
                       .replace(/-/g, " ")
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
-                  </Badge>
+                  </StatusPill>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <div className="flex items-center gap-4 flex-1">
                     <ProgressRing value={mod.progress ?? 0} />
                     <div className="flex-1 min-w-0 space-y-1">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground tabular-nums">
                         {mod.progress ?? 0}% complete
                       </p>
                       {(mod.startDate || mod.endDate) && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3 shrink-0" />
+                        <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                          <Calendar className="size-3 shrink-0" aria-hidden="true" />
                           {mod.startDate
                             ? new Date(
                                 typeof mod.startDate === "string"
@@ -467,17 +477,18 @@ export default function ModulesPage({
                       )}
                       {mod.leadId && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                          <User className="h-3 w-3 shrink-0" />
+                          <User className="size-3 shrink-0" aria-hidden="true" />
                           Lead assigned
                         </p>
                       )}
                     </div>
-                    <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <Layers className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+          </>
         )}
       </div>
     </PageWrapper>

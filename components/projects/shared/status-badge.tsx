@@ -1,13 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 
-const statusMap: Record<string, { label: string; dotColor: string }> = {
-  TODO: { label: "To Do", dotColor: "bg-muted-foreground" },
-  IN_PROGRESS: { label: "In Progress", dotColor: "bg-info-500" },
-  IN_REVIEW: { label: "In Review", dotColor: "bg-warning-500" },
-  DONE: { label: "Done", dotColor: "bg-success-500" },
-  CANCELLED: { label: "Cancelled", dotColor: "bg-danger-400" },
+const statusMap: Record<string, { label: string; tone: Tone }> = {
+  TODO: { label: "To Do", tone: "neutral" },
+  IN_PROGRESS: { label: "In Progress", tone: "info" },
+  IN_REVIEW: { label: "In Review", tone: "warning" },
+  DONE: { label: "Done", tone: "success" },
+  CANCELLED: { label: "Cancelled", tone: "danger" },
 };
 
 interface StatusBadgeProps {
@@ -21,32 +23,32 @@ export function StatusBadge({
   customStates,
   className,
 }: StatusBadgeProps) {
-
   const custom = customStates?.find(
     (s) => s.name === status || s.name.toUpperCase().replace(/\s+/g, "_") === status
   );
 
   if (custom) {
+    // Custom workflow states carry their own colour from data.
     return (
-      <span className={cn("inline-flex items-center gap-1.5 text-xs", className)}>
+      <StatusPill tone="neutral" className={cn("max-w-full", className)}>
         <span
-          className="h-2 w-2 shrink-0 rounded-full"
+          aria-hidden="true"
+          className="size-1.5 shrink-0 rounded-full"
           style={{ backgroundColor: custom.color }}
         />
         <span className="truncate">{custom.name}</span>
-      </span>
+      </StatusPill>
     );
   }
 
   const mapped = statusMap[status] ?? {
     label: status.replace(/_/g, " "),
-    dotColor: "bg-muted-foreground",
+    tone: "neutral" as const,
   };
 
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs", className)}>
-      <span className={cn("h-2 w-2 shrink-0 rounded-full", mapped.dotColor)} />
+    <StatusPill tone={mapped.tone} dot className={cn("max-w-full", className)}>
       <span className="truncate">{mapped.label}</span>
-    </span>
+    </StatusPill>
   );
 }

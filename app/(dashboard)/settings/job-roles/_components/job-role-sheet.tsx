@@ -137,7 +137,7 @@ export function JobRoleSheet({ open, onOpenChange, role, departments }: JobRoleS
       </div>
 
       {isEdit && (
-        <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-2.5">
           <div className="space-y-0.5">
             <Label className="text-sm">Active</Label>
             <p className="text-xs text-muted-foreground">

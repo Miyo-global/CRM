@@ -8,13 +8,20 @@ import {
   GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toneSoft, type Tone } from "@/lib/design/tones";
 
 const typeMap = {
-  TASK: { icon: CheckSquare, color: "text-info-strong" },
-  BUG: { icon: Bug, color: "text-danger-strong" },
-  STORY: { icon: BookOpen, color: "text-success-strong" },
-  EPIC: { icon: Layers, color: "text-plum-strong" },
-  SUBTASK: { icon: GitBranch, color: "text-muted-foreground" },
+  TASK: { icon: CheckSquare, tone: "info" },
+  BUG: { icon: Bug, tone: "danger" },
+  STORY: { icon: BookOpen, tone: "success" },
+  EPIC: { icon: Layers, tone: "plum" },
+  SUBTASK: { icon: GitBranch, tone: "neutral" },
+} as const satisfies Record<string, { icon: unknown; tone: Tone }>;
+
+const sizes = {
+  sm: { chip: "size-5", icon: "size-4" },
+  md: { chip: "size-6", icon: "size-4" },
+  lg: { chip: "size-7", icon: "size-5" },
 } as const;
 
 interface TicketTypeIconProps {
@@ -23,6 +30,7 @@ interface TicketTypeIconProps {
   className?: string;
 }
 
+/** Ticket type glyph in a rounded-sm tone chip (§6.2). */
 export function TicketTypeIcon({
   type,
   size = "sm",
@@ -31,9 +39,18 @@ export function TicketTypeIcon({
   const key = type.toUpperCase() as keyof typeof typeMap;
   const config = typeMap[key] ?? typeMap.TASK;
   const Icon = config.icon;
+  const s = sizes[size];
 
-  const sizeClass =
-    size === "sm" ? "h-3.5 w-3.5" : size === "md" ? "h-4 w-4" : "h-5 w-5";
-
-  return <Icon className={cn(sizeClass, config.color, className)} />;
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-sm p-0.5",
+        toneSoft[config.tone],
+        s.chip,
+        className
+      )}
+    >
+      <Icon className={s.icon} aria-hidden="true" />
+    </span>
+  );
 }

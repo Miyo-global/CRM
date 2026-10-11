@@ -2,14 +2,16 @@
 
 import { useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Check, Copy, X } from "lucide-react";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import type { Tone } from "@/lib/design/tones";
 
-const STATUS_BADGE_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "secondary",
-  accepted: "default",
-  declined: "destructive",
-  duplicate: "outline",
+const STATUS_TONE: Record<string, Tone> = {
+  pending: "warning",
+  accepted: "success",
+  declined: "danger",
+  duplicate: "neutral",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -47,45 +49,37 @@ export function IntakeItemCard({ item, onAccept, onDecline, onDuplicate }: Intak
   return (
     <Card>
       <CardContent className="py-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <p className="font-medium truncate">{item.title}</p>
-              <Badge variant={STATUS_BADGE_VARIANT[item.status] ?? "outline"}>
+            <div className="mb-1 flex min-w-0 items-center gap-2">
+              <p className="truncate text-sm font-medium">{item.title}</p>
+              <StatusPill tone={STATUS_TONE[item.status] ?? "neutral"} dot className="shrink-0">
                 {STATUS_LABEL[item.status] ?? "Unknown"}
-              </Badge>
+              </StatusPill>
             </div>
             {item.description != null && (
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {typeof item.description === "string" ? item.description : "No description available"}
               </p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 truncate text-xs tabular-nums text-muted-foreground">
               {createdLabel}
               {item.submitterEmail && ` by ${item.submitterEmail}`}
             </p>
             {item.declineReason && (
-              <p className="text-xs text-destructive mt-1">Reason: {item.declineReason}</p>
+              <p className="mt-1 text-xs text-danger-strong">Reason: {item.declineReason}</p>
             )}
           </div>
           {item.status === "pending" && (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex shrink-0 items-center gap-1">
               <Button size="sm" variant="outline" onClick={handleAccept}>
-                <svg className="h-3.5 w-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg> Accept
+                <Check aria-hidden="true" /> Accept
               </Button>
               <Button size="sm" variant="outline" onClick={handleDecline}>
-                <svg className="h-3.5 w-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M18 6 6 18" />
-                  <path d="m6 6 12 12" />
-                </svg> Decline
+                <X aria-hidden="true" /> Decline
               </Button>
-              <Button size="sm" variant="ghost" onClick={handleDuplicate} aria-label="Mark as duplicate">
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                </svg>
+              <Button size="icon-sm" variant="ghost" onClick={handleDuplicate} aria-label="Mark as duplicate">
+                <Copy aria-hidden="true" />
               </Button>
             </div>
           )}

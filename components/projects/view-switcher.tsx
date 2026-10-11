@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutGrid, List, Table2, Calendar, BarChart3 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type ViewType = "board" | "list" | "table" | "calendar" | "gantt";
 
@@ -18,24 +18,22 @@ const views: { type: ViewType; icon: typeof LayoutGrid; label: string }[] = [
   { type: "gantt", icon: BarChart3, label: "Gantt" },
 ];
 
+/** Segmented view toggle (§6.3 toolbar). Labels collapse to icons below `sm`. */
 export function ViewSwitcher({ activeView, onViewChange }: ViewSwitcherProps) {
   return (
-    <div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
-      {views.map(({ type, icon: Icon, label }) => (
-        <button
-          key={type}
-          onClick={() => onViewChange(type)}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all",
-            activeView === type
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Icon className="h-3.5 w-3.5" />
-          {label}
-        </button>
-      ))}
-    </div>
+    <Tabs
+      value={activeView}
+      onValueChange={(v) => onViewChange(v as ViewType)}
+      className="shrink-0"
+    >
+      <TabsList className="w-fit">
+        {views.map(({ type, icon: Icon, label }) => (
+          <TabsTrigger key={type} value={type} aria-label={label} className="px-2.5 text-xs">
+            <Icon className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">{label}</span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }

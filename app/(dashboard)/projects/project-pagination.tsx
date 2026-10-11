@@ -33,16 +33,15 @@ export function ProjectPagination({ page, totalPages, onPageChange }: ProjectPag
   const pages = getPageNumbers(page, totalPages);
 
   return (
-    <nav aria-label="Projects pagination" className="flex items-center justify-center gap-1 pt-6">
+    <nav aria-label="Projects pagination" className="flex flex-wrap items-center justify-center gap-1 pt-6">
       <Button
         variant="ghost"
-        size="icon"
-        className="h-8 w-8"
+        size="icon-sm"
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
         aria-label="Previous page"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="size-4" aria-hidden="true" />
       </Button>
 
       {pages.map((p, i) =>
@@ -54,10 +53,8 @@ export function ProjectPagination({ page, totalPages, onPageChange }: ProjectPag
           <Button
             key={p}
             variant={p === page ? "default" : "ghost"}
-            size="icon"
-            className={`h-8 w-8 text-sm ${
-              p === page ? "bg-primary text-primary-foreground hover:bg-brand-soft" : ""
-            }`}
+            size="icon-sm"
+            className="tabular-nums"
             onClick={() => onPageChange(p)}
             aria-current={p === page ? "page" : undefined}
             aria-label={`Page ${p}`}
@@ -69,13 +66,12 @@ export function ProjectPagination({ page, totalPages, onPageChange }: ProjectPag
 
       <Button
         variant="ghost"
-        size="icon"
-        className="h-8 w-8"
+        size="icon-sm"
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
         aria-label="Next page"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="size-4" aria-hidden="true" />
       </Button>
     </nav>
   );

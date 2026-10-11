@@ -58,7 +58,7 @@ export function WatcherList({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1">
+        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Eye className="h-3 w-3" /> Watchers
         </label>
         <Button
@@ -99,7 +99,7 @@ export function WatcherList({
               >
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={resolveImageUrl(w.user?.image)} />
-                  <AvatarFallback className="text-3xs bg-primary/10 text-primary">
+                  <AvatarFallback className="text-3xs bg-brand-soft text-brand-text">
                     {w.user?.firstName?.[0]}
                     {w.user?.lastName?.[0]}
                   </AvatarFallback>
@@ -141,7 +141,7 @@ export function WatcherList({
           addWatcher.mutate({ ticketId, userId });
         }}
       >
-        <SelectTrigger className="h-7 text-xs bg-background">
+        <SelectTrigger className="h-8 w-full text-xs bg-background">
           <SelectValue placeholder="+ Add watcher" />
         </SelectTrigger>
         <SelectContent>

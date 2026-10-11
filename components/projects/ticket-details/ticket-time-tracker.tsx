@@ -110,11 +110,11 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5" />
           Time Tracking
           {totalSpent > 0 && (
-            <span className="text-foreground font-semibold">{totalSpent}h logged</span>
+            <span className="normal-case tracking-normal text-foreground font-semibold tabular-nums">{totalSpent}h logged</span>
           )}
         </h4>
         <Button
@@ -129,8 +129,8 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
 
       <div className="flex items-center gap-2 mb-2">
         <div className={cn(
-          "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-mono flex-1",
-          running ? "border-primary/50 bg-primary/5 text-primary" : "bg-muted/30"
+          "flex flex-1 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 font-mono text-sm tabular-nums",
+          running ? "border-primary bg-brand-soft text-brand-text" : "bg-background"
         )}>
           <Timer className="h-3.5 w-3.5 shrink-0" />
           <span>{formatElapsed(elapsed)}</span>
@@ -148,7 +148,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
               size="sm"
               className="h-7 text-xs px-3"
               onClick={handleSaveTimer}
-              disabled={logTime.isPending}
+              loading={logTime.isPending}
             >
               Save
             </Button>
@@ -166,7 +166,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
       )}
 
       {showManual && (
-        <div className="flex items-center gap-2 pt-1 border-t mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
           <Input
             type="number"
             min="0.01"
@@ -174,21 +174,21 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
             placeholder="Hours"
             value={manualHours}
             onChange={(e) => setManualHours(e.target.value)}
-            className="h-7 text-xs w-24"
+            className="h-7 w-20 text-xs tabular-nums"
           />
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description (optional)"
-            className="h-7 text-xs flex-1"
+            className="h-7 min-w-0 flex-1 text-xs"
           />
           <Button
             size="sm"
             className="h-7 text-xs px-3 shrink-0"
             onClick={handleLogManual}
-            disabled={logTime.isPending}
+            loading={logTime.isPending}
           >
-            {logTime.isPending ? "..." : "Log"}
+            Log
           </Button>
         </div>
       )}

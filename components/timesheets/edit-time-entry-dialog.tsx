@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useUpdateTimeEntry } from "@/lib/api/hooks/projects";
-import { Loader2 } from "lucide-react";
 
 interface EditTimeEntryDialogProps {
   entry: {
@@ -84,15 +83,16 @@ export function EditTimeEntryDialog({ entry, open, onOpenChange }: EditTimeEntry
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader>
+      <SheetContent size="sm" className="gap-0 p-0">
+        <SheetHeader className="border-b px-6 py-4">
           <SheetTitle>Edit Time Entry</SheetTitle>
           <SheetDescription>
             Update the description or hours for this time entry.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-0 flex-1 flex-col">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
             <FormField
               control={form.control}
               name="description"
@@ -102,7 +102,7 @@ export function EditTimeEntryDialog({ entry, open, onOpenChange }: EditTimeEntry
                   <FormControl>
                     <Textarea
                       placeholder="What did you work on?"
-                      className="min-h-[100px]"
+                      className="min-h-24"
                       {...field}
                     />
                   </FormControl>
@@ -131,18 +131,17 @@ export function EditTimeEntryDialog({ entry, open, onOpenChange }: EditTimeEntry
                 </FormItem>
               )}
             />
+            </div>
             <SheetFooter>
               <Button
                 type="button"
-                variant="outline"
-                className="flex-1"
+                variant="ghost"
                 onClick={() => onOpenChange(false)}
                 disabled={mutation.isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1" disabled={mutation.isPending}>
-                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" loading={mutation.isPending}>
                 Update
               </Button>
             </SheetFooter>

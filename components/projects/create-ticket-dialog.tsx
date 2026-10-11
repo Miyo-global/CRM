@@ -11,12 +11,14 @@ import {
 import { queryKeys } from "@/lib/query-keys";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -234,13 +236,13 @@ export function CreateTicketDialog({
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       {!hideTrigger && (
-        <SheetTrigger asChild>
+        <DialogTrigger asChild>
           {variant === "fab" ? (
             <Button
               size="lg"
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+              className="size-14 rounded-full shadow-md transition-shadow hover:shadow-lg"
             >
               <Plus className="h-6 w-6" />
               <span className="sr-only">Create Ticket</span>
@@ -250,19 +252,19 @@ export function CreateTicketDialog({
               <Plus className="mr-2 h-4 w-4" /> Create Ticket
             </Button>
           )}
-        </SheetTrigger>
+        </DialogTrigger>
       )}
-      <SheetContent
-        side="right"
-        className="w-full sm:w-1/2 sm:max-w-[50vw] overflow-y-auto p-0"
+      <DialogContent
+        size="lg"
+        className="flex max-h-[90svh] flex-col gap-0 overflow-hidden p-0"
       >
-        <SheetHeader className="p-6 pb-4 border-b">
-          <SheetTitle>New Ticket</SheetTitle>
-        </SheetHeader>
-        <div className="p-6 pt-4">
+        <DialogHeader className="shrink-0 border-b border-border px-6 pt-6 pb-4">
+          <DialogTitle>New Ticket</DialogTitle>
+        </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="type"
@@ -346,7 +348,7 @@ export function CreateTicketDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                <FormItem>
                     <FormLabel>Assignees</FormLabel>
 
@@ -474,7 +476,7 @@ export function CreateTicketDialog({
               />
             </div>
 
-            <FormItem className="pt-2">
+            <FormItem>
                 <FormLabel>Attachments</FormLabel>
                 <FormControl>
                   <div className="space-y-2">
@@ -499,7 +501,7 @@ export function CreateTicketDialog({
                         ))}
                       </div>
                     )}
-                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors">
+                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors focus-within:focus-ring">
                       <Upload className="h-6 w-6 text-muted-foreground mb-1" />
                       <span className="text-xs font-medium text-foreground">
                         {files.length > 0 ? "Add more files" : "Click to upload"}
@@ -527,18 +529,24 @@ export function CreateTicketDialog({
                   </div>
                 </FormControl>
             </FormItem>
+            </div>
 
-            <Button
-              type="submit"
-              disabled={createTicketMutation.isPending || isUploading}
-              className="w-full"
-            >
-              {createTicketMutation.isPending || isUploading ? "Creating..." : "Create Ticket"}
-            </Button>
+            <DialogFooter className="m-0 shrink-0">
+              <DialogClose asChild>
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button
+                type="submit"
+                loading={createTicketMutation.isPending || isUploading}
+              >
+                {createTicketMutation.isPending || isUploading ? "Creating..." : "Create Ticket"}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
-        </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

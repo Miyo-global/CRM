@@ -3,14 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { Progress } from "@/components/ui/progress";
-import {
-  getColorSafe,
-  projectStatusColors,
-  projectStatusDisplayLabels,
-} from "@/lib/theme-constants";
+import { projectStatusDisplayLabels } from "@/lib/theme-constants";
+import { projectStatusTone } from "./project-status-tone";
 import { format } from "date-fns";
 
 interface ProjectCardProps {
@@ -36,7 +34,7 @@ interface ProjectCardProps {
 export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectCardProps) {
   const status = project.status ?? "ACTIVE";
   const displayLabel = projectStatusDisplayLabels[status] ?? status;
-  const statusColor = getColorSafe(projectStatusColors, status);
+  const statusTone = projectStatusTone[status] ?? "neutral";
   const dateStr = project.startDate
     ? format(new Date(project.startDate), "MMM d")
     : null;
@@ -45,59 +43,52 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
     <Link
       href={`/projects/${project.id}`}
       aria-label={`${project.name} — ${displayLabel}`}
-      className="block h-full"
+      className="group block h-full rounded-lg outline-none focus-visible:focus-ring"
     >
-      <div
-        className="rounded-lg border bg-card p-4 hover:shadow-md hover:border-border/80 transition-all cursor-pointer h-full min-h-[230px] flex flex-col group"
-        role="listitem"
-      >
-
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-2xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+      <Card interactive className="h-full min-h-56 gap-0 p-5" role="listitem">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground">
             {project.key}
           </span>
-          <Badge
-            variant="secondary"
-            className={`text-2xs font-medium ${statusColor}`}
-          >
+          <StatusPill tone={statusTone} dot>
             {displayLabel}
-          </Badge>
+          </StatusPill>
         </div>
 
-        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
+        <h3 className="mb-1 line-clamp-1 text-lg font-semibold text-foreground transition-colors group-hover:text-brand-text">
           {project.name}
         </h3>
 
-        <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem] mb-3">
+        <p className="mb-4 line-clamp-2 min-h-10 text-sm text-muted-foreground">
           {project.description || "No description provided."}
         </p>
 
         <div className="flex-1" />
 
-        <div className="mb-3 min-h-[1.7rem]">
-          <div className="flex items-center justify-between text-2xs text-muted-foreground mb-1">
+        <div className="mb-3">
+          <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
             <span>Progress</span>
             <span className="tabular-nums">
               {project.progress.total > 0 ? `${project.progress.done}/${project.progress.total}` : "0/0"}
             </span>
           </div>
-          <Progress value={project.progress.total > 0 ? project.progress.percentage : 0} className="h-1" />
+          <Progress value={project.progress.total > 0 ? project.progress.percentage : 0} className="h-1.5" />
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+        <div className="flex items-center justify-between border-t border-border pt-3">
           <AvatarStack
             users={project.members}
             limit={4}
-            className="[&>div]:h-6 [&>div]:w-6"
+            className="[&>div]:size-6"
           />
           {dateStr && (
-            <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
+            <div className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
+              <Calendar className="size-3.5" aria-hidden="true" />
               {dateStr}
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </Link>
   );
 });

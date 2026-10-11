@@ -1,41 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { StatusPill } from "@/components/ui/status-pill";
 import { toast } from "sonner";
 import { useUpdateRole } from "@/lib/api/hooks/roles";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import type { Permission } from "@/lib/rbac/permissions";
 import type { Role } from "@/types/organization";
-
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function SpinnerIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
 
 
 interface PermissionRowProps {
@@ -49,13 +23,21 @@ function PermissionRow({ perm, enabled, isCEO, onToggle }: PermissionRowProps) {
   const handleToggle = useCallback(() => onToggle(perm.name), [perm.name, onToggle]);
 
   return (
-    <div className="flex items-center justify-between px-4 pl-10 py-2 hover:bg-muted/20 transition-colors">
-      <div>
+    <tr className="group/row border-b border-border transition-colors hover:bg-accent/60">
+      <th scope="row" className="sticky left-0 z-base bg-card py-2 pl-10 pr-4 text-left font-normal group-hover/row:bg-accent">
         <p className="text-sm">{perm.description}</p>
-        <p className="text-2xs text-muted-foreground font-mono">{perm.name}</p>
-      </div>
-      <Switch checked={enabled} onCheckedChange={handleToggle} disabled={isCEO} className="h-4 w-7" />
-    </div>
+        <p className="font-mono text-2xs text-muted-foreground">{perm.name}</p>
+      </th>
+      <td className="w-28 px-3 py-2 text-center hover:bg-brand-soft/60">
+        <Checkbox
+          checked={enabled}
+          onCheckedChange={handleToggle}
+          disabled={isCEO}
+          aria-label={perm.description}
+          className="align-middle"
+        />
+      </td>
+    </tr>
   );
 }
 
@@ -74,36 +56,50 @@ interface PermissionGroupRowProps {
 
 function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO, rolePermissions, onToggleGroup, onToggleAll, onTogglePermission }: PermissionGroupRowProps) {
   const allEnabled = enabledCount === perms.length;
+  const someEnabled = enabledCount > 0 && !allEnabled;
   const handleToggleGroup = useCallback(() => onToggleGroup(groupName), [groupName, onToggleGroup]);
-  const handleToggleAll = useCallback((v: boolean) => onToggleAll(perms, v), [perms, onToggleAll]);
-  const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+  const handleToggleAll = useCallback((v: boolean | "indeterminate") => onToggleAll(perms, v === true), [perms, onToggleAll]);
+  const Chevron = isExpanded ? ChevronDown : ChevronRight;
 
   return (
-    <div>
-      <button onClick={handleToggleGroup} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-2">
-          {isExpanded ? <ChevronDownIcon className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />}
-          <span className="text-sm font-medium">{groupName}</span>
-          <Badge variant="outline" className="text-2xs px-1.5 py-0">{enabledCount}/{perms.length}</Badge>
-        </div>
-        {!isCEO && (
-          <Switch checked={allEnabled} onCheckedChange={handleToggleAll} onClick={handleStopPropagation} className="h-4 w-7" />
-        )}
-      </button>
-      {isExpanded && (
-        <div className="bg-muted/10 border-t border-border/20">
-          {perms.map((perm) => (
-            <PermissionRow
-              key={perm.name}
-              perm={perm}
-              enabled={isCEO || rolePermissions.has(perm.name)}
-              isCEO={isCEO}
-              onToggle={onTogglePermission}
+    <tbody>
+      <tr className="border-b border-border bg-surface-sunken">
+        <th scope="rowgroup" className="sticky left-0 z-base bg-surface-sunken p-0 text-left font-normal">
+          <button
+            type="button"
+            onClick={handleToggleGroup}
+            aria-expanded={isExpanded}
+            className="flex w-full items-center gap-2 px-4 py-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:focus-ring"
+          >
+            <Chevron className="size-3.5 shrink-0" aria-hidden />
+            <span>{groupName}</span>
+            <span className="rounded-full bg-card px-1.5 py-px text-3xs tabular-nums text-muted-foreground ring-1 ring-border ring-inset">
+              {enabledCount}/{perms.length}
+            </span>
+          </button>
+        </th>
+        <td className="w-28 px-3 py-2 text-center">
+          {!isCEO && (
+            <Checkbox
+              checked={allEnabled ? true : someEnabled ? "indeterminate" : false}
+              onCheckedChange={handleToggleAll}
+              aria-label={`Toggle all ${groupName} permissions`}
+              className="align-middle"
             />
-          ))}
-        </div>
-      )}
-    </div>
+          )}
+        </td>
+      </tr>
+      {isExpanded &&
+        perms.map((perm) => (
+          <PermissionRow
+            key={perm.name}
+            perm={perm}
+            enabled={isCEO || rolePermissions.has(perm.name)}
+            isCEO={isCEO}
+            onToggle={onTogglePermission}
+          />
+        ))}
+    </tbody>
   );
 }
 
@@ -169,24 +165,33 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
   const isCEO = role.slug === "CEO";
 
   return (
-    <Card className="flex flex-col lg:min-h-0 lg:h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              {role.name}
-              {role.isSystem && <Badge variant="outline" className="text-2xs">System Role</Badge>}
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {rolePermissions.size} of {PERMISSIONS.length} permissions enabled
-            </p>
-          </div>
-          {updateRole.isPending && <SpinnerIcon className="h-4 w-4 animate-spin text-muted-foreground" />}
+    <Card className="flex flex-col overflow-hidden lg:min-h-0 lg:h-full">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="flex flex-wrap items-center gap-2 text-lg font-semibold">
+            {role.name}
+            {role.isSystem && <StatusPill tone="neutral">System Role</StatusPill>}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+            {rolePermissions.size} of {PERMISSIONS.length} permissions enabled
+          </p>
         </div>
-      </CardHeader>
-      <Separator />
-      <ScrollArea className="max-h-[65vh] lg:max-h-none lg:flex-1 lg:min-h-0" type="auto">
-        <div className="divide-y divide-border/30">
+        {updateRole.isPending && (
+          <Loader2 className="size-4 animate-spin text-muted-foreground" aria-label="Saving" />
+        )}
+      </div>
+      <div className="max-h-[65vh] overflow-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+        <table className="w-full border-separate border-spacing-0 text-sm">
+          <thead className="sticky top-0 z-sticky bg-surface-sunken">
+            <tr>
+              <th scope="col" className="sticky left-0 z-sticky h-9 border-b border-border bg-surface-sunken px-4 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Permission
+              </th>
+              <th scope="col" className="h-9 w-28 border-b border-border px-3 text-center text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Enabled
+              </th>
+            </tr>
+          </thead>
           {permissionGroups.map(([groupName, perms]) => (
             <PermissionGroupRow
               key={groupName}
@@ -201,8 +206,8 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
               onTogglePermission={togglePermission}
             />
           ))}
-        </div>
-      </ScrollArea>
+        </table>
+      </div>
     </Card>
   );
 }
