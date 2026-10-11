@@ -1,18 +1,12 @@
-import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeaderSkeleton, ChartGridSkeleton } from "@/components/ui/skeletons";
 
-export default function WinLossLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Win/Loss Analysis" subtitle="Deal outcome breakdown and lost reason attribution">
-      <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28" />)}
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
-        </div>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <ChartGridSkeleton />
       </div>
-    </PageWrapper>
+    </>
   );
 }

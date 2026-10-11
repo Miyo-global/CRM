@@ -1,18 +1,12 @@
-import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeaderSkeleton, TableSkeleton } from "@/components/ui/skeletons";
 
-export default function DuplicateLeadsLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Duplicate Lead Detection" subtitle="Fuzzy matching to find potential duplicate leads">
-      <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-2">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-        </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-48" />)}
-        </div>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <TableSkeleton />
       </div>
-    </PageWrapper>
+    </>
   );
 }

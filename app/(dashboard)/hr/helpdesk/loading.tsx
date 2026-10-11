@@ -1,29 +1,12 @@
-import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import { PageHeaderSkeleton, TableSkeleton } from "@/components/ui/skeletons";
 
-export default function HelpdeskLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Helpdesk" subtitle="Submit and track your support tickets">
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <Skeleton className="h-4 w-20 mb-2" />
-                <Skeleton className="h-8 w-12" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Card>
-          <CardContent className="pt-6 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </CardContent>
-        </Card>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <TableSkeleton />
       </div>
-    </PageWrapper>
+    </>
   );
 }

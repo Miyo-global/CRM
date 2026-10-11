@@ -1,39 +1,25 @@
-import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeaderSkeleton } from "@/components/ui/skeletons";
 
-export default function TimelineLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Timeline" subtitle="Loading timeline...">
-      <div className="h-full px-4 pb-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-48" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-8 w-20 rounded-md" />
-            <Skeleton className="h-8 w-20 rounded-md" />
-          </div>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10" role="status" aria-label="Loading">
+        <div className="mb-3 flex items-center gap-2">
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="ml-auto h-9 w-40" />
         </div>
-        <div className="border rounded-lg overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/30">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-3.5 w-16" />
-            ))}
-          </div>
-          <div className="p-4 space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="h-4 w-32 shrink-0" />
-                <Skeleton
-                  className="h-6 rounded"
-                  style={{
-                    width: `${30 + (i * 13) % 50}%`,
-                    marginLeft: `${(i * 7) % 30}%`,
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-border bg-border">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <div key={i} className="h-24 space-y-2 bg-card p-2">
+              <Skeleton className="h-3 w-6" />
+              {i % 3 === 0 && <Skeleton className="h-4 w-full" />}
+            </div>
+          ))}
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 }

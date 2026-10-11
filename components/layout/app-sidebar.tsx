@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Search, Bell } from "lucide-react";
+import { ChevronsLeft, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ import { useGetOrganizations } from "@/lib/hooks/auth-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import { useUnreadNotificationCount } from "@/lib/api/hooks/notifications";
 import {
   getNavGroupsForRole,
@@ -20,6 +22,22 @@ import {
 import { SidebarSection } from "./sidebar/sidebar-section";
 import { SidebarUserMenu } from "./sidebar/sidebar-user-menu";
 import { NotificationBell } from "./notification-bell";
+import { ThemeToggle } from "./theme-toggle";
+import { openCommandPalette } from "./shortcuts-provider";
+
+/**
+ * Role + nav groups for the signed-in user. Keeps the last known role while the
+ * session refetches so the nav doesn't flash empty.
+ */
+export function useRoleNavGroups() {
+  const { data: session, status } = useSession();
+  const role = session?.user?.role;
+  const [lastKnownRole, setLastKnownRole] = useState(role);
+  if (role && role !== lastKnownRole) setLastKnownRole(role);
+  const effectiveRole = role || lastKnownRole;
+  const navGroups = useMemo(() => getNavGroupsForRole(effectiveRole), [effectiveRole]);
+  return { session, status, role, effectiveRole, hasEverLoaded: !!effectiveRole, navGroups };
+}
 
 interface AppSidebarProps {
   isCollapsed?: boolean;
@@ -32,24 +50,9 @@ export function AppSidebar({
   onToggleCollapse,
   onNavigate,
 }: AppSidebarProps) {
-  const { data: session, status } = useSession();
+  const { session, status, role, effectiveRole, hasEverLoaded, navGroups } = useRoleNavGroups();
   const { data: organizations } = useGetOrganizations();
-  const role = session?.user?.role;
-
-  const lastKnownRoleRef = useRef<string | undefined>(role);
-  const hasEverLoadedRef = useRef(false);
-  if (role) {
-    lastKnownRoleRef.current = role;
-    hasEverLoadedRef.current = true;
-  }
-  const effectiveRole = role || lastKnownRoleRef.current;
-
   const pathname = usePathname();
-
-  const navGroups = useMemo(
-    () => getNavGroupsForRole(effectiveRole),
-    [effectiveRole]
-  );
   const isAdmin = effectiveRole === "CEO" || effectiveRole === "HR";
 
   const longestMatchingNavPath = useMemo(
@@ -89,7 +92,7 @@ export function AppSidebar({
 
   const toggleGroup = useCallback((label: string) => {
     setCollapsedGroups((prev) => {
-      const next = { ...prev, [label]: !prev[label] };
+      const next = { ...prev, [label]: !(prev[label] ?? true) };
       try { localStorage.setItem("sidebar-groups", JSON.stringify(next)); } catch { }
       return next;
     });
@@ -130,41 +133,30 @@ export function AppSidebar({
 
   const orgName = organizations?.[0]?.name;
 
-  const handleSearchClick = useCallback(() => {
-    document.dispatchEvent(
-      new KeyboardEvent("keydown", {
-        key: "k",
-        metaKey: navigator.platform?.toUpperCase().includes("MAC") ?? true,
-        ctrlKey: !(navigator.platform?.toUpperCase().includes("MAC") ?? true),
-        bubbles: true,
-      })
-    );
-  }, []);
-
   if (
-    !hasEverLoadedRef.current &&
+    !hasEverLoaded &&
     (status === "loading" || (status === "authenticated" && !role))
   ) {
     return (
       <div className="flex flex-col h-full bg-sidebar">
         <div className="px-3 py-4 flex-1 space-y-6">
           <div className="flex items-center gap-3 px-1">
-            <Skeleton className="h-8 w-8 rounded-xl bg-sidebar-border" />
-            <Skeleton className="h-4 w-20 rounded bg-sidebar-border" />
+            <Skeleton className="size-7 rounded-full bg-sidebar-accent" />
+            <Skeleton className="h-4 w-20 rounded bg-sidebar-accent" />
           </div>
           <div className="space-y-1">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 px-2 py-1.5">
-                <Skeleton className="h-4 w-4 rounded bg-sidebar-border" />
-                <Skeleton className="h-3.5 w-24 rounded bg-sidebar-border" />
+                <Skeleton className="h-4 w-4 rounded bg-sidebar-accent" />
+                <Skeleton className="h-3.5 w-24 rounded bg-sidebar-accent" />
               </div>
             ))}
           </div>
         </div>
         <div className="px-3 py-3 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-7 w-7 rounded-full bg-sidebar-border" />
-            <Skeleton className="h-3 w-20 rounded bg-sidebar-border" />
+            <Skeleton className="h-7 w-7 rounded-full bg-sidebar-accent" />
+            <Skeleton className="h-3 w-20 rounded bg-sidebar-accent" />
           </div>
         </div>
       </div>
@@ -173,96 +165,70 @@ export function AppSidebar({
 
   return (
     <TooltipProvider>
-      <div
-        className={cn(
-          "relative flex flex-col h-full bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out",
-          isCollapsed ? "w-[3.5rem]" : "w-[17rem]"
-        )}
-      >
+      <div className="relative flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
         <div
           className={cn(
-            "relative flex items-center h-14 shrink-0 border-b border-sidebar-border",
-            isCollapsed ? "justify-center px-0" : "justify-between px-4"
+            "flex h-14 shrink-0 items-center border-b border-sidebar-border",
+            isCollapsed ? "justify-center px-2" : "gap-2 px-3",
           )}
         >
-          {!isCollapsed && (
-            <Link
-              href="/dashboard"
-              onClick={onNavigate}
-              className="flex items-center gap-3 min-w-0 group"
-            >
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-gold/20 ring-1 ring-gold/35 shrink-0">
-                <Image
-                  src="/logo.svg"
-                  alt="Miyo Global"
-                  fill
-                  className="object-contain p-1.5"
-                />
-              </div>
-              <div className="min-w-0">
-                <span className="gold-text text-[17px] font-bold tracking-tight leading-none block group-hover:opacity-90 transition-opacity">
-                  Miyo Global
-                </span>
-                {orgName ? (
-                  <span className="text-[11px] text-sidebar-foreground/40 truncate block mt-0.5 leading-none max-w-[120px]">
-                    {orgName}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-sidebar-foreground/30 block mt-0.5 leading-none">
-                    CRM
-                  </span>
-                )}
-              </div>
-            </Link>
+          <Link
+            href="/dashboard"
+            onClick={onNavigate}
+            aria-label={isCollapsed ? "Go to dashboard" : undefined}
+            className={cn(
+              "flex min-w-0 items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              !isCollapsed && "flex-1",
+            )}
+          >
+            <Image src="/logo.svg" alt="Miyo Global" width={28} height={28} className="size-7 shrink-0" />
+            {!isCollapsed && (
+              <span className="min-w-0 leading-tight">
+                <span className="block truncate font-display text-sm font-bold text-sidebar-accent-foreground">Miyo Global</span>
+                <span className="block truncate text-2xs text-sidebar-muted">{orgName ?? "CRM"}</span>
+              </span>
+            )}
+          </Link>
+          {onToggleCollapse && !isCollapsed && (
+            <CollapseButton isCollapsed={false} onToggle={onToggleCollapse} />
           )}
+        </div>
 
-          {isCollapsed && (
-            <Link
-              href="/dashboard"
-              onClick={onNavigate}
-              className="h-10 w-10 rounded-xl overflow-hidden bg-gold/20 ring-1 ring-gold/35 flex items-center justify-center"
-              aria-label="Go to dashboard"
-            >
-              <Image
-                src="/logo.svg"
-                alt="Miyo Global"
-                width={26}
-                height={26}
-                className="object-contain"
-              />
-            </Link>
-          )}
-
-          {onToggleCollapse && (
+        <div className={cn("shrink-0 pt-3 pb-1", isCollapsed ? "flex justify-center px-2" : "px-3")}>
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={openCommandPalette}
+                  aria-label="Search"
+                  className="size-10 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                >
+                  <Search strokeWidth={1.75} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={10}>Search (⌘K)</TooltipContent>
+            </Tooltip>
+          ) : (
             <button
               type="button"
-              onClick={onToggleCollapse}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className={cn(
-                "z-50 flex h-6 w-6 shrink-0 items-center justify-center transition-colors",
-                isCollapsed
-                  ? "absolute top-3 -right-3 rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground/70 shadow-md hover:border-gold/40 hover:bg-sidebar hover:text-gold"
-                  : "rounded-md text-sidebar-primary/70 hover:bg-white/5 hover:text-sidebar-primary"
-              )}
+              onClick={openCommandPalette}
+              aria-label="Search"
+              className="flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border bg-sidebar-accent/50 px-2.5 text-sm text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              {isCollapsed ? (
-                <ChevronRight className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronLeft className="h-3.5 w-3.5" />
-              )}
+              <Search aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.75} />
+              <span className="flex-1 text-left">Search…</span>
+              <Kbd className="border-sidebar-border bg-transparent text-sidebar-muted">⌘K</Kbd>
             </button>
           )}
         </div>
 
-        <ScrollArea className="flex-1 min-h-0">
-          <nav
-            className={cn("py-2", isCollapsed ? "px-1.5" : "px-3")}
-          >
+        <ScrollArea className="min-h-0 flex-1 mask-y-from-97%">
+          <nav aria-label="Main" className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
             {navGroups.map((group, i) => {
               const groupLabel = group.label;
-              const isGroupCollapsed = groupLabel in collapsedGroups
-                ? collapsedGroups[groupLabel]
-                : true;
+              const isGroupCollapsed = groupLabel in collapsedGroups ? collapsedGroups[groupLabel] : true;
               return (
                 <SidebarSection
                   key={groupLabel}
@@ -282,54 +248,48 @@ export function AppSidebar({
 
         <div
           className={cn(
-            "border-t border-sidebar-border shrink-0",
-            isCollapsed ? "px-1.5 py-2 flex flex-col items-center gap-1" : "px-3 py-2 flex items-center gap-1"
+            "shrink-0 border-t border-sidebar-border",
+            isCollapsed ? "flex flex-col items-center gap-1 px-2 py-2" : "space-y-1 px-3 py-2",
           )}
         >
           {isCollapsed ? (
             <>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={handleSearchClick}
-                    aria-label="Search"
-                    className="h-8 w-8 rounded-lg flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-white/5 transition-colors"
-                  >
-                    <Search className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={10} className="text-xs">
-                  Search (⌘K)
-                </TooltipContent>
-              </Tooltip>
-              <div className="[&_button]:h-8 [&_button]:w-8 [&_button]:rounded-lg [&_button]:text-sidebar-foreground/50 [&_button:hover]:text-sidebar-foreground [&_button:hover]:bg-white/[0.05]">
-                <NotificationBell />
-              </div>
+              <NotificationBell tone="inverse" silent />
+              {onToggleCollapse && <CollapseButton isCollapsed onToggle={onToggleCollapse} />}
             </>
           ) : (
-            <>
-              <button
-                type="button"
-                onClick={handleSearchClick}
-                aria-label="Search"
-                className="flex-1 flex items-center gap-2 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] px-2.5 text-sidebar-foreground/40 text-xs hover:text-sidebar-foreground/70 hover:bg-white/[0.07] transition-colors"
-              >
-                <Search className="h-3.5 w-3.5 shrink-0" />
-                <span className="flex-1 text-left">Search…</span>
-                <kbd className="hidden sm:inline-flex h-4 items-center rounded border border-white/[0.08] bg-white/[0.04] px-1 font-mono text-[9px] text-sidebar-foreground/25">
-                  ⌘K
-                </kbd>
-              </button>
-              <div className="[&_button]:h-8 [&_button]:w-8 [&_button]:rounded-lg [&_button]:text-sidebar-foreground/50 [&_button:hover]:text-sidebar-foreground [&_button:hover]:bg-white/[0.05]">
-                <NotificationBell />
-              </div>
-            </>
+            <div className="flex items-center justify-between gap-2">
+              <NotificationBell tone="inverse" silent />
+              <ThemeToggle tone="inverse" />
+            </div>
           )}
+          <SidebarUserMenu isCollapsed={isCollapsed} isAdmin={isAdmin} />
         </div>
-
-        <SidebarUserMenu isCollapsed={isCollapsed} isAdmin={isAdmin} />
       </div>
     </TooltipProvider>
+  );
+}
+
+function CollapseButton({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onToggle}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="shrink-0 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <ChevronsLeft
+            strokeWidth={1.75}
+            className={cn("transition-transform duration-200 motion-reduce:transition-none", isCollapsed && "rotate-180")}
+          />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={10}>
+        {isCollapsed ? "Expand sidebar" : "Collapse sidebar"} ( [ )
+      </TooltipContent>
+    </Tooltip>
   );
 }

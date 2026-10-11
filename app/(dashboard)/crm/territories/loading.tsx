@@ -1,20 +1,12 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageWrapper } from "@/components/ui/page-wrapper";
+import { PageHeaderSkeleton, TableSkeleton } from "@/components/ui/skeletons";
 
-export default function TerritoriesLoading() {
+export default function Loading() {
   return (
-    <PageWrapper
-      title="Territory Management"
-      subtitle="Define geographic territories and assign sales reps"
-    >
-      <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}
-        </div>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-52" />)}
-        </div>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <TableSkeleton />
       </div>
-    </PageWrapper>
+    </>
   );
 }

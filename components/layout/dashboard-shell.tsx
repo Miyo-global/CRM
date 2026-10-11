@@ -2,19 +2,19 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
-import { AppSidebar } from "./app-sidebar";
+import { AppSidebar, useRoleNavGroups } from "./app-sidebar";
 import { CommandPalette } from "./command-palette";
+import { Topbar } from "./topbar";
+import { ShortcutsProvider } from "./shortcuts-provider";
 import { NotActivatedPage } from "../auth/not-activated-page";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
-import Image from "next/image";
 
 const DESKTOP_SIDEBAR_MIN_WIDTH = 1024;
 const SIDEBAR_COOKIE = "sidebar-collapsed";
-const SIDEBAR_COLLAPSED_W = "3.5rem";
-const SIDEBAR_EXPANDED_W = "17rem";
+const SIDEBAR_COLLAPSED_W = "4rem";
+const SIDEBAR_EXPANDED_W = "16rem";
 
 function setSidebarCookie(collapsed: boolean) {
   document.cookie = `${SIDEBAR_COOKIE}=${collapsed}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
@@ -36,6 +36,7 @@ export function DashboardShell({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(defaultCollapsed);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile(DESKTOP_SIDEBAR_MIN_WIDTH);
+  const { navGroups } = useRoleNavGroups();
   usePushSubscription(userId);
 
   const handleToggleSidebar = useCallback(() => {
@@ -47,72 +48,60 @@ export function DashboardShell({
   }, []);
 
   const handleCloseMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+  const handleOpenMobileMenu = useCallback(() => setMobileMenuOpen(true), []);
 
   const sidebarW = isSidebarCollapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_EXPANDED_W;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] flex bg-background overflow-hidden">
-      <Link
-        href="#dashboard-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium"
-      >
-        Skip to content
-      </Link>
-
-      {hasDashboardAccess && !isMobile && (
-        <aside
-          aria-label="Sidebar"
-          style={{ width: sidebarW }}
-          className="hidden lg:flex flex-col h-full min-h-0 border-r border-sidebar-border bg-sidebar shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden relative z-30"
+    <ShortcutsProvider navGroups={navGroups} onToggleSidebar={handleToggleSidebar}>
+      <div className="flex h-[100dvh] max-h-[100dvh] overflow-hidden bg-background">
+        <Link
+          href="#dashboard-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-skip-link focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-md"
         >
-          <AppSidebar
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={handleToggleSidebar}
-          />
-        </aside>
-      )}
+          Skip to content
+        </Link>
 
-      <main
-        id="dashboard-content"
-        className="flex-1 min-w-0 flex flex-col h-full min-h-0 overflow-hidden"
-      >
-        {hasDashboardAccess ? (
-          <>
-            <CommandPalette />
+        {hasDashboardAccess && !isMobile && (
+          <aside
+            aria-label="Sidebar"
+            style={{ width: sidebarW }}
+            className="relative z-sidebar hidden h-full min-h-0 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-out motion-reduce:transition-none lg:flex"
+          >
+            <AppSidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+          </aside>
+        )}
 
-            {isMobile && (
-              <header className="lg:hidden sticky top-0 z-40 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur-sm px-3">
+        <main
+          id="dashboard-content"
+          className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+        >
+          {hasDashboardAccess ? (
+            <>
+              <CommandPalette />
+
+              {isMobile && (
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} modal>
-                  <button
-                    type="button"
-                    onClick={() => setMobileMenuOpen(true)}
-                    aria-label="Open navigation"
-                    className="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  <SheetContent
+                    side="left"
+                    className="z-modal w-64 gap-0 border-sidebar-border bg-sidebar p-0 [&>button]:text-sidebar-muted [&>button]:hover:bg-sidebar-accent [&>button]:hover:text-sidebar-accent-foreground"
                   >
-                    <Menu className="h-4 w-4" />
-                  </button>
-                  <SheetContent side="left" className="z-[100] p-0 w-[17rem] border-r-sidebar-border">
                     <SheetTitle className="sr-only">Navigation</SheetTitle>
                     <AppSidebar onNavigate={handleCloseMobileMenu} />
                   </SheetContent>
                 </Sheet>
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg overflow-hidden bg-gold/15 ring-1 ring-gold/20 flex items-center justify-center">
-                    <Image src="/logo.svg" alt="Miyo Global" width={20} height={20} className="object-contain" />
-                  </div>
-                  <span className="text-sm font-bold gold-text">Miyo Global</span>
-                </div>
-              </header>
-            )}
+              )}
 
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
-              {children}
-            </div>
-          </>
-        ) : (
-          <NotActivatedPage />
-        )}
-      </main>
-    </div>
+              <Topbar navGroups={navGroups} onOpenMobileNav={handleOpenMobileMenu} />
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+                {children}
+              </div>
+            </>
+          ) : (
+            <NotActivatedPage />
+          )}
+        </main>
+      </div>
+    </ShortcutsProvider>
   );
 }

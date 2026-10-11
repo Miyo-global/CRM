@@ -1,17 +1,12 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
-import { PageWrapper } from "@/components/ui/page-wrapper";
+import { PageHeaderSkeleton, ChartGridSkeleton } from "@/components/ui/skeletons";
 
-export default function CrmdealsagingLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Deal Aging Report" subtitle="Loading...">
-      <Card>
-        <CardContent className="p-6 space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
-          ))}
-        </CardContent>
-      </Card>
-    </PageWrapper>
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <ChartGridSkeleton />
+      </div>
+    </>
   );
 }

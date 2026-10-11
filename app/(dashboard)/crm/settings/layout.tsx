@@ -15,32 +15,66 @@ export default function CrmSettingsLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 border-b bg-background/95 backdrop-blur-sm px-1">
-        <nav className="flex items-center gap-1 overflow-x-auto" aria-label="CRM Settings">
-          {TABS.map((tab) => {
-            const isActive = pathname === tab.href;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "relative px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
-                  isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tab.label}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-      <div className="flex-1 min-h-0">{children}</div>
+    <div className="flex h-full flex-col md:flex-row">
+      {/* <md: underline tabs */}
+      <nav
+        aria-label="CRM Settings"
+        className="flex shrink-0 items-center gap-6 overflow-x-auto border-b border-border bg-background px-4 sm:px-6 md:hidden"
+      >
+        {TABS.map((tab) => {
+          const isActive = pathname === tab.href;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "relative inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-sm px-0.5 text-sm font-medium transition-colors duration-150 focus-visible:focus-ring",
+                "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary",
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground after:hidden hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* ≥md: 200px left sub-nav */}
+      <nav
+        aria-label="CRM Settings"
+        className="hidden w-50 shrink-0 flex-col gap-0.5 border-r border-border bg-background p-3 md:flex"
+      >
+        <p className="px-2 pb-1.5 pt-1 text-2xs font-semibold uppercase tracking-wider text-subtle-foreground">
+          CRM settings
+        </p>
+        {TABS.map((tab) => {
+          const isActive = pathname === tab.href;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "flex h-8 items-center gap-2 rounded-md px-2 text-sm transition-colors duration-150 focus-visible:focus-ring",
+                isActive
+                  ? "bg-accent font-medium text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              <span
+                aria-hidden
+                className={cn("size-1.5 shrink-0 rounded-full", isActive ? "bg-primary" : "bg-transparent")}
+              />
+              <span className="truncate">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="min-h-0 min-w-0 flex-1">{children}</div>
     </div>
   );
 }

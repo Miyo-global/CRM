@@ -18,6 +18,8 @@ interface SidebarSectionProps {
   longestMatchingNavPath: string | null;
 }
 
+const focusRing = "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring";
+
 export function SidebarSection({
   group,
   groupIndex,
@@ -28,111 +30,114 @@ export function SidebarSection({
   onNavigate,
   longestMatchingNavPath,
 }: SidebarSectionProps) {
-
   const showItems = isCollapsed || !isGroupCollapsed;
 
   return (
-    <div className={cn(groupIndex > 0 && "mt-2")}>
-
+    <div className={cn(groupIndex > 0 && !isCollapsed && "mt-3")}>
       {!isCollapsed && (
         <button
           type="button"
           onClick={onToggleGroup}
-          className="w-full flex items-center justify-between px-2 py-1 mb-0.5 group/header rounded-md hover:bg-white/[0.06] transition-colors"
+          aria-expanded={!isGroupCollapsed}
+          className={cn(
+            "group/header flex h-7 w-full items-center justify-between rounded-md px-2.5 text-2xs font-semibold uppercase tracking-[0.08em] text-sidebar-muted transition-colors hover:text-sidebar-accent-foreground select-none",
+            focusRing,
+          )}
         >
-          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/60 group-hover/header:text-sidebar-foreground select-none transition-colors">
-            {group.label}
-          </span>
+          <span className="truncate">{group.label}</span>
           <ChevronDown
+            aria-hidden="true"
             className={cn(
-              "h-3.5 w-3.5 text-sidebar-primary/80 group-hover/header:text-sidebar-primary transition-all duration-200 shrink-0",
-              isGroupCollapsed && "-rotate-90"
+              "size-3.5 shrink-0 transition-transform duration-200 motion-reduce:transition-none",
+              isGroupCollapsed && "-rotate-90",
             )}
           />
         </button>
       )}
 
-      {isCollapsed && groupIndex > 0 && (
-        <div className="mx-auto mb-2 h-px w-6 bg-sidebar-border" />
-      )}
+      {isCollapsed && groupIndex > 0 && <div aria-hidden="true" className="mx-auto my-2 h-px w-6 bg-sidebar-border" />}
 
       {showItems && (
-        <div className="space-y-0.5">
+        <ul className={cn("space-y-0.5", isCollapsed && "flex flex-col items-center")}>
           {group.routes.map((route) => {
             const routePath = navHrefPath(route.href);
-            const isActive =
-              longestMatchingNavPath !== null && routePath === longestMatchingNavPath;
-
-            const badgeCount =
-              route.badge === "leaves" && pendingLeaves > 0 ? pendingLeaves : 0;
-            const hasBadge = badgeCount > 0;
+            const isActive = longestMatchingNavPath !== null && routePath === longestMatchingNavPath;
+            const badgeCount = route.badge === "leaves" && pendingLeaves > 0 ? pendingLeaves : 0;
+            const badgeText = badgeCount > 99 ? "99+" : String(badgeCount);
+            const isSub = !isCollapsed && route.isSubItem;
 
             const item = (
               <Link
                 href={route.href}
                 onClick={onNavigate}
                 aria-current={isActive ? "page" : undefined}
+                aria-label={isCollapsed ? route.label : undefined}
                 className={cn(
-                  "nav-item group relative",
+                  "group relative flex items-center rounded-md font-medium transition-colors duration-150",
+                  focusRing,
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   isCollapsed
-                    ? "justify-center w-9 h-9 mx-auto flex"
-                    : "px-2.5 py-1.5 gap-2.5 w-full flex",
-                  !isCollapsed && route.isSubItem && "pl-6",
-                  isActive && "active"
+                    ? "size-10 justify-center"
+                    : isSub
+                      ? "h-7 w-full gap-2.5 pl-9 pr-2.5 text-sm"
+                      : "h-8 w-full gap-2.5 px-2.5 text-sm",
+                  isSub && !isActive && "text-sidebar-foreground/80",
+                  // Active indicator: 6px gold circle (logo motif); collapsed → 3px bar.
+                  isActive &&
+                    (isCollapsed
+                      ? "before:absolute before:inset-y-2 before:-left-2 before:w-0.75 before:rounded-full before:bg-sidebar-primary"
+                      : "before:absolute before:top-1/2 before:-left-2.5 before:size-1.5 before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary"),
                 )}
               >
-
-                {isActive && !isCollapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r-full bg-gold" />
-                )}
-
                 <route.icon
+                  aria-hidden="true"
+                  strokeWidth={1.75}
                   className={cn(
-                    "nav-icon transition-colors duration-150",
-                    route.isSubItem ? "h-3.5 w-3.5" : "h-4 w-4",
-                    isActive && "text-gold"
+                    "shrink-0 transition-colors",
+                    isSub ? "size-3.5" : "size-4",
+                    isActive ? "text-sidebar-primary" : "text-sidebar-muted group-hover:text-sidebar-accent-foreground",
                   )}
                 />
 
-                {!isCollapsed && (
-                  <>
-                    <span className="flex-1 truncate text-[0.8125rem]">
-                      {route.label}
+                {!isCollapsed && <span className="flex-1 truncate">{route.label}</span>}
+
+                {badgeCount > 0 &&
+                  (isCollapsed ? (
+                    <span aria-hidden="true" className="absolute top-1.5 right-1.5 size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar" />
+                  ) : (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-3xs font-bold tabular-nums text-sidebar-primary-foreground">
+                      {badgeText}
                     </span>
-
-                    {hasBadge && (
-                      <span
-                        className="inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full text-[10px] font-bold tabular-nums leading-none bg-amber-500 text-white"
-                      >
-                        {badgeCount > 99 ? "99+" : badgeCount}
-                      </span>
-                    )}
-                  </>
-                )}
-
-                {isCollapsed && hasBadge && (
-                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 ring-1 ring-sidebar" />
-                )}
+                  ))}
               </Link>
             );
 
             if (isCollapsed) {
               return (
-                <Tooltip key={route.href} delayDuration={0}>
-                  <TooltipTrigger asChild>{item}</TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={10} className="text-xs font-medium">
-                    {route.label}
-                    {hasBadge && (
-                      <span className="ml-1.5 opacity-70">({badgeCount})</span>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
+                <li key={route.href}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>{item}</TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={10}>
+                      {route.label}
+                      {badgeCount > 0 && <span className="ml-1.5 opacity-70">({badgeText})</span>}
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
               );
             }
 
-            return <div key={route.href}>{item}</div>;
+            return (
+              <li key={route.href} className="relative">
+                {isSub && (
+                  <span aria-hidden="true" className="absolute inset-y-0 left-4.5 w-px bg-sidebar-border" />
+                )}
+                {item}
+              </li>
+            );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

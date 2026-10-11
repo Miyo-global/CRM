@@ -44,7 +44,10 @@ export function PageWrapper({
 
   const titleBlock = (
     <div className="px-4 sm:px-6 xl:px-8 pt-6 pb-4">
-      {crumbs.length > 0 && <Breadcrumbs items={crumbs} className="mb-2" />}
+      {/* Auto crumbs duplicate the topbar's on lg+; explicit crumbs always render. */}
+      {crumbs.length > 0 && (
+        <Breadcrumbs items={crumbs} className={cn("mb-2", breadcrumbs === undefined && "lg:hidden")} />
+      )}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           {eyebrow && (
