@@ -2,7 +2,6 @@ import "server-only";
 
 import { db } from "@/lib/db";
 import { jobPostings, departments } from "@/lib/db/schema";
-import { landingPages } from "@/lib/db/schema/marketing";
 import { eq, desc, inArray, and, or, isNull, gte } from "drizzle-orm";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
@@ -128,25 +127,3 @@ export async function getDepartmentName(id: number): Promise<string | null> {
   return rows[0]?.name ?? null;
 }
 
-export async function getLandingPageMetadataBySlug(slug: string) {
-  const rows = await db
-    .select({ title: landingPages.title, description: landingPages.description })
-    .from(landingPages)
-    .where(and(eq(landingPages.slug, slug), eq(landingPages.isPublished, true)));
-  return rows[0] ?? null;
-}
-
-export async function getLandingPageBySlug(slug: string) {
-  const rows = await db
-    .select({
-      id: landingPages.id,
-      orgId: landingPages.orgId,
-      title: landingPages.title,
-      content: landingPages.content,
-      description: landingPages.description,
-      settings: landingPages.settings,
-    })
-    .from(landingPages)
-    .where(and(eq(landingPages.slug, slug), eq(landingPages.isPublished, true)));
-  return rows[0] ?? null;
-}

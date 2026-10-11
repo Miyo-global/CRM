@@ -22,8 +22,6 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "careers/apply/route.ts": "public job application",
   "careers/apply/upload-resume/route.ts": "public job application",
   "careers/apply/parse-resume/route.ts": "public job application",
-  "landing/submit/route.ts": "public landing page form",
-  "marketing/landing-pages/[pageId]/track/route.ts": "public page-view tracking",
   "public/lead-form/[token]/route.ts": "token-scoped public form",
   "public/intake/[projectId]/route.ts": "public project intake form",
   "public/interview-booking/[token]/route.ts": "token-scoped booking",

@@ -18,13 +18,6 @@ export function useSalesDashboard() {
   });
 }
 
-export function useMarketingDashboard() {
-  return useQuery({
-    queryKey: queryKeys.crm.marketingDashboard(),
-    queryFn: () => apiClient.get<MarketingDashboard>("/crm/marketing-dashboard"),
-  });
-}
-
 export function useSupportDashboard() {
   return useQuery({
     queryKey: queryKeys.crm.supportDashboard(),

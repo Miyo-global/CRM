@@ -206,26 +206,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-          label: "Marketing",
-          defaultCollapsed: true,
-          routes: [
-            { label: "Marketing Hub", icon: Megaphone, href: "/marketing" },
-            { label: "Campaigns", icon: Megaphone, href: "/marketing/campaigns", isSubItem: true },
-            { label: "Email Campaigns", icon: Mail, href: "/marketing/email-campaigns", isSubItem: true },
-            { label: "A/B Testing", icon: FlaskConical, href: "/marketing/ab-testing", isSubItem: true },
-            { label: "Marketing Calendar", icon: CalendarDays, href: "/marketing/calendar", isSubItem: true },
-            { label: "Content Calendar", icon: CalendarRange, href: "/marketing/content-calendar", isSubItem: true },
-            { label: "Landing Pages", icon: BarChart2, href: "/marketing/landing-pages", isSubItem: true },
-            { label: "Content Brief", icon: FileText, href: "/marketing/content-brief", isSubItem: true },
-            { label: "Social Analytics", icon: BarChart2, href: "/marketing/social-analytics", isSubItem: true },
-            { label: "AI Insights", icon: Sparkles, href: "/marketing/ai-insights", isSubItem: true },
-            { label: "Digital Marketing", icon: BarChart3, href: "/digital-marketing" },
-            { label: "Digital Campaigns", icon: Megaphone, href: "/digital-marketing/campaigns", isSubItem: true },
-            { label: "Digital Leads", icon: Contact2, href: "/digital-marketing/leads", isSubItem: true },
-            { label: "Social", icon: Globe, href: "/digital-marketing/social", isSubItem: true },
-          ],
-        },
-        {
           label: "Projects & Time",
           routes: [
             { label: "All Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
@@ -429,7 +409,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-
           label: "My Pipeline",
           routes: [
             { label: "My Leads", icon: Contact2, href: "/crm/leads" },
@@ -445,7 +424,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-
           label: "My Revenue",
           routes: [
             { label: "My Targets", icon: Trophy, href: "/crm/targets" },
@@ -489,7 +467,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-
           label: "Helpdesk",
           routes: [
             { label: "All Tickets", icon: LifeBuoy, href: "/support" },
@@ -498,7 +475,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-
           label: "Customers",
           routes: [
             { label: "Clients", icon: Users, href: "/crm/clients" },
@@ -540,27 +516,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ],
         },
         {
-
-          label: "Marketing",
-          routes: [
-            { label: "Marketing Hub", icon: Megaphone, href: "/marketing" },
-            { label: "Campaigns", icon: Megaphone, href: "/marketing/campaigns", isSubItem: true },
-            { label: "Email Campaigns", icon: Mail, href: "/marketing/email-campaigns", isSubItem: true },
-            { label: "A/B Testing", icon: FlaskConical, href: "/marketing/ab-testing", isSubItem: true },
-            { label: "Marketing Calendar", icon: CalendarDays, href: "/marketing/calendar", isSubItem: true },
-            { label: "Content Calendar", icon: CalendarRange, href: "/marketing/content-calendar", isSubItem: true },
-            { label: "Landing Pages", icon: BarChart2, href: "/marketing/landing-pages", isSubItem: true },
-            { label: "Content Brief", icon: FileText, href: "/marketing/content-brief", isSubItem: true },
-            { label: "Social Analytics", icon: BarChart2, href: "/marketing/social-analytics", isSubItem: true },
-            { label: "AI Insights", icon: Sparkles, href: "/marketing/ai-insights", isSubItem: true },
-            { label: "Digital Marketing", icon: BarChart3, href: "/digital-marketing" },
-            { label: "Digital Campaigns", icon: Megaphone, href: "/digital-marketing/campaigns", isSubItem: true },
-            { label: "Digital Leads", icon: Contact2, href: "/digital-marketing/leads", isSubItem: true },
-            { label: "Social", icon: Globe, href: "/digital-marketing/social", isSubItem: true },
-          ],
-        },
-        {
-
           label: "CRM (Leads)",
           routes: [
             { label: "CRM Hub", icon: Contact2, href: "/crm" },

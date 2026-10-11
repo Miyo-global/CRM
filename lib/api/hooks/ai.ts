@@ -256,20 +256,6 @@ export function useNLSearch() {
 
 
 
-export interface CampaignInsightsResult {
-  insights: string;
-  generatedAt: string;
-}
-
-export function useCampaignInsights() {
-  return useMutation({
-    mutationFn: (period: string) =>
-      apiClient.post<CampaignInsightsResult>("/ai/campaign-insights", { period }),
-  });
-}
-
-
-
 export interface AccountSummaryResult {
   summary: string;
   clientName: string;

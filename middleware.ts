@@ -42,10 +42,8 @@ const PROTECTED_ROUTES = [
   "/timesheets",
   "/support",
   "/crm",
-  "/digital-marketing",
   "/reports",
   "/notifications",
-  "/marketing",
   "/ai",
   "/calendar",
 ];
