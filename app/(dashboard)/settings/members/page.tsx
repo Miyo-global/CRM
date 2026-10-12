@@ -57,8 +57,6 @@ const ALL_ROLES = [
   { value: "DESIGN", label: "Design" },
   { value: "VIDEO_EDITOR", label: "Video Editor" },
   { value: "DIGITAL_MARKETING", label: "Digital Marketing" },
-  { value: "BRANCH_MANAGER", label: "Branch Manager" },
-  { value: "BRANCH_HR", label: "Branch HR" },
 ];
 
 const ROLE_TONES: Record<string, Tone> = {

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   return withAuth(async (session) => {
     const role = session.user.role;
-    if (!role || !["CEO", "ADMIN", "HR", "BRANCH_HR", "BRANCH_MANAGER"].includes(role)) {
+    if (!role || !["CEO", "ADMIN", "HR"].includes(role)) {
       return err("Forbidden", 403);
     }
 

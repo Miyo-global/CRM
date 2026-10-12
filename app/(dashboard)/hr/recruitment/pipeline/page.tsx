@@ -301,7 +301,7 @@ export default function PipelinePage() {
                   )}
                 </Label>
                 {(() => {
-                  const HR_ROLES = ["HR", "BRANCH_HR"];
+                  const HR_ROLES = ["HR"];
                   const pool = schedulingTarget.roundType === "HR_SCREENING"
                     ? employees.filter((e) => HR_ROLES.includes(e.role))
                     : employees;

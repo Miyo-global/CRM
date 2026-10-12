@@ -9,7 +9,7 @@ import { buildHrLetterVars, applyHrLetterTokens, HR_LETTER_TYPE_TITLES } from "@
 import { renderOfferLetterPdf } from "@/lib/hr/offer-letter-branded-pdf";
 import { isStorageConfigured, uploadFile } from "@/lib/storage";
 
-const HR_ROLES = ["CEO", "ADMIN", "HR", "BRANCH_HR"];
+const HR_ROLES = ["CEO", "ADMIN", "HR"];
 
 const bodySchema = z.object({
   templateId: z.number().int().positive(),

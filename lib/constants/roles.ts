@@ -9,8 +9,6 @@ export const ROLES = {
   CUSTOMER_SUPPORT: "CUSTOMER_SUPPORT",
   VIDEO_EDITOR: "VIDEO_EDITOR",
   DIGITAL_MARKETING: "DIGITAL_MARKETING",
-  BRANCH_MANAGER: "BRANCH_MANAGER",
-  BRANCH_HR: "BRANCH_HR",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -23,7 +21,6 @@ export const RECRUITMENT_HR_ROLES: readonly string[] = [
   ROLES.CEO,
   ROLES.HR,
   ROLES.ADMIN,
-  ROLES.BRANCH_HR,
 ];
 
 export function isRecruitmentHr(role: string | undefined | null): boolean {
@@ -50,7 +47,7 @@ export function isExpenseAdmin(role: string | undefined | null): boolean {
  */
 export const ALL_EMPLOYEE_ROLES: readonly string[] = Object.values(ROLES);
 
-export const HR_ROLES: readonly string[] = [ROLES.HR, ROLES.BRANCH_HR];
+export const HR_ROLES: readonly string[] = [ROLES.HR];
 
 export const INVOICE_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR, ROLES.SALES];
 
@@ -64,7 +61,7 @@ export const CHURN_ALERT_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.
 
 export const CSAT_MANAGE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.CUSTOMER_SUPPORT];
 
-export const ONBOARDING_MUTATE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.BRANCH_HR];
+export const ONBOARDING_MUTATE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
 
 /**
  * Roles that manage new-employee onboarding (Add Employee wizard, onboarding
@@ -76,7 +73,7 @@ export function isOnboardingManager(role: string | undefined | null): boolean {
   return hasRole(role, ONBOARDING_MANAGER_ROLES);
 }
 
-export const MANAGEMENT_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR, ROLES.BRANCH_MANAGER];
+export const MANAGEMENT_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR];
 
 export function hasRole(role: string | undefined | null, allowed: readonly string[]): boolean {
   return !!role && allowed.includes(role);

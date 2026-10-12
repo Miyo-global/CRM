@@ -23,8 +23,6 @@ const DEMO_ACCOUNTS = [
   { email: "demo.support@miyoglobal.demo",         firstName: "Demo", lastName: "Support",        role: "CUSTOMER_SUPPORT", designation: "Customer Support Executive",     branchScoped: false },
   { email: "demo.videoeditor@miyoglobal.demo",     firstName: "Demo", lastName: "VideoEditor",    role: "VIDEO_EDITOR",     designation: "Video Editor",                  branchScoped: false },
   { email: "demo.marketing@miyoglobal.demo",       firstName: "Demo", lastName: "Marketing",      role: "DIGITAL_MARKETING",designation: "Digital Marketing Specialist",  branchScoped: false },
-  { email: "demo.branchmanager@miyoglobal.demo",   firstName: "Demo", lastName: "BranchManager",  role: "BRANCH_MANAGER",   designation: "Branch Manager",                branchScoped: true  },
-  { email: "demo.branchhr@miyoglobal.demo",        firstName: "Demo", lastName: "BranchHR",       role: "BRANCH_HR",        designation: "Branch HR Executive",           branchScoped: true  },
 ];
 
 async function main() {

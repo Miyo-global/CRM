@@ -50,7 +50,7 @@ export default function CandidateDetailPage() {
   const updateCandidate = useUpdateCandidate();
   const createInterview = useCreateInterview();
   const generateAiScore = useGenerateCandidateAiScore();
-  const { data: membersData } = useOrgMembers(1, 50, undefined, { roles: ["CEO", "HR", "ADMIN", "BRANCH_HR"] });
+  const { data: membersData } = useOrgMembers(1, 50, undefined, { roles: ["CEO", "HR", "ADMIN"] });
 
   const [interviewOpen, setInterviewOpen] = useState(false);
   const [interviewFormat, setInterviewFormat] = useState<InterviewFormat>("VIDEO");

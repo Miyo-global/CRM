@@ -89,7 +89,6 @@ describe("isRoleAllowedForDepartment", () => {
   it("allows generic and custom roles everywhere", () => {
     expect(isRoleAllowedForDepartment("CEO", "Sales")).toBe(true);
     expect(isRoleAllowedForDepartment("ADMIN", "Engineering")).toBe(true);
-    expect(isRoleAllowedForDepartment("BRANCH_MANAGER", "HR")).toBe(true);
     // Unknown / custom role slug → unconstrained.
     expect(isRoleAllowedForDepartment("FINANCE", "Engineering")).toBe(true);
   });

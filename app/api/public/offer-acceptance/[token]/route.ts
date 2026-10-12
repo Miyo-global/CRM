@@ -217,7 +217,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         }),
       ]);
 
-      void notifyByRoles(offer.orgId, ["CEO", "HR", "ADMIN", "BRANCH_HR"], {
+      void notifyByRoles(offer.orgId, ["CEO", "HR", "ADMIN"], {
         type: body.decision === "ACCEPTED" ? ("SUCCESS" as const) : ("INFO" as const),
         title: body.decision === "ACCEPTED" ? "Offer Accepted" : "Offer Declined",
         message:

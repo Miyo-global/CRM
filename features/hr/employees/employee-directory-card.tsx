@@ -8,7 +8,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { cn, resolveImageUrl } from "@/lib/utils";
 
 /** Roles that lead people; their avatar gets the gold ring (logo circle motif). */
-const MANAGER_ROLES = new Set(["CEO", "BRANCH_MANAGER"]);
+const MANAGER_ROLES = new Set(["CEO"]);
 
 interface EmployeeDirectoryCardProps {
   id: string;

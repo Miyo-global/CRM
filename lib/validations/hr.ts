@@ -29,8 +29,6 @@ import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 const GENERIC_ROLE_SLUGS = new Set([
   "CEO",
   "ADMIN",
-  "BRANCH_MANAGER",
-  "BRANCH_HR",
 ]);
 
 const KNOWN_DEPARTMENT_ROLE_SLUGS = new Set([

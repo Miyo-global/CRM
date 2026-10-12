@@ -23,7 +23,7 @@ function toRow(cells: unknown[]): string {
 export async function GET(_req: NextRequest) {
   return withAuth(async (session) => {
     const role = session.user.role;
-    if (!role || !["CEO", "ADMIN", "HR", "BRANCH_HR"].includes(role)) {
+    if (!role || !["CEO", "ADMIN", "HR"].includes(role)) {
       return err("Forbidden", 403);
     }
 

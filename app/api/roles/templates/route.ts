@@ -39,12 +39,6 @@ const ROLE_TEMPLATES = [
     slug: "VIEWER",
     permissions: ["LEADS:READ", "DEALS:READ", "PROJECTS:READ", "HR:READ", "REPORTS:READ"],
   },
-  {
-    id: "branch_manager",
-    name: "Branch Manager",
-    slug: "BRANCH_MANAGER",
-    permissions: ["LEADS:READ", "LEADS:WRITE", "DEALS:READ", "DEALS:WRITE", "HR:READ", "REPORTS:READ", "TASKS:READ", "TASKS:WRITE"],
-  },
 ] as const;
 
 const cloneSchema = z.object({

@@ -51,7 +51,7 @@ interface HandbookVersion {
   createdAt: string | null;
 }
 
-const MANAGER_ROLES = new Set(["CEO", "ADMIN", "HR", "BRANCH_MANAGER", "BRANCH_HR"]);
+const MANAGER_ROLES = new Set(["CEO", "ADMIN", "HR"]);
 
 const hbKeys = {
   all: [...queryKeys.hr.all, "handbook"] as const,

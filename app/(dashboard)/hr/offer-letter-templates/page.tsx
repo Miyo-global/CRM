@@ -945,7 +945,7 @@ function OfferLetterTemplatesContent() {
 
 export default function OfferLetterTemplatesPage() {
   return (
-    <DashboardGate allowedRoles={["HR", "CEO", "BRANCH_HR"]}>
+    <DashboardGate allowedRoles={["HR", "CEO"]}>
       <OfferLetterTemplatesContent />
     </DashboardGate>
   );

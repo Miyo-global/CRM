@@ -8,7 +8,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { BRAND } from "@/lib/design/brand-hex";
 
-const RECRUITMENT_ROLES = ["HR", "BRANCH_HR", "ADMIN"] as const;
+const RECRUITMENT_ROLES = ["HR", "ADMIN"] as const;
 
 export const interviewNoShow = inngest.createFunction(
   {

@@ -67,7 +67,7 @@ const CATEGORIES = [
   { value: "general", label: "General" },
 ];
 
-const HR_FEATURE_ROLES = ["CEO", "HR", "BRANCH_HR", "ADMIN"];
+const HR_FEATURE_ROLES = ["CEO", "HR", "ADMIN"];
 
 export default function AIHubPage() {
   const { data: session } = useSession();

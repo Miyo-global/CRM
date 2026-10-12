@@ -15,7 +15,7 @@ import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { logger } from "@/lib/logger";
 import { formatDeadlineDisplay } from "@/lib/careers/application-deadline";
 
-const HR_EMAIL_ROLES: readonly string[] = [ROLES.HR, ROLES.ADMIN, ROLES.BRANCH_HR];
+const HR_EMAIL_ROLES: readonly string[] = [ROLES.HR, ROLES.ADMIN];
 
 const CEO_EMAIL_EVENTS = new Set<RecruitmentEmailEvent>([
   "job_published",

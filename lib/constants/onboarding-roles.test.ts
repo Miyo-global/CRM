@@ -9,7 +9,7 @@ describe("isOnboardingManager", () => {
   });
 
   it("keeps everyone else on the self-service onboarding view", () => {
-    for (const role of ["BRANCH_HR", "BRANCH_MANAGER", "ENGINEERING", "SALES", undefined, null, ""]) {
+    for (const role of ["ENGINEERING", "SALES", undefined, null, ""]) {
       expect(isOnboardingManager(role)).toBe(false);
     }
   });

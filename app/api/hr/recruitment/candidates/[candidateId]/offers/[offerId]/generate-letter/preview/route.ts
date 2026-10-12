@@ -9,7 +9,7 @@ type RouteParams = {
   params: Promise<{ candidateId: string; offerId: string }>;
 };
 
-const HR_ROLES = ["CEO", "ADMIN", "HR", "BRANCH_HR"];
+const HR_ROLES = ["CEO", "ADMIN", "HR"];
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {

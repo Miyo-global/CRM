@@ -3,7 +3,7 @@ import { getAttendanceMonitor } from "@/server/queries/hr";
 import { getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 
-const ALLOWED_ROLES = new Set(["CEO", "ADMIN", "HR", "BRANCH_MANAGER", "BRANCH_HR"]);
+const ALLOWED_ROLES = new Set(["CEO", "ADMIN", "HR"]);
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {

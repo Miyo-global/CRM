@@ -97,7 +97,7 @@ export const weeklyProjectReport = inngest.createFunction(
           .where(
             and(
               eq(organizationMembers.orgId, org.id),
-              sql`${organizationMembers.role} IN ('CEO', 'ADMIN', 'PROJECT_MANAGER', 'BRANCH_MANAGER')`,
+              sql`${organizationMembers.role} IN ('CEO', 'ADMIN', 'PROJECT_MANAGER')`,
             ),
           );
 

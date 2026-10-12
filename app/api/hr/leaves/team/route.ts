@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     const isAdmin =
       hasLeaveApproverRole(effectiveRole) || EXPENSE_ADMIN_ROLES.includes(effectiveRole);
 
-    if (!isAdmin && effectiveRole !== "MANAGER" && effectiveRole !== "BRANCH_MANAGER") {
+    if (!isAdmin && effectiveRole !== "MANAGER") {
       return err("Only managers and admins can access team leave requests.", 403);
     }
 

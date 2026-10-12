@@ -398,7 +398,7 @@ function BonusContent() {
 
 export default function BonusesPage() {
   return (
-    <DashboardGate allowedRoles={["HR", "CEO", "BRANCH_HR"]}>
+    <DashboardGate allowedRoles={["HR", "CEO"]}>
       <BonusContent />
     </DashboardGate>
   );

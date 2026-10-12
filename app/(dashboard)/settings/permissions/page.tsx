@@ -22,8 +22,6 @@ const ROLE_LABELS: Record<SystemRole, string> = {
   DESIGN: "Design",
   VIDEO_EDITOR: "Video Editor",
   DIGITAL_MARKETING: "DM",
-  BRANCH_MANAGER: "Branch Mgr",
-  BRANCH_HR: "Branch HR",
 };
 
 function groupByResource(permissions: typeof PERMISSIONS) {

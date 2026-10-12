@@ -12,7 +12,7 @@ export interface SourceEffectivenessRow {
   hireRate: number;
 }
 
-const REPORT_ROLES = new Set(["CEO", "HR", "ADMIN", "BRANCH_HR"]);
+const REPORT_ROLES = new Set(["CEO", "HR", "ADMIN"]);
 
 export async function GET(_req: NextRequest) {
   return withAuth(async (session) => {

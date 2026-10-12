@@ -68,7 +68,7 @@ export function useExportMailPeople() {
   );
   const people = useMemo(() => buildExportMailPeople(employees), [employees]);
   const hrEmails = useMemo(
-    () => people.filter((p) => p.role === "HR" || p.role === "BRANCH_HR").map((p) => p.email),
+    () => people.filter((p) => p.role === "HR").map((p) => p.email),
     [people],
   );
   const ceoEmails = useMemo(() => people.filter((p) => p.role === "CEO").map((p) => p.email), [people]);

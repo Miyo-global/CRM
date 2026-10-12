@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     const role = session.user.role;
-    const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN" || role === "BRANCH_MANAGER" || role === "BRANCH_HR";
+    const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
     if (userId !== session.user.id && !isAdmin) {
       return err("Not authorized to view other users' logs.", 403);
     }

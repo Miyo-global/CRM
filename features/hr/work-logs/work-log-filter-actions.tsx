@@ -157,7 +157,7 @@ export function WorkLogFilterActions({
     });
   }, [setDraftFilters, employees]);
 
-  const writesOwnLogsByDefault = userRole === "HR" || userRole === "BRANCH_HR";
+  const writesOwnLogsByDefault = userRole === "HR";
 
   const handleSelectMyLogs = useCallback(() => {
     setDraftFilters((p) => ({
