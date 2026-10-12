@@ -16,6 +16,7 @@ import { PasswordStrengthIndicator } from "@/components/auth/password-strength-i
 import { PasswordInput } from "@/components/auth/password-input";
 import Link from "next/link";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { IconChip } from "@/components/ui/icon-chip";
 
 export const dynamic = "force-dynamic";
 
@@ -32,17 +33,6 @@ function ArrowRight({ className }: { className?: string }) {
     <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function Rocket({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
     </svg>
   );
 }
@@ -108,13 +98,13 @@ function SetupPasswordContent() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-        <h1 className="text-xl font-semibold mb-2">Invalid Link</h1>
-        <p className="text-sm text-muted-foreground mb-4">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+        <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
+        <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Invalid Link</h1>
+        <p className="mb-6 text-base text-muted-foreground">
           This setup link is invalid. Please contact your HR administrator.
         </p>
-        <Button asChild variant="outline">
+        <Button asChild size="lg" className="w-full">
           <Link href="/signin">Go to Sign In</Link>
         </Button>
       </div>
@@ -123,8 +113,8 @@ function SetupPasswordContent() {
 
   if (isValidating) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gold mx-auto mb-4" />
+      <div role="status" className="w-full max-w-[400px] text-center">
+        <Loader2 className="mx-auto mb-4 size-8 animate-spin text-brand-text" />
         <p className="text-sm text-muted-foreground">Verifying your setup link...</p>
       </div>
     );
@@ -132,13 +122,13 @@ function SetupPasswordContent() {
 
   if (tokenError || !tokenInfo) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-        <h1 className="text-xl font-semibold mb-2">Link Expired</h1>
-        <p className="text-sm text-muted-foreground mb-4">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+        <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
+        <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Link Expired</h1>
+        <p className="mb-6 text-base text-muted-foreground">
           This setup link has expired or is no longer valid. Please contact your HR administrator to get a new link.
         </p>
-        <Button asChild variant="outline">
+        <Button asChild size="lg" className="w-full">
           <Link href="/signin">Go to Sign In</Link>
         </Button>
       </div>
@@ -146,30 +136,27 @@ function SetupPasswordContent() {
   }
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="mb-6">
-        <div className="h-10 w-10 rounded-xl bg-gold/10 flex items-center justify-center mb-4 mx-auto">
-          <Rocket className="h-5 w-5 text-gold" />
-        </div>
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+    <div className="w-full max-w-[400px] animate-fade-up">
+      <div className="mb-8">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
           Welcome, {tokenInfo.name}!
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
+        <p className="mt-2 text-base text-muted-foreground">
           Set up your password to complete your account for <strong>{tokenInfo.email}</strong>.
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-6">
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <div>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-[13px] font-medium">
+            <Label htmlFor="password">
               Password
             </Label>
             <PasswordInput
               id="password"
               autoComplete="new-password"
               placeholder="Create a strong password"
-              className="h-9 text-sm"
+              className="h-10"
               aria-invalid={!!form.formState.errors.password}
               {...form.register("password")}
             />
@@ -180,14 +167,14 @@ function SetupPasswordContent() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-[13px] font-medium">
+            <Label htmlFor="confirmPassword">
               Confirm Password
             </Label>
             <PasswordInput
               id="confirmPassword"
               autoComplete="new-password"
               placeholder="Confirm your password"
-              className="h-9 text-sm"
+              className="h-10"
               aria-invalid={!!form.formState.errors.confirmPassword}
               {...form.register("confirmPassword")}
             />
@@ -196,17 +183,17 @@ function SetupPasswordContent() {
             )}
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="w-full h-9 text-sm font-medium gap-2">
+          <Button type="submit" size="lg" loading={isSubmitting} className="mt-2 w-full">
             {isSubmitting ? (
-              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Setting up...</>
+              "Setting up..."
             ) : (
-              <><ArrowRight className="h-3.5 w-3.5" /> Complete Setup</>
+              <>Complete Setup <ArrowRight className="size-4" /></>
             )}
           </Button>
         </form>
       </div>
 
-      <p className="text-xs text-muted-foreground text-center mt-4">
+      <p className="mt-4 text-xs text-subtle-foreground">
         8+ characters with uppercase, lowercase, number, and special character required.
       </p>
     </div>
@@ -217,8 +204,8 @@ export default function SetupPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full max-w-sm text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-gold mx-auto" />
+        <div role="status" className="w-full max-w-[400px] text-center">
+          <Loader2 className="mx-auto size-8 animate-spin text-brand-text" />
         </div>
       }
     >

@@ -13,6 +13,8 @@ import {
 } from "date-fns";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -67,35 +69,29 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-bold flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-primary" />
+        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+          <CalendarDays className="size-4 text-brand-text" aria-hidden="true" />
           View Settings
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 pb-5">
-        <div className="flex p-1 bg-muted rounded-lg">
-          {(["day", "week", "month"] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => onViewModeChange(mode)}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${
-                viewMode === mode
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
+        <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as ViewMode)}>
+          <TabsList className="w-full">
+            {(["day", "week", "month"] as const).map((mode) => (
+              <TabsTrigger key={mode} value={mode} className="flex-1 capitalize">
+                {mode}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+            <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Employee
             </label>
             <Select value={selectedEmployee} onValueChange={onEmployeeChange}>
-              <SelectTrigger aria-label="Filter by employee" className="h-8 text-xs">
+              <SelectTrigger aria-label="Filter by employee" className="w-full">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
@@ -109,11 +105,11 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+            <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Status
             </label>
             <Select value={selectedStatus} onValueChange={onStatusChange}>
-              <SelectTrigger aria-label="Filter by status" className="h-8 text-xs">
+              <SelectTrigger aria-label="Filter by status" className="w-full">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
@@ -127,11 +123,11 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+          <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
             Project
           </label>
           <Select value={selectedProject} onValueChange={onProjectChange}>
-            <SelectTrigger aria-label="Filter by project" className="h-8 text-xs">
+            <SelectTrigger aria-label="Filter by project" className="w-full">
               <SelectValue placeholder="All Projects" />
             </SelectTrigger>
             <SelectContent>
@@ -147,27 +143,31 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
 
         <div className="pt-1">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold">{format(calendarMonth, "MMMM yyyy")}</span>
+            <span className="text-sm font-semibold">{format(calendarMonth, "MMMM yyyy")}</span>
             <div className="flex gap-1">
-              <button
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="rounded-full"
                 onClick={() => onCalendarMonthChange(subMonths(calendarMonth, 1))}
-                className="size-6 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
                 aria-label="Previous month"
               >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
+                <ChevronLeft className="size-3.5" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="rounded-full"
                 onClick={() => onCalendarMonthChange(addMonths(calendarMonth, 1))}
-                className="size-6 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
                 aria-label="Next month"
               >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
+                <ChevronRight className="size-3.5" aria-hidden="true" />
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center">
             {WEEKDAY_LABELS.map((d, i) => (
-              <span key={`${d}-${i}`} className="text-[10px] font-bold text-muted-foreground">
+              <span key={`${d}-${i}`} className="text-2xs font-semibold text-muted-foreground">
                 {d}
               </span>
             ))}
@@ -180,10 +180,10 @@ export const ViewSettingsCard = memo(function ViewSettingsCard({
                 <button
                   key={date.getDate()}
                   onClick={() => onDateSelect(date)}
-                  className={`h-6 text-[10px] flex items-center justify-center rounded-full transition-colors ${
+                  className={`flex h-7 items-center justify-center rounded-full text-2xs tabular-nums transition-colors focus-visible:focus-ring ${
                     isTodayDate
-                      ? "bg-primary text-white font-bold"
-                      : "hover:bg-primary/10"
+                      ? "bg-primary font-semibold text-primary-foreground"
+                      : "hover:bg-accent"
                   }`}
                 >
                   {date.getDate()}

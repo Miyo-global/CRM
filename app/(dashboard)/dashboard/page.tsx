@@ -22,20 +22,18 @@ import {
   Briefcase,
   CalendarCheck,
   Building2,
-  RefreshCw,
   Ticket,
   CheckCircle2,
   ListChecks,
   Zap,
 } from "lucide-react";
-import { AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ClockInWidget } from "@/components/attendance/clock-in-widget";
 import { DashboardStatsSkeleton } from "@/components/ui/dashboard-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyActivityIllustration } from "@/components/illustrations";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -58,6 +56,7 @@ import { AnnouncementsWidget } from "@/components/dashboard/widgets/announcement
 import { WidgetSkeleton } from "@/components/dashboard/widgets/widget-skeleton";
 import { CeoAdminSection } from "@/features/dashboard/ceo-admin-section";
 import { HrHomeSection } from "@/features/dashboard/hr-home-section";
+import { SPAN } from "@/features/dashboard/bento";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -76,11 +75,11 @@ export default function DashboardPage() {
     retryDelay: 1000,
   });
 
-  const { data: recentProjects, isLoading: projectsLoading, error: projectsError } = useRecentProjects();
+  const { data: recentProjects, isLoading: projectsLoading, error: projectsError, refetch: refetchProjects } = useRecentProjects();
   const { data: teamAvailability, isLoading: teamLoading } = useTeamAvailability();
   const { data: recentActivity, isLoading: activityLoading, error: activityError } = useRecentActivity();
 
-  const { data: myIssuesData, isLoading: ticketsLoading, error: ticketsError } = useMyIssues(
+  const { data: myIssuesData, isLoading: ticketsLoading, error: ticketsError, refetch: refetchMyIssues } = useMyIssues(
     currentUserId ?? "",
   );
 
@@ -135,40 +134,40 @@ export default function DashboardPage() {
     switch (role) {
       case "CEO":
         return [
-          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, href: "/hr/attendance" },
-          { id: "org", label: "Organization", value: stats.orgName, icon: Building2 },
+          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
+          { id: "org", label: "Organization", value: stats.orgName, icon: Building2, tone: "neutral" as const },
         ];
       case "HR":
         return [
-          { id: "employees", label: "Total Employees", value: stats.totalEmployees, icon: Users, href: "/hr" },
-          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, href: "/hr/attendance" },
-          { id: "org", label: "Organization", value: stats.orgName, icon: Building2 },
+          { id: "employees", label: "Total Employees", value: stats.totalEmployees, icon: Users, tone: "info" as const, href: "/hr" },
+          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
+          { id: "org", label: "Organization", value: stats.orgName, icon: Building2, tone: "neutral" as const },
         ];
       case "SALES":
         return [
-          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, href: "/projects" },
-          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, href: "/hr/attendance" },
+          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "info" as const, href: "/projects" },
+          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
         ];
       case "CUSTOMER_SUPPORT":
         return [
-          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, href: "/projects" },
-          { id: "tickets", label: "My Tickets", value: rs?.myTickets ?? 0, icon: Ticket },
-          { id: "done", label: "Completed", value: rs?.myTicketsDone ?? 0, icon: CheckCircle2 },
-          { id: "inprogress", label: "In Progress", value: rs?.myTicketsInProgress ?? 0, icon: ListChecks },
+          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "brand" as const, href: "/projects" },
+          { id: "tickets", label: "My Tickets", value: rs?.myTickets ?? 0, icon: Ticket, tone: "info" as const },
+          { id: "done", label: "Completed", value: rs?.myTicketsDone ?? 0, icon: CheckCircle2, tone: "success" as const },
+          { id: "inprogress", label: "In Progress", value: rs?.myTicketsInProgress ?? 0, icon: ListChecks, tone: "warning" as const },
         ];
       case "ENGINEERING":
       case "DESIGN":
       case "VIDEO_EDITOR":
       case "DIGITAL_MARKETING":
         return [
-          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, href: "/projects" },
-          { id: "tickets", label: "My Tasks", value: rs?.myTickets ?? 0, icon: ListChecks },
-          { id: "done", label: "Completed", value: rs?.myTicketsDone ?? 0, icon: CheckCircle2 },
-          { id: "inprogress", label: "In Progress", value: rs?.myTicketsInProgress ?? 0, icon: Zap },
+          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "brand" as const, href: "/projects" },
+          { id: "tickets", label: "My Tasks", value: rs?.myTickets ?? 0, icon: ListChecks, tone: "info" as const },
+          { id: "done", label: "Completed", value: rs?.myTicketsDone ?? 0, icon: CheckCircle2, tone: "success" as const },
+          { id: "inprogress", label: "In Progress", value: rs?.myTicketsInProgress ?? 0, icon: Zap, tone: "warning" as const },
         ];
       default:
         return [
-          { id: "org", label: "Organization", value: stats.orgName, icon: Building2 },
+          { id: "org", label: "Organization", value: stats.orgName, icon: Building2, tone: "neutral" as const },
         ];
     }
   }, [stats, role, roleStats]);
@@ -191,64 +190,42 @@ export default function DashboardPage() {
     return [...inProgress, ...todo].map(toDashboardTicket);
   }, [myIssuesData]);
 
+  // KPI row: up to 4 StatCards across 12 columns (fewer cards widen to fill).
+  const kpiSpan =
+    statCards.length >= 4
+      ? "col-span-12 sm:col-span-6 xl:col-span-3"
+      : statCards.length === 3
+      ? "col-span-12 sm:col-span-4"
+      : "col-span-12 sm:col-span-6 xl:col-span-4";
+
   if (isLoading) {
     const quickActionsList = getQuickActionsForRole(role);
-    const quickActionsGridClass =
-      `grid grid-cols-2 gap-3 sm:grid-cols-3 ${quickActionsList.length >= 5 ? "md:grid-cols-5" : quickActionsList.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`;
 
     return (
       <PageWrapper
         title="Dashboard"
         subtitle="Loading your workspace..."
-        actions={<Skeleton className="h-10 w-32 rounded-md" />}
+        actions={<Skeleton className="h-10 w-64 rounded-full" />}
       >
-        <div className="space-y-5" role="status" aria-live="polite" aria-label="Loading dashboard">
-          <DashboardStatsSkeleton />
+        <div className="grid grid-cols-12 gap-4 xl:gap-6" role="status" aria-live="polite" aria-label="Loading dashboard">
+          <div className="col-span-12">
+            <DashboardStatsSkeleton />
+          </div>
           {quickActionsList.length > 0 ? (
-            <div className={quickActionsGridClass}>
+            <div className="col-span-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {quickActionsList.map((a) => (
-                <div key={a.label} className="rounded-xl border border-border bg-card p-4 shadow-noir">
-                  <div className="flex flex-col items-center gap-2">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
+                <div key={a.label} className="flex h-14 items-center gap-3 rounded-lg border border-border bg-card px-3">
+                  <Skeleton className="size-8 rounded-full" />
+                  <Skeleton className="h-3 w-20" />
                 </div>
               ))}
             </div>
           ) : null}
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`kpi-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-noir">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                  <Skeleton className="h-9 w-9 rounded-lg" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            <WidgetSkeleton rows={4} />
-            <WidgetSkeleton rows={3} />
-            <WidgetSkeleton rows={4} />
-          </div>
-
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`mini-${i}`} className="rounded-xl border border-border bg-card p-4 shadow-noir">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <WidgetSkeleton rows={6} className={SPAN.twoThirds} />
+          <WidgetSkeleton rows={3} className={SPAN.third} />
+          <WidgetSkeleton rows={4} className={SPAN.third} />
+          <WidgetSkeleton rows={4} className={SPAN.third} />
+          <WidgetSkeleton rows={4} className={SPAN.third} />
         </div>
       </PageWrapper>
     );
@@ -256,24 +233,19 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="space-y-8" role="alert">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error instanceof Error ? error.message : "Failed to load dashboard stats"}</span>
-          </div>
-          <Button onClick={() => refetch()} variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-            Retry
-          </Button>
-        </div>
-      </div>
+      <PageWrapper title="Dashboard">
+        <QueryErrorState
+          title="Failed to load dashboard stats"
+          error={error}
+          onRetry={() => refetch()}
+        />
+      </PageWrapper>
     );
   }
 
   if (!stats) {
     return (
-      <div className="space-y-8">
+      <PageWrapper title="Dashboard">
         <EmptyState
           illustration={<EmptyActivityIllustration className="h-40 w-40" />}
           title="No data available"
@@ -283,34 +255,43 @@ export default function DashboardPage() {
             onClick: handleGoToDashboard,
           }}
         />
-      </div>
+      </PageWrapper>
     );
   }
+
+  const showProjects = !isEmployee || projectsLoading || (recentProjects?.length ?? 0) > 0;
+  const showActivity = !isEmployee || activityLoading || (recentActivity?.length ?? 0) > 0;
+  const bottomCount = (showProjects ? 1 : 0) + (showActivity ? 1 : 0) + (isAdmin ? 1 : 0);
+  const bottomSpan = bottomCount === 3 ? SPAN.third : bottomCount === 2 ? SPAN.half : SPAN.full;
 
   return (
     <PageWrapper
       title={`${greeting}, ${firstName}`}
-      subtitle={`${todayFormatted} · ${stats.orgName}`}
+      subtitle={<span className="tabular-nums">{todayFormatted} · {stats.orgName}</span>}
       actions={<ClockInWidget />}
     >
-      <div className="space-y-5">
-
-        <motion.div variants={fadeUp} initial="hidden" animate="visible" className={`grid gap-4 grid-cols-1 ${statCards.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : statCards.length >= 3 ? "sm:grid-cols-2 md:grid-cols-3" : "sm:grid-cols-2"}`}>
-          {statCards.map((stat, i) => (
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-12 gap-4 xl:gap-6"
+      >
+        {statCards.map((stat, i) => (
+          <div key={stat.id} className={kpiSpan}>
             <StatCard
-              key={stat.id}
               label={stat.label}
               value={stat.value}
               icon={stat.icon}
+              tone={stat.tone}
               href={stat.href}
               index={i}
             />
-          ))}
-        </motion.div>
+          </div>
+        ))}
 
-        <motion.div variants={fadeUp} initial="hidden" animate="visible">
+        <div className={SPAN.full}>
           <QuickActions />
-        </motion.div>
+        </div>
 
         {isCeo && <CeoAdminSection />}
 
@@ -318,127 +299,103 @@ export default function DashboardPage() {
 
         {isManager && (
           <>
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-            >
-              <Suspense fallback={<WidgetSkeleton rows={4} />}>
-                <TeamAttendanceWidgetNew />
+            <div className={SPAN.twoThirds}>
+              <Suspense fallback={<WidgetSkeleton rows={6} />}>
+                <MyTasksWidget />
               </Suspense>
+            </div>
+            <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
               <Suspense fallback={<WidgetSkeleton rows={2} />}>
                 <PendingApprovalsWidgetNew />
               </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={3} />}>
-                <MyTasksWidget />
+              <Suspense fallback={<WidgetSkeleton rows={2} />}>
+                <QuickActionsWidget />
               </Suspense>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-            >
+            </div>
+            <div className={SPAN.third}>
+              <Suspense fallback={<WidgetSkeleton rows={4} />}>
+                <TeamAttendanceWidgetNew />
+              </Suspense>
+            </div>
+            <div className={SPAN.third}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <UpcomingLeavesWidget />
               </Suspense>
+            </div>
+            <div className={SPAN.third}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <AnnouncementsWidget />
               </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={3} />}>
-                <QuickActionsWidget />
-              </Suspense>
-            </motion.div>
+            </div>
           </>
         )}
 
         {isEmployee && (
           <>
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="grid gap-4 grid-cols-1 md:grid-cols-2"
-            >
-              <Suspense fallback={<WidgetSkeleton rows={4} />}>
+            <div className={SPAN.twoThirds}>
+              <Suspense fallback={<WidgetSkeleton rows={6} />}>
                 <MyTasksWidget />
               </Suspense>
+            </div>
+            <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <LeaveBalanceWidgetNew />
               </Suspense>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-            >
+              <Suspense fallback={<WidgetSkeleton rows={2} />}>
+                <QuickActionsWidget />
+              </Suspense>
+            </div>
+            <div className={SPAN.half}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <UpcomingLeavesWidget />
               </Suspense>
+            </div>
+            <div className={SPAN.half}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <AnnouncementsWidget />
               </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={3} />}>
-                <QuickActionsWidget />
-              </Suspense>
-            </motion.div>
+            </div>
           </>
         )}
 
-        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid gap-4 grid-cols-1 lg:grid-cols-7 md:auto-rows-[24rem]">
-          <div className="lg:col-span-4 min-h-0">
-            <MyIssuesCard
-              tickets={sortedMyTickets}
-              isLoading={ticketsLoading}
-              error={ticketsError}
+        <div className={SPAN.twoThirds}>
+          <MyIssuesCard
+            tickets={sortedMyTickets}
+            isLoading={ticketsLoading}
+            error={ticketsError}
+            onRetry={() => refetchMyIssues()}
+          />
+        </div>
+        <div className={SPAN.third}>
+          <SprintCard summary={sprintSummary ?? undefined} isLoading={sprintLoading} />
+        </div>
+
+        {showProjects && (
+          <div className={bottomSpan}>
+            <RecentProjectsCard
+              projects={recentProjects?.map((p) => ({ ...p, key: p.key ?? "" }))}
+              isLoading={projectsLoading}
+              error={projectsError}
+              onCreateProject={handleGoToProjects}
+              onRetry={() => refetchProjects()}
             />
           </div>
-          <div className="lg:col-span-3 min-h-0">
-            <SprintCard summary={sprintSummary ?? undefined} isLoading={sprintLoading} />
+        )}
+        {showActivity && (
+          <div className={bottomSpan}>
+            <RecentActivityCard
+              items={recentActivity}
+              isLoading={activityLoading}
+              error={activityError}
+            />
           </div>
-        </motion.div>
-
-        {(() => {
-          const showProjects = !isEmployee || projectsLoading || (recentProjects?.length ?? 0) > 0;
-          const showActivity = !isEmployee || activityLoading || (recentActivity?.length ?? 0) > 0;
-          const colCount = (showProjects ? 1 : 0) + (showActivity ? 1 : 0) + (isAdmin ? 1 : 0);
-          if (colCount === 0) return null;
-          const gridClass = colCount === 1 ? "grid-cols-1" : colCount === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3";
-          return (
-            <motion.div variants={fadeUp} initial="hidden" animate="visible" className={`grid gap-4 grid-cols-1 ${gridClass} md:auto-rows-[24rem]`}>
-              {showProjects && (
-                <div className="sm:col-span-1 min-h-0">
-                  <RecentProjectsCard
-                    projects={recentProjects?.map((p) => ({ ...p, key: p.key ?? "" }))}
-                    isLoading={projectsLoading}
-                    error={projectsError}
-                    onCreateProject={handleGoToProjects}
-                  />
-                </div>
-              )}
-              {showActivity && (
-                <div className="sm:col-span-1 min-h-0">
-                  <RecentActivityCard
-                    items={recentActivity}
-                    isLoading={activityLoading}
-                    error={activityError}
-                  />
-                </div>
-              )}
-              {isAdmin && (
-                <div className={`${colCount === 3 ? "sm:col-span-2 lg:col-span-1" : "sm:col-span-1"} min-h-0`}>
-                  <TeamCard members={teamAvailability} isLoading={teamLoading} />
-                </div>
-              )}
-            </motion.div>
-          );
-        })()}
-
-      </div>
+        )}
+        {isAdmin && (
+          <div className={bottomSpan}>
+            <TeamCard members={teamAvailability} isLoading={teamLoading} />
+          </div>
+        )}
+      </motion.div>
     </PageWrapper>
   );
 }

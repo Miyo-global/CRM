@@ -7,7 +7,7 @@ export function EmptyTasksIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="75" fill={GOLD} opacity="0.03" />
 
-      <rect x="50" y="30" width="100" height="140" rx="10" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="50" y="30" width="100" height="140" rx="10" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <rect x="50" y="30" width="100" height="20" rx="10" fill={BLUE} opacity="0.06" />
 
       <rect x="75" y="20" width="50" height="20" rx="6" fill={BLUE} opacity="0.15" stroke={BLUE} strokeWidth="1.5" />

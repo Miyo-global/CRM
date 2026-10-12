@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -29,14 +31,15 @@ import {
 } from "@/components/ui/table";
 import { AIScoreCandidateButton } from "@/features/hr/recruitment/ai-score-candidate-button";
 import type { Candidate, CandidateListItem, CandidateStatus } from "@/types/hr";
-import { Briefcase, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Briefcase, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   JOB_STATUS_LABELS,
   SOURCE_BADGE_CLASSES,
   SOURCE_LABELS,
+  JOB_STATUS_TONE,
   STATUSES,
-  jobStatusClass,
-  statusBadgeVariant,
+  candidateStatusLabel,
+  candidateStatusTone,
 } from "./candidates-list-shared";
 
 interface CandidatesTableViewProps {
@@ -57,8 +60,7 @@ export function CandidatesTableView({
   onDelete,
 }: CandidatesTableViewProps) {
   return (
-    <div className="rounded-lg border overflow-x-auto">
-      <Table>
+    <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-10" />
@@ -68,7 +70,7 @@ export function CandidatesTableView({
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Source</TableHead>
-            <TableHead>Updated</TableHead>
+            <TableHead className="whitespace-nowrap">Updated</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -78,7 +80,8 @@ export function CandidatesTableView({
             return (
               <TableRow
                 key={candidate.id}
-                className={selectedIds.has(candidate.id) ? "bg-primary/5" : undefined}
+                data-state={selectedIds.has(candidate.id) ? "selected" : undefined}
+                className="group"
               >
                 <TableCell>
                   <Checkbox
@@ -88,41 +91,56 @@ export function CandidatesTableView({
                   />
                 </TableCell>
                 <TableCell>
-                  <Link
-                    href={`/hr/recruitment/candidates/${candidate.id}`}
-                    className="font-medium text-sm hover:text-primary hover:underline"
-                  >
-                    {candidate.firstName} {candidate.lastName}
-                  </Link>
-                  {candidate.currentRole && (
-                    <p className="text-xs text-muted-foreground truncate max-w-[180px]">
-                      {candidate.currentRole}
-                      {candidate.currentCompany ? ` · ${candidate.currentCompany}` : ""}
-                    </p>
-                  )}
+                  <div className="flex min-w-48 items-center gap-2.5">
+                    <Avatar className="size-8">
+                      <AvatarFallback>
+                        {candidate.firstName.charAt(0)}
+                        {candidate.lastName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <Link
+                        href={`/hr/recruitment/candidates/${candidate.id}`}
+                        className="block truncate text-sm font-medium text-foreground hover:text-brand-text hover:underline"
+                      >
+                        {candidate.firstName} {candidate.lastName}
+                      </Link>
+                      {candidate.currentRole && (
+                        <p
+                          className="max-w-48 truncate text-xs text-muted-foreground"
+                          title={`${candidate.currentRole}${candidate.currentCompany ? ` · ${candidate.currentCompany}` : ""}`}
+                        >
+                          {candidate.currentRole}
+                          {candidate.currentCompany ? ` · ${candidate.currentCompany}` : ""}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusBadgeVariant(candidate.status)} className="text-[10px]">
-                    {candidate.status}
-                  </Badge>
+                  <StatusPill tone={candidateStatusTone(candidate.status)} dot>
+                    {candidateStatusLabel(candidate.status)}
+                  </StatusPill>
                 </TableCell>
                 <TableCell>
                   {candidate.primaryJobTitle ? (
-                    <div className="min-w-[140px]">
+                    <div className="min-w-36">
                       <div className="flex items-center gap-1 text-sm">
-                        <Briefcase className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate max-w-[160px]">{candidate.primaryJobTitle}</span>
+                        <Briefcase className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <span className="max-w-40 truncate" title={candidate.primaryJobTitle}>
+                          {candidate.primaryJobTitle}
+                        </span>
                       </div>
                       {primary?.jobStatus && (
-                        <Badge
-                          variant="outline"
-                          className={`mt-1 text-[10px] ${jobStatusClass(primary.jobStatus)}`}
+                        <StatusPill
+                          tone={JOB_STATUS_TONE[primary.jobStatus] ?? "neutral"}
+                          className="mt-1"
                         >
                           {JOB_STATUS_LABELS[primary.jobStatus]}
-                        </Badge>
+                        </StatusPill>
                       )}
                       {candidate.primaryAppliedAt && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="mt-0.5 text-2xs text-muted-foreground tabular-nums">
                           {format(new Date(candidate.primaryAppliedAt), "dd MMM yyyy")}
                         </p>
                       )}
@@ -131,17 +149,17 @@ export function CandidatesTableView({
                     <span className="text-xs text-muted-foreground">No job linked</span>
                   )}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                <TableCell className="max-w-52 truncate text-sm text-muted-foreground" title={candidate.email}>
                   {candidate.email}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                <TableCell className="whitespace-nowrap text-sm text-muted-foreground tabular-nums">
                   {candidate.phone ?? "—"}
                 </TableCell>
                 <TableCell>
                   {candidate.source ? (
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${SOURCE_BADGE_CLASSES[candidate.source] ?? "text-muted-foreground"}`}
+                      className={SOURCE_BADGE_CLASSES[candidate.source] ?? "text-muted-foreground"}
                     >
                       {SOURCE_LABELS[candidate.source] ?? candidate.source}
                     </Badge>
@@ -149,7 +167,14 @@ export function CandidatesTableView({
                     "—"
                   )}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                <TableCell
+                  className="whitespace-nowrap text-xs text-muted-foreground tabular-nums"
+                  title={
+                    candidate.updatedAt || candidate.createdAt
+                      ? format(new Date(candidate.updatedAt ?? candidate.createdAt!), "dd MMM yyyy, HH:mm")
+                      : undefined
+                  }
+                >
                   {candidate.updatedAt || candidate.createdAt
                     ? formatDistanceToNow(new Date(candidate.updatedAt ?? candidate.createdAt!), {
                         addSuffix: true,
@@ -163,7 +188,7 @@ export function CandidatesTableView({
                       value={candidate.status ?? "NEW"}
                       onValueChange={(v) => onStatusChange(candidate.id, v as CandidateStatus)}
                     >
-                      <SelectTrigger className="h-7 w-[110px] text-xs">
+                      <SelectTrigger size="sm" className="h-7 w-28 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -176,13 +201,18 @@ export function CandidatesTableView({
                     </Select>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreVertical className="h-3.5 w-3.5" />
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Actions for ${candidate.firstName} ${candidate.lastName}`}
+                          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 data-[state=open]:opacity-100"
+                        >
+                          <MoreHorizontal className="size-4" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
                         <DropdownMenuItem onClick={() => onEdit(candidate)}>
-                          <Pencil className="h-3.5 w-3.5 mr-2" />
+                          <Pencil className="size-3.5" aria-hidden="true" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -190,7 +220,7 @@ export function CandidatesTableView({
                           className="text-destructive focus:text-destructive"
                           onClick={() => onDelete(candidate)}
                         >
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          <Trash2 className="size-3.5" aria-hidden="true" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -201,7 +231,6 @@ export function CandidatesTableView({
             );
           })}
         </TableBody>
-      </Table>
-    </div>
+    </Table>
   );
 }

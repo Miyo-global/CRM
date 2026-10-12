@@ -5,7 +5,6 @@ import {
   Download,
   FileSpreadsheet,
   File as FileIcon,
-  Loader2,
   Mail,
   Layers,
 } from "lucide-react";
@@ -162,15 +161,15 @@ export function AssetExportSheet({
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" type="button" className="gap-2">
-          <Download className="h-3.5 w-3.5" />
+          <Download className="size-3.5" aria-hidden="true" />
           Export
         </Button>
       </SheetTrigger>
 
       <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg p-6">
         <SheetHeader className="mb-4 shrink-0">
-          <SheetTitle className="text-xl font-semibold flex items-center gap-2">
-            <Download className="h-5 w-5 text-primary" />
+          <SheetTitle className="flex items-center gap-2 font-display text-xl font-bold">
+            <Download className="size-5 text-brand-text" aria-hidden="true" />
             Export assets
           </SheetTitle>
           <SheetDescription>
@@ -181,7 +180,7 @@ export function AssetExportSheet({
         <div className="flex flex-1 flex-col gap-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+              <Layers className="size-3.5 text-muted-foreground" aria-hidden="true" />
               Inventory scope
             </Label>
             <Select
@@ -200,7 +199,7 @@ export function AssetExportSheet({
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              <strong>{rowCount}</strong> row{rowCount === 1 ? "" : "s"} · Status: {statusLabel}
+              <strong className="tabular-nums">{rowCount}</strong> row{rowCount === 1 ? "" : "s"} · Status: {statusLabel}
             </p>
           </div>
 
@@ -215,14 +214,14 @@ export function AssetExportSheet({
                 <label
                   key={option.value}
                   className={cn(
-                    "flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50",
-                    format === option.value ? "border-primary bg-primary/5" : "border-border",
+                    "flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-accent",
+                    format === option.value ? "border-primary bg-brand-soft" : "border-border",
                   )}
                 >
                   <RadioGroupItem value={option.value} className="mt-0.5" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <option.icon className="h-4 w-4 text-muted-foreground" />
+                      <option.icon className="size-4 text-muted-foreground" aria-hidden="true" />
                       <span className="font-medium text-sm">{option.label}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{option.description}</p>
@@ -235,11 +234,11 @@ export function AssetExportSheet({
           <Tabs value={tab} onValueChange={(v) => setTab(v as "download" | "email")} className="flex-1">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="download" className="gap-1.5">
-                <Download className="h-3.5 w-3.5" />
+                <Download className="size-3.5" aria-hidden="true" />
                 Download
               </TabsTrigger>
               <TabsTrigger value="email" className="gap-1.5">
-                <Mail className="h-3.5 w-3.5" />
+                <Mail className="size-3.5" aria-hidden="true" />
                 Send mail
               </TabsTrigger>
             </TabsList>
@@ -252,8 +251,9 @@ export function AssetExportSheet({
                 className="w-full gap-2"
                 onClick={() => void handleDownload()}
                 disabled={isExporting || isSending || !hasRows}
+                loading={isExporting}
               >
-                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                <Download className="size-4" aria-hidden="true" />
                 Download {format === "csv" ? "CSV" : "Excel"}
               </Button>
             </TabsContent>

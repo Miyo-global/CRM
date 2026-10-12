@@ -16,7 +16,7 @@ export const AttendanceLogRow = memo(function AttendanceLogRow({ log, index }: A
   const statusKey = log.status || "PRESENT";
 
   return (
-    <TableRow className={index % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+    <TableRow className={index % 2 === 0 ? "bg-card" : "bg-surface-sunken"}>
       <TableCell className="font-medium border border-border px-4 py-2.5">
         {format(new Date(log.date), "EEE, MMM dd")}
       </TableCell>

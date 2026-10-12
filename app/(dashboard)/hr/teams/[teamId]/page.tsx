@@ -42,14 +42,14 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/employees">
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+            <ArrowLeft className="size-4" aria-hidden="true" />
             Directory
           </Link>
         </Button>
       }
     >
       {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-20 w-full rounded-lg" />
           ))}
@@ -58,33 +58,33 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
         <QueryErrorState title="Couldn't load this team" error={error} onRetry={() => refetch()} />
       ) : !team || team.members.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="h-40 w-40" />}
+          illustration={<EmptyTeamIllustration />}
           title="No team members"
           description="No active employees assigned to this department."
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {team.members.map((member) => (
-            <Card key={member.id} className="hover:shadow-md transition-shadow">
+            <Card key={member.id} interactive className="gap-0 py-0">
               <CardContent className="p-4">
                 <Link
                   href={`/hr/employees/${member.id}`}
-                  className="flex items-center gap-3 group"
+                  className="group flex items-center gap-3 rounded-md outline-none focus-visible:focus-ring"
                 >
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={resolveImageUrl(member.image)} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                  <Avatar className="size-10 shrink-0">
+                    <AvatarImage src={resolveImageUrl(member.image)} alt="" />
+                    <AvatarFallback className="bg-brand-soft text-brand-soft-foreground font-bold text-sm">
                       {(member.name ?? "?")[0]?.toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="font-medium text-sm group-hover:text-primary transition-colors truncate">
+                    <p className="truncate text-sm font-medium transition-colors group-hover:text-brand-text">
                       {member.name ?? member.email}
                     </p>
                     {member.designation && (
                       <p className="text-xs text-muted-foreground truncate">{member.designation}</p>
                     )}
-                    <Badge variant="outline" className="text-[10px] mt-0.5">
+                    <Badge variant="outline" className="mt-1">
                       {member.role}
                     </Badge>
                   </div>

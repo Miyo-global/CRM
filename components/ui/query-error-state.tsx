@@ -27,20 +27,20 @@ export function QueryErrorState({
     <div
       role="alert"
       className={cn(
-        "flex min-h-[50vh] w-full flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 px-6 py-14 text-center",
+        "flex min-h-[50vh] w-full flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-surface-sunken/40 px-6 py-14 text-center",
         className,
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10">
-        <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden="true" />
+      <div className="flex size-14 items-center justify-center rounded-full bg-danger-soft text-danger-strong">
+        <AlertTriangle className="size-6" aria-hidden="true" />
       </div>
-      <h3 className="text-[0.9375rem] font-semibold text-foreground">{title}</h3>
-      <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+      <h3 className="font-display text-lg font-bold text-foreground">{title}</h3>
+      <p className="max-w-sm text-sm text-muted-foreground">
         {message ?? "Something went wrong while loading. Please try again."}
       </p>
       {onRetry && (
-        <Button variant="outline" onClick={onRetry} className="mt-2">
-          <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+        <Button onClick={onRetry} className="mt-2">
+          <RefreshCw className="size-4" aria-hidden="true" />
           Retry
         </Button>
       )}

@@ -1,4 +1,5 @@
 import { getEmailTemplate, escapeHtml } from "./base";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getProjectAssignmentEmailTemplate(
   memberName: string,
@@ -44,7 +45,7 @@ export function getProjectAssignmentEmailTemplate(
     <p class="email-text">
       <strong>What's Next:</strong>
     </p>
-    <ul style="color: #475569; font-size: 15px; line-height: 1.8; margin: 16px 0;">
+    <ul style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.8; margin: 16px 0;">
       <li>Review the project details and objectives</li>
       <li>Check your assigned tickets</li>
       <li>Collaborate with your team members</li>
@@ -70,21 +71,21 @@ export function getTicketAssignmentEmailTemplate(
   issueKey?: string,
 ): string {
   const priorityColors: Record<string, string> = {
-    LOW: '#22c55e',
-    MEDIUM: '#eab308',
-    HIGH: '#f97316',
-    URGENT: '#ef4444',
+    LOW: BRAND.success,
+    MEDIUM: BRAND.warning,
+    HIGH: BRAND.warning,
+    URGENT: BRAND.danger,
   };
   const typeColors: Record<string, string> = {
-    BUG: '#ef4444',
-    TASK: '#3b82f6',
-    STORY: '#22c55e',
-    EPIC: '#8b5cf6',
-    SUBTASK: '#64748b',
+    BUG: BRAND.danger,
+    TASK: BRAND.info,
+    STORY: BRAND.success,
+    EPIC: BRAND.plum,
+    SUBTASK: BRAND.inkMuted,
   };
 
-  const priorityColor = priorityColors[ticketPriority] || '#64748b';
-  const typeColor = typeColors[ticketType] || '#64748b';
+  const priorityColor = priorityColors[ticketPriority] || BRAND.inkMuted;
+  const typeColor = typeColors[ticketType] || BRAND.inkMuted;
   const sTitle = escapeHtml(ticketTitle);
   const sProject = escapeHtml(projectName);
   const sAssignee = escapeHtml(assigneeName);
@@ -93,41 +94,41 @@ export function getTicketAssignmentEmailTemplate(
   const keyPrefix = sKey ? `[${sKey}] ` : "";
 
   const content = `
-    <p style="font-size:13px; color:#64748b; margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
+    <p style="font-size:13px; color:${BRAND.inkMuted}; margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
       ${sProject}
     </p>
-    <h2 style="font-size:22px; font-weight:600; color:#0f172a; margin:0 0 8px 0; line-height:1.35;">
-      ${sKey ? `<span style="color:#0f2b7f; font-family:'Monaco','Courier New',monospace; font-weight:700;">${sKey}</span> &nbsp;·&nbsp; ` : ""}${sTitle}
+    <h2 style="font-size:22px; font-weight:600; color:${BRAND.ink}; margin:0 0 8px 0; line-height:1.35;">
+      ${sKey ? `<span style="color:${BRAND.ink}; font-family:'Monaco','Courier New',monospace; font-weight:700;">${sKey}</span> &nbsp;·&nbsp; ` : ""}${sTitle}
     </h2>
-    <p style="font-size:14px; color:#475569; margin:0 0 24px 0;">
-      <strong style="color:#0f172a;">${sCreatedBy}</strong> assigned this issue to <strong style="color:#0f172a;">${sAssignee}</strong>.
+    <p style="font-size:14px; color:${BRAND.inkMuted}; margin:0 0 24px 0;">
+      <strong style="color:${BRAND.ink};">${sCreatedBy}</strong> assigned this issue to <strong style="color:${BRAND.ink};">${sAssignee}</strong>.
     </p>
 
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0; border-radius:6px; border-collapse:separate; margin:0 0 24px 0; font-size:14px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BRAND.border}; border-radius:6px; border-collapse:separate; margin:0 0 24px 0; font-size:14px;">
       <tr>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; width:130px; color:#64748b; font-weight:500;">Type</td>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:${typeColor}; font-weight:600;">${ticketType}</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; width:130px; color:${BRAND.inkMuted}; font-weight:500;">Type</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${typeColor}; font-weight:600;">${ticketType}</td>
       </tr>
       <tr>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:#64748b; font-weight:500;">Priority</td>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:${priorityColor}; font-weight:600;">${ticketPriority}</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${BRAND.inkMuted}; font-weight:500;">Priority</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${priorityColor}; font-weight:600;">${ticketPriority}</td>
       </tr>
       <tr>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:#64748b; font-weight:500;">Status</td>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:#0f172a; font-weight:600;">To Do</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${BRAND.inkMuted}; font-weight:500;">Status</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${BRAND.ink}; font-weight:600;">To Do</td>
       </tr>
       <tr>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:#64748b; font-weight:500;">Assignee</td>
-        <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; color:#0f172a; font-weight:500;">${sAssignee}</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${BRAND.inkMuted}; font-weight:500;">Assignee</td>
+        <td style="padding:10px 16px; border-bottom:1px solid ${BRAND.border}; color:${BRAND.ink}; font-weight:500;">${sAssignee}</td>
       </tr>
       <tr>
-        <td style="padding:10px 16px; color:#64748b; font-weight:500;">Reporter</td>
-        <td style="padding:10px 16px; color:#0f172a; font-weight:500;">${sCreatedBy}</td>
+        <td style="padding:10px 16px; color:${BRAND.inkMuted}; font-weight:500;">Reporter</td>
+        <td style="padding:10px 16px; color:${BRAND.ink}; font-weight:500;">${sCreatedBy}</td>
       </tr>
     </table>
 
     ${ticketPriority === 'URGENT' || ticketPriority === 'HIGH' ? `
-    <p style="font-size:13px; color:#92400e; background:#fef3c7; border-left:3px solid #f59e0b; padding:10px 14px; margin:0 0 24px 0; border-radius:4px;">
+    <p style="font-size:13px; color:${BRAND.warning}; background:${BRAND.warningSoft}; border-left:3px solid ${BRAND.warning}; padding:10px 14px; margin:0 0 24px 0; border-radius:4px;">
       <strong>High priority.</strong> This issue is flagged for immediate attention.
     </p>
     ` : ''}
@@ -138,7 +139,7 @@ export function getTicketAssignmentEmailTemplate(
       </a>
     </div>
 
-    <p style="font-size:12px; color:#94a3b8; margin:0; line-height:1.6;">
+    <p style="font-size:12px; color:${BRAND.inkSubtle}; margin:0; line-height:1.6;">
       You are receiving this notification because you were assigned to this issue. Reply to comments and changes are tracked in the CRM.
     </p>
   `;
@@ -168,7 +169,7 @@ export function getTicketReviewRequestEmailTemplate(
     <h2 class="email-title">👀 Ticket Ready for Your Review</h2>
     <p class="email-text">
       <strong>${sCompletedBy}</strong> has completed their work and moved a ticket to
-      <span style="display: inline-block; background: #eab308; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN REVIEW</span>.
+      <span style="display: inline-block; background: ${BRAND.warning}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN REVIEW</span>.
     </p>
 
     <div class="credential-box">
@@ -191,9 +192,9 @@ export function getTicketReviewRequestEmailTemplate(
     </div>
 
     ${sComment ? `
-    <div style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #1e293b; font-size: 14px;">💬 Latest Comment:</p>
-      <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">${sComment}</p>
+    <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.info}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">💬 Latest Comment:</p>
+      <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.6;">${sComment}</p>
     </div>
     ` : ''}
 
@@ -208,7 +209,7 @@ export function getTicketReviewRequestEmailTemplate(
     <p class="email-text">
       <strong>You can review:</strong>
     </p>
-    <ul style="color: #475569; font-size: 15px; line-height: 1.8; margin: 16px 0;">
+    <ul style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.8; margin: 16px 0;">
       <li>View all comments and work updates</li>
       <li>Check attached images, videos, and documents</li>
       <li>Review external links and deployments</li>
@@ -241,7 +242,7 @@ export function getTicketChangesRequestedEmailTemplate(
     <h2 class="email-title">🔄 Changes Requested on Your Ticket</h2>
     <p class="email-text">
       <strong>${sReviewer}</strong> has reviewed your work and moved the ticket back to
-      <span style="display: inline-block; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN PROGRESS</span>.
+      <span style="display: inline-block; background: ${BRAND.info}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN PROGRESS</span>.
     </p>
 
     <div class="credential-box">
@@ -260,9 +261,9 @@ export function getTicketChangesRequestedEmailTemplate(
     </div>
 
     ${sComment ? `
-    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #92400e; font-size: 14px;">💬 Review Feedback:</p>
-      <p style="margin: 0; color: #78350f; font-size: 14px; line-height: 1.6;">${sComment}</p>
+    <div style="background: ${BRAND.warningSoft}; border-left: 4px solid ${BRAND.warning}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.warning}; font-size: 14px;">💬 Review Feedback:</p>
+      <p style="margin: 0; color: ${BRAND.warning}; font-size: 14px; line-height: 1.6;">${sComment}</p>
     </div>
     ` : ''}
 
@@ -313,28 +314,28 @@ export function getTicketCommentEmailTemplate(
   const preview = sComment.length > 200 ? `${sComment.slice(0, 200)}…` : sComment;
 
   const content = `
-    <p style="font-size:13px; color:#64748b; margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
+    <p style="font-size:13px; color:${BRAND.inkMuted}; margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
       ${sProject}
     </p>
-    <h2 style="font-size:20px; font-weight:600; color:#0f172a; margin:0 0 6px 0; line-height:1.35;">
-      ${sKey ? `<span style="color:#0f2b7f; font-family:'Monaco','Courier New',monospace; font-weight:700;">${sKey}</span> &nbsp;·&nbsp; ` : ""}${sTitle}
+    <h2 style="font-size:20px; font-weight:600; color:${BRAND.ink}; margin:0 0 6px 0; line-height:1.35;">
+      ${sKey ? `<span style="color:${BRAND.ink}; font-family:'Monaco','Courier New',monospace; font-weight:700;">${sKey}</span> &nbsp;·&nbsp; ` : ""}${sTitle}
     </h2>
-    <p style="font-size:14px; color:#475569; margin:0 0 24px 0;">
-      Hi <strong style="color:#0f172a;">${sRecipient}</strong>, <strong style="color:#0f172a;">${sCommenter}</strong> left a comment on this ticket.
+    <p style="font-size:14px; color:${BRAND.inkMuted}; margin:0 0 24px 0;">
+      Hi <strong style="color:${BRAND.ink};">${sRecipient}</strong>, <strong style="color:${BRAND.ink};">${sCommenter}</strong> left a comment on this ticket.
     </p>
 
-    <div style="background:#f8fafc; border-left:4px solid #6366f1; padding:16px 20px; margin:0 0 24px 0; border-radius:0 6px 6px 0;">
-      <p style="margin:0 0 8px 0; font-size:12px; font-weight:600; color:#6366f1; text-transform:uppercase; letter-spacing:0.5px;">${sCommenter}</p>
-      <p style="margin:0; font-size:14px; color:#334155; line-height:1.7; white-space:pre-wrap;">${preview}</p>
+    <div style="background:${BRAND.sunken}; border-left:4px solid ${BRAND.plum}; padding:16px 20px; margin:0 0 24px 0; border-radius:0 6px 6px 0;">
+      <p style="margin:0 0 8px 0; font-size:12px; font-weight:600; color:${BRAND.plum}; text-transform:uppercase; letter-spacing:0.5px;">${sCommenter}</p>
+      <p style="margin:0; font-size:14px; color:${BRAND.inkMuted}; line-height:1.7; white-space:pre-wrap;">${preview}</p>
     </div>
 
     <div style="margin:0 0 32px 0;">
-      <a href="${ticketUrl}" style="display:inline-block; background:#6366f1; color:#ffffff; font-size:14px; font-weight:600; text-decoration:none; padding:12px 24px; border-radius:6px;">
+      <a href="${ticketUrl}" style="display:inline-block; background:${BRAND.plum}; color:${BRAND.white}; font-size:14px; font-weight:600; text-decoration:none; padding:12px 24px; border-radius:6px;">
         View Comment &amp; Reply
       </a>
     </div>
 
-    <p style="font-size:12px; color:#94a3b8; margin:0; line-height:1.6;">
+    <p style="font-size:12px; color:${BRAND.inkSubtle}; margin:0; line-height:1.6;">
       You are receiving this because you are assigned to or reported this ticket. To manage notifications, visit your profile settings.
     </p>
   `;

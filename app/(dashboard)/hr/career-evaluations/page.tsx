@@ -6,18 +6,21 @@ import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { Plus, ClipboardList } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyApprovalIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { format } from "date-fns";
 import type { CareerEvaluation, CareerLadder, CareerReadinessStatus } from "@/types/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
@@ -37,11 +40,11 @@ const READINESS_OPTIONS: { value: CareerReadinessStatus; label: string }[] = [
   { value: "RECOMMENDED", label: "Recommended" },
 ];
 
-const READINESS_BADGE: Record<CareerReadinessStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  NOT_READY: { label: "Not Ready", variant: "destructive" },
-  DEVELOPING: { label: "Developing", variant: "secondary" },
-  READY_SOON: { label: "Ready Soon", variant: "outline" },
-  RECOMMENDED: { label: "Recommended", variant: "default" },
+const READINESS_BADGE: Record<CareerReadinessStatus, { label: string; tone: Tone }> = {
+  NOT_READY: { label: "Not Ready", tone: "danger" },
+  DEVELOPING: { label: "Developing", tone: "warning" },
+  READY_SOON: { label: "Ready Soon", tone: "info" },
+  RECOMMENDED: { label: "Recommended", tone: "success" },
 };
 
 const EMPTY_FORM = {
@@ -59,7 +62,7 @@ export default function CareerEvaluationsPage() {
   const isAdmin = ["CEO", "HR", "ADMIN"].includes(session?.user?.role ?? "");
   const qc = useQueryClient();
 
-  const { data: evaluations, isLoading } = useQuery({
+  const { data: evaluations, isLoading, isError, error, refetch } = useQuery({
     queryKey: evalKeys.list(),
     queryFn: () => apiClient.get<CareerEvaluation[]>("/hr/career-evaluations"),
   });
@@ -120,7 +123,7 @@ export default function CareerEvaluationsPage() {
     return (
       <PageWrapper title="Career Evaluations" subtitle="Manager readiness assessments">
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
       </PageWrapper>
     );
@@ -134,74 +137,61 @@ export default function CareerEvaluationsPage() {
       actions={
         isAdmin ? (
           <Button size="sm" onClick={() => { setForm(EMPTY_FORM); setAddOpen(true); }}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="size-4" aria-hidden="true" />
             New Evaluation
           </Button>
         ) : undefined
       }
     >
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[700px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Ladder / Level</TableHead>
-                  <TableHead>Readiness</TableHead>
-                  <TableHead>Strengths</TableHead>
-                  <TableHead>Areas to Grow</TableHead>
-                  <TableHead>Date</TableHead>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          illustration={<EmptyApprovalIllustration className="size-32" />}
+          title="No evaluations yet."
+          {...(isAdmin ? { action: { label: "New Evaluation", onClick: () => { setForm(EMPTY_FORM); setAddOpen(true); } } } : {})}
+        />
+      ) : (
+        <Table className="min-w-[700px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Employee</TableHead>
+              <TableHead>Ladder / Level</TableHead>
+              <TableHead>Readiness</TableHead>
+              <TableHead>Strengths</TableHead>
+              <TableHead>Areas to Grow</TableHead>
+              <TableHead>Date</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((ev) => {
+              const badge = READINESS_BADGE[ev.readinessStatus];
+              return (
+                <TableRow key={ev.id}>
+                  <TableCell className="text-sm font-medium">{ev.employeeName ?? ev.employeeUserId}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {ev.ladderTitle ? (
+                      <span>{ev.ladderTitle}{ev.level ? <span className="tabular-nums">{` · L${ev.level}`}</span> : ""}</span>
+                    ) : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill tone={badge.tone} dot>{badge.label}</StatusPill>
+                  </TableCell>
+                  <TableCell className="max-w-44 text-xs text-muted-foreground">
+                    <p className="line-clamp-2" title={ev.strengths ?? undefined}>{ev.strengths ?? "—"}</p>
+                  </TableCell>
+                  <TableCell className="max-w-44 text-xs text-muted-foreground">
+                    <p className="line-clamp-2" title={ev.areasToGrow ?? undefined}>{ev.areasToGrow ?? "—"}</p>
+                  </TableCell>
+                  <TableCell className="text-xs tabular-nums text-muted-foreground">
+                    {ev.evaluatedAt ? format(new Date(ev.evaluatedAt), "dd MMM yyyy") : "—"}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                      <div className="flex flex-col items-center gap-2">
-                        <ClipboardList className="h-10 w-10 opacity-30" />
-                        <p className="text-sm">No evaluations yet.</p>
-                        {isAdmin && (
-                          <Button size="sm" variant="outline" onClick={() => { setForm(EMPTY_FORM); setAddOpen(true); }}>
-                            <Plus className="h-3.5 w-3.5 mr-1.5" />
-                            New Evaluation
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((ev) => {
-                    const badge = READINESS_BADGE[ev.readinessStatus];
-                    return (
-                      <TableRow key={ev.id}>
-                        <TableCell className="text-sm font-medium">{ev.employeeName ?? ev.employeeUserId}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {ev.ladderTitle ? (
-                            <span>{ev.ladderTitle}{ev.level ? ` · L${ev.level}` : ""}</span>
-                          ) : "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[180px]">
-                          <p className="line-clamp-2">{ev.strengths ?? "—"}</p>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[180px]">
-                          <p className="line-clamp-2">{ev.areasToGrow ?? "—"}</p>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {ev.evaluatedAt ? format(new Date(ev.evaluatedAt), "dd MMM yyyy") : "—"}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
-      </div>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
 
       <HrSheet
         open={addOpen}

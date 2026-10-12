@@ -397,7 +397,7 @@ export function WorkLogFilterActions({
             <Filter className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Filters</span>
             {activeFilterCount > 0 && (
-              <Badge className="absolute -top-1.5 -right-1.5 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-gold text-white border-0">
+              <Badge className="absolute -top-1.5 -right-1.5 h-4 w-4 p-0 flex items-center justify-center text-2xs bg-primary text-primary-foreground border-0">
                 {activeFilterCount}
               </Badge>
             )}
@@ -556,7 +556,7 @@ export function WorkLogFilterActions({
               Reset
             </Button>
             <SheetClose asChild>
-              <Button className="flex-1 bg-gold hover:bg-gold/90 text-white" onClick={handleApplyFilters}>
+              <Button className="flex-1" onClick={handleApplyFilters}>
                 Apply Filters
               </Button>
             </SheetClose>

@@ -1,11 +1,14 @@
 "use client";
 
+import { CheckSquare, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { resolveImageUrl } from "@/lib/utils";
-import { cn } from "@/lib/utils";
-import { Bug, Bookmark, Zap, CheckSquare, ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { resolveImageUrl } from "@/lib/utils";
+import { TicketTypeIcon } from "./shared/ticket-type-icon";
+import { PriorityBadge } from "./shared/priority-badge";
+import { StatusBadge } from "./shared/status-badge";
 
 interface Ticket {
   id: number;
@@ -25,27 +28,6 @@ interface ListViewProps {
   groupBy?: string;
 }
 
-const typeIcons: Record<string, typeof CheckSquare> = {
-  TASK: CheckSquare,
-  BUG: Bug,
-  STORY: Bookmark,
-  EPIC: Zap,
-};
-
-const priorityColors: Record<string, string> = {
-  URGENT: "text-red-500",
-  HIGH: "text-orange-500",
-  MEDIUM: "text-yellow-500",
-  LOW: "text-blue-400",
-};
-
-const statusColors: Record<string, string> = {
-  TODO: "bg-gray-400",
-  IN_PROGRESS: "bg-blue-500",
-  IN_REVIEW: "bg-purple-500",
-  DONE: "bg-green-500",
-};
-
 export function ListView({ tickets, onTicketClick, groupBy }: ListViewProps) {
   const grouped = groupBy
     ? tickets.reduce<Record<string, Ticket[]>>((acc, t) => {
@@ -56,52 +38,67 @@ export function ListView({ tickets, onTicketClick, groupBy }: ListViewProps) {
     : { "All Items": tickets };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-6 p-4">
       {Object.entries(grouped).map(([group, items]) => (
-        <div key={group}>
+        <section key={group} className="space-y-2">
           {groupBy && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-semibold text-foreground">{group}</span>
-              <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground">{group}</h3>
+              <Badge variant="secondary" className="tabular-nums">{items.length}</Badge>
             </div>
           )}
-          <div className="border rounded-lg divide-y divide-border">
-            {items.map((ticket) => {
-              const TypeIcon = typeIcons[ticket.type] ?? CheckSquare;
-              return (
-                <button
+          <Table className="min-w-[640px]">
+            <TableBody>
+              {items.map((ticket) => (
+                <TableRow
                   key={ticket.id}
+                  tabIndex={0}
                   onClick={() => onTicketClick(ticket.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") onTicketClick(ticket.id);
+                  }}
+                  className="cursor-pointer outline-none focus-visible:bg-accent/60"
                 >
-                  <div className={cn("h-2 w-2 rounded-full flex-shrink-0", statusColors[ticket.status] ?? "bg-gray-400")} />
-                  <TypeIcon className={cn("h-4 w-4 flex-shrink-0", ticket.type === "BUG" ? "text-red-500" : "text-muted-foreground")} />
-                  <span className="text-xs text-muted-foreground font-mono flex-shrink-0">
+                  <TableCell className="w-8 pr-0">
+                    <TicketTypeIcon type={ticket.type} />
+                  </TableCell>
+                  <TableCell className="w-24 font-mono text-xs text-muted-foreground">
                     {ticket.sequenceId ?? `#${ticket.ticketNumber}`}
-                  </span>
-                  <span className="text-sm text-foreground truncate flex-1">{ticket.title}</span>
-                  {ticket.priority && (
-                    <span className={cn("text-xs font-medium flex-shrink-0", priorityColors[ticket.priority])}>
-                      {ticket.priority}
+                  </TableCell>
+                  <TableCell className="max-w-0">
+                    <span className="block truncate" title={ticket.title}>
+                      {ticket.title}
                     </span>
-                  )}
-                  {ticket.points && (
-                    <Badge variant="outline" className="text-xs flex-shrink-0">{ticket.points}pt</Badge>
-                  )}
-                  {ticket.assignee && (
-                    <Avatar className="h-6 w-6 flex-shrink-0">
-                      <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
-                      <AvatarFallback className="text-[8px]">
-                        {ticket.assignee.firstName?.[0]}{ticket.assignee.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  </TableCell>
+                  <TableCell className="w-32">
+                    <StatusBadge status={ticket.status} />
+                  </TableCell>
+                  <TableCell className="w-8">
+                    {ticket.priority && <PriorityBadge priority={ticket.priority} />}
+                  </TableCell>
+                  <TableCell className="w-16 text-right">
+                    {ticket.points ? (
+                      <Badge variant="outline" className="tabular-nums">{ticket.points}pt</Badge>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="w-10">
+                    {ticket.assignee && (
+                      <Avatar className="size-6">
+                        <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
+                        <AvatarFallback className="text-3xs">
+                          {ticket.assignee.firstName?.[0]}{ticket.assignee.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </TableCell>
+                  <TableCell className="w-8 pl-0">
+                    <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </section>
       ))}
       {tickets.length === 0 && (
         <EmptyState

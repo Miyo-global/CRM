@@ -52,7 +52,9 @@ export function NewFolderDialog({
       <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <FolderPlus className="h-5 w-5 text-primary" />
+            <span className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground">
+              <FolderPlus className="size-4" aria-hidden />
+            </span>
             Create New Folder
           </SheetTitle>
           <SheetDescription>

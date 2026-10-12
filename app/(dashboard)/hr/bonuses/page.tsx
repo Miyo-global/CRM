@@ -10,6 +10,7 @@ import { useHrEmployees } from "@/lib/api/hooks/hr";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { clampPageSize, type PageSizeOption } from "@/lib/pagination-constants";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,7 +79,7 @@ function BonusContent() {
     [employeesRaw],
   );
 
-  const { data: bonuses, isLoading } = useQuery({
+  const { data: bonuses, isLoading, isError, error, refetch } = useQuery({
     queryKey: bonusKeys.list(),
     queryFn: () => apiClient.get<BonusRow[]>("/hr/bonuses"),
   });
@@ -231,7 +232,10 @@ function BonusContent() {
   if (isLoading) {
     return (
       <PageWrapper title="Bonuses" subtitle="Employee bonus processing">
-        <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+        <div className="space-y-4">
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-80 rounded-lg" />
+        </div>
       </PageWrapper>
     );
   }
@@ -244,7 +248,7 @@ function BonusContent() {
       stickyHeader
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="mr-1 h-3.5 w-3.5" />
+          <Plus className="size-4" aria-hidden="true" />
           Add Bonus
         </Button>
       }
@@ -267,9 +271,13 @@ function BonusContent() {
         />
       }
     >
+      {isError ? (
+        <QueryErrorState title="Couldn't load bonuses" error={error} onRetry={() => refetch()} />
+      ) : (
       <div className="space-y-4">
         <BonusStatsCards stats={allStats} />
         <BonusTable
+          onClearFilters={clearFilters}
           rows={filteredBonuses}
           page={safePage}
           pageSize={pageSize}
@@ -281,6 +289,7 @@ function BonusContent() {
           hasActiveFilters={activeFilterCount > 0}
         />
       </div>
+      )}
 
       <HrSheet
         open={sheetOpen}
@@ -299,7 +308,7 @@ function BonusContent() {
             onValueChange={setUserId}
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="bonus-amount">Amount <span className="text-destructive">*</span></label>
             <Input
@@ -326,7 +335,7 @@ function BonusContent() {
             <label className="text-sm font-medium" htmlFor="bonus-type">Type <span className="text-destructive">*</span></label>
             <Select value={type} onValueChange={handleTypeChange}>
               <SelectTrigger id="bonus-type"><SelectValue placeholder="Select type" /></SelectTrigger>
-              <SelectContent className="max-h-[180px]">
+              <SelectContent className="max-h-48">
                 {BONUS_TYPES.map((t) => (
                   <SelectItem key={t.value} value={t.value} className="py-1.5 text-sm">
                     {t.label}
@@ -342,7 +351,7 @@ function BonusContent() {
               <label className="text-sm font-medium" htmlFor="bonus-reason">
                 Reason / Notes <span className="text-destructive">*</span>
               </label>
-              <span className="text-[10px] text-muted-foreground">{reason.length}/{BONUS_OTHER_REASON_MAX}</span>
+              <span className="text-2xs text-muted-foreground">{reason.length}/{BONUS_OTHER_REASON_MAX}</span>
             </div>
             <Input
               id="bonus-reason"

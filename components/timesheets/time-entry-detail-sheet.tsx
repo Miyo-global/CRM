@@ -15,7 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, Loader2, ExternalLink, Image as ImageIcon } from "lucide-react";
+import { Check, X, ExternalLink, Image as ImageIcon } from "lucide-react";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { PropertyList } from "@/components/shared/property-list";
+import type { Tone } from "@/lib/design/tones";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { resolveImageUrl } from "@/lib/utils";
@@ -92,190 +96,159 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
   if (!entry) return null;
 
   const canApproveReject = !entry.status || entry.status === "PENDING";
+  const statusKey = entry.status || "PENDING";
+  const statusTone: Tone = statusKey === "APPROVED" ? "success" : statusKey === "REJECTED" ? "danger" : "warning";
+
+  const properties: { label: string; value: React.ReactNode }[] = [
+    { label: "Date", value: <span className="tabular-nums">{format(new Date(entry.date), "MMMM d, yyyy")}</span> },
+    { label: "Hours", value: <span className="font-medium tabular-nums">{entry.hours || "0"}h</span> },
+  ];
+  if (entry.ticket?.project) {
+    properties.push({ label: "Project", value: <Badge variant="outline">{entry.ticket.project.name}</Badge> });
+  }
+  if (entry.ticketId) {
+    properties.push({ label: "Ticket", value: <span className="font-mono font-medium">#{entry.ticketId}</span> });
+  }
+  if (entry.workLink) {
+    properties.push({
+      label: "Work Link",
+      value: (
+        <a
+          href={entry.workLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 break-all text-brand-text hover:underline"
+        >
+          <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+          {entry.workLink}
+        </a>
+      ),
+    });
+  }
+  if (entry.status === "APPROVED" && entry.approvedBy) {
+    properties.push({ label: "Approved By", value: entry.approvedBy });
+  }
 
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-[600px] overflow-y-auto">
-          <SheetHeader>
+        <SheetContent side="right" size="md" className="gap-0 p-0">
+          <SheetHeader className="border-b px-6 py-4">
             <SheetTitle>Time Entry Details</SheetTitle>
             <SheetDescription>
               Review the time entry and approve or reject it
             </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-6 space-y-6">
-            <div className="flex items-center gap-3 pb-4 border-b px-6">
-              <Avatar className="h-10 w-10">
+          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10">
                 <AvatarImage src={resolveImageUrl(entry.user?.image)} />
                 <AvatarFallback>
                   {entry.user?.firstName?.[0]}
                   {entry.user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <p className="font-medium">
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">
                   {entry.user?.firstName} {entry.user?.lastName}
                 </p>
-                <p className="text-sm text-muted-foreground">{entry.user?.email}</p>
+                <p className="truncate text-sm text-muted-foreground">{entry.user?.email}</p>
               </div>
-              <Badge
-                variant={
-                  entry.status === "APPROVED"
-                    ? "default"
-                    : entry.status === "REJECTED"
-                    ? "destructive"
-                    : "secondary"
-                }
-              >
+              <StatusPill tone={statusTone} dot>
                 {entry.status || "PENDING"}
-              </Badge>
+              </StatusPill>
             </div>
 
-            <div className="space-y-4 px-6 pt-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Date</label>
-                <p className="mt-1 text-sm">{format(new Date(entry.date), "MMMM d, yyyy")}</p>
-              </div>
+            <PropertyList items={properties} />
 
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Hours</label>
-                <p className="mt-1 text-sm font-medium">{entry.hours || "0"}h</p>
-              </div>
+            {entry.description && (
+              <section className="space-y-1.5">
+                <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Description</h3>
+                <p className="whitespace-pre-wrap text-sm">{entry.description}</p>
+              </section>
+            )}
 
-              {entry.ticket?.project && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Project</label>
-                  <p className="mt-1">
-                    <Badge variant="outline">{entry.ticket.project.name}</Badge>
-                  </p>
+            {entry.status === "REJECTED" && entry.rejectionReason && (
+              <section className="space-y-1.5 rounded-lg bg-danger-soft p-3">
+                <h3 className="text-2xs font-semibold uppercase tracking-wider text-danger-strong">Rejection Reason</h3>
+                <p className="whitespace-pre-wrap text-sm text-danger-strong">{entry.rejectionReason}</p>
+              </section>
+            )}
+
+            {entry.imageUrl && (
+              <section className="space-y-2">
+                <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Work Image/Attachment</h3>
+                <div className="relative overflow-hidden rounded-lg border bg-surface-sunken/40">
+                  {(() => {
+                    const imageUrl = entry.imageUrl;
+                    const normalizedUrl = imageUrl.startsWith("http")
+                      ? imageUrl
+                      : imageUrl.startsWith("/")
+                      ? imageUrl
+                      : `/uploads/${imageUrl}`;
+                    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl);
+
+                    return isImage && !imageError ? (
+                      <div className="relative flex max-h-125 w-full items-center justify-center">
+                        <Image
+                          src={normalizedUrl}
+                          alt="Work attachment"
+                          width={800}
+                          height={500}
+                          className="h-auto max-h-125 w-full object-contain"
+                          unoptimized
+                          onError={() => setImageError(true)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 p-6 text-center">
+                        <IconChip icon={ImageIcon} tone="neutral" />
+                        <p className="text-sm text-muted-foreground">
+                          {imageError ? "Unable to load image" : "Document attachment"}
+                        </p>
+                        <a
+                          href={normalizedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-brand-text hover:underline"
+                        >
+                          <ExternalLink className="size-4" aria-hidden="true" />
+                          Open file
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
-              )}
-
-              {entry.ticketId && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Ticket</label>
-                  <p className="mt-1 text-sm font-medium">#{entry.ticketId}</p>
-                </div>
-              )}
-
-              {entry.description && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Description</label>
-                  <p className="mt-1 text-sm whitespace-pre-wrap">{entry.description}</p>
-                </div>
-              )}
-
-              {entry.workLink && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Work Link</label>
-                  <div className="mt-1">
-                    <a
-                      href={entry.workLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      {entry.workLink}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {entry.imageUrl && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Work Image/Attachment</label>
-                  <div className="mt-2 pl-4 pt-4 pr-4">
-                    <div className="relative border rounded-lg overflow-hidden bg-muted/50">
-                      {(() => {
-                        const imageUrl = entry.imageUrl;
-                        const normalizedUrl = imageUrl.startsWith("http")
-                          ? imageUrl
-                          : imageUrl.startsWith("/")
-                          ? imageUrl
-                          : `/uploads/${imageUrl}`;
-                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(imageUrl);
-
-                        return isImage && !imageError ? (
-                          <div className="relative w-full max-h-[500px] flex items-center justify-center">
-                            <Image
-                              src={normalizedUrl}
-                              alt="Work attachment"
-                              width={800}
-                              height={500}
-                              className="w-full h-auto max-h-[500px] object-contain"
-                              unoptimized
-                              onError={() => setImageError(true)}
-                            />
-                          </div>
-                        ) : (
-                          <div className="p-4 text-center">
-                            <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {imageError ? "Unable to load image" : "Document attachment"}
-                            </p>
-                            <a
-                              href={normalizedUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Open file
-                            </a>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {entry.status === "APPROVED" && entry.approvedBy && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Approved By</label>
-                  <p className="mt-1 text-sm">{entry.approvedBy}</p>
-                </div>
-              )}
-
-              {entry.status === "REJECTED" && entry.rejectionReason && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Rejection Reason</label>
-                  <p className="mt-1 text-sm text-red-600 whitespace-pre-wrap">{entry.rejectionReason}</p>
-                </div>
-              )}
-            </div>
-
-            {canApproveReject && (
-              <div className="pt-4 border-t flex gap-2 px-6">
-                <Button
-                  onClick={handleApprove}
-                  disabled={approveMutation.isPending || rejectMutation.isPending}
-                  className="flex-1"
-                  variant="default"
-                >
-                  {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <Check className="mr-2 h-4 w-4" />
-                  Approve
-                </Button>
-                <Button
-                  onClick={handleRejectClick}
-                  disabled={rejectMutation.isPending || approveMutation.isPending}
-                  className="flex-1"
-                  variant="destructive"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Reject
-                </Button>
-              </div>
+              </section>
             )}
           </div>
+
+          {canApproveReject && (
+            <SheetFooter>
+              <Button
+                onClick={handleRejectClick}
+                disabled={rejectMutation.isPending || approveMutation.isPending}
+                variant="destructive"
+              >
+                <X className="size-4" aria-hidden="true" />
+                Reject
+              </Button>
+              <Button
+                onClick={handleApprove}
+                loading={approveMutation.isPending}
+                disabled={rejectMutation.isPending}
+              >
+                {!approveMutation.isPending && <Check className="size-4" aria-hidden="true" />}
+                Approve
+              </Button>
+            </SheetFooter>
+          )}
         </SheetContent>
       </Sheet>
 
       <Sheet open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <SheetContent className="sm:max-w-md overflow-y-auto">
+        <SheetContent size="sm">
           <SheetHeader>
             <SheetTitle>Reject Timesheet</SheetTitle>
             <SheetDescription>
@@ -292,19 +265,17 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
           </div>
           <SheetFooter>
             <Button
-              variant="outline"
-              className="flex-1"
+              variant="ghost"
               onClick={handleCancelReject}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              className="flex-1"
               onClick={handleRejectConfirm}
-              disabled={!rejectionReason.trim() || rejectMutation.isPending}
+              disabled={!rejectionReason.trim()}
+              loading={rejectMutation.isPending}
             >
-              {rejectMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Reject
             </Button>
           </SheetFooter>

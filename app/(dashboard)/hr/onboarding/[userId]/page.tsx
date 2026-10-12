@@ -9,9 +9,14 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyTasksIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
 
 import { useUserOnboarding, useCompleteOnboardingTask } from "@/lib/api/hooks/hr/onboarding";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -19,14 +24,14 @@ import { getTodayIST, normalizeDeadlineDate } from "@/lib/careers/application-de
 import { formatDisplayDate } from "@/lib/date-utils";
 
 
-function ownerRoleVariant(role: string): "default" | "secondary" | "outline" {
+function ownerRoleTone(role: string): Tone {
   switch (role) {
     case "NEW_HIRE":
-      return "default";
+      return "brand";
     case "HR":
-      return "secondary";
+      return "info";
     default:
-      return "outline";
+      return "neutral";
   }
 }
 
@@ -63,7 +68,7 @@ function ProgressRing({
           cy="50"
           r={r}
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="var(--ink-200)"
           strokeWidth="10"
         />
         <circle
@@ -71,26 +76,26 @@ function ProgressRing({
           cy="50"
           r={r}
           fill="none"
-          stroke={percent === 100 ? "hsl(142 71% 45%)" : "hsl(var(--primary))"}
+          stroke="var(--gold-400)"
           strokeWidth="10"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
           transform="rotate(-90 50 50)"
-          style={{ transition: "stroke-dashoffset 0.5s ease" }}
+          className="transition-[stroke-dashoffset] duration-500 ease-out motion-reduce:transition-none"
         />
         <text
           x="50"
-          y="55"
+          y="56"
           textAnchor="middle"
-          fontSize="18"
-          fontWeight="bold"
+          fontWeight="800"
           fill="currentColor"
+          className="font-display text-lg tabular-nums"
         >
           {percent}%
         </text>
       </svg>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm tabular-nums text-muted-foreground">
         {completed} of {total} tasks done
       </p>
     </div>
@@ -104,7 +109,7 @@ export default function UserOnboardingPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = use(params);
-  const { data: tasks, isLoading } = useUserOnboarding(userId);
+  const { data: tasks, isLoading, isError, error, refetch } = useUserOnboarding(userId);
   const completeTask = useCompleteOnboardingTask();
 
   const handleToggle = useCallback(
@@ -133,45 +138,64 @@ export default function UserOnboardingPage({
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/onboarding">
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            <ArrowLeft className="size-4" aria-hidden="true" />
             Back
           </Link>
         </Button>
       }
     >
       {isLoading ? (
-        <div className="space-y-3">
-          <div className="flex justify-center py-4">
-            <Skeleton className="h-28 w-28 rounded-full" />
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
           </div>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20" />
-          ))}
+          <Skeleton className="order-first h-64 rounded-lg lg:order-none" />
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : taskList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="h-24 w-24" />}
+          illustration={<EmptyTasksIllustration className="size-24" />}
           title="No tasks yet"
           description="Onboarding hasn't been initiated for this employee yet."
           compact
         />
       ) : (
-        <div className="space-y-5">
-          <div className="flex justify-center py-2">
-            <ProgressRing percent={percent} completed={completed} total={total} />
-          </div>
-
-          {allDone && (
-            <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 px-4 py-3 text-center">
-              <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-                All done!
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400 mt-0.5">
-                Onboarding complete. Welcome to the team!
-              </p>
-            </div>
-          )}
-
+        <DetailLayout
+          rail={
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-sans text-sm font-semibold">Progress</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 px-5 pb-5">
+                  <div className="flex justify-center">
+                    <ProgressRing percent={percent} completed={completed} total={total} />
+                  </div>
+                  <PropertyList
+                    items={[
+                      { label: "Completed", value: <span className="tabular-nums">{completed}</span> },
+                      { label: "Remaining", value: <span className="tabular-nums">{total - completed}</span> },
+                      { label: "Total tasks", value: <span className="tabular-nums">{total}</span> },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+              {allDone && (
+                <div className="rounded-lg bg-success-soft px-4 py-3 text-center">
+                  <p className="font-display text-lg font-bold text-success-strong">
+                    All done!
+                  </p>
+                  <p className="text-sm text-success-strong mt-0.5">
+                    Onboarding complete. Welcome to the team!
+                  </p>
+                </div>
+              )}
+            </>
+          }
+          main={
           <div className="space-y-2">
             {taskList.map((task) => {
               const done = task.status === "COMPLETED";
@@ -182,56 +206,53 @@ export default function UserOnboardingPage({
                   key={task.id}
                   className={done ? "opacity-70" : undefined}
                 >
-                  <CardContent className="p-3">
+                  <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => handleToggle(task.id, task.status)}
                         disabled={completeTask.isPending}
                         aria-label={done ? `Mark "${task.title}" as pending` : `Mark "${task.title}" as complete`}
-                        className="mt-0.5 shrink-0 transition-opacity hover:opacity-75 disabled:opacity-50"
+                        className="shrink-0 rounded-full transition-opacity hover:opacity-75 focus-visible:focus-ring disabled:opacity-50"
                       >
                         {done ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <CheckCircle2 className="size-5 text-success-strong" aria-hidden="true" />
                         ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
+                          <Circle className="size-5 text-muted-foreground" aria-hidden="true" />
                         )}
                       </button>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                          <p className={`text-sm font-medium ${done ? "line-through text-muted-foreground" : ""}`}>
+                          <p className={cn("text-sm font-medium", done && "line-through text-muted-foreground")}>
                             {task.title}
                           </p>
-                          <Badge
-                            variant={ownerRoleVariant(task.ownerRole)}
-                            className="text-[9px] py-0 h-4 shrink-0"
-                          >
+                          <StatusPill tone={ownerRoleTone(task.ownerRole)}>
                             {task.ownerRole.replace("_", " ")}
-                          </Badge>
+                          </StatusPill>
                           {overdue && (
-                            <Badge variant="destructive" className="text-[9px] py-0 h-4 shrink-0">
+                            <StatusPill tone="danger" dot>
                               Overdue
-                            </Badge>
+                            </StatusPill>
                           )}
                         </div>
 
                         {task.description && (
-                          <p className="text-[12px] text-muted-foreground">{task.description}</p>
+                          <p className="text-xs text-muted-foreground">{task.description}</p>
                         )}
 
-                        <div className="flex items-center gap-3 mt-1">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                           {task.dueDate && (
-                            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
                               {overdue ? (
-                                <AlertCircle className="h-3 w-3 text-destructive" />
+                                <AlertCircle className="size-3.5 text-danger-strong" aria-hidden="true" />
                               ) : (
-                                <Clock className="h-3 w-3" />
+                                <Clock className="size-3.5" aria-hidden="true" />
                               )}
                               Due {formatDate(task.dueDate)}
                             </span>
                           )}
                           {done && task.completedAt && (
-                            <span className="text-[11px] text-green-600 dark:text-green-400">
+                            <span className="text-xs tabular-nums text-success-strong">
                               Completed {formatDate(task.completedAt)}
                             </span>
                           )}
@@ -243,7 +264,8 @@ export default function UserOnboardingPage({
               );
             })}
           </div>
-        </div>
+          }
+        />
       )}
     </PageWrapper>
   );

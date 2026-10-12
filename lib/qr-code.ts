@@ -2,6 +2,7 @@ import QRCode from "qrcode";
 import sharp from "sharp";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { BRAND } from "@/lib/design/brand-hex";
 
 interface GenerateQRCodeWithLogoOptions {
   url: string;
@@ -33,8 +34,8 @@ export async function generateQRCodeWithLogo(
       margin,
       errorCorrectionLevel,
       color: {
-        dark: "#000000",
-        light: "#FFFFFF",
+        dark: BRAND.ink,
+        light: BRAND.white,
       },
     });
 

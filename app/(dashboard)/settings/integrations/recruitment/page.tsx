@@ -10,13 +10,17 @@ import {
   RefreshCw,
   CheckCircle2,
   XCircle,
-  ChevronRight,
+  ChevronLeft,
+  Info,
+  type LucideIcon,
 } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,7 +39,7 @@ interface PlatformConfig {
   id: UpsertPortalInput["platform"];
   label: string;
   description: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   docsUrl?: string;
   webhookEnvVar: string;
 }
@@ -94,78 +98,63 @@ function PortalCard({
   );
 
   return (
-    <Card className={connected ? "border-primary/30" : ""}>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-muted">
-              <Icon className="h-5 w-5 text-foreground" />
-            </div>
-            <div>
-              <CardTitle className="text-sm">{config.label}</CardTitle>
-              <CardDescription className="text-xs mt-0.5">{config.description}</CardDescription>
-            </div>
+    <Card className={cn("overflow-hidden", connected && "border-primary")}>
+      <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5">
+        <div className="flex min-w-0 items-start gap-3">
+          <IconChip icon={Icon} tone={connected ? "brand" : "neutral"} />
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold">{config.label}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{config.description}</p>
           </div>
-          <Badge
-            variant="outline"
-            className={
-              connected
-                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[11px]"
-                : "bg-muted text-muted-foreground border-border text-[11px]"
-            }
-          >
-            {connected ? (
-              <>
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                Connected
-              </>
-            ) : (
-              <>
-                <XCircle className="h-3 w-3 mr-1" />
-                Inactive
-              </>
-            )}
-          </Badge>
         </div>
-      </CardHeader>
+        <StatusPill tone={connected ? "success" : "neutral"}>
+          {connected ? (
+            <>
+              <CheckCircle2 className="size-3" aria-hidden />
+              Connected
+            </>
+          ) : (
+            <>
+              <XCircle className="size-3" aria-hidden />
+              Inactive
+            </>
+          )}
+        </StatusPill>
+      </div>
 
-      <CardContent className="space-y-3">
-        {portal && (
-          <div className="text-xs text-muted-foreground space-y-1">
-            {portal.lastSyncedAt && (
-              <div className="flex items-center gap-1.5">
-                <RefreshCw className="h-3 w-3" />
-                Last sync: {format(new Date(portal.lastSyncedAt), "PPp")}
-                {portal.lastSyncCount != null && (
-                  <span>({portal.lastSyncCount} candidates)</span>
-                )}
-              </div>
+      <div className="space-y-3 px-5 py-4">
+        {portal?.lastSyncedAt && (
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+            <RefreshCw className="size-3" aria-hidden />
+            Last sync: {format(new Date(portal.lastSyncedAt), "PPp")}
+            {portal.lastSyncCount != null && (
+              <span>({portal.lastSyncCount} candidates)</span>
             )}
           </div>
         )}
 
-        <div className="rounded-md border bg-muted/30 p-3 text-xs space-y-1">
+        <div className="space-y-1 rounded-md border border-border bg-surface-sunken p-3 text-xs">
           <p className="font-medium text-foreground">Webhook URL</p>
-          <p className="font-mono text-muted-foreground break-all">
+          <p className="font-mono text-muted-foreground break-all select-all">
             {`${typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/${config.id.toLowerCase()}/applications?orgId=YOUR_ORG_ID`}
           </p>
           <p className="text-muted-foreground mt-1">
-            Set <code className="bg-muted px-1 rounded">{config.webhookEnvVar}</code> env var to enable signature verification.
+            Set <code className="rounded-xs bg-muted px-1 font-mono">{config.webhookEnvVar}</code> env var to enable signature verification.
           </p>
         </div>
+      </div>
 
-        <div className="flex items-center justify-between">
-          <Label htmlFor={`toggle-${config.id}`} className="text-sm cursor-pointer">
-            {connected ? "Disable integration" : "Enable integration"}
-          </Label>
-          <Switch
-            id={`toggle-${config.id}`}
-            checked={connected}
-            onCheckedChange={handleToggle}
-            disabled={toggling || upsert.isPending}
-          />
-        </div>
-      </CardContent>
+      <div className="flex items-center justify-between gap-4 border-t border-border bg-surface-sunken/50 px-5 py-3">
+        <Label htmlFor={`toggle-${config.id}`} className="text-sm cursor-pointer">
+          {connected ? "Disable integration" : "Enable integration"}
+        </Label>
+        <Switch
+          id={`toggle-${config.id}`}
+          checked={connected}
+          onCheckedChange={handleToggle}
+          disabled={toggling || upsert.isPending}
+        />
+      </div>
     </Card>
   );
 }
@@ -184,23 +173,26 @@ export default function RecruitmentIntegrationsPage() {
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/settings">
-            <ChevronRight className="mr-1 h-3.5 w-3.5 rotate-180" />
+            <ChevronLeft aria-hidden />
             Back to Settings
           </Link>
         </Button>
       }
     >
-      <div className="space-y-6 max-w-3xl">
-        <div className="rounded-lg border bg-blue/5 border-blue/20 p-4 text-sm text-blue">
+      <div className="space-y-6">
+        <div className="flex items-start gap-3 rounded-lg bg-info-soft p-4 text-sm text-info-strong">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <p>
           <strong>How it works:</strong> Each platform sends a webhook to the URL shown below
           whenever a candidate applies. The CRM automatically creates a candidate record and
           deduplicates by email/phone.
+          </p>
         </div>
 
         {isLoading ? (
           <div className="space-y-4">
             {PLATFORMS.map((p) => (
-              <Skeleton key={p.id} className="h-48 w-full rounded-xl" />
+              <Skeleton key={p.id} className="h-48 w-full rounded-lg" />
             ))}
           </div>
         ) : (

@@ -9,13 +9,15 @@ import {
 } from "@/lib/api/hooks/organization";
 import { useResetMfa, useResendInvitation } from "@/lib/api/hooks/mfa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   AlertDialog,
@@ -36,12 +38,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Search, UserPlus, Shield, ShieldOff, RefreshCw } from "lucide-react";
+import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { resolveImageUrl } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/use-debounce";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -60,16 +61,18 @@ const ALL_ROLES = [
   { value: "BRANCH_HR", label: "Branch HR" },
 ];
 
-const ROLE_COLORS: Record<string, string> = {
-  CEO: "bg-amber-500/15 text-amber-500 border-amber-500/20",
-  HR: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-  SALES: "bg-green-500/15 text-green-400 border-green-500/20",
-  CUSTOMER_SUPPORT: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-  ENGINEERING: "bg-sky-500/15 text-sky-400 border-sky-500/20",
-  DESIGN: "bg-pink-500/15 text-pink-400 border-pink-500/20",
-  VIDEO_EDITOR: "bg-orange-500/15 text-orange-400 border-orange-500/20",
-  DIGITAL_MARKETING: "bg-teal-500/15 text-teal-400 border-teal-500/20",
+const ROLE_TONES: Record<string, Tone> = {
+  CEO: "brand",
+  HR: "info",
+  SALES: "success",
+  CUSTOMER_SUPPORT: "plum",
+  ENGINEERING: "info",
+  DESIGN: "plum",
+  VIDEO_EDITOR: "warning",
+  DIGITAL_MARKETING: "teal",
 };
+
+const countPill = "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-soft px-1.5 text-2xs font-semibold tabular-nums text-neutral-strong";
 
 export default function MembersSettingsPage() {
   return (
@@ -204,35 +207,31 @@ function MembersSettingsContent() {
       subtitle="Manage organization members, roles, and invitations"
       badge={membersData ? String(membersData.pagination.total) : undefined}
       actions={
-        <Button onClick={handleToggleInviteForm} className="bg-gold hover:bg-gold/80 text-white">
-          <UserPlus className="h-4 w-4 mr-2" />
+        <Button onClick={handleToggleInviteForm} variant={showInviteForm ? "outline" : "default"}>
+          <UserPlus aria-hidden />
           {showInviteForm ? "Cancel" : "Invite Member"}
         </Button>
       }
     >
         <Tabs defaultValue="members" className="space-y-4">
-          <TabsList className="h-auto w-full sm:w-fit gap-1 rounded-lg p-1">
+          <TabsList variant="underline">
             <TabsTrigger value="members">
               Members
               {membersData && (
-                <Badge variant="secondary" className="ml-1.5 text-[10px]">
-                  {membersData.pagination.total}
-                </Badge>
+                <span className={countPill}>{membersData.pagination.total}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="invitations">
               Invitations
               {invitations && invitations.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 text-[10px]">
-                  {invitations.length}
-                </Badge>
+                <span className={countPill}>{invitations.length}</span>
               )}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="members" className="space-y-4">
             {showInviteForm && (
-              <Card className="rounded-xl border shadow-sm">
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Invite New Member</CardTitle>
                   <CardDescription>Send an invitation to join your organization</CardDescription>
@@ -250,7 +249,7 @@ function MembersSettingsContent() {
                         required
                       />
                     </div>
-                    <div className="w-full space-y-1.5 sm:w-[180px]">
+                    <div className="w-full space-y-1.5 sm:w-44">
                       <Label className="text-sm">Role</Label>
                       <Select value={inviteRole} onValueChange={setInviteRole}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
@@ -262,7 +261,7 @@ function MembersSettingsContent() {
                       </Select>
                     </div>
                     <div className="flex w-full flex-col justify-end sm:w-auto sm:shrink-0">
-                      <Button type="submit" disabled={inviteUser.isPending} className="h-9 w-full sm:w-auto">
+                      <Button type="submit" disabled={inviteUser.isPending} loading={inviteUser.isPending} className="w-full sm:w-auto">
                         {inviteUser.isPending ? "Sending..." : "Send"}
                       </Button>
                     </div>
@@ -271,23 +270,24 @@ function MembersSettingsContent() {
               </Card>
             )}
 
-            <Card className="rounded-xl border shadow-sm">
+            <Card className="overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-gold" />
+                      <Shield className="size-4 text-brand-text" aria-hidden />
                       Organization Members
-                      {membersData && <Badge variant="secondary" className="ml-2 text-xs">{membersData.pagination.total}</Badge>}
+                      {membersData && <span className={countPill}>{membersData.pagination.total}</span>}
                     </CardTitle>
                   </div>
                   <div className="relative w-full sm:w-72">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" aria-hidden />
                     <Input
                       placeholder="Search members"
                       value={memberSearch}
                       onChange={handleSearchChange}
-                      className="h-9 pl-8 text-sm"
+                      className="pl-8"
+                      data-page-search
                       aria-label="Search members"
                       aria-describedby="members-search-hint"
                     />
@@ -295,34 +295,32 @@ function MembersSettingsContent() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="w-full max-h-[65vh]" type="auto">
-                  <div className="min-w-[900px]">
-                    <Table>
-                      <TableHeader className="bg-muted/40">
+              <CardContent className="border-t border-border p-0">
+                    <Table className="min-w-225">
+                      <TableHeader>
                         <TableRow>
-                          <TableHead className="px-5 py-3 text-xs font-semibold">Member</TableHead>
-                          <TableHead className="px-5 py-3 text-xs font-semibold">Email</TableHead>
-                          <TableHead className="px-5 py-3 text-xs font-semibold">Role</TableHead>
-                          <TableHead className="px-5 py-3 text-xs font-semibold">Joined</TableHead>
-                          <TableHead className="px-5 py-3 text-right text-xs font-semibold">Actions</TableHead>
+                          <TableHead className="px-5">Member</TableHead>
+                          <TableHead className="px-5">Email</TableHead>
+                          <TableHead className="px-5">Role</TableHead>
+                          <TableHead className="px-5">Joined</TableHead>
+                          <TableHead className="px-5 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {membersLoading ? (
                           Array.from({ length: 5 }).map((_, i) => (
                             <TableRow key={i}>
-                            <TableCell colSpan={5} className="px-5 py-4">
-                                <div className="h-4 w-full bg-muted/50 rounded animate-pulse" />
+                              <TableCell colSpan={5} className="px-5 py-3">
+                                <Skeleton className="h-9 w-full" />
                               </TableCell>
                             </TableRow>
                           ))
                         ) : !membersData?.data.length ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-sm text-muted-foreground">
-                              No members found
-                            </TableCell>
-                          </TableRow>
+                          <TableEmpty
+                            colSpan={5}
+                            icon={memberSearch ? Search : Users}
+                            message={memberSearch ? "No results for these filters" : "No members found"}
+                          />
                         ) : (
                           membersData.data.map((member) => (
                             <MemberTableRow
@@ -337,17 +335,15 @@ function MembersSettingsContent() {
                         )}
                       </TableBody>
                     </Table>
-                  </div>
-                </ScrollArea>
                 {membersData && membersData.pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between border-t px-5 py-3">
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between border-t border-border px-5 py-3">
+                    <span className="text-sm text-muted-foreground tabular-nums">
                       Page {membersData.pagination.page} of {membersData.pagination.totalPages}
                     </span>
                     <div className="flex gap-1">
-                      <Button variant="outline" size="sm" className="h-8 text-xs"
+                      <Button variant="outline" size="sm"
                         disabled={page <= 1} onClick={handlePrevPage}>Prev</Button>
-                      <Button variant="outline" size="sm" className="h-8 text-xs"
+                      <Button variant="outline" size="sm"
                         disabled={page >= membersData.pagination.totalPages} onClick={handleNextPage}>Next</Button>
                     </div>
                   </div>
@@ -357,7 +353,7 @@ function MembersSettingsContent() {
           </TabsContent>
 
           <TabsContent value="invitations" className="space-y-4">
-            <Card className="rounded-xl border shadow-sm">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-base">Invite New Member</CardTitle>
                 <CardDescription>Send an invitation to join your organization</CardDescription>
@@ -375,7 +371,7 @@ function MembersSettingsContent() {
                       required
                     />
                   </div>
-                  <div className="w-full space-y-1.5 sm:w-[180px]">
+                  <div className="w-full space-y-1.5 sm:w-44">
                     <Label className="text-sm">Role</Label>
                     <Select value={inviteRole} onValueChange={setInviteRole}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
@@ -387,7 +383,7 @@ function MembersSettingsContent() {
                     </Select>
                   </div>
                   <div className="flex w-full flex-col justify-end sm:w-auto sm:shrink-0">
-                    <Button type="submit" disabled={inviteUser.isPending} className="h-9 w-full sm:w-auto">
+                    <Button type="submit" disabled={inviteUser.isPending} loading={inviteUser.isPending} className="w-full sm:w-auto">
                       {inviteUser.isPending ? "Sending..." : "Send Invite"}
                     </Button>
                   </div>
@@ -395,12 +391,12 @@ function MembersSettingsContent() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-xl border shadow-sm">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle className="text-base flex items-center gap-2">
                   Pending Invitations
                   {invitations && invitations.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 text-xs">{invitations.length}</Badge>
+                    <span className={countPill}>{invitations.length}</span>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -420,6 +416,7 @@ function MembersSettingsContent() {
                 ) : (
                   <EmptyState
                     compact
+                    icon={Mail}
                     title="No pending invitations"
                     description="Invitations you send will appear here until they're accepted."
                     className="border-0 bg-transparent"
@@ -454,29 +451,29 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
   const handleResetMfa = useCallback(() => onResetMfa(member.userId), [member.userId, onResetMfa]);
 
   return (
-    <TableRow className="hover:bg-muted/30">
-      <TableCell className="px-5 py-3.5">
+    <TableRow>
+      <TableCell className="px-5">
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
+          <Avatar className="size-8">
             <AvatarImage src={resolveImageUrl(member.image)} />
-            <AvatarFallback className="text-xs bg-gold/10 text-gold">{member.name?.charAt(0) || "?"}</AvatarFallback>
+            <AvatarFallback className="text-xs bg-brand-soft text-brand-text">{member.name?.charAt(0) || "?"}</AvatarFallback>
           </Avatar>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium">{member.name || "Unknown"}</span>
             {member.totpEnabled && (
-              <Shield className="h-3 w-3 text-green-500" aria-label="MFA enabled" />
+              <Shield className="size-3.5 text-success-strong" aria-label="MFA enabled" />
             )}
           </div>
         </div>
       </TableCell>
-      <TableCell className="px-5 py-3.5 text-sm text-muted-foreground">{member.email}</TableCell>
-      <TableCell className="px-5 py-3.5">
-        <Badge variant="outline" className={`text-[11px] border ${ROLE_COLORS[member.role] || ""}`}>{member.role}</Badge>
+      <TableCell className="px-5 text-sm text-muted-foreground">{member.email}</TableCell>
+      <TableCell className="px-5">
+        <StatusPill tone={ROLE_TONES[member.role] ?? "neutral"}>{member.role}</StatusPill>
       </TableCell>
-      <TableCell className="px-5 py-3.5 text-sm text-muted-foreground">
+      <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
       </TableCell>
-      <TableCell className="px-5 py-3.5 text-right">
+      <TableCell className="px-5 text-right">
         <div className="flex items-center justify-end gap-2">
           {canManageMfa && member.totpEnabled && (
             <AlertDialog>
@@ -484,10 +481,10 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive hover:bg-danger-soft"
                   disabled={isResettingMfa}
                 >
-                  <ShieldOff className="h-3 w-3 mr-1" />
+                  <ShieldOff aria-hidden />
                   Reset MFA
                 </Button>
               </AlertDialogTrigger>
@@ -501,7 +498,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className={buttonVariants({ variant: "destructive" })}
                     onClick={handleResetMfa}
                   >
                     Reset MFA
@@ -511,7 +508,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
             </AlertDialog>
           )}
           <Select value={member.role} onValueChange={handleRoleChange}>
-            <SelectTrigger className="ml-auto h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
             <SelectContent>
               {ALL_ROLES.map(r => (
                 <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
@@ -536,24 +533,23 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
   const handleResend = useCallback(() => onResend(inv.id), [inv.id, onResend]);
 
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg">
-      <div>
-        <p className="text-sm font-medium">{inv.email}</p>
-        <Badge variant="outline" className={`text-[10px] mt-1 ${ROLE_COLORS[inv.role] || ""}`}>{inv.role}</Badge>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{inv.email}</p>
+        <StatusPill tone={ROLE_TONES[inv.role] ?? "neutral"} className="mt-1">{inv.role}</StatusPill>
       </div>
       <div className="flex gap-1.5">
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs"
           onClick={handleResend}
           disabled={isResending}
           aria-label="Resend invitation"
         >
-          <RefreshCw className="h-3 w-3 mr-1" />
+          <RefreshCw aria-hidden />
           Resend
         </Button>
-        <Button variant="ghost" size="sm" className="text-xs" onClick={handleCancel}>Cancel</Button>
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={handleCancel}>Cancel</Button>
       </div>
     </div>
   );

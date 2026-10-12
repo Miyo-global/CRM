@@ -1,7 +1,7 @@
 "use client";
 import { getErrorMessage } from "@/lib/get-error-message";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, type ReactNode } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   useHrPerformanceReviews,
@@ -25,8 +25,11 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
@@ -72,7 +75,24 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
-import { EmptyLeaderboardIllustration } from "@/components/illustrations";
+import { EmptyLeaderboardIllustration, EmptyTargetIllustration, EmptyCalendarIllustration, EmptyTeamIllustration } from "@/components/illustrations";
+
+const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
+const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
+const MEETING_TONE: Record<string, Tone> = { COMPLETED: "success", CANCELLED: "danger", SCHEDULED: "info" };
+
+function TabHeader({ count, children }: { count: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <p className="text-sm text-muted-foreground tabular-nums">{count}</p>
+      {children}
+    </div>
+  );
+}
+
+function ListSkeleton({ count, className }: { count: number; className: string }) {
+  return <div className="space-y-3">{Array.from({ length: count }).map((_, i) => <Skeleton key={i} className={className} />)}</div>;
+}
 
 export default function PerformancePage() {
   return (
@@ -97,40 +117,28 @@ function PerformanceContent() {
   return (
     <PageWrapper title="Performance" subtitle="Reviews, goals, and team development">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="h-9 flex-wrap">
-          <TabsTrigger value="reviews" className="text-xs gap-1.5 px-3">
-            <Star className="h-3.5 w-3.5" />Reviews
-          </TabsTrigger>
-          <TabsTrigger value="appraisals" className="text-xs gap-1.5 px-3">
-            <ClipboardList className="h-3.5 w-3.5" />Appraisals
-          </TabsTrigger>
-          <TabsTrigger value="pip" className="text-xs gap-1.5 px-3">
-            <AlertTriangle className="h-3.5 w-3.5" />PIP
-          </TabsTrigger>
-          <TabsTrigger value="goals" className="text-xs gap-1.5 px-3">
-            <Target className="h-3.5 w-3.5" />Goals
-          </TabsTrigger>
-          <TabsTrigger value="one-on-ones" className="text-xs gap-1.5 px-3">
-            <Users className="h-3.5 w-3.5" />1-on-1s
-          </TabsTrigger>
-          <TabsTrigger value="cycles" className="text-xs gap-1.5 px-3">
-            <Calendar className="h-3.5 w-3.5" />Cycles
-          </TabsTrigger>
+        <TabsList variant="underline" className="max-w-full overflow-x-auto">
+          <TabsTrigger value="reviews"><Star className="size-4" />Reviews</TabsTrigger>
+          <TabsTrigger value="appraisals"><ClipboardList className="size-4" />Appraisals</TabsTrigger>
+          <TabsTrigger value="pip"><AlertTriangle className="size-4" />PIP</TabsTrigger>
+          <TabsTrigger value="goals"><Target className="size-4" />Goals</TabsTrigger>
+          <TabsTrigger value="one-on-ones"><Users className="size-4" />1-on-1s</TabsTrigger>
+          <TabsTrigger value="cycles"><Calendar className="size-4" />Cycles</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="reviews" className="mt-3"><ReviewsTab /></TabsContent>
-        <TabsContent value="appraisals" className="mt-3"><AppraisalsTab /></TabsContent>
-        <TabsContent value="pip" className="mt-3"><PipTab /></TabsContent>
-        <TabsContent value="goals" className="mt-3"><GoalsTab /></TabsContent>
-        <TabsContent value="one-on-ones" className="mt-3"><OneOnOnesTab /></TabsContent>
-        <TabsContent value="cycles" className="mt-3"><CyclesTab /></TabsContent>
+        <TabsContent value="reviews" className="mt-4"><ReviewsTab /></TabsContent>
+        <TabsContent value="appraisals" className="mt-4"><AppraisalsTab /></TabsContent>
+        <TabsContent value="pip" className="mt-4"><PipTab /></TabsContent>
+        <TabsContent value="goals" className="mt-4"><GoalsTab /></TabsContent>
+        <TabsContent value="one-on-ones" className="mt-4"><OneOnOnesTab /></TabsContent>
+        <TabsContent value="cycles" className="mt-4"><CyclesTab /></TabsContent>
       </Tabs>
     </PageWrapper>
   );
 }
 
 function ReviewsTab() {
-  const { data: reviews, isLoading } = useHrPerformanceReviews();
+  const { data: reviews, isLoading, isError, error, refetch } = useHrPerformanceReviews();
   const { data: employeesRaw } = useHrEmployees();
   const { data: cycles } = useReviewCycles();
   const createReview = useCreatePerformanceReview();
@@ -219,57 +227,58 @@ function ReviewsTab() {
   }, [updateReview]);
 
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}</div>;
+    return <ListSkeleton count={4} className="h-20 w-full rounded-lg" />;
   }
+  if (isError) return <QueryErrorState error={error} onRetry={() => void refetch()} />;
 
   const reviewsList = Array.isArray(reviews) ? reviews : [];
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{reviewsList.length} reviews</p>
+    <div className="space-y-4">
+      <TabHeader count={`${reviewsList.length} reviews`}>
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" />New Review
+          <Plus className="size-4" />New Review
         </Button>
-      </div>
+      </TabHeader>
 
       {reviewsList.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <EmptyLeaderboardIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">No reviews yet. Create your first one.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptyLeaderboardIllustration className="h-40 w-40" />}
+          title="No reviews yet. Create your first one."
+          action={{ label: "New Review", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {reviewsList.map((review: PerformanceReview) => (
-            <Card key={review.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant={review.status === "COMPLETED" ? "default" : review.status === "IN_PROGRESS" ? "secondary" : "outline"} className="text-[10px]">
+            <Card key={review.id}>
+              <CardContent className="flex h-full flex-col gap-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <StatusPill tone={REVIEW_TONE[review.status ?? ""] ?? "neutral"} dot>
                     {review.status ?? "DRAFT"}
-                  </Badge>
+                  </StatusPill>
                   {review.overallRating && (
-                    <div className="flex items-center gap-1 text-amber-500">
-                      <Star className="h-3 w-3 fill-current" />
-                      <span className="text-xs font-bold">{Number(review.overallRating).toFixed(1)}</span>
+                    <div className="flex items-center gap-1 text-brand-text">
+                      <Star className="size-3.5 fill-current" />
+                      <span className="font-display text-sm font-bold tabular-nums">{Number(review.overallRating).toFixed(1)}</span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Avatar className="h-6 w-6">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <Avatar className="size-8">
                     <AvatarImage src={resolveImageUrl(review.user?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{review.user?.name?.[0] ?? "?"}</AvatarFallback>
+                    <AvatarFallback className="bg-brand-soft text-2xs text-brand-soft-foreground">{review.user?.name?.[0] ?? "?"}</AvatarFallback>
                   </Avatar>
-                  <p className="text-sm font-medium truncate">{review.user?.name ?? "Employee"}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{review.user?.name ?? "Employee"}</p>
+                    <p className="truncate text-xs text-muted-foreground tabular-nums">
+                      {review.periodStart} → {review.periodEnd}
+                      {review.reviewer?.name && <> &middot; by {review.reviewer.name}</>}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground mb-2">
-                  {review.periodStart} → {review.periodEnd}
-                  {review.reviewer?.name && <> &middot; by {review.reviewer.name}</>}
-                </p>
                 {review.status !== "COMPLETED" && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs w-full" onClick={() => handleComplete(review.id)}>
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Mark Complete
+                  <Button variant="outline" size="xs" className="mt-auto w-full" onClick={() => handleComplete(review.id)} disabled={updateReview.isPending} loading={updateReview.isPending && updateReview.variables?.id === review.id}>
+                    <CheckCircle2 />Mark Complete
                   </Button>
                 )}
               </CardContent>
@@ -288,7 +297,7 @@ function ReviewsTab() {
             placeholder="Select employee"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.employeeId && <p className="text-[11px] text-destructive">{formErrors.employeeId}</p>}
+          {formErrors.employeeId && <p className="text-2xs text-destructive">{formErrors.employeeId}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Review Cycle (optional)</label>
@@ -302,26 +311,26 @@ function ReviewsTab() {
             </SelectContent>
           </Select>
           {selectedCycle && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Inherits {selectedCycle.periodStart} → {selectedCycle.periodEnd}. Dates must stay within this range.
             </p>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period Start</label>
             <Input type="date" value={periodStart} min={minStart} max={periodEnd || maxEnd} onChange={(e) => setPeriodStart(e.target.value)} />
-            {formErrors.periodStart && <p className="text-[11px] text-destructive">{formErrors.periodStart}</p>}
+            {formErrors.periodStart && <p className="text-2xs text-destructive">{formErrors.periodStart}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period End</label>
             <Input type="date" value={periodEnd} min={periodStart || minStart} max={maxEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
-            {formErrors.periodEnd && <p className="text-[11px] text-destructive">{formErrors.periodEnd}</p>}
+            {formErrors.periodEnd && <p className="text-2xs text-destructive">{formErrors.periodEnd}</p>}
           </div>
         </div>
         {employeeId && periodStart && periodEnd && (
-          <div className="pt-2 border-t border-border">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">AI Assist</p>
+          <div className="border-t border-border pt-3">
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-2">AI Assist</p>
             <AIGenerateReviewButton
               userId={employeeId}
               userName={employees.find((e) => e.id === employeeId)?.name ?? "Employee"}
@@ -336,7 +345,7 @@ function ReviewsTab() {
 }
 
 function GoalsTab() {
-  const { data: goals, isLoading } = useHrGoals();
+  const { data: goals, isLoading, isError, error, refetch } = useHrGoals();
   const { data: employeesRaw } = useHrEmployees();
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
@@ -412,51 +421,50 @@ function GoalsTab() {
   }, [deleteId, deleteGoal]);
 
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}</div>;
+    return <ListSkeleton count={4} className="h-20 w-full rounded-lg" />;
   }
+  if (isError) return <QueryErrorState error={error} onRetry={() => void refetch()} />;
 
   const goalsList = Array.isArray(goals) ? goals : [];
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{goalsList.length} goals</p>
+    <div className="space-y-4">
+      <TabHeader count={`${goalsList.length} goals`}>
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" />New Goal
+          <Plus className="size-4" />New Goal
         </Button>
-      </div>
+      </TabHeader>
 
       {goalsList.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Target className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No goals set yet.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptyTargetIllustration className="h-36 w-36" />}
+          title="No goals set yet."
+          action={{ label: "New Goal", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {goalsList.map((goal: Goal) => (
             <Card key={goal.id}>
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-start justify-between">
-                  <Badge variant={goal.status === "COMPLETED" ? "default" : "secondary"} className="text-[10px]">
+              <CardContent className="flex h-full flex-col gap-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <StatusPill tone={goal.status === "COMPLETED" ? "success" : "info"} dot>
                     {(goal.status ?? "IN_PROGRESS").replace("_", " ")}
-                  </Badge>
+                  </StatusPill>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
+                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label="Goal actions"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleProgressUpdate(goal.id, (goal.progress ?? 0) + 10)}>+10% Progress</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleProgressUpdate(goal.id, 100)}>Mark Complete</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(goal.id)}><Trash2 className="h-3.5 w-3.5 mr-1.5" />Delete</DropdownMenuItem>
+                      <DropdownMenuItem variant="destructive" onClick={() => setDeleteId(goal.id)}><Trash2 />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <p className="text-sm font-semibold leading-tight">{goal.title}</p>
-                {goal.endDate && <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px]">
+                <p className="text-sm font-semibold leading-tight text-foreground">{goal.title}</p>
+                {goal.endDate && <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums"><Calendar className="size-3.5" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
+                <div className="mt-auto space-y-1.5">
+                  <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="font-medium">{goal.progress ?? 0}%</span>
+                    <span className="font-medium tabular-nums text-foreground">{goal.progress ?? 0}%</span>
                   </div>
                   <Progress value={goal.progress ?? 0} className="h-1.5" />
                 </div>
@@ -476,23 +484,23 @@ function GoalsTab() {
             placeholder="Select employee"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.userId && <p className="text-[11px] text-destructive">{formErrors.userId}</p>}
+          {formErrors.userId && <p className="text-2xs text-destructive">{formErrors.userId}</p>}
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Title</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{title.length}/120</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{title.length}/120</span>
           </div>
           <Input placeholder="e.g., Complete Q2 OKRs" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
-          {formErrors.title && <p className="text-[11px] text-destructive">{formErrors.title}</p>}
+          {formErrors.title && <p className="text-2xs text-destructive">{formErrors.title}</p>}
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Description</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{description.length}/2000</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{description.length}/2000</span>
           </div>
           <Textarea placeholder="Goal details..." value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} rows={3} />
-          {formErrors.description && <p className="text-[11px] text-destructive">{formErrors.description}</p>}
+          {formErrors.description && <p className="text-2xs text-destructive">{formErrors.description}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Target Value</label>
@@ -503,18 +511,18 @@ function GoalsTab() {
             value={targetValue}
             onChange={(e) => setTargetValue(sanitizeTargetValueInput(e.target.value))}
           />
-          {formErrors.targetValue && <p className="text-[11px] text-destructive">{formErrors.targetValue}</p>}
+          {formErrors.targetValue && <p className="text-2xs text-destructive">{formErrors.targetValue}</p>}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Start Date</label>
             <Input type="date" value={startDate} max={endDate || undefined} onChange={(e) => setStartDate(e.target.value)} />
-            {formErrors.startDate && <p className="text-[11px] text-destructive">{formErrors.startDate}</p>}
+            {formErrors.startDate && <p className="text-2xs text-destructive">{formErrors.startDate}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">End Date</label>
             <Input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)} />
-            {formErrors.endDate && <p className="text-[11px] text-destructive">{formErrors.endDate}</p>}
+            {formErrors.endDate && <p className="text-2xs text-destructive">{formErrors.endDate}</p>}
           </div>
         </div>
       </HrSheet>
@@ -534,7 +542,7 @@ function GoalsTab() {
 }
 
 function OneOnOnesTab() {
-  const { data: meetings, isLoading } = useOneOnOneMeetings();
+  const { data: meetings, isLoading, isError, error, refetch } = useOneOnOneMeetings();
   const { data: employeesRaw } = useHrEmployees();
   const createMeeting = useCreateOneOnOne();
   const updateMeeting = useUpdateOneOnOne();
@@ -655,77 +663,76 @@ function OneOnOnesTab() {
   }, [deleteId, deleteMeeting]);
 
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>;
+    return <ListSkeleton count={3} className="h-16 w-full rounded-lg" />;
   }
+  if (isError) return <QueryErrorState error={error} onRetry={() => void refetch()} />;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{meetings?.length ?? 0} meetings</p>
+    <div className="space-y-4">
+      <TabHeader count={`${meetings?.length ?? 0} meetings`}>
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" />Schedule 1-on-1
+          <Plus className="size-4" />Schedule 1-on-1
         </Button>
-      </div>
+      </TabHeader>
 
       {!meetings?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Users className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No 1-on-1 meetings scheduled.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptyTeamIllustration className="h-36 w-36" />}
+          title="No 1-on-1 meetings scheduled."
+          action={{ label: "Schedule 1-on-1", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
         <div className="space-y-2">
           {meetings.map((m: OneOnOneMeetingWithParticipants) => {
             const participants = resolveParticipants(m);
             return (
             <Card key={m.id}>
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="flex -space-x-2 shrink-0">
-                  <Avatar className="h-7 w-7 border-2 border-background">
+              <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
+                <div className="flex shrink-0 -space-x-2">
+                  <Avatar className="size-7 border-2 border-card">
                     <AvatarImage src={resolveImageUrl(m.manager?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{m.manager?.name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{m.manager?.name?.[0]}</AvatarFallback>
                   </Avatar>
-                  <Avatar className="h-7 w-7 border-2 border-background">
+                  <Avatar className="size-7 border-2 border-card">
                     <AvatarImage src={resolveImageUrl(m.employee?.image ?? null)} />
-                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{m.employee?.name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{m.employee?.name?.[0]}</AvatarFallback>
                   </Avatar>
                   {participants.slice(0, 3).map((p) => (
-                    <Avatar key={p.id} className="h-7 w-7 border-2 border-background">
+                    <Avatar key={p.id} className="size-7 border-2 border-card">
                       <AvatarImage src={resolveImageUrl(p.image ?? null)} />
-                      <AvatarFallback className="text-[9px] bg-muted text-muted-foreground">{p.name?.[0] ?? "?"}</AvatarFallback>
+                      <AvatarFallback className="bg-neutral-soft text-3xs text-neutral-strong">{p.name?.[0] ?? "?"}</AvatarFallback>
                     </Avatar>
                   ))}
                   {participants.length > 3 && (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[9px] font-medium text-muted-foreground">
+                    <span className="flex size-7 items-center justify-center rounded-full border-2 border-card bg-neutral-soft text-3xs font-semibold tabular-nums text-neutral-strong">
                       +{participants.length - 3}
                     </span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{m.manager?.name} & {m.employee?.name}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">{m.manager?.name} & {m.employee?.name}</p>
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                    <Clock className="size-3.5" />
                     {formatMeetingDateTime(String(m.scheduledAt))} &middot; {m.duration}min
                   </p>
                   {participants.length > 0 && (
-                    <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
-                      <Users className="h-3 w-3 shrink-0" />
+                    <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                      <Users className="size-3.5 shrink-0" />
                       <span className="truncate">
                         with {participants.map((p) => p.name ?? "Participant").join(", ")}
                       </span>
                     </p>
                   )}
                 </div>
-                <Badge variant={m.status === "COMPLETED" ? "default" : m.status === "CANCELLED" ? "destructive" : "outline"} className="text-[10px] shrink-0">
+                <StatusPill tone={MEETING_TONE[m.status ?? ""] ?? "neutral"} dot className="shrink-0">
                   {m.status}
-                </Badge>
+                </StatusPill>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label="Meeting actions"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {m.status === "SCHEDULED" && <DropdownMenuItem onClick={() => handleStatusChange(m.id, "COMPLETED")}>Mark Completed</DropdownMenuItem>}
                     {m.status === "SCHEDULED" && <DropdownMenuItem onClick={() => handleStatusChange(m.id, "CANCELLED")}>Cancel</DropdownMenuItem>}
-                    <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(m.id)}><Trash2 className="h-3.5 w-3.5 mr-1.5" />Delete</DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => setDeleteId(m.id)}><Trash2 />Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardContent>
@@ -745,7 +752,7 @@ function OneOnOnesTab() {
             placeholder="Select team member"
             searchPlaceholder="Search employees…"
           />
-          {formErrors.employeeId && <p className="text-[11px] text-destructive">{formErrors.employeeId}</p>}
+          {formErrors.employeeId && <p className="text-2xs text-destructive">{formErrors.employeeId}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Additional participants (optional)</label>
@@ -757,26 +764,26 @@ function OneOnOnesTab() {
             searchPlaceholder="Search teammates…"
             selectedLabel={(count) => `${count} participant${count === 1 ? "" : "s"}`}
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             They are added to the calendar (.ics) invite and emailed alongside the manager and employee.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Date</label>
             <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
-            {formErrors.date && <p className="text-[11px] text-destructive">{formErrors.date}</p>}
+            {formErrors.date && <p className="text-2xs text-destructive">{formErrors.date}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Time</label>
             <Input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
-            {formErrors.time && <p className="text-[11px] text-destructive">{formErrors.time}</p>}
+            {formErrors.time && <p className="text-2xs text-destructive">{formErrors.time}</p>}
           </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Duration (min)</label>
           <Input type="number" min={15} max={180} step={5} value={duration} onChange={(e) => setDuration(e.target.value)} />
-          {formErrors.duration && <p className="text-[11px] text-destructive">{formErrors.duration}</p>}
+          {formErrors.duration && <p className="text-2xs text-destructive">{formErrors.duration}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Meeting link (optional)</label>
@@ -786,14 +793,14 @@ function OneOnOnesTab() {
             value={meetingLink}
             onChange={(e) => setMeetingLink(e.target.value)}
           />
-          {formErrors.meetingLink && <p className="text-[11px] text-destructive">{formErrors.meetingLink}</p>}
+          {formErrors.meetingLink && <p className="text-2xs text-destructive">{formErrors.meetingLink}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Agenda</label>
           <Textarea placeholder="Topics to discuss..." value={agenda} maxLength={1000} onChange={(e) => setAgenda(e.target.value)} rows={3} />
-          {formErrors.agenda && <p className="text-[11px] text-destructive">{formErrors.agenda}</p>}
+          {formErrors.agenda && <p className="text-2xs text-destructive">{formErrors.agenda}</p>}
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           The employee receives an email with a calendar (.ics) invite they can add to Google Calendar, Outlook, or Apple Calendar.
         </p>
       </HrSheet>
@@ -813,7 +820,7 @@ function OneOnOnesTab() {
 }
 
 function CyclesTab() {
-  const { data: cycles, isLoading } = useReviewCycles();
+  const { data: cycles, isLoading, isError, error, refetch } = useReviewCycles();
   const { data: org } = useOrgSettings();
   const createCycle = useCreateReviewCycle();
   const updateCycle = useUpdateReviewCycle();
@@ -902,36 +909,35 @@ function CyclesTab() {
   }, [deleteId, deleteCycle]);
 
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>;
+    return <ListSkeleton count={3} className="h-16 w-full rounded-lg" />;
   }
+  if (isError) return <QueryErrorState error={error} onRetry={() => void refetch()} />;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{cycles?.length ?? 0} cycles</p>
+    <div className="space-y-4">
+      <TabHeader count={`${cycles?.length ?? 0} cycles`}>
         <Button size="sm" onClick={openCreate}>
-          <Plus className="h-3.5 w-3.5 mr-1" />New Cycle
+          <Plus className="size-4" />New Cycle
         </Button>
-      </div>
+      </TabHeader>
 
       {!cycles?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Calendar className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No review cycles yet. Create a quarterly or annual cycle.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          illustration={<EmptyCalendarIllustration className="h-36 w-36" />}
+          title="No review cycles yet. Create a quarterly or annual cycle."
+          action={{ label: "New Cycle", onClick: openCreate }}
+        />
       ) : (
         <div className="space-y-2">
           {cycles.map((cycle: ReviewCycle) => (
             <Card key={cycle.id}>
-              <CardContent className="p-4 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{cycle.name}</p>
-                    <Badge variant={cycle.status === "ACTIVE" ? "default" : cycle.status === "COMPLETED" ? "secondary" : "outline"} className="text-[10px]">{cycle.status}</Badge>
+              <CardContent className="flex items-start justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">{cycle.name}</p>
+                    <StatusPill tone={CYCLE_TONE[cycle.status ?? ""] ?? "warning"} dot>{cycle.status}</StatusPill>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
                     {cycle.periodStart} → {cycle.periodEnd}
                     {cycle.deadline && <> &middot; Deadline: {cycle.deadline}</>}
                     {cycle.type && (
@@ -939,21 +945,21 @@ function CyclesTab() {
                     )}
                   </p>
                   {cycle.type && REVIEW_CYCLE_TYPE_MAP[cycle.type] && (
-                    <p className="text-[10px] text-muted-foreground/80 mt-1 max-w-md">
+                    <p className="mt-1 max-w-md text-xs text-subtle-foreground">
                       {REVIEW_CYCLE_TYPE_MAP[cycle.type]!.description}
                     </p>
                   )}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon-sm" aria-label="Cycle actions"><MoreHorizontal className="size-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => openEdit(cycle)}>
-                      <Pencil className="h-3.5 w-3.5 mr-1.5" />Edit
+                      <Pencil />Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(cycle.id)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />Delete
+                    <DropdownMenuItem variant="destructive" onClick={() => setDeleteId(cycle.id)}>
+                      <Trash2 />Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -967,10 +973,10 @@ function CyclesTab() {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Cycle Name</label>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{name.length}/100</span>
+            <span className="text-2xs text-muted-foreground tabular-nums">{name.length}/100</span>
           </div>
           <Input placeholder="e.g., Q2 2026 Review" value={name} maxLength={100} onChange={(e) => setName(e.target.value)} />
-          {formErrors.name && <p className="text-[11px] text-destructive">{formErrors.name}</p>}
+          {formErrors.name && <p className="text-2xs text-destructive">{formErrors.name}</p>}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Type</label>
@@ -983,28 +989,28 @@ function CyclesTab() {
             </SelectContent>
           </Select>
           {typeInfo && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               {typeInfo.description}
               {typeInfo.months ? " End date auto-fills from the start — adjust if needed." : ""}
             </p>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period Start</label>
             <Input type="date" value={periodStart} min={orgStartDate} max={periodEnd || undefined} onChange={(e) => handlePeriodStartChange(e.target.value)} />
-            {formErrors.periodStart && <p className="text-[11px] text-destructive">{formErrors.periodStart}</p>}
+            {formErrors.periodStart && <p className="text-2xs text-destructive">{formErrors.periodStart}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Period End</label>
-            <Input type="date" value={periodEnd} min={periodStart || orgStartDate} readOnly={type !== "CUSTOM"} onChange={(e) => setPeriodEnd(e.target.value)} className={type !== "CUSTOM" ? "bg-muted" : undefined} />
-            {formErrors.periodEnd && <p className="text-[11px] text-destructive">{formErrors.periodEnd}</p>}
+            <Input type="date" value={periodEnd} min={periodStart || orgStartDate} readOnly={type !== "CUSTOM"} onChange={(e) => setPeriodEnd(e.target.value)} className={type !== "CUSTOM" ? "bg-surface-sunken" : undefined} />
+            {formErrors.periodEnd && <p className="text-2xs text-destructive">{formErrors.periodEnd}</p>}
           </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Submission Deadline</label>
           <Input type="date" value={deadline} min={periodStart || undefined} max={periodEnd || undefined} onChange={(e) => setDeadline(e.target.value)} />
-          {formErrors.deadline && <p className="text-[11px] text-destructive">{formErrors.deadline}</p>}
+          {formErrors.deadline && <p className="text-2xs text-destructive">{formErrors.deadline}</p>}
         </div>
       </HrSheet>
 

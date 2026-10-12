@@ -5,6 +5,7 @@ import { documentExportEmailSchema, formatDocumentExportLabel } from "@/lib/hr/d
 import { buildDocumentsZipBuffer } from "@/lib/hr/build-documents-zip";
 import { sendEmail } from "@/lib/email/sender";
 import { ZodError } from "zod";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function canSendDocumentPackEmail(role: string | null | undefined): boolean {
   return role === "CEO" || role === "HR" || role === "ADMIN";
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     const messageHtml = body.message?.trim()
       ? `<p>${escapeHtml(body.message.trim()).replace(/\n/g, "<br/>")}</p>`
       : `<p>Please find attached a ZIP export of documents matching: <strong>${escapeHtml(label)}</strong>.</p>`;
-    const summary = `<p style="color:#666;font-size:13px">Files included: ${included}${
+    const summary = `<p style="color:${BRAND.inkMuted};font-size:13px">Files included: ${included}${
       skipped ? ` · Skipped (unreadable): ${skipped}` : ""
     }</p>`;
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
       html: `
         ${messageHtml}
         ${summary}
-        <p style="margin-top:16px;font-size:12px;color:#888">Sent from Miyo Global HR Documents.</p>
+        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Documents.</p>
       `,
       attachments: [
         {

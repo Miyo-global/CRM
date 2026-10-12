@@ -31,7 +31,7 @@ export default function MyBonusesPage() {
       subtitle="View your bonus history and payment status"
       actions={
         <Button variant="ghost" size="sm" onClick={handleGoBack}>
-          <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+          <ArrowLeft className="size-4" aria-hidden="true" />
           Back
         </Button>
       }

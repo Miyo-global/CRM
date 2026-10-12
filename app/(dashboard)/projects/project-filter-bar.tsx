@@ -2,18 +2,20 @@
 
 import { Search, X, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Kbd } from "@/components/ui/kbd";
+import { FilterChip } from "@/components/ui/filter-chip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 
 type ViewMode = "grid" | "list";
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
+
+const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: "ALL", label: "All" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "ARCHIVED", label: "Archived" },
+];
 
 interface ProjectFilterBarProps {
   search: string;
@@ -24,6 +26,7 @@ interface ProjectFilterBarProps {
   onViewModeChange: (mode: ViewMode) => void;
 }
 
+/** ListToolbar layout (§6.3): search → status chips → spacer → view toggle. */
 export function ProjectFilterBar({
   search,
   onSearchChange,
@@ -33,71 +36,65 @@ export function ProjectFilterBar({
   onViewModeChange,
 }: ProjectFilterBarProps) {
   return (
-    <div className="flex items-center gap-2 w-full flex-wrap">
-
-      <div className="relative w-full sm:w-48">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+    <div className="flex w-full flex-wrap items-center gap-2">
+      <div className="relative w-full sm:w-64">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
+          aria-hidden="true"
+        />
         <Input
+          type="search"
+          data-page-search
           placeholder="Search projects"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="h-8 pl-8 pr-7 text-sm"
+          className="pl-9 pr-9"
           aria-label="Search projects"
           aria-describedby="projects-search-hint"
         />
         <MinLengthHint id="projects-search-hint" value={search} />
-        {search && (
+        {search ? (
           <button
+            type="button"
             onClick={() => onSearchChange("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:focus-ring"
             aria-label="Clear search"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" aria-hidden="true" />
           </button>
+        ) : (
+          <Kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" aria-hidden="true">
+            /
+          </Kbd>
         )}
       </div>
 
-      <Select
-        value={status}
-        onValueChange={(v) => onStatusChange(v as StatusFilter)}
-      >
-        <SelectTrigger className="h-8 w-[120px] text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="ALL">All</SelectItem>
-          <SelectItem value="ACTIVE">Active</SelectItem>
-          <SelectItem value="COMPLETED">Completed</SelectItem>
-          <SelectItem value="ARCHIVED">Archived</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <div className="flex items-center rounded-md border bg-muted/50 p-0.5 ml-auto shrink-0">
-        <button
-          onClick={() => onViewModeChange("grid")}
-          className={cn(
-            "inline-flex items-center justify-center rounded px-2 py-1 transition-all",
-            viewMode === "grid"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-          aria-label="Grid view"
-        >
-          <LayoutGrid className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={() => onViewModeChange("list")}
-          className={cn(
-            "inline-flex items-center justify-center rounded px-2 py-1 transition-all",
-            viewMode === "list"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-          aria-label="List view"
-        >
-          <List className="h-3.5 w-3.5" />
-        </button>
+      <div role="group" aria-label="Filter by status" className="flex flex-wrap items-center gap-2">
+        {STATUS_OPTIONS.map((opt) => (
+          <FilterChip
+            key={opt.value}
+            active={status === opt.value}
+            onClick={() => onStatusChange(opt.value)}
+          >
+            {opt.label}
+          </FilterChip>
+        ))}
       </div>
+
+      <Tabs
+        value={viewMode}
+        onValueChange={(v) => onViewModeChange(v as ViewMode)}
+        className="ml-auto shrink-0"
+      >
+        <TabsList className="w-fit">
+          <TabsTrigger value="grid" aria-label="Grid view" className="px-2">
+            <LayoutGrid aria-hidden="true" />
+          </TabsTrigger>
+          <TabsTrigger value="list" aria-label="List view" className="px-2">
+            <List aria-hidden="true" />
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   );
 }

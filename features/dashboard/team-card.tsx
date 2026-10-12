@@ -2,17 +2,18 @@
 
 import { memo, useMemo, useState } from "react";
 import { Clock, LogOut, Search, Users } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { EmptyTeamIllustration } from "@/components/illustrations";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials, formatTime } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors } from "@/lib/theme-constants";
+
+const MAX_ROWS = 6;
 
 interface TeamMember {
   userId: string;
@@ -38,93 +39,92 @@ export const TeamCard = memo(function TeamCard({ members, isLoading }: TeamCardP
   }, [members, query]);
 
   return (
-    <Card className="bg-card border-border shadow-noir flex flex-col h-full w-full">
-      <CardHeader className="flex-shrink-0 px-4 py-3">
-        <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Users className="h-4 w-4 text-gold" aria-hidden="true" />
-          Team Availability
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden flex flex-col px-4 pt-0 pb-4" aria-live="polite">
+    <WidgetCard
+      title="Team Availability"
+      icon={Users}
+      tone="success"
+      count={members?.length || undefined}
+      viewAllHref={filtered.length > MAX_ROWS ? "/hr/attendance" : undefined}
+    >
+      <div className="flex flex-col" aria-live="polite">
         {isLoading ? (
-          <div className="space-y-3 overflow-y-auto">
+          <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <Skeleton key={i} className="h-11 w-full rounded-md" />
             ))}
           </div>
         ) : members && members.length > 0 ? (
           <>
-          {showSearch && (
-            <div className="relative mb-3 flex-shrink-0">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search team…"
-                className="h-8 pl-8 text-sm"
-                aria-label="Search team members"
-              />
-            </div>
-          )}
-          {filtered.length > 0 ? (
-          <ScrollArea className="h-full pr-3">
-          <div className="space-y-3">
-            {filtered.map((member) => (
-              <div key={member.userId} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={resolveImageUrl(member.image)} />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(member.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${getColorSafe(onlineStatusColors, member.isOnline ? "online" : "offline")}`} aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-foreground">{member.name}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      {member.isOnline ? (
-                        <>
-                          <Clock className="h-3 w-3" />
-                          Checked in at {formatTime(member.checkIn)}
-                        </>
-                      ) : member.checkOut ? (
-                        <>
-                          <LogOut className="h-3 w-3" />
-                          Checked out at {formatTime(member.checkOut)}
-                        </>
-                      ) : (
-                        "Offline"
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant={member.isOnline ? "default" : "secondary"} className={member.isOnline ? getColorSafe(onlineStatusColors, "online") : ""}>
-                  {member.isOnline ? "Online" : "Offline"}
-                </Badge>
+            {showSearch && (
+              <div className="relative mb-2">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search team…"
+                  className="h-8 pl-8 text-sm"
+                  aria-label="Search team members"
+                />
               </div>
-            ))}
-          </div>
-          </ScrollArea>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                No members match &ldquo;{query}&rdquo;.
-              </p>
-            </div>
-          )}
+            )}
+            {filtered.length > 0 ? (
+              <ul className="-mx-2">
+                {filtered.slice(0, MAX_ROWS).map((member) => (
+                  <li key={member.userId}>
+                    <WidgetListRow
+                      leading={
+                        <span className="relative">
+                          <Avatar className="size-8">
+                            <AvatarImage src={resolveImageUrl(member.image)} />
+                            <AvatarFallback className="text-2xs">{getInitials(member.name)}</AvatarFallback>
+                          </Avatar>
+                          <span className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-card ${getColorSafe(onlineStatusColors, member.isOnline ? "online" : "offline")}`} aria-hidden="true" />
+                        </span>
+                      }
+                      title={member.name}
+                      meta={
+                        member.isOnline ? (
+                          <span className="inline-flex items-center gap-1 tabular-nums">
+                            <Clock className="size-3" aria-hidden="true" />
+                            Checked in at {formatTime(member.checkIn)}
+                          </span>
+                        ) : member.checkOut ? (
+                          <span className="inline-flex items-center gap-1 tabular-nums">
+                            <LogOut className="size-3" aria-hidden="true" />
+                            Checked out at {formatTime(member.checkOut)}
+                          </span>
+                        ) : (
+                          "Offline"
+                        )
+                      }
+                      trailing={
+                        <StatusPill tone={member.isOnline ? "success" : "neutral"}>
+                          {member.isOnline ? "Online" : "Offline"}
+                        </StatusPill>
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState
+                compact
+                icon={Search}
+                title="No results for this search"
+                description={`No members match \u201c${query}\u201d.`}
+                action={{ label: "Clear search", onClick: () => setQuery("") }}
+              />
+            )}
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <EmptyState
-              illustration={<EmptyTeamIllustration />}
-              title="No team members online"
-              description="Team availability will appear here when members clock in."
-            />
-          </div>
+          <EmptyState
+            compact
+            illustration={<EmptyTeamIllustration className="h-20 w-20" />}
+            title="No team members online"
+            description="Team availability will appear here when members clock in."
+          />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </WidgetCard>
   );
 });

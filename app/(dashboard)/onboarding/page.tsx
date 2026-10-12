@@ -11,7 +11,8 @@ import { PersonalInfoTab } from "@/features/onboarding/personal-info-tab";
 import { BankDetailsTab } from "@/features/onboarding/bank-details-tab";
 import { DocumentsTab } from "@/features/onboarding/documents-tab";
 import { ReviewTab } from "@/features/onboarding/review-tab";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { PageWrapper } from "@/components/ui/page-wrapper";
+import { cn } from "@/lib/utils";
 import type { Variants } from "framer-motion";
 
 export const STEP_IDS = {
@@ -97,7 +98,19 @@ export default function OnboardingPage() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <PageWrapper
+      title="Employee Onboarding"
+      subtitle={
+        <span className="tabular-nums">
+          Complete your profile to get started · Step {currentStepIndex + 1} of {ONBOARDING_STEPS.length}
+        </span>
+      }
+      actions={
+        <div className="w-56 tabular-nums">
+          <ProgressBar value={progressPercentage} ariaLabel="Onboarding progress" />
+        </div>
+      }
+    >
       <div
         role="status"
         aria-live="polite"
@@ -107,58 +120,64 @@ export default function OnboardingPage() {
         {`Step ${currentStepIndex + 1} of ${ONBOARDING_STEPS.length}: ${ONBOARDING_STEPS[currentStepIndex]?.label}`}
       </div>
 
-      <div className="shrink-0 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6 lg:px-8 pt-4 pb-4 space-y-3">
-        <motion.div variants={fadeUpVariants} initial="hidden" animate="visible">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">Employee Onboarding</h1>
-              <p className="text-sm text-muted-foreground">
-                Complete your profile to get started · Step {currentStepIndex + 1} of {ONBOARDING_STEPS.length}
-              </p>
-            </div>
-            <span className="text-sm font-medium text-muted-foreground tabular-nums">{progressPercentage}%</span>
-          </div>
-        </motion.div>
-
-        <ProgressBar value={progressPercentage} ariaLabel="Onboarding progress" />
-
-        <nav aria-label="Onboarding steps">
-          <ol className="flex items-center gap-0">
+      <motion.div
+        variants={fadeUpVariants}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[220px_1fr]"
+      >
+        <nav aria-label="Onboarding steps" className="lg:sticky lg:top-6 lg:self-start">
+          <ol className="flex items-start gap-1 overflow-x-auto lg:flex-col lg:gap-0">
             {ONBOARDING_STEPS.map((step, index) => {
               const StepIcon = step.icon;
               const isCompleted = completedSteps.has(step.id);
               const isCurrent = step.id === activeTab;
-              const isPast = index < currentStepIndex;
+              const isLast = index === ONBOARDING_STEPS.length - 1;
 
               return (
-                <li key={step.id} className="flex items-center flex-1 last:flex-initial min-w-0">
+                <li key={step.id} className="relative flex-1 lg:flex-initial">
                   <button
                     type="button"
                     onClick={handleStepClick(step.id)}
-                    className="flex flex-col items-center gap-1 group rounded-lg py-1 px-1.5 min-w-0"
+                    className={cn(
+                      "flex w-full min-w-0 flex-col items-center gap-1.5 rounded-md p-2 text-center outline-none transition-colors hover:bg-accent focus-visible:focus-ring lg:flex-row lg:gap-3 lg:text-left",
+                      isCurrent && "lg:bg-accent"
+                    )}
                     aria-current={isCurrent ? "step" : undefined}
                     aria-label={`${step.label}${isCompleted ? " (completed)" : ""}`}
                   >
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
-                      isCompleted
-                        ? "bg-emerald-500 border-emerald-500 text-white"
-                        : isCurrent
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "bg-muted border-border text-muted-foreground group-hover:border-primary/50"
-                    }`}>
-                      {isCompleted ? <Check className="h-3.5 w-3.5" /> : <StepIcon className="h-3.5 w-3.5" />}
-                    </div>
-                    <span className={`text-[10px] font-medium text-center leading-tight hidden sm:block ${
-                      isCurrent ? "text-primary" : isCompleted ? "text-emerald-600" : "text-muted-foreground"
-                    }`}>
-                      {step.label}
+                    <span
+                      className={cn(
+                        "relative z-base flex size-8 shrink-0 items-center justify-center rounded-full transition-colors",
+                        isCompleted
+                          ? "bg-primary text-primary-foreground"
+                          : isCurrent
+                          ? "bg-brand-soft text-brand-soft-foreground ring-2 ring-gold-400"
+                          : "border border-border bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {isCompleted ? <Check className="size-4" aria-hidden="true" /> : <StepIcon className="size-4" aria-hidden="true" />}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="hidden text-2xs font-semibold uppercase tracking-wider text-muted-foreground lg:block">
+                        Step {index + 1}
+                      </span>
+                      <span
+                        className={cn(
+                          "hidden text-xs font-medium leading-tight sm:block lg:text-sm",
+                          isCurrent ? "text-foreground" : "text-muted-foreground"
+                        )}
+                      >
+                        {step.label}
+                      </span>
                     </span>
                   </button>
-                  {index < ONBOARDING_STEPS.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-1 mt-[-0.75rem] hidden sm:block transition-colors ${
-                        isPast || (isCompleted && index < currentStepIndex) ? "bg-emerald-500" : "bg-border"
-                      }`}
+                  {!isLast && (
+                    <span
+                      className={cn(
+                        "absolute top-10 left-6 hidden h-5 w-px -translate-x-1/2 lg:block",
+                        isCompleted ? "bg-gold-400" : "bg-border"
+                      )}
                       aria-hidden="true"
                     />
                   )}
@@ -167,46 +186,42 @@ export default function OnboardingPage() {
             })}
           </ol>
         </nav>
-      </div>
 
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
-          <Card className="shadow-sm">
-            <CardContent className="pt-6">
-              <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsContent value={STEP_IDS.PERSONAL}>
-                  <PersonalInfoTab
-                    onComplete={completeHandlers[STEP_IDS.PERSONAL]}
-                    defaultValues={savedFormData[STEP_IDS.PERSONAL]}
-                  />
-                </TabsContent>
-                <TabsContent value={STEP_IDS.BANK}>
-                  <BankDetailsTab
-                    onComplete={completeHandlers[STEP_IDS.BANK]}
-                    onBack={goToHandlers[STEP_IDS.PERSONAL]}
-                    defaultValues={savedFormData[STEP_IDS.BANK]}
-                  />
-                </TabsContent>
-                <TabsContent value={STEP_IDS.DOCS}>
-                  <DocumentsTab
-                    onComplete={completeHandlers[STEP_IDS.DOCS]}
-                    onBack={goToHandlers[STEP_IDS.BANK]}
-                    savedUploads={savedFormData[STEP_IDS.DOCS]}
-                  />
-                </TabsContent>
-                <TabsContent value={STEP_IDS.REVIEW}>
-                  <ReviewTab
-                    completedSteps={completedSteps}
-                    steps={ONBOARDING_STEPS}
-                    reviewStepId={STEP_IDS.REVIEW}
-                    onBack={goToHandlers[STEP_IDS.DOCS]}
-                  />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      </ScrollArea>
-    </div>
+        <Card className="w-full max-w-2xl">
+          <CardContent className="pt-1">
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <TabsContent value={STEP_IDS.PERSONAL}>
+                <PersonalInfoTab
+                  onComplete={completeHandlers[STEP_IDS.PERSONAL]}
+                  defaultValues={savedFormData[STEP_IDS.PERSONAL]}
+                />
+              </TabsContent>
+              <TabsContent value={STEP_IDS.BANK}>
+                <BankDetailsTab
+                  onComplete={completeHandlers[STEP_IDS.BANK]}
+                  onBack={goToHandlers[STEP_IDS.PERSONAL]}
+                  defaultValues={savedFormData[STEP_IDS.BANK]}
+                />
+              </TabsContent>
+              <TabsContent value={STEP_IDS.DOCS}>
+                <DocumentsTab
+                  onComplete={completeHandlers[STEP_IDS.DOCS]}
+                  onBack={goToHandlers[STEP_IDS.BANK]}
+                  savedUploads={savedFormData[STEP_IDS.DOCS]}
+                />
+              </TabsContent>
+              <TabsContent value={STEP_IDS.REVIEW}>
+                <ReviewTab
+                  completedSteps={completedSteps}
+                  steps={ONBOARDING_STEPS}
+                  reviewStepId={STEP_IDS.REVIEW}
+                  onBack={goToHandlers[STEP_IDS.DOCS]}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </PageWrapper>
   );
 }

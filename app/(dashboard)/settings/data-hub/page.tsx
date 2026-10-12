@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Progress } from "@/components/ui/progress";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
@@ -35,7 +35,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Users,
     description: "Export employee directory with roles, departments, and contact info.",
     exportEndpoint: "/hr/employees/export",
-    color: "text-purple-400",
+    color: "text-plum-strong",
     supported: { import: false, export: true },
   },
   {
@@ -44,7 +44,7 @@ const ENTITIES: ImportEntity[] = [
     icon: CreditCard,
     description: "Export payroll records with breakdown, deductions, and net pay.",
     exportEndpoint: "/hr/payroll/export",
-    color: "text-gold",
+    color: "text-brand-text",
     supported: { import: false, export: true },
   },
   {
@@ -53,7 +53,7 @@ const ENTITIES: ImportEntity[] = [
     icon: FileSpreadsheet,
     description: "Export expense claims with status, category, and amounts.",
     exportEndpoint: "/hr/expenses/export",
-    color: "text-cyan-400",
+    color: "text-teal-strong",
     supported: { import: false, export: true },
   },
   {
@@ -62,7 +62,7 @@ const ENTITIES: ImportEntity[] = [
     icon: Package,
     description: "Export asset inventory with assigned employees and status.",
     exportEndpoint: "/hr/assets/export",
-    color: "text-slate-400",
+    color: "text-subtle-foreground",
     supported: { import: false, export: true },
   },
 ];
@@ -150,7 +150,7 @@ function DataHubContent() {
       subtitle="Centralized hub for importing data into and exporting data from the platform"
     >
       <motion.div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
@@ -161,19 +161,21 @@ function DataHubContent() {
 
           return (
             <motion.div key={entity.id} variants={fadeUp}>
-              <Card className="shadow-noir h-full flex flex-col">
+              <Card className="h-full flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <entity.icon className={`h-5 w-5 ${entity.color}`} />
+                    <div className="flex items-center gap-3">
+                      <span className={`flex size-9 shrink-0 items-center justify-center rounded-full bg-muted ${entity.color}`}>
+                        <entity.icon className="size-4.5" aria-hidden />
+                      </span>
                       <CardTitle className="text-sm">{entity.label}</CardTitle>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex flex-wrap justify-end gap-1">
                       {entity.supported.import && (
-                        <Badge variant="secondary" className="text-[9px] px-1">Import</Badge>
+                        <StatusPill tone="info">Import</StatusPill>
                       )}
                       {entity.supported.export && (
-                        <Badge variant="outline" className="text-[9px] px-1">Export</Badge>
+                        <StatusPill tone="neutral">Export</StatusPill>
                       )}
                     </div>
                   </div>
@@ -187,12 +189,12 @@ function DataHubContent() {
                         <Progress value={upload.progress} className="h-1.5" />
                       )}
                       <div className={`flex items-center gap-1.5 text-xs ${
-                        upload.status === "success" ? "text-emerald-400" :
-                        upload.status === "error" ? "text-red-400" : "text-muted-foreground"
+                        upload.status === "success" ? "text-success-strong" :
+                        upload.status === "error" ? "text-danger-strong" : "text-muted-foreground"
                       }`}>
-                        {upload.status === "uploading" && <Loader2 className="h-3 w-3 animate-spin" />}
-                        {upload.status === "success" && <CheckCircle2 className="h-3 w-3" />}
-                        {upload.status === "error" && <AlertCircle className="h-3 w-3" />}
+                        {upload.status === "uploading" && <Loader2 className="size-3 animate-spin" aria-hidden />}
+                        {upload.status === "success" && <CheckCircle2 className="size-3" aria-hidden />}
+                        {upload.status === "error" && <AlertCircle className="size-3" aria-hidden />}
                         {upload.message}
                       </div>
                     </div>
@@ -218,13 +220,12 @@ function DataHubContent() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-xs h-8"
+                          className="flex-1"
                           onClick={() => handleImportClick(entity.id)}
                           disabled={upload.status === "uploading"}
+                          loading={upload.status === "uploading"}
                         >
-                          {upload.status === "uploading"
-                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            : <Upload className="h-3.5 w-3.5 mr-1" />}
+                          {upload.status !== "uploading" && <Upload aria-hidden />}
                           Import
                         </Button>
                       </>
@@ -233,13 +234,12 @@ function DataHubContent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className={`text-xs h-8 ${entity.supported.import ? "flex-1" : "w-full"}`}
+                        className={entity.supported.import ? "flex-1" : "w-full"}
                         onClick={() => handleExport(entity)}
                         disabled={isExporting}
+                        loading={isExporting}
                       >
-                        {isExporting
-                          ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                          : <Download className="h-3.5 w-3.5 mr-1" />}
+                        {!isExporting && <Download aria-hidden />}
                         Export
                       </Button>
                     )}
@@ -249,9 +249,9 @@ function DataHubContent() {
                     <a
                       href={entity.templateUrl}
                       download
-                      className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1"
+                      className="flex w-fit items-center gap-1 rounded-xs text-xs text-brand-text hover:underline focus-visible:focus-ring"
                     >
-                      <FileSpreadsheet className="h-3 w-3" />
+                      <FileSpreadsheet className="size-3.5" aria-hidden />
                       Download template
                     </a>
                   )}

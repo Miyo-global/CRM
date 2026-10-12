@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { IndianRupee, Loader2 } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
@@ -62,10 +62,10 @@ export function PayPolicyCard({ minMonthlySalary: initialMin }: PayPolicyCardPro
   }, [minMonthlySalary, updatePayPolicy]);
 
   return (
-    <Card className="rounded-xl border shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <IndianRupee className="h-4 w-4 text-gold" />
+          <IndianRupee className="size-4 text-brand-text" aria-hidden />
           Pay Policy
         </CardTitle>
         <CardDescription>
@@ -88,7 +88,7 @@ export function PayPolicyCard({ minMonthlySalary: initialMin }: PayPolicyCardPro
             placeholder="e.g. 15000"
             value={minMonthlySalary}
             onChange={(e) => setMinMonthlySalary(e.target.value.replace(/\D/g, ""))}
-            className="w-48"
+            className="w-48 tabular-nums"
             aria-label="Minimum monthly salary"
           />
           <p className="text-sm text-muted-foreground">
@@ -96,15 +96,8 @@ export function PayPolicyCard({ minMonthlySalary: initialMin }: PayPolicyCardPro
           </p>
         </div>
         <div className="pt-1">
-          <Button onClick={handleSave} disabled={isPending} size="sm">
-            {isPending ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Pay Policy"
-            )}
+          <Button onClick={handleSave} disabled={isPending} loading={isPending} size="sm">
+            {isPending ? "Saving..." : "Save Pay Policy"}
           </Button>
         </div>
       </CardContent>

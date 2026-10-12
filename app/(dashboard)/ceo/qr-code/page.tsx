@@ -20,6 +20,7 @@ import {
   Link2,
   CalendarDays,
   MoreVertical,
+  Building2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,8 +33,17 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+
+// QR codes must stay ink-on-white in every theme for scannability (spec §5.4).
+// These are the only hex literals allowed in-app.
+const QR_FG = "#201E1F";
+const QR_BG = "#FFFFFF";
 
 type QRCodeData = {
   id: number;
@@ -64,15 +74,15 @@ function QRCodeImage({ imageUrl, size = 96 }: { imageUrl: string; size?: number 
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full w-full text-xs text-muted-foreground">
-        <QrCodeIcon className="h-8 w-8 text-muted-foreground/30" />
+      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+        <QrCodeIcon className="size-8 text-subtle-foreground" aria-hidden="true" />
       </div>
     );
   }
   if (!src) {
     return (
-      <div className="flex items-center justify-center h-full w-full">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-subtle-foreground" aria-hidden="true" />
       </div>
     );
   }
@@ -109,105 +119,79 @@ function QRCard({
   const handleDownloadSvg = useCallback(() => onDownload(qr.slug, "svg"), [qr.slug, onDownload]);
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden border border-border/40 bg-card flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-[0_8px_40px_rgba(189,136,44,0.18)]">
-
-      <div
-        className="relative flex items-center justify-center p-6 h-48 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0a0c18 0%, #0f1420 50%, #0d0f1c 100%)" }}
-      >
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-border-strong hover:shadow-md">
+      <div className="relative flex h-44 items-center justify-center bg-surface-sunken p-6">
+        <StatusPill tone="success" className="absolute top-3 left-3 tabular-nums">
+          <ScanLine className="size-3" aria-hidden="true" />
+          {qr.scanCount} <span className="font-normal">scans</span>
+        </StatusPill>
 
         <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        />
-
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(189,136,44,0.12) 0%, transparent 70%)" }}
-        />
-
-        <span className="absolute top-3 left-3 h-5 w-5 border-t-2 border-l-2 border-gold/50 rounded-tl-sm" />
-        <span className="absolute top-3 right-3 h-5 w-5 border-t-2 border-r-2 border-gold/50 rounded-tr-sm" />
-        <span className="absolute bottom-3 left-3 h-5 w-5 border-b-2 border-l-2 border-gold/50 rounded-bl-sm" />
-        <span className="absolute bottom-3 right-3 h-5 w-5 border-b-2 border-r-2 border-gold/50 rounded-br-sm" />
-
-        <span className="absolute left-3 right-3 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent opacity-0 group-hover:opacity-100 animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
-
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/60 border border-emerald-500/30 backdrop-blur-sm rounded-full px-2.5 py-1">
-          {qr.scanCount > 0 && (
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-          )}
-          <ScanLine className="h-3 w-3 text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-bold text-emerald-400 tabular-nums">{qr.scanCount}</span>
-          <span className="text-[9px] text-emerald-400/70">scans</span>
-        </div>
-
-        <div className="relative h-28 w-28 bg-white rounded-2xl p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_32px_rgba(0,0,0,0.6)] group-hover:shadow-[0_0_0_1px_rgba(189,136,44,0.3),0_8px_40px_rgba(0,0,0,0.8)] transition-shadow duration-300">
+          className="relative size-28 rounded-md p-2 shadow-sm ring-1 ring-border"
+          style={{ backgroundColor: QR_BG, color: QR_FG }}
+        >
           <QRCodeImage imageUrl={qr.imageUrl} size={120} />
         </div>
       </div>
 
-      <div className="p-4 flex flex-col gap-3 flex-1 border-t border-border/30">
-
-        <div>
+      <div className="flex flex-1 flex-col gap-3 border-t border-border p-4">
+        <div className="min-w-0">
           <Link
             href={qr.targetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/link flex items-center gap-1.5 w-fit max-w-full"
+            className="group/link flex w-fit max-w-full items-center gap-1.5 rounded-sm outline-none focus-visible:focus-ring"
           >
-            <span className="text-sm font-semibold truncate leading-tight group-hover/link:text-gold transition-colors">
+            <span className="truncate text-sm font-semibold leading-tight transition-colors group-hover/link:text-brand-text">
               {domain}
             </span>
-            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/40 group-hover/link:text-gold transition-colors" />
+            <ExternalLink className="size-3 shrink-0 text-muted-foreground transition-colors group-hover/link:text-brand-text" aria-hidden="true" />
           </Link>
-          <p className="text-[10px] text-muted-foreground/50 truncate mt-0.5">{qr.targetUrl}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground" title={qr.targetUrl}>{qr.targetUrl}</p>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-[10px] text-muted-foreground font-mono">
-            <Link2 className="h-2.5 w-2.5 shrink-0" />
-            <span className="truncate max-w-[72px]">/qr/{qr.slug}</span>
-          </span>
-          <span className="flex items-center gap-1 bg-muted/60 border border-border/40 rounded-lg px-2 py-1 text-[10px] text-muted-foreground">
-            <CalendarDays className="h-2.5 w-2.5 shrink-0" />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusPill tone="neutral" className="font-mono">
+            <Link2 className="size-3 shrink-0" aria-hidden="true" />
+            <span className="max-w-24 truncate">/qr/{qr.slug}</span>
+          </StatusPill>
+          <StatusPill tone="neutral" className="tabular-nums">
+            <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
             {qr.createdAt
               ? new Date(qr.createdAt).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short" })
               : ""}
-          </span>
+          </StatusPill>
         </div>
       </div>
 
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+      <div className="absolute top-3 right-3 z-base transition-opacity duration-150 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full bg-black/60 border border-white/10 backdrop-blur-sm text-white/70 hover:text-white hover:bg-black/80"
+              variant="outline"
+              size="icon-sm"
+              className="rounded-full bg-background/90 backdrop-blur-sm"
               aria-label="QR code options"
             >
-              <MoreVertical className="h-3.5 w-3.5" />
+              <MoreVertical />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal truncate">/qr/{qr.slug}</DropdownMenuLabel>
+            <DropdownMenuLabel className="truncate font-mono text-2xs font-normal normal-case text-muted-foreground">/qr/{qr.slug}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold px-2 py-1">Download</DropdownMenuLabel>
+            <DropdownMenuLabel className="px-2 py-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Download</DropdownMenuLabel>
             <DropdownMenuItem onClick={handleDownloadPng}>
-              <FileImage className="mr-2 h-3.5 w-3.5 text-blue-400" /> PNG
+              <FileImage /> PNG
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDownloadJpeg}>
-              <FileImage className="mr-2 h-3.5 w-3.5 text-purple-400" /> JPEG
+              <FileImage /> JPEG
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDownloadSvg}>
-              <FileType className="mr-2 h-3.5 w-3.5 text-emerald-400" /> SVG
+              <FileType /> SVG
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-              <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+            <DropdownMenuItem onClick={handleDeleteClick} variant="destructive">
+              <Trash2 /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -218,18 +202,15 @@ function QRCard({
 
 function QRCardSkeleton() {
   return (
-    <div className="rounded-2xl overflow-hidden border border-border/40">
-      <Skeleton className="h-48 w-full rounded-none" />
-      <div className="p-4 space-y-3 border-t border-border/30">
+    <div className="overflow-hidden rounded-lg border border-border">
+      <Skeleton className="h-44 w-full rounded-none" />
+      <div className="space-y-3 border-t border-border p-4">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-full" />
         <div className="flex gap-1.5">
           <Skeleton className="h-6 w-20" />
           <Skeleton className="h-6 w-16" />
         </div>
-      </div>
-      <div className="px-4 pb-4">
-        <Skeleton className="h-8 w-full" />
       </div>
     </div>
   );
@@ -331,18 +312,24 @@ export default function CEOQRCodePage() {
 
   if (isOrgLoading) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <PageWrapper title="QR Code Manager" subtitle="Generate trackable QR codes for your marketing campaigns.">
+        <Skeleton className="mb-6 h-32 rounded-lg" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 4 }).map((_, i) => <QRCardSkeleton key={i} />)}
+        </div>
+      </PageWrapper>
     );
   }
 
   if (!organizations?.length) {
     return (
-      <div className="p-8 text-center">
-        <h2 className="text-xl font-bold">No Organization Found</h2>
-        <p className="text-muted-foreground mt-1">You need an organization to create QR codes.</p>
-      </div>
+      <PageWrapper title="QR Code Manager" subtitle="Generate trackable QR codes for your marketing campaigns.">
+        <EmptyState
+          icon={Building2}
+          title="No Organization Found"
+          description="You need an organization to create QR codes."
+        />
+      </PageWrapper>
     );
   }
 
@@ -354,45 +341,56 @@ export default function CEOQRCodePage() {
       subtitle="Generate trackable QR codes for your marketing campaigns."
       badge={typedCodes.length > 0 ? String(typedCodes.length) : undefined}
       actions={
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleRefetch} disabled={isLoadingData} aria-label="Refresh">
-          <RefreshCw className={cn("h-3.5 w-3.5", isLoadingData && "animate-spin")} />
+        <Button variant="ghost" size="icon-sm" onClick={handleRefetch} disabled={isLoadingData} aria-label="Refresh">
+          <RefreshCw className={cn(isLoadingData && "motion-safe:animate-spin")} />
         </Button>
       }
     >
       <div className="space-y-6">
 
-        <div className="rounded-xl border bg-card p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-9 w-9 rounded-xl bg-gold/10 ring-1 ring-gold/20 flex items-center justify-center shrink-0">
-              <QrCodeIcon className="h-4 w-4 text-gold" />
+        <div className={cn("grid gap-4", typedCodes[0] && "lg:grid-cols-[1fr_320px]")}>
+          <Card className="gap-4 p-5">
+            <div className="flex items-center gap-3">
+              <IconChip icon={QrCodeIcon} />
+              <div>
+                <h2 className="font-sans text-sm font-semibold tracking-normal">Generate New QR Code</h2>
+                <p className="text-xs text-muted-foreground">Enter the destination URL to create a tracked QR code</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">Generate New QR Code</p>
-              <p className="text-xs text-muted-foreground">Enter the destination URL to create a tracked QR code</p>
-            </div>
-          </div>
-          <form onSubmit={handleGenerate} className="flex gap-2">
-            <div className="flex-1 space-y-1">
-              <Label htmlFor="target-url" className="sr-only">Target URL</Label>
-              <Input
-                id="target-url"
-                placeholder="https://example.com/campaign-landing-page"
-                value={targetUrl}
-                onChange={handleUrlChange}
-                required
-                type="url"
-                className="h-9"
-              />
-            </div>
-            <Button type="submit" disabled={generateMutation.isPending || !targetUrl} size="sm" className="h-9 shrink-0">
-              {generateMutation.isPending ? (
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <QrCodeIcon className="mr-2 h-3.5 w-3.5" />
-              )}
-              Generate
-            </Button>
-          </form>
+            <form onSubmit={handleGenerate} className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="target-url" className="sr-only">Target URL</Label>
+                <Input
+                  id="target-url"
+                  placeholder="https://example.com/campaign-landing-page"
+                  value={targetUrl}
+                  onChange={handleUrlChange}
+                  required
+                  type="url"
+                />
+              </div>
+              <Button type="submit" disabled={!targetUrl} loading={generateMutation.isPending} className="shrink-0">
+                {!generateMutation.isPending && <QrCodeIcon aria-hidden="true" />}
+                Generate
+              </Button>
+            </form>
+          </Card>
+
+          {typedCodes[0] && (
+            <Card className="flex-row items-center gap-4 p-5">
+              <div
+                className="size-24 shrink-0 rounded-md p-2 ring-1 ring-border"
+                style={{ backgroundColor: QR_BG, color: QR_FG }}
+              >
+                <QRCodeImage imageUrl={typedCodes[0].imageUrl} size={96} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Latest</p>
+                <p className="truncate text-sm font-medium" title={typedCodes[0].targetUrl}>{typedCodes[0].targetUrl}</p>
+                <p className="mt-1 font-mono text-xs text-muted-foreground">/qr/{typedCodes[0].slug}</p>
+              </div>
+            </Card>
+          )}
         </div>
 
         <div>
@@ -401,13 +399,11 @@ export default function CEOQRCodePage() {
               {Array.from({ length: 4 }).map((_, i) => <QRCardSkeleton key={i} />)}
             </div>
           ) : typedCodes.length === 0 ? (
-            <div className="rounded-xl border border-dashed bg-muted/20 flex flex-col items-center justify-center py-14 gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center">
-                <QrCodeIcon className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-medium">No QR codes yet</p>
-              <p className="text-xs text-muted-foreground">Generate your first QR code above.</p>
-            </div>
+            <EmptyState
+              icon={QrCodeIcon}
+              title="No QR codes yet"
+              description="Generate your first QR code above."
+            />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {typedCodes.map((qr) => (

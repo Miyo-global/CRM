@@ -126,7 +126,7 @@ export function WorkLogEntryRow({
     if (parts.length === 1) return null;
     return parts.map((part, i) =>
       testRegex.test(part) ? (
-        <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">
+        <mark key={i} className="bg-warning-200 rounded px-0.5">
           {part}
         </mark>
       ) : (
@@ -142,12 +142,12 @@ export function WorkLogEntryRow({
       aria-label={`Work log for ${dateLabel}`}
       className={cn(
         "flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border shadow-sm hover:shadow-md transition-all",
-        isWeekendDay ? "bg-gold/[0.03] dark:bg-gold/[0.05]" : "bg-card",
+        isWeekendDay ? "bg-brand-soft/40" : "bg-card",
         saveState === "dirty"
-          ? "border-l-4 border-l-amber-500"
+          ? "border-l-4 border-l-warning-500"
           : content
-            ? "border-l-4 border-l-green-500"
-            : "border-l-4 border-l-slate-200 dark:border-l-slate-700",
+            ? "border-l-4 border-l-success-500"
+            : "border-l-4 border-l-border",
       )}
     >
       {/* Date column */}
@@ -156,30 +156,30 @@ export function WorkLogEntryRow({
         <span className="text-muted-foreground text-xs font-medium">{format(date, "MMM, EEEE")}</span>
         <div className="flex items-center gap-1.5 flex-wrap">
           {isWeekendDay && (
-            <span className="text-[10px] bg-gold/10 dark:bg-gold/20 px-1.5 py-0.5 rounded font-medium text-gold">
+            <span className="text-2xs bg-brand-soft px-1.5 py-0.5 rounded font-medium text-brand-text">
               Weekend
             </span>
           )}
           {/* Auto-save status badge — only for own rows */}
           {!readOnly && saveState === "dirty" && (
-            <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded font-medium text-amber-700 dark:text-amber-400">
+            <span className="text-2xs bg-warning-soft px-1.5 py-0.5 rounded font-medium text-warning-strong">
               Unsaved…
             </span>
           )}
           {!readOnly && saveState === "saving" && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded font-medium text-blue-700 dark:text-blue-400">
+            <span className="inline-flex items-center gap-0.5 text-2xs bg-info-soft px-1.5 py-0.5 rounded font-medium text-info-strong">
               <Loader2 className="h-2.5 w-2.5 animate-spin" />
               Saving
             </span>
           )}
           {!readOnly && saveState === "saved" && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded font-medium text-green-700 dark:text-green-400">
+            <span className="inline-flex items-center gap-0.5 text-2xs bg-success-soft px-1.5 py-0.5 rounded font-medium text-success-strong">
               <Check className="h-2.5 w-2.5" />
               Saved
             </span>
           )}
           {!readOnly && saveState === "idle" && content && (
-            <span className="text-[10px] bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded font-medium text-green-700 dark:text-green-400">
+            <span className="text-2xs bg-success-soft px-1.5 py-0.5 rounded font-medium text-success-strong">
               Saved
             </span>
           )}
@@ -190,7 +190,7 @@ export function WorkLogEntryRow({
       <div className="flex-1 min-w-0 space-y-2">
         {ticket && (
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30">
+            <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 border-info-strong/25 text-info-strong bg-info-soft">
               <Ticket className="h-3 w-3" />
               #{ticket.ticketNumber}
             </Badge>
@@ -238,7 +238,7 @@ export function WorkLogEntryRow({
             href={initialWorkLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            className="flex items-center gap-1.5 text-xs text-info-strong hover:text-info-strong"
           >
             <ExternalLink className="h-3 w-3" />
             {initialWorkLink}

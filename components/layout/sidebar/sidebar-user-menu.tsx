@@ -2,18 +2,24 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { Settings, LogOut, ChevronUp } from "lucide-react";
+import { ChevronsUpDown, Keyboard, LogOut, SlidersHorizontal, SunMoon, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { resolveImageUrl } from "@/lib/utils";
+import { cn, resolveImageUrl } from "@/lib/utils";
+import { THEME_OPTIONS, useMountedTheme, type ThemeValue } from "../theme-toggle";
+import { useShortcuts } from "../shortcuts-provider";
 
 interface SidebarUserMenuProps {
   isCollapsed: boolean;
@@ -22,6 +28,8 @@ interface SidebarUserMenuProps {
 
 export function SidebarUserMenu({ isCollapsed }: SidebarUserMenuProps) {
   const { data: session } = useSession();
+  const { theme, setTheme } = useMountedTheme();
+  const { openShortcuts } = useShortcuts();
 
   const name = session?.user?.name || "User";
   const email = session?.user?.email || "";
@@ -29,96 +37,81 @@ export function SidebarUserMenu({ isCollapsed }: SidebarUserMenuProps) {
   const initials = name.charAt(0).toUpperCase();
   const role = session?.user?.role || "";
 
-  const avatarEl = (
-    <Avatar className="h-7 w-7 shrink-0 ring-1 ring-sidebar-border">
-      <AvatarImage src={image} alt={name} />
-      <AvatarFallback className="text-[11px] font-bold bg-gold/15 text-gold">
-        {initials}
-      </AvatarFallback>
-    </Avatar>
-  );
-
-  const trigger = (
-    <button
-      type="button"
-      className={cn(
-        "group flex items-center gap-2.5 w-full rounded-lg outline-none transition-colors duration-150",
-        "hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-sidebar-ring",
-        isCollapsed ? "justify-center p-2" : "px-2.5 py-2"
-      )}
-    >
-      {avatarEl}
-
-      {!isCollapsed && (
-        <>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-[0.8125rem] font-medium text-sidebar-foreground/85 truncate leading-none">
-              {name}
-            </p>
-            <p className="text-[0.6875rem] text-sidebar-foreground/35 truncate mt-0.5 leading-none">
-              {role}
-            </p>
-          </div>
-          <ChevronUp className="h-3.5 w-3.5 text-sidebar-primary/75 group-hover:text-sidebar-primary transition-colors shrink-0" />
-        </>
-      )}
-    </button>
-  );
-
-  const content = (
-    <DropdownMenuContent
-      align={isCollapsed ? "center" : "start"}
-      side="top"
-      sideOffset={6}
-      className="w-56 z-[200]"
-    >
-      <div className="px-2 py-1.5">
-        <p className="text-xs font-semibold text-foreground truncate">{name}</p>
-        <p className="text-[11px] text-muted-foreground truncate mt-0.5">{email}</p>
-      </div>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem asChild>
-        <Link href="/settings" className="gap-2 cursor-pointer">
-          <Settings className="h-3.5 w-3.5" />
-          Settings
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem
-        className="gap-2 text-destructive focus:text-destructive cursor-pointer"
-        onClick={() => signOut({ callbackUrl: "/signin" })}
-      >
-        <LogOut className="h-3.5 w-3.5" />
-        Sign out
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  );
-
-  const menu = (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      {content}
-    </DropdownMenu>
-  );
-
-  if (isCollapsed) {
-    return (
-      <div className="border-t border-sidebar-border p-2 pb-2">
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <div>{menu}</div>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={10} className="text-xs">
-            {name}
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    );
-  }
-
   return (
-    <div className="border-t border-sidebar-border px-2 py-2">
-      {menu}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={isCollapsed ? `Account menu for ${name}` : undefined}
+          title={isCollapsed ? name : undefined}
+          className={cn(
+            "group flex items-center gap-2.5 rounded-md text-left transition-colors duration-150 hover:bg-sidebar-accent data-[state=open]:bg-sidebar-accent outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+            isCollapsed ? "size-10 justify-center" : "w-full px-2 py-1.5",
+          )}
+        >
+          <Avatar className="size-7 shrink-0 ring-offset-2 ring-offset-sidebar group-data-[state=open]:ring-2 group-data-[state=open]:ring-sidebar-primary">
+            <AvatarImage src={image} alt={name} />
+            <AvatarFallback className="bg-sidebar-accent text-2xs font-semibold text-sidebar-accent-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {!isCollapsed && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-sidebar-accent-foreground">{name}</span>
+                <span className="block truncate text-2xs text-sidebar-muted">{role}</span>
+              </span>
+              <ChevronsUpDown aria-hidden="true" className="size-4 shrink-0 text-sidebar-muted" />
+            </>
+          )}
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" side={isCollapsed ? "right" : "top"} sideOffset={8} className="w-60">
+        <div className="px-2 py-1.5">
+          <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+          <p className="truncate text-xs text-muted-foreground">{email}</p>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <User />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <SlidersHorizontal />
+            Preferences
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="gap-2">
+            <SunMoon className="size-4 text-muted-foreground" />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="w-40">
+            <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as ThemeValue)}>
+              {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+                <DropdownMenuRadioItem key={value} value={value} className="gap-2">
+                  <Icon className="size-4 text-muted-foreground" />
+                  {label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem onSelect={openShortcuts}>
+          <Keyboard />
+          Keyboard shortcuts
+          <DropdownMenuShortcut>?</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={() => signOut({ callbackUrl: "/signin" })}>
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -28,7 +28,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import {
   Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { ListToolbar } from "@/components/shared/list-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -42,18 +46,31 @@ import { format } from "date-fns";
 import type { InterviewResult } from "@/types/hr";
 import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
+import { eventToneStyle } from "@/features/calendar/event-tones";
 
-function resultBadgeVariant(result: string | null): "default" | "secondary" | "outline" | "destructive" {
-  switch (result) {
-    case "PASSED": return "default";
-    case "FAILED": return "destructive";
-    case "NO_SHOW": return "destructive";
-    default: return "outline";
-  }
-}
+const RESULT_TONE: Record<InterviewResult, Tone> = {
+  PENDING: "neutral",
+  PASSED: "success",
+  FAILED: "danger",
+  NO_SHOW: "warning",
+};
+
+const RESULT_LABEL: Record<InterviewResult, string> = {
+  PENDING: "Pending",
+  PASSED: "Passed",
+  FAILED: "Failed",
+  NO_SHOW: "No show",
+};
+
+const segmentClass = (active: boolean) =>
+  cn(
+    "flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium transition-colors focus-ring",
+    active ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+  );
 
 export default function InterviewsPage() {
-  const { data: interviews, isLoading } = useInterviews();
+  const { data: interviews, isLoading, isError, error, refetch } = useInterviews();
   const { data: jobPostings } = useJobPostings({ status: "OPEN" });
   const { data: orgMembers } = useCalendarOrgMembers();
   const scheduleInterview = useScheduleInterview();
@@ -254,7 +271,7 @@ export default function InterviewsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Interviews" subtitle="Schedule and track interviews">
-        <Card><CardContent className="pt-6 space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</CardContent></Card>
+        <Card><CardContent className="space-y-3 pt-6">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</CardContent></Card>
       </PageWrapper>
     );
   }
@@ -265,26 +282,26 @@ export default function InterviewsPage() {
       subtitle="Schedule and track interviews"
       badge={`${interviews?.length ?? 0} interviews`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PageBackButton fallback="/hr/recruitment" />
           <Button variant="outline" size="sm" asChild>
             <Link href="/hr/recruitment/interviewer-performance">
-              <BarChart2 className="mr-1.5 h-3.5 w-3.5" />
+              <BarChart2 className="size-3.5" aria-hidden="true" />
               Performance
             </Link>
           </Button>
           <Sheet open={sheetOpen} onOpenChange={(open) => { setSheetOpen(open); if (!open) resetForm(); }}>
             <SheetTrigger asChild>
-              <Button size="sm"><Plus className="mr-2 h-4 w-4" />Schedule Interview</Button>
+              <Button size="sm"><Plus className="size-4" aria-hidden="true" />Schedule Interview</Button>
             </SheetTrigger>
             <SheetContent className="flex h-svh max-h-svh flex-col gap-0 p-0">
               <div ref={sheetPortalRef} className="flex min-h-0 flex-1 flex-col">
-              <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
+              <SheetHeader className="shrink-0 border-b border-border px-4 pt-4 pb-3">
                 <SheetTitle className="text-base">Schedule Interview</SheetTitle>
                 <SheetDescription className="text-xs">Set up an interview with a candidate. Notifications will be sent to interviewers and the candidate.</SheetDescription>
               </SheetHeader>
 
-              <div className="shrink-0 space-y-4 border-b bg-background px-4 py-4">
+              <div className="shrink-0 space-y-4 border-b border-border bg-background px-4 py-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Job Position <span className="text-destructive">*</span></label>
                   <SearchableSelect
@@ -452,7 +469,7 @@ export default function InterviewsPage() {
                   />
                 )}
 
-                <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
+                <div className="space-y-2 rounded-lg border border-border bg-surface-sunken p-3">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notification Channels</p>
                   <div className="flex items-center justify-between">
                     <label className="text-sm">Email</label>
@@ -467,9 +484,9 @@ export default function InterviewsPage() {
                   </div>
                 </div>
               </div>
-              <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
+              <SheetFooter className="shrink-0 flex-row gap-2 border-t border-border px-4 py-3">
                 <Button variant="outline" className="flex-1" onClick={() => { setSheetOpen(false); resetForm(); }}>Cancel</Button>
-                <Button className="flex-1" onClick={handleCreate} disabled={scheduleInterview.isPending}>
+                <Button className="flex-1" onClick={handleCreate} loading={scheduleInterview.isPending}>
                   {scheduleInterview.isPending ? "Scheduling..." : "Schedule"}
                 </Button>
               </SheetFooter>
@@ -478,84 +495,112 @@ export default function InterviewsPage() {
           </Sheet>
         </div>
       }
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1 rounded-lg border p-1">
-          <button
-            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", pageView === "list" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
-            onClick={() => setPageView("list")}
-          >
-            <List className="h-3.5 w-3.5" />
-            List
-          </button>
-          <button
-            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", pageView === "calendar" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
-            onClick={() => setPageView("calendar")}
-          >
-            <CalendarDays className="h-3.5 w-3.5" />
-            Calendar
-          </button>
-        </div>
-        {pageView === "calendar" && (
-          <div className="flex items-center gap-2">
-            <button onClick={() => setCalDate(calView === "month" ? subMonths(calDate, 1) : subWeeks(calDate, 1))} className="rounded-md border p-1 hover:bg-muted">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-medium tabular-nums min-w-[120px] text-center">
-              {calView === "month" ? fmtDate(calDate, "MMMM yyyy") : `Week of ${fmtDate(calDate, "MMM d")}`}
-            </span>
-            <button onClick={() => setCalDate(calView === "month" ? addMonths(calDate, 1) : addWeeks(calDate, 1))} className="rounded-md border p-1 hover:bg-muted">
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <div className="flex items-center gap-1 rounded-lg border p-1">
-              {(["month", "week"] as View[]).map((v) => (
-                <button
-                  key={v}
-                  className={cn("rounded px-2 py-0.5 text-xs capitalize", calView === v ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
-                  onClick={() => setCalView(v)}
+      filters={
+        <ListToolbar
+          filters={
+            pageView === "calendar" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => setCalDate(calView === "month" ? subMonths(calDate, 1) : subWeeks(calDate, 1))}
+                  aria-label="Previous"
                 >
-                  {v}
-                </button>
-              ))}
+                  <ChevronLeft className="size-4" aria-hidden="true" />
+                </Button>
+                <span className="min-w-32 text-center text-sm font-medium tabular-nums">
+                  {calView === "month" ? fmtDate(calDate, "MMMM yyyy") : `Week of ${fmtDate(calDate, "MMM d")}`}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => setCalDate(calView === "month" ? addMonths(calDate, 1) : addWeeks(calDate, 1))}
+                  aria-label="Next"
+                >
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </Button>
+                <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+                  {(["month", "week"] as View[]).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={cn(segmentClass(calView === v), "capitalize")}
+                      onClick={() => setCalView(v)}
+                      aria-pressed={calView === v}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : undefined
+          }
+          view={
+            <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+              <button
+                type="button"
+                className={segmentClass(pageView === "list")}
+                onClick={() => setPageView("list")}
+                aria-pressed={pageView === "list"}
+              >
+                <List className="size-3.5" aria-hidden="true" />
+                List
+              </button>
+              <button
+                type="button"
+                className={segmentClass(pageView === "calendar")}
+                onClick={() => setPageView("calendar")}
+                aria-pressed={pageView === "calendar"}
+              >
+                <CalendarDays className="size-3.5" aria-hidden="true" />
+                Calendar
+              </button>
             </div>
-          </div>
-        )}
-      </div>
-
+          }
+        />
+      }
+    >
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5 mb-2">
-          <span className="text-sm font-medium text-primary">{selectedIds.size} selected</span>
-          <div className="flex items-center gap-2 ml-auto">
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-sticky flex justify-center px-4">
+          <div
+            role="toolbar"
+            aria-label="Bulk actions"
+            className="pointer-events-auto flex min-h-11 flex-wrap items-center justify-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-secondary-foreground shadow-lg"
+          >
+            <span className="text-sm font-medium tabular-nums">{selectedIds.size} selected</span>
             <Input
               type="datetime-local"
-              className="h-8 text-xs w-52"
+              className="h-8 w-52 bg-background text-xs text-foreground"
               value={bulkNewDate}
               onChange={(e) => setBulkNewDate(e.target.value)}
               placeholder="New date & time"
             />
             <Button
               size="sm"
-              className="h-8 text-xs"
               onClick={handleBulkReschedule}
-              disabled={bulkReschedule.isPending || !bulkNewDate}
+              loading={bulkReschedule.isPending}
+              disabled={!bulkNewDate}
             >
               {bulkReschedule.isPending ? "Rescheduling..." : "Reschedule Selected"}
             </Button>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 text-xs"
+              size="icon-sm"
+              className="text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
               onClick={() => { setSelectedIds(new Set()); setBulkNewDate(""); }}
+              aria-label="Clear selection"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="size-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
       )}
 
-      {pageView === "calendar" ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load interviews" error={error} onRetry={() => refetch()} />
+      ) : pageView === "calendar" ? (
         <Card>
-          <CardContent className="p-4" style={{ height: 520 }}>
+          <CardContent className="calendar-container p-4" style={{ height: 520 }}>
             <BigCalendarWrapper
               events={(interviews ?? []).map((iv): BigCalEvent => ({
                 id: iv.id,
@@ -563,7 +608,7 @@ export default function InterviewsPage() {
                 start: new Date(iv.scheduledAt),
                 end: new Date(new Date(iv.scheduledAt).getTime() + (iv.duration ?? 60) * 60_000),
                 resource: {
-                  color: iv.result === "PASSED" ? "#10b981" : iv.result === "FAILED" ? "#ef4444" : "#0f2b7f",
+                  color: iv.result === "PASSED" ? "success" : iv.result === "FAILED" ? "danger" : "brand",
                 },
               }))}
               date={calDate}
@@ -575,94 +620,99 @@ export default function InterviewsPage() {
                 if (iv) setFeedbackInterview(iv as Interview);
               }}
               eventPropGetter={(e) => ({
-                style: { backgroundColor: (e as BigCalEvent).resource?.color ?? "#0f2b7f", color: "#fff", borderRadius: 4, border: "none", fontSize: 11 },
+                style: eventToneStyle(((e as BigCalEvent).resource?.color as Tone | undefined) ?? "brand"),
               })}
             />
           </CardContent>
         </Card>
+      ) : !interviews?.length ? (
+        <EmptyState
+          illustration={<EmptyCalendarIllustration className="size-32" />}
+          title="No interviews scheduled."
+          action={{ label: "Schedule Interview", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-
-      <Card>
-        <CardContent className="p-0">
-          <ScrollArea className="w-full" type="auto">
-            <div className="min-w-[800px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={!!interviews?.length && selectedIds.size === interviews.length}
-                        onCheckedChange={toggleSelectAll}
-                        aria-label="Select all interviews"
-                      />
-                    </TableHead>
-                    <TableHead>Candidate</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Result</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {!interviews?.length ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground"><div className="flex flex-col items-center justify-center gap-2 py-2">
-                      <EmptyCalendarIllustration className="h-36 w-36 opacity-95" />
-                      <p>No interviews scheduled.</p>
-                    </div></TableCell></TableRow>
-                  ) : (
-                    interviews.map((interview) => (
-                      <TableRow key={interview.id} className={selectedIds.has(interview.id) ? "bg-primary/5" : undefined}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedIds.has(interview.id)}
-                            onCheckedChange={() => toggleSelect(interview.id)}
-                            aria-label={`Select interview ${interview.id}`}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
+        <Table className="min-w-[800px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={!!interviews?.length && selectedIds.size === interviews.length}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all interviews"
+                />
+              </TableHead>
+              <TableHead>Candidate</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Date & Time</TableHead>
+              <TableHead className="text-right">Duration</TableHead>
+              <TableHead>Result</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {interviews.map((interview) => {
+              const panelIds = (interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds;
+              return (
+                <TableRow key={interview.id} data-state={selectedIds.has(interview.id) ? "selected" : undefined}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(interview.id)}
+                      onCheckedChange={() => toggleSelect(interview.id)}
+                      aria-label={`Select interview ${interview.id}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex min-w-44 items-center gap-2.5">
+                      <Avatar className="size-8">
+                        <AvatarFallback>
+                          {interview.candidate?.firstName?.charAt(0)}
+                          {interview.candidate?.lastName?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">
                           {interview.candidate?.firstName} {interview.candidate?.lastName}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <Badge variant="outline">{interview.type}</Badge>
-                            {(interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds &&
-                              (interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds!.length > 1 && (
-                              <Badge variant="secondary" className="text-[10px]">
-                                Panel ({(interview as Interview & { panelInterviewerIds?: string[] }).panelInterviewerIds!.length})
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {format(new Date(interview.scheduledAt), "PPp")}
-                        </TableCell>
-                        <TableCell className="text-sm">{interview.duration} min</TableCell>
-                        <TableCell>
-                          <Badge variant={resultBadgeVariant(interview.result)}>
-                            {interview.result}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => setFeedbackInterview(interview as Interview)}
-                          >
-                            Feedback
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
+                        </p>
+                        {interview.candidate?.email && (
+                          <p className="max-w-52 truncate text-xs text-muted-foreground" title={interview.candidate.email}>
+                            {interview.candidate.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline">{interview.type}</Badge>
+                      {panelIds && panelIds.length > 1 && (
+                        <Badge variant="secondary">Panel ({panelIds.length})</Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm tabular-nums">
+                    {format(new Date(interview.scheduledAt), "PPp")}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-right text-sm tabular-nums">{interview.duration} min</TableCell>
+                  <TableCell>
+                    <StatusPill tone={interview.result ? RESULT_TONE[interview.result] : "neutral"} dot>
+                      {interview.result ? RESULT_LABEL[interview.result] : "—"}
+                    </StatusPill>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => setFeedbackInterview(interview as Interview)}
+                    >
+                      Feedback
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
 
       {feedbackInterview && (

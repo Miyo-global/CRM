@@ -7,7 +7,7 @@ export function EmptySearchIllustration({ className }: IllustrationProps) {
 
       <circle cx="95" cy="100" r="78" fill={BLUE} opacity="0.03" />
 
-      <circle cx="85" cy="78" r="36" fill="white" stroke={BLUE} strokeWidth="3" />
+      <circle cx="85" cy="78" r="36" fill="var(--card)" stroke={BLUE} strokeWidth="3" />
       <circle cx="85" cy="78" r="28" fill={BLUE} opacity="0.04" />
 
       <line x1="112" y1="105" x2="140" y2="133" stroke={GOLD} strokeWidth="6" strokeLinecap="round" />

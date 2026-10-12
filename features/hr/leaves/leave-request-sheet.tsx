@@ -196,10 +196,10 @@ export function LeaveRequestSheet({
             name="leaveTypeId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">Leave Type</FormLabel>
+                <FormLabel>Leave Type</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select leave type" />
                     </SelectTrigger>
                   </FormControl>
@@ -214,13 +214,13 @@ export function LeaveRequestSheet({
             )}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="startDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-medium">From</FormLabel>
+                  <FormLabel>From</FormLabel>
                   <FormControl>
                     <DatePicker
                       value={field.value}
@@ -244,7 +244,7 @@ export function LeaveRequestSheet({
               name="endDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-medium">To</FormLabel>
+                  <FormLabel>To</FormLabel>
                   <FormControl>
                     <DatePicker
                       value={field.value}
@@ -280,10 +280,10 @@ export function LeaveRequestSheet({
               name="halfDayPeriod"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs font-medium">Half Day Period</FormLabel>
+                  <FormLabel>Half Day Period</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="text-sm">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -303,27 +303,27 @@ export function LeaveRequestSheet({
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">Priority</FormLabel>
+                <FormLabel>Priority</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="LOW">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />Low
+                        <span className="size-2 rounded-full bg-success-500" aria-hidden="true" />Low
                       </span>
                     </SelectItem>
                     <SelectItem value="MEDIUM">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-amber-500" />Medium
+                        <span className="size-2 rounded-full bg-warning-500" aria-hidden="true" />Medium
                       </span>
                     </SelectItem>
                     <SelectItem value="HIGH">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-red-500" />High
+                        <span className="size-2 rounded-full bg-danger-500" aria-hidden="true" />High
                       </span>
                     </SelectItem>
                   </SelectContent>
@@ -338,11 +338,11 @@ export function LeaveRequestSheet({
             name="reason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">Reason</FormLabel>
+                <FormLabel>Reason</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="E.g. Family function, Doctor appointment..."
-                    className="resize-none text-sm"
+                    className="resize-none"
                     rows={3}
                     {...field}
                   />
@@ -357,7 +357,7 @@ export function LeaveRequestSheet({
             name="attachments"
             render={() => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">
+                <FormLabel>
                   Attach Document <span className="text-muted-foreground">(Optional)</span>
                 </FormLabel>
                 <FormControl>
@@ -385,12 +385,12 @@ export function LeaveRequestSheet({
           />
 
           {balancePreview && requestedDays > 0 && (
-            <div className={`flex items-start gap-2 p-3 rounded-lg border text-xs ${
+            <div className={`flex items-start gap-2 rounded-lg p-3 text-xs ${
               balancePreview.after < 0
-                ? "bg-destructive/10 border-destructive/20 text-destructive"
-                : "bg-muted/50 border-border text-foreground"
+                ? "bg-danger-soft text-danger-strong"
+                : "bg-surface-sunken text-foreground"
             }`}>
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span>
                 This will consume{" "}
                 <strong>{requestedDays} day{requestedDays !== 1 ? "s" : ""}</strong>{" "}
@@ -406,9 +406,9 @@ export function LeaveRequestSheet({
           )}
 
           {leaveDayLimitError && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-              <p className="text-xs text-destructive">{leaveDayLimitError}</p>
+            <div role="alert" className="flex items-start gap-2 rounded-lg bg-danger-soft p-3">
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-danger-strong" aria-hidden="true" />
+              <p className="text-xs text-danger-strong">{leaveDayLimitError}</p>
             </div>
           )}
         </div>

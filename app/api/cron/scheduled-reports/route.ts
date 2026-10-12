@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { appUrl } from "@/lib/app-url";
 import { verifyCronSecret, cronIdempotencyCheck } from "@/lib/cron-auth";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const IST = DEFAULT_TIMEZONE;
 
@@ -289,14 +290,14 @@ function buildReportEmail(opts: {
   const sectionsHtml = opts.sections
     .map(
       (sec) => `
-      <h3 style="color:#0f2b7f;margin:24px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(sec.heading)}</h3>
+      <h3 style="color:${BRAND.ink};margin:24px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(sec.heading)}</h3>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         ${sec.rows
           .map(
             (row) => `
           <tr>
-            <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;color:#374151;">${escapeHtml(row[0] ?? "")}</td>
-            <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;color:#111827;font-weight:600;text-align:right;">${escapeHtml(row[1] ?? "")}</td>
+            <td style="padding:6px 8px;border-bottom:1px solid ${BRAND.border};color:${BRAND.inkMuted};">${escapeHtml(row[0] ?? "")}</td>
+            <td style="padding:6px 8px;border-bottom:1px solid ${BRAND.border};color:${BRAND.ink};font-weight:600;text-align:right;">${escapeHtml(row[1] ?? "")}</td>
           </tr>`
           )
           .join("")}
@@ -307,24 +308,24 @@ function buildReportEmail(opts: {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 0;">
+<body style="margin:0;padding:0;background:${BRAND.sunken};font-family:sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.sunken};padding:32px 0;">
     <tr><td align="center">
-      <table width="580" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:${BRAND.white};border-radius:8px;overflow:hidden;box-shadow:0 1px 3px ${BRAND.border};">
         <tr>
-          <td style="background:#0f2b7f;padding:20px 28px;">
-            <h1 style="margin:0;color:#fff;font-size:18px;font-weight:700;">${escapeHtml(opts.orgName)}</h1>
-            <p style="margin:4px 0 0;color:#bd882c;font-size:13px;">${escapeHtml(opts.title)}</p>
+          <td style="background:${BRAND.ink};padding:20px 28px;">
+            <h1 style="margin:0;color:${BRAND.white};font-size:18px;font-weight:700;">${escapeHtml(opts.orgName)}</h1>
+            <p style="margin:4px 0 0;color:${BRAND.gold};font-size:13px;">${escapeHtml(opts.title)}</p>
           </td>
         </tr>
         <tr>
           <td style="padding:24px 28px;">
             ${sectionsHtml}
-            ${opts.footer ? `<p style="margin-top:24px;font-size:12px;color:#6b7280;">${opts.footer}</p>` : ""}
+            ${opts.footer ? `<p style="margin-top:24px;font-size:12px;color:${BRAND.inkMuted};">${opts.footer}</p>` : ""}
           </td>
         </tr>
         <tr>
-          <td style="background:#f3f4f6;padding:16px 28px;font-size:11px;color:#9ca3af;text-align:center;">
+          <td style="background:${BRAND.sunken};padding:16px 28px;font-size:11px;color:${BRAND.inkSubtle};text-align:center;">
             This is an automated report from Miyo Global CRM. Do not reply to this email.
           </td>
         </tr>

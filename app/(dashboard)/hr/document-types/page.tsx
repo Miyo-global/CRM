@@ -18,7 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
   Table,
   TableBody,
@@ -155,7 +156,7 @@ export default function DocumentTypesPage() {
   const role = session?.user?.role;
   const isHROrCEO = role === "HR" || role === "CEO";
 
-  const { data, isLoading } = useDocumentTypes();
+  const { data, isLoading, isError, error, refetch } = useDocumentTypes();
   const createMutation = useCreateDocumentType();
   const updateMutation = useUpdateDocumentType();
   const deleteMutation = useDeleteDocumentType();
@@ -316,15 +317,17 @@ export default function DocumentTypesPage() {
       actions={
         isHROrCEO ? (
           <Button size="sm" onClick={openCreate}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
+            <Plus className="size-4" aria-hidden />
             Add Document Type
           </Button>
         ) : undefined
       }
     >
-      {list.length === 0 ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load document types" error={error} onRetry={() => void refetch()} />
+      ) : list.length === 0 ? (
         <EmptyState
-          illustration={<EmptyUploadIllustration className="h-40 w-40" />}
+          illustration={<EmptyUploadIllustration />}
           title="No document types configured"
           description="Add document types to define what employees must submit during onboarding."
           action={
@@ -335,9 +338,7 @@ export default function DocumentTypesPage() {
         />
       ) : (
         <TooltipProvider>
-        <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[640px]">
-            <Table>
+            <Table className="min-w-160">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
@@ -354,10 +355,10 @@ export default function DocumentTypesPage() {
                 {list.map((dt) => (
                   <TableRow key={dt.id}>
                     <TableCell>
-                      <div>
-                        <p className="text-sm font-medium">{dt.name}</p>
+                      <div className="min-w-0 max-w-sm">
+                        <p className="truncate text-sm font-medium" title={dt.name}>{dt.name}</p>
                         {dt.description && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                          <p className="text-2xs text-muted-foreground mt-0.5 line-clamp-1">
                             {dt.description}
                           </p>
                         )}
@@ -365,27 +366,19 @@ export default function DocumentTypesPage() {
                     </TableCell>
                     <TableCell>
                       {dt.isMandatory ? (
-                        <Badge variant="default" className="text-[10px]">
-                          Required
-                        </Badge>
+                        <StatusPill tone="brand">Required</StatusPill>
                       ) : (
-                        <Badge variant="outline" className="text-[10px]">
-                          Optional
-                        </Badge>
+                        <StatusPill tone="neutral">Optional</StatusPill>
                       )}
                     </TableCell>
                     <TableCell>
                       {dt.isActive !== false ? (
-                        <Badge variant="default" className="text-[10px] bg-green-600">
-                          Active
-                        </Badge>
+                        <StatusPill tone="success" dot>Active</StatusPill>
                       ) : (
-                        <Badge variant="secondary" className="text-[10px]">
-                          Inactive
-                        </Badge>
+                        <StatusPill tone="neutral" dot>Inactive</StatusPill>
                       )}
                     </TableCell>
-                    <TableCell className="text-center text-sm">
+                    <TableCell className="text-center text-sm tabular-nums">
                       {dt.sortOrder ?? ""}
                     </TableCell>
                     <TableCell>
@@ -394,11 +387,7 @@ export default function DocumentTypesPage() {
                           <span className="text-xs text-muted-foreground">All</span>
                         ) : (
                           (dt.applicableRoles ?? []).map((r) => (
-                            <Badge
-                              key={r}
-                              variant="outline"
-                              className="text-[9px] py-0 h-4"
-                            >
+                            <Badge key={r} variant="secondary">
                               {getRoleLabel(r)}
                             </Badge>
                           ))
@@ -411,13 +400,12 @@ export default function DocumentTypesPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                size="sm"
+                                size="icon-sm"
                                 variant="ghost"
-                                className="h-7 w-7 p-0"
                                 onClick={() => openEdit(dt)}
                                 aria-label={`Edit ${dt.name}`}
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Pencil className="size-4" aria-hidden />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>Edit</TooltipContent>
@@ -451,8 +439,6 @@ export default function DocumentTypesPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </ScrollArea>
         </TooltipProvider>
       )}
 
@@ -475,7 +461,7 @@ export default function DocumentTypesPage() {
       >
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">
-            Name <span className="text-destructive">*</span>
+            Name <span className="text-danger-strong">*</span>
           </Label>
           <Input
             placeholder="e.g. National ID / Aadhaar Card"
@@ -495,13 +481,13 @@ export default function DocumentTypesPage() {
             aria-invalid={!!formErrors.name}
           />
           {formErrors.name && (
-            <p className="text-[11px] text-destructive">{formErrors.name}</p>
+            <p className="text-2xs text-danger-strong">{formErrors.name}</p>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Allowed: {DOC_TYPE_NAME_HINT}. Max 120 characters.
           </p>
           {form.name && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Slug: {documentTypeNameToSlug(form.name) || "—"}
             </p>
           )}
@@ -523,7 +509,7 @@ export default function DocumentTypesPage() {
 
         <Separator />
 
-        <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5">
           <div>
             <p className="text-sm font-medium">Mandatory Document</p>
             <p className="text-xs text-muted-foreground">
@@ -538,7 +524,7 @@ export default function DocumentTypesPage() {
         </div>
 
         {editTarget && (
-          <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5">
             <div>
               <p className="text-sm font-medium">Active</p>
               <p className="text-xs text-muted-foreground">
@@ -579,9 +565,9 @@ export default function DocumentTypesPage() {
             aria-invalid={!!formErrors.sortOrder}
           />
           {formErrors.sortOrder && (
-            <p className="text-[11px] text-destructive">{formErrors.sortOrder}</p>
+            <p className="text-2xs text-danger-strong">{formErrors.sortOrder}</p>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Lower numbers appear first. Decimals are allowed (e.g. 1.5 to place between 1 and 2).
           </p>
         </div>
@@ -595,7 +581,7 @@ export default function DocumentTypesPage() {
               (leave empty = all roles)
             </span>
           </Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {SYSTEM_ROLES.map((r) => (
               <div key={r} className="flex items-center gap-2">
                 <Checkbox

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil, Plus, Settings } from "lucide-react";
+import { Pencil, Plus, Settings, UserX } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { HrSheet } from "@/features/hr/hr-sheet";
@@ -140,83 +136,92 @@ function TerminationReasonsContent() {
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" asChild>
             <Link href="/hr/termination">
-              <Settings className="h-3.5 w-3.5 mr-1" />
+              <Settings aria-hidden />
               Termination page
             </Link>
           </Button>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
+            <Plus aria-hidden />
             Add reason
           </Button>
         </div>
       }
     >
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Reasons</CardTitle>
-          <CardDescription>
-            Active reasons appear as selectable options on{" "}
-            <Link
-              href="/hr/termination"
-              className="underline underline-offset-2"
-            >
-              Termination Management
-            </Link>
-            . Deactivated reasons are hidden from new terminations but kept for
-            historical records. Defaults are seeded automatically the first time
-            this page loads.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <Skeleton className="h-40 w-full" />
-          ) : sorted.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No reasons configured yet. Add one above.
+      <Card className="overflow-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold">Reasons</h2>
+            <p className="mt-0.5 max-w-2xl text-xs text-muted-foreground">
+              Active reasons appear as selectable options on{" "}
+              <Link
+                href="/hr/termination"
+                className="text-brand-text underline underline-offset-2"
+              >
+                Termination Management
+              </Link>
+              . Deactivated reasons are hidden from new terminations but kept for
+              historical records. Defaults are seeded automatically the first time
+              this page loads.
             </p>
-          ) : (
-            <>
-              <p className="text-xs text-muted-foreground">
-                {activeCount} active · {sorted.length} total
-              </p>
-              <ul className="divide-y rounded-md border">
-                {sorted.map((reason) => (
-                  <li
-                    key={reason.id}
-                    className="flex items-start justify-between gap-3 px-3 py-2.5"
-                  >
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">
-                          {reason.label}
-                        </span>
-                        {!reason.isActive && (
-                          <Badge variant="outline" className="text-[10px]">
-                            Inactive
-                          </Badge>
-                        )}
-                        {reason.label === OTHER_TERMINATION_REASON && (
-                          <Badge variant="secondary" className="text-[10px]">
-                            System
-                          </Badge>
-                        )}
-                      </div>
-                      {reason.description && (
-                        <p className="text-xs text-muted-foreground">
-                          {reason.description}
-                        </p>
+          </div>
+          {!isLoading && sorted.length > 0 && (
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {activeCount} active · {sorted.length} total
+            </p>
+          )}
+        </div>
+        {isLoading ? (
+          <div className="p-5">
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : sorted.length === 0 ? (
+          <div className="p-5">
+            <EmptyState
+              compact
+              icon={UserX}
+              title="No reasons configured yet. Add one above."
+              action={{ label: "Add reason", onClick: openCreate }}
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Reason</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sorted.map((reason) => (
+                <TableRow key={reason.id}>
+                  <TableCell className="max-w-0 w-full whitespace-normal">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium">{reason.label}</span>
+                      {reason.label === OTHER_TERMINATION_REASON && (
+                        <StatusPill tone="info">System</StatusPill>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    {reason.description && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">{reason.description}</p>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill tone={reason.isActive ? "success" : "neutral"} dot>
+                      {reason.isActive ? "Active" : "Inactive"}
+                    </StatusPill>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-foreground"
                         onClick={() => openEdit(reason)}
                         aria-label={`Edit ${reason.label}`}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil aria-hidden />
                       </Button>
                       <Switch
                         checked={!!reason.isActive}
@@ -227,12 +232,12 @@ function TerminationReasonsContent() {
                         aria-label={`${reason.isActive ? "Deactivate" : "Activate"} ${reason.label}`}
                       />
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </CardContent>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </Card>
 
       <HrSheet

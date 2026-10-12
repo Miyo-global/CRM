@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { comboboxTriggerClassName } from "@/components/ui/searchable-select";
 import { apiClient } from "@/lib/api-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -65,15 +66,15 @@ const JobRoleOption = memo(function JobRoleOption({ role, isSelected, onSelect }
     <button
       type="button"
       className={cn(
-        "flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+        "flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground",
         isSelected && "bg-accent text-accent-foreground",
       )}
       onClick={handleClick}
     >
-      <Check className={cn("h-4 w-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
+      <Check className={cn("size-4 shrink-0 text-brand-text", isSelected ? "opacity-100" : "opacity-0")} aria-hidden="true" />
       <span className="truncate">{role.title}</span>
       {role.departmentId == null && (
-        <span className="ml-auto shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
+        <span className="ml-auto shrink-0 text-2xs uppercase tracking-wide text-muted-foreground">
           Org-wide
         </span>
       )}
@@ -182,17 +183,17 @@ export function JobRoleCombobox({
           aria-invalid={ariaInvalid}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal border-input data-[placeholder]:text-muted-foreground",
-            !value && "text-muted-foreground",
+            comboboxTriggerClassName,
+            !value && "text-subtle-foreground",
             className,
           )}
         >
           <span className="truncate text-left">{value || placeholder}</span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <div className="flex flex-col gap-1 p-2">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] overflow-hidden p-0" align="start">
+        <div className="flex flex-col gap-1 border-b border-border p-2">
           <Input
             ref={inputRef}
             placeholder="Search or add job title..."
@@ -215,10 +216,10 @@ export function JobRoleCombobox({
             {canAdd && (
               <button
                 type="button"
-                className="flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground"
+                className="flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
                 onClick={handleAdd}
               >
-                <Plus className="h-4 w-4 shrink-0" />
+                <Plus className="size-4 shrink-0 text-brand-text" aria-hidden="true" />
                 <span className="truncate">Add &quot;{search.trim()}&quot;</span>
               </button>
             )}

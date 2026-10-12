@@ -1,5 +1,6 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
 import { SUPPORT_EMAIL } from "@/lib/constants/company";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getVerificationEmailTemplate(verificationUrl: string): string {
   const content = `
@@ -15,10 +16,10 @@ export function getVerificationEmailTemplate(verificationUrl: string): string {
       </a>
     </div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b; margin-top: 24px;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted}; margin-top: 24px;">
       If the button doesn't work, you can copy and paste this link into your browser:
     </p>
-    <p class="email-text" style="word-break: break-all; font-size: 13px; color: #0f2b7f;">
+    <p class="email-text" style="word-break: break-all; font-size: 13px; color: ${BRAND.ink};">
       ${verificationUrl}
     </p>
 
@@ -50,10 +51,10 @@ export function getPasswordResetEmailTemplate(resetUrl: string): string {
       </a>
     </div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b; margin-top: 24px;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted}; margin-top: 24px;">
       If the button doesn't work, you can copy and paste this link into your browser:
     </p>
-    <p class="email-text" style="word-break: break-all; font-size: 13px; color: #0f2b7f;">
+    <p class="email-text" style="word-break: break-all; font-size: 13px; color: ${BRAND.ink};">
       ${resetUrl}
     </p>
 
@@ -111,7 +112,7 @@ export function getWelcomeEmailTemplate(name: string, email: string, setupUrl: s
     <p class="email-text">
       <strong>After setting up your password:</strong>
     </p>
-    <ul style="color: #475569; font-size: 15px; line-height: 1.8; margin: 16px 0;">
+    <ul style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.8; margin: 16px 0;">
       <li>Complete your profile with a photo and personal details</li>
       <li>Explore the dashboard to see your team and projects</li>
       <li>Set up your attendance tracking</li>
@@ -141,7 +142,7 @@ export function getPasswordChangeConfirmationEmailTemplate(userName: string): st
     <div class="security-notice">
       <p class="security-text">
         <strong>Security Alert:</strong> If you did NOT make this change, please contact our support team immediately
-        at <a href="mailto:${SUPPORT_EMAIL}" style="color: #92400e; text-decoration: underline;">${SUPPORT_EMAIL}</a>
+        at <a href="mailto:${SUPPORT_EMAIL}" style="color: ${BRAND.warning}; text-decoration: underline;">${SUPPORT_EMAIL}</a>
         or reset your password right away.
       </p>
     </div>
@@ -151,7 +152,7 @@ export function getPasswordChangeConfirmationEmailTemplate(userName: string): st
     <p class="email-text" style="font-size: 14px;">
       <strong>Security Tips:</strong>
     </p>
-    <ul style="color: #475569; font-size: 14px; line-height: 1.8; margin: 16px 0;">
+    <ul style="color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.8; margin: 16px 0;">
       <li>Use a strong, unique password for your account</li>
       <li>Never share your password with anyone</li>
       <li>Enable two-factor authentication if available</li>
@@ -188,7 +189,7 @@ export function getAccountDeactivationEmailTemplate(
     <div class="credential-box">
       <div class="credential-item">
         <span class="credential-label">Reason:</span>
-        <span style="color: #475569; margin-left: 8px;">${sReason}</span>
+        <span style="color: ${BRAND.inkMuted}; margin-left: 8px;">${sReason}</span>
       </div>
     </div>
     ` : ''}
@@ -196,7 +197,7 @@ export function getAccountDeactivationEmailTemplate(
     <p class="email-text">
       You will no longer have access to:
     </p>
-    <ul style="color: #475569; font-size: 15px; line-height: 1.8; margin: 16px 0;">
+    <ul style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.8; margin: 16px 0;">
       <li>The CRM dashboard and all projects</li>
       <li>Time tracking and attendance systems</li>
       <li>HR portal and leave management</li>
@@ -207,7 +208,7 @@ export function getAccountDeactivationEmailTemplate(
 
     <p class="email-text">
       If you believe this is an error or have questions, please contact HR at
-      <a href="mailto:${SUPPORT_EMAIL}" style="color: #0f2b7f; text-decoration: underline;">${SUPPORT_EMAIL}</a>.
+      <a href="mailto:${SUPPORT_EMAIL}" style="color: ${BRAND.ink}; text-decoration: underline;">${SUPPORT_EMAIL}</a>.
     </p>
 
     <p class="email-text" style="margin-top: 24px;">
@@ -248,9 +249,9 @@ export function getAccountLockedEmailTemplate(name: string): string {
       </a>
     </div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       If you need immediate assistance, please contact our support team at
-      <a href="mailto:${SUPPORT_EMAIL}" style="color: #0f2b7f;">${SUPPORT_EMAIL}</a>.
+      <a href="mailto:${SUPPORT_EMAIL}" style="color: ${BRAND.ink};">${SUPPORT_EMAIL}</a>.
     </p>
   `;
 
@@ -282,15 +283,15 @@ export function getNewDeviceLoginEmailTemplate(
     <div class="credential-box">
       <div class="credential-item">
         <span class="credential-label">Device:</span>
-        <span style="color: #475569; margin-left: 8px; font-size: 13px;">${sUserAgent}</span>
+        <span style="color: ${BRAND.inkMuted}; margin-left: 8px; font-size: 13px;">${sUserAgent}</span>
       </div>
       <div class="credential-item">
         <span class="credential-label">IP Address:</span>
-        <span style="color: #475569; margin-left: 8px; font-size: 13px;">${sIp}</span>
+        <span style="color: ${BRAND.inkMuted}; margin-left: 8px; font-size: 13px;">${sIp}</span>
       </div>
       <div class="credential-item">
         <span class="credential-label">Time:</span>
-        <span style="color: #475569; margin-left: 8px; font-size: 13px;">${sTime}</span>
+        <span style="color: ${BRAND.inkMuted}; margin-left: 8px; font-size: 13px;">${sTime}</span>
       </div>
     </div>
 
@@ -341,7 +342,7 @@ export function getPasswordExpiryWarningEmailTemplate(name: string, daysLeft: nu
       </a>
     </div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       Choose a strong password with at least 8 characters, including uppercase, lowercase, numbers, and special characters.
     </p>
   `;

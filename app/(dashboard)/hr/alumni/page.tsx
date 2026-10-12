@@ -7,7 +7,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,7 +34,7 @@ export default function AlumniPage() {
   const qc = useQueryClient();
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: alumni, isLoading } = useQuery({
+  const { data: alumni, isLoading, isError, error, refetch } = useQuery({
     queryKey: alumniKeys.list(),
     queryFn: () => apiClient.get<Alumni[]>("/hr/alumni"),
   });
@@ -70,8 +70,8 @@ export default function AlumniPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Alumni Network" subtitle="Stay connected with former employees">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -82,28 +82,35 @@ export default function AlumniPage() {
       title="Alumni Network"
       subtitle="Stay connected with former team members"
       badge={`${alumni?.length ?? 0} alumni`}
-      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Add Alumni</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Add Alumni</Button> : undefined}
     >
-      {!alumni?.length ? (
-        <Card><CardContent className="py-12 text-center">
-          <EmptyState
-            illustration={<EmptyTeamIllustration className="h-32 w-32 opacity-95" />}
-            title="No alumni records yet"
-            description="Add former team members to stay connected with your alumni network."
-            action={isAdmin ? { label: "Add Alumni", onClick: () => setSheetOpen(true) } : undefined}
-          />
-        </CardContent></Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !alumni?.length ? (
+        <EmptyState
+          illustration={<EmptyTeamIllustration className="size-32" />}
+          title="No alumni records yet"
+          description="Add former team members to stay connected with your alumni network."
+          action={isAdmin ? { label: "Add Alumni", onClick: () => setSheetOpen(true) } : undefined}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {alumni.map((a: Alumni) => (
-            <Card key={a.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-2">
-                <h3 className="text-sm font-semibold">{a.name}</h3>
-                {a.lastDesignation && <p className="text-xs text-muted-foreground">{a.lastDesignation}{a.department ? ` - ${a.department}` : ""}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                  {a.exitDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Left {format(new Date(a.exitDate), "MMM yyyy")}</span>}
-                  {a.currentCompany && <span className="flex items-center gap-0.5"><Briefcase className="h-3 w-3" />{a.currentCompany}</span>}
-                  {a.email && <span className="flex items-center gap-0.5"><Mail className="h-3 w-3" />{a.email}</span>}
+            <Card key={a.id} className="h-full">
+              <CardContent className="flex h-full flex-col gap-3 p-5">
+                <div className="flex items-start gap-3">
+                  <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
+                    {a.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-foreground" title={a.name}>{a.name}</h3>
+                    {a.lastDesignation && <p className="truncate text-xs text-muted-foreground">{a.lastDesignation}{a.department ? ` - ${a.department}` : ""}</p>}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground tabular-nums">
+                  {a.exitDate && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />Left {format(new Date(a.exitDate), "MMM yyyy")}</span>}
+                  {a.currentCompany && <span className="flex min-w-0 items-center gap-1"><Briefcase className="size-3.5 shrink-0" aria-hidden="true" /><span className="truncate">{a.currentCompany}</span></span>}
+                  {a.email && <span className="flex min-w-0 items-center gap-1"><Mail className="size-3.5 shrink-0" aria-hidden="true" /><span className="truncate">{a.email}</span></span>}
                 </div>
               </CardContent>
             </Card>
@@ -120,7 +127,7 @@ export default function AlumniPage() {
           <label className="text-sm font-medium">Email</label>
           <Input type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Last Designation</label>
             <Input placeholder="e.g., Sr. Engineer" value={designation} onChange={(e) => setDesignation(e.target.value)} />
@@ -130,7 +137,7 @@ export default function AlumniPage() {
             <Input placeholder="e.g., Engineering" value={department} onChange={(e) => setDepartment(e.target.value)} />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Exit Date</label>
             <Input type="date" value={exitDate} onChange={(e) => setExitDate(e.target.value)} />

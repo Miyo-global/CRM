@@ -7,23 +7,23 @@ export function EmptyUploadIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="80" fill={BLUE} opacity="0.04" />
 
-      <ellipse cx="100" cy="80" rx="40" ry="25" fill="white" stroke={GOLD} strokeWidth="2" />
-      <ellipse cx="75" cy="85" rx="20" ry="15" fill="white" stroke={GOLD} strokeWidth="2" />
-      <ellipse cx="125" cy="85" rx="20" ry="15" fill="white" stroke={GOLD} strokeWidth="2" />
-      <rect x="60" y="80" width="80" height="20" fill="white" />
+      <ellipse cx="100" cy="80" rx="40" ry="25" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
+      <ellipse cx="75" cy="85" rx="20" ry="15" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
+      <ellipse cx="125" cy="85" rx="20" ry="15" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
+      <rect x="60" y="80" width="80" height="20" fill="var(--card)" />
 
       <path d="M100 105 L100 75" stroke={BLUE} strokeWidth="3" strokeLinecap="round" />
       <path d="M90 85 L100 73 L110 85" stroke={BLUE} strokeWidth="3" strokeLinecap="round" fill="none" />
 
-      <rect x="60" y="120" width="22" height="28" rx="3" fill="white" stroke={GOLD} strokeWidth="1.5" />
+      <rect x="60" y="120" width="22" height="28" rx="3" fill="var(--card)" stroke={GOLD} strokeWidth="1.5" />
       <rect x="65" y="126" width="12" height="2" rx="1" fill={BLUE} opacity="0.2" />
       <rect x="65" y="131" width="8" height="2" rx="1" fill={BLUE} opacity="0.15" />
 
-      <rect x="90" y="118" width="22" height="28" rx="3" fill="white" stroke={GOLD} strokeWidth="1.5" />
+      <rect x="90" y="118" width="22" height="28" rx="3" fill="var(--card)" stroke={GOLD} strokeWidth="1.5" />
       <rect x="95" y="124" width="12" height="2" rx="1" fill={BLUE} opacity="0.2" />
       <rect x="95" y="129" width="8" height="2" rx="1" fill={BLUE} opacity="0.15" />
 
-      <rect x="120" y="120" width="22" height="28" rx="3" fill="white" stroke={GOLD} strokeWidth="1.5" />
+      <rect x="120" y="120" width="22" height="28" rx="3" fill="var(--card)" stroke={GOLD} strokeWidth="1.5" />
       <rect x="125" y="126" width="12" height="2" rx="1" fill={BLUE} opacity="0.2" />
       <rect x="125" y="131" width="8" height="2" rx="1" fill={BLUE} opacity="0.15" />
 

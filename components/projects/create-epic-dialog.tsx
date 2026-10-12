@@ -7,12 +7,14 @@ import { z } from "zod";
 import { Plus, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { IconChip } from "@/components/ui/icon-chip";
 import {
   Form,
   FormControl,
@@ -85,24 +87,24 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         {trigger || (
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="size-4" />
             Create Epic
           </Button>
         )}
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] overflow-y-auto p-6">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="flex items-center gap-2 text-lg">
-            <Layers className="h-5 w-5 text-purple-500" />
+      </DialogTrigger>
+      <DialogContent size="md" className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2.5 text-lg">
+            <IconChip icon={Layers} tone="plum" size="sm" />
             Create New Epic
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -129,7 +131,7 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
                   <FormControl>
                     <Textarea
                       placeholder="Describe the epic goals and scope..."
-                      className="resize-none min-h-[120px]"
+                      className="min-h-28 resize-none"
                       rows={4}
                       {...field}
                     />
@@ -139,31 +141,33 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="URGENT">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="LOW">Low</SelectItem>
+                        <SelectItem value="MEDIUM">Medium</SelectItem>
+                        <SelectItem value="HIGH">High</SelectItem>
+                        <SelectItem value="URGENT">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -171,13 +175,13 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createTicket.isPending}>
+              <Button type="submit" disabled={createTicket.isPending} loading={createTicket.isPending}>
                 {createTicket.isPending ? "Creating..." : "Create Epic"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

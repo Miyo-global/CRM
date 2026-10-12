@@ -3,15 +3,15 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Bell,
   Info,
   CheckCircle2,
   AlertTriangle,
   XCircle,
   CheckCheck,
-  Loader2,
   Trash2,
+  X,
 } from "lucide-react";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   useNotifications,
   useUnreadNotificationCount,
@@ -21,9 +21,14 @@ import {
 } from "@/lib/api/hooks/notifications";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyInboxIllustration } from "@/components/illustrations";
@@ -33,15 +38,20 @@ import { toast } from "sonner";
 type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 type TabFilter = "ALL" | "UNREAD" | NotificationType;
 
-const TYPE_CONFIG: Record<
-  NotificationType,
-  { icon: typeof Info; color: string; bg: string; label: string }
-> = {
-  INFO: { icon: Info, color: "text-blue-400", bg: "bg-blue-500/10", label: "Info" },
-  SUCCESS: { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10", label: "Success" },
-  WARNING: { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10", label: "Warning" },
-  ERROR: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", label: "Error" },
+const TYPE_CONFIG: Record<NotificationType, { icon: typeof Info; tone: Tone; label: string }> = {
+  INFO: { icon: Info, tone: "info", label: "Info" },
+  SUCCESS: { icon: CheckCircle2, tone: "success", label: "Success" },
+  WARNING: { icon: AlertTriangle, tone: "warning", label: "Warning" },
+  ERROR: { icon: XCircle, tone: "danger", label: "Error" },
 };
+
+function dayGroup(date: Date | string | null): string {
+  if (!date) return "Earlier";
+  const d = new Date(date);
+  if (isToday(d)) return "Today";
+  if (isYesterday(d)) return "Yesterday";
+  return "Earlier";
+}
 
 function isSafeInAppPath(link: string): boolean {
   return link.startsWith("/") && !link.startsWith("//");
@@ -69,9 +79,10 @@ export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<TabFilter>("ALL");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkPending, setBulkPending] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const isUnreadOnly = activeTab === "UNREAD";
-  const { data: notifications, isLoading } = useNotifications(isUnreadOnly, 50);
+  const { data: notifications, isLoading, error, refetch } = useNotifications(isUnreadOnly, 50);
   const { data: unreadData } = useUnreadNotificationCount();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
@@ -146,14 +157,22 @@ export default function NotificationsPage() {
     }
   }
 
+  const groups: { label: string; items: typeof filtered }[] = [];
+  for (const n of filtered) {
+    const label = dayGroup(n.createdAt);
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.items.push(n);
+    else groups.push({ label, items: [n] });
+  }
+
   const tabsFilter = (
     <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabFilter); setSelected(new Set()); }}>
-      <TabsList className="bg-card border border-border">
+      <TabsList variant="underline">
         <TabsTrigger value="ALL">All</TabsTrigger>
         <TabsTrigger value="UNREAD">
           Unread
           {unreadCount > 0 && (
-            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[10px] font-semibold text-white">
+            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-soft px-1.5 text-2xs font-semibold tabular-nums text-brand-soft-foreground">
               {unreadCount}
             </span>
           )}
@@ -166,175 +185,190 @@ export default function NotificationsPage() {
     </Tabs>
   );
 
+  const isTypeFilter = activeTab !== "ALL" && activeTab !== "UNREAD";
+
   return (
     <PageWrapper
       title="Notifications"
       subtitle="Stay up to date with everything happening in your workspace"
+      badge={unreadCount > 0 ? unreadCount : undefined}
       actions={
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          disabled={unreadCount === 0 || markAllRead.isPending}
+          disabled={unreadCount === 0}
+          loading={markAllRead.isPending}
           onClick={handleMarkAllRead}
-          className="border-gold/30 text-gold hover:bg-gold/10 hover:text-gold"
         >
-          {markAllRead.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <CheckCheck className="mr-2 h-4 w-4" />
-          )}
+          {!markAllRead.isPending && <CheckCheck aria-hidden="true" />}
           Mark all as read
-          {unreadCount > 0 && (
-            <Badge variant="secondary" className="ml-2 bg-gold/20 text-gold text-xs">
-              {unreadCount}
-            </Badge>
-          )}
         </Button>
       }
       filters={tabsFilter}
     >
       {isLoading ? (
-        <div className="space-y-3">
+        <Card className="divide-y divide-border">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="p-4">
-              <div className="flex items-start gap-4">
-                <Skeleton className="h-10 w-10 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-3 w-full max-w-md" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
+            <div key={i} className="flex items-start gap-3 p-4">
+              <Skeleton className="size-9 shrink-0 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-full max-w-md" />
               </div>
-            </Card>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <EmptyInboxIllustration className="mb-5 opacity-95" />
-          <h3 className="text-lg font-semibold text-foreground mb-1">
-            {activeTab === "UNREAD" ? "You're all caught up" : "No notifications yet"}
-          </h3>
-          <p className="text-sm text-muted-foreground text-center max-w-sm">
-            {activeTab === "UNREAD"
-              ? "All your notifications have been read. Check back later for new updates."
-              : "When something important happens, you'll see it here."}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {someSelected && (
-            <div className="flex items-center gap-3 px-4 py-2.5 bg-muted/50 rounded-lg border border-border sticky top-0 z-10">
-              <span className="text-sm font-medium text-foreground">{selected.size} selected</span>
-              <div className="flex items-center gap-2 ml-auto">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  disabled={bulkPending}
-                  onClick={handleBulkMarkRead}
-                >
-                  {bulkPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCheck className="h-3 w-3 mr-1" />}
-                  Mark read
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
-                  disabled={bulkPending}
-                  onClick={handleBulkDelete}
-                >
-                  {bulkPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
-                  Delete
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-xs"
-                  onClick={() => setSelected(new Set())}
-                >
-                  Clear
-                </Button>
-              </div>
+              <Skeleton className="h-3 w-12" />
             </div>
-          )}
-
-          <div className="flex items-center gap-2 px-1 pb-1">
+          ))}
+        </Card>
+      ) : error ? (
+        <QueryErrorState error={error} onRetry={() => refetch()} />
+      ) : filtered.length === 0 ? (
+        isTypeFilter && (notifications?.length ?? 0) > 0 ? (
+          <EmptyState
+            illustration={<EmptyInboxIllustration />}
+            title="No results for these filters"
+            description="No notifications match this type."
+            action={{ label: "Clear filters", onClick: () => setActiveTab("ALL") }}
+          />
+        ) : (
+          <EmptyState
+            illustration={<EmptyInboxIllustration />}
+            title={activeTab === "UNREAD" ? "You're all caught up" : "No notifications yet"}
+            description={
+              activeTab === "UNREAD"
+                ? "All your notifications have been read. Check back later for new updates."
+                : "When something important happens, you'll see it here."
+            }
+          />
+        )
+      ) : (
+        <div className="space-y-4 pb-16">
+          <div className="flex items-center gap-2 px-1">
             <Checkbox
               checked={allSelected}
               onCheckedChange={toggleSelectAll}
               aria-label="Select all notifications"
-              className="h-4 w-4"
             />
             <span className="text-xs text-muted-foreground">Select all</span>
           </div>
 
-          {filtered.map((notification) => {
-            const typeKey = (notification.type ?? "INFO") as NotificationType;
-            const config = TYPE_CONFIG[typeKey];
-            const Icon = config.icon;
-            const isUnread = !notification.isRead;
-            const isChecked = selected.has(notification.id);
+          {groups.map((group) => (
+            <section key={group.label} className="space-y-2">
+              <h2 className="px-1 font-sans text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {group.label}
+              </h2>
+              <Card className="divide-y divide-border overflow-hidden">
+                {group.items.map((notification) => {
+                  const typeKey = (notification.type ?? "INFO") as NotificationType;
+                  const config = TYPE_CONFIG[typeKey];
+                  const isUnread = !notification.isRead;
+                  const isChecked = selected.has(notification.id);
+                  const created = notification.createdAt ? new Date(notification.createdAt) : null;
 
-            return (
-              <div key={notification.id} className="flex items-start gap-3">
-                <div className="flex items-center pt-4 pl-1 shrink-0">
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => toggleSelect(notification.id)}
-                    aria-label={`Select notification: ${notification.title}`}
-                    className="h-4 w-4"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-                <Card
-                  className={cn(
-                    "group relative cursor-pointer transition-all duration-200 hover:shadow-md flex-1",
-                    isUnread ? "border-l-2 border-l-gold bg-gold/[0.03]" : "opacity-75 hover:opacity-100",
-                    isChecked && "ring-1 ring-gold/40"
-                  )}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex items-start gap-4 p-4">
-                    <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", config.bg)}>
-                      <Icon className={cn("h-5 w-5", config.color)} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h4 className={cn(
-                          "text-sm truncate",
-                          isUnread ? "font-semibold text-foreground" : "font-medium text-muted-foreground"
-                        )}>
-                          {notification.title}
-                        </h4>
-                        <Badge
-                          variant="outline"
-                          className={cn("shrink-0 text-[10px] px-1.5 py-0", config.color, "border-current/20")}
-                        >
-                          {config.label}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{notification.message}</p>
-                      <span className="mt-1 block text-xs text-muted-foreground/60">
-                        {formatRelativeTime(notification.createdAt)}
-                      </span>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      {isUnread && (
-                        <span className="flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-gold opacity-40" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gold" />
-                        </span>
+                  return (
+                    <div
+                      key={notification.id}
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group flex cursor-pointer items-start gap-3 px-4 py-3 outline-none transition-colors hover:bg-accent focus-visible:bg-accent",
+                        isChecked && "bg-brand-soft/60"
                       )}
+                      onClick={() => handleNotificationClick(notification)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.target === e.currentTarget) handleNotificationClick(notification);
+                      }}
+                    >
+                      <div className="flex shrink-0 items-center pt-2.5">
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={() => toggleSelect(notification.id)}
+                          aria-label={`Select notification: ${notification.title}`}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <IconChip icon={config.icon} tone={config.tone} />
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className={cn(
+                            "truncate font-sans text-sm tracking-normal",
+                            isUnread ? "font-semibold text-foreground" : "font-normal text-muted-foreground"
+                          )}>
+                            {notification.title}
+                          </h3>
+                          <StatusPill tone={config.tone}>{config.label}</StatusPill>
+                        </div>
+                        <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{notification.message}</p>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2 pt-0.5">
+                        <time
+                          className="text-xs tabular-nums text-muted-foreground"
+                          dateTime={created?.toISOString()}
+                          title={created ? format(created, "PPpp") : undefined}
+                        >
+                          {formatRelativeTime(notification.createdAt)}
+                        </time>
+                        {isUnread && (
+                          <span className="size-1.5 rounded-full bg-gold-400" aria-label="Unread" />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </div>
-            );
-          })}
+                  );
+                })}
+              </Card>
+            </section>
+          ))}
         </div>
       )}
+
+      {someSelected && (
+        <div
+          role="toolbar"
+          aria-label="Bulk actions"
+          className="fixed bottom-6 left-1/2 z-sticky flex h-11 max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-full bg-secondary px-4 text-secondary-foreground shadow-lg animate-fade-up"
+        >
+          <span className="whitespace-nowrap text-sm font-medium tabular-nums">{selected.size} selected</span>
+          <Button
+            size="xs"
+            variant="ghost"
+            className="text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
+            loading={bulkPending}
+            onClick={handleBulkMarkRead}
+          >
+            {!bulkPending && <CheckCheck aria-hidden="true" />}
+            Mark read
+          </Button>
+          <Button
+            size="xs"
+            variant="destructive"
+            disabled={bulkPending}
+            onClick={() => setConfirmDeleteOpen(true)}
+          >
+            <Trash2 aria-hidden="true" />
+            Delete
+          </Button>
+          <Button
+            size="icon-xs"
+            variant="ghost"
+            className="text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
+            aria-label="Clear"
+            onClick={() => setSelected(new Set())}
+          >
+            <X aria-hidden="true" />
+          </Button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Delete notifications"
+        description={`Delete ${selected.size} selected notification${selected.size !== 1 ? "s" : ""}? This cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleBulkDelete}
+      />
     </PageWrapper>
   );
 }

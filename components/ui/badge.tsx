@@ -3,26 +3,23 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../../lib/utils";
+import { toneDot, toneSoft, toneSolid } from "../../lib/design/tones";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex h-5 items-center justify-center gap-1 rounded-full px-2 text-2xs font-semibold w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:focus-ring aria-invalid:border-destructive transition-colors overflow-hidden",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent gold-gradient text-primary-foreground font-semibold [a&]:hover:bg-primary/90",
-        secondary:
-          "border-border bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive:
-          "border-transparent bg-destructive/10 text-red-700 dark:text-red-400 [a&]:hover:bg-destructive/20 focus-visible:ring-destructive/20",
-        success:
-          "border-transparent bg-success/10 text-success [a&]:hover:bg-success/20",
-        warning:
-          "border-transparent bg-warning/10 text-warning [a&]:hover:bg-warning/20",
-        info:
-          "border-transparent bg-info/10 text-info [a&]:hover:bg-info/20",
-        outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        default: toneSoft.brand,
+        secondary: toneSoft.neutral,
+        destructive: toneSoft.danger,
+        success: toneSoft.success,
+        warning: toneSoft.warning,
+        info: toneSoft.info,
+        teal: toneSoft.teal,
+        plum: toneSoft.plum,
+        outline: "border border-border-strong text-muted-foreground",
+        solid: toneSolid.brand,
       },
     },
     defaultVariants: {
@@ -31,13 +28,34 @@ const badgeVariants = cva(
   }
 );
 
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
+
+const dotClass: Record<BadgeVariant, string> = {
+  default: toneDot.brand,
+  secondary: toneDot.neutral,
+  destructive: toneDot.danger,
+  success: toneDot.success,
+  warning: toneDot.warning,
+  info: toneDot.info,
+  teal: toneDot.teal,
+  plum: toneDot.plum,
+  outline: toneDot.neutral,
+  solid: "bg-current",
+};
+
 function Badge({
   className,
   variant,
   asChild = false,
+  dot = false,
+  children,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean;
+    /** Leading 6px status dot (ignored with asChild). */
+    dot?: boolean;
+  }) {
   const Comp = asChild ? Slot : "span";
 
   return (
@@ -45,8 +63,21 @@ function Badge({
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {dot && !asChild ? (
+        <>
+          <span
+            aria-hidden="true"
+            className={cn("size-1.5 shrink-0 rounded-full", dotClass[variant ?? "default"])}
+          />
+          {children}
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   );
 }
 
 export { Badge, badgeVariants };
+export type { BadgeVariant };

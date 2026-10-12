@@ -14,11 +14,15 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { Plus, Award, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, CheckCircle2, XCircle } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyTargetIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { format } from "date-fns";
 import type { CareerPromotionRecommendation, CareerLadder, CareerPromotionStatus } from "@/types/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
@@ -31,11 +35,11 @@ const ladderKeys = {
   list: () => ["hr", "career-ladders", "list"] as const,
 };
 
-const STATUS_BADGE: Record<CareerPromotionStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  PENDING: { label: "Pending", variant: "outline" },
-  APPROVED: { label: "Approved", variant: "default" },
-  REJECTED: { label: "Rejected", variant: "destructive" },
-  WITHDRAWN: { label: "Withdrawn", variant: "secondary" },
+const STATUS_BADGE: Record<CareerPromotionStatus, { label: string; tone: Tone }> = {
+  PENDING: { label: "Pending", tone: "warning" },
+  APPROVED: { label: "Approved", tone: "success" },
+  REJECTED: { label: "Rejected", tone: "danger" },
+  WITHDRAWN: { label: "Withdrawn", tone: "neutral" },
 };
 
 const EMPTY_FORM = {
@@ -52,7 +56,7 @@ export default function CareerPromotionsPage() {
   const isAdmin = ["CEO", "HR", "ADMIN"].includes(session?.user?.role ?? "");
   const qc = useQueryClient();
 
-  const { data: promotions, isLoading } = useQuery({
+  const { data: promotions, isLoading, isError, error, refetch } = useQuery({
     queryKey: promoKeys.list(),
     queryFn: () => apiClient.get<CareerPromotionRecommendation[]>("/hr/career-promotions"),
   });
@@ -145,7 +149,7 @@ export default function CareerPromotionsPage() {
     return (
       <PageWrapper title="Promotions" subtitle="Promotion recommendations and approvals">
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
       </PageWrapper>
     );
@@ -164,107 +168,96 @@ export default function CareerPromotionsPage() {
       actions={
         isAdmin ? (
           <Button size="sm" onClick={() => { setForm(EMPTY_FORM); setAddOpen(true); }}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="size-4" aria-hidden="true" />
             Recommend Promotion
           </Button>
         ) : undefined
       }
     >
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[780px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Ladder</TableHead>
-                  <TableHead>Promotion</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Date</TableHead>
-                  {isAdmin && <TableHead className="text-right w-[120px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                      <div className="flex flex-col items-center gap-2">
-                        <Award className="h-10 w-10 opacity-30" />
-                        <p className="text-sm">No promotion recommendations yet.</p>
-                        {isAdmin && (
-                          <Button size="sm" variant="outline" onClick={() => { setForm(EMPTY_FORM); setAddOpen(true); }}>
-                            <Plus className="h-3.5 w-3.5 mr-1.5" />
-                            Recommend Promotion
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          illustration={<EmptyTargetIllustration className="size-32" />}
+          title="No promotion recommendations yet."
+          {...(isAdmin ? { action: { label: "Recommend Promotion", onClick: () => { setForm(EMPTY_FORM); setAddOpen(true); } } } : {})}
+        />
+      ) : (
+        <Table className="min-w-[780px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Employee</TableHead>
+              <TableHead>Ladder</TableHead>
+              <TableHead>Promotion</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Reason</TableHead>
+              <TableHead>Date</TableHead>
+              {isAdmin && <TableHead className="w-28 text-right">Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((rec) => {
+              const badge = STATUS_BADGE[rec.status];
+              return (
+                <TableRow key={rec.id}>
+                  <TableCell className="text-sm font-medium">{rec.employeeName ?? rec.employeeUserId}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {rec.ladderTitle ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-xs tabular-nums">
+                      {rec.fromLevel ? (
+                        <><Badge variant="outline">L{rec.fromLevel}</Badge>
+                        <span className="text-muted-foreground" aria-hidden="true">→</span></>
+                      ) : null}
+                      <Badge variant="default">L{rec.toLevel}</Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill tone={badge.tone} dot>{badge.label}</StatusPill>
+                  </TableCell>
+                  <TableCell className="max-w-52 text-xs text-muted-foreground">
+                    <p className="line-clamp-2" title={rec.reason ?? undefined}>{rec.reason ?? "—"}</p>
+                  </TableCell>
+                  <TableCell className="text-xs tabular-nums text-muted-foreground">
+                    {rec.createdAt ? format(new Date(rec.createdAt), "dd MMM yyyy") : "—"}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell className="text-right">
+                      {rec.status === "PENDING" && (
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="text-success-strong"
+                            title="Approve"
+                            aria-label="Approve"
+                            onClick={() => { setReviewTarget(rec); setReviewAction("APPROVED"); setReviewNotes(""); }}
+                          >
+                            <CheckCircle2 className="size-4" aria-hidden="true" />
                           </Button>
-                        )}
-                      </div>
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            title="Reject"
+                            aria-label="Reject"
+                            onClick={() => { setReviewTarget(rec); setReviewAction("REJECTED"); setReviewNotes(""); }}
+                          >
+                            <XCircle className="size-4" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((rec) => {
-                    const badge = STATUS_BADGE[rec.status];
-                    return (
-                      <TableRow key={rec.id}>
-                        <TableCell className="text-sm font-medium">{rec.employeeName ?? rec.employeeUserId}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {rec.ladderTitle ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-xs">
-                            {rec.fromLevel ? (
-                              <><Badge variant="outline" className="text-[10px]">L{rec.fromLevel}</Badge>
-                              <span className="text-muted-foreground">→</span></>
-                            ) : null}
-                            <Badge variant="secondary" className="text-[10px]">L{rec.toLevel}</Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={badge.variant} className="text-[11px]">{badge.label}</Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[200px]">
-                          <p className="line-clamp-2">{rec.reason ?? "—"}</p>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {rec.createdAt ? format(new Date(rec.createdAt), "dd MMM yyyy") : "—"}
-                        </TableCell>
-                        {isAdmin && (
-                          <TableCell className="text-right">
-                            {rec.status === "PENDING" && (
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 text-green-600"
-                                  title="Approve"
-                                  onClick={() => { setReviewTarget(rec); setReviewAction("APPROVED"); setReviewNotes(""); }}
-                                >
-                                  <CheckCircle2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 text-destructive"
-                                  title="Reject"
-                                  onClick={() => { setReviewTarget(rec); setReviewAction("REJECTED"); setReviewNotes(""); }}
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
-      </div>
+                  )}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
 
       <HrSheet
         open={addOpen}

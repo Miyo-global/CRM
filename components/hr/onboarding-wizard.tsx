@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Check, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { useHrDepartments, useOnboardEmployee, useCheckEmailExists } from "@/lib/api/hooks/hr";
 import { useRolesList } from "@/lib/api/hooks/roles";
 import { useRouter } from "next/navigation";
@@ -180,39 +180,50 @@ export function OnboardingWizard() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col h-full">
-      <div className="flex items-center gap-1 mb-6 shrink-0">
-        {STEPS.map((step, i) => {
-          const isCompleted = step.id < currentStep;
-          const isActive = step.id === currentStep;
-          return (
-            <div key={step.id} className="flex items-center gap-1 flex-1">
-              <button
-                type="button"
-                onClick={() => step.id < currentStep && setCurrentStep(step.id)}
-                disabled={step.id > currentStep}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-full",
-                  isCompleted && "bg-primary/10 text-primary cursor-pointer hover:bg-primary/15",
-                  isActive && "bg-primary text-primary-foreground",
-                  !isCompleted && !isActive && "bg-muted text-muted-foreground cursor-not-allowed"
+    <div className="mx-auto grid w-full max-w-4xl gap-6 lg:grid-cols-[200px_1fr]">
+      <nav aria-label="Onboarding steps" className="lg:sticky lg:top-20 lg:self-start">
+        <ol className="flex items-center gap-1 overflow-x-auto lg:flex-col lg:items-stretch lg:gap-0">
+          {STEPS.map((step, i) => {
+            const isCompleted = step.id < currentStep;
+            const isActive = step.id === currentStep;
+            return (
+              <li key={step.id} className="flex flex-1 items-center gap-1 lg:flex-col lg:items-stretch lg:gap-0">
+                <button
+                  type="button"
+                  onClick={() => step.id < currentStep && setCurrentStep(step.id)}
+                  disabled={step.id > currentStep}
+                  aria-current={isActive ? "step" : undefined}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:focus-ring",
+                    isCompleted && "cursor-pointer text-foreground hover:bg-accent",
+                    isActive && "font-semibold text-foreground",
+                    !isCompleted && !isActive && "cursor-not-allowed text-muted-foreground"
+                  )}
+                >
+                  <span className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold tabular-nums",
+                    isCompleted && "border-gold-400 bg-gold-400 text-ink-950",
+                    isActive && "border-gold-400 bg-background text-foreground",
+                    !isCompleted && !isActive && "border-ink-200 bg-background text-muted-foreground"
+                  )}>
+                    {isCompleted ? <Check className="size-4" aria-hidden="true" /> : step.id}
+                  </span>
+                  <span className={cn("truncate", !isActive && "hidden sm:inline")}>{step.label}</span>
+                </button>
+                {i < STEPS.length - 1 && (
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      "h-px w-3 shrink-0 lg:ml-5.5 lg:h-4 lg:w-px",
+                      isCompleted ? "bg-gold-400" : "bg-border"
+                    )}
+                  />
                 )}
-              >
-                <span className={cn(
-                  "flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold shrink-0",
-                  isCompleted && "bg-primary text-primary-foreground",
-                  isActive && "bg-primary-foreground text-primary",
-                  !isCompleted && !isActive && "bg-muted-foreground/20 text-muted-foreground"
-                )}>
-                  {isCompleted ? <Check className="h-3 w-3" /> : step.id}
-                </span>
-                <span className="hidden sm:inline truncate">{step.label}</span>
-              </button>
-              {i < STEPS.length - 1 && <div className="h-px w-2 bg-border shrink-0" />}
-            </div>
-          );
-        })}
-      </div>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
 
       <Form {...form}>
         <form
@@ -222,9 +233,9 @@ export function OnboardingWizard() {
               e.preventDefault();
             }
           }}
-          className="flex flex-col flex-1 min-h-0"
+          className="flex w-full min-w-0 max-w-2xl flex-col rounded-lg border bg-card shadow-xs"
         >
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="p-5 sm:p-6">
             {currentStep === 1 && <StepPersonalInfo form={form} />}
             {currentStep === 2 && (
               <StepEmployment
@@ -247,44 +258,39 @@ export function OnboardingWizard() {
             )}
           </div>
 
-          <div className="shrink-0 flex items-center justify-between pt-4 mt-4 border-t">
+          <div className="sticky bottom-0 flex items-center justify-between gap-2 rounded-b-lg border-t bg-background/90 px-5 py-3 backdrop-blur sm:px-6">
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="ghost"
               onClick={handlePrev}
               disabled={currentStep === 1 || onboardEmployee.isPending}
-              className="gap-1"
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <ChevronLeft className="size-4" aria-hidden="true" />
               Back
             </Button>
 
             {currentStep < STEPS.length ? (
               <Button
                 type="button"
-                size="sm"
                 onClick={handleNext}
-                disabled={checkEmailExists.isPending}
-                className="gap-1"
+                loading={checkEmailExists.isPending}
               >
                 {checkEmailExists.isPending ? (
-                  <><Loader2 className="h-3.5 w-3.5 animate-spin" />Checking...</>
+                  <>Checking...</>
                 ) : (
-                  <>Next<ChevronRight className="h-3.5 w-3.5" /></>
+                  <>Next<ChevronRight className="size-4" aria-hidden="true" /></>
                 )}
               </Button>
             ) : (
               <Button
                 type="submit"
-                size="sm"
-                disabled={onboardEmployee.isPending || !reviewConfirmed}
-                className="gap-1 min-w-[140px]"
+                disabled={!reviewConfirmed}
+                loading={onboardEmployee.isPending}
               >
                 {onboardEmployee.isPending ? (
-                  <><Loader2 className="h-3.5 w-3.5 animate-spin" />Onboarding...</>
+                  <>Onboarding...</>
                 ) : (
-                  <><Check className="h-3.5 w-3.5" />Confirm & onboard</>
+                  <><Check className="size-4" aria-hidden="true" />Confirm & onboard</>
                 )}
               </Button>
             )}

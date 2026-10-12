@@ -4,23 +4,24 @@ import { LOGO_PNG_PATH, LOGO_SVG_PATH, LOGO_WORDMARK_PATH } from "@/lib/constant
 import { Document, Image, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { PayslipViewModel } from "@/lib/hr/payslip-view-model";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function fmtPdfInr(amount: number): string {
   const s = amount.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return `Rs.${s}`;
 }
 
-const INK = "#1a1a1a";
-const GOLD = "#bd882c";
-const LIGHT_HEADER = "#f6f1e4";
-const BORDER = "#e6dfd2";
-const DED_RED = "#b91c1c";
-const PAID_GREEN = "#15803d";
-const MUTED = "#555555";
-const FOOTER_GRAY = "#888888";
+const INK = BRAND.ink;
+const GOLD = BRAND.gold;
+const LIGHT_HEADER = BRAND.goldSoft;
+const BORDER = BRAND.border;
+const DED_RED = BRAND.danger;
+const PAID_GREEN = BRAND.success;
+const MUTED = BRAND.inkMuted;
+const FOOTER_GRAY = BRAND.inkSubtle;
 
 const styles = StyleSheet.create({
-  page: { padding: 28, fontSize: 10, color: "#111" },
+  page: { padding: 28, fontSize: 10, color: BRAND.ink },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -39,24 +40,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
   },
-  logoLetter: { fontSize: 20, fontWeight: 700, color: GOLD },
+  logoLetter: { fontSize: 20, fontWeight: 700, color: BRAND.goldDark },
   headerCenter: { flex: 1, alignItems: "center" },
   title: { fontSize: 11, fontWeight: 700, color: INK, textDecoration: "underline", textAlign: "center" },
   orgName: { fontSize: 10, color: MUTED, marginTop: 4, textAlign: "center" },
-  orgAddr: { fontSize: 9, color: "#666666", marginTop: 2, textAlign: "center" },
+  orgAddr: { fontSize: 9, color: BRAND.inkMuted, marginTop: 2, textAlign: "center" },
   paidWrap: { minWidth: 56, alignItems: "flex-end" },
   paidBadge: {
     backgroundColor: PAID_GREEN,
-    color: "#ffffff",
+    color: BRAND.white,
     fontSize: 8,
     fontWeight: 700,
     paddingVertical: 3,
     paddingHorizontal: 8,
     letterSpacing: 0.5,
   },
-  twoCol: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#dddddd" },
+  twoCol: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: BRAND.border },
   col: { flex: 1, paddingVertical: 12, paddingHorizontal: 14 },
-  colLeft: { borderRightWidth: 1, borderRightColor: "#dddddd" },
+  colLeft: { borderRightWidth: 1, borderRightColor: BRAND.border },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
   label: { fontSize: 10, color: MUTED, maxWidth: "42%" },
   value: { fontSize: 10, fontWeight: 600, maxWidth: "55%", textAlign: "right" },
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#efe6d6",
+    borderBottomColor: BRAND.border,
     marginHorizontal: 14,
   },
   table: { marginHorizontal: 14, marginBottom: 12 },
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   thRight: { textAlign: "right" },
-  tr: { flexDirection: "row", borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: "#f0ebe3" },
+  tr: { flexDirection: "row", borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: BRAND.border },
   td: { flex: 1, fontSize: 10, paddingVertical: 5, paddingHorizontal: 8 },
   tdRight: { textAlign: "right" },
   tdDed: { color: DED_RED },
@@ -107,36 +108,36 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  netLabel: { color: "#ffffff", fontSize: 11, fontWeight: 700 },
+  netLabel: { color: BRAND.white, fontSize: 11, fontWeight: 700 },
   netAmt: { color: GOLD, fontSize: 16, fontWeight: 800 },
   netWords: {
     backgroundColor: LIGHT_HEADER,
     paddingVertical: 7,
     paddingHorizontal: 14,
     fontSize: 10,
-    color: "#333333",
+    color: BRAND.ink,
     borderBottomWidth: 2,
     borderBottomColor: INK,
   },
-  bottomRow: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#dddddd" },
+  bottomRow: { flexDirection: "row", borderTopWidth: 1, borderTopColor: BRAND.border },
   bottomCol: { flex: 1, paddingVertical: 12, paddingHorizontal: 14 },
-  bottomColLeft: { borderRightWidth: 1, borderRightColor: "#dddddd" },
+  bottomColLeft: { borderRightWidth: 1, borderRightColor: BRAND.border },
   h3: {
     fontSize: 9,
     fontWeight: 700,
     color: INK,
     letterSpacing: 0.6,
     borderBottomWidth: 1,
-    borderBottomColor: "#efe6d6",
+    borderBottomColor: BRAND.border,
     paddingBottom: 5,
     marginBottom: 8,
   },
   authNote: { fontSize: 10, color: MUTED, marginBottom: 8 },
-  signLine: { borderTopWidth: 1, borderTopColor: "#aaaaaa", marginTop: 20, paddingTop: 6, textAlign: "center", fontSize: 9, color: "#666666" },
+  signLine: { borderTopWidth: 1, borderTopColor: BRAND.inkSubtle, marginTop: 20, paddingTop: 6, textAlign: "center", fontSize: 9, color: BRAND.inkMuted },
   footer: {
-    backgroundColor: "#f9f9f9",
+    backgroundColor: BRAND.sunken,
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopColor: BRAND.border,
     paddingVertical: 8,
     paddingHorizontal: 14,
     fontSize: 9,
@@ -268,8 +269,8 @@ function PayslipPdfPage({ vm, logoDataUri }: { vm: PayslipViewModel; logoDataUri
         <Text style={styles.netAmt}>{fmtPdfInr(vm.netSalary)}</Text>
       </View>
       <View style={styles.netWords}>
-        <Text style={{ fontSize: 10, color: "#444444" }}>
-          In Words: <Text style={{ fontWeight: 700, color: "#111111" }}>{vm.netInWords}</Text>
+        <Text style={{ fontSize: 10, color: BRAND.inkMuted }}>
+          In Words: <Text style={{ fontWeight: 700, color: BRAND.ink }}>{vm.netInWords}</Text>
         </Text>
       </View>
 

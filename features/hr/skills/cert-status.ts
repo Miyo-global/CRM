@@ -1,3 +1,5 @@
+import { toneDot, toneSoft } from "@/lib/design/tones";
+
 export type CertStatus = "expired" | "expiring" | "valid" | "none";
 
 const EXPIRING_SOON_DAYS = 30;
@@ -39,26 +41,26 @@ export function getCertStatus(
 export function certBadgeClass(status: CertStatus): string {
   switch (status) {
     case "expired":
-      return "bg-red-500/10 text-red-600 dark:text-red-400 border-transparent";
+      return `${toneSoft.danger} border-transparent`;
     case "expiring":
-      return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-transparent";
+      return `${toneSoft.warning} border-transparent`;
     case "valid":
-      return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-transparent";
+      return `${toneSoft.success} border-transparent`;
     default:
-      return "bg-muted text-muted-foreground border-transparent";
+      return `${toneSoft.neutral} border-transparent`;
   }
 }
 
 export function certDotClass(status: CertStatus): string {
   switch (status) {
     case "expired":
-      return "bg-red-500";
+      return toneDot.danger;
     case "expiring":
-      return "bg-amber-500";
+      return toneDot.warning;
     case "valid":
-      return "bg-emerald-500";
+      return toneDot.success;
     default:
-      return "bg-muted-foreground/40";
+      return toneDot.neutral;
   }
 }
 

@@ -1,22 +1,12 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageWrapper } from "@/components/ui/page-wrapper";
+import { PageHeaderSkeleton, ChartGridSkeleton } from "@/components/ui/skeletons";
 
-export default function AnalyticsLoading() {
+export default function Loading() {
   return (
-    <PageWrapper title="Analytics">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-5 w-40" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[280px] w-full rounded-md" />
-            </CardContent>
-          </Card>
-        ))}
+    <>
+      <PageHeaderSkeleton />
+      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10">
+        <ChartGridSkeleton />
       </div>
-    </PageWrapper>
+    </>
   );
 }

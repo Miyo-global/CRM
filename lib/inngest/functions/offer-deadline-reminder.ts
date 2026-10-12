@@ -4,6 +4,7 @@ import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export const offerDeadlineReminder = inngest.createFunction(
   { id: "offer-deadline-reminder", name: "Offer Deadline Reminder (24h)", triggers: { event: "hr/offer.deadline.reminder" } },
@@ -35,31 +36,31 @@ export const offerDeadlineReminder = inngest.createFunction(
           ${documentIds
             .map(
               (id) =>
-                `<li><a href="${appUrl}/api/hr/recruitment/candidates/${candidateId}/documents/${id}/view" style="color:#bd882c">View Document</a></li>`
+                `<li><a href="${appUrl}/api/hr/recruitment/candidates/${candidateId}/documents/${id}/view" style="color:${BRAND.goldDark}">View Document</a></li>`
             )
             .join("\n")}
         </ul>
-        ${acceptanceLink ? `<div style="text-align:center;margin:24px 0"><a href="${acceptanceLink}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a></div>` : ""}
+        ${acceptanceLink ? `<div style="text-align:center;margin:24px 0"><a href="${acceptanceLink}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a></div>` : ""}
       `
       : acceptanceLink
       ? `
         <p style="margin:12px 0">Please review and accept your offer before the deadline:</p>
         <div style="text-align:center;margin:24px 0">
-          <a href="${acceptanceLink}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a>
+          <a href="${acceptanceLink}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a>
         </div>
-        <p style="font-size:12px;color:#6b7280;text-align:center">Button not working? Copy this link: <a href="${acceptanceLink}" style="color:#bd882c">${acceptanceLink}</a></p>
+        <p style="font-size:12px;color:${BRAND.inkMuted};text-align:center">Button not working? Copy this link: <a href="${acceptanceLink}" style="color:${BRAND.goldDark}">${acceptanceLink}</a></p>
       `
       : `<p style="margin:12px 0">Please contact your HR representative to complete your offer acceptance before the deadline.</p>`;
 
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-        <h2 style="color:#0f2b7f">Offer Acceptance Reminder</h2>
+        <h2 style="color:${BRAND.ink}">Offer Acceptance Reminder</h2>
         <p>Dear ${candidateName},</p>
         <p>This is a friendly reminder that your offer acceptance deadline is in <strong>24 hours</strong>.</p>
         <p><strong>Deadline:</strong> ${deadlineStr}</p>
         ${actionBlock}
-        <p>If you have any questions, please reach out to your HR contact at <a href="mailto:${HR_NOTIFICATION_EMAIL}" style="color:#bd882c">${HR_NOTIFICATION_EMAIL}</a>.</p>
-        <p style="color:#666;font-size:12px;margin-top:32px">
+        <p>If you have any questions, please reach out to your HR contact at <a href="mailto:${HR_NOTIFICATION_EMAIL}" style="color:${BRAND.goldDark}">${HR_NOTIFICATION_EMAIL}</a>.</p>
+        <p style="color:${BRAND.inkMuted};font-size:12px;margin-top:32px">
           This is an automated reminder from Miyo Global HR system.
         </p>
       </div>

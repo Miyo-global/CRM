@@ -5,14 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -107,37 +107,36 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         {trigger ?? (
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
+          <Button>
+            <Plus className="size-4" aria-hidden="true" />
             New Project
           </Button>
         )}
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-[500px] p-0 flex flex-col overflow-hidden">
-        <SheetHeader className="bg-muted/40 p-6 pb-4 pr-12 border-b text-left">
-          <SheetTitle className="text-xl font-semibold tracking-tight">Create Project</SheetTitle>
-          <SheetDescription className="text-muted-foreground">
+      </DialogTrigger>
+      <DialogContent size="md" className="max-h-[90dvh] grid-rows-[auto_minmax(0,1fr)]">
+        <DialogHeader className="text-left">
+          <DialogTitle>Create Project</DialogTitle>
+          <DialogDescription>
             Launch a new initiative and assemble your team.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-            <div className="flex-1 overflow-y-auto space-y-6 px-6">
-            <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
+            <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-1">
+            <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="sm:col-span-2">
                             <FormLabel className="text-sm font-medium">Project Name</FormLabel>
                             <FormControl>
                                 <Input
                                     placeholder="e.g. Website Redesign"
-                                    className="h-10"
                                     {...field}
                                     onChange={handleNameChange}
                                 />
@@ -164,12 +163,12 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="sm:col-span-2">
                             <FormLabel className="text-sm font-medium">Description <span className="text-muted-foreground font-normal ml-1">(Optional)</span></FormLabel>
                             <FormControl>
                                 <Textarea
                                     placeholder="Briefly describe the project goals..."
-                                    className="resize-none min-h-[100px]"
+                                    className="min-h-24 resize-none"
                                     {...field}
                                 />
                             </FormControl>
@@ -182,12 +181,12 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                     control={form.control}
                     name="memberIds"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="sm:col-span-2">
                             <FormLabel className="text-sm font-medium">Team Customization</FormLabel>
                             <FormControl>
                                 <Popover onOpenChange={(open) => { if (!open) setMemberSearch(""); }}>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-between h-10 px-3 font-normal text-muted-foreground hover:text-foreground">
+                                        <Button variant="outline" className="w-full justify-between px-3 font-normal text-muted-foreground hover:text-foreground">
                                             {field.value?.length && field.value.length > 0
                                                 ? <span className="text-foreground font-medium">{field.value.length} members added</span>
                                                 : <span>Assign team members...</span>}
@@ -199,7 +198,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                         align="start"
                                         onOpenAutoFocus={(e) => e.preventDefault()}
                                     >
-                                        <div className="p-3 border-b bg-muted/40 space-y-2 shrink-0">
+                                        <div className="shrink-0 space-y-2 border-b border-border bg-surface-sunken/60 p-3">
                                             <h4 className="font-medium text-sm">Select Team Members</h4>
                                             <div className="relative">
                                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -209,7 +208,7 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                                     onChange={(e) => setMemberSearch(e.target.value)}
                                                     onKeyDown={(e) => e.stopPropagation()}
                                                     autoFocus
-                                                    className="pl-8 h-9 bg-background"
+                                                    className="bg-background pl-8"
                                                 />
                                             </div>
                                         </div>
@@ -238,24 +237,24 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                                                          }}
                                                          className={cn(
                                                              "flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors",
-                                                             isSelected ? "bg-primary/10" : "hover:bg-muted"
+                                                             isSelected ? "bg-brand-soft" : "hover:bg-muted"
                                                          )}
                                                     >
                                                         <Checkbox
                                                             checked={isSelected}
-                                                            className="pointer-events-none data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                                            className="pointer-events-none"
                                                         />
                                                         <div className="flex-1 flex items-center justify-between">
                                                             <div className="flex items-center space-x-3">
-                                                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                                                                <div className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-foreground">
                                                                     {emp.name?.charAt(0) || <User className="h-4 w-4" />}
                                                                 </div>
                                                                 <div className="flex flex-col">
-                                                                    <span className={cn("text-sm font-medium", isSelected && "text-primary")}>{emp.name}</span>
+                                                                    <span className={cn("text-sm font-medium", isSelected && "text-brand-text")}>{emp.name}</span>
                                                                     <span className="text-xs text-muted-foreground">{emp.email}</span>
                                                                 </div>
                                                             </div>
-                                                            {isSelected && <Check className="h-4 w-4 text-primary animate-in fade-in zoom-in" />}
+                                                            {isSelected && <Check className="size-4 text-brand-text" aria-hidden="true" />}
                                                         </div>
                                                     </div>
                                                 );
@@ -278,17 +277,17 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                     )}
                 />
 
-                <div className="pt-2">
+                <div className="pt-2 sm:col-span-2">
                     <FormLabel className="text-sm font-medium text-foreground mb-3 block">Project Modules</FormLabel>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                         <FormField
                             control={form.control}
                             name="modules.sprints"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Sprints</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Agile cycles</div>
+                                        <div className="text-2xs text-muted-foreground">Agile cycles</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -303,10 +302,10 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                             control={form.control}
                             name="modules.epics"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Epics</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Large initiatives</div>
+                                        <div className="text-2xs text-muted-foreground">Large initiatives</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -321,10 +320,10 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                             control={form.control}
                             name="modules.timeTracking"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Time Tracking</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Log work hours</div>
+                                        <div className="text-2xs text-muted-foreground">Log work hours</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -339,10 +338,10 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
                             control={form.control}
                             name="modules.wiki"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-card hover:bg-muted/50 transition-colors">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50">
                                     <div className="space-y-0.5">
                                         <FormLabel className="text-sm font-medium cursor-pointer">Wiki</FormLabel>
-                                        <div className="text-[10px] text-muted-foreground">Docs & Pages</div>
+                                        <div className="text-2xs text-muted-foreground">Docs & Pages</div>
                                     </div>
                                     <FormControl>
                                         <Checkbox
@@ -358,15 +357,18 @@ export function NewProjectDialog({ trigger, open: controlledOpen, onOpenChange }
             </div>
             </div>
 
-            <SheetFooter className="pt-4 mt-auto shrink-0">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={form.formState.isSubmitting} className="flex-1">
-                {form.formState.isSubmitting ? "Creating..." : "Create Project"}
+            <DialogFooter className="mt-6 shrink-0">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button
+                type="submit"
+                loading={form.formState.isSubmitting || createProjectMutation.isPending}
+              >
+                {form.formState.isSubmitting || createProjectMutation.isPending ? "Creating..." : "Create Project"}
               </Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

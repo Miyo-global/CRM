@@ -1,11 +1,12 @@
 "use client";
 
 import { use, useMemo, useCallback, useState, memo } from "react";
-import { EmptyTasksIllustration } from "@/components/illustrations";
+import { EmptySearchIllustration, EmptyTasksIllustration } from "@/components/illustrations";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useProject, useSprints } from "@/lib/hooks/trpc-hooks";
 import { useBulkUpdateTickets } from "@/lib/api/hooks/projects";
-import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { notFound, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CreateTicketDialog } from "@/components/projects/create-ticket-dialog";
 import { TicketFilterBar } from "@/components/projects/shared/ticket-filter-bar";
 import { TicketTypeIcon } from "@/components/projects/shared/ticket-type-icon";
@@ -71,11 +72,21 @@ const TicketRow = memo(function TicketRow({
     () => onToggleSelect(ticket.id),
     [onToggleSelect, ticket.id]
   );
+  const handleRowKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+      if (e.key === "Enter" && e.target === e.currentTarget) onSelect(ticket.id);
+    },
+    [onSelect, ticket.id]
+  );
+  const created = ticket.createdAt ? new Date(ticket.createdAt) : null;
 
   return (
     <TableRow
-      className={`cursor-pointer hover:bg-muted/50 ${isSelected ? "bg-primary/5" : ""}`}
+      className="cursor-pointer outline-none focus-visible:bg-accent/60"
+      data-state={isSelected ? "selected" : undefined}
+      tabIndex={0}
       onClick={handleRowClick}
+      onKeyDown={handleRowKeyDown}
     >
       <TableCell onClick={handleCheckboxCellClick}>
         <Checkbox
@@ -84,14 +95,14 @@ const TicketRow = memo(function TicketRow({
           aria-label={`Select ticket ${ticket.ticketNumber}`}
         />
       </TableCell>
-      <TableCell className="font-mono text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
+      <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+        <span className="flex items-center gap-1.5 whitespace-nowrap">
           <TicketTypeIcon type={ticket.type} />
           #{ticket.ticketNumber}
         </span>
       </TableCell>
-      <TableCell className="max-w-md">
-        <span className="text-sm font-medium line-clamp-1">{ticket.title}</span>
+      <TableCell className="min-w-48 max-w-md">
+        <span className="line-clamp-1 text-sm font-medium text-foreground">{ticket.title}</span>
       </TableCell>
       <TableCell>
         <StatusBadge status={ticket.status} />
@@ -101,15 +112,15 @@ const TicketRow = memo(function TicketRow({
       </TableCell>
       <TableCell>
         {ticket.assignee ? (
-          <div className="flex items-center gap-1.5">
-            <Avatar className="h-6 w-6">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Avatar className="size-6">
               <AvatarImage src={resolveImageUrl(ticket.assignee.image)} />
-              <AvatarFallback className="text-[8px]">
+              <AvatarFallback className="text-3xs">
                 {ticket.assignee.firstName?.[0]}
                 {ticket.assignee.lastName?.[0]}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs truncate">
+            <span className="truncate text-xs">
               {ticket.assignee.firstName}
             </span>
           </div>
@@ -117,10 +128,11 @@ const TicketRow = memo(function TicketRow({
           null
         )}
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground">
-        {ticket.createdAt
-          ? format(new Date(ticket.createdAt), "MMM d")
-          : ""}
+      <TableCell
+        className="whitespace-nowrap text-xs tabular-nums text-muted-foreground"
+        title={created ? format(created, "PPP") : undefined}
+      >
+        {created ? format(created, "MMM d") : ""}
       </TableCell>
     </TableRow>
   );
@@ -133,11 +145,12 @@ interface PageProps {
 export default function BacklogPage({ params }: PageProps) {
   const { projectId: projectIdStr } = use(params);
   const projectId = parseInt(projectIdStr);
-  const { data, isLoading } = useProject(projectId);
+  const { data, isLoading, isError, error, refetch } = useProject(projectId);
   const { data: sprints } = useSprints(projectId);
   const bulkUpdate = useBulkUpdateTickets(projectId);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
@@ -151,6 +164,15 @@ export default function BacklogPage({ params }: PageProps) {
   const filterAssigneeId = searchParams.get("assigneeId") ?? "";
 
   const tickets = useMemo(() => data?.tickets || [], [data?.tickets]);
+  const hasFilters = !!(q || filterStatus || filterPriority || filterType || filterAssigneeId);
+
+  // Same params TicketFilterBar's "Clear" removes.
+  const clearFilters = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    ["q", "status", "priority", "type", "sprintId", "assigneeId", "page"].forEach((k) => params.delete(k));
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [router, pathname, searchParams]);
 
   const filteredTickets = useMemo(() => {
     let result = tickets;
@@ -241,11 +263,19 @@ export default function BacklogPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <PageWrapper title="Backlog" subtitle="All tickets">
-        <div className="space-y-3 p-4">
+        <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Backlog" subtitle="All tickets">
+        <QueryErrorState title="Couldn't load the backlog" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
   }
@@ -258,51 +288,22 @@ export default function BacklogPage({ params }: PageProps) {
       subtitle={`${tickets.length} ticket${tickets.length !== 1 ? "s" : ""}`}
       actions={<CreateTicketDialog projectId={projectId} />}
       filters={<TicketFilterBar members={members} showSprintFilter={false} />}
+      contentClassName={selectedIds.size > 0 ? "pb-24" : undefined}
     >
-      {selectedIds.size > 0 && (
-        <div className="mx-4 mb-3 flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5">
-          <span className="text-sm font-medium text-primary shrink-0">{selectedIds.size} selected</span>
-          <div className="flex items-center gap-2 ml-auto flex-wrap">
-            <Select onValueChange={(v) => handleBulkUpdate({ status: v })}>
-              <SelectTrigger className="h-7 text-xs w-36"><SelectValue placeholder="Set Status" /></SelectTrigger>
-              <SelectContent>
-                {["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"].map((s) => (
-                  <SelectItem key={s} value={s} className="text-xs">{s.replace("_", " ")}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select onValueChange={(v) => handleBulkUpdate({ assigneeId: v })}>
-              <SelectTrigger className="h-7 text-xs w-36"><SelectValue placeholder="Assign to" /></SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id} className="text-xs">
-                    {m.firstName ?? m.name ?? m.id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select onValueChange={(v) => handleBulkUpdate({ sprintId: v === "backlog" ? null : Number(v) })}>
-              <SelectTrigger className="h-7 text-xs w-40"><SelectValue placeholder="Move to Sprint" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="backlog" className="text-xs">Backlog (remove sprint)</SelectItem>
-                {(sprints ?? []).filter((s) => s.status !== "COMPLETED").map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)} className="text-xs">{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => setSelectedIds(new Set())}
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div className="border rounded-lg mx-4 mb-4">
+      {tickets.length === 0 ? (
+        <EmptyState
+          illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
+          title="No tickets yet"
+          description="Create your first ticket to start building the backlog."
+        />
+      ) : filteredTickets.length === 0 ? (
+        <EmptyState
+          illustration={<EmptySearchIllustration className="h-32 w-32 opacity-95" />}
+          title="No results for these filters"
+          description="Try a different search or clear the filters."
+          action={hasFilters ? { label: "Clear filters", onClick: clearFilters } : undefined}
+        />
+      ) : (
         <Table>
           <caption className="sr-only">Backlog tickets</caption>
           <TableHeader>
@@ -314,40 +315,75 @@ export default function BacklogPage({ params }: PageProps) {
                   aria-label="Select all tickets"
                 />
               </TableHead>
-              <TableHead className="w-[80px]" scope="col">ID</TableHead>
+              <TableHead className="w-24" scope="col">ID</TableHead>
               <TableHead scope="col">Title</TableHead>
-              <TableHead className="w-[120px]" scope="col">Status</TableHead>
-              <TableHead className="w-[100px]" scope="col">Priority</TableHead>
-              <TableHead className="w-[140px]" scope="col">Assignee</TableHead>
-              <TableHead className="w-[110px]" scope="col">Created</TableHead>
+              <TableHead className="w-32" scope="col">Status</TableHead>
+              <TableHead className="w-28" scope="col">Priority</TableHead>
+              <TableHead className="w-36" scope="col">Assignee</TableHead>
+              <TableHead className="w-28" scope="col">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTickets.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <EmptyState
-                    illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
-                    title="No tickets yet"
-                    description="Create your first ticket to start building the backlog."
-                    className="border-0 bg-transparent"
-                  />
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredTickets.map((ticket) => (
-                <TicketRow
-                  key={ticket.id}
-                  ticket={ticket}
-                  isSelected={selectedIds.has(ticket.id)}
-                  onSelect={handleTicketSelect}
-                  onToggleSelect={toggleSelect}
-                />
-              ))
-            )}
+            {filteredTickets.map((ticket) => (
+              <TicketRow
+                key={ticket.id}
+                ticket={ticket}
+                isSelected={selectedIds.has(ticket.id)}
+                onSelect={handleTicketSelect}
+                onToggleSelect={toggleSelect}
+              />
+            ))}
           </TableBody>
         </Table>
-      </div>
+      )}
+
+      {selectedIds.size > 0 && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-sticky flex justify-center px-4">
+          <div
+            role="region"
+            aria-label="Bulk actions"
+            className="pointer-events-auto flex max-w-full flex-wrap items-center gap-2 rounded-3xl bg-secondary py-1.5 pr-1.5 pl-4 text-secondary-foreground shadow-lg sm:min-h-11 sm:rounded-full"
+          >
+            <span className="shrink-0 text-sm font-medium tabular-nums">{selectedIds.size} selected</span>
+            <Select disabled={bulkUpdate.isPending} onValueChange={(v) => handleBulkUpdate({ status: v })}>
+              <SelectTrigger className="h-8 w-36 bg-background text-xs text-foreground"><SelectValue placeholder="Set Status" /></SelectTrigger>
+              <SelectContent>
+                {["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"].map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">{s.replace("_", " ")}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select disabled={bulkUpdate.isPending} onValueChange={(v) => handleBulkUpdate({ assigneeId: v })}>
+              <SelectTrigger className="h-8 w-36 bg-background text-xs text-foreground"><SelectValue placeholder="Assign to" /></SelectTrigger>
+              <SelectContent>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className="text-xs">
+                    {m.firstName ?? m.name ?? m.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select disabled={bulkUpdate.isPending} onValueChange={(v) => handleBulkUpdate({ sprintId: v === "backlog" ? null : Number(v) })}>
+              <SelectTrigger className="h-8 w-40 bg-background text-xs text-foreground"><SelectValue placeholder="Move to Sprint" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="backlog" className="text-xs">Backlog (remove sprint)</SelectItem>
+                {(sprints ?? []).filter((s) => s.status !== "COMPLETED").map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)} className="text-xs">{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-full text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
+              onClick={() => setSelectedIds(new Set())}
+              aria-label="Clear selection"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <TicketDetailsDialog
         ticketId={selectedTicketId}

@@ -10,17 +10,19 @@ import {
   Zap,
   Package,
 } from "lucide-react";
+import { toneDot, toneText } from "@/lib/design/tones";
 
+// Categories are free categorical → TAG_TONE_CYCLE order (info, teal, plum, brand, warning, success).
 export const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; label: string; bg: string; text: string }> = {
-  Travel:            { icon: Plane,           label: "Travel",    bg: "bg-blue-50 dark:bg-blue-900/20",     text: "text-blue-600 dark:text-blue-400" },
-  Meals:             { icon: UtensilsCrossed, label: "Meals",     bg: "bg-orange-50 dark:bg-orange-900/20", text: "text-orange-600 dark:text-orange-400" },
-  Transport:         { icon: Car,             label: "Transport", bg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-600 dark:text-purple-400" },
-  Software:          { icon: Monitor,         label: "Software",  bg: "bg-teal-50 dark:bg-teal-900/20",     text: "text-teal-600 dark:text-teal-400" },
-  "Office Supplies": { icon: Armchair,        label: "Office",    bg: "bg-gray-100 dark:bg-gray-800/30",    text: "text-gray-600 dark:text-gray-400" },
-  Equipment:         { icon: Package,         label: "Equipment", bg: "bg-indigo-50 dark:bg-indigo-900/20", text: "text-indigo-600 dark:text-indigo-400" },
-  Training:          { icon: BookOpen,        label: "Training",  bg: "bg-cyan-50 dark:bg-cyan-900/20",     text: "text-cyan-600 dark:text-cyan-400" },
-  Marketing:         { icon: Megaphone,       label: "Marketing", bg: "bg-pink-50 dark:bg-pink-900/20",     text: "text-pink-600 dark:text-pink-400" },
-  Utilities:         { icon: Zap,             label: "Utilities", bg: "bg-amber-50 dark:bg-amber-900/20",   text: "text-amber-600 dark:text-amber-400" },
+  Travel:            { icon: Plane,           label: "Travel",    bg: "bg-info-soft",    text: toneText.info },
+  Meals:             { icon: UtensilsCrossed, label: "Meals",     bg: "bg-teal-soft",    text: toneText.teal },
+  Transport:         { icon: Car,             label: "Transport", bg: "bg-plum-soft",    text: toneText.plum },
+  Software:          { icon: Monitor,         label: "Software",  bg: "bg-brand-soft",   text: toneText.brand },
+  "Office Supplies": { icon: Armchair,        label: "Office",    bg: "bg-warning-soft", text: toneText.warning },
+  Equipment:         { icon: Package,         label: "Equipment", bg: "bg-success-soft", text: toneText.success },
+  Training:          { icon: BookOpen,        label: "Training",  bg: "bg-info-soft",    text: toneText.info },
+  Marketing:         { icon: Megaphone,       label: "Marketing", bg: "bg-teal-soft",    text: toneText.teal },
+  Utilities:         { icon: Zap,             label: "Utilities", bg: "bg-plum-soft",    text: toneText.plum },
 };
 
 export const ADMIN_CATEGORY_LABELS: Record<string, string> = {
@@ -34,19 +36,20 @@ export const ADMIN_CATEGORY_LABELS: Record<string, string> = {
 export const DEFAULT_CATEGORY = {
   icon: Receipt,
   label: "Other",
-  bg: "bg-slate-100 dark:bg-slate-800/30",
-  text: "text-slate-600 dark:text-slate-400",
+  bg: "bg-neutral-soft",
+  text: toneText.neutral,
 };
 
 export function getCategoryConfig(category: string) {
   return CATEGORY_CONFIG[category] || DEFAULT_CATEGORY;
 }
 
+// Pill renders with a `border` class → keep the key, transparent (no pill borders).
 export const STATUS_STYLES: Record<string, { dot: string; bg: string; text: string; border: string }> = {
-  PENDING:  { dot: "bg-amber-500",   bg: "bg-amber-50 dark:bg-amber-900/20",    text: "text-amber-700 dark:text-amber-400",   border: "border-amber-200 dark:border-amber-800" },
-  APPROVED: { dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400", border: "border-emerald-200 dark:border-emerald-800" },
-  REJECTED: { dot: "bg-red-500",     bg: "bg-red-50 dark:bg-red-900/20",         text: "text-red-700 dark:text-red-400",         border: "border-red-200 dark:border-red-800" },
-  PAID:     { dot: "bg-slate-500",   bg: "bg-slate-100 dark:bg-slate-800/20",    text: "text-slate-600 dark:text-slate-400",     border: "border-slate-200 dark:border-slate-700" },
+  PENDING:  { dot: toneDot.warning, bg: "bg-warning-soft", text: toneText.warning, border: "border-transparent" },
+  APPROVED: { dot: toneDot.success, bg: "bg-success-soft", text: toneText.success, border: "border-transparent" },
+  REJECTED: { dot: toneDot.danger,  bg: "bg-danger-soft",  text: toneText.danger,  border: "border-transparent" },
+  PAID:     { dot: toneDot.success, bg: "bg-success-soft", text: toneText.success, border: "border-transparent" },
 };
 
 export const STATUS_LABELS: Record<string, string> = {

@@ -5,18 +5,21 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useSkillsMatrix } from "@/lib/api/hooks/hr";
-import { EmptyTeamIllustration } from "@/components/illustrations";
-import { Search, LayoutGrid, Star, Users, Award, Layers } from "lucide-react";
+import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
+import { Search, LayoutGrid, Star, Users, Award, Layers, Rows3 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -130,7 +133,7 @@ function weightedScore(skills: Record<string, number>): number {
 }
 
 export default function SkillsMatrixPage() {
-  const { data, isLoading } = useSkillsMatrix();
+  const { data, isLoading, isError, error, refetch } = useSkillsMatrix();
 
   const [search, setSearch] = useState("");
   const [skillFilter, setSkillFilter] = useState<string>("all");
@@ -278,109 +281,99 @@ export default function SkillsMatrixPage() {
     <PageWrapper
       title="Skills Matrix"
       subtitle="Cross-reference of employee skill proficiencies across the organisation"
+      stickyHeader
+      filters={
+        hasData ? (
+          <ListToolbar
+            className="w-full"
+            search={{ value: search, onChange: setSearch, placeholder: "Search employee or skill…" }}
+            filters={
+              <>
+                <SearchableSelect
+                  options={[
+                    { value: "all", label: "All skills" },
+                    ...allSkills.map((s) => ({ value: s, label: s })),
+                  ]}
+                  value={skillFilter}
+                  onValueChange={setSkillFilter}
+                  placeholder="All skills"
+                  searchPlaceholder="Search skill…"
+                  triggerClassName="h-9 w-40 text-sm"
+                  className="w-56"
+                />
+
+                <Select value={levelFilter} onValueChange={setLevelFilter}>
+                  <SelectTrigger className="h-9 w-40" aria-label="Level">
+                    <SelectValue placeholder="All levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All levels</SelectItem>
+                    {[1, 2, 3, 4, 5].map((lvl) => (
+                      <SelectItem key={lvl} value={String(lvl)}>
+                        {LEVEL_LABELS[lvl]} — {LEVEL_NAMES[lvl]}+
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {viewMode === "matrix" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-pressed={groupByCategory}
+                    className={cn(groupByCategory && "border-border-strong bg-accent")}
+                    onClick={() => setGroupByCategory((v) => !v)}
+                  >
+                    <Rows3 className="size-4" aria-hidden="true" />
+                    Group columns
+                  </Button>
+                )}
+              </>
+            }
+            view={
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <TabsList aria-label="View">
+                  <TabsTrigger value="matrix" className="gap-1.5">
+                    <LayoutGrid className="size-4" aria-hidden="true" />
+                    Matrix
+                  </TabsTrigger>
+                  <TabsTrigger value="expert" className="gap-1.5">
+                    <Star className="size-4" aria-hidden="true" />
+                    Expert View
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            }
+          />
+        ) : undefined
+      }
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
             filename={`skills-matrix-${new Date().toISOString().slice(0, 10)}.xlsx`}
             sheets={matrixExportSheets}
           />
-          <Button asChild size="sm" className="gap-2 bg-gold hover:bg-gold/90 text-white glow-gold">
+          <Button asChild size="sm">
             <Link href="/hr/employees/find-expert">
-              <Search className="h-3.5 w-3.5" />
+              <Search className="size-4" aria-hidden="true" />
               Find Expert
             </Link>
           </Button>
         </div>
       }
     >
-      {!hasData ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-2 text-muted-foreground">
-          <EmptyTeamIllustration className="h-40 w-40 opacity-95" />
-          <p>No skills data yet. Add skills to employee profiles to build the matrix.</p>
-        </div>
+      {isError ? (
+        <QueryErrorState title="Couldn't load the skills matrix" error={error} onRetry={() => refetch()} />
+      ) : !hasData ? (
+        <EmptyState
+          illustration={<EmptyTeamIllustration />}
+          title="No skills data yet"
+          description="No skills data yet. Add skills to employee profiles to build the matrix."
+        />
       ) : (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px] max-w-xs">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                className="pl-8 h-8 text-sm"
-                placeholder="Search employee or skill…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            <SearchableSelect
-              options={[
-                { value: "all", label: "All skills" },
-                ...allSkills.map((s) => ({ value: s, label: s })),
-              ]}
-              value={skillFilter}
-              onValueChange={setSkillFilter}
-              placeholder="All skills"
-              searchPlaceholder="Search skill…"
-              triggerClassName="h-8 text-sm w-[160px]"
-              className="w-[220px]"
-            />
-
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="h-8 text-sm w-[160px]">
-                <SelectValue placeholder="All levels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All levels</SelectItem>
-                {[1, 2, 3, 4, 5].map((lvl) => (
-                  <SelectItem key={lvl} value={String(lvl)}>
-                    {LEVEL_LABELS[lvl]} — {LEVEL_NAMES[lvl]}+
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex items-center border rounded-md overflow-hidden h-8">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 px-3 rounded-none text-xs gap-1.5 ${viewMode === "matrix" ? "bg-muted" : ""}`}
-                onClick={() => setViewMode("matrix")}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Matrix
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 px-3 rounded-none text-xs gap-1.5 border-l ${viewMode === "expert" ? "bg-muted" : ""}`}
-                onClick={() => setViewMode("expert")}
-              >
-                <Star className="h-3.5 w-3.5" />
-                Expert View
-              </Button>
-            </div>
-
-            {viewMode === "matrix" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn("h-8 px-3 text-xs gap-1.5", groupByCategory && "bg-muted border-foreground/30")}
-                onClick={() => setGroupByCategory((v) => !v)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="h-3.5 w-3.5"
-                >
-                  <path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75ZM1 7.75A.75.75 0 0 1 1.75 7h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 1 7.75ZM1 12.75a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5a.75.75 0 0 1-.75-.75Z" />
-                </svg>
-                Group columns
-              </Button>
-            )}
-          </div>
-
           {viewMode === "expert" && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <SearchableSelect
                 options={[
                   { value: "all", label: "Overall score (all skills)" },
@@ -390,8 +383,8 @@ export default function SkillsMatrixPage() {
                 onValueChange={setExpertSkill}
                 placeholder="Rank by skill"
                 searchPlaceholder="Search skill…"
-                triggerClassName="h-8 text-sm w-[200px]"
-                className="w-[240px]"
+                triggerClassName="h-9 w-52 text-sm"
+                className="w-60"
               />
               <span className="text-xs text-muted-foreground">
                 Ranked by {expertSkill === "all" ? "total proficiency score" : `"${expertSkill}" proficiency`}
@@ -401,15 +394,15 @@ export default function SkillsMatrixPage() {
 
           {viewMode === "matrix" ? (
             <>
-              <ScrollArea className="w-full">
+              <ScrollArea className="w-full rounded-lg border border-border bg-card">
                 <div className="min-w-max">
-                  <table className="text-xs border-collapse">
+                  <table className="border-collapse text-xs tabular-nums">
                     <thead>
                       {groupByCategory ? (
                         <>
                           <tr>
                             <th
-                              className="sticky left-0 z-10 bg-background border-b border-r px-3 py-2 text-left font-medium min-w-[180px]"
+                              className="sticky left-0 z-sticky min-w-44 border-b border-r bg-card px-3 py-2 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
                               rowSpan={2}
                             >
                               Employee
@@ -420,7 +413,7 @@ export default function SkillsMatrixPage() {
                                 <th
                                   key={cat}
                                   colSpan={catSkills.length}
-                                  className="border-b border-r px-2 py-1 text-center font-semibold text-[10px] uppercase tracking-wide text-muted-foreground bg-muted/40"
+                                  className="border-b border-r px-2 py-1 text-center font-semibold text-2xs uppercase tracking-wide text-muted-foreground bg-muted/40"
                                 >
                                   {cat}
                                 </th>
@@ -450,7 +443,7 @@ export default function SkillsMatrixPage() {
                         </>
                       ) : (
                         <tr>
-                          <th className="sticky left-0 z-10 bg-background border-b border-r px-3 py-2 text-left font-medium min-w-[180px]">
+                          <th className="sticky left-0 z-sticky min-w-44 border-b border-r bg-card px-3 py-2 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Employee
                           </th>
                           {filteredSkills.map((skill) => (
@@ -482,14 +475,14 @@ export default function SkillsMatrixPage() {
                             ? SKILL_CATEGORIES.flatMap((cat) => skillsByCategory.get(cat) ?? [])
                             : filteredSkills;
                           return (
-                            <tr key={emp.userId} className="hover:bg-muted/30">
-                              <td className="sticky left-0 z-10 bg-background border-b border-r px-3 py-2">
+                            <tr key={emp.userId} className="group/row">
+                              <td className="sticky left-0 z-sticky border-b border-r bg-card px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-6 w-6 shrink-0">
-                                    <AvatarImage src={emp.image ?? undefined} />
-                                    <AvatarFallback className="text-[9px]">{getInitials(emp.name)}</AvatarFallback>
+                                    <AvatarImage src={emp.image ?? undefined} alt="" />
+                                    <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{getInitials(emp.name)}</AvatarFallback>
                                   </Avatar>
-                                  <span className="font-medium truncate max-w-[120px]">{emp.name}</span>
+                                  <span className="max-w-32 truncate font-medium" title={emp.name ?? undefined}>{emp.name}</span>
                                 </div>
                               </td>
                               {orderedSkills.map((skill) => {
@@ -508,30 +501,34 @@ export default function SkillsMatrixPage() {
                                       .join(" · ")
                                   : undefined;
                                 return (
-                                  <td key={skill} className="border-b border-r px-1 py-1 text-center">
+                                  <td
+                                    key={skill}
+                                    className={cn(
+                                      "border-b border-r border-border p-0 text-center",
+                                      level ? (LEVEL_COLORS[level] ?? LEVEL_COLORS[1]) : "bg-muted",
+                                    )}
+                                  >
                                     {level ? (
-                                      <span className="relative inline-flex items-center justify-center" title={cellTitle}>
-                                        <span
-                                          className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${LEVEL_COLORS[level] ?? LEVEL_COLORS[1]}`}
-                                        >
+                                      <span className="relative flex h-8 min-w-10 items-center justify-center" title={cellTitle}>
+                                        <span className="text-2xs font-semibold">
                                           {LEVEL_LABELS[level] ?? `L${level}`}
                                         </span>
                                         {showDot && (
                                           <span
                                             className={cn(
-                                              "absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full ring-1 ring-background",
+                                              "absolute right-1 top-1 size-1.5 rounded-full ring-1 ring-background",
                                               certDotClass(certStatus),
                                             )}
                                           />
                                         )}
                                       </span>
                                     ) : (
-                                      null
+                                      <span className="sr-only">None</span>
                                     )}
                                   </td>
                                 );
                               })}
-                              <td className="border-b px-2 py-2 text-center font-semibold text-foreground/80">
+                              <td className="border-b px-2 py-2 text-center font-semibold text-foreground">
                                 {score}
                               </td>
                             </tr>
@@ -567,17 +564,23 @@ export default function SkillsMatrixPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[auto_1fr] gap-3 items-start px-1">
                 <Card className="w-full sm:w-auto">
-                  <CardContent className="p-3 grid grid-cols-1 gap-2">
+                  <CardContent className="grid grid-cols-1 gap-2 p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="inline-block w-7 shrink-0 rounded-sm bg-muted py-0.5 text-center text-2xs font-semibold text-muted-foreground">
+                        —
+                      </span>
+                      <span className="text-xs font-medium">No skill</span>
+                    </div>
                     {Object.entries(LEVEL_LABELS).map(([lvl, lbl]) => {
                       const n = Number(lvl);
                       return (
                         <div key={lvl} className="flex items-start gap-2">
-                          <span className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${LEVEL_COLORS[n]}`}>
+                          <span className={`inline-block w-7 shrink-0 rounded-sm py-0.5 text-center text-2xs font-semibold ${LEVEL_COLORS[n]}`}>
                             {lbl}
                           </span>
                           <div className="min-w-0">
                             <span className="text-xs font-medium">{LEVEL_NAMES[n]}</span>
-                            <p className="text-[10px] text-muted-foreground leading-snug">{LEVEL_DESCRIPTIONS[n]}</p>
+                            <p className="text-2xs text-muted-foreground leading-snug">{LEVEL_DESCRIPTIONS[n]}</p>
                           </div>
                         </div>
                       );
@@ -588,7 +591,7 @@ export default function SkillsMatrixPage() {
                   <p className="text-xs text-muted-foreground">
                     Score = Σ(L1×1 + L2×2 + L3×4 + L4×8 + L5×16) — weighted by proficiency
                   </p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <span className={cn("h-1.5 w-1.5 rounded-full", certDotClass("expired"))} />
                       Certification expired
@@ -606,22 +609,22 @@ export default function SkillsMatrixPage() {
                   <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="inline-flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-gold" />
+                        <Layers className="h-4 w-4 text-brand-text" />
                         Role Skill Gaps
                       </span>
                       <span className="text-xs font-normal text-muted-foreground">
                         Open roles vs. skills available across the team
                       </span>
                     </CardTitle>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground pt-1">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-emerald-500/30 bg-emerald-500/5 px-2 text-[10px] text-emerald-700 dark:text-emerald-400">
+                        <span className="inline-flex h-4 items-center rounded-full border border-success-strong/30 bg-success-soft px-2 text-2xs text-success-strong">
                           Skill
                         </span>
                         Covered in team
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-dashed border-amber-500/40 bg-amber-500/5 px-2 text-[10px] text-amber-700 dark:text-amber-400">
+                        <span className="inline-flex h-4 items-center rounded-full border border-dashed border-warning-strong/40 bg-warning-soft px-2 text-2xs text-warning-strong">
                           Skill
                         </span>
                         Missing from team
@@ -634,7 +637,7 @@ export default function SkillsMatrixPage() {
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex items-center gap-2">
                             <span className="font-medium text-sm truncate">{gap.title}</span>
-                            <Badge variant="outline" className="text-[9px] shrink-0">{gap.status}</Badge>
+                            <Badge variant="outline" className="text-3xs shrink-0">{gap.status}</Badge>
                           </div>
                           <Badge
                             variant={gap.missingCount === 0 ? "success" : "warning"}
@@ -650,22 +653,22 @@ export default function SkillsMatrixPage() {
                             <span
                               key={req.skill}
                               className={cn(
-                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]",
+                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs",
                                 req.covered
-                                  ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400"
-                                  : "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-400 border-dashed",
+                                  ? "border-success-strong/30 bg-success-soft text-success-strong"
+                                  : "border-warning-strong/40 bg-warning-soft text-warning-strong border-dashed",
                               )}
                               title={req.covered ? "Available in the team" : "Missing — no one in the team has this skill"}
                             >
                               <span
                                 className={cn(
                                   "h-1.5 w-1.5 rounded-full shrink-0",
-                                  req.covered ? "bg-emerald-500" : "bg-amber-500",
+                                  req.covered ? "bg-success-500" : "bg-warning-500",
                                 )}
                               />
                               <span>{req.skill}</span>
                               {!req.covered && (
-                                <span className="text-[9px] font-medium uppercase tracking-wide opacity-80">
+                                <span className="text-3xs font-medium uppercase tracking-wide opacity-80">
                                   missing
                                 </span>
                               )}
@@ -680,31 +683,27 @@ export default function SkillsMatrixPage() {
             </>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <StatCard label="Experts Found" value={expertStats.count} icon={Users} color="gold" index={0} />
-                <StatCard label="Skills Tracked" value={expertStats.skillsTracked} icon={Layers} color="gold" index={1} />
-                <StatCard
-                  label={expertStats.specific ? "Avg Skill Level" : "Top Skill"}
-                  value={expertStats.specific ? (expertStats.avgLevel || "") : (topSkills[0]?.[0] ?? "")}
-                  icon={Star}
-                  color="gold"
-                  index={2}
-                />
-                <StatCard
-                  label="Ranked By"
-                  value={expertSkill === "all" ? "Overall" : expertSkill}
-                  icon={Award}
-                  color="gold"
-                  index={3}
-                />
-              </div>
+              <StatsStrip
+                items={[
+                  { label: "Experts Found", value: expertStats.count, icon: Users },
+                  { label: "Skills Tracked", value: expertStats.skillsTracked, icon: Layers },
+                  {
+                    label: expertStats.specific ? "Avg Skill Level" : "Top Skill",
+                    value: expertStats.specific ? (expertStats.avgLevel || "") : (topSkills[0]?.[0] ?? ""),
+                    icon: Star,
+                  },
+                  { label: "Ranked By", value: expertSkill === "all" ? "Overall" : expertSkill, icon: Award },
+                ]}
+              />
 
               <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-6 lg:items-start">
                 <div className="min-w-0 space-y-2">
                   {expertRanking.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-8 text-center">
-                      No employees found for this skill.
-                    </p>
+                    <EmptyState
+                      compact
+                      illustration={<EmptySearchIllustration />}
+                      title="No employees found for this skill."
+                    />
                   ) : (
                     expertRanking.map((emp, index) => {
                       const isSpecificSkill = expertSkill !== "all";
@@ -717,15 +716,15 @@ export default function SkillsMatrixPage() {
                       return (
                         <div
                           key={emp.userId}
-                          className="flex flex-col gap-3 p-4 rounded-xl border bg-card hover:border-gold/30 transition-colors sm:flex-row sm:items-center"
+                          className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md sm:flex-row sm:items-center"
                         >
-                          <div className="flex items-center gap-3 min-w-0 sm:w-[230px] shrink-0">
-                            <span className="text-sm font-bold text-muted-foreground w-5 text-right shrink-0">
+                          <div className="flex min-w-0 shrink-0 items-center gap-3 sm:w-56">
+                            <span className="w-5 shrink-0 text-right font-display text-sm font-bold tabular-nums text-muted-foreground">
                               {index + 1}
                             </span>
-                            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-gold/10">
-                              <AvatarImage src={emp.image ?? undefined} />
-                              <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+                            <Avatar className={cn("size-10 shrink-0", index < 3 && "ring-2 ring-gold-400 ring-offset-2 ring-offset-card")}>
+                              <AvatarImage src={emp.image ?? undefined} alt="" />
+                              <AvatarFallback className="bg-brand-soft text-sm font-semibold text-brand-soft-foreground">
                                 {getInitials(emp.name)}
                               </AvatarFallback>
                             </Avatar>
@@ -749,8 +748,8 @@ export default function SkillsMatrixPage() {
                                     <Badge
                                       variant={isMatch ? "default" : "secondary"}
                                       className={cn(
-                                        "text-[11px] font-normal",
-                                        isMatch && "bg-gold hover:bg-gold/90 text-white border-gold",
+                                        "text-2xs font-normal",
+                                        isMatch && "bg-primary text-primary-foreground",
                                       )}
                                     >
                                       {showDot && (
@@ -763,7 +762,7 @@ export default function SkillsMatrixPage() {
                                     </Badge>
                                     <span
                                       className={cn(
-                                        "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold",
+                                        "inline-flex items-center rounded-sm px-1.5 py-0.5 text-2xs font-semibold",
                                         LEVEL_COLORS[lvl] ?? LEVEL_COLORS[1],
                                       )}
                                       title={LEVEL_NAMES[lvl]}
@@ -774,7 +773,7 @@ export default function SkillsMatrixPage() {
                                 );
                               })}
                               {extra > 0 && (
-                                <Badge variant="outline" className="text-[11px]">
+                                <Badge variant="outline" className="text-2xs">
                                   +{extra}
                                 </Badge>
                               )}
@@ -789,7 +788,7 @@ export default function SkillsMatrixPage() {
                                   ? `Score ${emp.score} · ${expertSkillCount} L4+ skill${expertSkillCount !== 1 ? "s" : ""}`
                                   : `Score ${emp.score}`}
                             </Badge>
-                            <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-gold hover:text-gold">
+                            <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-brand-text hover:text-brand-text">
                               <Link href={`/hr/employees/${emp.userId}`}>View Profile</Link>
                             </Button>
                           </div>
@@ -811,7 +810,7 @@ export default function SkillsMatrixPage() {
                             key={skill}
                             type="button"
                             onClick={() => setExpertSkill(skill)}
-                            className="flex w-full items-center justify-between text-sm hover:text-gold transition-colors"
+                            className="flex w-full items-center justify-between text-sm hover:text-brand-text transition-colors"
                           >
                             <span className="truncate">{skill}</span>
                             <Badge variant="secondary" className="text-xs tabular-nums shrink-0 ml-2">
@@ -834,7 +833,7 @@ export default function SkillsMatrixPage() {
                                 key={skill}
                                 type="button"
                                 onClick={() => setExpertSkill(skill)}
-                                className="text-xs px-2.5 py-1 rounded-full border bg-muted/50 hover:border-gold/40 hover:bg-gold/5 transition-colors"
+                                className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs transition-colors hover:border-border-strong hover:bg-brand-soft"
                               >
                                 {skill}
                               </button>
@@ -844,12 +843,12 @@ export default function SkillsMatrixPage() {
                       </Card>
                     )}
 
-                    <Card className="bg-gold/5 border-gold/20">
+                    <Card className="border-primary/40 bg-brand-soft">
                       <CardContent className="p-4 space-y-3">
                         <p className="text-sm text-muted-foreground leading-snug">
                           Need a deeper search across departments, locations and experience?
                         </p>
-                        <Button asChild className="w-full bg-gold hover:bg-gold/90 text-white">
+                        <Button asChild className="w-full">
                           <Link href="/hr/employees/find-expert">Open Find Expert</Link>
                         </Button>
                       </CardContent>

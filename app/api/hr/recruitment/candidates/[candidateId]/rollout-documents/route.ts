@@ -16,6 +16,7 @@ import { createSigningRequest } from "@/lib/esign/documenso";
 import { createAuditLog } from "@/lib/audit-log";
 import { inngest } from "@/lib/inngest/client";
 import type { NextRequest } from "next/server";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const rolloutSchema = z.object({
   templateIds: z.array(z.number().int().positive()).min(1, "Select at least one template"),
@@ -189,20 +190,20 @@ export async function POST(req: NextRequest, { params }: Params) {
       const documentLinks = generatedDocs
         .map(
           (doc) =>
-            `<li><a href="${appUrl}/api/hr/recruitment/candidates/${candidateIdNum}/documents/${doc.id}/view" style="color:#bd882c">${escapeHtml(doc.title)}</a></li>`
+            `<li><a href="${appUrl}/api/hr/recruitment/candidates/${candidateIdNum}/documents/${doc.id}/view" style="color:${BRAND.goldDark}">${escapeHtml(doc.title)}</a></li>`
         )
         .join("\n");
 
       const emailHtml = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#0f2b7f">Your Documents Are Ready</h2>
+          <h2 style="color:${BRAND.ink}">Your Documents Are Ready</h2>
           <p>Dear ${escapeHtml(candidateName)},</p>
           <p>The following document(s) have been prepared for you as part of your application process:</p>
           <ul style="margin:16px 0;padding-left:24px">
             ${documentLinks}
           </ul>
           <p>Please review and sign the documents at your earliest convenience.</p>
-          <p style="color:#666;font-size:12px;margin-top:32px">
+          <p style="color:${BRAND.inkMuted};font-size:12px;margin-top:32px">
             This is an automated message from Miyo Global HR system.
           </p>
         </div>

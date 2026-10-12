@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
+import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +19,16 @@ import { Megaphone, X, Pin, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { toneDot, toneText } from "@/lib/design/tones";
+
+const MAX_ROWS = 6;
 
 export function AnnouncementsWidget() {
   const { data: session } = useSession();
   const role = session?.user?.role;
   const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
 
-  const { data, isLoading, error } = useAnnouncements();
+  const { data, isLoading, error, refetch } = useAnnouncements();
   const createMutation = useCreateAnnouncement();
   const deleteMutation = useDeleteAnnouncement();
 
@@ -54,134 +59,125 @@ export function AnnouncementsWidget() {
   };
 
   return (
-    <Card className="h-full flex flex-col bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 shrink-0">
-        <div className="flex items-center gap-2">
-          <Megaphone className="h-4 w-4 text-amber-600 shrink-0" aria-hidden="true" />
-          <CardTitle className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-            Announcements
-          </CardTitle>
-        </div>
-        {isAdmin && (
+    <WidgetCard
+      title="Announcements"
+      icon={Megaphone}
+      tone="warning"
+      count={data?.length || undefined}
+      actions={
+        isAdmin && (
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40"
+            size="xs"
             onClick={() => setShowForm((v) => !v)}
             aria-label="Add announcement"
           >
-            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="ml-1 text-xs">Add</span>
+            <Plus aria-hidden="true" />
+            Add
           </Button>
-        )}
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden space-y-3">
-        {showForm && isAdmin && (
-          <div className="space-y-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-950/40 p-3">
-            <Textarea
-              placeholder="Write an announcement..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="text-sm min-h-[72px] resize-none bg-transparent border-amber-200 dark:border-amber-700 focus-visible:ring-amber-400"
-              aria-label="Announcement content"
-            />
-            <div className="flex items-center justify-between gap-2">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isPinned}
-                  onChange={(e) => setIsPinned(e.target.checked)}
-                  className="rounded border-amber-300 text-amber-600 focus:ring-amber-400"
-                  aria-label="Pin this announcement"
-                />
-                <span className="text-xs text-amber-700 dark:text-amber-300">Pin</span>
-              </label>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => { setShowForm(false); setContent(""); }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-7 px-3 text-xs bg-amber-600 hover:bg-amber-700 text-white"
-                  onClick={handleSubmit}
-                  disabled={createMutation.isPending || !content.trim()}
-                  aria-label="Post announcement"
-                >
-                  {createMutation.isPending ? "Posting..." : "Post"}
-                </Button>
-              </div>
+        )
+      }
+      contentClassName="space-y-3"
+    >
+      {showForm && isAdmin && (
+        <div className="space-y-2 rounded-md border border-border bg-surface-sunken/40 p-3">
+          <Textarea
+            placeholder="Write an announcement..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="min-h-18 resize-none bg-card text-sm"
+            aria-label="Announcement content"
+          />
+          <div className="flex items-center justify-between gap-2">
+            <label className="flex cursor-pointer select-none items-center gap-1.5">
+              <Checkbox
+                checked={isPinned}
+                onCheckedChange={(v) => setIsPinned(v === true)}
+                aria-label="Pin this announcement"
+              />
+              <span className="text-xs text-muted-foreground">Pin</span>
+            </label>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => { setShowForm(false); setContent(""); }}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="xs"
+                onClick={handleSubmit}
+                loading={createMutation.isPending}
+                disabled={!content.trim()}
+                aria-label="Post announcement"
+              >
+                {createMutation.isPending ? "Posting..." : "Post"}
+              </Button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {isLoading ? (
-          <div className="space-y-3">
-            {[0, 1].map((i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-lg bg-amber-100 dark:bg-amber-900/40" />
-            ))}
-          </div>
-        ) : error ? (
-          <p className="text-sm text-destructive">Failed to load announcements.</p>
-        ) : !data?.length ? (
-          <EmptyState
-            illustration={<EmptyMailIllustration className="h-20 w-20" />}
-            title="No announcements"
-            description="Nothing to show yet."
-            compact
-          />
-        ) : (
-          <ul className="space-y-2 overflow-y-auto max-h-64">
-            {data.map((ann) => {
-              const authorDisplay =
-                ann.authorFirstName && ann.authorLastName
-                  ? `${ann.authorFirstName} ${ann.authorLastName}`
-                  : ann.authorName ?? "Team";
-              return (
-                <li
-                  key={ann.id}
+      {isLoading ? (
+        <div className="space-y-2">
+          {[0, 1].map((i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-md" />
+          ))}
+        </div>
+      ) : error ? (
+        <WidgetError error={error} onRetry={() => refetch()} />
+      ) : !data?.length ? (
+        <EmptyState
+          illustration={<EmptyMailIllustration className="h-20 w-20" />}
+          title="No announcements"
+          description="Nothing to show yet."
+          compact
+        />
+      ) : (
+        <ul className="divide-y divide-border">
+          {data.slice(0, MAX_ROWS).map((ann) => {
+            const authorDisplay =
+              ann.authorFirstName && ann.authorLastName
+                ? `${ann.authorFirstName} ${ann.authorLastName}`
+                : ann.authorName ?? "Team";
+            return (
+              <li key={ann.id} className="flex gap-3 py-2.5 first:pt-0 last:pb-0">
+                <span
                   className={cn(
-                    "relative rounded-lg border p-3 text-sm",
-                    ann.isPinned
-                      ? "border-amber-400 bg-amber-100 dark:bg-amber-900/50 dark:border-amber-600"
-                      : "border-amber-200 bg-white dark:bg-amber-950/30 dark:border-amber-700/50"
+                    "mt-1.5 size-1.5 shrink-0 rounded-full",
+                    ann.isPinned ? toneDot.warning : "bg-border-strong"
                   )}
-                >
-                  {ann.isPinned && (
-                    <Pin
-                      className="absolute top-2 right-2 h-3 w-3 text-amber-500"
-                      aria-label="Pinned"
-                    />
-                  )}
-                  <p className="text-amber-900 dark:text-amber-100 leading-snug pr-4">
-                    {ann.content}
-                  </p>
-                  <div className="flex items-center justify-between mt-2 gap-2">
-                    <span className="text-[11px] text-amber-600 dark:text-amber-400">
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm leading-snug text-foreground">{ann.content}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    {ann.isPinned && (
+                      <Pin className={cn("size-3 shrink-0", toneText.warning)} aria-label="Pinned" />
+                    )}
+                    <span className="truncate text-xs text-muted-foreground tabular-nums">
                       {authorDisplay} · {format(parseISO(ann.createdAt), "MMM d, yyyy")}
                     </span>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(ann.id)}
-                        className="text-amber-500 hover:text-amber-700 transition-colors"
-                        aria-label={`Delete announcement from ${authorDisplay}`}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <X className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
-                    )}
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+                </div>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleDelete(ann.id)}
+                    aria-label={`Delete announcement from ${authorDisplay}`}
+                    disabled={deleteMutation.isPending}
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <X aria-hidden="true" />
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }

@@ -11,6 +11,7 @@ import { clientEnv } from "@/lib/env";
 import type { NextRequest } from "next/server";
 import { CRM_BASE_URL } from "@/lib/constants/company";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const slotSchema = z.object({
   start: z.string().datetime(),
@@ -73,19 +74,19 @@ export async function POST(req: NextRequest) {
         subject: "Schedule Your Interview — Miyo Global",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: #0f2b7f; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: #fff; margin: 0; font-size: 22px;">Schedule Your Interview</h1>
+            <div style="background: ${BRAND.ink}; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: ${BRAND.white}; margin: 0; font-size: 22px;">Schedule Your Interview</h1>
             </div>
-            <div style="padding: 24px; background: #fff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <div style="padding: 24px; background: ${BRAND.white}; border: 1px solid ${BRAND.border}; border-top: none; border-radius: 0 0 8px 8px;">
               <p>Dear ${escapeHtml(candidateName)},</p>
               <p>We'd like to invite you to schedule your interview at a time that works best for you.</p>
               <p>Please click the button below to select from the available time slots:</p>
               <div style="text-align: center; margin: 24px 0;">
-                <a href="${bookingUrl}" style="display: inline-block; padding: 12px 32px; background: #0f2b7f; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                <a href="${bookingUrl}" style="display: inline-block; padding: 12px 32px; background: ${BRAND.ink}; color: ${BRAND.white}; text-decoration: none; border-radius: 8px; font-weight: 600;">
                   Choose a Time Slot
                 </a>
               </div>
-              <p style="font-size: 13px; color: #6b7280;">
+              <p style="font-size: 13px; color: ${BRAND.inkMuted};">
                 This link expires on ${expiresAt.toLocaleDateString(DEFAULT_LOCALE, { dateStyle: "long", timeZone: DEFAULT_TIMEZONE })}.
               </p>
               <p>Best regards,<br/><strong>Miyo Global Recruitment Team</strong></p>

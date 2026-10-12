@@ -25,8 +25,8 @@ function ExternalLinkIcon({ className }: { className?: string }) {
 
 export function AboutCompany({ className }: { className?: string }) {
   return (
-    <section className={cn("rounded-xl border bg-card/60 p-6", className)}>
-      <h2 className="text-base font-semibold mb-3">About the Company</h2>
+    <section className={cn("rounded-lg border border-border bg-card p-5 shadow-xs", className)}>
+      <h2 className="mb-3 font-display text-lg font-bold">About the Company</h2>
       <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
         <p>
           Miyo Global is an investment platform delivering
@@ -45,10 +45,10 @@ export function AboutCompany({ className }: { className?: string }) {
         href={COMPANY_WEBSITE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15"
+        className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-md bg-brand-soft px-3 text-sm font-semibold text-brand-soft-foreground outline-none transition-colors hover:bg-primary/15 focus-visible:focus-ring"
       >
         Visit miyoglobal.com
-        <ExternalLinkIcon className="h-3.5 w-3.5" />
+        <ExternalLinkIcon className="size-3.5" />
       </a>
     </section>
   );

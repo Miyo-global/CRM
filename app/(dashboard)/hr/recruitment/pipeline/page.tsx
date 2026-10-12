@@ -55,7 +55,9 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { ChevronsUpDown, UserPlus, Workflow } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import type { CandidateStatus, JobPipelineCandidate } from "@/types/hr";
 
 interface SchedulingTarget {
@@ -80,7 +82,7 @@ export default function PipelinePage() {
   const [interviewerOpen, setInterviewerOpen] = useState(false);
   const [scheduling, setScheduling] = useState(false);
 
-  const { data: pipeline, isLoading: globalLoading } = useAtsKanban();
+  const { data: pipeline, isLoading: globalLoading, isError: globalError, error: globalErrorObj, refetch: refetchGlobal } = useAtsKanban();
   const { data: jobs } = useJobPostings({ status: "OPEN" });
   const { data: jobPipeline, isLoading: jobLoading } = useJobPipeline(selectedJobId);
   const { data: employeesRaw } = useHrEmployees();
@@ -190,13 +192,13 @@ export default function PipelinePage() {
           : "Drag candidates between stages to update their status"
       }
       noInternalScroll
-      actions={
-        <div className="flex items-center gap-2">
+      filters={
+        <div className="flex flex-wrap items-center gap-2">
           <Select
             value={selectedJobId ? String(selectedJobId) : "all"}
             onValueChange={(v) => setSelectedJobId(v === "all" ? null : Number(v))}
           >
-            <SelectTrigger className="h-8 w-52 text-xs">
+            <SelectTrigger className="h-8 w-full text-sm sm:w-60" aria-label="Filter by job">
               <SelectValue placeholder="All candidates" />
             </SelectTrigger>
             <SelectContent>
@@ -209,12 +211,16 @@ export default function PipelinePage() {
             </SelectContent>
           </Select>
           {showDynamic && (
-            <Badge variant="outline" className="text-[10px] h-7">Flow</Badge>
+            <Badge>Flow</Badge>
           )}
+        </div>
+      }
+      actions={
+        <div className="flex items-center gap-2">
           <PageBackButton fallback="/hr/recruitment" showIcon />
           <Button size="sm" asChild>
             <Link href="/hr/recruitment/candidates/new">
-              <UserPlus className="mr-1.5 h-3.5 w-3.5" />New Candidate
+              <UserPlus className="size-4" aria-hidden="true" />New Candidate
             </Link>
           </Button>
         </div>
@@ -228,9 +234,20 @@ export default function PipelinePage() {
           isPending={updateAppStage.isPending}
         />
       ) : isJobView ? (
-        <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
-          {jobLoading ? "Loading…" : "This job has no hiring flow. Assign one to see dynamic stages."}
-        </div>
+        jobLoading ? (
+          <div className="flex h-48 items-center justify-center text-sm text-muted-foreground" aria-busy="true">
+            Loading…
+          </div>
+        ) : (
+          <EmptyState
+            icon={Workflow}
+            title="No hiring flow"
+            description="This job has no hiring flow. Assign one to see dynamic stages."
+            action={{ label: "Hiring Flows", href: "/hr/recruitment/hiring-flows" }}
+          />
+        )
+      ) : globalError ? (
+        <QueryErrorState error={globalErrorObj} onRetry={() => refetchGlobal()} />
       ) : (
         <PipelineKanban
           stages={pipeline?.stages ?? []}
@@ -241,18 +258,18 @@ export default function PipelinePage() {
       )}
 
       <Sheet open={!!schedulingTarget} onOpenChange={(v) => !v && setSchedulingTarget(null)}>
-        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+        <SheetContent size="md" className="overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="text-base">
+            <SheetTitle>
               Schedule Interview — {schedulingTarget?.roundLabel}
             </SheetTitle>
           </SheetHeader>
           {schedulingTarget && (
-            <div className="py-4 space-y-4">
-              <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
-                <p className="text-xs font-medium">{schedulingTarget.candidate.name}</p>
-                <p className="text-[10px] text-muted-foreground">{schedulingTarget.candidate.email}</p>
-                <p className="text-[10px] text-muted-foreground">
+            <div className="space-y-4 px-4 py-4">
+              <div className="space-y-0.5 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
+                <p className="text-sm font-medium">{schedulingTarget.candidate.name}</p>
+                <p className="text-xs text-muted-foreground">{schedulingTarget.candidate.email}</p>
+                <p className="text-xs tabular-nums text-muted-foreground">
                   {schedulingTarget.roundLabel} · {schedulingTarget.durationMinutes} min · {schedulingTarget.mode}
                 </p>
               </div>
@@ -280,7 +297,7 @@ export default function PipelinePage() {
                 <Label className="text-xs">
                   Interviewer
                   {schedulingTarget.roundType === "HR_SCREENING" && (
-                    <span className="ml-1 text-[10px] text-muted-foreground">(HR only)</span>
+                    <span className="ml-1 text-2xs text-muted-foreground">(HR only)</span>
                   )}
                 </Label>
                 {(() => {
@@ -298,7 +315,7 @@ export default function PipelinePage() {
                           {selectedName
                             ? `${selectedName.firstName ?? ""} ${selectedName.lastName ?? ""}`.trim()
                             : <span className="text-muted-foreground">Select interviewer (optional)</span>}
-                          <svg className="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4" /></svg>
+                          <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-72 p-0" align="start">
@@ -321,7 +338,7 @@ export default function PipelinePage() {
                                   className="text-sm"
                                 >
                                   {e.firstName} {e.lastName}
-                                  <span className="ml-1 text-[10px] text-muted-foreground">({e.role})</span>
+                                  <span className="ml-1 text-2xs text-muted-foreground">({e.role})</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -348,7 +365,7 @@ export default function PipelinePage() {
             <Button variant="outline" onClick={() => setSchedulingTarget(null)} disabled={scheduling}>
               Skip
             </Button>
-            <Button onClick={handleSchedule} disabled={!scheduledAt || scheduling}>
+            <Button onClick={handleSchedule} disabled={!scheduledAt} loading={scheduling}>
               {scheduling ? "Scheduling…" : "Schedule"}
             </Button>
           </SheetFooter>

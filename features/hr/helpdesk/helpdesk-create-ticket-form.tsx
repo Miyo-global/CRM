@@ -93,14 +93,14 @@ export function HelpdeskCreateTicketForm({
       <form
         id={formId}
         onSubmit={form.handleSubmit(onSubmit)}
-        className="px-4 py-4 space-y-4"
+        className="space-y-4 px-4 py-4"
       >
-        <p className="text-xs text-muted-foreground rounded-md bg-muted/50 px-3 py-2">
+        <p className="rounded-md border border-border bg-surface-sunken/60 px-3 py-2.5 text-xs text-muted-foreground">
           {isLeadership
             ? "Tickets appear in the HR Helpdesk queue for triage. HR is notified by email; assign an owner from the ticket detail view."
             : "Your ticket is sent to the HR Helpdesk queue. HR and leadership are notified by email for review and assignment."}
           {routingTarget && category && (
-            <span className="block mt-1.5 text-foreground/80">
+            <span className="mt-1.5 block text-foreground">
               <strong>{category}</strong> tickets are routed to: {routingTarget}.
             </span>
           )}
@@ -120,7 +120,7 @@ export function HelpdeskCreateTicketForm({
                   onBlur={field.onBlur}
                 />
               </FormControl>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Letters, numbers, spaces, and basic punctuation only
               </p>
               <FormMessage />
@@ -140,7 +140,7 @@ export function HelpdeskCreateTicketForm({
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="category"

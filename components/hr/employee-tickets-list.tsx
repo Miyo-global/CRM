@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -29,10 +30,10 @@ interface EmployeeTicketsListProps {
 }
 
 const priorityColors: Record<string, string> = {
-  URGENT: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900",
-  HIGH: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900",
-  MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-900",
-  LOW: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-800",
+  URGENT: "bg-danger-soft text-danger-strong",
+  HIGH: "bg-warning-soft text-warning-strong",
+  MEDIUM: "bg-brand-soft text-brand-soft-foreground",
+  LOW: "bg-neutral-soft text-neutral-strong",
 };
 
 function formatTicketKey(ticket: Ticket): string {
@@ -52,10 +53,7 @@ function ticketHref(ticket: Ticket): string | null {
 export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
   if (!tickets || tickets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-10 text-center text-muted-foreground">
-        <ListTodo className="h-8 w-8 mb-2 opacity-40" aria-hidden="true" />
-        <p className="text-sm">No assigned tickets found.</p>
-      </div>
+      <EmptyState compact icon={ListTodo} title="No assigned tickets found." />
     );
   }
 
@@ -74,15 +72,15 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium leading-snug line-clamp-2">{ticket.title}</p>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-                  <span className="font-mono text-[10px] text-muted-foreground/90">{key}</span>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground">
+                  <span className="font-mono text-2xs text-muted-foreground">{key}</span>
                   {ticket.project && (
-                    <span className="truncate max-w-[10rem]" title={ticket.project.name}>
+                    <span className="truncate max-w-40" title={ticket.project.name}>
                       {ticket.project.name}
                     </span>
                   )}
                   {ticket.sprint?.name && (
-                    <span className="truncate max-w-[8rem]" title={ticket.sprint.name}>
+                    <span className="truncate max-w-32" title={ticket.sprint.name}>
                       · {ticket.sprint.name}
                     </span>
                   )}
@@ -90,13 +88,13 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                <Badge variant="outline">
                   {ticket.status.replace(/_/g, " ")}
                 </Badge>
                 <span
                   className={cn(
-                    "text-[10px] font-semibold px-1.5 py-0.5 rounded border",
-                    priorityColors[priority] ?? "bg-muted text-muted-foreground border-border",
+                    "rounded-full px-1.5 py-0.5 text-2xs font-semibold",
+                    priorityColors[priority] ?? "bg-muted text-muted-foreground",
                   )}
                 >
                   {priority}
@@ -111,7 +109,7 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
             <Link
               key={ticket.id}
               href={href}
-              className="block rounded-lg border bg-muted/20 px-3 py-2.5 hover:bg-muted/40 hover:border-primary/30 transition-colors"
+              className="block rounded-lg border border-border bg-card px-3 py-2.5 outline-none transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md focus-visible:focus-ring"
             >
               {content}
             </Link>
@@ -121,7 +119,7 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
         return (
           <div
             key={ticket.id}
-            className="rounded-lg border bg-muted/20 px-3 py-2.5"
+            className="rounded-lg border border-border bg-card px-3 py-2.5"
           >
             {content}
           </div>

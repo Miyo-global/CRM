@@ -8,13 +8,18 @@ import {
   Clock,
   BarChart3,
 } from "lucide-react";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import { formatINR, formatINRCompact } from "@/lib/format-utils";
 import type { ExpensePageData } from "@/server/actions/expense-query";
 
 interface AdminExpenseStatsProps {
   stats: ExpensePageData["stats"] | null | undefined;
   pendingCount: number;
+}
+
+/** Compact amount with the exact value in a tooltip. */
+function Amount({ value }: { value: number }) {
+  return <span title={formatINR(value)}>{formatINRCompact(value)}</span>;
 }
 
 export function AdminExpenseStats({ stats, pendingCount }: AdminExpenseStatsProps) {
@@ -25,35 +30,14 @@ export function AdminExpenseStats({ stats, pendingCount }: AdminExpenseStatsProp
     (stats?.paidAmount || 0);
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-      <StatCard
-        label="Pending Approval"
-        value={pendingCount}
-        icon={AlertCircle}
-        color="red"
-      />
-      <StatCard
-        label="Approved Today"
-        value={formatINRCompact(stats?.approvedAmount || 0)}
-        valueTooltip={formatINR(stats?.approvedAmount || 0)}
-        icon={CheckCircle2}
-        color="green"
-      />
-      <StatCard
-        label="Rejected Today"
-        value={formatINRCompact(stats?.rejectedAmount || 0)}
-        valueTooltip={formatINR(stats?.rejectedAmount || 0)}
-        icon={XCircle}
-        color="red"
-      />
-      <StatCard
-        label="Total Claimed (Month)"
-        value={formatINRCompact(totalClaimed)}
-        valueTooltip={formatINR(totalClaimed)}
-        icon={BarChart3}
-        color="blue"
-      />
-    </div>
+    <StatsStrip
+      items={[
+        { label: "Pending Approval", value: pendingCount, icon: AlertCircle, tone: pendingCount > 0 ? "warning" : undefined },
+        { label: "Approved Today", value: <Amount value={stats?.approvedAmount || 0} />, icon: CheckCircle2, tone: "success" },
+        { label: "Rejected Today", value: <Amount value={stats?.rejectedAmount || 0} />, icon: XCircle, tone: "danger" },
+        { label: "Total Claimed (Month)", value: <Amount value={totalClaimed} />, icon: BarChart3 },
+      ]}
+    />
   );
 }
 
@@ -64,28 +48,12 @@ interface MemberExpenseStatsProps {
 export function MemberExpenseStats({ stats }: MemberExpenseStatsProps) {
   const totalReimbursed = (stats?.approvedAmount || 0) + (stats?.paidAmount || 0);
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-      <StatCard
-        label="Total Reimbursed (YTD)"
-        value={formatINRCompact(totalReimbursed)}
-        valueTooltip={formatINR(totalReimbursed)}
-        icon={DollarSign}
-        color="green"
-      />
-      <StatCard
-        label="Pending Approval"
-        value={formatINRCompact(stats?.pendingAmount || 0)}
-        valueTooltip={formatINR(stats?.pendingAmount || 0)}
-        icon={Clock}
-        color="gold"
-      />
-      <StatCard
-        label="Rejected (30d)"
-        value={formatINRCompact(stats?.rejectedAmount || 0)}
-        valueTooltip={formatINR(stats?.rejectedAmount || 0)}
-        icon={XCircle}
-        color="red"
-      />
-    </div>
+    <StatsStrip
+      items={[
+        { label: "Total Reimbursed (YTD)", value: <Amount value={totalReimbursed} />, icon: DollarSign, tone: "success" },
+        { label: "Pending Approval", value: <Amount value={stats?.pendingAmount || 0} />, icon: Clock, tone: "warning" },
+        { label: "Rejected (30d)", value: <Amount value={stats?.rejectedAmount || 0} />, icon: XCircle, tone: "danger" },
+      ]}
+    />
   );
 }

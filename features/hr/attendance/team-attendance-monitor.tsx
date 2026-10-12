@@ -29,9 +29,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { FilterChip } from "@/components/ui/filter-chip";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import type { Tone } from "@/lib/design/tones";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { useAttendanceMonitor, type AttendanceMonitorEntry } from "@/lib/api/hooks/hr/attendance";
 import { cn } from "@/lib/utils";
@@ -48,27 +52,27 @@ const STATUS_META: Record<
 > = {
   PRESENT: {
     label: "Present",
-    badge: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
+    badge: "bg-success-soft text-success-strong",
     icon: UserCheck,
   },
   ON_BREAK: {
     label: "On Break",
-    badge: "bg-amber-500/10 text-amber-600 border-amber-200",
+    badge: "bg-warning-soft text-warning-strong",
     icon: Coffee,
   },
   CHECKED_OUT: {
     label: "Checked Out",
-    badge: "bg-blue-500/10 text-blue-600 border-blue-200",
+    badge: "bg-info-soft text-info-strong",
     icon: LogOut,
   },
   ON_LEAVE: {
     label: "On Leave",
-    badge: "bg-purple-500/10 text-purple-600 border-purple-200",
+    badge: "bg-plum-soft text-plum-strong",
     icon: Palmtree,
   },
   ABSENT: {
     label: "Absent",
-    badge: "bg-red-500/10 text-red-600 border-red-200",
+    badge: "bg-danger-soft text-danger-strong",
     icon: UserX,
   },
 };
@@ -85,15 +89,15 @@ const FILTER_TABS: { value: Status; label: string; icon: LucideIcon }[] = [
 const SUMMARY_STATS: {
   key: keyof ReturnType<typeof buildCounts>;
   label: string;
-  color: string;
+  tone?: Tone;
   icon: LucideIcon;
 }[] = [
-  { key: "total", label: "Total", color: "text-foreground", icon: Users },
-  { key: "present", label: "Present", color: "text-emerald-600", icon: UserCheck },
-  { key: "onBreak", label: "On Break", color: "text-amber-600", icon: Coffee },
-  { key: "checkedOut", label: "Checked Out", color: "text-blue-600", icon: LogOut },
-  { key: "onLeave", label: "On Leave", color: "text-purple-600", icon: Palmtree },
-  { key: "absent", label: "Absent", color: "text-red-600", icon: UserX },
+  { key: "total", label: "Total", icon: Users },
+  { key: "present", label: "Present", tone: "success", icon: UserCheck },
+  { key: "onBreak", label: "On Break", tone: "warning", icon: Coffee },
+  { key: "checkedOut", label: "Checked Out", tone: "info", icon: LogOut },
+  { key: "onLeave", label: "On Leave", tone: "plum", icon: Palmtree },
+  { key: "absent", label: "Absent", tone: "danger", icon: UserX },
 ];
 
 function buildCounts(all: AttendanceMonitorEntry[]) {
@@ -136,7 +140,7 @@ export function TeamAttendanceMonitor() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSizeOption>(TEAM_PAGE_SIZE);
 
-  const { data, isLoading } = useAttendanceMonitor(date);
+  const { data, isLoading, isError, error, refetch } = useAttendanceMonitor(date);
 
   useEffect(() => {
     setPage(1);
@@ -187,45 +191,31 @@ export function TeamAttendanceMonitor() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
-        <div className="flex flex-wrap gap-2">
-          {SUMMARY_STATS.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={s.label}
-                className="flex flex-col items-center bg-muted/50 rounded-lg px-3 py-2 min-w-[72px]"
-              >
-                {isLoading ? (
-                  <Skeleton className="h-6 w-8 mb-1" />
-                ) : (
-                  <div className="flex items-center gap-1.5">
-                    <Icon className={cn("h-3.5 w-3.5 shrink-0", s.color)} aria-hidden="true" />
-                    <span className={cn("text-xl font-bold tabular-nums", s.color)}>{counts[s.key]}</span>
-                  </div>
-                )}
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">
-                  {s.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-end">
+        <StatsStrip
+          className="w-full lg:w-auto lg:flex-1"
+          items={SUMMARY_STATS.map((st) => ({
+            label: st.label,
+            value: isLoading ? <Skeleton className="mt-1 h-6 w-8" /> : counts[st.key],
+            icon: st.icon,
+            tone: st.tone,
+          }))}
+        />
 
         <div className="flex items-end gap-2 shrink-0">
           <div className="space-y-1">
             <Label className="text-xs inline-flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+              <Calendar className="size-3.5 text-muted-foreground" aria-hidden="true" />
               Date
             </Label>
             <div className="relative">
               <Calendar
-                className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
                 aria-hidden="true"
               />
               <Input
                 type="date"
-                className="h-9 w-40 pl-8"
+                className="h-9 w-40 pl-9 tabular-nums"
                 value={date}
                 max={todayIso()}
                 onChange={(e) => setDate(e.target.value)}
@@ -235,15 +225,16 @@ export function TeamAttendanceMonitor() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative max-w-sm flex-1 sm:max-w-xs">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative w-full sm:w-64">
           <Search
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
             aria-hidden="true"
           />
           <Input
+            type="search"
             placeholder="Search by name, email, or department…"
-            className="h-9 pl-8"
+            className="h-9 pl-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search team attendance"
@@ -254,26 +245,23 @@ export function TeamAttendanceMonitor() {
             const Icon = tab.icon;
             const active = statusFilter === tab.value;
             return (
-              <button
+              <FilterChip
                 key={tab.value}
-                type="button"
+                active={active}
                 onClick={() => setStatusFilter(tab.value)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors",
-                  active
-                    ? "bg-foreground text-background border-foreground"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
-                )}
               >
-                <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 {tab.label}
-              </button>
+              </FilterChip>
             );
           })}
         </div>
       </div>
 
-      <Card>
+      {isError ? (
+        <QueryErrorState title="Couldn't load team attendance" error={error} onRetry={() => refetch()} />
+      ) : (
+      <Card className="gap-0 overflow-hidden py-0">
         <CardContent className="p-0">
           <div className="border-b border-border">
             <ScrollArea
@@ -285,27 +273,27 @@ export function TeamAttendanceMonitor() {
             >
               <div className="min-w-max">
                 <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-sm">
-                    <TableRow className="bg-muted/60 hover:bg-muted/60">
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold pl-4 py-3 w-36">
+                  <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold pl-4 py-3 w-36">
                         <TableHeadLabel icon={Building2}>Department</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-56">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-56">
                         <TableHeadLabel icon={User}>Employee</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-32">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-32">
                         <TableHeadLabel icon={Briefcase}>Role</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={Activity}>Status</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={LogIn}>Check In</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 w-28">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 w-28">
                         <TableHeadLabel icon={LogOut}>Check Out</TableHeadLabel>
                       </TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-wider font-semibold py-3 pr-4 w-24">
+                      <TableHead className="text-2xs uppercase tracking-wider font-semibold py-3 pr-4 w-24">
                         <TableHeadLabel icon={Clock}>Hours</TableHeadLabel>
                       </TableHead>
                     </TableRow>
@@ -369,7 +357,7 @@ export function TeamAttendanceMonitor() {
                         const checkIn = fmtTime(emp.checkIn);
                         const checkOut = fmtTime(emp.checkOut);
                         return (
-                          <TableRow key={emp.userId} className="hover:bg-muted/30">
+                          <TableRow key={emp.userId}>
                             <TableCell className="pl-4 py-3">
                               <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Building2 className="h-3 w-3 shrink-0 opacity-60" aria-hidden="true" />
@@ -380,17 +368,17 @@ export function TeamAttendanceMonitor() {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8 shrink-0">
                                   {emp.image && <AvatarImage src={emp.image} alt={emp.name} />}
-                                  <AvatarFallback className="text-[10px] font-medium">{initials}</AvatarFallback>
+                                  <AvatarFallback className="text-2xs font-medium">{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0">
                                   <Link
                                     href={`/hr/employees/${emp.userId}?tab=attendance`}
-                                    className="text-sm font-medium truncate block hover:text-primary hover:underline underline-offset-2"
+                                    className="text-sm font-medium truncate block hover:text-brand-text hover:underline underline-offset-2"
                                     title={`View ${emp.name}'s attendance`}
                                   >
                                     {emp.name}
                                   </Link>
-                                  <p className="text-[11px] text-muted-foreground truncate">{emp.email}</p>
+                                  <p className="text-2xs text-muted-foreground truncate">{emp.email}</p>
                                 </div>
                               </div>
                             </TableCell>
@@ -403,7 +391,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3">
                               <Badge
                                 variant="outline"
-                                className={cn("text-[11px] font-medium border gap-1", meta.badge)}
+                                className={cn("gap-1 border-transparent", meta.badge)}
                               >
                                 <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
                                 {meta.label}
@@ -412,7 +400,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3 text-sm tabular-nums">
                               {checkIn ? (
                                 <span className="inline-flex items-center gap-1.5">
-                                  <LogIn className="h-3 w-3 text-emerald-600 shrink-0" aria-hidden="true" />
+                                  <LogIn className="h-3 w-3 text-success-strong shrink-0" aria-hidden="true" />
                                   {checkIn}
                                 </span>
                               ) : (
@@ -422,7 +410,7 @@ export function TeamAttendanceMonitor() {
                             <TableCell className="py-3 text-sm tabular-nums">
                               {checkOut ? (
                                 <span className="inline-flex items-center gap-1.5">
-                                  <LogOut className="h-3 w-3 text-blue-600 shrink-0" aria-hidden="true" />
+                                  <LogOut className="h-3 w-3 text-info-strong shrink-0" aria-hidden="true" />
                                   {checkOut}
                                 </span>
                               ) : (
@@ -449,7 +437,7 @@ export function TeamAttendanceMonitor() {
             </ScrollArea>
           </div>
           {!isLoading && rows.length > 0 && (
-            <div className="border-t border-border px-2 bg-muted/20">
+            <div className="border-t border-border px-2">
               <DataTablePagination
                 page={safePage}
                 totalPages={totalPages}
@@ -462,6 +450,7 @@ export function TeamAttendanceMonitor() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

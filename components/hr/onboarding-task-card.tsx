@@ -4,7 +4,8 @@ import { useState, useCallback } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { OnboardingTask } from "@/lib/api/hooks/hr/onboarding";
 
@@ -16,18 +17,18 @@ export interface OnboardingTaskCardProps {
 }
 
 
-function ownerBadgeClass(ownerRole: string): string {
+function ownerTone(ownerRole: string): Tone {
   switch (ownerRole.toUpperCase()) {
     case "NEW_HIRE":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300";
+      return "info";
     case "IT":
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300";
+      return "plum";
     case "HR":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300";
+      return "warning";
     case "MANAGER":
-      return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300";
+      return "success";
     default:
-      return "bg-muted text-muted-foreground";
+      return "neutral";
   }
 }
 
@@ -84,11 +85,11 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
   return (
     <Card
       className={cn(
-        "transition-all duration-200",
+        "transition-opacity duration-200",
         isCompleted && "opacity-70"
       )}
     >
-      <CardContent className="p-3">
+      <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Checkbox
             checked={isCompleted}
@@ -109,22 +110,17 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
                 {task.title}
               </p>
 
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0",
-                  ownerBadgeClass(task.ownerRole)
-                )}
-              >
+              <StatusPill tone={ownerTone(task.ownerRole)}>
                 {ownerBadgeLabel(task.ownerRole)}
-              </span>
+              </StatusPill>
             </div>
 
             {dueInfo && (
               <p
                 className={cn(
-                  "text-[11px] mt-0.5",
+                  "mt-0.5 text-xs tabular-nums",
                   dueInfo.overdue && !isCompleted
-                    ? "text-destructive font-medium"
+                    ? "font-medium text-danger-strong"
                     : "text-muted-foreground"
                 )}
               >
@@ -142,10 +138,10 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
                     <button
                       type="button"
                       onClick={() => setExpanded(false)}
-                      className="inline-flex items-center gap-0.5 text-[11px] text-primary mt-1 hover:underline"
+                      className="mt-1 inline-flex items-center gap-0.5 rounded-xs text-xs text-brand-text hover:underline focus-visible:focus-ring"
                       aria-label="Collapse description"
                     >
-                      <ChevronUp className="h-3 w-3" />
+                      <ChevronUp className="size-3" aria-hidden="true" />
                       Less
                     </button>
                   </>
@@ -153,10 +149,10 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
                   <button
                     type="button"
                     onClick={() => setExpanded(true)}
-                    className="inline-flex items-center gap-0.5 text-[11px] text-primary mt-0.5 hover:underline"
+                    className="mt-0.5 inline-flex items-center gap-0.5 rounded-xs text-xs text-brand-text hover:underline focus-visible:focus-ring"
                     aria-label="Expand description"
                   >
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className="size-3" aria-hidden="true" />
                     Details
                   </button>
                 )}
@@ -165,9 +161,9 @@ export function OnboardingTaskCard({ task, onToggle, isToggling }: OnboardingTas
           </div>
 
           {isCompleted && (
-            <Badge variant="secondary" className="text-[10px] shrink-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <StatusPill tone="success" dot>
               Done
-            </Badge>
+            </StatusPill>
           )}
         </div>
       </CardContent>

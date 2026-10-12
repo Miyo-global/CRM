@@ -3,9 +3,14 @@
 import { use, useState } from "react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { toneText, type Tone } from "@/lib/design/tones";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,11 +49,11 @@ import {
 import { toast } from "sonner";
 import { format, isPast, isToday, differenceInDays } from "date-fns";
 
-const STATUS_CONFIG = {
-  PENDING: { label: "Pending", variant: "secondary" as const, color: "text-muted-foreground" },
-  ACHIEVED: { label: "Achieved", variant: "default" as const, color: "text-green-600" },
-  MISSED: { label: "Missed", variant: "destructive" as const, color: "text-red-600" },
-} as const;
+const STATUS_CONFIG: Record<ProjectMilestone["status"], { label: string; tone: Tone; color: string }> = {
+  PENDING: { label: "Pending", tone: "neutral", color: "text-muted-foreground" },
+  ACHIEVED: { label: "Achieved", tone: "success", color: toneText.success },
+  MISSED: { label: "Missed", tone: "danger", color: toneText.danger },
+};
 
 function MilestoneDialog({
   projectId,
@@ -104,7 +109,7 @@ function MilestoneDialog({
             <Label>Description</Label>
             <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Target Date *</Label>
               <Input type="date" min={isEdit ? undefined : today} value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
@@ -124,7 +129,7 @@ function MilestoneDialog({
         </div>
         <SheetFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={isPending || !name.trim() || !targetDate}>
+          <Button onClick={handleSave} loading={isPending} disabled={!name.trim() || !targetDate}>
             {isPending ? "Saving…" : isEdit ? "Save Changes" : "Create Milestone"}
           </Button>
         </SheetFooter>
@@ -148,31 +153,32 @@ function MilestoneCard({
   const overdue = isPast(dateObj) && !isToday(dateObj) && milestone.status === "PENDING";
 
   return (
-    <Card className={overdue ? "border-destructive/40" : ""}>
-      <CardContent className="pt-4">
+    <Card className={cn("h-full", overdue && "border-danger-soft")}>
+      <CardContent className="py-4">
         <div className="flex items-start gap-3">
           <Diamond
-            className={`h-5 w-5 mt-0.5 shrink-0 ${cfg.color}`}
+            className={cn("mt-0.5 size-5 shrink-0", cfg.color)}
             fill="currentColor"
+            aria-hidden="true"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="font-medium text-sm">{milestone.name}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium" title={milestone.name}>{milestone.name}</p>
                 {milestone.description && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{milestone.description}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{milestone.description}</p>
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Badge variant={cfg.variant} className="text-[10px]">{cfg.label}</Badge>
+                <StatusPill tone={cfg.tone} dot>{cfg.label}</StatusPill>
               </div>
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <CalendarCheck2 className="h-3.5 w-3.5" />
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+                <CalendarCheck2 className="size-3.5" aria-hidden="true" />
                 <span>{format(dateObj, "MMM d, yyyy")}</span>
                 {milestone.status === "PENDING" && (
-                  <span className={overdue ? "text-destructive font-medium" : ""}>
+                  <span className={cn(overdue && "font-medium text-destructive")}>
                     {overdue
                       ? `${Math.abs(daysLeft)}d overdue`
                       : daysLeft === 0
@@ -182,11 +188,11 @@ function MilestoneCard({
                 )}
               </div>
               <div className="flex items-center gap-1">
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onEdit}>
-                  <Pencil className="h-3 w-3" />
+                <Button size="icon-xs" variant="ghost" onClick={onEdit} aria-label={`Edit ${milestone.name}`}>
+                  <Pencil className="size-3.5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" onClick={onDelete}>
-                  <Trash2 className="h-3 w-3" />
+                <Button size="icon-xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={onDelete} aria-label={`Delete ${milestone.name}`}>
+                  <Trash2 className="size-3.5" />
                 </Button>
               </div>
             </div>
@@ -200,7 +206,7 @@ function MilestoneCard({
 export default function MilestonesPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId: projectIdStr } = use(params);
   const projectId = Number(projectIdStr);
-  const { data: milestones, isLoading } = useProjectMilestones(projectId);
+  const { data: milestones, isLoading, isError, error, refetch } = useProjectMilestones(projectId);
   const deleteMilestone = useDeleteMilestone(projectId);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -219,22 +225,31 @@ export default function MilestonesPage({ params }: { params: Promise<{ projectId
   }
 
   return (
-    <PageWrapper title="Milestones" subtitle="Key checkpoints and target dates for this project">
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-muted-foreground">
-          {achieved}/{total} achieved
-        </p>
+    <PageWrapper
+      title="Milestones"
+      subtitle="Key checkpoints and target dates for this project"
+      actions={
         <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> New Milestone
+          <Plus className="size-4" aria-hidden="true" /> New Milestone
         </Button>
-      </div>
-
+      }
+    >
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={refetch} />
       ) : milestones && milestones.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-6">
+        <StatsStrip
+          items={[
+            { label: "Achieved", value: `${achieved}/${total}`, tone: "success" },
+            { label: "Pending", value: milestones.filter((m) => m.status === "PENDING").length },
+            { label: "Missed", value: milestones.filter((m) => m.status === "MISSED").length, tone: "danger" },
+          ]}
+        />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {milestones.map((m) => (
             <MilestoneCard
               key={m.id}
@@ -244,14 +259,13 @@ export default function MilestonesPage({ params }: { params: Promise<{ projectId
             />
           ))}
         </div>
+        </div>
       ) : (
         <EmptyState
-          compact
           icon={Diamond}
           title="No milestones yet"
           description="Add your first milestone to track key project dates."
           action={{ label: "Add first milestone", onClick: () => setCreateOpen(true) }}
-          className="border-0 bg-transparent"
         />
       )}
 
@@ -277,8 +291,9 @@ export default function MilestonesPage({ params }: { params: Promise<{ projectId
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={buttonVariants({ variant: "destructive" })}
               onClick={handleDelete}
+              disabled={deleteMilestone.isPending}
             >
               Delete
             </AlertDialogAction>

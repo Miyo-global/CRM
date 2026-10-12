@@ -11,16 +11,18 @@ interface HrEmployeeSearchProps {
 
 export function HrEmployeeSearch({ value, onChange }: HrEmployeeSearchProps) {
   return (
-    <div className="relative flex-1 max-w-sm">
+    <div className="relative w-full sm:w-64">
       <Search
-        className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none"
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground"
         aria-hidden
       />
       <Input
         placeholder="Search employees"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-8 h-9 w-full text-sm"
+        type="search"
+        data-page-search
+        className="h-9 w-full pl-9"
         aria-label="Search employees by name, email or employee ID"
         aria-describedby="employees-search-hint"
       />

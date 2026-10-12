@@ -37,9 +37,7 @@ import {
   Plus,
   Trash2,
   GripVertical,
-  FolderKanban,
   PlayCircle,
-  LayoutTemplate,
 } from "lucide-react";
 import {
   useProjectTemplates,
@@ -50,6 +48,9 @@ import {
 } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyProjectsIllustration } from "@/components/illustrations";
 
 interface TicketDraft {
   title: string;
@@ -113,7 +114,7 @@ function ApplyDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Apply &ldquo;{template.name}&rdquo;</DialogTitle>
         </DialogHeader>
@@ -130,7 +131,7 @@ function ApplyDialog({
               rows={2}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Start Date</Label>
               <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -140,14 +141,14 @@ function ApplyDialog({
               <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
-          <div className="rounded-md border p-3 space-y-1 text-sm">
+          <div className="space-y-1 rounded-md border border-border bg-surface-sunken/60 p-3 text-sm">
             <p className="font-medium">{template.tickets.length} tasks will be created:</p>
             {template.tickets.slice(0, 5).map((t) => (
               <div key={t.id} className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant="outline" className="text-[10px]">{t.type}</Badge>
+                <Badge variant="outline" className="text-2xs">{t.type}</Badge>
                 <span className="truncate">{t.title}</span>
                 {t.phase && (
-                  <span className="text-[10px] bg-muted rounded px-1 shrink-0">{t.phase}</span>
+                  <span className="shrink-0 rounded-xs bg-muted px-1 text-2xs">{t.phase}</span>
                 )}
               </div>
             ))}
@@ -158,7 +159,7 @@ function ApplyDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleApply} disabled={apply.isPending || !name.trim()}>
+          <Button onClick={handleApply} loading={apply.isPending} disabled={!name.trim()}>
             {apply.isPending ? "Creating…" : "Create Project"}
           </Button>
         </DialogFooter>
@@ -227,7 +228,7 @@ function CreateTemplateDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New Project Template</DialogTitle>
         </DialogHeader>
@@ -268,15 +269,15 @@ function CreateTemplateDialog({ onClose }: { onClose: () => void }) {
             <div className="flex items-center justify-between">
               <Label>Default Tasks ({tickets.length})</Label>
               <Button type="button" variant="outline" size="sm" onClick={addTicket}>
-                <Plus className="h-4 w-4 mr-1" /> Add Task
+                <Plus className="size-4" aria-hidden="true" /> Add Task
               </Button>
             </div>
             {tickets.map((ticket, idx) => (
-              <div key={idx} className="border rounded-md p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div key={idx} className="space-y-2 rounded-md border border-border p-3">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                  <GripVertical className="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />
                   <Input
-                    className="flex-1"
+                    className="min-w-0 flex-1 basis-40"
                     placeholder="Task title *"
                     value={ticket.title}
                     onChange={(e) => updateTicket(idx, "title", e.target.value)}
@@ -311,11 +312,12 @@ function CreateTemplateDialog({ onClose }: { onClose: () => void }) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="text-destructive shrink-0"
+                    className="shrink-0 text-destructive"
                     disabled={tickets.length <= 1}
                     onClick={() => removeTicket(idx)}
+                    aria-label="Remove task"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" aria-hidden="true" />
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -328,7 +330,7 @@ function CreateTemplateDialog({ onClose }: { onClose: () => void }) {
                   <Input
                     type="number"
                     min={0}
-                    className="w-24 text-xs"
+                    className="w-24 shrink-0 text-xs tabular-nums"
                     placeholder="Est. hrs"
                     value={ticket.estimatedHours}
                     onChange={(e) => updateTicket(idx, "estimatedHours", e.target.value)}
@@ -342,7 +344,8 @@ function CreateTemplateDialog({ onClose }: { onClose: () => void }) {
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button
             onClick={handleCreate}
-            disabled={create.isPending || !name.trim() || tickets.some((t) => !t.title.trim())}
+            loading={create.isPending}
+            disabled={!name.trim() || tickets.some((t) => !t.title.trim())}
           >
             {create.isPending ? "Creating…" : "Create Template"}
           </Button>
@@ -363,29 +366,29 @@ function TemplateCard({
   onDelete: () => void;
 }) {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">{template.name}</CardTitle>
+          <div className="min-w-0">
+            <CardTitle className="truncate" title={template.name}>{template.name}</CardTitle>
             {template.description && (
-              <p className="text-sm text-muted-foreground mt-0.5">{template.description}</p>
+              <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{template.description}</p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <Badge variant="secondary" className="text-[10px]">{template.category}</Badge>
-            <Badge variant="outline">{template.tickets.length} tasks</Badge>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <Badge variant="secondary">{template.category}</Badge>
+            <Badge variant="outline" className="tabular-nums">{template.tickets.length} tasks</Badge>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="mt-auto space-y-3 pb-5">
         <div className="space-y-1">
           {template.tickets.slice(0, 4).map((t) => (
             <div key={t.id} className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="text-[10px] shrink-0">{t.type}</Badge>
+              <Badge variant="outline" className="text-2xs shrink-0">{t.type}</Badge>
               <span className="flex-1 truncate text-sm">{t.title}</span>
               {t.phase && (
-                <span className="text-[10px] bg-muted rounded px-1 text-muted-foreground shrink-0">
+                <span className="shrink-0 rounded-xs bg-muted px-1 text-2xs text-muted-foreground">
                   {t.phase}
                 </span>
               )}
@@ -398,15 +401,16 @@ function TemplateCard({
 
         <div className="flex gap-2 pt-1">
           <Button size="sm" className="flex-1" onClick={onApply}>
-            <PlayCircle className="h-4 w-4 mr-1" /> Use Template
+            <PlayCircle className="size-4" aria-hidden="true" /> Use Template
           </Button>
           <Button
             size="sm"
             variant="outline"
             className="text-destructive hover:text-destructive"
             onClick={onDelete}
+            aria-label="Delete template"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </CardContent>
@@ -416,7 +420,7 @@ function TemplateCard({
 
 
 export default function ProjectTemplatesPage() {
-  const { data: templates, isLoading } = useProjectTemplates();
+  const { data: templates, isLoading, isError, error, refetch } = useProjectTemplates();
   const deleteTemplate = useDeleteProjectTemplate();
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTarget, setApplyTarget] = useState<ProjectTemplate | null>(null);
@@ -434,25 +438,26 @@ export default function ProjectTemplatesPage() {
   }
 
   return (
-    <PageWrapper title="Project Templates" subtitle="Pre-built project structures to bootstrap new projects quickly">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <LayoutTemplate className="h-5 w-5" />
-          <span className="text-sm">{templates?.length ?? 0} template{templates?.length !== 1 ? "s" : ""}</span>
-        </div>
+    <PageWrapper
+      title="Project Templates"
+      subtitle="Pre-built project structures to bootstrap new projects quickly"
+      badge={templates ? `${templates.length} template${templates.length !== 1 ? "s" : ""}` : undefined}
+      actions={
         <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> New Template
+          <Plus className="size-4" aria-hidden="true" /> New Template
         </Button>
-      </div>
-
+      }
+    >
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-52 rounded-lg bg-muted animate-pulse" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-52 rounded-lg" />
           ))}
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       ) : templates && templates.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {templates.map((t) => (
             <TemplateCard
               key={t.id}
@@ -464,12 +469,10 @@ export default function ProjectTemplatesPage() {
         </div>
       ) : (
         <EmptyState
-          compact
-          icon={FolderKanban}
+          illustration={<EmptyProjectsIllustration />}
           title="No templates yet"
           description="Create a template to bootstrap new projects with a ready-made task structure."
           action={{ label: "Create your first template", onClick: () => setCreateOpen(true) }}
-          className="border-0 bg-transparent"
         />
       )}
 
@@ -491,6 +494,7 @@ export default function ProjectTemplatesPage() {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDelete}
+              disabled={deleteTemplate.isPending}
             >
               Delete
             </AlertDialogAction>

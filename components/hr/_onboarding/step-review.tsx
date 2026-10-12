@@ -46,7 +46,7 @@ function ReviewSection({
 }) {
   return (
     <section className="rounded-lg border bg-card overflow-hidden">
-      <h3 className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground bg-muted/40 border-b">
+      <h3 className="border-b bg-surface-sunken/60 px-4 py-2.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </h3>
       <dl className="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
@@ -110,10 +110,10 @@ export function StepReview({
   return (
     <div className="space-y-5 pb-2">
       <div className="text-center">
-        <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3">
-          <Check className="w-7 h-7" />
+        <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground">
+          <Check className="size-6" aria-hidden="true" />
         </div>
-        <h2 className="text-xl font-bold">Confirm employee details</h2>
+        <h2 className="font-display text-xl font-bold">Confirm employee details</h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
           Review every section below. Onboarding will only start after you confirm the information is correct.
         </p>
@@ -175,8 +175,8 @@ export function StepReview({
         <ReviewField label="PF / UAN" value={bank?.pfUanNumber?.trim()} />
       </ReviewSection>
 
-      <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 p-4 rounded-lg flex gap-3 text-sm text-amber-900 dark:text-amber-100">
-        <Lightbulb className="w-5 h-5 shrink-0 mt-0.5" />
+      <div className="flex gap-3 rounded-lg bg-warning-soft p-4 text-sm text-warning-strong">
+        <Lightbulb className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
         <p>
           Submitting will create the employee account and automatically add them to the onboarding workflow.
         </p>
@@ -186,7 +186,7 @@ export function StepReview({
 
       {!confirmed && (
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
           Check the confirmation box to enable Submit.
         </p>
       )}

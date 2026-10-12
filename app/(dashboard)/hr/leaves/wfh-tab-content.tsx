@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyWfhIllustration } from "@/components/illustrations";
-import { Loader2, Filter, TrendingUp, AlertCircle } from "lucide-react";
+import { Filter, TrendingUp, AlertCircle } from "lucide-react";
 
 import type { WfhRequest } from "./leaves-shared";
-import { WfhRequestItem, StatsCard } from "./leaves-shared";
+import { WfhRequestItem } from "./leaves-shared";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function WfhTabContent() {
   const [wfhStatusFilter, setWfhStatusFilter] = useState<string>("ALL");
@@ -41,31 +43,21 @@ export function WfhTabContent() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3" role="list" aria-label="WFH statistics">
-        <StatsCard
-          title="Monthly WFH"
-          value={wfhStats.thisMonth}
-          subtitle="This month (approved)"
-          icon={TrendingUp}
-          accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-        />
-        <StatsCard
-          title="Pending"
-          value={wfhStats.pending}
-          subtitle="Awaiting approval"
-          icon={AlertCircle}
-          accent="bg-amber-500/10 text-amber-600 dark:text-amber-400"
-        />
-      </div>
+      <StatsStrip
+        items={[
+          { label: "Monthly WFH", value: wfhStats.thisMonth, hint: "This month (approved)", icon: TrendingUp, tone: "success" },
+          { label: "Pending", value: wfhStats.pending, hint: "Awaiting approval", icon: AlertCircle, tone: wfhStats.pending > 0 ? "warning" : undefined },
+        ]}
+      />
 
-      <Card className="border-border">
+      <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <CardTitle className="text-base">My WFH Requests</CardTitle>
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <Select value={wfhStatusFilter} onValueChange={setWfhStatusFilter}>
-                <SelectTrigger className="h-8 w-[130px] text-xs">
+                <SelectTrigger className="h-9 w-36" aria-label="Status filter">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -80,8 +72,10 @@ export function WfhTabContent() {
         </CardHeader>
         <CardContent className="pt-0" aria-live="polite">
           {wfhLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
             </div>
           ) : filteredWfhRequests.length === 0 ? (
             <EmptyState

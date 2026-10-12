@@ -7,7 +7,8 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +21,8 @@ import { useSession } from "next-auth/react";
 import { EmptyActivityIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
 
 interface EnpsSurvey {
   id: number; title: string; status: string | null; score: number | null;
@@ -31,15 +34,15 @@ const enpsKeys = { all: [...queryKeys.hr.all, "enps"] as const, list: () => [...
 
 function scoreColor(score: number | null): string {
   if (score === null) return "text-muted-foreground";
-  if (score >= 50) return "text-green-600";
-  if (score >= 0) return "text-amber-600";
-  return "text-red-600";
+  if (score >= 50) return "text-success-strong";
+  if (score >= 0) return "text-warning-strong";
+  return "text-danger-strong";
 }
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" {
-  if (s === "ACTIVE") return "default";
-  if (s === "CLOSED") return "outline";
-  return "secondary";
+function statusTone(s: string | null): Tone {
+  if (s === "ACTIVE") return "success";
+  if (s === "CLOSED") return "neutral";
+  return "warning";
 }
 
 export default function EnpsPage() {
@@ -47,7 +50,7 @@ export default function EnpsPage() {
   const qc = useQueryClient();
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: surveys, isLoading } = useQuery({
+  const { data: surveys, isLoading, isError, error, refetch } = useQuery({
     queryKey: enpsKeys.list(),
     queryFn: () => apiClient.get<EnpsSurvey[]>("/hr/enps"),
   });
@@ -99,8 +102,8 @@ export default function EnpsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Employee NPS" subtitle="Measure employee loyalty">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-44" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -111,39 +114,41 @@ export default function EnpsPage() {
       title="Employee NPS"
       subtitle="Measure and track employee Net Promoter Score"
       badge={`${surveys?.length ?? 0} surveys`}
-      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />New eNPS</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New eNPS</Button> : undefined}
     >
-      {!surveys?.length ? (
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !surveys?.length ? (
         <EmptyState
-          illustration={<EmptyActivityIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyActivityIllustration className="size-32" />}
           title="No eNPS surveys yet"
           description="Create a survey to start measuring employee Net Promoter Score."
           {...(isAdmin ? { action: { label: "New eNPS", onClick: () => setSheetOpen(true) } } : {})}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {surveys.map((s: EnpsSurvey) => (
-            <Card key={s.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <Badge variant={statusBadge(s.status)} className="text-[10px]">{s.status ?? "DRAFT"}</Badge>
+            <Card key={s.id} className="h-full">
+              <CardContent className="flex h-full flex-col gap-3 p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <StatusPill tone={statusTone(s.status)} dot>{s.status ?? "DRAFT"}</StatusPill>
                   {s.score !== null && (
-                    <span className={`text-lg font-bold ${scoreColor(s.score)}`}>{s.score}</span>
+                    <span className={cn("font-display text-2xl font-extrabold leading-none tabular-nums", scoreColor(s.score))}>{s.score}</span>
                   )}
                 </div>
-                <h3 className="text-sm font-semibold leading-tight">{s.title}</h3>
-                <div className="flex gap-3 text-[10px]">
-                  <span className="text-green-600">Promoters: {s.promoters}</span>
-                  <span className="text-amber-600">Passives: {s.passives}</span>
-                  <span className="text-red-600">Detractors: {s.detractors}</span>
+                <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{s.title}</h3>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium tabular-nums">
+                  <span className="text-success-strong">Promoters: {s.promoters}</span>
+                  <span className="text-warning-strong">Passives: {s.passives}</span>
+                  <span className="text-danger-strong">Detractors: {s.detractors}</span>
                 </div>
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{s.totalResponses} responses</span>
-                  {s.closesAt && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground tabular-nums">
+                  <span className="flex items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{s.totalResponses} responses</span>
+                  {s.closesAt && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />Closes {format(new Date(s.closesAt), "MMM d")}</span>}
                 </div>
                 {s.status === "ACTIVE" && (
-                  <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => setRespondId(s.id)}>
-                    <BarChart3 className="h-3 w-3 mr-1" />Respond
+                  <Button size="sm" variant="outline" className="mt-auto w-full" onClick={() => setRespondId(s.id)}>
+                    <BarChart3 className="size-4" aria-hidden="true" />Respond
                   </Button>
                 )}
               </CardContent>

@@ -4,7 +4,6 @@ import { use, useState, useMemo, useCallback, memo } from "react";
 import { usePages, useCreatePage, useUpdatePage } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -18,9 +17,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { cn } from "@/lib/utils";
 import {
   Plus,
-  FileText,
   ChevronRight,
   ChevronDown,
   Pin,
@@ -105,36 +105,39 @@ function PageTreeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors group ${
-          isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
-        }`}
+        className={cn(
+          "group flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 transition-colors",
+          isActive ? "bg-brand-soft text-brand-soft-foreground" : "hover:bg-muted",
+        )}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
         onClick={handleSelect}
       >
         {hasChildren ? (
           <button
             onClick={handleToggleExpand}
-            className="h-5 w-5 flex items-center justify-center shrink-0"
+            className="flex size-5 shrink-0 items-center justify-center rounded-sm focus-visible:focus-ring"
+            aria-label={expanded ? "Collapse" : "Expand"}
           >
             {expanded ? (
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="size-3.5" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="size-3.5" />
             )}
           </button>
         ) : (
           <span className="w-5 shrink-0" />
         )}
         <span className="text-base shrink-0">{page.icon ?? "📄"}</span>
-        <span className="text-sm truncate flex-1">{page.title}</span>
+        <span className="flex-1 truncate text-sm" title={page.title}>{page.title}</span>
         <button
           onClick={handleTogglePin}
-          className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          className="shrink-0 rounded-sm opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:focus-ring pointer-coarse:opacity-100"
+          aria-label={page.isPinned ? "Unpin page" : "Pin page"}
         >
           {page.isPinned ? (
-            <PinOff className="h-3.5 w-3.5 text-muted-foreground" />
+            <PinOff className="size-3.5 text-muted-foreground" />
           ) : (
-            <Pin className="h-3.5 w-3.5 text-muted-foreground" />
+            <Pin className="size-3.5 text-muted-foreground" />
           )}
         </button>
       </div>
@@ -170,15 +173,14 @@ const PinnedPageItem = memo(function PinnedPageItem({
   return (
     <div
       onClick={handleClick}
-      className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-        activePage === page.id
-          ? "bg-primary/10 text-primary"
-          : "hover:bg-muted"
-      }`}
+      className={cn(
+        "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
+        activePage === page.id ? "bg-brand-soft text-brand-soft-foreground" : "hover:bg-muted",
+      )}
     >
-      <Pin className="h-3 w-3 text-muted-foreground shrink-0" />
-      <span className="text-base shrink-0">{page.icon ?? "📄"}</span>
-      <span className="text-sm truncate">{page.title}</span>
+      <Pin className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span className="shrink-0 text-base">{page.icon ?? "📄"}</span>
+      <span className="truncate text-sm" title={page.title}>{page.title}</span>
     </div>
   );
 });
@@ -194,7 +196,7 @@ export default function PagesPage({
   const [activePage, setActivePage] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  const { data: pages, isLoading } = usePages(projectId);
+  const { data: pages, isLoading, isError, error, refetch } = usePages(projectId);
 
   const createMutation = useCreatePage();
   const updateMutation = useUpdatePage();
@@ -281,7 +283,7 @@ export default function PagesPage({
     return (
       <PageWrapper title="Pages" noInternalScroll contentClassName="p-0">
         <div className="flex h-full">
-          <div className="w-64 border-r p-4 space-y-2">
+          <div className="hidden w-64 space-y-2 border-r border-border p-4 md:block">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-8 w-full" />
             ))}
@@ -301,10 +303,10 @@ export default function PagesPage({
         <Sheet open={createOpen} onOpenChange={setCreateOpen}>
           <SheetTrigger asChild>
             <Button size="sm">
-              <Plus className="h-4 w-4 mr-1" /> New Page
+              <Plus className="size-4" aria-hidden="true" /> New Page
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+          <SheetContent side="right" size="sm" className="overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Create Page</SheetTitle>
             </SheetHeader>
@@ -312,7 +314,7 @@ export default function PagesPage({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 p-4"
             >
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="page-title">Title</Label>
                 <Input id="page-title" {...form.register("title")} />
                 {form.formState.errors.title && (
@@ -321,7 +323,7 @@ export default function PagesPage({
                   </p>
                 )}
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="page-icon">Icon Emoji</Label>
                 <Input
                   id="page-icon"
@@ -332,7 +334,7 @@ export default function PagesPage({
               </div>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                loading={createMutation.isPending}
                 className="w-full"
               >
                 {createMutation.isPending ? "Creating..." : "Create Page"}
@@ -344,8 +346,12 @@ export default function PagesPage({
       noInternalScroll
       contentClassName="p-0"
     >
-      {!pages?.length ? (
-        <div className="flex items-center justify-center py-16">
+      {isError ? (
+        <div className="p-4 sm:p-6">
+          <QueryErrorState error={error} onRetry={refetch} />
+        </div>
+      ) : !pages?.length ? (
+        <div className="p-4 sm:p-6">
           <EmptyState
             illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
             title="No pages yet"
@@ -354,11 +360,14 @@ export default function PagesPage({
           />
         </div>
       ) : (
-        <div className="flex h-full overflow-hidden">
-          <div className="w-64 border-r overflow-y-auto p-3 space-y-1">
+        <div className="flex h-full flex-col overflow-hidden md:flex-row">
+          <nav
+            aria-label="Pages"
+            className="max-h-56 shrink-0 space-y-1 overflow-y-auto border-b border-border bg-surface-sunken/40 p-3 md:max-h-none md:w-64 md:border-r md:border-b-0"
+          >
             {pinnedPages.length > 0 && (
               <div className="mb-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+                <p className="mb-1 px-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Pinned
                 </p>
                 {pinnedPages.map((page) => (
@@ -369,7 +378,7 @@ export default function PagesPage({
                     onSelect={handleSelectPage}
                   />
                 ))}
-                <div className="border-b my-2" />
+                <div className="my-2 border-b border-border" />
               </div>
             )}
             {tree.map((page) => (
@@ -382,40 +391,42 @@ export default function PagesPage({
                 onTogglePin={handleTogglePin}
               />
             ))}
-          </div>
+          </nav>
 
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {selectedPage ? (
-              <div className="flex-1 flex flex-col p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <span className="text-2xl">
+              <div className="flex flex-1 flex-col overflow-y-auto p-4 sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h2 className="flex min-w-0 items-center gap-2 font-display text-xl font-bold">
+                    <span className="shrink-0 text-2xl">
                       {selectedPage.icon ?? "📄"}
                     </span>
-                    {selectedPage.title}
+                    <span className="truncate">{selectedPage.title}</span>
                   </h2>
                   <Button
                     size="sm"
                     onClick={handleSave}
-                    disabled={updateMutation.isPending}
+                    loading={updateMutation.isPending}
                   >
                     {updateMutation.isPending ? "Saving..." : "Save"}
                   </Button>
                 </div>
                 <Textarea
-                  className="flex-1 min-h-[400px] resize-none font-mono text-sm"
+                  className="min-h-96 flex-1 resize-none font-mono text-sm"
                   placeholder="Start writing..."
                   value={editContent}
                   onChange={handleEditContentChange}
                 />
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <EmptyDocumentsIllustration className="mx-auto mb-3 w-32 h-32" />
-                  <p className="text-sm font-medium text-foreground">Select a page</p>
-                  <p className="text-xs text-muted-foreground mt-1">Choose a page from the list to start editing</p>
-                </div>
+              <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+                <EmptyState
+                  compact
+                  className="border-0 bg-transparent"
+                  illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
+                  title="Select a page"
+                  description="Choose a page from the list to start editing"
+                />
               </div>
             )}
           </div>

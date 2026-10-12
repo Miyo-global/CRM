@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Trash2, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowLeft, MapPin } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/card";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useOrgSettings, useUpdateOrgSettings } from "@/lib/api/hooks/organization";
 import { getErrorMessage } from "@/lib/get-error-message";
 import type { JobOfficeLocation } from "@/types/organization";
@@ -126,19 +128,19 @@ function JobOfficeLocationsContent() {
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/settings/organization">
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            <ArrowLeft aria-hidden />
             Back
           </Link>
         </Button>
       }
     >
-      <div className="max-w-xl space-y-4">
+      <div className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle>Add location</CardTitle>
             <CardDescription>
               Fill in all fields. Choosing a location on the{" "}
-              <Link href="/hr/recruitment/jobs/new" className="underline underline-offset-2">
+              <Link href="/hr/recruitment/jobs/new" className="text-brand-text underline underline-offset-2">
                 new job opening
               </Link>{" "}
               form will auto-fill city, state and country.
@@ -159,7 +161,7 @@ function JobOfficeLocationsContent() {
                       value={form.name}
                       onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setFormErrors((fe) => ({ ...fe, name: undefined })); }}
                     />
-                    {formErrors.name && <p className="text-[11px] text-destructive">{formErrors.name}</p>}
+                    {formErrors.name && <p className="text-xs text-destructive">{formErrors.name}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="loc-country">Country *</Label>
@@ -176,7 +178,7 @@ function JobOfficeLocationsContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {formErrors.country && <p className="text-[11px] text-destructive">{formErrors.country}</p>}
+                    {formErrors.country && <p className="text-xs text-destructive">{formErrors.country}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="loc-state">State / Region *</Label>
@@ -187,7 +189,7 @@ function JobOfficeLocationsContent() {
                       value={form.state}
                       onChange={(e) => { setForm((f) => ({ ...f, state: e.target.value })); setFormErrors((fe) => ({ ...fe, state: undefined })); }}
                     />
-                    {formErrors.state && <p className="text-[11px] text-destructive">{formErrors.state}</p>}
+                    {formErrors.state && <p className="text-xs text-destructive">{formErrors.state}</p>}
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="loc-city">City *</Label>
@@ -198,7 +200,7 @@ function JobOfficeLocationsContent() {
                       value={form.city}
                       onChange={(e) => { setForm((f) => ({ ...f, city: e.target.value })); setFormErrors((fe) => ({ ...fe, city: undefined })); }}
                     />
-                    {formErrors.city && <p className="text-[11px] text-destructive">{formErrors.city}</p>}
+                    {formErrors.city && <p className="text-xs text-destructive">{formErrors.city}</p>}
                   </div>
                 </div>
                 <Button type="button" variant="secondary" onClick={addLocation}>
@@ -209,50 +211,70 @@ function JobOfficeLocationsContent() {
           </CardContent>
         </Card>
 
+        {!isLoading && draft.length === 0 && (
+          <EmptyState
+            compact
+            icon={MapPin}
+            title="No office locations yet"
+            description="Add a location above to use it as a preset on job openings."
+          />
+        )}
+
         {draft.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Saved locations ({draft.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ul className="divide-y">
+          <Card className="overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+              <h2 className="text-sm font-semibold">Saved locations</h2>
+              <span className="inline-flex h-5 items-center rounded-full bg-neutral-soft px-2 text-2xs font-semibold tabular-nums text-neutral-strong">
+                {draft.length}
+              </span>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Office</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {draft.map((loc) => (
-                  <li key={loc.name} className="flex items-center justify-between gap-2 px-4 py-3 text-sm">
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{loc.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {[loc.city, loc.state, loc.country].filter(Boolean).join(", ")}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-muted-foreground hover:text-destructive"
-                      aria-label={`Remove ${loc.name}`}
-                      onClick={() => remove(loc.name)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </li>
+                  <TableRow key={loc.name} className="group">
+                    <TableCell className="max-w-56 truncate font-medium" title={loc.name}>{loc.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {[loc.city, loc.state, loc.country].filter(Boolean).join(", ")}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label={`Remove ${loc.name}`}
+                        onClick={() => remove(loc.name)}
+                      >
+                        <Trash2 aria-hidden />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </ul>
-            </CardContent>
+              </TableBody>
+            </Table>
           </Card>
         )}
 
         {draft.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={save} disabled={!dirty || updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving…" : "Save changes"}
-            </Button>
+          <div className="sticky bottom-0 z-sticky -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-border bg-background/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 xl:-mx-8 xl:px-8">
+            {dirty && <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>}
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               disabled={!dirty || updateMutation.isPending}
               onClick={() => setDraft(dedupeLocations(org?.jobOfficeLocations ?? []))}
             >
               Discard
+            </Button>
+            <Button type="button" onClick={save} disabled={!dirty || updateMutation.isPending} loading={updateMutation.isPending}>
+              {updateMutation.isPending ? "Saving…" : "Save changes"}
             </Button>
           </div>
         )}

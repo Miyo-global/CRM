@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
-import { CheckCircle, ArrowLeft, ArrowRight, Check, Loader2, Send, Shield, type LucideIcon } from "lucide-react";
+import { CheckCircle, ArrowLeft, ArrowRight, Check, Send, Shield, type LucideIcon } from "lucide-react";
 import { submitOnboarding } from "@/server/actions/onboarding-actions";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -69,7 +69,7 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
 
   if (isSubmitted) {
     return (
-      <Card className="border-border text-center py-8">
+      <Card className="border-0 bg-transparent py-6 text-center shadow-none">
         <CardContent className="flex flex-col items-center space-y-4">
           <motion.div
             variants={staggerContainer}
@@ -77,10 +77,10 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
             animate="visible"
             className="flex flex-col items-center space-y-4"
           >
-            <motion.div variants={fadeUp} className="bg-green-500/15 p-4 rounded-full">
-              <CheckCircle className="h-16 w-16 text-green-500" aria-hidden="true" />
+            <motion.div variants={fadeUp} className="bg-success-soft p-4 rounded-full">
+              <CheckCircle className="size-12 text-success-strong" aria-hidden="true" />
             </motion.div>
-            <motion.h2 variants={fadeUp} className="text-2xl font-bold">You&apos;re All Set!</motion.h2>
+            <motion.h2 variants={fadeUp} className="font-display text-2xl font-bold">You&apos;re All Set!</motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground max-w-md">
               Your onboarding information has been submitted. The HR team will verify your documents and approve your profile soon.
             </motion.p>
@@ -89,24 +89,24 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
               {dataSteps.map((step) => (
                 <div
                   key={step.id}
-                  className="flex items-center gap-3 p-3 rounded-lg text-left bg-green-500/10"
+                  className="flex items-center gap-3 p-3 rounded-lg text-left bg-success-soft"
                 >
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm font-medium text-green-600">
+                  <Check className="h-5 w-5 text-success-strong shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-medium text-success-strong">
                     {step.label}
                   </span>
-                  <span className="ml-auto text-xs text-green-600">
+                  <span className="ml-auto text-xs text-success-strong">
                     Completed
                   </span>
                 </div>
               ))}
 
-              <div className="flex items-center gap-3 p-3 rounded-lg text-left bg-primary/10">
-                <Shield className="h-5 w-5 text-primary flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm font-medium text-primary">
+              <div className="flex items-center gap-3 p-3 rounded-lg text-left bg-brand-soft">
+                <Shield className="h-5 w-5 text-brand-text shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium text-brand-text">
                   Role: {roleLabel}
                 </span>
-                <span className="ml-auto text-xs text-primary">
+                <span className="ml-auto text-xs text-brand-text">
                   Assigned
                 </span>
               </div>
@@ -115,7 +115,7 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
             <motion.div variants={fadeUp} className="pt-4">
               <Button onClick={handleGoToDashboard}>
                 Go to Dashboard
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight aria-hidden="true" />
               </Button>
             </motion.div>
           </motion.div>
@@ -125,7 +125,7 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
   }
 
   return (
-    <Card className="border-border text-center py-8">
+    <Card className="border-0 bg-transparent py-6 text-center shadow-none">
       <CardContent className="flex flex-col items-center space-y-4">
         <motion.div
           variants={staggerContainer}
@@ -133,10 +133,10 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
           animate="visible"
           className="flex flex-col items-center space-y-4"
         >
-          <motion.div variants={fadeUp} className="bg-primary/10 p-4 rounded-full">
-            <Send className="h-12 w-12 text-primary" aria-hidden="true" />
+          <motion.div variants={fadeUp} className="bg-brand-soft p-4 rounded-full">
+            <Send className="size-10 text-brand-text" aria-hidden="true" />
           </motion.div>
-          <motion.h2 variants={fadeUp} className="text-2xl font-bold">Review & Submit</motion.h2>
+          <motion.h2 variants={fadeUp} className="font-display text-2xl font-bold">Review & Submit</motion.h2>
           <motion.p variants={fadeUp} className="text-muted-foreground max-w-md">
             Please review your completed steps below. When you&apos;re ready, click Submit to finalize your onboarding.
           </motion.p>
@@ -148,53 +148,52 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg text-left ${isCompleted ? "bg-green-500/10" : "bg-muted/50"}`}
+                  className={`flex items-center gap-3 p-3 rounded-lg text-left ${isCompleted ? "bg-success-soft" : "bg-muted/50"}`}
                 >
                   {isCompleted ? (
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-success-strong shrink-0" aria-hidden="true" />
                   ) : (
-                    <StepIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                    <StepIcon className="h-5 w-5 text-muted-foreground shrink-0" aria-hidden="true" />
                   )}
-                  <span className={`text-sm font-medium ${isCompleted ? "text-green-600" : "text-muted-foreground"}`}>
+                  <span className={`text-sm font-medium ${isCompleted ? "text-success-strong" : "text-muted-foreground"}`}>
                     {step.label}
                   </span>
-                  <span className={`ml-auto text-xs ${isCompleted ? "text-green-600" : "text-muted-foreground"}`}>
+                  <span className={`ml-auto text-xs ${isCompleted ? "text-success-strong" : "text-muted-foreground"}`}>
                     {isCompleted ? "Completed" : "Pending"}
                   </span>
                 </div>
               );
             })}
 
-            <div className="flex items-center gap-3 p-3 rounded-lg text-left bg-primary/10">
-              <Shield className="h-5 w-5 text-primary flex-shrink-0" aria-hidden="true" />
-              <span className="text-sm font-medium text-primary">
+            <div className="flex items-center gap-3 p-3 rounded-lg text-left bg-brand-soft">
+              <Shield className="h-5 w-5 text-brand-text shrink-0" aria-hidden="true" />
+              <span className="text-sm font-medium text-brand-text">
                 Role: {roleLabel}
               </span>
-              <span className="ml-auto text-xs text-primary">
+              <span className="ml-auto text-xs text-brand-text">
                 Assigned
               </span>
             </div>
           </motion.div>
 
-          <motion.p variants={fadeUp} className="text-sm text-muted-foreground italic pt-2">
+          <motion.p variants={fadeUp} className="pt-2 text-sm text-muted-foreground">
             Default leave balances will be allocated upon submission
           </motion.p>
 
-          <motion.div variants={fadeUp} className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
+          <motion.div variants={fadeUp} className="flex w-full justify-between gap-3 border-t border-border pt-4">
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft aria-hidden="true" />
               Back
             </Button>
             <span title={!allDataStepsComplete ? "Complete all steps before submitting" : undefined}>
               <Button
                 onClick={handleSubmit}
-                disabled={!allDataStepsComplete || isSubmitting}
-                aria-busy={isSubmitting}
+                disabled={!allDataStepsComplete}
+                loading={isSubmitting}
                 aria-describedby={!allDataStepsComplete ? "review-hint" : undefined}
               >
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit
-                <ArrowRight className="ml-2 h-4 w-4" />
+                                Submit
+                <ArrowRight aria-hidden="true" />
               </Button>
             </span>
             {!allDataStepsComplete && (

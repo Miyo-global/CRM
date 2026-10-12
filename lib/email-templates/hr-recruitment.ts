@@ -1,4 +1,5 @@
 import { getEmailTemplate, escapeHtml, baseUrl } from "./base";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export type RecruitmentEmailEvent =
   | "job_created"
@@ -245,7 +246,7 @@ export function getCandidateOfferEmail(
   ].filter(Boolean).join("\n");
 
   const ctaBlock = params.acceptanceLink
-    ? `<div style="text-align:center;margin:24px 0"><a href="${escapeHtml(params.acceptanceLink)}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a></div><p class="email-text" style="font-size:12px;color:#6b7280;text-align:center">Button not working? Copy this link: <a href="${escapeHtml(params.acceptanceLink)}" class="footer-link">${escapeHtml(params.acceptanceLink)}</a></p>`
+    ? `<div style="text-align:center;margin:24px 0"><a href="${escapeHtml(params.acceptanceLink)}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px">Review &amp; Accept Offer</a></div><p class="email-text" style="font-size:12px;color:${BRAND.inkMuted};text-align:center">Button not working? Copy this link: <a href="${escapeHtml(params.acceptanceLink)}" class="footer-link">${escapeHtml(params.acceptanceLink)}</a></p>`
     : "";
 
   const content = `
@@ -368,7 +369,7 @@ export function buildOfferResponseHrNotificationHtml(
       <div class="credential-item"><span class="credential-label">Decision:</span><span class="credential-value">${decisionLabel}</span></div>
       ${notesRow}
     </div>
-    <div style="text-align:center;margin:24px 0"><a href="${escapeHtml(params.candidateProfileUrl)}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a></div>
+    <div style="text-align:center;margin:24px 0"><a href="${escapeHtml(params.candidateProfileUrl)}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a></div>
     <p class="email-text">Please update the candidate record and proceed with the next steps accordingly.</p>
     <p class="email-text">Recruitment Automation · ${org}</p>
   `;

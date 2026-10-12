@@ -5,12 +5,12 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { format, eachDayOfInterval, parse, isValid } from "date-fns";
 import { useGetWorkLogs, useUpsertWorkLog } from "@/lib/api/hooks/hr";
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
-import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { apiClient } from "@/lib/api-client";
-import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { Employee } from "@/types/hr";
 
@@ -22,7 +22,7 @@ import {
 import { WorkLogMonthGroup } from "@/features/hr/work-logs/work-log-month-group";
 import { WorkLogList } from "@/features/hr/work-logs/work-log-list";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTimeIllustration } from "@/components/illustrations";
+import { EmptySearchIllustration } from "@/components/illustrations";
 import { resolveWorkLogWindow, normalizeWorkLogFilters } from "@/lib/hr/work-log-window";
 import { normalizeWorkLogPeopleFilters } from "@/lib/hr/work-log-people-filters";
 import { resolveWorkLogView } from "@/lib/hr/work-log-view";
@@ -193,7 +193,7 @@ export default function WorkLogsPage() {
     });
   }, []);
 
-  const { data: logs, isLoading } = useGetWorkLogs({
+  const { data: logs, isLoading, isError, error, refetch } = useGetWorkLogs({
     year,
     quarter,
     ...(effectiveUserId ? { userId: effectiveUserId } : {}),
@@ -431,26 +431,22 @@ export default function WorkLogsPage() {
     >
       <div className="space-y-4">
         {isLoading ? (
-          <Card>
-            <CardContent className="py-12">
-              <div className="flex justify-center" role="status" aria-label="Loading work logs">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-3" role="status" aria-label="Loading work logs">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : isError ? (
+          <QueryErrorState title="Couldn't load work logs" error={error} onRetry={() => refetch()} />
         ) : isMultiUser ? (
           <WorkLogList logs={logs ?? []} searchTerm={searchTerm} />
         ) : !hasSearchResults ? (
-          <Card>
-            <CardContent className="py-12">
-              <EmptyState
-                illustration={<EmptyTimeIllustration className="h-32 w-32 opacity-95" />}
-                title="No matches"
-                description="Try adjusting your search or filters."
-                action={{ label: "Clear filters", onClick: () => setSearchTerm("") }}
-              />
-            </CardContent>
-          </Card>
+          <EmptyState
+            illustration={<EmptySearchIllustration />}
+            title="No matches"
+            description="Try adjusting your search or filters."
+            action={{ label: "Clear filters", onClick: () => setSearchTerm("") }}
+          />
         ) : (
           <div className="space-y-4">
             {monthGroups.map((group) => {

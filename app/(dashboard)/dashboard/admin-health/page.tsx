@@ -1,7 +1,10 @@
 "use client";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
@@ -22,7 +25,7 @@ interface AdminHealthData {
 }
 
 export default function AdminHealthDashboardPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: [...queryKeys.dashboard.all, "admin-health"],
     queryFn: () => apiClient.get<AdminHealthData>("/dashboard/admin-health"),
     refetchInterval: 60_000,
@@ -31,11 +34,19 @@ export default function AdminHealthDashboardPage() {
   if (isLoading) {
     return (
       <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-5">
+        <div className="grid grid-cols-12 gap-4 xl:gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-[172px] rounded-xl" />
+            <Skeleton key={i} className="col-span-12 h-36 rounded-lg md:col-span-6 xl:col-span-4" />
           ))}
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -45,8 +56,7 @@ export default function AdminHealthDashboardPage() {
       label: "Overdue Tasks",
       value: data?.overdueTasks ?? 0,
       icon: Clock,
-      color: (data?.overdueTasks ?? 0) > 0 ? "text-amber-500" : "text-green-500",
-      bgColor: (data?.overdueTasks ?? 0) > 0 ? "bg-amber-50 dark:bg-amber-950" : "bg-green-50 dark:bg-green-950",
+      tone: (data?.overdueTasks ?? 0) > 0 ? ("warning" as Tone) : ("success" as Tone),
       description: "Tasks past their due date",
       link: "/tasks/overdue",
     },
@@ -54,8 +64,7 @@ export default function AdminHealthDashboardPage() {
       label: "Pending Expenses",
       value: data?.pendingExpenses.count ?? 0,
       icon: Wallet,
-      color: (data?.pendingExpenses.count ?? 0) > 0 ? "text-blue-500" : "text-green-500",
-      bgColor: (data?.pendingExpenses.count ?? 0) > 0 ? "bg-blue-50 dark:bg-blue-950" : "bg-green-50 dark:bg-green-950",
+      tone: (data?.pendingExpenses.count ?? 0) > 0 ? ("info" as Tone) : ("success" as Tone),
       description: `INR ${Number(data?.pendingExpenses.totalAmount ?? 0).toLocaleString(DEFAULT_LOCALE)} awaiting approval`,
       link: "/hr/expenses?status=PENDING",
     },
@@ -63,8 +72,7 @@ export default function AdminHealthDashboardPage() {
       label: "Pending Leave Requests",
       value: data?.pendingLeaves ?? 0,
       icon: CalendarDays,
-      color: (data?.pendingLeaves ?? 0) > 0 ? "text-orange-500" : "text-green-500",
-      bgColor: (data?.pendingLeaves ?? 0) > 0 ? "bg-orange-50 dark:bg-orange-950" : "bg-green-50 dark:bg-green-950",
+      tone: (data?.pendingLeaves ?? 0) > 0 ? ("warning" as Tone) : ("success" as Tone),
       description: "Leave requests awaiting approval",
       link: "/hr/leaves?status=PENDING",
     },
@@ -72,8 +80,7 @@ export default function AdminHealthDashboardPage() {
       label: "Total Employees",
       value: data?.totalEmployees ?? 0,
       icon: Users,
-      color: "text-blue-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950",
+      tone: "info" as Tone,
       description: (() => {
         const total = data?.totalEmployees ?? 0;
         const active = data?.activeEmployees ?? 0;
@@ -87,27 +94,25 @@ export default function AdminHealthDashboardPage() {
 
   return (
     <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-5">
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <Link key={kpi.label} href={kpi.link} className="h-full">
-              <Card className={`${kpi.bgColor} h-full border-0 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer rounded-xl`}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{kpi.label}</CardTitle>
-                  <Icon className={`h-5 w-5 ${kpi.color}`} />
-                </CardHeader>
-                <CardContent className="flex min-h-[112px] flex-col justify-between gap-2">
-                  <div>
-                    <p className={`text-3xl font-bold leading-none tracking-tight ${kpi.color}`}>{kpi.value}</p>
-                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2 min-h-[32px]">{kpi.description}</p>
-                  </div>
-                  <div className="mt-3 h-2" aria-hidden="true" />
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
+      <div className="grid grid-cols-12 gap-4 xl:gap-6">
+        {kpis.map((kpi) => (
+          <Link
+            key={kpi.label}
+            href={kpi.link}
+            className="col-span-12 rounded-lg outline-none focus-visible:focus-ring md:col-span-6 xl:col-span-4"
+          >
+            <Card interactive className="h-full gap-0 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
+                <IconChip icon={kpi.icon} tone={kpi.tone} />
+              </div>
+              <p className="mt-1 font-display text-3xl font-extrabold leading-none tabular-nums text-foreground">
+                {kpi.value}
+              </p>
+              <p className="mt-3 line-clamp-2 text-xs text-muted-foreground">{kpi.description}</p>
+            </Card>
+          </Link>
+        ))}
       </div>
     </PageWrapper>
   );

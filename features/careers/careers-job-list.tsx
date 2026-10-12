@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { Building2, Briefcase, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { CareersJobCard } from "@/features/careers/careers-job-card";
+import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
+import { Input } from "@/components/ui/input";
 import { formatJobTypeLabel } from "@/lib/hr/job-posting-format";
 import { cn } from "@/lib/utils";
 import type { PublicJobPosting } from "@/server/queries/public";
@@ -16,7 +19,7 @@ const ALL = "__all";
 const MIN_SEARCH_LEN = 3;
 
 const FILTER_SELECT =
-  "h-10 w-full appearance-none rounded-xl border border-border/80 bg-background/80 pl-9 pr-8 text-sm text-foreground shadow-sm outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/15";
+  "h-9 w-full appearance-none rounded-md border border-input bg-card pl-9 pr-8 text-sm text-foreground shadow-xs outline-none transition-[border-color,box-shadow] focus-visible:focus-ring focus-visible:border-ring";
 
 export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
   const [query, setQuery] = useState("");
@@ -64,12 +67,10 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
 
   return (
     <div className="space-y-8">
-      <div className="sticky top-16 z-30 -mx-4 border-b border-border/50 bg-background/90 px-4 py-4 backdrop-blur-md sm:-mx-6 sm:px-6">
-        <div className="rounded-2xl border border-border/60 bg-card/50 p-4 shadow-soft sm:p-5">
+      <div className="sticky top-14 z-sticky -mx-4 border-b border-border bg-background/90 px-4 py-4 backdrop-blur-md sm:-mx-6 sm:px-6">
+        <div className="rounded-lg border border-border bg-card p-4 shadow-xs sm:p-5">
           <div className="mb-4 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <SlidersHorizontal className="h-4 w-4" aria-hidden />
-            </div>
+            <IconChip icon={SlidersHorizontal} size="sm" />
             <div>
               <p className="text-sm font-semibold leading-none">Find a role</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -81,27 +82,23 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
           <div className="grid gap-3 lg:grid-cols-[1fr_minmax(0,11rem)_minmax(0,11rem)]">
             <div className="relative">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden
               />
-              <input
+              <Input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search roles"
                 aria-label="Search jobs"
                 aria-describedby="careers-search-hint"
-                className={cn(
-                  "h-10 w-full rounded-xl border border-border/80 bg-background/80 pl-9 pr-3 text-sm shadow-sm outline-none transition",
-                  "focus:border-primary/50 focus:ring-2 focus:ring-primary/15",
-                  searchTooShort && "border-amber-500/40 focus:border-amber-500/50 focus:ring-amber-500/15",
-                )}
+                className={cn("pl-9", searchTooShort && "border-warning-strong focus-visible:border-warning-strong")}
               />
             </div>
 
             <div className="relative">
               <Building2
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden
               />
               <select
@@ -121,7 +118,7 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
 
             <div className="relative">
               <Briefcase
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden
               />
               <select
@@ -141,7 +138,7 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
           </div>
 
           {searchTooShort && (
-            <p id="careers-search-hint" className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+            <p id="careers-search-hint" className="mt-3 text-xs text-warning-strong">
               Type at least {MIN_SEARCH_LEN} characters to search.
             </p>
           )}
@@ -150,43 +147,36 @@ export function CareersJobList({ items }: { items: CareersJobListItem[] }) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold tracking-tight">Open positions</h2>
-          <span className="inline-flex min-w-[1.75rem] items-center justify-center rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-bold text-primary tabular-nums">
+          <h2 className="font-display text-xl font-bold tracking-tight">Open positions</h2>
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-soft px-2 text-2xs font-semibold tabular-nums text-brand-soft-foreground">
             {filtered.length}
           </span>
         </div>
         {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-card/60 px-3 py-1.5 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-muted/50"
-          >
-            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+          <Button type="button" variant="outline" size="sm" onClick={clearFilters}>
+            <RotateCcw className="size-3.5" aria-hidden />
             Clear filters
-          </button>
+          </Button>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 bg-gradient-to-b from-card/60 to-card/30 px-6 py-16 text-center">
-          <p className="text-base font-semibold">No roles match your filters</p>
+        <div className="rounded-lg border border-dashed border-border-strong bg-card px-6 py-16 text-center">
+          <IconChip icon={Search} tone="neutral" size="lg" className="mx-auto mb-4" />
+          <p className="font-display text-lg font-bold">No roles match your filters</p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             Try another keyword, department, or employment type — or clear filters to see
             everything.
           </p>
           {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-gold transition hover:bg-primary/90"
-            >
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+            <Button type="button" onClick={clearFilters} className="mt-6">
+              <RotateCcw className="size-3.5" aria-hidden />
               Show all roles
-            </button>
+            </Button>
           )}
         </div>
       ) : (
-        <ul className="flex flex-col gap-4" role="list">
+        <ul className="flex flex-col gap-3" role="list">
           {filtered.map(({ job, departmentName }) => (
             <li key={job.id}>
               <CareersJobCard job={job} departmentName={departmentName} />

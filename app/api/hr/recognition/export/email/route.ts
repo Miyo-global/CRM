@@ -10,6 +10,7 @@ import {
 import { buildRecognitionCsvBuffer } from "@/lib/hr/recognition-export-rows";
 import { getRecognitionExportRows } from "@/server/queries/hr/recognition-export";
 import { sendEmail } from "@/lib/email/sender";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function escapeHtml(s: string) {
   return s
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     const messageHtml = message?.trim()
       ? `<p>${escapeHtml(message.trim()).replace(/\n/g, "<br/>")}</p>`
       : `<p>Please find attached the recognition history for <strong>${escapeHtml(scopeLabel)}</strong>.</p>`;
-    const summaryHtml = `<p style="color:#666;font-size:13px">Records: ${rowCount}</p>`;
+    const summaryHtml = `<p style="color:${BRAND.inkMuted};font-size:13px">Records: ${rowCount}</p>`;
 
     await sendEmail({
       to,
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
       html: `
         ${messageHtml}
         ${summaryHtml}
-        <p style="margin-top:16px;font-size:12px;color:#888">Sent from Miyo Global HR Recognition.</p>
+        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Recognition.</p>
       `,
       attachments: [
         {

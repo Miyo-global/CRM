@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Webhook, Trash2, ToggleLeft, ToggleRight, Copy, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { Plus, Webhook, Trash2, Copy, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,7 +170,7 @@ function WebhooksContent() {
       subtitle="Send real-time events to external systems when things happen in the CRM"
       actions={
         <Button onClick={() => setSheetOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus aria-hidden />
           Add Webhook
         </Button>
       }
@@ -186,82 +187,93 @@ function WebhooksContent() {
             />
           </motion.div>
         ) : (
-          webhooks.map((wh) => (
-            <motion.div key={wh.id} variants={fadeUp}>
-              <Card className="shadow-noir">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${wh.isActive ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-sm truncate">{wh.url}</CardTitle>
-                          <button onClick={() => copyUrl(wh.url)} aria-label="Copy URL">
-                            <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />
-                          </button>
-                        </div>
-                        {wh.description && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{wh.description}</p>
+          <motion.div variants={fadeUp}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Endpoint</TableHead>
+                  <TableHead>Events</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {webhooks.map((wh) => (
+                  <TableRow key={wh.id}>
+                    <TableCell className="max-w-72">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate font-mono text-xs font-medium" title={wh.url}>{wh.url}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="shrink-0 text-muted-foreground"
+                          onClick={() => copyUrl(wh.url)}
+                          aria-label="Copy URL"
+                        >
+                          <Copy aria-hidden />
+                        </Button>
+                      </div>
+                      {wh.description && (
+                        <p className="truncate text-xs text-muted-foreground" title={wh.description}>{wh.description}</p>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-80 whitespace-normal">
+                      <div className="flex flex-wrap gap-1">
+                        {(wh.events ?? []).length === 0 ? (
+                          <span className="text-xs text-muted-foreground">No events selected</span>
+                        ) : (
+                          (wh.events ?? []).map(ev => (
+                            <Badge key={ev} variant="secondary" className="font-mono text-2xs">{ev}</Badge>
+                          ))
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant={wh.isActive ? "default" : "secondary"} className="text-xs">
+                    </TableCell>
+                    <TableCell>
+                      <StatusPill tone={wh.isActive ? "success" : "neutral"} dot>
                         {wh.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleToggle(wh.id, wh.isActive)}
-                        aria-label={wh.isActive ? "Disable webhook" : "Enable webhook"}
-                      >
-                        {wh.isActive
-                          ? <ToggleRight className="h-4 w-4 text-emerald-500" />
-                          : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={() => setDeleteId(wh.id)}
-                        aria-label="Delete webhook"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(wh.events ?? []).length === 0 ? (
-                      <span className="text-xs text-muted-foreground">No events selected</span>
-                    ) : (
-                      (wh.events ?? []).map(ev => (
-                        <Badge key={ev} variant="secondary" className="text-[10px]">{ev}</Badge>
-                      ))
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Created {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))
+                      </StatusPill>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground tabular-nums">
+                      Created {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <Switch
+                          checked={wh.isActive}
+                          onCheckedChange={() => handleToggle(wh.id, wh.isActive)}
+                          disabled={toggleWebhook.isPending}
+                          aria-label={wh.isActive ? "Disable webhook" : "Enable webhook"}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:bg-danger-soft hover:text-destructive"
+                          onClick={() => setDeleteId(wh.id)}
+                          aria-label="Delete webhook"
+                        >
+                          <Trash2 aria-hidden />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </motion.div>
         )}
       </motion.div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
+        <SheetContent size="md" className="w-full">
+          <SheetHeader className="border-b border-border">
             <SheetTitle>Add Webhook</SheetTitle>
           </SheetHeader>
-          <div className="space-y-5 mt-6">
+          <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
             <div className="space-y-1.5">
               <Label htmlFor="webhook-url">Endpoint URL *</Label>
               <div className="relative">
-                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" aria-hidden />
                 <Input
                   id="webhook-url"
                   className="pl-9"
@@ -282,9 +294,9 @@ function WebhooksContent() {
             </div>
             <div className="space-y-2">
               <Label>Events to send</Label>
-              <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 gap-1 rounded-md border border-border p-1">
                 {AVAILABLE_EVENTS.map(ev => (
-                  <div key={ev.id} className="flex items-center gap-2">
+                  <div key={ev.id} className="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent">
                     <Checkbox
                       id={`ev-${ev.id}`}
                       checked={selectedEvents.includes(ev.id)}
@@ -299,12 +311,12 @@ function WebhooksContent() {
               </div>
             </div>
           </div>
-          <SheetFooter className="mt-6">
-            <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>Cancel</Button>
+          <SheetFooter>
+            <Button variant="ghost" onClick={() => setSheetOpen(false)}>Cancel</Button>
             <Button
-              className="flex-1"
               onClick={handleCreate}
               disabled={createWebhook.isPending || !url.trim()}
+              loading={createWebhook.isPending}
             >
               {createWebhook.isPending ? "Creating..." : "Create Webhook"}
             </Button>
@@ -323,7 +335,7 @@ function WebhooksContent() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90"
+              className={buttonVariants({ variant: "destructive" })}
               onClick={handleDelete}
             >
               Delete

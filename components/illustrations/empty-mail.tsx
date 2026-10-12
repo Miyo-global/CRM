@@ -7,11 +7,11 @@ export function EmptyMailIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="78" fill={GOLD} opacity="0.03" />
 
-      <rect x="30" y="60" width="140" height="90" rx="8" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="30" y="60" width="140" height="90" rx="8" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <path d="M30 68l70 42 70-42" stroke={BLUE} strokeWidth="2" fill="none" strokeLinejoin="round" />
       <rect x="30" y="60" width="140" height="16" rx="8" fill={BLUE} opacity="0.06" />
 
-      <path d="M30 60l70 38 70-38" stroke={BLUE} strokeWidth="2" fill="white" strokeLinejoin="round" />
+      <path d="M30 60l70 38 70-38" stroke={BLUE} strokeWidth="2" fill="var(--card)" strokeLinejoin="round" />
 
       <circle cx="100" cy="125" r="12" fill={GOLD} opacity="0.15" stroke={GOLD} strokeWidth="1.5" />
       <path d="M95 125l3 3 7-7" stroke={GOLD} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

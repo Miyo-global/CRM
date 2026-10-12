@@ -9,6 +9,7 @@ import { CareersHeader } from "@/features/careers/careers-header";
 import { CareersFooter } from "@/features/careers/careers-footer";
 import { CareersJobList } from "@/features/careers/careers-job-list";
 import { canAcceptApplications } from "@/lib/careers/application-deadline";
+import { IconChip } from "@/components/ui/icon-chip";
 
 export const revalidate = 300;
 
@@ -44,38 +45,34 @@ export default async function CareersPage() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col noir-mesh">
+    <div className="min-h-screen flex flex-col bg-background">
       <CareersHeader backHref="/" backLabel="Back to site" />
 
-      <section className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-primary/8 blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-secondary/10 blur-3xl" />
-        </div>
+      <section className="brand-mark-bg relative overflow-hidden">
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
           <div className="max-w-2xl mx-auto lg:mx-0 text-center lg:text-left space-y-5">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sidebar-border bg-sidebar-accent px-3 py-1 text-xs font-semibold text-gold-300">
+                <Sparkles className="size-3.5" aria-hidden />
                 We&apos;re hiring
               </span>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-tight">
+              <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-sidebar-accent-foreground sm:text-4xl">
                 Join{" "}
-                <span className="gold-text">Miyo Global</span>
+                <span className="text-gold-400">Miyo Global</span>
               </h1>
 
-              <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-sidebar-foreground text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 We&apos;re building the future of capital markets. Explore open
                 roles and grow your career with a team that moves fast and cares
                 deeply.
               </p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                <span className="inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground shadow-gold">
+                <span className="inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-sm font-semibold tabular-nums text-primary-foreground">
                   {openForApplications} open position{openForApplications !== 1 ? "s" : ""}
                 </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-sidebar-muted">
                   Updated regularly
                 </span>
               </div>
@@ -85,12 +82,10 @@ export default async function CareersPage() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-12">
         {jobs.length === 0 ? (
-          <div className="text-center py-16 sm:py-24 rounded-2xl border border-dashed border-border bg-card/50">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/60">
-              <Briefcase className="h-8 w-8 text-muted-foreground/60" />
-            </div>
-            <p className="text-lg font-semibold">No open positions right now</p>
-            <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
+          <div className="rounded-lg border border-dashed border-border-strong bg-card py-16 text-center sm:py-24">
+            <IconChip icon={Briefcase} tone="neutral" size="lg" className="mx-auto mb-5" />
+            <p className="font-display text-lg font-bold">No open positions right now</p>
+            <p className="text-base text-muted-foreground mt-2 max-w-sm mx-auto">
               Check back soon — we&apos;re always growing and new roles open up
               frequently.
             </p>

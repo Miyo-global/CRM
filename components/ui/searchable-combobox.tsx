@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -12,6 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { comboboxTriggerClassName } from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
 
 export interface SearchableComboboxProps {
@@ -68,13 +69,13 @@ export function SearchableCombobox({
           aria-invalid={ariaInvalid}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal border-input h-9 px-3 data-[placeholder]:text-muted-foreground",
-            !display && "text-muted-foreground",
+            comboboxTriggerClassName,
+            !display && "text-subtle-foreground",
             className,
           )}
         >
           <span className="truncate text-left">{display ?? placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -85,9 +86,9 @@ export function SearchableCombobox({
         align="start"
         onWheel={(e) => e.stopPropagation()}
       >
-        <Command className="flex h-auto max-h-[min(320px,70vh)] min-h-0 w-full flex-col overflow-hidden" shouldFilter>
-          <CommandInput placeholder={searchPlaceholder} className="h-9" />
-          <CommandList className="max-h-[min(260px,60vh)] min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
+        <Command className="flex h-auto max-h-[min(22rem,70vh)] min-h-0 w-full flex-col overflow-hidden" shouldFilter>
+          <CommandInput placeholder={searchPlaceholder} className="h-10" />
+          <CommandList className="max-h-[min(18rem,60vh)] min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
@@ -97,7 +98,7 @@ export function SearchableCombobox({
                   keywords={[opt]}
                   onSelect={() => handleSelect(opt)}
                 >
-                  <Check className={cn("mr-2 h-4 w-4 shrink-0", value === opt ? "opacity-100" : "opacity-0")} />
+                  <Check className={cn("size-4 shrink-0 text-brand-text", value === opt ? "opacity-100" : "opacity-0")} />
                   <span className="whitespace-nowrap">{opt}</span>
                 </CommandItem>
               ))}

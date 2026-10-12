@@ -10,19 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Mail,
-  Phone,
-  Briefcase,
-  Calendar,
-  Star,
-  ExternalLink,
-  MapPin,
-  Wallet,
-  Clock,
-  GraduationCap,
-  Globe,
-} from "lucide-react";
+import { Star, ExternalLink, GraduationCap } from "lucide-react";
+import { StatusPill } from "@/components/ui/status-pill";
+import { PropertyList } from "@/components/shared/property-list";
+import { COLUMNS } from "@/features/hr/recruitment/kanban/types";
+import { cn } from "@/lib/utils";
+import type { Tone } from "@/lib/design/tones";
 import type { CandidateStatus } from "@/types/hr";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -62,12 +55,7 @@ export interface EducationEntry {
   year?: string;
 }
 
-function statusColor(s: string | null): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "HIRED") return "default";
-  if (s === "REJECTED") return "destructive";
-  if (s === "OFFER" || s === "INTERVIEW") return "secondary";
-  return "outline";
-}
+const STATUS_TONE: Record<string, Tone> = Object.fromEntries(COLUMNS.map((c) => [c.id, c.tone]));
 
 function formatCtc(amount?: string | number | null, currency?: string | null): string | null {
   if (amount === null || amount === undefined || amount === "") return null;
@@ -109,7 +97,7 @@ interface CandidateProfileCardProps {
 
 function SkillBadge({ skill }: { skill: string }) {
   return (
-    <Badge key={skill} variant="outline" className="text-[10px]">
+    <Badge key={skill} variant="secondary" className="font-normal">
       {skill}
     </Badge>
   );
@@ -117,11 +105,12 @@ function SkillBadge({ skill }: { skill: string }) {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-0.5" role="img" aria-label={`Rating ${rating} of 5`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`h-3.5 w-3.5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"}`}
+          aria-hidden="true"
+          className={cn("size-3.5", i < rating ? "fill-current text-warning-500" : "text-border-strong")}
         />
       ))}
     </div>
@@ -132,18 +121,22 @@ function StatusItem({ status }: { status: CandidateStatus }) {
   return <SelectItem value={status}>{status}</SelectItem>;
 }
 
-function InfoRow({
-  icon,
-  children,
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function joinParts(...parts: (string | null | undefined | false)[]): string | null {
+  const out = parts.filter(Boolean).join(" · ");
+  return out || null;
+}
+
+function ExternalLinkItem({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-muted-foreground">
-      <span className="shrink-0">{icon}</span>
-      <span className="truncate">{children}</span>
-    </div>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-sm text-xs font-medium text-brand-text outline-none hover:underline focus-visible:focus-ring"
+    >
+      <ExternalLink className="size-3" aria-hidden="true" />
+      {children}
+    </a>
   );
 }
 
@@ -184,168 +177,94 @@ export const CandidateProfileCard = memo(function CandidateProfileCard({
   const currentCtcLabel = formatCtc(currentCtc, salaryCurrency);
   const expectedCtcLabel = formatCtc(expectedCtc, salaryCurrency);
 
+  const experience =
+    experienceYears != null
+      ? `${experienceYears} years total${relevantExperienceMonths != null ? ` · ${relevantExperienceMonths} mo relevant` : ""}`
+      : null;
+
+  const properties = ([
+    { label: "Email", value: <span className="break-all">{email}</span> },
+    phone ? { label: "Phone", value: <span className="tabular-nums">{formatPhoneForDisplay(phone)}</span> } : null,
+    alternatePhone
+      ? { label: "Alt phone", value: <span className="tabular-nums">{formatPhoneForDisplay(alternatePhone)}</span> }
+      : null,
+    location ? { label: "Location", value: location } : null,
+    preferredLocation ? { label: "Prefers", value: preferredLocation } : null,
+    source ? { label: "Source", value: label(source) } : null,
+    experience ? { label: "Experience", value: <span className="tabular-nums">{experience}</span> } : null,
+    employmentType || currentEmploymentStatus
+      ? { label: "Employment", value: joinParts(label(employmentType), label(currentEmploymentStatus)) }
+      : null,
+    preferredWorkMode || workAuthorization || willingToRelocate
+      ? {
+          label: "Work",
+          value: joinParts(label(preferredWorkMode), label(workAuthorization), willingToRelocate && "Open to relocate"),
+        }
+      : null,
+    noticePeriodDays != null ? { label: "Notice", value: <span className="tabular-nums">{`${noticePeriodDays}-day notice`}</span> } : null,
+    availableFrom ? { label: "Available", value: <span className="tabular-nums">{availableFrom}</span> } : null,
+    currentCtcLabel ? { label: "Current CTC", value: <span className="tabular-nums">{currentCtcLabel}</span> } : null,
+    expectedCtcLabel ? { label: "Expected CTC", value: <span className="tabular-nums">{expectedCtcLabel}</span> } : null,
+  ] as ({ label: string; value: React.ReactNode } | null)[]).filter(
+    (p): p is { label: string; value: React.ReactNode } => p !== null,
+  );
+
   return (
     <Card>
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <Badge variant={statusColor(status)}>{status}</Badge>
+      <CardContent className="space-y-4 pt-5">
+        <div className="flex items-center justify-between gap-2">
+          {status ? (
+            <StatusPill tone={STATUS_TONE[status] ?? "neutral"} dot>{status}</StatusPill>
+          ) : (
+            <span />
+          )}
           {rating != null && <StarRating rating={rating} />}
         </div>
 
-        {/* Contact */}
-        <div className="space-y-2 text-sm">
-          <InfoRow icon={<Mail className="h-3.5 w-3.5" />}>{email}</InfoRow>
-          {phone && (
-            <InfoRow icon={<Phone className="h-3.5 w-3.5" />}>
-              {formatPhoneForDisplay(phone)}
-            </InfoRow>
-          )}
-          {alternatePhone && (
-            <InfoRow icon={<Phone className="h-3.5 w-3.5" />}>
-              {formatPhoneForDisplay(alternatePhone)} (alt)
-            </InfoRow>
-          )}
-          {(location || preferredLocation) && (
-            <InfoRow icon={<MapPin className="h-3.5 w-3.5" />}>
-              {location}
-              {preferredLocation && location ? " · " : ""}
-              {preferredLocation ? `Prefers ${preferredLocation}` : ""}
-            </InfoRow>
-          )}
-        </div>
+        <PropertyList items={properties} />
 
-        {/* Professional */}
-        {(source ||
-          experienceYears != null ||
-          relevantExperienceMonths != null ||
-          employmentType ||
-          currentEmploymentStatus) && (
-          <div className="space-y-2 text-sm border-t pt-2">
-            {source && (
-              <InfoRow icon={<Briefcase className="h-3.5 w-3.5" />}>
-                Source: {label(source)}
-              </InfoRow>
-            )}
-            {experienceYears != null && (
-              <InfoRow icon={<Calendar className="h-3.5 w-3.5" />}>
-                {experienceYears} years total
-                {relevantExperienceMonths != null
-                  ? ` · ${relevantExperienceMonths} mo relevant`
-                  : ""}
-              </InfoRow>
-            )}
-            {(employmentType || currentEmploymentStatus) && (
-              <InfoRow icon={<Briefcase className="h-3.5 w-3.5" />}>
-                {[label(employmentType), label(currentEmploymentStatus)]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </InfoRow>
-            )}
-            {(preferredWorkMode || workAuthorization || willingToRelocate) && (
-              <InfoRow icon={<Globe className="h-3.5 w-3.5" />}>
-                {[
-                  label(preferredWorkMode),
-                  label(workAuthorization),
-                  willingToRelocate ? "Open to relocate" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </InfoRow>
-            )}
-          </div>
-        )}
-
-        {/* Availability + Compensation */}
-        {(noticePeriodDays != null ||
-          availableFrom ||
-          currentCtcLabel ||
-          expectedCtcLabel) && (
-          <div className="space-y-2 text-sm border-t pt-2">
-            {(noticePeriodDays != null || availableFrom) && (
-              <InfoRow icon={<Clock className="h-3.5 w-3.5" />}>
-                {noticePeriodDays != null ? `${noticePeriodDays}-day notice` : ""}
-                {noticePeriodDays != null && availableFrom ? " · " : ""}
-                {availableFrom ? `Available ${availableFrom}` : ""}
-              </InfoRow>
-            )}
-            {(currentCtcLabel || expectedCtcLabel) && (
-              <InfoRow icon={<Wallet className="h-3.5 w-3.5" />}>
-                {currentCtcLabel ? `Current ${currentCtcLabel}` : ""}
-                {currentCtcLabel && expectedCtcLabel ? " · " : ""}
-                {expectedCtcLabel ? `Expected ${expectedCtcLabel}` : ""}
-              </InfoRow>
-            )}
-          </div>
-        )}
-
-        {/* Education */}
         {education && education.length > 0 && (
-          <div className="space-y-1.5 text-sm border-t pt-2">
-            {education.map((e, i) => (
-              <InfoRow key={i} icon={<GraduationCap className="h-3.5 w-3.5" />}>
-                {e.qualification}
-                {e.institution ? `, ${e.institution}` : ""}
-                {e.year ? ` (${e.year})` : ""}
-              </InfoRow>
-            ))}
+          <div className="space-y-2 border-t border-border pt-3">
+            <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Education</h3>
+            <ul className="space-y-1.5 text-sm">
+              {education.map((e, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <GraduationCap className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <span className="min-w-0">
+                    {e.qualification}
+                    {e.institution ? `, ${e.institution}` : ""}
+                    {e.year ? <span className="tabular-nums text-muted-foreground">{` (${e.year})`}</span> : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
-        {/* Links */}
         {(linkedinUrl || githubUrl || portfolioUrl) && (
-          <div className="flex flex-wrap gap-3 border-t pt-2">
-            {linkedinUrl && (
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                LinkedIn
-              </a>
-            )}
-            {githubUrl && (
-              <a
-                href={githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                GitHub
-              </a>
-            )}
-            {portfolioUrl && (
-              <a
-                href={portfolioUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                Portfolio
-              </a>
-            )}
+          <div className="flex flex-wrap gap-3 border-t border-border pt-3">
+            {linkedinUrl && <ExternalLinkItem href={linkedinUrl}>LinkedIn</ExternalLinkItem>}
+            {githubUrl && <ExternalLinkItem href={githubUrl}>GitHub</ExternalLinkItem>}
+            {portfolioUrl && <ExternalLinkItem href={portfolioUrl}>Portfolio</ExternalLinkItem>}
           </div>
         )}
 
         {skills && skills.length > 0 && (
-          <div className="flex flex-wrap gap-1 border-t pt-2">
+          <div className="flex flex-wrap gap-1.5 border-t border-border pt-3">
             {skills.map((skill) => (
               <SkillBadge key={skill} skill={skill} />
             ))}
           </div>
         )}
 
-        <div className="pt-2 border-t">
-          <label className="text-xs font-medium mb-1 block">Move to stage</label>
+        <div className="border-t border-border pt-3">
+          <label htmlFor="candidate-stage" className="mb-1.5 block text-xs font-medium">Move to stage</label>
           <Select
             value={status ?? "NEW"}
             onValueChange={handleValueChange}
             disabled={isUpdating}
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger id="candidate-stage" className="h-8 w-full text-sm" aria-busy={isUpdating || undefined}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

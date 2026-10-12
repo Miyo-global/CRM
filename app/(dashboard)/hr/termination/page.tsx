@@ -23,7 +23,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +31,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { FilterChip } from "@/components/ui/filter-chip";
+import { EmptyPersonIllustration, EmptySearchIllustration } from "@/components/illustrations";
 
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox";
@@ -78,7 +81,7 @@ export default function TerminationPage() {
   const isHR = role === "HR";
   const isCEO = role === "CEO";
 
-  const { data: terminations, isLoading } = useTerminations();
+  const { data: terminations, isLoading, isError, error, refetch } = useTerminations();
   const { data: employeesData } = useHrEmployees();
   const { data: reasonsData } = useTerminationReasons();
   const createTermination = useCreateTermination();
@@ -377,7 +380,7 @@ export default function TerminationPage() {
       >
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20" />
+            <Skeleton key={i} className="h-28 rounded-lg" />
           ))}
         </div>
       </PageWrapper>
@@ -391,55 +394,54 @@ export default function TerminationPage() {
       badge={`${(terminations ?? []).length} records`}
       actions={
         (isHR || isCEO) ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" asChild>
               <Link href="/settings/termination-reasons">
-                <Settings className="h-3.5 w-3.5 mr-1" />
+                <Settings className="size-4" aria-hidden="true" />
                 Configure reasons
               </Link>
             </Button>
             <Button size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="size-4" aria-hidden="true" />
               New Termination
             </Button>
           </div>
         ) : undefined
       }
+      filters={
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by status">
+          {STATUS_FILTER_OPTIONS.map(({ value, label }) => (
+            <FilterChip
+              key={value}
+              active={statusFilter === value}
+              count={statusCounts[value] > 0 ? statusCounts[value] : undefined}
+              onClick={() => setStatusFilter(value)}
+            >
+              {label}
+            </FilterChip>
+          ))}
+        </div>
+      }
     >
-      <div className="flex items-center gap-1.5 flex-wrap mb-4">
-        {STATUS_FILTER_OPTIONS.map(({ value, label }) => (
-          <Button
-            key={value}
-            size="sm"
-            variant={statusFilter === value ? "default" : "outline"}
-            className="h-7 text-xs"
-            onClick={() => setStatusFilter(value)}
-          >
-            {label}
-            {statusCounts[value] > 0 && (
-              <Badge
-                variant={statusFilter === value ? "secondary" : "outline"}
-                className="ml-1.5 text-[9px] px-1.5 py-0 h-4"
-              >
-                {statusCounts[value]}
-              </Badge>
-            )}
-          </Button>
-        ))}
-      </div>
-
-      {list.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              {statusFilter === "ALL"
-                ? "No termination records found."
-                : `No ${TERMINATION_STATUS_LABELS[statusFilter as keyof typeof TERMINATION_STATUS_LABELS] ?? statusFilter} records.`}
-            </p>
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : list.length === 0 ? (
+        statusFilter === "ALL" ? (
+          <EmptyState
+            illustration={<EmptyPersonIllustration className="size-32" />}
+            title="No termination records found."
+            {...((isHR || isCEO) ? { action: { label: "New Termination", onClick: () => setCreateOpen(true) } } : {})}
+          />
+        ) : (
+          <EmptyState
+            illustration={<EmptySearchIllustration className="size-32" />}
+            title="No results for these filters"
+            description={`No ${TERMINATION_STATUS_LABELS[statusFilter as keyof typeof TERMINATION_STATUS_LABELS] ?? statusFilter} records.`}
+            action={{ label: "Clear filters", onClick: () => setStatusFilter("ALL") }}
+          />
+        )
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {list.map((record: Termination) => (
             <TerminationCard
               key={record.id}
@@ -500,15 +502,15 @@ export default function TerminationPage() {
             </Label>
             <Link
               href="/settings/termination-reasons"
-              className="text-[11px] text-primary underline-offset-2 hover:underline shrink-0"
+              className="shrink-0 text-2xs font-medium text-brand-text underline-offset-2 hover:underline"
             >
               Manage reasons
             </Link>
           </div>
           {activeReasonOptions.length === 0 ? (
-            <p className="text-xs text-muted-foreground rounded-md border border-dashed px-3 py-2">
+            <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
               No active termination reasons configured.{" "}
-              <Link href="/settings/termination-reasons" className="text-primary underline">
+              <Link href="/settings/termination-reasons" className="font-medium text-brand-text underline">
                 Add reasons in Settings
               </Link>{" "}
               before creating a termination.
@@ -532,7 +534,7 @@ export default function TerminationPage() {
                     {reason.label}
                   </Label>
                   {reason.description ? (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       {reason.description}
                     </p>
                   ) : null}
@@ -550,7 +552,7 @@ export default function TerminationPage() {
             Detailed Explanation <span className="text-destructive">*</span>
           </Label>
           {isOtherSelected && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+            <p className="text-2xs text-warning-strong">
               You selected &quot;Other&quot; — a detailed explanation is required.
             </p>
           )}
@@ -561,7 +563,7 @@ export default function TerminationPage() {
             rows={4}
             aria-label="Detailed explanation"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             {explanation.length} / 50 min characters
           </p>
         </div>
@@ -580,7 +582,7 @@ export default function TerminationPage() {
 
         <Separator />
 
-        <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5">
           <div>
             <p className="text-sm font-medium">Notice Period Waived</p>
             <p className="text-xs text-muted-foreground">
@@ -637,7 +639,7 @@ export default function TerminationPage() {
             Supporting Evidence{" "}
             <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Attach warning letters, performance reviews, incident reports or other
             documents supporting this termination.
           </p>
@@ -652,26 +654,26 @@ export default function TerminationPage() {
               {evidenceUrls.map((url, idx) => (
                 <li
                   key={url}
-                  className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5"
+                  className="flex items-center justify-between gap-2 rounded-md border border-border px-2.5 py-1.5"
                 >
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 min-w-0 text-xs text-primary hover:underline"
+                    className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-brand-text hover:underline"
                   >
-                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <FileText className="size-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">Evidence {idx + 1}</span>
                   </a>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
+                    className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={() => handleRemoveEvidence(url)}
                     aria-label={`Remove evidence ${idx + 1}`}
                   >
-                    <XCircle className="h-3.5 w-3.5" />
+                    <XCircle className="size-4" aria-hidden="true" />
                   </Button>
                 </li>
               ))}
@@ -687,10 +689,10 @@ export default function TerminationPage() {
             readOnly
             value={letterPreview}
             rows={12}
-            className="font-mono text-[11px] bg-muted/40 resize-none"
+            className="resize-none bg-surface-sunken/60 font-mono text-2xs"
             aria-label="Termination letter preview"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Auto-generated preview based on the fields above. The final letter will be
             generated upon email send.
           </p>
@@ -730,12 +732,12 @@ export default function TerminationPage() {
         submitLabel={
           reviewDecision === "approve" ? (
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="size-4" aria-hidden="true" />
               Approve
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-destructive-foreground">
-              <XCircle className="h-3.5 w-3.5" />
+            <span className="flex items-center gap-1.5">
+              <XCircle className="size-4" aria-hidden="true" />
               Reject
             </span>
           )
@@ -744,9 +746,9 @@ export default function TerminationPage() {
       >
         {reviewRecord && (
           <>
-            <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+            <div className="flex items-center gap-3 rounded-md border border-border bg-surface-sunken/60 p-3">
+              <Avatar className="size-9 shrink-0">
+                <AvatarFallback className="bg-brand-soft text-xs text-brand-soft-foreground">
                   {getInitials(reviewRecord.employee?.name ?? null)}
                 </AvatarFallback>
               </Avatar>
@@ -764,7 +766,7 @@ export default function TerminationPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Effective Date
               </Label>
               <p className="text-sm">
@@ -775,12 +777,12 @@ export default function TerminationPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Reasons
               </Label>
               <div className="flex flex-wrap gap-1">
                 {(reviewRecord.reasons ?? []).map((r) => (
-                  <Badge key={r} variant="outline" className="text-xs">
+                  <Badge key={r} variant="outline">
                     {r}
                   </Badge>
                 ))}
@@ -788,7 +790,7 @@ export default function TerminationPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Detailed Explanation
               </Label>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -798,7 +800,7 @@ export default function TerminationPage() {
 
             {(reviewRecord.evidenceUrls?.length ?? 0) > 0 && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <Label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Supporting Evidence
                 </Label>
                 <ul className="space-y-1.5">
@@ -808,9 +810,9 @@ export default function TerminationPage() {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs text-primary hover:underline"
+                        className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-brand-text hover:underline"
                       >
-                        <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                        <Paperclip className="size-3.5 shrink-0" aria-hidden="true" />
                         <span className="truncate">Evidence document {idx + 1}</span>
                       </a>
                     </li>
@@ -820,7 +822,7 @@ export default function TerminationPage() {
             )}
 
             {(reviewRecord.severanceAmount || reviewRecord.noticePeriodWaived) && (
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-4 text-sm tabular-nums">
                 {reviewRecord.severanceAmount &&
                   Number(reviewRecord.severanceAmount) > 0 && (
                     <span>
@@ -832,7 +834,7 @@ export default function TerminationPage() {
                     </span>
                   )}
                 {reviewRecord.noticePeriodWaived && (
-                  <span className="text-amber-600 dark:text-amber-400">
+                  <span className="text-warning-strong">
                     Notice period waived
                   </span>
                 )}

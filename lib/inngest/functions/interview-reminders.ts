@@ -6,6 +6,7 @@ import { addHours, subHours } from "date-fns";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function buildCandidateReminderHtml(params: {
   candidateName: string;
@@ -33,10 +34,10 @@ function buildCandidateReminderHtml(params: {
     subject: `Interview Reminder: Your interview at ${params.orgName} is tomorrow`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #0f2b7f;">Interview Reminder</h2>
+        <h2 style="color: ${BRAND.ink};">Interview Reminder</h2>
         <p>Dear ${params.candidateName},</p>
         <p>This is a reminder that your interview is scheduled for <strong>tomorrow</strong>.</p>
-        <div style="background: #f8f9fa; border-left: 4px solid #bd882c; padding: 16px; margin: 16px 0; border-radius: 4px;">
+        <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.gold}; padding: 16px; margin: 16px 0; border-radius: 4px;">
           <p><strong>Date &amp; Time:</strong> ${dateStr}</p>
           <p><strong>Format:</strong> ${params.interviewType}</p>
           <p><strong>Duration:</strong> ${params.duration} minutes</p>
@@ -76,10 +77,10 @@ function buildInterviewerReminderHtml(params: {
     subject: `Interview Reminder: ${params.candidateName} — tomorrow`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #0f2b7f;">Interview Reminder</h2>
+        <h2 style="color: ${BRAND.ink};">Interview Reminder</h2>
         <p>Dear ${params.interviewerName},</p>
         <p>You have an interview scheduled for <strong>tomorrow</strong>.</p>
-        <div style="background: #f8f9fa; border-left: 4px solid #bd882c; padding: 16px; margin: 16px 0; border-radius: 4px;">
+        <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.gold}; padding: 16px; margin: 16px 0; border-radius: 4px;">
           <p><strong>Candidate:</strong> ${params.candidateName}</p>
           <p><strong>Date &amp; Time:</strong> ${dateStr}</p>
           <p><strong>Format:</strong> ${params.interviewType}</p>
@@ -136,16 +137,16 @@ function buildPrepEmailHtml(params: {
     subject: `Your interview at ${params.orgName} starts in 2 hours — Here's what to expect`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #0f2b7f;">Almost time! Your interview is in 2 hours</h2>
+        <h2 style="color: ${BRAND.ink};">Almost time! Your interview is in 2 hours</h2>
         <p>Dear ${params.candidateName},</p>
         <p>Your interview with <strong>${params.orgName}</strong> is starting soon at <strong>${timeStr}</strong>.</p>
-        <div style="background: #f8f9fa; border-left: 4px solid #bd882c; padding: 16px; margin: 16px 0; border-radius: 4px;">
+        <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.gold}; padding: 16px; margin: 16px 0; border-radius: 4px;">
           <p><strong>Format:</strong> ${params.interviewType}</p>
           <p><strong>Duration:</strong> ${params.duration} minutes</p>
           ${params.interviewerName ? `<p><strong>Interviewer:</strong> ${params.interviewerName}</p>` : ""}
           ${locationLine}
         </div>
-        <h3 style="color: #0f2b7f;">Quick tips to prepare:</h3>
+        <h3 style="color: ${BRAND.ink};">Quick tips to prepare:</h3>
         <ul>${tipList.map((t) => `<li>${t}</li>`).join("")}</ul>
         <p>You've got this! Good luck.</p>
         <p>Best regards,<br/><strong>${params.orgName}</strong></p>

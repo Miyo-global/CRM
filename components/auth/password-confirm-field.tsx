@@ -42,8 +42,8 @@ export function PasswordConfirmField({
           required
           disabled={disabled}
           className={`hide-native-password-reveal ${showIcon ? "pl-10" : ""} pr-10 focus-visible:ring-primary ${
-            passwordsMatch ? "border-green-500 focus-visible:ring-green-500" :
-            passwordsMismatch ? "border-red-500 focus-visible:ring-red-500" : ""
+            passwordsMatch ? "border-success-500 focus-visible:ring-success-500" :
+            passwordsMismatch ? "border-danger-500 focus-visible:ring-danger-500" : ""
           }`}
         />
         <button
@@ -58,7 +58,7 @@ export function PasswordConfirmField({
       </div>
       {passwordsMismatch && <p className="text-xs text-destructive">Passwords do not match</p>}
       {passwordsMatch && (
-        <p className="text-xs text-green-600 flex items-center gap-1">
+        <p className="text-xs text-success-strong flex items-center gap-1">
           <Check className="h-3 w-3" /> Passwords match
         </p>
       )}

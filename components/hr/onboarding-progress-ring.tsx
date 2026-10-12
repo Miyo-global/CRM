@@ -16,13 +16,6 @@ export function OnboardingProgressRing({
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (clampedPct / 100) * circumference;
 
-  const strokeColor =
-    clampedPct === 100
-      ? "#22c55e"
-      : clampedPct >= 50
-      ? "#f59e0b"
-      : "#ef4444";
-
   const center = size / 2;
 
   return (
@@ -46,27 +39,26 @@ export function OnboardingProgressRing({
           cy={center}
           r={radius}
           fill="none"
-          stroke="currentColor"
+          stroke="var(--border-strong)"
           strokeWidth={strokeWidth}
-          className="text-muted-foreground/20"
         />
         <circle
           cx={center}
           cy={center}
           r={radius}
           fill="none"
-          stroke={strokeColor}
+          stroke="var(--gold-400)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.6s ease, stroke 0.3s ease" }}
+          className="transition-[stroke-dashoffset] duration-500 ease-out motion-reduce:transition-none"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className="font-bold leading-none tabular-nums"
-          style={{ fontSize: size * 0.2, color: strokeColor }}
+          className="font-display font-extrabold leading-none tabular-nums text-foreground"
+          style={{ fontSize: size * 0.2 }}
         >
           {clampedPct}%
         </span>

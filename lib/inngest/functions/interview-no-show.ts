@@ -6,6 +6,7 @@ import { addDays } from "date-fns";
 import { logger } from "@/lib/logger";
 import { sendEmail } from "@/lib/email/sender";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
+import { BRAND } from "@/lib/design/brand-hex";
 
 const RECRUITMENT_ROLES = ["HR", "BRANCH_HR", "ADMIN"] as const;
 
@@ -96,7 +97,7 @@ export const interviewNoShow = inngest.createFunction(
         subject: `We missed you — Would you like to reschedule? | ${orgName}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #0f2b7f;">We missed you, ${name}!</h2>
+            <h2 style="color: ${BRAND.ink};">We missed you, ${name}!</h2>
             <p>We noticed you were unable to attend your recent interview with <strong>${orgName}</strong>.</p>
             <p>We understand things come up unexpectedly. If you're still interested in the opportunity, we'd be happy to reschedule at a time that works better for you.</p>
             <p>Please reply to this email or contact your recruiter at <a href="mailto:${HR_NOTIFICATION_EMAIL}">${HR_NOTIFICATION_EMAIL}</a> to arrange a new time.</p>
@@ -124,13 +125,13 @@ export const interviewNoShow = inngest.createFunction(
         subject: `Interview No-Show: ${candidateName} — Interview #${interviewId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #0f2b7f;">Interview No-Show Alert</h2>
+            <h2 style="color: ${BRAND.ink};">Interview No-Show Alert</h2>
             <p><strong>${candidateName}</strong> did not attend their scheduled interview (#${interviewId}) at <strong>${orgName}</strong>.</p>
             <p>A follow-up task has been created and assigned to the HR team. A reschedule email has also been sent to the candidate.</p>
             <div style="text-align:center;margin:24px 0">
-              <a href="${profileUrl}" style="display:inline-block;background:#0f2b7f;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a>
+              <a href="${profileUrl}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px">View Candidate Profile</a>
             </div>
-            <p style="color:#666;font-size:12px;">Recruitment Automation · ${orgName}</p>
+            <p style="color:${BRAND.inkMuted};font-size:12px;">Recruitment Automation · ${orgName}</p>
           </div>
         `,
       }).catch((e: unknown) =>

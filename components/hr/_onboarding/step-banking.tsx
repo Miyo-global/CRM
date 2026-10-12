@@ -76,7 +76,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.accountHolder"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Account Holder Name <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>Account Holder Name <span className="text-danger-strong">*</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="Name as per bank records"
@@ -99,7 +99,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.bankName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Bank Name <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>Bank Name <span className="text-danger-strong">*</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. HDFC Bank"
@@ -122,7 +122,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.branch"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Branch Name <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>Branch Name <span className="text-danger-strong">*</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. Hyderabad Main"
@@ -145,7 +145,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.accountNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Account Number <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>Account Number <span className="text-danger-strong">*</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="1234567890"
@@ -171,7 +171,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.ifsc"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>IFSC Code <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>IFSC Code <span className="text-danger-strong">*</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. SBIN0001234"

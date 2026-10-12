@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { DetailHeader, DetailLayout } from "@/components/shared/detail-header";
+import { PropertyList } from "@/components/shared/property-list";
+import { NotFoundIllustration, EmptySprintIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
@@ -34,22 +42,18 @@ import type {
 } from "@/types/hr";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const LEVEL_COLORS = [
-  { bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700", strip: "bg-slate-400" },
-  { bg: "bg-blue-50",   border: "border-blue-300",  text: "text-blue-700",  strip: "bg-blue-500" },
-  { bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", strip: "bg-indigo-500" },
-  { bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", strip: "bg-violet-500" },
-  { bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", strip: "bg-purple-500" },
-  { bg: "bg-fuchsia-50",border: "border-fuchsia-300",text: "text-fuchsia-700",strip: "bg-fuchsia-500" },
-];
+/** Gold progression: each rung's accent strip a step deeper on the brand scale. */
+const LEVEL_COLORS = ["bg-gold-200", "bg-gold-300", "bg-gold-400", "bg-gold-500", "bg-gold-600", "bg-gold-700"].map(
+  (strip) => ({ bg: "bg-brand-soft", border: "border-border", text: "text-brand-soft-foreground", strip }),
+);
 
 const STATUS_LABELS: Record<CareerLadderStatus, string> = {
   draft: "Draft", active: "Active", archived: "Archived",
 };
-const STATUS_CLASS: Record<CareerLadderStatus, string> = {
-  draft:    "bg-amber-50 text-amber-700 border-amber-200",
-  active:   "bg-emerald-50 text-emerald-700 border-emerald-200",
-  archived: "bg-slate-100 text-slate-500 border-slate-200",
+const STATUS_TONE: Record<CareerLadderStatus, Tone> = {
+  draft: "warning",
+  active: "success",
+  archived: "neutral",
 };
 const TRACK_LABELS: Record<CareerLadderTrackType, string> = {
   individual_contributor: "Individual Contributor",
@@ -91,9 +95,9 @@ function formatCurrency(n: number | undefined): string {
 
 function LevelPill({ level, title, color }: { level: number; title: string; color: typeof LEVEL_COLORS[0] }) {
   return (
-    <div className={cn("flex items-center gap-1.5 rounded-full px-3 py-1 border text-xs font-medium", color.bg, color.border, color.text)}>
-      <span className="font-bold">L{level}</span>
-      <span className="truncate max-w-[140px]">{title}</span>
+    <div className={cn("flex min-w-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium", color.bg, color.border, color.text)}>
+      <span className="font-bold tabular-nums">L{level}</span>
+      <span className="max-w-36 truncate">{title}</span>
     </div>
   );
 }
@@ -106,7 +110,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
   const qc = useQueryClient();
   const ladderKey = ["hr", "career-ladders", ladderId];
 
-  const { data: ladder, isLoading } = useQuery({
+  const { data: ladder, isLoading, isError, error, refetch } = useQuery({
     queryKey: ladderKey,
     queryFn: () => apiClient.get<CareerLadder>(`/hr/career-ladders/${ladderId}`),
   });
@@ -256,9 +260,20 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
   if (isLoading) {
     return (
       <PageWrapper title="Career Ladder" subtitle="Loading…">
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
+          </div>
+          <Skeleton className="h-56 rounded-lg" />
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError && !ladder) {
+    return (
+      <PageWrapper title="Career Ladder">
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
   }
@@ -266,102 +281,124 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
   if (!ladder) {
     return (
       <PageWrapper title="Not Found" subtitle="">
-        <p className="text-sm text-muted-foreground">Career ladder not found.</p>
-        <Button asChild variant="outline" size="sm" className="mt-3">
-          <Link href="/hr/career-ladders"><ArrowLeft className="h-3.5 w-3.5 mr-1.5" />Back</Link>
-        </Button>
+        <EmptyState
+          illustration={<NotFoundIllustration className="size-32" />}
+          title="Career ladder not found."
+          action={{ label: "Back", href: "/hr/career-ladders" }}
+        />
       </PageWrapper>
     );
   }
 
-  const statusCls = STATUS_CLASS[ladder.status as CareerLadderStatus] ?? STATUS_CLASS.active;
+  const statusTone = STATUS_TONE[ladder.status as CareerLadderStatus] ?? STATUS_TONE.active;
   const statusLbl = STATUS_LABELS[ladder.status as CareerLadderStatus] ?? ladder.status;
 
   return (
-    <PageWrapper
-      title={ladder.title}
-      subtitle={ladder.description ?? "Career progression path"}
-      badge={ladder.department ?? undefined}
-      actions={
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
+    <div className="flex w-full flex-col space-y-6 px-4 pb-10 pt-6 sm:px-6 xl:px-8">
+      <DetailHeader
+        back={
+          <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
             <Link href="/hr/career-ladders">
-              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+              <ArrowLeft className="size-4" aria-hidden="true" />
               All Ladders
             </Link>
           </Button>
-          {isAdmin && (
+        }
+        icon={Layers}
+        title={ladder.title}
+        subtitle={ladder.description ?? "Career progression path"}
+        status={<StatusPill tone={statusTone} dot>{statusLbl}</StatusPill>}
+        meta={
+          <>
+            {ladder.department && <span>{ladder.department}</span>}
+            {ladder.trackType && (
+              <span>{TRACK_LABELS[ladder.trackType as CareerLadderTrackType] ?? ladder.trackType}</span>
+            )}
+            {levels.length > 0 && (
+              <span className="inline-flex items-center gap-1 tabular-nums">
+                <Layers className="size-3.5" aria-hidden="true" />{levels.length} level{levels.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </>
+        }
+        actions={
+          isAdmin ? (
             <>
               <Button variant="outline" size="sm" onClick={openEditMeta}>
-                <Settings2 className="h-3.5 w-3.5 mr-1.5" />
+                <Settings2 className="size-4" aria-hidden="true" />
                 Edit Info
               </Button>
               <Button size="sm" onClick={openAdd}>
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                <Plus className="size-4" aria-hidden="true" />
                 Add Level
               </Button>
             </>
-          )}
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", statusCls)}>
-            {statusLbl}
-          </span>
-          {ladder.trackType && (
-            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700 border-indigo-200">
-              {TRACK_LABELS[ladder.trackType as CareerLadderTrackType] ?? ladder.trackType}
-            </span>
-          )}
-          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-slate-50 text-slate-600 border-slate-200">
-            {VISIBILITY_LABELS[ladder.visibility as CareerLadderVisibility] ?? ladder.visibility}
-          </span>
-          {levels.length > 0 && (
-            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-slate-50 text-slate-600 border-slate-200">
-              <Layers className="h-3 w-3 mr-1" />{levels.length} level{levels.length !== 1 ? "s" : ""}
-            </span>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
 
-        {levels.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-14 text-center">
-            <p className="text-sm text-muted-foreground mb-1">No levels defined yet.</p>
-            {isAdmin && (
-              <Button size="sm" variant="outline" className="mt-2" onClick={openAdd}>
-                <Plus className="h-3.5 w-3.5 mr-1.5" />Add First Level
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              {levels.map((lvl, idx) => (
-                <div key={lvl.level} className="flex items-center gap-1.5">
-                  <LevelPill level={lvl.level} title={lvl.title} color={LEVEL_COLORS[idx % LEVEL_COLORS.length]} />
-                  {idx < levels.length - 1 && <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />}
-                </div>
-              ))}
-            </div>
+      <DetailLayout
+        rail={
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PropertyList
+                items={[
+                  { label: "Status", value: <StatusPill tone={statusTone} dot>{statusLbl}</StatusPill> },
+                  {
+                    label: "Track",
+                    value: ladder.trackType
+                      ? TRACK_LABELS[ladder.trackType as CareerLadderTrackType] ?? ladder.trackType
+                      : null,
+                  },
+                  {
+                    label: "Visibility",
+                    value: VISIBILITY_LABELS[ladder.visibility as CareerLadderVisibility] ?? ladder.visibility,
+                  },
+                  { label: "Department", value: ladder.department || null },
+                  { label: "Levels", value: <span className="tabular-nums">{levels.length}</span> },
+                ]}
+              />
+            </CardContent>
+          </Card>
+        }
+        main={
+          levels.length === 0 ? (
+            <EmptyState
+              illustration={<EmptySprintIllustration className="size-32" />}
+              title="No levels defined yet."
+              {...(isAdmin ? { action: { label: "Add First Level", onClick: openAdd } } : {})}
+            />
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {levels.map((lvl, idx) => (
+                  <div key={lvl.level} className="flex items-center gap-1.5">
+                    <LevelPill level={lvl.level} title={lvl.title} color={LEVEL_COLORS[idx % LEVEL_COLORS.length]} />
+                    {idx < levels.length - 1 && <ChevronRight className="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />}
+                  </div>
+                ))}
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {levels.map((lvl, idx) => {
                 const c = LEVEL_COLORS[idx % LEVEL_COLORS.length];
                 const hasSalary = lvl.salaryBandMin != null || lvl.salaryBandMax != null;
                 return (
-                  <div key={lvl.level} className={cn("rounded-lg border bg-card p-0 overflow-hidden", c.border)}>
-                    <div className={cn("h-1 w-full", c.strip)} />
-                    <div className="p-4 space-y-3">
+                  <Card key={lvl.level} className="overflow-hidden">
+                    <div className={cn("h-1 w-full", c.strip)} aria-hidden="true" />
+                    <div className="space-y-3 p-5">
                       <div className="flex items-start justify-between gap-2">
                         <LevelPill level={lvl.level} title={lvl.title} color={c} />
                         {isAdmin && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(lvl)}>
-                              <Pencil className="h-3.5 w-3.5" />
+                            <Button type="button" size="icon-sm" variant="ghost" aria-label="Edit level" onClick={() => openEdit(lvl)}>
+                              <Pencil className="size-4" aria-hidden="true" />
                             </Button>
-                            <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteLevel(lvl.level)}>
-                              <Trash2 className="h-3.5 w-3.5" />
+                            <Button type="button" size="icon-sm" variant="ghost" aria-label="Delete level" className="text-destructive hover:text-destructive" onClick={() => setDeleteLevel(lvl.level)}>
+                              <Trash2 className="size-4" aria-hidden="true" />
                             </Button>
                           </div>
                         )}
@@ -374,21 +411,21 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                       <div className="grid grid-cols-2 gap-2">
                         {lvl.minExperience > 0 && (
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Clock3 className="h-3 w-3 shrink-0" />
-                            <span>{lvl.minExperience} yr{lvl.minExperience !== 1 ? "s" : ""} exp.</span>
+                            <Clock3 className="size-3 shrink-0" aria-hidden="true" />
+                            <span className="tabular-nums">{lvl.minExperience} yr{lvl.minExperience !== 1 ? "s" : ""} exp.</span>
                           </div>
                         )}
                         {lvl.typicalDuration && (
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <ChevronRight className="h-3 w-3 shrink-0" />
+                            <ChevronRight className="size-3 shrink-0" aria-hidden="true" />
                             <span>{lvl.typicalDuration}</span>
                           </div>
                         )}
                       </div>
 
                       {hasSalary && (
-                        <div className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium", c.bg, c.text)}>
-                          <IndianRupee className="h-3 w-3 shrink-0" />
+                        <div className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium tabular-nums", c.bg, c.text)}>
+                          <IndianRupee className="size-3 shrink-0" aria-hidden="true" />
                           <span>
                             {lvl.salaryBandMin != null && lvl.salaryBandMax != null
                               ? `${formatCurrency(lvl.salaryBandMin)} – ${formatCurrency(lvl.salaryBandMax)}`
@@ -401,23 +438,23 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
                       {lvl.scope && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Scope</p>
-                          <p className="text-xs text-foreground/80 line-clamp-2">{lvl.scope}</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Scope</p>
+                          <p className="text-xs text-foreground line-clamp-2">{lvl.scope}</p>
                         </div>
                       )}
 
                       {(lvl.responsibilities ?? []).length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Responsibilities</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Responsibilities</p>
                           <ul className="space-y-0.5">
                             {(lvl.responsibilities ?? []).slice(0, 3).map((r, i) => (
-                              <li key={i} className="flex items-start gap-1.5 text-xs text-foreground/80">
-                                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
+                              <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                                <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-success-strong" aria-hidden="true" />
                                 <span className="line-clamp-1">{r}</span>
                               </li>
                             ))}
                             {(lvl.responsibilities ?? []).length > 3 && (
-                              <li className="text-[10px] text-muted-foreground pl-4.5">+{(lvl.responsibilities ?? []).length - 3} more</li>
+                              <li className="text-2xs text-muted-foreground pl-4.5">+{(lvl.responsibilities ?? []).length - 3} more</li>
                             )}
                           </ul>
                         </div>
@@ -425,13 +462,13 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
                       {(lvl.competencies ?? []).length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Competencies</p>
+                          <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Competencies</p>
                           <div className="flex flex-wrap gap-1">
                             {(lvl.competencies ?? []).slice(0, 4).map((c) => (
-                              <Badge key={c} variant="outline" className="text-[10px] py-0">{c}</Badge>
+                              <Badge key={c} variant="outline">{c}</Badge>
                             ))}
                             {(lvl.competencies ?? []).length > 4 && (
-                              <Badge variant="outline" className="text-[10px] py-0">+{(lvl.competencies ?? []).length - 4}</Badge>
+                              <Badge variant="outline">+{(lvl.competencies ?? []).length - 4}</Badge>
                             )}
                           </div>
                         </div>
@@ -440,21 +477,22 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                       {(lvl.skills ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {(lvl.skills ?? []).slice(0, 5).map((s) => (
-                            <Badge key={s} variant="secondary" className="text-[10px] py-0">{s}</Badge>
+                            <Badge key={s} variant="secondary">{s}</Badge>
                           ))}
                           {(lvl.skills ?? []).length > 5 && (
-                            <Badge variant="outline" className="text-[10px] py-0">+{(lvl.skills ?? []).length - 5}</Badge>
+                            <Badge variant="outline">+{(lvl.skills ?? []).length - 5}</Badge>
                           )}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
-          </>
-        )}
-      </div>
+            </div>
+          )
+        }
+      />
 
       {isAdmin && (
         <HrSheet
@@ -475,7 +513,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 maxLength={120}
                 placeholder="e.g., Engineering Career Path"
               />
-              <p className="text-[10px] text-muted-foreground text-right">{metaForm.title.length}/120</p>
+              <p className="text-2xs text-muted-foreground text-right">{metaForm.title.length}/120</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -532,7 +570,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 rows={3}
                 maxLength={500}
               />
-              <p className="text-[10px] text-muted-foreground text-right">{metaForm.description.length}/500</p>
+              <p className="text-2xs text-muted-foreground text-right">{metaForm.description.length}/500</p>
             </div>
           </div>
         </HrSheet>
@@ -560,7 +598,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 className={cn(form.title.length > 0 && getCareerLadderTitleError(form.title) && "border-destructive")}
               />
               {form.title.length > 0 && getCareerLadderTitleError(form.title) && (
-                <p className="text-[11px] text-destructive">{getCareerLadderTitleError(form.title)}</p>
+                <p className="text-2xs text-destructive">{getCareerLadderTitleError(form.title)}</p>
               )}
             </div>
 
@@ -622,7 +660,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
                 />
               </div>
               {form.salaryBandMin != null && form.salaryBandMax != null && form.salaryBandMin > form.salaryBandMax && (
-                <p className="text-[11px] text-destructive">Min cannot exceed max</p>
+                <p className="text-2xs text-destructive">Min cannot exceed max</p>
               )}
             </div>
 
@@ -712,6 +750,6 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
         onConfirm={handleDeleteLevel}
         isPending={updateLadder.isPending}
       />
-    </PageWrapper>
+    </div>
   );
 }

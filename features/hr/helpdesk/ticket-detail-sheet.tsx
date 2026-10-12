@@ -22,12 +22,17 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { PropertyList } from "@/components/shared/property-list";
+import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -73,33 +78,29 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "DONE", label: "Done" },
 ];
 
-function statusBadgeVariant(
-  status: string | null,
-): "default" | "secondary" | "outline" | "destructive" {
+function statusTone(status: string | null): Tone {
   switch (status) {
     case "DONE":
-      return "default";
+      return "success";
     case "IN_PROGRESS":
-      return "secondary";
+      return "info";
     case "IN_REVIEW":
-      return "outline";
+      return "plum";
     default:
-      return "destructive";
+      return "warning";
   }
 }
 
-function priorityBadgeVariant(
-  priority: string | null,
-): "default" | "secondary" | "outline" | "destructive" {
+function priorityTone(priority: string | null): Tone {
   switch (priority) {
     case "URGENT":
-      return "destructive";
+      return "danger";
     case "HIGH":
-      return "default";
+      return "warning";
     case "MEDIUM":
-      return "secondary";
+      return "brand";
     default:
-      return "outline";
+      return "neutral";
   }
 }
 
@@ -119,26 +120,24 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
   const to = comment.metadata?.to ?? null;
   return (
     <div className="flex items-center gap-2 py-1.5 text-xs text-muted-foreground">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted">
-        <ArrowRight className="h-3 w-3" />
-      </div>
+      <IconChip icon={ArrowRight} tone="neutral" size="sm" />
       <span className="flex flex-wrap items-center gap-1.5">
         <span className="font-medium text-foreground">{comment.authorName ?? "Someone"}</span>
         changed status
         {from && (
           <>
             from{" "}
-            <Badge variant={statusBadgeVariant(from)} className="text-[10px]">
+            <StatusPill tone={statusTone(from)}>
               {STATUS_LABELS[from] ?? from}
-            </Badge>
+            </StatusPill>
           </>
         )}
         to{" "}
-        <Badge variant={statusBadgeVariant(to)} className="text-[10px]">
+        <StatusPill tone={statusTone(to)}>
           {to ? STATUS_LABELS[to] ?? to : ""}
-        </Badge>
+        </StatusPill>
         {comment.createdAt && (
-          <span className="text-muted-foreground/70">
+          <span className="text-subtle-foreground">
             &middot; {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
           </span>
         )}
@@ -151,21 +150,18 @@ function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
   const isInternal = comment.kind === "internal_note";
   return (
     <div className="flex gap-2.5">
-      <Avatar className="h-7 w-7 shrink-0">
+      <Avatar className="size-7 shrink-0">
         {comment.authorImage && <AvatarImage src={comment.authorImage} alt={comment.authorName ?? ""} />}
-        <AvatarFallback className="text-[10px]">{initials(comment.authorName)}</AvatarFallback>
+        <AvatarFallback className="text-2xs">{initials(comment.authorName)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{comment.authorName ?? "System"}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold text-foreground">{comment.authorName ?? "System"}</span>
           {isInternal && (
-            <Badge
-              variant="outline"
-              className="gap-1 border-amber-300 bg-amber-50 text-[10px] text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-            >
-              <Lock className="h-2.5 w-2.5" />
+            <StatusPill tone="warning">
+              <Lock aria-hidden="true" />
               Internal
-            </Badge>
+            </StatusPill>
           )}
           {comment.createdAt && (
             <span className="text-xs text-muted-foreground">
@@ -176,15 +172,15 @@ function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
         <div
           className={
             isInternal
-              ? "mt-1 rounded-md border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-800 dark:bg-amber-900/20"
-              : "mt-1 rounded-md border bg-muted/30 p-2.5"
+              ? "mt-1 rounded-md border border-warning-500/30 bg-warning-soft p-3"
+              : "mt-1 rounded-md border border-border bg-surface-sunken/60 p-3"
           }
         >
           <p
             className={
               isInternal
-                ? "whitespace-pre-wrap text-sm leading-relaxed text-amber-900 dark:text-amber-100"
-                : "whitespace-pre-wrap text-sm leading-relaxed"
+                ? "whitespace-pre-wrap text-sm leading-relaxed text-warning-strong"
+                : "whitespace-pre-wrap text-sm leading-relaxed text-foreground"
             }
           >
             {comment.body}
@@ -278,14 +274,14 @@ export function TicketDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col gap-0 p-0 sm:max-w-lg">
-        <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5">
+      <SheetContent size="md" className="flex flex-col gap-0 p-0">
+        <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5 pr-12">
           <div className="flex items-start gap-3">
-            <Ticket className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            <IconChip icon={Ticket} tone={statusTone(ticket.status)} />
             <div className="min-w-0 flex-1">
-              <SheetTitle className="text-base leading-snug">{ticket.title}</SheetTitle>
-              <SheetDescription className="mt-1 text-xs">
-                #{ticket.id} &middot;{" "}
+              <SheetTitle className="font-display text-lg leading-snug">{ticket.title}</SheetTitle>
+              <SheetDescription className="mt-1 text-xs tabular-nums">
+                <span className="font-mono">#{ticket.id}</span> &middot;{" "}
                 {ticket.createdAt ? format(new Date(ticket.createdAt), "dd MMM yyyy, HH:mm") : ""}
               </SheetDescription>
             </div>
@@ -294,32 +290,67 @@ export function TicketDetailSheet({
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 px-5 py-4">
-            <div className="flex flex-wrap items-center gap-2">
-              {(isAdmin || isAssignee) ? (
-                <Select value={ticket.status ?? "TODO"} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="h-7 w-[140px] text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Badge variant={statusBadgeVariant(ticket.status)}>
-                  {STATUS_LABELS[ticket.status ?? "TODO"] ?? ticket.status ?? "To Do"}
-                </Badge>
-              )}
-              <Badge variant={priorityBadgeVariant(ticket.priority)}>
-                {ticket.priority ?? "MEDIUM"}
-              </Badge>
-              {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
-            </div>
+            <PropertyList
+              items={[
+                {
+                  label: "Status",
+                  value:
+                    isAdmin || isAssignee ? (
+                      <Select value={ticket.status ?? "TODO"} onValueChange={handleStatusChange}>
+                        <SelectTrigger size="sm" className="w-40" aria-label="Status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_OPTIONS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <StatusPill tone={statusTone(ticket.status)} dot>
+                        {STATUS_LABELS[ticket.status ?? "TODO"] ?? ticket.status ?? "To Do"}
+                      </StatusPill>
+                    ),
+                },
+                {
+                  label: "Priority",
+                  value: (
+                    <StatusPill tone={priorityTone(ticket.priority)}>
+                      {ticket.priority ?? "MEDIUM"}
+                    </StatusPill>
+                  ),
+                },
+                {
+                  label: "Category",
+                  value: ticket.category ? <Badge variant="outline">{ticket.category}</Badge> : null,
+                },
+                {
+                  label: "Assignee",
+                  value: isAdmin ? (
+                    <SearchableSelect
+                      options={assigneeOptions}
+                      value={ticket.assigneeId ?? ""}
+                      onValueChange={handleAssigneeChange}
+                      placeholder="Assign to support user…"
+                      searchPlaceholder="Search members…"
+                      emptyText="No members found."
+                      disabled={updateTicket.isPending}
+                    />
+                  ) : assigneeName ? (
+                    <span className="flex items-center gap-1.5">
+                      <UserPlus className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                      {assigneeName}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Unassigned</span>
+                  ),
+                },
+              ]}
+            />
 
-            <div className="rounded-md border border-dashed bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
+            <div className="rounded-md border border-dashed border-border bg-surface-sunken/40 px-3 py-2.5 text-xs text-muted-foreground">
               <p>
                 <span className="font-medium text-foreground">Routing:</span>{" "}
                 {ticket.category
@@ -334,58 +365,25 @@ export function TicketDetailSheet({
               </p>
             </div>
 
-            <div className="rounded-md border bg-muted/20 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Assignee
-                </p>
-                {!isAdmin && (
-                  <span className="flex items-center gap-1.5 text-sm">
-                    {assigneeName ? (
-                      <>
-                        <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
-                        {assigneeName}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">Unassigned</span>
-                    )}
-                  </span>
-                )}
-              </div>
-              {isAdmin && (
-                <div className="mt-2">
-                  <SearchableSelect
-                    options={assigneeOptions}
-                    value={ticket.assigneeId ?? ""}
-                    onValueChange={handleAssigneeChange}
-                    placeholder="Assign to support user…"
-                    searchPlaceholder="Search members…"
-                    emptyText="No members found."
-                    disabled={updateTicket.isPending}
-                  />
-                </div>
-              )}
-            </div>
-
             {ticket.description && (
               <div>
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Description
                 </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{ticket.description}</p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{ticket.description}</p>
               </div>
             )}
 
             {isResolved && ticket.resolution && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              <div className="rounded-md border border-success-500/30 bg-success-soft p-3">
+                <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-success-strong">
                   Resolution
                 </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-success-strong">
                   {ticket.resolution}
                 </p>
                 {ticket.resolvedAt && (
-                  <p className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-500">
+                  <p className="mt-1.5 text-xs text-success-strong">
                     Resolved {formatDistanceToNow(new Date(ticket.resolvedAt), { addSuffix: true })}
                   </p>
                 )}
@@ -394,18 +392,18 @@ export function TicketDetailSheet({
 
             {ticket.attachmentUrl && (
               <div>
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Attachment
                 </p>
                 <a
                   href={ticket.attachmentUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-brand-text hover:underline focus-visible:focus-ring"
                 >
-                  <Paperclip className="h-3.5 w-3.5" />
+                  <Paperclip className="size-3.5" aria-hidden="true" />
                   View attachment
-                  <ExternalLink className="h-3 w-3 opacity-60" />
+                  <ExternalLink className="size-3 opacity-60" aria-hidden="true" />
                 </a>
               </div>
             )}
@@ -413,13 +411,16 @@ export function TicketDetailSheet({
             <Separator />
 
             <div>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Conversation
               </p>
               {commentsLoading ? (
-                <p className="text-sm text-muted-foreground">Loading conversation…</p>
+                <div className="space-y-3" aria-busy="true">
+                  <Skeleton className="h-14 w-full rounded-md" />
+                  <Skeleton className="h-14 w-full rounded-md" />
+                </div>
               ) : !comments || comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
                   No activity yet. Start the conversation below.
                 </p>
               ) : (
@@ -437,7 +438,7 @@ export function TicketDetailSheet({
           </div>
         </ScrollArea>
 
-        <div className="shrink-0 space-y-2 border-t px-5 py-3">
+        <div className="shrink-0 space-y-2 border-t bg-background px-5 py-3">
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -445,30 +446,30 @@ export function TicketDetailSheet({
             rows={3}
             className={
               internal
-                ? "resize-none border-amber-300 focus-visible:ring-amber-400 dark:border-amber-700"
+                ? "resize-none border-warning-500/40 bg-warning-soft/40"
                 : "resize-none"
             }
           />
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             {canAddInternal ? (
               <div className="flex items-center gap-2">
                 <Switch id="internal-note" checked={internal} onCheckedChange={setInternal} />
                 <Label htmlFor="internal-note" className="flex items-center gap-1 text-xs">
-                  <Lock className="h-3 w-3" />
+                  <Lock className="size-3" aria-hidden="true" />
                   Internal note
                 </Label>
               </div>
             ) : (
               <span />
             )}
-            <Button size="sm" onClick={handleSend} disabled={addComment.isPending || !body.trim()}>
-              <Send className="mr-1.5 h-3.5 w-3.5" />
+            <Button size="sm" onClick={handleSend} disabled={addComment.isPending || !body.trim()} loading={addComment.isPending}>
+              <Send className="size-3.5" aria-hidden="true" />
               {addComment.isPending ? "Sending…" : internal ? "Add note" : "Send"}
             </Button>
           </div>
         </div>
 
-        <SheetFooter className="shrink-0 flex-row justify-between border-t px-5 py-3">
+        <SheetFooter className="shrink-0 flex-row justify-between border-t bg-surface-sunken/40 px-5 py-3">
           <AISuggestReplyButton ticketId={ticket.id} />
         </SheetFooter>
       </SheetContent>

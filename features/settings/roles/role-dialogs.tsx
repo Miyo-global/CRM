@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -19,24 +21,6 @@ import {
   useCloneRoleTemplate,
   type RoleTemplate,
 } from "@/lib/api/hooks/roles";
-
-
-function SpinnerIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
-
-function CopyIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-    </svg>
-  );
-}
 
 
 const ROLE_TEMPLATES: Array<{ label: string; name: string; slug: string; permissions: string[] }> = [
@@ -131,10 +115,10 @@ export function CreateRoleDialog({ open, onOpenChange }: { open: boolean; onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Create New Role</DialogTitle>
-          <DialogDescription className="text-xs">Start from a template or create a custom role.</DialogDescription>
+          <DialogDescription>Start from a template or create a custom role.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -145,11 +129,12 @@ export function CreateRoleDialog({ open, onOpenChange }: { open: boolean; onOpen
                   key={tmpl.slug}
                   type="button"
                   onClick={() => handleTemplateSelect(tmpl)}
+                  aria-pressed={slug === tmpl.slug}
                   className={cn(
-                    "text-xs px-2.5 py-1 rounded-full border transition-colors",
+                    "h-7 rounded-full border px-3 text-xs font-medium transition-colors focus-visible:focus-ring",
                     slug === tmpl.slug
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border hover:border-primary hover:text-primary"
+                      ? "border-primary bg-brand-soft text-brand-soft-foreground"
+                      : "border-border text-muted-foreground hover:border-border-strong hover:bg-accent hover:text-foreground"
                   )}
                 >
                   {tmpl.label}
@@ -159,7 +144,7 @@ export function CreateRoleDialog({ open, onOpenChange }: { open: boolean; onOpen
           </div>
 
           <div>
-            <Label className="text-xs">Role Name</Label>
+            <Label className="text-sm">Role Name</Label>
             <Input
               value={name}
               onChange={handleNameInputChange}
@@ -168,7 +153,7 @@ export function CreateRoleDialog({ open, onOpenChange }: { open: boolean; onOpen
             />
           </div>
           <div>
-            <Label className="text-xs">Slug (auto-generated)</Label>
+            <Label className="text-sm">Slug (auto-generated)</Label>
             <Input
               value={slug}
               onChange={handleSlugInputChange}
@@ -182,13 +167,12 @@ export function CreateRoleDialog({ open, onOpenChange }: { open: boolean; onOpen
             </p>
           )}
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={handleCancelDialog}>Cancel</Button>
+            <Button variant="ghost" onClick={handleCancelDialog}>Cancel</Button>
             <Button
               onClick={handleCreate}
               disabled={!name.trim() || !slug.trim() || create.isPending}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              loading={create.isPending}
             >
-              {create.isPending && <SpinnerIcon className="h-4 w-4 animate-spin mr-1" />}
               Create Role
             </Button>
           </div>
@@ -224,7 +208,7 @@ export function RoleTemplateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Role Templates</DialogTitle>
           <DialogDescription>
@@ -233,27 +217,33 @@ export function RoleTemplateDialog({
         </DialogHeader>
         <div className="space-y-2 py-2">
           {isLoading ? (
-            <div className="text-sm text-muted-foreground text-center py-4">Loading templates...</div>
+            <div className="space-y-2" aria-busy="true">
+              <span className="sr-only">Loading templates...</span>
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
           ) : (
             templates?.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between rounded-md border px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5 transition-colors hover:border-border-strong"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">{t.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">{t.slug}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {t.permissions.length} permission{t.permissions.length !== 1 ? "s" : ""}
+                    <span className="tabular-nums">{t.permissions.length}</span> permission{t.permissions.length !== 1 ? "s" : ""}
                   </p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
                   disabled={clone.isPending}
+                  loading={clone.isPending && clone.variables?.templateId === t.id}
                   onClick={() => handleClone(t)}
                 >
-                  <CopyIcon className="h-3.5 w-3.5 mr-1" /> Clone
+                  {!(clone.isPending && clone.variables?.templateId === t.id) && <Copy aria-hidden />} Clone
                 </Button>
               </div>
             ))

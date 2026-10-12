@@ -66,7 +66,7 @@ export function HrFilterBar({
   return (
     <div
       className={cn(
-        "flex flex-nowrap items-center gap-2 min-w-0 overflow-x-auto overflow-y-visible [scrollbar-width:thin]",
+        "flex min-w-0 flex-wrap items-center gap-2",
         className,
       )}
     >
@@ -77,14 +77,14 @@ export function HrFilterBar({
           onValueChange={onDeptChange}
           placeholder="Department"
           searchPlaceholder="Search department…"
-          triggerClassName="h-9 w-[min(220px,70vw)] min-w-[9.5rem] max-w-[16rem] text-xs"
+          triggerClassName="h-9 w-44 text-sm"
           className="w-[220px]"
         />
       </div>
 
       <div className="shrink-0">
         <Select value={statusFilter} onValueChange={(v) => onStatusChange(v as StatusFilter)}>
-          <SelectTrigger className="h-9 w-auto min-w-[9.5rem] max-w-[16rem] text-xs [&_[data-slot=select-value]]:!line-clamp-none">
+          <SelectTrigger className="h-9 w-36" aria-label="Status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -102,7 +102,7 @@ export function HrFilterBar({
           onValueChange={(v) => onRoleChange(v as RoleFilter)}
           placeholder="All Roles"
           searchPlaceholder="Search role…"
-          triggerClassName="h-9 w-[min(220px,70vw)] min-w-[12.5rem] max-w-[16rem] text-xs"
+          triggerClassName="h-9 w-44 text-sm"
           className="w-[220px]"
         />
       </div>
@@ -112,11 +112,11 @@ export function HrFilterBar({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-xs text-muted-foreground"
+            className="text-muted-foreground"
             onClick={onClearFilters}
             aria-label="Clear filters"
           >
-            <X className="h-3.5 w-3.5 mr-1" />
+            <X className="size-4" aria-hidden="true" />
             Clear
           </Button>
         </div>

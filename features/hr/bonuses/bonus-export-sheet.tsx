@@ -138,7 +138,7 @@ export function BonusExportSheet({
         </SheetHeader>
 
         <div className="mt-4 flex flex-1 flex-col gap-4 px-1 pb-6">
-          <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+          <div className="rounded-lg border border-border bg-surface-sunken p-3 text-sm">
             <p className="mb-1 text-sm font-medium">Current filters</p>
             <p className="text-xs text-muted-foreground">{scopeLabel}</p>
             <p className="mt-2 text-xs font-medium text-foreground">

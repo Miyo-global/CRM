@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +23,7 @@ import { toast } from "sonner";
 import {
   Sparkles, Brain, Mail, TrendingUp, Target, MessageSquare,
   FileText, Users, ShieldCheck, Zap, AlertTriangle, ClipboardList,
+  type LucideIcon,
 } from "lucide-react";
 import {
   useAIScoreLead, useGenerateEmail, usePredictDeal, useNextBestAction,
@@ -33,26 +37,26 @@ interface AiFeature {
   id: string;
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   category: "sales" | "hr" | "marketing" | "general";
-  color: string;
+  tone: Tone;
 }
 
 const AI_FEATURES: AiFeature[] = [
-  { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", color: "text-amber-500" },
-  { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", color: "text-blue-500" },
-  { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", color: "text-green-500" },
-  { id: "next-action", title: "Next Best Action", description: "AI suggests the optimal next step for any lead", icon: Zap, category: "sales", color: "text-purple-500" },
-  { id: "objection-handler", title: "Objection Handler", description: "Get counter-arguments and talking points for sales objections", icon: MessageSquare, category: "sales", color: "text-red-500" },
-  { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", color: "text-indigo-500" },
-  { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", color: "text-teal-500" },
-  { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", color: "text-pink-500" },
-  { id: "score-candidate", title: "Candidate Scoring", description: "Score job candidates against role requirements", icon: Users, category: "hr", color: "text-cyan-500" },
-  { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", color: "text-orange-500" },
-  { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", color: "text-emerald-500" },
-  { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", color: "text-red-500" },
-  { id: "generate-jd", title: "JD Generator", description: "Generate complete job descriptions from role title", icon: FileText, category: "hr", color: "text-violet-500" },
-  { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", color: "text-sky-500" },
+  { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", tone: "warning" },
+  { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", tone: "info" },
+  { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", tone: "success" },
+  { id: "next-action", title: "Next Best Action", description: "AI suggests the optimal next step for any lead", icon: Zap, category: "sales", tone: "plum" },
+  { id: "objection-handler", title: "Objection Handler", description: "Get counter-arguments and talking points for sales objections", icon: MessageSquare, category: "sales", tone: "danger" },
+  { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", tone: "info" },
+  { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", tone: "teal" },
+  { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", tone: "plum" },
+  { id: "score-candidate", title: "Candidate Scoring", description: "Score job candidates against role requirements", icon: Users, category: "hr", tone: "teal" },
+  { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", tone: "warning" },
+  { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", tone: "success" },
+  { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", tone: "danger" },
+  { id: "generate-jd", title: "JD Generator", description: "Generate complete job descriptions from role title", icon: FileText, category: "hr", tone: "plum" },
+  { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", tone: "info" },
 ];
 
 const CATEGORIES = [
@@ -85,60 +89,62 @@ export default function AIHubPage() {
     <PageWrapper
       title="AI Hub"
       subtitle="Intelligent tools powered by AI to supercharge your workflow"
+      filters={
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+          <TabsList variant="underline">
+            {CATEGORIES.map((cat) => (
+              <TabsTrigger key={cat.value} value={cat.value} className="whitespace-nowrap">
+                {cat.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      }
     >
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="h-auto w-full justify-start gap-1 rounded-lg p-1 overflow-x-auto">
-          {CATEGORIES.map((cat) => (
-            <TabsTrigger key={cat.value} value={cat.value} className="whitespace-nowrap">
-              {cat.label}
-            </TabsTrigger>
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Sparkles}
+          title="No results for these filters"
+          description="No AI tools in this category yet."
+          action={{ label: "Clear filters", onClick: () => setSelectedCategory("all") }}
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {filtered.map((feature) => (
+            <Card
+              key={feature.id}
+              interactive
+              role="button"
+              tabIndex={0}
+              className="h-full gap-3 p-5 outline-none focus-visible:focus-ring"
+              onClick={() => setActiveFeature(feature)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveFeature(feature);
+                }
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <IconChip icon={feature.icon} tone={feature.tone} />
+                <div className="min-w-0">
+                  <h2 className="truncate font-sans text-sm font-semibold tracking-normal text-foreground">{feature.title}</h2>
+                  <StatusPill tone="neutral" className="mt-1 capitalize">{feature.category}</StatusPill>
+                </div>
+              </div>
+              <p className="line-clamp-2 text-sm text-muted-foreground">{feature.description}</p>
+            </Card>
           ))}
-        </TabsList>
-
-        <TabsContent value={selectedCategory} className="mt-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <Card
-                  key={feature.id}
-                  className="h-full cursor-pointer border-l-4 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
-                  style={{ borderLeftColor: "var(--gold, #bd882c)" }}
-                  onClick={() => setActiveFeature(feature)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-muted shrink-0 ${feature.color}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <CardTitle className="text-sm leading-tight">{feature.title}</CardTitle>
-                        <Badge variant="outline" className="text-[10px] mt-1">{feature.category}</Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <CardDescription className="text-sm leading-relaxed line-clamp-2 min-h-[40px]">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       <Sheet open={!!activeFeature} onOpenChange={(open) => { if (!open) setActiveFeature(null); }}>
-        <SheetContent side="right" className="w-full sm:max-w-[480px] flex flex-col gap-0 p-0">
+        <SheetContent side="right" size="md" className="flex w-full flex-col gap-0 p-0">
           {activeFeature && (
             <>
-              <SheetHeader className="px-6 py-4 border-b shrink-0">
-                <SheetTitle className="flex items-center gap-2 text-base">
-                  {(() => {
-                    const Icon = activeFeature.icon;
-                    return <Icon className={`h-5 w-5 ${activeFeature.color}`} />;
-                  })()}
+              <SheetHeader className="shrink-0 border-b border-border px-6 py-4 pr-12">
+                <SheetTitle className="flex items-center gap-3 text-lg">
+                  <IconChip icon={activeFeature.icon} tone={activeFeature.tone} size="sm" />
                   {activeFeature.title}
                 </SheetTitle>
               </SheetHeader>
@@ -258,14 +264,14 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
         </div>
       )}
 
-      <Button onClick={handleSubmit} disabled={isLoading} className="w-full">
-        <Sparkles className="mr-2 h-4 w-4" />
+      <Button onClick={handleSubmit} loading={isLoading} className="w-full">
+        {!isLoading && <Sparkles aria-hidden="true" />}
         {isLoading ? "Processing..." : "Run AI"}
       </Button>
 
       {result && (
-        <div className="max-h-80 overflow-auto rounded-lg bg-muted p-4">
-          <pre className="text-xs whitespace-pre-wrap break-words">{result}</pre>
+        <div className="max-h-80 overflow-auto rounded-md border border-border bg-surface-sunken p-4">
+          <pre className="whitespace-pre-wrap break-words font-mono text-xs">{result}</pre>
         </div>
       )}
 

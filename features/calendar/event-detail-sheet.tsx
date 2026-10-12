@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -24,6 +24,8 @@ import { EventCreateDialog } from "./event-create-dialog";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveImageUrl } from "@/lib/utils";
+import { toneVar } from "@/lib/design/tones";
+import { RSVP_TONES, eventColorTone } from "./event-tones";
 
 function CalendarIcon({ className }: { className?: string }) {
   return (
@@ -113,14 +115,7 @@ function HelpCircle({ className }: { className?: string }) {
   );
 }
 
-const EVENT_COLORS: Record<string, string> = {
-  blue: "#3b82f6",
-  green: "#22c55e",
-  red: "#ef4444",
-  yellow: "#f59e0b",
-  purple: "#a855f7",
-  gold: "#bd882c",
-};
+
 
 function getSafeLocationUrl(location: string): string | null {
   try {
@@ -178,19 +173,18 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
     [event, numericEventId, rsvpMutation]
   );
 
-  const colorHex = event
-    ? (EVENT_COLORS[event.color ?? "blue"] ?? EVENT_COLORS.blue)
-    : EVENT_COLORS.blue;
+  const colorHex = toneVar[eventColorTone(event?.color)];
 
   return (
     <>
       <Sheet open={!!event} onOpenChange={(v) => !v && onClose()}>
-        <SheetContent className="flex flex-col p-0 w-[360px] sm:max-w-[360px]">
-          <SheetHeader className="px-5 py-4 border-b shrink-0">
-            <SheetTitle className="text-sm font-semibold flex items-center gap-2">
+        <SheetContent size="sm" className="flex flex-col gap-0 p-0">
+          <SheetHeader className="shrink-0 border-b border-border px-5 py-4 pr-12">
+            <SheetTitle className="flex items-center gap-2 text-lg">
               <span
-                className="h-3 w-3 rounded-full shrink-0"
+                className="size-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: colorHex }}
+                aria-hidden="true"
               />
               {event?.title ?? ""}
             </SheetTitle>
@@ -200,8 +194,8 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
               {event && (
                 <>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-                    <span>
+                    <CalendarIcon className="size-4 shrink-0" />
+                    <span className="tabular-nums">
                       {event.allDay
                         ? format(new Date(event.start), "PPP")
                         : `${format(new Date(event.start), "PPp")} – ${format(new Date(event.end), "p")}`}
@@ -209,13 +203,13 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                   </div>
                   {event.location && (
                     <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <MapPin className="mt-0.5 size-4 shrink-0" />
                       {getSafeLocationUrl(event.location) ? (
                         <a
                           href={getSafeLocationUrl(event.location)!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline break-all"
+                          className="break-all text-brand-text hover:underline"
                         >
                           {event.location}
                         </a>
@@ -225,8 +219,8 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Tag className="h-3.5 w-3.5 shrink-0" />
-                    <Badge variant="outline" className="text-xs capitalize">{event.category}</Badge>
+                    <Tag className="size-4 shrink-0" />
+                    <StatusPill tone={eventColorTone(event.color)} className="capitalize">{event.category}</StatusPill>
                   </div>
                   {event.description && (
                     <>
@@ -245,39 +239,39 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                     <>
                       <Separator />
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Your RSVP</p>
+                        <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Your RSVP</p>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:border-green-900 dark:hover:bg-green-950"
+                            className="flex-1 text-success-strong hover:bg-success-soft hover:text-success-strong"
                             disabled={deleteEventIsPending || rsvpMutationIsPending}
                             onClick={() => handleRsvp("accepted")}
                             aria-label="Accept event"
                           >
-                            <Check className="h-3 w-3" />
+                            <Check />
                             Accept
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-yellow-600 border-yellow-200 hover:bg-yellow-50 hover:text-yellow-700 dark:text-yellow-400 dark:border-yellow-900 dark:hover:bg-yellow-950"
+                            className="flex-1 text-warning-strong hover:bg-warning-soft hover:text-warning-strong"
                             disabled={rsvpMutationIsPending}
                             onClick={() => handleRsvp("tentative")}
                             aria-label="Mark as tentative"
                           >
-                            <HelpCircle className="h-3 w-3" />
+                            <HelpCircle />
                             Maybe
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs gap-1.5 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-900 dark:hover:bg-red-950"
+                            className="flex-1 text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
                             disabled={rsvpMutationIsPending}
                             onClick={() => handleRsvp("declined")}
                             aria-label="Decline event"
                           >
-                            <X className="h-3 w-3" />
+                            <X />
                             Decline
                           </Button>
                         </div>
@@ -289,36 +283,25 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                     <>
                       <Separator />
                       <div className="space-y-2">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          <Users className="h-3 w-3" />
+                        <div className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <Users className="size-3" />
                           Attendees ({attendees.length})
                         </div>
                         <div className="space-y-1.5">
                           {attendees.map((a) => (
                             <div key={a.id} className="flex items-center gap-2 text-sm">
-                              <Avatar className="h-6 w-6">
+                              <Avatar className="size-7">
                                 <AvatarImage src={resolveImageUrl(a.user?.image ?? null)} />
-                                <AvatarFallback className="text-[10px]">
+                                <AvatarFallback className="text-2xs">
                                   {(a.user?.name ?? a.user?.email ?? "?").slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="flex-1 truncate text-xs">
+                              <span className="flex-1 truncate text-sm">
                                 {a.user?.name ?? a.user?.email ?? "Unknown"}
                               </span>
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] h-4 px-1.5 capitalize ${
-                                  a.status === "accepted"
-                                    ? "border-green-200 text-green-600 dark:border-green-900 dark:text-green-400"
-                                    : a.status === "declined"
-                                      ? "border-red-200 text-red-600 dark:border-red-900 dark:text-red-400"
-                                      : a.status === "tentative"
-                                        ? "border-yellow-200 text-yellow-600 dark:border-yellow-900 dark:text-yellow-400"
-                                        : "border-border text-muted-foreground"
-                                }`}
-                              >
+                              <StatusPill tone={RSVP_TONES[a.status] ?? "neutral"} className="capitalize">
                                 {RSVP_STATUS_LABELS[a.status] ?? a.status}
-                              </Badge>
+                              </StatusPill>
                             </div>
                           ))}
                         </div>
@@ -329,15 +312,15 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
               )}
             </div>
           </ScrollArea>
-          <div className="px-5 py-3 border-t shrink-0 flex items-center justify-between gap-2">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-5 py-3">
             {isCalendarEvent ? (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="text-destructive hover:bg-danger-soft hover:text-destructive"
                 onClick={() => setConfirmOpen(true)}
               >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                <Trash2 />
                 Delete
               </Button>
             ) : (
@@ -346,7 +329,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
             <div className="flex items-center gap-2">
               {isCalendarEvent && (
                 <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                  <Pencil />
                   Edit
                 </Button>
               )}

@@ -7,13 +7,18 @@ import { cn } from "../../lib/utils";
 
 function Avatar({
   className,
+  ring = false,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
+  /** Gold ring for managers / the current user. */
+  ring?: boolean;
+}) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
         "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        ring && "ring-2 ring-gold-400 ring-offset-2 ring-offset-background",
         className
       )}
       {...props}
@@ -42,7 +47,7 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "bg-muted flex size-full items-center justify-center rounded-full",
+        "flex size-full items-center justify-center rounded-full bg-ink-200 text-ink-700 text-xs font-semibold",
         className
       )}
       {...props}

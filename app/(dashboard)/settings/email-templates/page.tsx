@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyMailIllustration } from "@/components/illustrations";
 
 import {
   getVerificationEmailTemplate,
@@ -653,11 +655,11 @@ function EmailTemplatesContent() {
       title="Email Templates"
       subtitle="Preview and test all transactional email templates used in the system"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Input
             type="email"
             placeholder="your@email.com"
-            className="h-8 w-52 text-sm"
+            className="h-8 min-w-0 flex-1 sm:w-52 sm:flex-none"
             value={testEmail}
             onChange={(e) => setTestEmail(e.target.value)}
             aria-label="Test email address"
@@ -666,18 +668,19 @@ function EmailTemplatesContent() {
             size="sm"
             onClick={handleSendTest}
             disabled={sending || !selectedTemplate || !testEmail.trim()}
+            loading={sending}
           >
-            <Send className="h-3.5 w-3.5 mr-1.5" />
+            {!sending && <Send aria-hidden />}
             {sending ? "Sending…" : "Send Test"}
           </Button>
         </div>
       }
     >
       <div className="flex flex-col gap-4">
-        <Tabs value={activeCategory} onValueChange={handleCategoryChange}>
-          <TabsList className="flex-wrap h-auto gap-1">
+        <Tabs value={activeCategory} onValueChange={handleCategoryChange} className="-mx-1 overflow-x-auto px-1">
+          <TabsList variant="underline">
             {CATEGORIES.map((cat) => (
-              <TabsTrigger key={cat} value={cat} className="text-xs">
+              <TabsTrigger key={cat} value={cat}>
                 {cat}
               </TabsTrigger>
             ))}
@@ -689,7 +692,7 @@ function EmailTemplatesContent() {
             value={selectedTemplate?.id ?? ""}
             onValueChange={setSelectedId}
           >
-            <SelectTrigger className="w-72 h-8 text-sm" aria-label="Select template">
+            <SelectTrigger className="h-8 w-full sm:w-72" aria-label="Select template">
               <SelectValue placeholder="Select a template…" />
             </SelectTrigger>
             <SelectContent>
@@ -702,18 +705,18 @@ function EmailTemplatesContent() {
           </Select>
 
           {preview && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Mail className="h-3.5 w-3.5 shrink-0" />
+            <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+              <Mail className="size-3.5 shrink-0" aria-hidden />
               <span className="font-medium text-foreground">Subject:</span>
-              <span className="truncate max-w-[420px]">{preview.subject}</span>
+              <span className="truncate max-w-md" title={preview.subject}>{preview.subject}</span>
             </div>
           )}
         </div>
 
         {preview ? (
-          <Card className="shadow-noir overflow-hidden">
+          <Card className="overflow-hidden">
             <CardContent className="p-0">
-              <div className="border-b px-4 py-2.5 bg-muted/40 flex items-center gap-2">
+              <div className="border-b border-border px-4 py-2.5 bg-surface-sunken flex items-center gap-2">
                 <Label className="text-xs text-muted-foreground shrink-0">Subject</Label>
                 <span className="text-xs font-medium text-foreground truncate">
                   {preview.subject}
@@ -721,21 +724,17 @@ function EmailTemplatesContent() {
               </div>
 
               <div
-                className="bg-white rounded-b-lg"
+                className="bg-card rounded-b-lg"
                 style={{ minHeight: "500px" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview.html) }}
               />
             </CardContent>
           </Card>
         ) : (
-          <Card className="shadow-noir">
-            <CardContent className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-              <Mail className="h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">
-                Select a template to preview it here
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            illustration={<EmptyMailIllustration className="size-32" />}
+            title="Select a template to preview it here"
+          />
         )}
       </div>
     </PageWrapper>

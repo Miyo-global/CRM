@@ -20,21 +20,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-const Briefcase = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="2" y="7" width="20" height="14" rx="2" /><path strokeLinecap="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
-);
-const CalendarIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" /></svg>
-);
-const FileText = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-);
-const ClipboardCheck = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-);
-const FileSignature = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-);
+import { AlertTriangle, Briefcase, Calendar as CalendarIcon, ClipboardCheck, FileSignature, FileText } from "lucide-react";
+import { DetailLayout } from "@/components/shared/detail-header";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptyPersonIllustration } from "@/components/illustrations";
+import { COLUMNS } from "@/features/hr/recruitment/kanban/types";
 import type { CandidateStatus } from "@/types/hr";
 import { ResumeCard } from "@/features/hr/recruitment/candidate-detail/resume-card";
 import { ReferenceChecksTab } from "@/features/hr/recruitment/candidate-detail/reference-checks-tab";
@@ -54,7 +46,7 @@ export default function CandidateDetailPage() {
   const { candidateId } = useParams<{ candidateId: string }>();
   const id = Number(candidateId);
   const { data: session } = useSession();
-  const { data: candidate, isLoading } = useCandidate(id);
+  const { data: candidate, isLoading, isError, error, refetch } = useCandidate(id);
   const updateCandidate = useUpdateCandidate();
   const createInterview = useCreateInterview();
   const generateAiScore = useGenerateCandidateAiScore();
@@ -176,10 +168,27 @@ export default function CandidateDetailPage() {
         subtitle="Loading..."
         actions={<PageBackButton fallback="/hr/recruitment/candidates" showIcon />}
       >
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-48 w-full" />
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]" aria-busy="true">
+          <div className="space-y-4">
+            <Skeleton className="h-9 w-96 max-w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+          <div className="order-first space-y-4 lg:order-none">
+            <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError && !candidate) {
+    return (
+      <PageWrapper
+        title="Candidate"
+        actions={<PageBackButton fallback="/hr/recruitment/candidates" showIcon />}
+      >
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -191,7 +200,10 @@ export default function CandidateDetailPage() {
         subtitle="Candidate not found"
         actions={<PageBackButton fallback="/hr/recruitment/candidates" label="Back to Candidates" />}
       >
-        <div />
+        <EmptyState
+          illustration={<EmptyPersonIllustration className="size-32" />}
+          title="Candidate not found"
+        />
       </PageWrapper>
     );
   }
@@ -219,37 +231,40 @@ export default function CandidateDetailPage() {
     <PageWrapper
       title={`${candidate.firstName} ${candidate.lastName}`}
       subtitle={
-        candidate.currentRole
-          ? `${candidate.currentRole}${candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}`
-          : undefined
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {candidate.currentRole && (
+            <span>{`${candidate.currentRole}${candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}`}</span>
+          )}
+          {candidate.status && (
+            <StatusPill tone={COLUMNS.find((c) => c.id === candidate.status)?.tone ?? "neutral"} dot>
+              {candidate.status}
+            </StatusPill>
+          )}
+        </span>
       }
       stickyHeader
       actions={
         <div className="flex items-center gap-2">
           <PageBackButton fallback="/hr/recruitment/candidates" showIcon />
           <Button size="sm" onClick={handleInterviewOpen}>
+            <CalendarIcon className="size-4" aria-hidden="true" />
             Schedule Interview
           </Button>
         </div>
       }
     >
       {candidate.duplicateOfId != null && (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 mb-4 text-sm">
-          <span
-            className="text-amber-600 dark:text-amber-400 mt-0.5"
-            aria-hidden="true"
-          >
-            ⚠
-          </span>
+        <div role="status" className="mb-6 flex items-start gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-strong" aria-hidden="true" />
           <div className="flex-1">
-            <span className="font-medium text-amber-800 dark:text-amber-300">
+            <span className="font-medium text-warning-strong">
               Duplicate candidate —{" "}
             </span>
-            <span className="text-amber-700 dark:text-amber-400">
+            <span className="text-warning-strong">
               This profile was identified as a duplicate of{" "}
               <Link
                 href={`/hr/recruitment/candidates/${candidate.duplicateOfId}`}
-                className="underline underline-offset-2 hover:no-underline"
+                className="rounded-sm font-medium underline underline-offset-2 outline-none hover:no-underline focus-visible:focus-ring"
               >
                 Candidate #{candidate.duplicateOfId}
               </Link>
@@ -259,82 +274,28 @@ export default function CandidateDetailPage() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-1 space-y-4">
-          <CandidateProfileCard
-            status={candidate.status}
-            rating={candidate.rating}
-            email={candidate.email}
-            phone={candidate.phone}
-            alternatePhone={candidateExtras.alternatePhone}
-            source={candidate.source}
-            experienceYears={candidate.experienceYears}
-            relevantExperienceMonths={candidateExtras.relevantExperienceMonths}
-            location={candidateExtras.location}
-            preferredLocation={candidateExtras.preferredLocation}
-            employmentType={candidateExtras.employmentType}
-            currentEmploymentStatus={candidateExtras.currentEmploymentStatus}
-            preferredWorkMode={candidateExtras.preferredWorkMode}
-            workAuthorization={candidateExtras.workAuthorization}
-            willingToRelocate={candidateExtras.willingToRelocate}
-            noticePeriodDays={candidateExtras.noticePeriodDays}
-            availableFrom={candidateExtras.availableFrom}
-            currentCtc={candidateExtras.currentCtc}
-            expectedCtc={candidateExtras.expectedCtc}
-            salaryCurrency={candidateExtras.salaryCurrency}
-            linkedinUrl={candidate.linkedinUrl}
-            githubUrl={candidateExtras.githubUrl}
-            portfolioUrl={candidate.portfolioUrl}
-            education={candidateExtras.education}
-            skills={candidate.skills}
-            onStatusChange={handleStatusChange}
-            isUpdating={updateCandidate.isPending}
-          />
-
-          <AiScoreCard
-            displayAiScore={displayAiScore}
-            aiScoreGeneratedAt={candidate.aiScoreGeneratedAt}
-            isLatestScore={latestAiScore !== null}
-            isPending={generateAiScore.isPending}
-            onGenerate={handleGenerateAiScore}
-          />
-
-
-          {candidate.notes && (
-            <Card>
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xs font-medium">Notes</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                  {candidate.notes}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <div className="lg:col-span-2">
+      <DetailLayout
+        main={
           <Tabs defaultValue="applications" className="flex min-h-0 flex-col">
-            <TabsList className="sticky top-0 z-10 mb-4 w-full justify-start overflow-x-auto bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+            <TabsList variant="underline" className="mb-4 w-full justify-start overflow-x-auto">
               <TabsTrigger value="applications">
-                <Briefcase className="h-3.5 w-3.5 mr-1.5" />
+                <Briefcase className="size-4" aria-hidden="true" />
                 Applications
               </TabsTrigger>
               <TabsTrigger value="interviews">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
+                <CalendarIcon className="size-4" aria-hidden="true" />
                 Interviews
               </TabsTrigger>
               <TabsTrigger value="documents">
-                <FileText className="h-3.5 w-3.5 mr-1.5" />
+                <FileText className="size-4" aria-hidden="true" />
                 Documents
               </TabsTrigger>
               <TabsTrigger value="references">
-                <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
+                <ClipboardCheck className="size-4" aria-hidden="true" />
                 References
               </TabsTrigger>
               <TabsTrigger value="offers">
-                <FileSignature className="h-3.5 w-3.5 mr-1.5" />
+                <FileSignature className="size-4" aria-hidden="true" />
                 Offers
               </TabsTrigger>
             </TabsList>
@@ -359,10 +320,10 @@ export default function CandidateDetailPage() {
 
             <TabsContent value="references">
               <Card>
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-sm">Reference Checks</CardTitle>
+                <CardHeader>
+                  <CardTitle className="text-base">Reference Checks</CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
+                <CardContent>
                   <ReferenceChecksTab candidateId={id} />
                 </CardContent>
               </Card>
@@ -370,17 +331,71 @@ export default function CandidateDetailPage() {
 
             <TabsContent value="offers">
               <Card>
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-sm">Offer Tracking</CardTitle>
+                <CardHeader>
+                  <CardTitle className="text-base">Offer Tracking</CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
+                <CardContent>
                   <OffersTab candidateId={id} />
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        }
+        rail={
+          <>
+            <CandidateProfileCard
+              status={candidate.status}
+              rating={candidate.rating}
+              email={candidate.email}
+              phone={candidate.phone}
+              alternatePhone={candidateExtras.alternatePhone}
+              source={candidate.source}
+              experienceYears={candidate.experienceYears}
+              relevantExperienceMonths={candidateExtras.relevantExperienceMonths}
+              location={candidateExtras.location}
+              preferredLocation={candidateExtras.preferredLocation}
+              employmentType={candidateExtras.employmentType}
+              currentEmploymentStatus={candidateExtras.currentEmploymentStatus}
+              preferredWorkMode={candidateExtras.preferredWorkMode}
+              workAuthorization={candidateExtras.workAuthorization}
+              willingToRelocate={candidateExtras.willingToRelocate}
+              noticePeriodDays={candidateExtras.noticePeriodDays}
+              availableFrom={candidateExtras.availableFrom}
+              currentCtc={candidateExtras.currentCtc}
+              expectedCtc={candidateExtras.expectedCtc}
+              salaryCurrency={candidateExtras.salaryCurrency}
+              linkedinUrl={candidate.linkedinUrl}
+              githubUrl={candidateExtras.githubUrl}
+              portfolioUrl={candidate.portfolioUrl}
+              education={candidateExtras.education}
+              skills={candidate.skills}
+              onStatusChange={handleStatusChange}
+              isUpdating={updateCandidate.isPending}
+            />
+
+            <AiScoreCard
+              displayAiScore={displayAiScore}
+              aiScoreGeneratedAt={candidate.aiScoreGeneratedAt}
+              isLatestScore={latestAiScore !== null}
+              isPending={generateAiScore.isPending}
+              onGenerate={handleGenerateAiScore}
+            />
+
+            {candidate.notes && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-semibold">Notes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                    {candidate.notes}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        }
+      />
 
       <ScheduleInterviewSheet
         open={interviewOpen}

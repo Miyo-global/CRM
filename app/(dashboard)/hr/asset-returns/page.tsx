@@ -7,8 +7,18 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +43,7 @@ import { format } from "date-fns";
 import { Plus, CheckCircle2, Download, Laptop, Eye, Pencil, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyDevicesIllustration } from "@/components/illustrations";
-import { AssetReturnDetailSheet } from "@/features/hr/assets/asset-return-detail-sheet";
+import { AssetReturnDetailSheet, assetReturnStatusTone } from "@/features/hr/assets/asset-return-detail-sheet";
 import { EmployeeAssignedAssetsPanel } from "@/features/hr/assets/employee-assigned-assets-panel";
 import { HandoverPhotoCapture } from "@/components/hr/handover-photo-capture";
 import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox";
@@ -73,15 +83,6 @@ const ASSET_TYPES = [
 const CONDITIONS = ["Good", "Fair", "Damaged", "Missing"];
 const RETURN_STATUSES = ["PENDING", "RETURNED", "DAMAGED", "LOST", "MISSING"] as const;
 
-function statusBadge(
-  s: string | null,
-): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "RETURNED") return "default";
-  if (s === "PENDING") return "outline";
-  if (s === "MISSING" || s === "LOST") return "destructive";
-  return "secondary";
-}
-
 export default function AssetReturnsPage() {
   const { data: session } = useSession();
   const qc = useQueryClient();
@@ -90,7 +91,7 @@ export default function AssetReturnsPage() {
     session?.user?.role === "HR" ||
     session?.user?.role === "ADMIN";
 
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, isError, error, refetch } = useQuery({
     queryKey: arKeys.list(),
     queryFn: () => apiClient.get<AssetReturn[]>("/hr/asset-returns"),
   });
@@ -441,7 +442,7 @@ export default function AssetReturnsPage() {
       <PageWrapper title="Asset Returns" subtitle="Track company asset returns">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20" />
+            <Skeleton key={i} className="h-14" />
           ))}
         </div>
       </PageWrapper>
@@ -454,11 +455,11 @@ export default function AssetReturnsPage() {
       subtitle="Track and manage company asset returns from employees"
       badge={`${items?.length ?? 0} items`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" disabled={!items?.length}>
-                <Download className="h-3.5 w-3.5 mr-1" />
+                <Download className="size-3.5" aria-hidden="true" />
                 Export
               </Button>
             </DropdownMenuTrigger>
@@ -469,7 +470,7 @@ export default function AssetReturnsPage() {
           </DropdownMenu>
           {isAdmin && (
             <Button size="sm" onClick={() => setSheetOpen(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="size-3.5" aria-hidden="true" />
               Log Return
             </Button>
           )}
@@ -586,92 +587,104 @@ export default function AssetReturnsPage() {
         isPending={deleteReturn.isPending}
       />
 
-      {!items?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <EmptyDevicesIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">No asset returns tracked.</p>
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !items?.length ? (
+        <EmptyState
+          illustration={<EmptyDevicesIllustration className="size-32" />}
+          title="No asset returns tracked."
+          action={isAdmin ? { label: "Log Return", onClick: () => setSheetOpen(true) } : undefined}
+        />
       ) : (
-        <div className="space-y-2">
-          {items.map((ar: AssetReturn) => (
-            <Card key={ar.id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <Laptop className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold">{ar.assetName}</p>
-                    {ar.assetType && (
-                      <Badge variant="outline" className="text-[10px]">
-                        {ar.assetType}
-                      </Badge>
-                    )}
-                    <Badge variant={statusBadge(ar.status)} className="text-[10px]">
+        <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-xs">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Asset</TableHead>
+                <TableHead>Employee</TableHead>
+                <TableHead>Serial</TableHead>
+                <TableHead>Condition</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Logged</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((ar: AssetReturn) => (
+                <TableRow key={ar.id}>
+                  <TableCell>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <IconChip icon={Laptop} tone="neutral" size="sm" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium" title={ar.assetName}>{ar.assetName}</p>
+                        {ar.assetType && <p className="text-xs text-muted-foreground">{ar.assetType}</p>}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">{ar.employeeName ?? ar.userId}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {ar.serialNumber}
+                  </TableCell>
+                  <TableCell className="text-sm">{ar.condition}</TableCell>
+                  <TableCell>
+                    <StatusPill tone={assetReturnStatusTone(ar.status)} dot>
                       {ar.status ?? "PENDING"}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
-                    {(ar.employeeName || ar.userId) && (
-                      <span>{ar.employeeName ?? ar.userId}</span>
-                    )}
-                    {ar.serialNumber && <span>S/N: {ar.serialNumber}</span>}
-                    {ar.condition && <span>Condition: {ar.condition}</span>}
-                    {ar.createdAt && (
-                      <span>{format(new Date(ar.createdAt), "MMM d, yyyy")}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-0.5">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
-                    aria-label="View details"
-                    onClick={() => setDetailAr(ar)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {isAdmin && (
-                    <>
+                    </StatusPill>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                    {ar.createdAt && format(new Date(ar.createdAt), "MMM d, yyyy")}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-0.5">
                       <Button
                         type="button"
-                        size="sm"
+                        size="icon-sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0"
-                        aria-label="Edit"
-                        onClick={() => setEditAr(ar)}
+                        aria-label="View details"
+                        onClick={() => setDetailAr(ar)}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Eye className="size-4" />
                       </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        aria-label="Delete"
-                        onClick={() => setDeleteAr(ar)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      {ar.status !== "RETURNED" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs ml-1"
-                          onClick={() => setReturnId(ar.id)}
-                        >
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Received
-                        </Button>
+                      {isAdmin && (
+                        <>
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            aria-label="Edit"
+                            onClick={() => setEditAr(ar)}
+                          >
+                            <Pencil className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            aria-label="Delete"
+                            onClick={() => setDeleteAr(ar)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                          {ar.status !== "RETURNED" && (
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              className="ml-1"
+                              onClick={() => setReturnId(ar.id)}
+                            >
+                              <CheckCircle2 className="size-3" aria-hidden="true" />
+                              Received
+                            </Button>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

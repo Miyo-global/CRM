@@ -7,6 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
+
+const STATUS_TONE: Record<string, Tone> = {
+  DRAFT: "neutral",
+  PENDING_APPROVAL: "warning",
+  APPROVED: "info",
+  PAID: "success",
+};
 import { Separator } from "@/components/ui/separator";
 import { format, getDaysInMonth } from "date-fns";
 import { HrSheet } from "@/features/hr/hr-sheet";
@@ -78,7 +87,7 @@ export function PayrollRecordPreviewSheet({
       description="Read-only breakdown for this payroll record."
       showSubmit={false}
     >
-      <Card className="border-2">
+      <Card className="gap-0">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div className="min-w-0">
@@ -90,25 +99,25 @@ export function PayrollRecordPreviewSheet({
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <Badge variant="outline">
+              <Badge variant="outline" className="tabular-nums">
                 {format(new Date(monthKey + "-01"), "MMMM yyyy")}
               </Badge>
-              <p className="text-[10px] text-muted-foreground tabular-nums">
+              <p className="text-2xs text-muted-foreground tabular-nums">
                 {(() => {
                   const start = new Date(monthKey + "-01");
                   const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
                   return `${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`;
                 })()}
               </p>
-              <Badge variant="secondary" className="text-[10px]">
+              <StatusPill tone={STATUS_TONE[payroll.status ?? ""] ?? "neutral"} dot>
                 {payroll.status ?? ""}
-              </Badge>
+              </StatusPill>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <h4 className="font-semibold text-xs mb-3 text-emerald-600 uppercase tracking-wider">Earnings</h4>
+            <h4 className="font-semibold text-xs mb-3 text-success-strong uppercase tracking-wider">Earnings</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Basic Pay</span>
@@ -125,13 +134,13 @@ export function PayrollRecordPreviewSheet({
                 </div>
               )}
               {bonus > 0 && (
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-success-strong">
                   <span>Bonus / Incentive</span>
                   <span className="tabular-nums">+₹{bonus.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {otAmt > 0 && (
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-success-strong">
                   <span>
                     Overtime Pay
                     {otType === "days"
@@ -152,16 +161,16 @@ export function PayrollRecordPreviewSheet({
           </div>
 
           <div>
-            <h4 className="font-semibold text-xs mb-3 text-red-600 uppercase tracking-wider">Deductions</h4>
+            <h4 className="font-semibold text-xs mb-3 text-danger-strong uppercase tracking-wider">Deductions</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Professional Tax</span>
-                <span className="text-red-600 tabular-nums">-₹{pt.toLocaleString(DEFAULT_LOCALE)}</span>
+                <span className="text-danger-strong tabular-nums">-₹{pt.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
               {structureDed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>
-                  <span className="text-red-600 tabular-nums">-₹{structureDed.toLocaleString(DEFAULT_LOCALE)}</span>
+                  <span className="text-danger-strong tabular-nums">-₹{structureDed.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {lopD > 0 && (
@@ -169,25 +178,25 @@ export function PayrollRecordPreviewSheet({
                   <span className="text-muted-foreground">
                     LOP ({lopD} {lopD === 1 ? "day" : "days"})
                   </span>
-                  <span className="text-red-600 tabular-nums">-₹{lopAmt.toLocaleString(DEFAULT_LOCALE)}</span>
+                  <span className="text-danger-strong tabular-nums">-₹{lopAmt.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {otherDed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Other Deductions</span>
-                  <span className="text-red-600 tabular-nums">-₹{otherDed.toLocaleString(DEFAULT_LOCALE)}</span>
+                  <span className="text-danger-strong tabular-nums">-₹{otherDed.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               {advance > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Advance / loan recovery</span>
-                  <span className="text-red-600 tabular-nums">-₹{advance.toLocaleString(DEFAULT_LOCALE)}</span>
+                  <span className="text-danger-strong tabular-nums">-₹{advance.toLocaleString(DEFAULT_LOCALE)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Total Deductions</span>
-                <span className="text-red-600 tabular-nums">-₹{totalDeductions.toLocaleString(DEFAULT_LOCALE)}</span>
+                <span className="text-danger-strong tabular-nums">-₹{totalDeductions.toLocaleString(DEFAULT_LOCALE)}</span>
               </div>
             </div>
           </div>
@@ -196,12 +205,12 @@ export function PayrollRecordPreviewSheet({
 
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
-            <span className="text-2xl font-bold text-emerald-600 tabular-nums">
+            <span className="font-display text-2xl font-bold tabular-nums text-success-strong">
               ₹{netSalary.toLocaleString(DEFAULT_LOCALE)}
             </span>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-3 text-xs space-y-1">
+          <div className="space-y-1 rounded-lg bg-surface-sunken p-3 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Calendar days</span>
               <span className="tabular-nums">{workingDays}</span>

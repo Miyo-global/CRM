@@ -4,11 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { CalendarClock, CheckCircle2, Save, History } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import {
@@ -24,6 +21,8 @@ import {
   useUpdatePayrollSchedule,
 } from "@/lib/api/hooks/hr/payroll-extended";
 import { toast } from "sonner";
+import { PropertyList } from "@/components/shared/property-list";
+import { SettingsSection, SettingRow } from "@/features/settings/settings-row";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const DAY_OPTIONS = Array.from({ length: 28 }, (_, i) => i + 1);
@@ -89,7 +88,7 @@ export default function PayrollSchedulePage() {
         title="Payroll Schedule"
         subtitle="Automate monthly payroll generation for your organization"
       >
-        <div className="space-y-4 max-w-2xl">
+        <div className="space-y-4">
           {[1, 2].map((i) => (
             <Skeleton key={i} className="h-44" />
           ))}
@@ -106,41 +105,39 @@ export default function PayrollSchedulePage() {
       subtitle="Automate monthly payroll generation for your organization"
       actions={
         canEdit ? (
-          <Button onClick={handleSave} disabled={!dirty || updateSchedule.isPending}>
-            <Save className="h-4 w-4 mr-2" />
-            {updateSchedule.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          <>
+            {dirty && <span className="text-xs text-warning-strong">Unsaved changes</span>}
+            <Button onClick={handleSave} disabled={!dirty || updateSchedule.isPending} loading={updateSchedule.isPending}>
+              {!updateSchedule.isPending && <Save aria-hidden />}
+              {updateSchedule.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </>
         ) : undefined
       }
     >
       <motion.div
-        className="space-y-6 max-w-2xl"
+        className="space-y-6"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <CalendarClock className="h-4 w-4 text-gold" />
+          <SettingsSection
+            title={
+              <span className="flex items-center gap-2">
+                <CalendarClock className="size-4 text-brand-text" aria-hidden />
                 Automatic Generation
-              </CardTitle>
-              <CardDescription>
-                When enabled, payroll for the current month is generated automatically on the
-                chosen day. Generation is idempotent — it runs once per month and skips employees
-                who already have a payroll record.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium">Enable auto-generation</p>
-                  <p className="text-xs text-muted-foreground">
-                    Run payroll on a fixed day every month without manual action.
-                  </p>
-                </div>
+              </span>
+            }
+            description="When enabled, payroll for the current month is generated automatically on the chosen day. Generation is idempotent — it runs once per month and skips employees who already have a payroll record."
+          >
+            <SettingRow
+              htmlFor="payroll-auto-enabled"
+              title="Enable auto-generation"
+              description="Run payroll on a fixed day every month without manual action."
+              control={
                 <Switch
+                  id="payroll-auto-enabled"
                   checked={isEnabled}
                   onCheckedChange={(v) => {
                     setIsEnabled(v);
@@ -149,19 +146,13 @@ export default function PayrollSchedulePage() {
                   disabled={!canEdit}
                   aria-label="Enable automatic payroll generation"
                 />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <Label htmlFor="day-of-month" className="text-sm font-medium">
-                    Generate on
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Day of the month the run is triggered (1–28).
-                  </p>
-                </div>
+              }
+            />
+            <SettingRow
+              htmlFor="day-of-month"
+              title="Generate on"
+              description="Day of the month the run is triggered (1–28)."
+              control={
                 <Select
                   value={String(dayOfMonth)}
                   onValueChange={(v) => {
@@ -170,7 +161,7 @@ export default function PayrollSchedulePage() {
                   }}
                   disabled={!canEdit || !isEnabled}
                 >
-                  <SelectTrigger id="day-of-month" className="w-[160px]">
+                  <SelectTrigger id="day-of-month" className="w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,19 +172,15 @@ export default function PayrollSchedulePage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium">Auto-approve generated payroll</p>
-                  <p className="text-xs text-muted-foreground">
-                    Approve runs immediately instead of leaving them in DRAFT for review. Approved
-                    payroll still has to be marked as paid manually.
-                  </p>
-                </div>
+              }
+            />
+            <SettingRow
+              htmlFor="payroll-auto-approve"
+              title="Auto-approve generated payroll"
+              description="Approve runs immediately instead of leaving them in DRAFT for review. Approved payroll still has to be marked as paid manually."
+              control={
                 <Switch
+                  id="payroll-auto-approve"
                   checked={autoApprove}
                   onCheckedChange={(v) => {
                     setAutoApprove(v);
@@ -202,40 +189,39 @@ export default function PayrollSchedulePage() {
                   disabled={!canEdit || !isEnabled}
                   aria-label="Auto-approve generated payroll"
                 />
-              </div>
-            </CardContent>
-          </Card>
+              }
+            />
+          </SettingsSection>
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="shadow-noir">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <History className="h-4 w-4 text-blue" />
+          <SettingsSection
+            title={
+              <span className="flex items-center gap-2">
+                <History className="size-4 text-muted-foreground" aria-hidden />
                 Last Run
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Last generated period</span>
-                <span className="font-medium">{formatRunPeriod(schedule?.lastRunPeriod ?? null)}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Last run at</span>
-                <span className="font-medium">{lastRunAt ?? "Never"}</span>
-              </div>
+              </span>
+            }
+          >
+            <div className="px-5 py-4">
+              <PropertyList
+                className="grid-cols-[160px_1fr]"
+                items={[
+                  { label: "Last generated period", value: <span className="font-medium tabular-nums">{formatRunPeriod(schedule?.lastRunPeriod ?? null)}</span> },
+                  { label: "Last run at", value: <span className="font-medium tabular-nums">{lastRunAt ?? "Never"}</span> },
+                ]}
+              />
               {isEnabled && (
-                <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                  <p className="text-xs text-muted-foreground">
+                <div className="mt-4 flex items-start gap-2 rounded-md bg-success-soft px-3 py-2">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success-strong" aria-hidden />
+                  <p className="text-xs text-success-strong">
                     Active — payroll will be generated automatically on the {ordinal(dayOfMonth)} of
                     each month{autoApprove ? " and approved automatically" : ""}.
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </SettingsSection>
         </motion.div>
 
         {!canEdit && (

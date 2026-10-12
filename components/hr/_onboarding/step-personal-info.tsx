@@ -125,7 +125,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
               />
             </FormControl>
             {checkingEmail && (
-              <p id="email-checking" className="text-[11px] text-muted-foreground">Checking email…</p>
+              <p id="email-checking" className="text-xs text-muted-foreground">Checking email…</p>
             )}
             <FormMessage />
           </FormItem>

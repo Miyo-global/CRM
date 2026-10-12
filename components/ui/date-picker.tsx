@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { format, parseISO, isValid, startOfDay } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import type { Matcher } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -97,12 +97,12 @@ export function DatePicker({
           aria-invalid={invalid ? true : undefined}
           aria-describedby={ariaDescribedBy}
           className={cn(
-            "w-full justify-start text-left font-normal h-9",
-            !selected && "text-muted-foreground",
+            "h-9 w-full justify-start gap-2 border-input bg-card px-3 text-left text-sm font-normal shadow-xs hover:bg-card focus-visible:focus-ring focus-visible:border-ring aria-invalid:border-destructive",
+            !selected && "text-subtle-foreground",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarDays className="text-muted-foreground" />
           {selected ? format(selected, "PPP") : placeholder}
         </Button>
       </PopoverTrigger>

@@ -20,7 +20,14 @@ import { toast } from "sonner";
 import { format, formatDistanceToNow, subDays } from "date-fns";
 import { resolveImageUrl } from "@/lib/utils";
 import { SearchableMultiSelect } from "@/components/ui/searchable-multi-select";
-import { Heart, Plus, Award, Users, Lightbulb, Zap, Trophy, Sparkles, TrendingUp, History, ArrowUpRight, ArrowDownLeft, Download, Search, X, Mail, AlertTriangle } from "lucide-react";
+import { Heart, Plus, Award, Users, Lightbulb, Zap, Trophy, Sparkles, TrendingUp, History, ArrowUpRight, ArrowDownLeft, Download, X, Mail, AlertTriangle } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import { toneBar, toneSoft, toneText, type Tone } from "@/lib/design/tones";
 import { RecognitionExportSheet } from "@/features/hr/recognition/recognition-export-sheet";
 import type { RecognitionExportFilters } from "@/lib/hr/recognition-export-filters";
 import { recognitionExportFilename } from "@/lib/hr/recognition-export-filters";
@@ -42,13 +49,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const CATEGORIES = [
-  { value: "KUDOS", label: "Kudos", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", bar: "bg-pink-500" },
-  { value: "TEAMWORK", label: "Teamwork", icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", bar: "bg-blue-500" },
-  { value: "INNOVATION", label: "Innovation", icon: Lightbulb, color: "text-amber-500", bg: "bg-amber-500/10", bar: "bg-amber-500" },
-  { value: "LEADERSHIP", label: "Leadership", icon: Award, color: "text-purple-500", bg: "bg-purple-500/10", bar: "bg-purple-500" },
-  { value: "ABOVE_AND_BEYOND", label: "Above & Beyond", icon: Zap, color: "text-green-500", bg: "bg-green-500/10", bar: "bg-green-500" },
+const CATEGORY_DEFS: { value: string; label: string; icon: typeof Heart; tone: Tone }[] = [
+  { value: "KUDOS", label: "Kudos", icon: Heart, tone: "plum" },
+  { value: "TEAMWORK", label: "Teamwork", icon: Users, tone: "info" },
+  { value: "INNOVATION", label: "Innovation", icon: Lightbulb, tone: "warning" },
+  { value: "LEADERSHIP", label: "Leadership", icon: Award, tone: "brand" },
+  { value: "ABOVE_AND_BEYOND", label: "Above & Beyond", icon: Zap, tone: "success" },
 ];
+const CATEGORIES = CATEGORY_DEFS.map((c) => ({ ...c, color: toneText[c.tone], bg: toneSoft[c.tone], bar: toneBar[c.tone] }));
 
 function getCategoryMeta(category: string | null) {
   return CATEGORIES.find((c) => c.value === category) ?? CATEGORIES[0];
@@ -110,13 +118,13 @@ function HistoryCard({ r, currentUserId }: { r: Recognition; currentUserId: stri
   const isReceived = r.toUserId === currentUserId;
 
   return (
-    <Card className="hover:shadow-sm transition-shadow">
-      <CardContent className="p-4 space-y-3">
+    <Card>
+      <CardContent className="space-y-3 p-5">
         <div className="flex items-start justify-between gap-2">
-          <Badge variant="outline" className={`text-[10px] gap-1 ${catMeta.color} ${catMeta.bg} border-0`}>
-            <Icon className="h-3 w-3" />{catMeta.label}
-          </Badge>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
+          <StatusPill tone={catMeta.tone}>
+            <Icon aria-hidden="true" />{catMeta.label}
+          </StatusPill>
+          <span className="shrink-0 whitespace-nowrap text-2xs tabular-nums text-muted-foreground">
             {r.createdAt ? format(new Date(r.createdAt), "dd MMM yyyy, hh:mm a") : "—"}
           </span>
         </div>
@@ -125,34 +133,34 @@ function HistoryCard({ r, currentUserId }: { r: Recognition; currentUserId: stri
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage src={resolveImageUrl(r.fromUser?.image ?? null)} />
-              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{r.fromUser?.name?.[0] ?? "?"}</AvatarFallback>
+              <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{r.fromUser?.name?.[0] ?? "?"}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-sm font-medium truncate">{r.fromUser?.name ?? "—"}</span>
-                {isSent && <Badge variant="outline" className="text-[10px] text-blue-600 border-blue-300 gap-0.5 py-0"><ArrowUpRight className="h-2.5 w-2.5" />Sent</Badge>}
+                {isSent && <StatusPill tone="info"><ArrowUpRight aria-hidden="true" />Sent</StatusPill>}
               </div>
-              {r.fromUserDept && <p className="text-[10px] text-muted-foreground">{r.fromUserDept}</p>}
+              {r.fromUserDept && <p className="text-2xs text-muted-foreground">{r.fromUserDept}</p>}
             </div>
           </div>
-          <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 rotate-45" />
+          <ArrowUpRight className="size-4 shrink-0 rotate-45 text-subtle-foreground" aria-hidden="true" />
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
             <div className="min-w-0 text-right">
               <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                {isReceived && <Badge variant="outline" className="text-[10px] text-green-600 border-green-300 gap-0.5 py-0"><ArrowDownLeft className="h-2.5 w-2.5" />Received</Badge>}
+                {isReceived && <StatusPill tone="success"><ArrowDownLeft aria-hidden="true" />Received</StatusPill>}
                 <span className="text-sm font-medium truncate">{r.toUser?.name ?? "—"}</span>
               </div>
-              {r.toUserDept && <p className="text-[10px] text-muted-foreground">{r.toUserDept}</p>}
+              {r.toUserDept && <p className="text-2xs text-muted-foreground">{r.toUserDept}</p>}
             </div>
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage src={resolveImageUrl(r.toUser?.image ?? null)} />
-              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{r.toUser?.name?.[0] ?? "?"}</AvatarFallback>
+              <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{r.toUser?.name?.[0] ?? "?"}</AvatarFallback>
             </Avatar>
           </div>
         </div>
 
         {r.message && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed border-t pt-2.5">{r.message}</p>
+          <p className="line-clamp-2 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{r.message}</p>
         )}
       </CardContent>
     </Card>
@@ -164,7 +172,7 @@ export default function RecognitionPage() {
   const currentUserId = session?.user?.id;
   const isAdmin = ["CEO", "HR", "ADMIN"].includes(session?.user?.role ?? "");
 
-  const { data: recognitions, isLoading } = useRecognitions();
+  const { data: recognitions, isLoading, isError, error, refetch } = useRecognitions();
   const { data: employeesRaw } = useHrEmployees();
   const createRecognition = useCreateRecognition();
 
@@ -427,24 +435,21 @@ export default function RecognitionPage() {
     return (
       <PageWrapper title="Recognition" subtitle="Celebrate your team">
         <div className="space-y-4">
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-          </div>
-          <div className="space-y-3 max-w-2xl">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
+          <Skeleton className="h-20 rounded-lg" />
+          <div className="max-w-2xl space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}</div>
         </div>
       </PageWrapper>
     );
   }
 
   const summaryCards = [
-    { label: "Total Kudos", value: stats.total, icon: Heart, color: "text-pink-500" },
-    { label: "This Month", value: stats.thisMonth, icon: TrendingUp, color: "text-emerald-500" },
-    { label: "People Recognized", value: stats.topRecognized.length, icon: Users, color: "text-blue-500" },
+    { label: "Total Kudos", value: stats.total, icon: Heart, tone: "plum" as const },
+    { label: "This Month", value: stats.thisMonth, icon: TrendingUp, tone: "success" as const },
+    { label: "People Recognized", value: stats.topRecognized.length, icon: Users, tone: "info" as const },
     {
       label: "Top Category",
       value: stats.byCategory[0]?.count ? stats.byCategory[0].label : "—",
       icon: Sparkles,
-      color: "text-purple-500",
     },
   ];
 
@@ -455,52 +460,37 @@ export default function RecognitionPage() {
       badge={`${stats.total} kudos`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" />Give Kudos
+          <Plus className="size-4" aria-hidden="true" />Give Kudos
         </Button>
       }
     >
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : (
       <Tabs defaultValue="wall">
-        <TabsList className="mb-4">
-          <TabsTrigger value="wall"><Heart className="h-3.5 w-3.5 mr-1.5" />Wall</TabsTrigger>
-          <TabsTrigger value="history"><History className="h-3.5 w-3.5 mr-1.5" />History</TabsTrigger>
+        <TabsList variant="underline" className="mb-4">
+          <TabsTrigger value="wall"><Heart className="size-4" aria-hidden="true" />Wall</TabsTrigger>
+          <TabsTrigger value="history"><History className="size-4" aria-hidden="true" />History</TabsTrigger>
         </TabsList>
 
         {/* ── WALL TAB ── */}
         <TabsContent value="wall">
           {stats.total === 0 ? (
-            <div className="max-w-2xl mx-auto">
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <EmptyTeamIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-                  <p className="text-sm text-muted-foreground">No recognition yet. Be the first to celebrate a teammate!</p>
-                  <Button size="sm" className="mt-4" onClick={() => setSheetOpen(true)}>
-                    <Plus className="h-3.5 w-3.5 mr-1" />Give Kudos
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <EmptyState
+              illustration={<EmptyTeamIllustration className="size-32" />}
+              title="No recognition yet. Be the first to celebrate a teammate!"
+              action={{ label: "Give Kudos", onClick: () => setSheetOpen(true) }}
+            />
           ) : (
             <div className="space-y-5">
-              <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                {summaryCards.map((c) => (
-                  <Card key={c.label}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <c.icon className={`h-5 w-5 ${c.color}`} />
-                        <span className={`text-xl font-bold tabular-nums ${c.color}`}>{c.value}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{c.label}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <StatsStrip items={summaryCards} />
 
               <div className="grid gap-5 lg:grid-cols-3">
                 <div className="space-y-5 lg:col-span-1">
                   <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Trophy className="h-4 w-4 text-amber-500" />
+                    <CardContent className="p-5">
+                      <div className="mb-3 flex items-center gap-2">
+                        <IconChip icon={Trophy} tone="brand" size="sm" />
                         <p className="text-sm font-semibold">Top Recognized</p>
                       </div>
                       {stats.topRecognized.length === 0 ? (
@@ -509,14 +499,14 @@ export default function RecognitionPage() {
                         <div className="space-y-2.5">
                           {stats.topRecognized.map((person, idx) => (
                             <div key={person.id} className="flex items-center gap-2.5">
-                              <span className="text-xs font-bold text-muted-foreground w-4 tabular-nums">{idx + 1}</span>
-                              <Avatar className="h-7 w-7">
+                              <span className="w-4 text-xs font-bold tabular-nums text-muted-foreground">{idx + 1}</span>
+                              <Avatar className="size-7">
                                 <AvatarImage src={resolveImageUrl(person.image ?? null)} />
-                                <AvatarFallback className="text-[9px] bg-primary/10 text-primary">{person.name?.[0] ?? "?"}</AvatarFallback>
+                                <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{person.name?.[0] ?? "?"}</AvatarFallback>
                               </Avatar>
-                              <span className="text-sm flex-1 truncate">{person.name ?? "Teammate"}</span>
-                              <Badge variant="secondary" className="text-[10px] gap-1 shrink-0">
-                                <Heart className="h-2.5 w-2.5 fill-current text-pink-500" />
+                              <span className="flex-1 truncate text-sm">{person.name ?? "Teammate"}</span>
+                              <Badge variant="plum" className="shrink-0 tabular-nums">
+                                <Heart className="fill-current" aria-hidden="true" />
                                 {person.count}
                               </Badge>
                             </div>
@@ -527,9 +517,9 @@ export default function RecognitionPage() {
                   </Card>
 
                   <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Sparkles className="h-4 w-4 text-purple-500" />
+                    <CardContent className="p-5">
+                      <div className="mb-3 flex items-center gap-2">
+                        <IconChip icon={Sparkles} tone="plum" size="sm" />
                         <p className="text-sm font-semibold">By Category</p>
                       </div>
                       <div className="space-y-2.5">
@@ -546,14 +536,14 @@ export default function RecognitionPage() {
                               <div key={cat.value} className="space-y-1">
                                 <div className="flex items-center justify-between text-xs">
                                   <span className={`flex items-center gap-1.5 ${cat.color}`}>
-                                    <Icon className="h-3.5 w-3.5" />
+                                    <Icon className="size-3.5" aria-hidden="true" />
                                     <span className="text-foreground">{cat.label}</span>
                                   </span>
                                   <span className="text-muted-foreground tabular-nums">{cat.count}</span>
                                 </div>
                                 <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                                   <div
-                                    className={`h-full rounded-full transition-all duration-500 ${cat.bar}`}
+                                    className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${cat.bar}`}
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
@@ -567,8 +557,8 @@ export default function RecognitionPage() {
                 </div>
 
                 <div className="lg:col-span-2">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Heart className="h-4 w-4 text-pink-500" />
+                  <div className="mb-3 flex items-center gap-2">
+                    <IconChip icon={Heart} tone="plum" size="sm" />
                     <p className="text-sm font-semibold">Recent Recognition</p>
                   </div>
                   <div className="space-y-3">
@@ -577,24 +567,27 @@ export default function RecognitionPage() {
                       const Icon = catMeta.icon;
                       return (
                         <Card key={r.id}>
-                          <CardContent className="p-4">
+                          <CardContent className="p-5">
                             <div className="flex items-start gap-3">
-                              <Avatar className="h-9 w-9 shrink-0">
+                              <Avatar className="size-9 shrink-0">
                                 <AvatarImage src={resolveImageUrl(r.fromUser?.image ?? null)} />
-                                <AvatarFallback className="text-xs bg-primary/10 text-primary">{r.fromUser?.name?.[0]}</AvatarFallback>
+                                <AvatarFallback className="bg-brand-soft text-xs text-brand-soft-foreground">{r.fromUser?.name?.[0]}</AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="text-sm font-semibold">{r.fromUser?.name}</span>
                                   <span className="text-xs text-muted-foreground">recognized</span>
                                   <span className="text-sm font-semibold">{r.toUser?.name}</span>
-                                  <Badge variant="outline" className={`text-[10px] gap-1 ${catMeta.color}`}>
-                                    <Icon className="h-3 w-3" />
+                                  <StatusPill tone={catMeta.tone}>
+                                    <Icon aria-hidden="true" />
                                     {catMeta.label}
-                                  </Badge>
+                                  </StatusPill>
                                 </div>
-                                <p className="text-sm mt-1.5 text-foreground/90">{r.message}</p>
-                                <p className="text-[10px] text-muted-foreground mt-1.5">
+                                <p className="mt-1.5 text-sm text-foreground">{r.message}</p>
+                                <p
+                                  className="mt-1.5 text-xs text-muted-foreground"
+                                  title={r.createdAt ? format(new Date(r.createdAt), "dd MMM yyyy, hh:mm a") : undefined}
+                                >
                                   {r.createdAt ? formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }) : ""}
                                 </p>
                               </div>
@@ -613,126 +606,114 @@ export default function RecognitionPage() {
         {/* ── HISTORY TAB ── */}
         <TabsContent value="history">
           <div className="space-y-3">
-            {/* Filter bar */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                  <Input
-                    placeholder="Search name, email, or message…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 h-8 text-xs"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2">
-                      <X className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
+            <ListToolbar
+              search={{ value: searchQuery, onChange: setSearchQuery, placeholder: "Search name, email, or message…" }}
+              filters={
+                <>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="h-9 w-36 text-sm">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Categories</SelectItem>
+                      {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+
+                  {isAdmin ? (
+                    <>
+                      <Select value={filterDept} onValueChange={setFilterDept}>
+                        <SelectTrigger className="h-9 w-40 text-sm">
+                          <SelectValue placeholder="Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All Departments</SelectItem>
+                          {allDepts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={filterFrom} onValueChange={setFilterFrom}>
+                        <SelectTrigger className="h-9 w-40 text-sm">
+                          <SelectValue placeholder="From person" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">From Anyone</SelectItem>
+                          {allFromPeople.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={filterTo} onValueChange={setFilterTo}>
+                        <SelectTrigger className="h-9 w-40 text-sm">
+                          <SelectValue placeholder="To person" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">To Anyone</SelectItem>
+                          {allToPeople.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </>
+                  ) : (
+                    <Select value={historyFilter} onValueChange={(v) => setHistoryFilter(v as typeof historyFilter)}>
+                      <SelectTrigger className="h-9 w-36 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
+                        <SelectItem value="SENT">Sent by me</SelectItem>
+                        <SelectItem value="RECEIVED">Received by me</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 gap-1.5 text-xs"
-                  onClick={() => {
-                    setExportSheetTab("download");
-                    setExportSheetOpen(true);
-                  }}
-                  disabled={historyRows.length === 0}
-                >
-                  <Download className="h-3.5 w-3.5" />Export
-                </Button>
-                {isAdmin ? (
+
+                  <label className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">From</span>
+                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9 w-36 text-sm tabular-nums" />
+                  </label>
+
+                  <label className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">To</span>
+                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-36 text-sm tabular-nums" />
+                  </label>
+
+                  {hasActiveFilters && (
+                    <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={clearFilters}>
+                      <X className="size-4" aria-hidden="true" />Clear
+                    </Button>
+                  )}
+                </>
+              }
+              actions={
+                <>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 gap-1.5 text-xs"
                     onClick={() => {
-                      setExportSheetTab("email");
+                      setExportSheetTab("download");
                       setExportSheetOpen(true);
                     }}
                     disabled={historyRows.length === 0}
                   >
-                    <Mail className="h-3.5 w-3.5" />Send mail
+                    <Download className="size-4" aria-hidden="true" />Export
                   </Button>
-                ) : null}
-                {hasActiveFilters && (
-                  <Button size="sm" variant="ghost" className="h-8 gap-1 text-xs text-muted-foreground" onClick={clearFilters}>
-                    <X className="h-3 w-3" />Clear
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-36 h-8 text-xs">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Categories</SelectItem>
-                    {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-
-                {isAdmin ? (
-                  <>
-                    <Select value={filterDept} onValueChange={setFilterDept}>
-                      <SelectTrigger className="w-40 h-8 text-xs">
-                        <SelectValue placeholder="Department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">All Departments</SelectItem>
-                        {allDepts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={filterFrom} onValueChange={setFilterFrom}>
-                      <SelectTrigger className="w-40 h-8 text-xs">
-                        <SelectValue placeholder="From person" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">From Anyone</SelectItem>
-                        {allFromPeople.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={filterTo} onValueChange={setFilterTo}>
-                      <SelectTrigger className="w-40 h-8 text-xs">
-                        <SelectValue placeholder="To person" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">To Anyone</SelectItem>
-                        {allToPeople.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </>
-                ) : (
-                  <Select value={historyFilter} onValueChange={(v) => setHistoryFilter(v as typeof historyFilter)}>
-                    <SelectTrigger className="w-36 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">All</SelectItem>
-                      <SelectItem value="SENT">Sent by me</SelectItem>
-                      <SelectItem value="RECEIVED">Received by me</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">From</span>
-                  <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 text-xs w-36" />
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">To</span>
-                  <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 text-xs w-36" />
-                </div>
-              </div>
-            </div>
+                  {isAdmin ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setExportSheetTab("email");
+                        setExportSheetOpen(true);
+                      }}
+                      disabled={historyRows.length === 0}
+                    >
+                      <Mail className="size-4" aria-hidden="true" />Send mail
+                    </Button>
+                  ) : null}
+                </>
+              }
+            />
 
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs tabular-nums text-muted-foreground">
                 {isAdmin
                   ? `All organisation recognitions — ${historyRows.length} record${historyRows.length !== 1 ? "s" : ""}`
                   : `Your recognition history — ${historyRows.length} record${historyRows.length !== 1 ? "s" : ""}`}
@@ -741,26 +722,27 @@ export default function RecognitionPage() {
             </div>
 
             {historyRows.length === 0 ? (
-              <Card>
-                <CardContent className="py-10 text-center">
-                  {hasActiveFilters ? (
-                    <EmptySearchIllustration className="mx-auto mb-4 h-36 w-36 opacity-95" />
-                  ) : (
-                    <EmptyActivityIllustration className="mx-auto mb-4 h-36 w-36 opacity-95" />
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    {hasActiveFilters ? "No records match the current filters." : "No recognition records found."}
-                  </p>
-                </CardContent>
-              </Card>
+              hasActiveFilters ? (
+                <EmptyState
+                  illustration={<EmptySearchIllustration className="size-32" />}
+                  title="No results for these filters"
+                  description="No records match the current filters."
+                  action={{ label: "Clear filters", onClick: clearFilters }}
+                />
+              ) : (
+                <EmptyState
+                  illustration={<EmptyActivityIllustration className="size-32" />}
+                  title="No recognition records found."
+                />
+              )
             ) : (
               <div className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {paginatedHistoryRows.map((r) => (
                     <HistoryCard key={r.id} r={r} currentUserId={currentUserId} />
                   ))}
                 </div>
-                <div className="rounded-lg border border-border px-2 bg-muted/20">
+                <div className="rounded-lg border border-border bg-card px-2">
                   <DataTablePagination
                     page={historySafePage}
                     totalPages={historyTotalPages}
@@ -775,6 +757,7 @@ export default function RecognitionPage() {
           </div>
         </TabsContent>
       </Tabs>
+      )}
 
       <RecognitionExportSheet
         open={exportSheetOpen}
@@ -805,7 +788,7 @@ export default function RecognitionPage() {
             selectedLabel={(count) => `${count} teammates selected`}
             emptyText="No teammate found."
           />
-          <p className="text-[10px] text-muted-foreground">Select one or more teammates to recognize.</p>
+          <p className="text-2xs text-muted-foreground">Select one or more teammates to recognize.</p>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Category</label>
@@ -827,7 +810,7 @@ export default function RecognitionPage() {
             rows={4}
             maxLength={500}
           />
-          <p className="text-[10px] text-muted-foreground text-right">{message.length}/500</p>
+          <p className="text-2xs text-muted-foreground text-right">{message.length}/500</p>
         </div>
       </HrSheet>
 
@@ -849,8 +832,8 @@ export default function RecognitionPage() {
                     })}
                   </ul>
                 ) : null}
-                <div className="flex gap-2.5 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-950 dark:text-amber-100">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+                <div className="flex gap-2.5 rounded-md bg-warning-soft p-3 text-warning-strong">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
                   <p className="text-xs leading-relaxed">
                     This will notify the recipient and send a team shoutout. Once sent, the message and notification{" "}
                     <strong>cannot be edited or recalled</strong>.

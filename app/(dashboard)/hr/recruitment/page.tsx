@@ -4,50 +4,64 @@ import { useRecruitmentStats, useJobPostings, useInterviews } from "@/lib/api/ho
 import { useRecruitmentAnalytics } from "@/lib/api/hooks/hr/recruitment";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { PageBackButton } from "@/components/ui/page-back-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Users, Calendar, UserCheck, ArrowRight } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
+import { Briefcase, Users, Calendar, UserCheck, Filter, PieChart as PieChartIcon, Clock, BarChart3, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CHART_VARS, toneBar, type Tone } from "@/lib/design/tones";
+import { CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
+import { cn } from "@/lib/utils";
 
+const PIE_COLORS = CHART_VARS;
 
-const PIE_COLORS = ["#0f2b7f", "#bd882c", "#10b981", "#8b5cf6", "#f43f5e", "#06b6d4"];
+const RESULT_TONE: Record<string, Tone> = {
+  PENDING: "warning",
+  PASSED: "success",
+  FAILED: "danger",
+  NO_SHOW: "neutral",
+};
+
+const FUNNEL_TONE: Record<string, Tone> = { HIRED: "success", REJECTED: "danger" };
 
 function SourcePieChart({ sources }: { sources: { source: string; count: number }[] }) {
   const data = sources.map((s) => ({ name: s.source, value: s.count }));
   return (
-    <ResponsiveContainer width="100%" height={160}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          innerRadius={36}
-          outerRadius={60}
-          paddingAngle={2}
-          dataKey="value"
-        >
-          {data.map((_, idx) => (
-            <Cell key={`cell-${idx}`} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip contentStyle={{ fontSize: 11 }} />
-        <Legend
-          iconType="circle"
-          iconSize={8}
-          wrapperStyle={{ fontSize: 10 }}
-        />
-      </PieChart>
-    </ResponsiveContainer>
+    <div role="img" aria-label={`Candidate sources: ${data.map((d) => `${d.name} ${d.value}`).join(", ")}`}>
+      <ResponsiveContainer width="100%" height={180}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={44}
+            outerRadius={64}
+            paddingAngle={2}
+            dataKey="value"
+            stroke="var(--card)"
+          >
+            {data.map((_, idx) => (
+              <Cell key={`cell-${idx}`} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, color: "var(--muted-foreground)" }} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
 export default function RecruitmentDashboardPage() {
-  const { data: stats, isLoading: statsLoading } = useRecruitmentStats();
+  const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErrorObj, refetch: refetchStats } = useRecruitmentStats();
   const { data: recentJobs, isLoading: jobsLoading } = useJobPostings({ status: "OPEN" });
   const { data: upcomingInterviews, isLoading: interviewsLoading } = useInterviews({ upcoming: true });
   const { data: analytics } = useRecruitmentAnalytics();
@@ -57,17 +71,31 @@ export default function RecruitmentDashboardPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Recruitment" subtitle="Hire the best talent for your team">
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="space-y-6" aria-busy="true">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}><CardContent className="pt-6"><Skeleton className="h-4 w-16 mb-2" /><Skeleton className="h-8 w-10" /></CardContent></Card>
+              <Card key={i} className="gap-3 p-5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-8 w-12" />
+              </Card>
             ))}
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card><CardContent className="pt-6 space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</CardContent></Card>
-            <Card><CardContent className="pt-6 space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</CardContent></Card>
+          <div className="grid gap-4 md:grid-cols-2 xl:gap-6">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i} className="space-y-3 p-5">
+                {Array.from({ length: 4 }).map((__, j) => <Skeleton key={j} className="h-11 w-full" />)}
+              </Card>
+            ))}
           </div>
         </div>
+      </PageWrapper>
+    );
+  }
+
+  if (statsError) {
+    return (
+      <PageWrapper title="Recruitment" subtitle="Hire the best talent for your team">
+        <QueryErrorState error={statsErrorObj} onRetry={() => refetchStats()} />
       </PageWrapper>
     );
   }
@@ -98,181 +126,165 @@ export default function RecruitmentDashboardPage() {
       }
     >
       <div className="space-y-6">
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { label: "Total Jobs", value: stats?.totalJobs ?? 0, icon: Briefcase },
-            { label: "Open Positions", value: stats?.openJobs ?? 0, icon: Briefcase },
-            { label: "Total Candidates", value: stats?.totalCandidates ?? 0, icon: Users },
-            { label: "New Candidates", value: stats?.newCandidates ?? 0, icon: Users },
-            { label: "Upcoming Interviews", value: stats?.upcomingInterviews ?? 0, icon: Calendar },
-            { label: "Hired (Month)", value: stats?.hiredThisMonth ?? 0, icon: UserCheck },
-          ].map(({ label, value, icon: Icon }) => (
-            <Card key={label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Icon className="h-3.5 w-3.5" />
-                  <span className="text-xs">{label}</span>
-                </div>
-                <p className="text-xl font-bold">{value}</p>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+          {([
+            { label: "Total Jobs", value: stats?.totalJobs ?? 0, icon: Briefcase, tone: "neutral" },
+            { label: "Open Positions", value: stats?.openJobs ?? 0, icon: Briefcase, tone: "brand" },
+            { label: "Total Candidates", value: stats?.totalCandidates ?? 0, icon: Users, tone: "info" },
+            { label: "New Candidates", value: stats?.newCandidates ?? 0, icon: UserPlus, tone: "teal" },
+            { label: "Upcoming Interviews", value: stats?.upcomingInterviews ?? 0, icon: Calendar, tone: "plum" },
+            { label: "Hired (Month)", value: stats?.hiredThisMonth ?? 0, icon: UserCheck, tone: "success" },
+          ] as const).map(({ label, value, icon, tone }, i) => (
+            <StatCard key={label} label={label} value={value} icon={icon} tone={tone} index={i} />
           ))}
         </div>
 
         {stats && (stats.funnel || stats.sources?.length > 0) && (
-          <div className="grid md:grid-cols-3 gap-3">
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Hiring Funnel</h3>
-                <div className="space-y-1.5">
-                  {["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"].map((stage) => {
-                    const cnt = stats.funnel[stage] ?? 0;
-                    const max = Math.max(...Object.values(stats.funnel), 1);
-                    return (
-                      <div key={stage} className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground w-16 shrink-0">{stage}</span>
-                        <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${stage === "HIRED" ? "bg-green-500" : stage === "REJECTED" ? "bg-red-400" : "bg-primary"}`}
-                            style={{ width: `${Math.max(2, (cnt / max) * 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium tabular-nums w-6 text-right">{cnt}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Candidate Sources</h3>
-                {stats.sources.length > 0 ? (
-                  <SourcePieChart sources={stats.sources} />
-                ) : (
-                  <EmptyState
-                    compact
-                    icon={Users}
-                    title="No source data yet"
-                    description="Candidate sources will appear here as applicants come in."
-                    className="border-0 bg-transparent"
-                  />
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                <p className="text-3xl font-bold tabular-nums">{stats.avgTimeToHireDays}</p>
-                <p className="text-xs text-muted-foreground mt-1">Avg. Days to Hire</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 gap-3">
-          <Card>
-            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm">Open Positions</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/hr/recruitment/jobs">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              {!recentJobs?.length ? (
-                <EmptyState
-                  compact
-                  icon={Briefcase}
-                  title="No open positions yet"
-                  description="Open job postings will show up here once you publish them."
-                  className="border-0 bg-transparent"
-                />
-              ) : (
-                <div className="max-h-[260px] overflow-y-auto pr-1">
-                  {recentJobs.map((job) => (
-                    <Link
-                      key={job.id}
-                      href={`/hr/recruitment/jobs/${job.id}/edit`}
-                      className="flex items-center justify-between gap-2 -mx-2 px-2 py-2 rounded-md border-b border-border/50 last:border-0 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{job.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{job.location ?? "Remote"} &middot; {job.type}</p>
-                      </div>
-                      <Badge variant="secondary" className="shrink-0">{job.openings} opening{(job.openings ?? 1) > 1 ? "s" : ""}</Badge>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm">Upcoming Interviews</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/hr/recruitment/interviews">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-2">
-              {!upcomingInterviews?.length ? (
-                <EmptyState
-                  compact
-                  icon={Calendar}
-                  title="No upcoming interviews"
-                  description="Scheduled interviews will appear here."
-                  className="border-0 bg-transparent"
-                />
-              ) : (
-                upcomingInterviews.slice(0, 5).map((interview) => (
-                  <div key={interview.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                    <div>
-                      <p className="font-medium text-sm">
-                        {interview.candidate?.firstName} {interview.candidate?.lastName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {interview.type} &middot; {formatDistanceToNow(new Date(interview.scheduledAt), { addSuffix: true })}
-                      </p>
-                    </div>
-                    <Badge variant={interview.result === "PENDING" ? "outline" : "default"}>
-                      {interview.result}
-                    </Badge>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {analytics && analytics.funnel.some((s) => s.count > 0) && (
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium">Pipeline Funnel</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-end gap-2 overflow-x-auto pb-2">
-                {analytics.funnel.map((stage) => {
-                  const maxCount = Math.max(...analytics.funnel.map((s) => s.count), 1);
-                  const heightPct = Math.max((stage.count / maxCount) * 100, 4);
+          <div className="grid grid-cols-12 gap-4 xl:gap-6">
+            <WidgetCard title="Hiring Funnel" icon={Filter} className="col-span-12 md:col-span-6 xl:col-span-5">
+              <div className="space-y-2.5">
+                {["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"].map((stage) => {
+                  const cnt = stats.funnel[stage] ?? 0;
+                  const max = Math.max(...Object.values(stats.funnel), 1);
                   return (
-                    <div key={stage.stage} className="flex flex-col items-center gap-1 flex-1 min-w-[60px]">
-                      <span className="text-xs font-semibold tabular-nums">{stage.count}</span>
-                      <div className="w-full rounded-t-sm bg-primary/80" style={{ height: `${heightPct * 0.6}px`, minHeight: 4 }} />
-                      <span className="text-[10px] text-muted-foreground text-center leading-tight">{stage.stage}</span>
-                      {stage.avgDaysInStage !== null && (
-                        <span className="text-[10px] text-muted-foreground">{stage.avgDaysInStage}d avg</span>
-                      )}
+                    <div key={stage} className="flex items-center gap-3">
+                      <span className="w-20 shrink-0 text-2xs font-medium uppercase tracking-wider text-muted-foreground">{stage}</span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={cn("h-full rounded-full", toneBar[FUNNEL_TONE[stage] ?? "brand"])}
+                          style={{ width: `${Math.max(2, (cnt / max) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="w-8 text-right text-sm font-medium tabular-nums">{cnt}</span>
                     </div>
                   );
                 })}
               </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span>Hire Rate: <span className="font-semibold text-foreground">{analytics.hireRate}%</span></span>
-                <span>Total: <span className="font-semibold text-foreground">{analytics.totalCandidates}</span></span>
-                <span>Hired: <span className="font-semibold text-foreground">{analytics.totalHired}</span></span>
+            </WidgetCard>
+            <WidgetCard title="Candidate Sources" icon={PieChartIcon} tone="info" className="col-span-12 md:col-span-6 xl:col-span-4">
+              {stats.sources.length > 0 ? (
+                <SourcePieChart sources={stats.sources} />
+              ) : (
+                <EmptyState
+                  compact
+                  icon={Users}
+                  title="No source data yet"
+                  description="Candidate sources will appear here as applicants come in."
+                  className="border-0 bg-transparent"
+                />
+              )}
+            </WidgetCard>
+            <div className="col-span-12 xl:col-span-3">
+              <StatCard label="Avg. Days to Hire" value={stats.avgTimeToHireDays} icon={Clock} tone="warning" />
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2 xl:gap-6">
+          <WidgetCard
+            title="Open Positions"
+            icon={Briefcase}
+            count={recentJobs?.length}
+            viewAllHref="/hr/recruitment/jobs"
+          >
+            {!recentJobs?.length ? (
+              <EmptyState
+                compact
+                icon={Briefcase}
+                title="No open positions yet"
+                description="Open job postings will show up here once you publish them."
+                className="border-0 bg-transparent"
+              />
+            ) : (
+              <div className="-mx-2 max-h-72 overflow-y-auto">
+                {recentJobs.map((job) => (
+                  <WidgetListRow
+                    key={job.id}
+                    href={`/hr/recruitment/jobs/${job.id}/edit`}
+                    title={job.title}
+                    meta={<>{job.location ?? "Remote"} &middot; {job.type}</>}
+                    trailing={
+                      <Badge variant="secondary" className="tabular-nums">
+                        {job.openings} opening{(job.openings ?? 1) > 1 ? "s" : ""}
+                      </Badge>
+                    }
+                  />
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </WidgetCard>
+
+          <WidgetCard
+            title="Upcoming Interviews"
+            icon={Calendar}
+            tone="plum"
+            count={upcomingInterviews?.length}
+            viewAllHref="/hr/recruitment/interviews"
+          >
+            {!upcomingInterviews?.length ? (
+              <EmptyState
+                compact
+                icon={Calendar}
+                title="No upcoming interviews"
+                description="Scheduled interviews will appear here."
+                className="border-0 bg-transparent"
+              />
+            ) : (
+              <div className="-mx-2">
+                {upcomingInterviews.slice(0, 5).map((interview) => {
+                  const when = new Date(interview.scheduledAt);
+                  return (
+                    <WidgetListRow
+                      key={interview.id}
+                      title={<>{interview.candidate?.firstName} {interview.candidate?.lastName}</>}
+                      meta={
+                        <>
+                          {interview.type} &middot;{" "}
+                          <time dateTime={when.toISOString()} title={format(when, "PPpp")}>
+                            {formatDistanceToNow(when, { addSuffix: true })}
+                          </time>
+                        </>
+                      }
+                      trailing={
+                        <StatusPill tone={RESULT_TONE[interview.result ?? "PENDING"] ?? "neutral"} dot>
+                          {interview.result}
+                        </StatusPill>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </WidgetCard>
+        </div>
+
+        {analytics && analytics.funnel.some((s) => s.count > 0) && (
+          <WidgetCard title="Pipeline Funnel" icon={BarChart3} tone="info">
+            <div className="flex items-end gap-2 overflow-x-auto pb-2">
+              {analytics.funnel.map((stage) => {
+                const maxCount = Math.max(...analytics.funnel.map((s) => s.count), 1);
+                const heightPct = Math.max((stage.count / maxCount) * 100, 4);
+                return (
+                  <div key={stage.stage} className="flex min-w-16 flex-1 flex-col items-center gap-1">
+                    <span className="text-xs font-semibold tabular-nums">{stage.count}</span>
+                    <div
+                      className={cn("w-full max-w-16 rounded-t-sm", toneBar.brand)}
+                      style={{ height: `${heightPct * 0.6}px`, minHeight: 4 }}
+                    />
+                    <span className="text-center text-2xs leading-tight text-muted-foreground">{stage.stage}</span>
+                    {stage.avgDaysInStage !== null && (
+                      <span className="text-2xs tabular-nums text-muted-foreground">{stage.avgDaysInStage}d avg</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+              <span>Hire Rate: <span className="font-semibold tabular-nums text-foreground">{analytics.hireRate}%</span></span>
+              <span>Total: <span className="font-semibold tabular-nums text-foreground">{analytics.totalCandidates}</span></span>
+              <span>Hired: <span className="font-semibold tabular-nums text-foreground">{analytics.totalHired}</span></span>
+            </div>
+          </WidgetCard>
         )}
       </div>
     </PageWrapper>

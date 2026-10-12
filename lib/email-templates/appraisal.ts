@@ -1,4 +1,5 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getSelfReviewReminderEmail(
   employeeName: string,
@@ -18,7 +19,7 @@ export function getSelfReviewReminderEmail(
     <div style="text-align: center; margin: 32px 0;">
       <a href="${reviewUrl}" class="email-button">Start Self-Review</a>
     </div>
-    <p class="email-text" style="font-size:13px;color:#64748b;">
+    <p class="email-text" style="font-size:13px;color:${BRAND.inkMuted};">
       This review helps your manager understand your perspective and ensure a fair evaluation.
     </p>
   `;

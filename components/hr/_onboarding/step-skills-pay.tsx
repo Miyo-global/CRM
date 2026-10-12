@@ -108,13 +108,13 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
       </div>
 
       <div className="pt-4 border-t border-border">
-        <h3 className="text-base font-semibold mb-4">Salary Information</h3>
+        <h3 className="mb-4 text-sm font-semibold">Salary Information</h3>
         <FormField
           control={form.control}
           name="monthlySalary"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Monthly Salary (CTC) <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Monthly Salary (CTC) <span className="text-danger-strong">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
@@ -151,8 +151,8 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
           )}
         />
         {form.watch("monthlySalary") && Number(form.watch("monthlySalary")) > 0 && (
-          <div className="mt-4 p-4 bg-muted/40 rounded-lg border text-sm">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="mt-4 rounded-lg border bg-surface-sunken/40 p-4 text-sm tabular-nums">
+            <div className="grid grid-cols-[1fr_auto] gap-2">
               <span className="text-muted-foreground">Basic Pay:</span>
               <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.5).toLocaleString()}</span>
               <span className="text-muted-foreground">HRA:</span>
@@ -160,9 +160,9 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
               <span className="text-muted-foreground">Special Allowance:</span>
               <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.25).toLocaleString()}</span>
               <span className="text-muted-foreground">Professional Tax:</span>
-              <span className="font-medium text-red-600">-&#8377;200</span>
+              <span className="font-medium text-danger-strong">-&#8377;200</span>
               <span className="text-muted-foreground font-semibold border-t pt-2">Net Salary:</span>
-              <span className="font-bold text-green-600 border-t pt-2">&#8377;{(Number(form.watch("monthlySalary")) - 200).toLocaleString()}</span>
+              <span className="font-bold text-success-strong border-t pt-2">&#8377;{(Number(form.watch("monthlySalary")) - 200).toLocaleString()}</span>
             </div>
           </div>
         )}

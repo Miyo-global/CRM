@@ -8,6 +8,7 @@ import { generateTerminationLetterPdf } from "@/lib/termination-letter-pdf";
 import { escapeHtml } from "@/lib/email-templates/base";
 import { NextResponse, type NextRequest } from "next/server";
 import { HR_EMAIL } from "@/lib/constants/company";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export async function GET(
   req: NextRequest,
@@ -90,9 +91,9 @@ function generateTerminationLetterHtml(data: {
 
   return `
 <div style="font-family: 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 40px; line-height: 1.8;">
-  <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+  <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid ${BRAND.ink}; padding-bottom: 15px;">
     <h2 style="margin: 0;">${companyName}</h2>
-    <p style="margin: 5px 0 0; font-size: 12px; color: #666;">CONFIDENTIAL</p>
+    <p style="margin: 5px 0 0; font-size: 12px; color: ${BRAND.inkMuted};">CONFIDENTIAL</p>
   </div>
 
   <p style="text-align: right;">Date: ${data.date}</p>
@@ -127,7 +128,7 @@ function generateTerminationLetterHtml(data: {
   ${companyName}
   </p>
 
-  <p style="margin-top: 20px; font-size: 11px; color: #999; text-align: center;">
+  <p style="margin-top: 20px; font-size: 11px; color: ${BRAND.inkSubtle}; text-align: center;">
     For queries, please contact HR at <a href="mailto:${HR_EMAIL}">${HR_EMAIL}</a>
   </p>
 </div>`.trim();

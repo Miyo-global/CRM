@@ -8,6 +8,7 @@ import { sendEmail } from "@/lib/email";
 import { isEmailConfigured } from "@/lib/email/config";
 import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export interface CalendarEventNotifyResult {
   attendeeCount: number;
@@ -112,11 +113,11 @@ export async function sendCalendarEventAttendeeEmails(params: {
     ${locBlock}
     ${descBlock}
     <p style="margin-top:20px">
-      <a href="${escapeHtml(calendarUrl)}" style="display:inline-block;background:#1e40af;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;font-weight:600">
+      <a href="${escapeHtml(calendarUrl)}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};padding:10px 18px;text-decoration:none;border-radius:6px;font-weight:600">
         Open calendar
       </a>
     </p>
-    <p style="margin-top:16px;color:#666;font-size:12px">This message was sent from your organization&apos;s CRM calendar.</p>
+    <p style="margin-top:16px;color:${BRAND.inkMuted};font-size:12px">This message was sent from your organization&apos;s CRM calendar.</p>
   `;
 
   const emailOutcomes = await Promise.all(

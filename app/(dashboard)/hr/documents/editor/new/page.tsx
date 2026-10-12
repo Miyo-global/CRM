@@ -20,7 +20,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, FileCheck, FileClock, FileKey, Loader2, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, FileText, FileCheck, FileClock, FileKey, LayoutTemplate } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const optionClass = (isSelected: boolean) =>
+  cn(
+    "flex flex-col items-start rounded-lg border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    isSelected
+      ? "border-primary bg-brand-soft/60 ring-1 ring-primary"
+      : "border-border bg-card hover:border-border-strong hover:bg-accent/40",
+  );
+
+const optionIconClass = (isSelected: boolean) =>
+  cn(
+    "mb-3 flex size-9 items-center justify-center rounded-full",
+    isSelected ? "bg-primary text-primary-foreground" : "bg-neutral-soft text-neutral-strong",
+  );
 import Link from "next/link";
 
 const USER_TEMPLATE_PREFIX = "tmpl:";
@@ -157,7 +172,7 @@ export default function NewDocumentPage() {
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/documents">
-            <ArrowLeft className="mr-1 h-4 w-4" />
+            <ArrowLeft className="size-4" aria-hidden />
             Back
           </Link>
         </Button>
@@ -172,7 +187,7 @@ export default function NewDocumentPage() {
             </CardHeader>
             <CardContent className="space-y-5">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className="mb-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Starter templates
                 </p>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -184,13 +199,12 @@ export default function NewDocumentPage() {
                         key={t.value}
                         type="button"
                         onClick={() => setTemplate(t.value)}
-                        className={`text-left p-4 rounded-lg border transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                            : "border-border hover:border-primary/30 bg-card"
-                        }`}
+                        aria-pressed={isSelected}
+                        className={optionClass(isSelected)}
                       >
-                        <Icon className={`h-7 w-7 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                        <span className={optionIconClass(isSelected)}>
+                          <Icon className="size-4" aria-hidden />
+                        </span>
                         <p className="font-medium text-sm">{t.label}</p>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{t.description}</p>
                       </button>
@@ -202,10 +216,10 @@ export default function NewDocumentPage() {
               {activeUserTemplates.length > 0 && (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Your templates
                     </p>
-                    <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                    <Button variant="link" size="xs" className="h-auto p-0" asChild>
                       <Link href="/hr/documents/templates">Manage</Link>
                     </Button>
                   </div>
@@ -218,17 +232,14 @@ export default function NewDocumentPage() {
                           key={t.id}
                           type="button"
                           onClick={() => setTemplate(value)}
-                          className={`text-left p-4 rounded-lg border transition-all ${
-                            isSelected
-                              ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                              : "border-border hover:border-primary/30 bg-card"
-                          }`}
+                          aria-pressed={isSelected}
+                          className={optionClass(isSelected)}
                         >
-                          <LayoutTemplate
-                            className={`h-7 w-7 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
-                          />
-                          <p className="font-medium text-sm truncate" title={t.title}>{t.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          <span className={optionIconClass(isSelected)}>
+                            <LayoutTemplate className="size-4" aria-hidden />
+                          </span>
+                          <p className="w-full font-medium text-sm truncate" title={t.title}>{t.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed tabular-nums">
                             {t.variables?.length
                               ? `${t.variables.length} variable${t.variables.length === 1 ? "" : "s"}`
                               : "Custom template"}
@@ -242,15 +253,17 @@ export default function NewDocumentPage() {
             </CardContent>
           </Card>
 
-          <Card className="h-fit lg:sticky lg:top-4">
+          <Card className="h-fit lg:sticky lg:top-[calc(var(--page-sticky-top,0px)+1rem)]">
             <CardHeader>
               <CardTitle>Document Details</CardTitle>
               <CardDescription>Give your document a title and confirm template.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <label htmlFor="new-doc-title" className="text-sm font-medium">Title</label>
                 <Input
+                  id="new-doc-title"
+                  aria-invalid={!!titleError || undefined}
                   placeholder="e.g. Employee Handbook 2026"
                   value={title}
                   maxLength={200}
@@ -260,13 +273,13 @@ export default function NewDocumentPage() {
                   }}
                   autoFocus
                 />
-                {titleError && <p className="text-xs text-destructive">{titleError}</p>}
-                <p className="text-[10px] text-muted-foreground text-right">{title.trim().length}/200</p>
+                {titleError && <p className="text-xs text-danger-strong">{titleError}</p>}
+                <p className="text-2xs text-muted-foreground text-right tabular-nums">{title.trim().length}/200</p>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Template</label>
+                <label htmlFor="new-doc-template" className="text-sm font-medium">Template</label>
                 <Select value={template} onValueChange={setTemplate}>
-                  <SelectTrigger>
+                  <SelectTrigger id="new-doc-template" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -291,15 +304,12 @@ export default function NewDocumentPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleCreate} disabled={createDoc.isPending} className="w-full" size="lg">
+              <Button onClick={handleCreate} loading={createDoc.isPending} className="w-full" size="lg">
                 {createDoc.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
+                  "Creating..."
                 ) : (
                   <>
-                    <FileText className="mr-2 h-4 w-4" />
+                    <FileText className="size-4" aria-hidden />
                     Create & Open Editor
                   </>
                 )}

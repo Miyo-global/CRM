@@ -1,6 +1,8 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter,
 } from "@/components/ui/sheet";
@@ -44,25 +46,21 @@ export function CompleteSprintSheet({
 
   return (
     <Sheet open={!!sprint} onOpenChange={(open) => !open && onCancel()}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader>
+      <SheetContent size="md" className="gap-0 p-0">
+        <SheetHeader className="border-b border-border pl-6">
           <SheetTitle className="flex items-center gap-2">
-            <svg className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-              <path d="M12 9v4" />
-              <path d="M12 17h.01" />
-            </svg>
-            Complete Sprint: {sprint?.name}
+            <IconChip icon={AlertTriangle} tone="warning" size="sm" />
+            <span className="min-w-0 truncate">Complete Sprint: {sprint?.name}</span>
           </SheetTitle>
         </SheetHeader>
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
           {incompleteCount > 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
-                {incompleteCount} ticket{incompleteCount > 1 ? "s are" : " is"} not done. Where should they go?
+                <span className="font-medium tabular-nums text-foreground">{incompleteCount}</span> ticket{incompleteCount > 1 ? "s are" : " is"} not done. Where should they go?
               </p>
               <Select value={effectiveMoveTo} onValueChange={onMoveToChange}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -77,9 +75,9 @@ export function CompleteSprintSheet({
             <p className="text-sm text-muted-foreground">All tickets are done! Ready to complete this sprint.</p>
           )}
         </div>
-        <SheetFooter>
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button onClick={handleConfirm} disabled={isUpdating}>
+        <SheetFooter className="sticky bottom-0 bg-surface-raised/90 backdrop-blur">
+          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button onClick={handleConfirm} loading={isUpdating}>
             {isUpdating ? "Completing..." : "Complete Sprint"}
           </Button>
         </SheetFooter>

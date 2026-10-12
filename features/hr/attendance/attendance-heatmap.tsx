@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Activity, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAttendanceHeatmap } from "@/lib/api/hooks/hr";
+import { IconChip } from "@/components/ui/icon-chip";
 
 const MONTH_LABELS = [
   "Jan",
@@ -30,12 +31,13 @@ const MONTH_LABELS = [
 ];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** Gold heat scale (§8.8): zero = muted, then 4 gold buckets 100→700. */
 const intensityClasses: Record<number, string> = {
-  0: "bg-muted/40 dark:bg-muted/20",
-  1: "bg-blue-200 dark:bg-blue-900/60",
-  2: "bg-blue-400 dark:bg-blue-700",
-  3: "bg-blue-600 dark:bg-blue-500",
-  4: "bg-blue-800 dark:bg-blue-300",
+  0: "bg-muted",
+  1: "bg-gold-100",
+  2: "bg-gold-300",
+  3: "bg-gold-500",
+  4: "bg-gold-700",
 };
 
 export function AttendanceHeatmap({ userId }: { userId: string }) {
@@ -91,42 +93,38 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
   }, [year, data]);
 
   return (
-    <Card className="overflow-hidden border-border shadow-sm">
+    <Card className="gap-0 overflow-hidden">
       <CardHeader className="pb-3 pt-5">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-              <Activity className="h-4 w-4 text-blue-500" />
-            </div>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <IconChip icon={Activity} />
             Attendance Heatmap
           </CardTitle>
-          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/30 p-0.5">
+          <div className="flex items-center gap-0.5">
             <Button
               variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+              size="icon-sm"
               onClick={handlePrevYear}
               aria-label="Previous year"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
-            <span className="text-sm font-medium min-w-[50px] text-center text-foreground">
+            <span className="min-w-12 text-center text-sm font-medium tabular-nums text-foreground" aria-live="polite">
               {year}
             </span>
             <Button
               variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+              size="icon-sm"
               onClick={handleNextYear}
               disabled={year >= new Date().getFullYear()}
               aria-label="Next year"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
         {data?.summary && (
-          <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 flex flex-wrap gap-4 text-xs tabular-nums text-muted-foreground">
             <span>
               <span className="font-semibold text-foreground">
                 {data.summary.totalDays}
@@ -160,14 +158,22 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex gap-1">
                 {Array.from({ length: 53 }).map((__, j) => (
-                  <Skeleton key={j} className="h-3 w-3 rounded-[2px]" />
+                  <Skeleton key={j} className="h-3 w-3 rounded-xs" />
                 ))}
               </div>
             ))}
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <div className="inline-block min-w-max">
+            <div
+              className="inline-block min-w-max"
+              role="img"
+              aria-label={
+                data?.summary
+                  ? `Attendance heatmap for ${year}: ${data.summary.totalDays} days, ${data.summary.totalHours} hours worked`
+                  : `Attendance heatmap for ${year}`
+              }
+            >
               {/* Month row: same column widths as week grid so labels stay on one baseline */}
               <div className="mb-1.5 flex gap-0.5">
                 <div className="mr-1.5 w-8 shrink-0" aria-hidden />
@@ -179,7 +185,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                       className="relative h-4 w-3 shrink-0 overflow-visible"
                     >
                       {monthStart ? (
-                        <span className="absolute left-0 top-0 z-10 whitespace-nowrap text-[10px] leading-none text-muted-foreground">
+                        <span className="absolute left-0 top-0 z-10 whitespace-nowrap text-2xs leading-none text-muted-foreground">
                           {MONTH_LABELS[monthStart.month]}
                         </span>
                       ) : null}
@@ -193,7 +199,7 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                     {DAY_LABELS.map((d, i) => (
                       <div
                         key={d}
-                        className={`h-3 text-[10px] leading-3 text-muted-foreground ${i % 2 === 0 ? "invisible" : ""}`}
+                        className={`h-3 text-2xs leading-3 text-muted-foreground ${i % 2 === 0 ? "invisible" : ""}`}
                       >
                         {d}
                       </div>
@@ -215,10 +221,8 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                         return (
                           <div
                             key={rowIdx}
-                            className={`h-3 w-3 rounded-[2px] cursor-default transition-opacity hover:opacity-70 ${cls}`}
+                            className={`size-3 cursor-default rounded-xs ring-ring transition-shadow hover:ring-1 ${cls}`}
                             title={title}
-                            role="gridcell"
-                            aria-label={title}
                           />
                         );
                       })}
@@ -227,14 +231,15 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 mt-3">
-                <span className="text-[10px] text-muted-foreground">Less</span>
+                <span className="text-2xs text-muted-foreground">Less</span>
                 {[0, 1, 2, 3, 4].map((level) => (
                   <div
                     key={level}
-                    className={`h-3 w-3 rounded-[2px] ${intensityClasses[level]}`}
+                    className={`size-3 rounded-xs ${intensityClasses[level]}`}
+                    aria-hidden="true"
                   />
                 ))}
-                <span className="text-[10px] text-muted-foreground">More</span>
+                <span className="text-2xs text-muted-foreground">More</span>
               </div>
             </div>
           </div>

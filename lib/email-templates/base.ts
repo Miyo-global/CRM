@@ -1,4 +1,5 @@
 import { appUrl } from "../app-url";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export const baseUrl = appUrl;
 
@@ -30,34 +31,34 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
   ${preheader ? `<meta name="description" content="${escapeHtml(preheader)}">` : ''}
   <title>${escapeHtml(title)}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-      background-color: #f6f9fc;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      background-color: ${BRAND.canvas};
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
     .email-wrapper {
       width: 100%;
-      background-color: #f6f9fc;
+      background-color: ${BRAND.canvas};
       padding: 40px 0;
     }
 
     .email-container {
       max-width: 600px;
       margin: 0 auto;
-      background-color: #ffffff;
+      background-color: ${BRAND.white};
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      box-shadow: 0 4px 6px ${BRAND.border};
     }
 
     .email-header {
-      background: linear-gradient(135deg, #0f2b7f 0%, #1e40af 100%);
+      background: linear-gradient(135deg, ${BRAND.ink} 0%, ${BRAND.inkDeep} 100%);
       padding: 40px 48px;
       text-align: center;
     }
@@ -70,21 +71,21 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
 
     .email-body {
       padding: 48px;
-      color: #334155;
+      color: ${BRAND.inkMuted};
       line-height: 1.6;
     }
 
     .email-title {
       font-size: 24px;
       font-weight: 700;
-      color: #0f172a;
+      color: ${BRAND.ink};
       margin: 0 0 24px 0;
       line-height: 1.3;
     }
 
     .email-text {
       font-size: 16px;
-      color: #475569;
+      color: ${BRAND.inkMuted};
       margin: 0 0 16px 0;
       line-height: 1.6;
     }
@@ -92,8 +93,8 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
     .email-button {
       display: inline-block;
       padding: 14px 32px;
-      background: linear-gradient(135deg, #0f2b7f 0%, #1e40af 100%);
-      color: #ffffff !important;
+      background: linear-gradient(135deg, ${BRAND.ink} 0%, ${BRAND.inkDeep} 100%);
+      color: ${BRAND.white} !important;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
@@ -107,8 +108,8 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
     }
 
     .credential-box {
-      background-color: #f8fafc;
-      border-left: 4px solid #0f2b7f;
+      background-color: ${BRAND.sunken};
+      border-left: 4px solid ${BRAND.ink};
       padding: 20px;
       border-radius: 8px;
       margin: 24px 0;
@@ -121,13 +122,13 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
 
     .credential-label {
       font-weight: 600;
-      color: #0f172a;
+      color: ${BRAND.ink};
     }
 
     .credential-value {
-      color: #0f2b7f;
+      color: ${BRAND.ink};
       font-family: 'Monaco', 'Courier New', monospace;
-      background-color: #ffffff;
+      background-color: ${BRAND.white};
       padding: 4px 8px;
       border-radius: 4px;
       display: inline-block;
@@ -136,32 +137,32 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
 
     .divider {
       height: 1px;
-      background-color: #e2e8f0;
+      background-color: ${BRAND.border};
       margin: 32px 0;
     }
 
     .email-footer {
-      background-color: #f8fafc;
+      background-color: ${BRAND.sunken};
       padding: 32px 48px;
       text-align: center;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid ${BRAND.border};
     }
 
     .footer-text {
       font-size: 14px;
-      color: #64748b;
+      color: ${BRAND.inkMuted};
       margin: 8px 0;
     }
 
     .footer-link {
-      color: #0f2b7f;
+      color: ${BRAND.ink};
       text-decoration: none;
       font-weight: 500;
     }
 
     .security-notice {
-      background-color: #fef3c7;
-      border-left: 4px solid #f59e0b;
+      background-color: ${BRAND.warningSoft};
+      border-left: 4px solid ${BRAND.warning};
       padding: 16px;
       border-radius: 8px;
       margin: 24px 0;
@@ -169,7 +170,7 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
 
     .security-text {
       font-size: 14px;
-      color: #92400e;
+      color: ${BRAND.warning};
       margin: 0;
     }
 
@@ -192,7 +193,7 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
   <div class="email-wrapper">
     <div class="email-container">
       <div class="email-header">
-        <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0;">
+        <h1 style="color: ${BRAND.white}; font-size: 28px; font-weight: 700; margin: 0;">
           Miyo Global
         </h1>
       </div>
@@ -209,7 +210,7 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
         <p class="footer-text">
           Need help? Contact us at <a href="mailto:support@miyoglobal.com" class="footer-link">support@miyoglobal.com</a>
         </p>
-        <p class="footer-text" style="margin-top: 16px; font-size: 12px; color: #94a3b8;">
+        <p class="footer-text" style="margin-top: 16px; font-size: 12px; color: ${BRAND.inkSubtle};">
           This is an automated email. Please do not reply to this message.
         </p>
       </div>

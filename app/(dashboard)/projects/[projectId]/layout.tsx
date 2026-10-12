@@ -41,15 +41,14 @@ export default async function ProjectLayout({
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full w-full">
-
+    <div className="flex h-full w-full flex-col">
       <ProjectSidebar
         projectId={projectId}
         projectName={project.name}
         projectKey={project.key}
       />
 
-      <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         {children}
       </div>
     </div>

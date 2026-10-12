@@ -1,0 +1,13 @@
+/* react-phone-number-input — token overrides */
+.PhoneInput {
+  --PhoneInputCountrySelectArrow-color: var(--muted-foreground);
+  --PhoneInputCountrySelectArrow-opacity: 1;
+  --PhoneInputCountryFlag-borderColor: var(--border);
+  --PhoneInputCountrySelect-marginRight: 0;
+  --PhoneInputCountryFlag-height: 1em;
+  --PhoneInput-color--focus: var(--ring);
+}
+
+.PhoneInputCountrySelect:focus + .PhoneInputCountryIcon--border {
+  box-shadow: 0 0 0 1px var(--ring);
+}

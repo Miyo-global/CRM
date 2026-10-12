@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -76,23 +76,58 @@ export function HandoverPhotoCapture({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">Handover photos</p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs"
-          disabled={disabled || uploading}
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploading ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Camera className="mr-1.5 h-3.5 w-3.5" />
-          )}
-          {uploading ? "Uploading…" : "Take / upload"}
-        </Button>
+      <p className="text-sm font-medium">Handover photos</p>
+      <p className="text-xs text-muted-foreground">
+        Capture the asset condition during handover from the employee (at least one photo).
+      </p>
+      {/* §6.2 capture frame: ink surface, 56px gold shutter (ink icon on gold). */}
+      <div className="space-y-4 rounded-xl bg-ink-950 p-4">
+        {photos.length > 0 ? (
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((url, index) => (
+              <div
+                key={`${url}-${index}`}
+                className="relative aspect-square overflow-hidden rounded-md bg-ink-900"
+              >
+                <Image
+                  src={url}
+                  alt={`Handover photo ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="secondary"
+                  className="absolute right-1 top-1 size-7 rounded-full shadow-sm"
+                  disabled={disabled}
+                  onClick={() => removePhoto(index)}
+                  aria-label="Remove photo"
+                >
+                  <X className="size-3.5" aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-4 text-center text-xs text-sidebar-muted">No photos yet</p>
+        )}
+        <div className="flex flex-col items-center gap-1.5">
+          <Button
+            type="button"
+            className="size-14 rounded-full p-0 shadow-md"
+            disabled={disabled}
+            loading={uploading}
+            onClick={() => inputRef.current?.click()}
+            aria-label={uploading ? "Uploading…" : "Take / upload"}
+          >
+            {!uploading && <Camera className="size-6" aria-hidden="true" />}
+          </Button>
+          <span className="text-xs font-medium text-sidebar-foreground" aria-hidden="true">
+            {uploading ? "Uploading…" : "Take / upload"}
+          </span>
+        </div>
         <input
           ref={inputRef}
           type="file"
@@ -104,42 +139,6 @@ export function HandoverPhotoCapture({
           onChange={(e) => void handleFiles(e.target.files)}
         />
       </div>
-      <p className="text-xs text-muted-foreground">
-        Capture the asset condition during handover from the employee (at least one photo).
-      </p>
-      {photos.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
-          {photos.map((url, index) => (
-            <div
-              key={`${url}-${index}`}
-              className="relative aspect-square overflow-hidden rounded-md border bg-muted"
-            >
-              <Image
-                src={url}
-                alt={`Handover photo ${index + 1}`}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-              <Button
-                type="button"
-                size="icon"
-                variant="secondary"
-                className="absolute right-1 top-1 h-6 w-6 rounded-full shadow"
-                disabled={disabled}
-                onClick={() => removePhoto(index)}
-                aria-label="Remove photo"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-md border border-dashed bg-muted/30 px-3 py-6 text-center text-xs text-muted-foreground">
-          No photos yet
-        </div>
-      )}
     </div>
   );
 }

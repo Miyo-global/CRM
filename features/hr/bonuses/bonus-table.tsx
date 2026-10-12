@@ -15,15 +15,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
+import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { formatINR } from "@/lib/format-utils";
 import { BONUS_TYPE_LABELS, type BonusType } from "@/lib/validations/bonus";
 import type { BonusRow } from "@/lib/hr/bonus-filters";
 
-function statusBadgeVariant(status: string | null): "default" | "secondary" | "outline" {
-  if (status === "PAID") return "default";
-  if (status === "APPROVED") return "secondary";
-  return "outline";
+function statusTone(status: string | null): Tone {
+  if (status === "PAID") return "success";
+  if (status === "APPROVED") return "info";
+  if (status === "REJECTED") return "danger";
+  return "warning";
 }
 
 interface BonusTableProps {
@@ -36,6 +40,8 @@ interface BonusTableProps {
   onPageSizeChange: (size: number) => void;
   onMarkPaid: (id: number) => void;
   hasActiveFilters: boolean;
+  /** Shown as the filtered-empty action when provided. */
+  onClearFilters?: () => void;
 }
 
 export function BonusTable({
@@ -48,34 +54,39 @@ export function BonusTable({
   onPageSizeChange,
   onMarkPaid,
   hasActiveFilters,
+  onClearFilters,
 }: BonusTableProps) {
   const paginatedRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <Card>
+    <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="p-0">
         <ScrollArea className="w-full" type="auto">
           <div className="min-w-[760px]">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 z-sticky bg-card">
                 <TableRow>
                   <TableHead>Employee</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Reason</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="w-[120px] text-right">Actions</TableHead>
+                  <TableHead className="w-32 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <EmptyExpensesIllustration className="h-32 w-32 opacity-95" />
-                        <p>{hasActiveFilters ? "No bonuses match your filters." : "No bonuses on record."}</p>
-                      </div>
+                    <TableCell colSpan={7} className="p-4">
+                      <EmptyState
+                        compact
+                        className="border-0 bg-transparent"
+                        illustration={hasActiveFilters ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />}
+                        title={hasActiveFilters ? "No results for these filters" : "No bonuses yet"}
+                        description={hasActiveFilters ? "No bonuses match your filters." : "No bonuses on record."}
+                        action={hasActiveFilters && onClearFilters ? { label: "Clear filters", onClick: onClearFilters } : undefined}
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -83,20 +94,20 @@ export function BonusTable({
                     <TableRow key={bonus.id}>
                       <TableCell className="font-medium">{bonus.employeeName ?? "Employee"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline">
                           {bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "Bonus"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium tabular-nums">{formatINR(bonus.amount)}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">{formatINR(bonus.amount)}</TableCell>
                       <TableCell>
-                        <Badge variant={statusBadgeVariant(bonus.status)} className="text-[10px]">
+                        <StatusPill tone={statusTone(bonus.status)} dot>
                           {bonus.status ?? "PENDING"}
-                        </Badge>
+                        </StatusPill>
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                      <TableCell className="max-w-52 truncate text-muted-foreground" title={bonus.reason ?? undefined}>
                         {bonus.reason ?? "—"}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
                         {bonus.createdAt ? format(new Date(bonus.createdAt), "MMM d, yyyy") : "—"}
                       </TableCell>
                       <TableCell className="text-right">
@@ -104,10 +115,9 @@ export function BonusTable({
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs"
                             onClick={() => onMarkPaid(bonus.id)}
                           >
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            <CheckCircle2 className="size-4" aria-hidden="true" />
                             Mark Paid
                           </Button>
                         ) : (

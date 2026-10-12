@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Users, Home, CalendarCheck, Clock3, BadgeCheck } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
@@ -82,9 +84,7 @@ export function LeavesWfhContent() {
     return (
       <PageWrapper title="Leaves & Time Off" subtitle="Manage your leave requests, work from home, and approvals.">
         <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
-          </div>
+          <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-64" />
         </div>
       </PageWrapper>
@@ -105,15 +105,15 @@ export function LeavesWfhContent() {
               onClick={handleOpenWfhSheet}
               className="gap-1.5"
             >
-              <Home className="h-3.5 w-3.5" />
+              <Home className="size-4" aria-hidden="true" />
               Request WFH
             </Button>
             <Button
               size="sm"
               onClick={handleOpenLeaveSheet}
-              className="gap-1.5 bg-gold hover:bg-gold/80 text-white"
+              className="gap-1.5"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="size-4" aria-hidden="true" />
               Request Leave
             </Button>
           </>
@@ -121,34 +121,21 @@ export function LeavesWfhContent() {
       >
         <div className="space-y-5">
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard
-              label="Available Days"
-              value={totalAvailable}
-              icon={CalendarCheck}
-              color="green"
-            />
-            <StatCard
-              label="Pending Requests"
-              value={pendingCount}
-              icon={Clock3}
-              color="gold"
-            />
-            <StatCard
-              label="Approved (YTD)"
-              value={approvedCount}
-              icon={BadgeCheck}
-              color="blue"
-            />
-          </div>
+          <StatsStrip
+            items={[
+              { label: "Available Days", value: totalAvailable, icon: CalendarCheck, tone: "success" },
+              { label: "Pending Requests", value: pendingCount, icon: Clock3, tone: pendingCount > 0 ? "warning" : undefined },
+              { label: "Approved (YTD)", value: approvedCount, icon: BadgeCheck },
+            ]}
+          />
 
           {approvedLeavesThisWeek.length > 0 && (
-            <Card className="border-amber-200/50 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-950/10">
+            <Card className="gap-0">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2 text-amber-800 dark:text-amber-400">
-                  <Users className="h-4 w-4" />
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <IconChip icon={Users} tone="warning" size="sm" />
                   Who&apos;s Out This Week
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge variant="secondary" className="ml-1 tabular-nums">
                     {approvedLeavesThisWeek.length}
                   </Badge>
                 </CardTitle>
@@ -158,11 +145,11 @@ export function LeavesWfhContent() {
                   {approvedLeavesThisWeek.map((leave) => (
                     <div
                       key={leave.id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-card border border-amber-200/50 dark:border-amber-800/20"
+                      className="flex items-center gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2"
                     >
                       <Avatar className="h-7 w-7">
-                        <AvatarImage src={resolveImageUrl(leave.user?.image)} />
-                        <AvatarFallback className="text-[10px] bg-amber-100 text-amber-700">
+                        <AvatarImage src={resolveImageUrl(leave.user?.image)} alt="" />
+                        <AvatarFallback className="text-2xs bg-warning-soft text-warning-strong">
                           {leave.user?.firstName?.[0]}
                           {leave.user?.lastName?.[0]}
                         </AvatarFallback>
@@ -171,11 +158,11 @@ export function LeavesWfhContent() {
                         <p className="text-xs font-medium text-foreground truncate">
                           {leave.user?.firstName} {leave.user?.lastName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-2xs tabular-nums text-muted-foreground">
                           {format(new Date(leave.startDate), "MMM dd")} –{" "}
                           {format(new Date(leave.endDate), "MMM dd")}
                           {leave.leaveType && (
-                            <span className="ml-1 text-amber-600 dark:text-amber-400">
+                            <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}
                             </span>
                           )}
@@ -189,27 +176,25 @@ export function LeavesWfhContent() {
           )}
 
           <Tabs defaultValue="my-leaves" className="min-h-0">
-            <TabsList className="bg-muted/50 border border-border p-1 rounded-lg h-auto gap-1">
+            <TabsList variant="underline" className="overflow-x-auto">
               <TabsTrigger
                 value="my-leaves"
-                className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
               >
                 My Leaves
               </TabsTrigger>
               <TabsTrigger
                 value="wfh"
-                className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
               >
                 Work From Home
               </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger
                   value="approvals"
-                  className="relative data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  className="relative"
                 >
                   Approvals
                   {totalPendingApprovals > 0 && (
-                    <Badge className="ml-2 h-5 min-w-5 px-1.5 bg-red-500 text-white text-[10px] font-bold border-0">
+                    <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 justify-center px-1.5 tabular-nums">
                       {totalPendingApprovals}
                     </Badge>
                   )}
@@ -237,16 +222,11 @@ export function LeavesWfhContent() {
                     <Skeleton className="h-48 w-full" />
                   </div>
                 ) : approvalsError ? (
-                  <Card className="border-destructive/30">
-                    <CardContent className="py-8 text-center space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Could not load leave approvals: {getErrorMessage(approvalsErrorObj)}
-                      </p>
-                      <Button size="sm" variant="outline" onClick={() => refetchApprovals()}>
-                        Retry
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <QueryErrorState
+                    title="Could not load leave approvals"
+                    error={new Error(getErrorMessage(approvalsErrorObj))}
+                    onRetry={() => refetchApprovals()}
+                  />
                 ) : (
                   <LeaveApprovalsContent
                     incomingLeaveRequests={incomingLeaveRequests}

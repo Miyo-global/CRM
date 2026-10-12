@@ -128,7 +128,7 @@ export function OrgVariablesPanel({
         <CardContent className="pb-6 space-y-3">
           {isLoading ? (
             <p className="text-xs text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
               Loading variables…
             </p>
           ) : variables.length === 0 ? (
@@ -140,7 +140,7 @@ export function OrgVariablesPanel({
               {variables.map((v) => (
                 <li
                   key={v.id}
-                  className="flex items-start gap-2 rounded-lg border border-border/60 px-3 py-2 text-xs"
+                  className="flex items-start gap-2 rounded-md border border-border bg-card px-3 py-2 text-xs"
                 >
                   <OrgVariablesPanelListItem
                     variable={v}
@@ -153,8 +153,8 @@ export function OrgVariablesPanel({
               ))}
             </ul>
           )}
-          <Button type="button" variant="outline" size="sm" className="w-full gap-1.5" onClick={openCreate}>
-            <Plus className="h-3.5 w-3.5" />
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={openCreate}>
+            <Plus className="size-3.5" aria-hidden />
             Add organization variable
           </Button>
         </CardContent>
@@ -176,7 +176,7 @@ export function OrgVariablesPanel({
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 className="font-mono text-sm"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Letters, numbers, underscores. Used as {"{{Token}}"}.
               </p>
             </div>
@@ -206,11 +206,8 @@ export function OrgVariablesPanel({
             <Button
               type="button"
               onClick={handleSave}
-              disabled={createMutation.isPending || updateMutation.isPending}
+              loading={createMutation.isPending || updateMutation.isPending}
             >
-              {(createMutation.isPending || updateMutation.isPending) && (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              )}
               {editing ? "Save" : "Create"}
             </Button>
           </SheetFooter>
@@ -255,10 +252,10 @@ function OrgVariablesPanelListItem({
   return (
     <>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground">{variable.label}</p>
+        <p className="truncate font-medium text-foreground" title={variable.label}>{variable.label}</p>
         <button
           type="button"
-          className="font-mono text-[10px] text-blue hover:underline"
+          className="max-w-full truncate rounded-xs font-mono text-2xs text-brand-text hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onInsertToken?.(variable.slug)}
           title="Insert into editor"
         >
@@ -271,18 +268,19 @@ function OrgVariablesPanelListItem({
         ) : null}
       </div>
       <div className="flex shrink-0 gap-0.5">
-        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(variable)}>
-          <Pencil className="h-3.5 w-3.5" />
+        <Button type="button" variant="ghost" size="icon-xs" aria-label={`Edit ${variable.label}`} onClick={() => onEdit(variable)}>
+          <Pencil className="size-3.5" aria-hidden />
         </Button>
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-destructive"
+          size="icon-xs"
+          className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
+          aria-label={`Remove ${variable.label}`}
           disabled={isDeleting}
           onClick={() => onDelete(variable)}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="size-3.5" aria-hidden />
         </Button>
       </div>
     </>

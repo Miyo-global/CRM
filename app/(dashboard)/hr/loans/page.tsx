@@ -10,8 +10,11 @@ import {
 } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,21 +22,22 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, Landmark, CheckCircle2, XCircle, Banknote } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, Banknote } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "ACTIVE" || s === "REPAID") return "default";
-  if (s === "APPROVED") return "secondary";
-  if (s === "REJECTED") return "destructive";
-  return "outline";
+function statusTone(s: string | null): Tone {
+  if (s === "ACTIVE") return "info";
+  if (s === "REPAID") return "success";
+  if (s === "APPROVED") return "success";
+  if (s === "REJECTED") return "danger";
+  return "warning";
 }
 
 export default function LoansPage() {
   const { data: session } = useSession();
-  const { data: loans, isLoading } = useSalaryLoans();
+  const { data: loans, isLoading, isError, error, refetch } = useSalaryLoans();
   const create = useCreateSalaryLoan();
   const process = useProcessSalaryLoan();
   const isAdmin = isAdminOrOwner(session?.user?.role);
@@ -80,7 +84,7 @@ export default function LoansPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Salary Loans" subtitle="Loan requests and repayment tracking">
-        <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+        <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
   }
@@ -90,47 +94,79 @@ export default function LoansPage() {
       title="Salary Loans"
       subtitle="Request salary advances and track repayments"
       badge={`${loans?.length ?? 0} loans`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Request Loan</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Request Loan</Button>}
     >
-      {!loans?.length ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load salary loans" error={error} onRetry={() => refetch()} />
+      ) : !loans?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyExpensesIllustration />}
           title="No salary loans"
           description="Approved and pending salary loans will appear here."
           action={{ label: "Request Loan", onClick: () => setSheetOpen(true) }}
         />
       ) : (
-        <div className="space-y-2">
-          {loans.map((loan: SalaryLoan) => (
-            <Card key={loan.id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <Banknote className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{formatINR(loan.amount)}</p>
-                    <Badge variant={statusBadge(loan.status)} className="text-[10px]">{loan.status}</Badge>
-                  </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
-                    {loan.user?.name && <span>{loan.user.name}</span>}
-                    {loan.totalEmis && <span>{loan.paidEmis ?? 0}/{loan.totalEmis} EMIs</span>}
-                    {loan.emiAmount && <span>{formatINR(loan.emiAmount)}/mo</span>}
-                    {loan.createdAt && <span>{format(new Date(loan.createdAt), "MMM d, yyyy")}</span>}
-                  </div>
-                  {loan.reason && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{loan.reason}</p>}
-                </div>
-                {isAdmin && loan.status === "PENDING" && loan.user?.id !== session?.user?.id && (
-                  <div className="flex gap-1.5 shrink-0">
-                    <Button size="sm" className="h-7 text-xs" onClick={() => handleApprove(loan.id)} disabled={process.isPending}>
-                      <CheckCircle2 className="h-3 w-3 mr-1" />Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setRejectId(loan.id)}>
-                      <XCircle className="h-3 w-3 mr-1" />Reject
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table className="min-w-[760px] tabular-nums">
+            <caption className="sr-only">Salary loans</caption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Loan</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>EMIs</TableHead>
+                <TableHead className="text-right">EMI / mo</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Requested</TableHead>
+                {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loans.map((loan: SalaryLoan) => (
+                <TableRow key={loan.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <IconChip icon={Banknote} size="sm" tone="neutral" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{loan.user?.name ?? "—"}</p>
+                        {loan.reason && (
+                          <p className="max-w-64 truncate text-xs text-muted-foreground" title={loan.reason}>
+                            {loan.reason}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">{formatINR(loan.amount)}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {loan.totalEmis ? `${loan.paidEmis ?? 0}/${loan.totalEmis} EMIs` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {loan.emiAmount ? `${formatINR(loan.emiAmount)}/mo` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill tone={statusTone(loan.status)} dot>{loan.status}</StatusPill>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {loan.createdAt ? format(new Date(loan.createdAt), "MMM d, yyyy") : "—"}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell className="text-right">
+                      {loan.status === "PENDING" && loan.user?.id !== session?.user?.id ? (
+                        <div className="flex justify-end gap-1.5">
+                          <Button size="sm" onClick={() => handleApprove(loan.id)} disabled={process.isPending}>
+                            <CheckCircle2 className="size-4" aria-hidden="true" />Approve
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setRejectId(loan.id)}>
+                            <XCircle className="size-4" aria-hidden="true" />Reject
+                          </Button>
+                        </div>
+                      ) : null}
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

@@ -55,7 +55,12 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
       return (
         <RPNInput.default
           ref={ref}
-          className={cn("flex", className)}
+          className={cn(
+            "flex h-9 w-full items-stretch rounded-md border border-input bg-card shadow-xs transition-[border-color,box-shadow] duration-150",
+            "focus-within:focus-ring focus-within:border-ring",
+            "has-[input[aria-invalid=true]]:border-destructive has-[input:disabled]:opacity-50",
+            className,
+          )}
           flagComponent={FlagComponent}
           countrySelectComponent={CountrySelect}
           inputComponent={InputComponent}
@@ -78,7 +83,10 @@ const InputComponent = React.forwardRef<
   React.ComponentProps<"input">
 >(({ className, ...props }, ref) => (
   <Input
-    className={cn("rounded-e-lg rounded-s-none", className)}
+    className={cn(
+      "h-full rounded-s-none rounded-e-md border-0 bg-transparent shadow-none focus-visible:border-0 focus-visible:shadow-none! disabled:opacity-100",
+      className,
+    )}
     {...props}
     ref={ref}
   />
@@ -116,8 +124,8 @@ const CountrySelect = ({
       <PopoverTrigger asChild>
         <Button
           type="button"
-          variant="outline"
-          className="flex gap-1 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10"
+          variant="ghost"
+          className="flex h-full gap-1 rounded-e-none rounded-s-md border-r border-input px-3 hover:bg-accent focus-visible:shadow-none!"
           disabled={disabled}
         >
           <FlagComponent
@@ -126,13 +134,13 @@ const CountrySelect = ({
           />
           <ChevronsUpDown
             className={cn(
-              "-mr-2 size-4 opacity-50",
-              disabled ? "hidden" : "opacity-100",
+              "-mr-1 size-3.5 text-muted-foreground",
+              disabled && "hidden",
             )}
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-72 p-0">
         <Command>
           <CommandInput
             value={searchValue}
@@ -198,9 +206,9 @@ const CountrySelectOption = ({
     <CommandItem className="gap-2" onSelect={handleSelect}>
       <FlagComponent country={country} countryName={countryName} />
       <span className="flex-1 text-sm">{countryName}</span>
-      <span className="text-sm text-foreground/50">{`+${RPNInput.getCountryCallingCode(country)}`}</span>
+      <span className="text-sm text-muted-foreground tabular-nums">{`+${RPNInput.getCountryCallingCode(country)}`}</span>
       <CheckIcon
-        className={`ml-auto size-4 ${country === selectedCountry ? "opacity-100" : "opacity-0"}`}
+        className={cn("ml-auto size-4 text-brand-text", country === selectedCountry ? "opacity-100" : "opacity-0")}
       />
     </CommandItem>
   );
@@ -210,7 +218,7 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
   const Flag = flags[country];
 
   return (
-    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 [&_svg:not([class*='size-'])]:size-full">
+    <span className="flex h-4 w-6 overflow-hidden rounded-xs bg-muted [&_svg:not([class*='size-'])]:size-full">
       {Flag && <Flag title={countryName} />}
     </span>
   );

@@ -7,7 +7,6 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +18,10 @@ import { Plus, ClipboardCheck, Clock, Users, PlayCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface Assessment {
@@ -29,10 +32,10 @@ interface Assessment {
 
 const assessKeys = { all: [...queryKeys.hr.all, "assessments"] as const, list: () => [...assessKeys.all, "list"] as const };
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" {
-  if (s === "PUBLISHED") return "default";
-  if (s === "DRAFT") return "secondary";
-  return "outline";
+function statusTone(s: string | null): Tone {
+  if (s === "PUBLISHED") return "success";
+  if (s === "DRAFT" || s === null) return "neutral";
+  return "info";
 }
 
 export default function AssessmentsPage() {
@@ -40,7 +43,7 @@ export default function AssessmentsPage() {
   const qc = useQueryClient();
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, isError, error, refetch } = useQuery({
     queryKey: assessKeys.list(),
     queryFn: () => apiClient.get<Assessment[]>("/hr/assessments"),
   });
@@ -74,8 +77,8 @@ export default function AssessmentsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Assessments" subtitle="Skills assessments and quizzes">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -86,34 +89,39 @@ export default function AssessmentsPage() {
       title="Skills Assessments"
       subtitle="Create and take skill assessment quizzes"
       badge={`${items?.length ?? 0} assessments`}
-      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Create Assessment</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Assessment</Button> : undefined}
     >
-      {!items?.length ? (
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No assessments available"
           description="Published skill assessments and quizzes will appear here."
           {...(isAdmin ? { action: { label: "Create Assessment", onClick: () => setSheetOpen(true) } } : {})}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {items.map((a: Assessment) => (
-            <Card key={a.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-start justify-between">
-                  <Badge variant={statusBadge(a.status)} className="text-[10px]">{a.status ?? "DRAFT"}</Badge>
-                  {a.category && <span className="text-[10px] text-muted-foreground">{a.category}</span>}
+            <Card key={a.id}>
+              <CardContent className="flex h-full flex-col gap-3 p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <IconChip icon={ClipboardCheck} tone="brand" />
+                  <StatusPill tone={statusTone(a.status)} dot>{a.status ?? "DRAFT"}</StatusPill>
                 </div>
-                <h3 className="text-sm font-semibold leading-tight">{a.title}</h3>
-                {a.description && <p className="text-xs text-muted-foreground line-clamp-2">{a.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                  {a.durationMinutes && <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{a.durationMinutes} min</span>}
-                  <span className="flex items-center gap-0.5"><ClipboardCheck className="h-3 w-3" />{a.questionCount} questions</span>
-                  <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{a.completedCount} completed</span>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold leading-tight">{a.title}</h3>
+                  {a.category && <p className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">{a.category}</p>}
+                  {a.description && <p className="text-xs text-muted-foreground line-clamp-2">{a.description}</p>}
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
+                  {a.durationMinutes && <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{a.durationMinutes} min</span>}
+                  <span className="flex items-center gap-1"><ClipboardCheck className="size-3.5" aria-hidden="true" />{a.questionCount} questions</span>
+                  <span className="flex items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{a.completedCount} completed</span>
                 </div>
                 {a.status === "PUBLISHED" && (
-                  <Button size="sm" variant="outline" className="w-full h-7 text-xs">
-                    <PlayCircle className="h-3 w-3 mr-1" />Take Assessment
+                  <Button size="sm" variant="outline" className="mt-auto w-full">
+                    <PlayCircle className="size-4" aria-hidden="true" />Take Assessment
                   </Button>
                 )}
               </CardContent>

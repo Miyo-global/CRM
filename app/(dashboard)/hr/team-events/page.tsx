@@ -7,7 +7,9 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +36,7 @@ export default function TeamEventsPage() {
   const qc = useQueryClient();
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading, isError, error, refetch } = useQuery({
     queryKey: eventKeys.list(),
     queryFn: () => apiClient.get<TeamEvent[]>("/hr/team-events"),
   });
@@ -81,8 +83,8 @@ export default function TeamEventsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Team Events" subtitle="Company events and celebrations">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -93,32 +95,39 @@ export default function TeamEventsPage() {
       title="Team Events"
       subtitle="Company events, outings, and celebrations"
       badge={`${events?.length ?? 0} events`}
-      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Create Event</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Event</Button> : undefined}
     >
-      {!events?.length ? (
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !events?.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyCalendarIllustration className="size-32" />}
           title="No upcoming events"
           description="Company events, outings, and celebrations will show up here."
           {...(isAdmin ? { action: { label: "Create Event", onClick: () => setSheetOpen(true) } } : {})}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {events.map((ev: TeamEvent) => (
-            <Card key={ev.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-2">
-                <h3 className="text-sm font-semibold leading-tight">{ev.title}</h3>
-                {ev.description && <p className="text-xs text-muted-foreground line-clamp-2">{ev.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                  {ev.startDate && <span className="flex items-center gap-0.5"><Calendar className="h-3 w-3" />{format(new Date(ev.startDate), "MMM d, h:mm a")}</span>}
-                  {ev.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{ev.location}</span>}
-                  <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{ev.rsvpCount} going</span>
+            <Card key={ev.id} className="h-full">
+              <CardContent className="flex h-full flex-col gap-3 p-5">
+                <div className="flex items-start gap-3">
+                  <IconChip icon={PartyPopper} tone="plum" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{ev.title}</h3>
+                    {ev.description && <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{ev.description}</p>}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground tabular-nums">
+                  {ev.startDate && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />{format(new Date(ev.startDate), "MMM d, h:mm a")}</span>}
+                  {ev.location && <span className="flex min-w-0 items-center gap-1"><MapPin className="size-3.5 shrink-0" aria-hidden="true" /><span className="truncate">{ev.location}</span></span>}
+                  <span className="flex items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{ev.rsvpCount} going</span>
                 </div>
                 {ev.isRsvped ? (
-                  <Badge variant="default" className="text-[10px] w-full justify-center">Going</Badge>
+                  <StatusPill tone="success" dot className="mt-auto h-8 w-full">Going</StatusPill>
                 ) : (
-                  <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => handleRsvp(ev.id)}>
-                    <UserPlus className="h-3 w-3 mr-1" />RSVP
+                  <Button size="sm" variant="outline" className="mt-auto w-full" onClick={() => handleRsvp(ev.id)} loading={rsvp.isPending && rsvp.variables === ev.id}>
+                    <UserPlus className="size-4" aria-hidden="true" />RSVP
                   </Button>
                 )}
               </CardContent>
@@ -140,7 +149,7 @@ export default function TeamEventsPage() {
           <label className="text-sm font-medium">Location</label>
           <Input placeholder="e.g., Conference Room A" value={location} onChange={(e) => setLocation(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Start Date</label>
             <Input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} />

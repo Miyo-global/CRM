@@ -19,7 +19,7 @@ interface MiniDonutChartProps {
 export function MiniDonutChart({
   data,
   size = 180,
-  strokeWidth = 28,
+  strokeWidth = 10,
   centerLabel,
   centerValue,
 }: MiniDonutChartProps) {
@@ -35,15 +35,14 @@ export function MiniDonutChart({
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={data.map((d) => `${d.label}: ${d.value}`).join(", ")}>
 
           <circle
             cx={center}
             cy={center}
             r={radius}
             fill="none"
-            stroke="currentColor"
-            strokeOpacity={0.06}
+            stroke="var(--chart-grid)"
             strokeWidth={strokeWidth}
           />
 
@@ -78,7 +77,7 @@ export function MiniDonutChart({
         {(centerLabel || centerValue) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             {centerValue !== undefined && (
-              <span className="text-2xl font-bold text-foreground">{centerValue}</span>
+              <span className="font-display text-3xl font-extrabold tabular-nums text-foreground">{centerValue}</span>
             )}
             {centerLabel && (
               <span className="text-xs text-muted-foreground">{centerLabel}</span>
@@ -90,11 +89,12 @@ export function MiniDonutChart({
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
         {data.map((segment, i) => (
           <div key={i} className="flex items-center gap-1.5">
-            <div
-              className="w-2.5 h-2.5 rounded-full shrink-0"
+            <span
+              className="size-2 shrink-0 rounded-full"
               style={{ backgroundColor: segment.color }}
+              aria-hidden="true"
             />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs tabular-nums text-muted-foreground">
               {segment.label} ({segment.value})
             </span>
           </div>

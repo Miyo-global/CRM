@@ -96,7 +96,7 @@ function SubmitterContactPopover({
         </p>
         {hasNote ? (
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
               Claim note
             </p>
             <p className="text-sm whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
@@ -106,7 +106,7 @@ function SubmitterContactPopover({
         ) : null}
         {hasRejection ? (
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
+            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
               Rejection reason
             </p>
             <p className="text-sm whitespace-pre-wrap break-words text-destructive max-h-24 overflow-y-auto">
@@ -179,12 +179,12 @@ export function AdminExpenseItem({
   const adminCatLabel = ADMIN_CATEGORY_LABELS[expense.category || ""] || catConfig.label;
 
   return (
-    <div className="flex items-start gap-4 px-4 py-4 hover:bg-muted/20 transition-colors">
+    <div className="flex flex-col items-start gap-4 px-4 py-4 transition-colors hover:bg-muted/40 sm:flex-row">
       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
         <div
           className={cn(
-            "relative w-[100px] h-[80px] rounded-lg bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900/20 dark:to-rose-800/20 flex items-center justify-center overflow-hidden border border-rose-200/50 dark:border-rose-800/30",
-            expense.receiptUrl && "cursor-pointer hover:ring-2 hover:ring-gold/40 transition-all"
+            "relative flex h-20 w-25 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-sunken",
+            expense.receiptUrl && "cursor-pointer transition-shadow hover:ring-2 hover:ring-ring"
           )}
           onClick={() => expense.receiptUrl && viewFile(expense.receiptUrl)}
         >
@@ -197,7 +197,7 @@ export function AdminExpenseItem({
               className="object-cover rounded-lg"
             />
           ) : (
-            <Receipt className="h-7 w-7 text-rose-400" />
+            <Receipt className="size-7 text-muted-foreground" aria-hidden="true" />
           )}
         </div>
         {expense.receiptUrl && (
@@ -230,14 +230,14 @@ export function AdminExpenseItem({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge
-                  className={`cursor-help text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                  className={`cursor-help text-2xs font-semibold px-2 py-0.5 rounded border ${
                     status === "PENDING"
-                      ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                      ? "bg-warning-soft text-warning-strong border-warning-strong/25"
                       : status === "APPROVED"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
+                      ? "bg-success-soft text-success-strong border-success-strong/25"
                       : status === "PAID"
-                      ? "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/30 dark:text-slate-300 dark:border-slate-600"
-                      : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                      ? "bg-muted text-neutral-strong border-border"
+                      : "bg-danger-soft text-danger-strong border-danger-strong/25"
                   }`}
                 >
                   {status === "PENDING"
@@ -264,7 +264,7 @@ export function AdminExpenseItem({
             #EXP-{new Date(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
           </span>
         </div>
-        <h4 className="font-semibold text-[15px] text-foreground mb-0.5">
+        <h4 className="font-semibold text-base text-foreground mb-0.5">
           {expense.merchant || expense.description || "Expense Claim"}
         </h4>
         <p className="text-sm text-muted-foreground line-clamp-1 mb-2.5">
@@ -273,7 +273,7 @@ export function AdminExpenseItem({
         <div className="flex items-center gap-2 text-sm flex-wrap">
           <Avatar className="h-6 w-6">
             <AvatarImage src={resolveImageUrl(expense.user?.image)} />
-            <AvatarFallback className="text-[10px] bg-muted">
+            <AvatarFallback className="text-2xs bg-muted">
               {expense.user?.firstName?.[0]}{expense.user?.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
@@ -290,7 +290,7 @@ export function AdminExpenseItem({
       </div>
 
       <div className="text-right min-w-[130px] flex-shrink-0 hidden lg:block">
-        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category</p>
+        <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category</p>
         <div className="flex items-center gap-1.5 justify-end">
           <CatIcon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">{adminCatLabel}</span>
@@ -366,7 +366,7 @@ export function AdminExpenseItem({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+              className="h-8 text-xs text-danger-strong border-danger-strong/25 hover:bg-danger-soft"
               onClick={() => onRejectStart(expense.id)}
             >
               Reject
@@ -413,7 +413,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
   });
 
   return (
-    <TableRow className="hover:bg-muted/30 transition-colors">
+    <TableRow>
       <TableCell className="px-6 py-4 text-sm font-medium">
         #EXP-{new Date(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
       </TableCell>
@@ -464,7 +464,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs text-gold border-gold/20 hover:bg-gold/5"
+            className="h-7 text-xs text-brand-text border-primary/40 hover:bg-brand-soft"
             onClick={() => onResubmit(expense)}
           >
             Resubmit
@@ -473,7 +473,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gold hover:text-gold/80"
+            className="h-8 w-8 text-brand-text hover:text-brand-text"
             onClick={() => onEdit(toEditPayload())}
             aria-label="Edit"
           >

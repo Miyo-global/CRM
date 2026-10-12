@@ -7,7 +7,7 @@ export function EmptyCalendarIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="105" r="75" fill={GOLD} opacity="0.03" />
 
-      <rect x="28" y="42" width="130" height="115" rx="8" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="28" y="42" width="130" height="115" rx="8" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
 
       <rect x="28" y="42" width="130" height="30" rx="8" fill={BLUE} opacity="0.08" />
       <rect x="28" y="62" width="130" height="10" fill={BLUE} opacity="0.08" />

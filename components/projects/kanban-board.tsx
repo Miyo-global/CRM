@@ -1,8 +1,12 @@
 "use client";
 
+import { toneForKey, toneVar, type Tone } from "@/lib/design/tones";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import {
+  KanbanCanvas,
+  KanbanColumnShell,
+  KanbanEmptyDrop,
+} from "@/components/shared/kanban";
 import { cn } from "@/lib/utils";
 import { useUpdateTicketOrder } from "@/lib/hooks/trpc-hooks";
 import { queryKeys } from "@/lib/query-keys";
@@ -20,11 +24,26 @@ import type { KanbanTicket, KanbanColumn } from "./shared/types";
 import { AnimatePresence, motion } from "framer-motion";
 
 const DEFAULT_COLUMNS: KanbanColumn[] = [
-  { id: "TODO", name: "To Do", color: "#94a3b8", order: 0 },
-  { id: "IN_PROGRESS", name: "In Progress", color: "#3b82f6", order: 1 },
-  { id: "IN_REVIEW", name: "In Review", color: "#eab308", order: 2 },
-  { id: "DONE", name: "Done", color: "#22c55e", order: 3 },
+  { id: "TODO", name: "To Do", color: toneVar.neutral, order: 0 },
+  { id: "IN_PROGRESS", name: "In Progress", color: toneVar.info, order: 1 },
+  { id: "IN_REVIEW", name: "In Review", color: toneVar.warning, order: 2 },
+  { id: "DONE", name: "Done", color: toneVar.success, order: 3 },
 ];
+
+const STATUS_TONES: Record<string, Tone> = {
+  TODO: "neutral",
+  IN_PROGRESS: "info",
+  IN_REVIEW: "warning",
+  DONE: "success",
+  CANCELLED: "danger",
+};
+
+const statusKey = (id: string) => id.toUpperCase().replace(/\s+/g, "_");
+const columnTone = (id: string): Tone =>
+  STATUS_TONES[statusKey(id)] ?? toneForKey(id);
+// Built-in statuses use tones; custom statuses keep their stored colour (user data).
+const columnColor = (id: string, color: string | null | undefined) =>
+  STATUS_TONES[statusKey(id)] ? undefined : color;
 
 interface KanbanBoardProps {
   tickets: KanbanTicket[];
@@ -185,8 +204,7 @@ export function KanbanBoard({
 
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-
-      <div className="flex gap-3 h-full overflow-x-auto overflow-y-hidden pb-1 px-1">
+      <KanbanCanvas className="h-full items-stretch rounded-lg">
         {columns.map((col) => {
           const columnTickets = optimisticTickets
             .filter((t) => t.status === col.id)
@@ -196,97 +214,79 @@ export function KanbanBoard({
           const overWip = wip != null && columnTickets.length > wip;
 
           return (
-            <div
-              key={col.id}
-              className={cn(
-                "rounded-lg border bg-muted/20 min-w-[272px] w-[272px] flex flex-col flex-shrink-0 h-full",
-                overWip && "border-red-400/60"
-              )}
-            >
-
-              <div className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: col.color || "#94a3b8" }}
-                  />
-                  <h3 className="font-medium text-[13px] text-foreground truncate">
-                    {col.name}
-                  </h3>
-                  <span className="text-xs text-muted-foreground tabular-nums">
-                    {columnTickets.length}
-                    {wip != null && `/${wip}`}
-                  </span>
-                </div>
-              </div>
-
-              <Droppable droppableId={col.id}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={cn(
-                      "flex-1 overflow-y-auto min-h-[100px] px-2 pb-2 space-y-1.5 transition-colors",
-                      snapshot.isDraggingOver && "bg-primary/5"
+            <Droppable key={col.id} droppableId={col.id}>
+              {(provided, snapshot) => (
+                <KanbanColumnShell
+                  title={col.name}
+                  tone={columnTone(col.id)}
+                  color={columnColor(col.id, col.color)}
+                  count={columnTickets.length}
+                  summary={
+                    wip != null ? (
+                      <span className={cn(overWip && "font-semibold text-danger-strong")}>
+                        {columnTickets.length}/{wip}
+                      </span>
+                    ) : undefined
+                  }
+                  isDraggingOver={snapshot.isDraggingOver}
+                  innerRef={provided.innerRef}
+                  droppableProps={provided.droppableProps}
+                  className={cn(
+                    "max-h-full [&>[data-rfd-droppable-id]]:overflow-y-auto",
+                    overWip && "ring-1 ring-danger-500 ring-inset"
+                  )}
+                  footer={
+                    <div className="px-2 pb-2">
+                      <QuickAddInput columnId={col.id} projectId={projectId} />
+                    </div>
+                  }
+                >
+                  <AnimatePresence mode="popLayout">
+                    {columnTickets.length === 0 && !snapshot.isDraggingOver && (
+                      <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <KanbanEmptyDrop label="Drop tickets here" />
+                      </motion.div>
                     )}
-                  >
-                    <AnimatePresence mode="popLayout">
-                      {columnTickets.length === 0 &&
-                        !snapshot.isDraggingOver && (
-                          <motion.div
-                            key="empty"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex flex-col items-center justify-center py-8 text-center"
+                    {columnTickets.map((ticket, index) => (
+                      <Draggable
+                        key={ticket.id}
+                        draggableId={ticket.id.toString()}
+                        index={index}
+                      >
+                        {(draggableProvided, draggableSnapshot) => (
+                          <div
+                            ref={draggableProvided.innerRef}
+                            {...draggableProvided.draggableProps}
+                            {...draggableProvided.dragHandleProps}
+                            style={{
+                              ...draggableProvided.draggableProps.style,
+                            }}
+                            className="rounded-md outline-none focus-visible:focus-ring"
                           >
-                            <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center mb-2">
-                              <Plus className="h-4 w-4 text-muted-foreground/50" />
-                            </div>
-                            <p className="text-[11px] text-muted-foreground">
-                              Drop tickets here
-                            </p>
-                          </motion.div>
+                            <KanbanTicketCard
+                              ticket={ticket}
+                              projectKey={projectKey}
+                              isDragging={draggableSnapshot.isDragging}
+                              dragStartRef={dragStartRef}
+                              onSelect={handleSelect}
+                            />
+                          </div>
                         )}
-                      {columnTickets.map((ticket, index) => (
-                        <Draggable
-                          key={ticket.id}
-                          draggableId={ticket.id.toString()}
-                          index={index}
-                        >
-                          {(draggableProvided, draggableSnapshot) => (
-                            <div
-                              ref={draggableProvided.innerRef}
-                              {...draggableProvided.draggableProps}
-                              {...draggableProvided.dragHandleProps}
-                              style={{
-                                ...draggableProvided.draggableProps.style,
-                              }}
-                            >
-                              <KanbanTicketCard
-                                ticket={ticket}
-                                projectKey={projectKey}
-                                isDragging={draggableSnapshot.isDragging}
-                                dragStartRef={dragStartRef}
-                                onSelect={handleSelect}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    </AnimatePresence>
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-
-              <div className="border-t">
-                <QuickAddInput columnId={col.id} projectId={projectId} />
-              </div>
-            </div>
+                      </Draggable>
+                    ))}
+                  </AnimatePresence>
+                  {provided.placeholder}
+                </KanbanColumnShell>
+              )}
+            </Droppable>
           );
         })}
-      </div>
+      </KanbanCanvas>
     </DragDropContext>
   );
 }

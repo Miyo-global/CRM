@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Info, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PERMISSIONS, ROLE_DEFAULT_PERMISSIONS, SYSTEM_ROLES } from "@/lib/rbac/permissions";
@@ -70,14 +69,19 @@ function PermissionsContent() {
     return result;
   }, []);
 
+  const [hoverRole, setHoverRole] = useState<SystemRole | null>(null);
+  const clearHover = useCallback(() => setHoverRole(null), []);
+  const colTone = (r: SystemRole) =>
+    r === hoverRole ? "bg-accent" : r === role ? "bg-brand-soft/50" : undefined;
+
   return (
     <PageWrapper
       title="Permission Matrix"
       subtitle="Read-only overview of built-in permissions per system role"
     >
       <div className="space-y-4">
-        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
-          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="flex items-start gap-3 rounded-lg border border-info-soft bg-info-soft p-3 text-sm text-info-strong">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
           <p>
             Permissions are defined by system role. To assign custom permissions to a specific
             user, create a custom role in{" "}
@@ -90,73 +94,73 @@ function PermissionsContent() {
 
         <div className="flex flex-wrap gap-2">
           {SYSTEM_ROLES.map((r) => (
-            <Badge
-              key={r}
-              variant={r === role ? "default" : "outline"}
-              className={cn(
-                "text-[11px]",
-                r === role && "bg-primary text-primary-foreground"
-              )}
-            >
+            <StatusPill key={r} tone={r === role ? "brand" : "neutral"} dot={r === role}>
               {ROLE_LABELS[r]}
-            </Badge>
+            </StatusPill>
           ))}
         </div>
 
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Lock className="h-4 w-4 text-gold" />
-              System Role Permissions ({PERMISSIONS.length} total)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="w-full" type="auto">
-              <div className="min-w-[900px]">
-                <div className="grid bg-muted/50 border-b border-border/40 sticky top-0 z-10"
-                  style={{ gridTemplateColumns: `260px repeat(${SYSTEM_ROLES.length}, minmax(72px, 1fr))` }}
-                >
-                  <div className="px-4 py-2.5 text-xs font-semibold text-muted-foreground">
+        <Card className="overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+            <Lock className="size-4 text-brand-text" aria-hidden />
+            <h2 className="text-sm font-semibold">
+              System Role Permissions <span className="tabular-nums text-muted-foreground">({PERMISSIONS.length} total)</span>
+            </h2>
+          </div>
+          <div className="max-h-[70vh] overflow-auto" onMouseLeave={clearHover}>
+            <table className="w-full min-w-[900px] border-separate border-spacing-0 text-sm">
+              <thead className="sticky top-0 z-sticky">
+                <tr>
+                  <th
+                    scope="col"
+                    className="sticky left-0 z-sticky w-64 border-b border-border bg-surface-sunken px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     Permission
-                  </div>
+                  </th>
                   {SYSTEM_ROLES.map((r) => (
-                    <div
+                    <th
                       key={r}
+                      scope="col"
+                      onMouseEnter={() => setHoverRole(r)}
                       className={cn(
-                        "px-2 py-2.5 text-center text-[11px] font-semibold leading-tight text-muted-foreground",
-                        r === role && "text-primary"
+                        "min-w-18 border-b border-border bg-surface-sunken px-2 py-2.5 text-center text-2xs font-semibold leading-tight text-muted-foreground transition-colors",
+                        r === role && "text-brand-text",
+                        r === hoverRole && "bg-accent text-foreground"
                       )}
                     >
                       {ROLE_LABELS[r]}
-                    </div>
+                    </th>
                   ))}
-                </div>
+                </tr>
+              </thead>
 
-                {permissionGroups.map(([resource, perms]) => (
-                  <div key={resource}>
-                    <div
-                      className="grid bg-muted/20 border-b border-border/30"
-                      style={{ gridTemplateColumns: `260px repeat(${SYSTEM_ROLES.length}, minmax(72px, 1fr))` }}
+              {permissionGroups.map(([resource, perms]) => (
+                <tbody key={resource}>
+                  <tr>
+                    <th
+                      scope="rowgroup"
+                      colSpan={SYSTEM_ROLES.length + 1}
+                      className="border-b border-border bg-surface-sunken p-0 text-left"
                     >
-                      <div className="px-4 py-1.5 col-span-full text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      <span className="sticky left-0 inline-block px-4 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {formatResource(resource)}
-                      </div>
-                    </div>
+                      </span>
+                    </th>
+                  </tr>
 
-                    {perms.map((perm) => (
-                      <PermissionRow
-                        key={perm.name}
-                        perm={perm}
-                        roleCount={SYSTEM_ROLES.length}
-                        rolePermSets={rolePermSets}
-                        currentRole={role}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
+                  {perms.map((perm) => (
+                    <PermissionRow
+                      key={perm.name}
+                      perm={perm}
+                      rolePermSets={rolePermSets}
+                      onHoverRole={setHoverRole}
+                      colTone={colTone}
+                    />
+                  ))}
+                </tbody>
+              ))}
+            </table>
+          </div>
         </Card>
       </div>
     </PageWrapper>
@@ -165,42 +169,43 @@ function PermissionsContent() {
 
 interface PermissionRowProps {
   perm: (typeof PERMISSIONS)[number];
-  roleCount: number;
   rolePermSets: Record<string, Set<string>>;
-  currentRole: SystemRole | undefined;
+  onHoverRole: (r: SystemRole) => void;
+  colTone: (r: SystemRole) => string | undefined;
 }
 
-function PermissionRow({ perm, roleCount, rolePermSets, currentRole }: PermissionRowProps) {
+function PermissionRow({ perm, rolePermSets, onHoverRole, colTone }: PermissionRowProps) {
   return (
-    <div
-      className="grid border-b border-border/20 hover:bg-muted/10 transition-colors"
-      style={{ gridTemplateColumns: `260px repeat(${roleCount}, minmax(72px, 1fr))` }}
-    >
-      <div className="px-4 py-2 flex flex-col justify-center">
-        <p className="text-[12px] font-medium leading-snug">{perm.description}</p>
-        <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+    <tr className="group/row">
+      <th
+        scope="row"
+        className="sticky left-0 z-base border-b border-border bg-card px-4 py-2 text-left font-normal group-hover/row:bg-accent"
+      >
+        <p className="text-xs font-medium leading-snug">{perm.description}</p>
+        <p className="text-2xs text-muted-foreground font-mono mt-0.5">
           {formatAction(perm.action)}
         </p>
-      </div>
+      </th>
 
       {SYSTEM_ROLES.map((r) => {
         const hasPermission = r === "CEO" || (rolePermSets[r]?.has(perm.name) ?? false);
         return (
-          <div
+          <td
             key={r}
+            onMouseEnter={() => onHoverRole(r)}
             className={cn(
-              "flex items-center justify-center py-2",
-              r === currentRole && "bg-primary/5"
+              "border-b border-border py-2 text-center align-middle transition-colors group-hover/row:bg-accent/60",
+              colTone(r)
             )}
           >
             {hasPermission ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-label="Allowed" />
+              <CheckCircle2 className="inline-block size-4 text-success-strong" aria-label="Allowed" />
             ) : (
-              <XCircle className="h-3.5 w-3.5 text-muted-foreground/30" aria-label="Not allowed" />
+              <XCircle className="inline-block size-3.5 text-subtle-foreground/50" aria-label="Not allowed" />
             )}
-          </div>
+          </td>
         );
       })}
-    </div>
+    </tr>
   );
 }

@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
+import { ArrowRightLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
+import { KanbanCanvas, KanbanEmptyDrop, kanbanCardClass } from "@/components/shared/kanban";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { toneDot, type Tone } from "@/lib/design/tones";
 import type { SprintData } from "./sprint-card";
 
 interface PlanningTicket {
@@ -24,107 +28,114 @@ interface SprintPlanningPanelProps {
   onDone: () => void;
 }
 
+/** Column chrome per §8.4; kept local so the droppable div keeps its aria-label. */
+function ColumnHeader({ title, tone, count }: { title: ReactNode; tone: Tone; count: number }) {
+  return (
+    <div className="flex h-11 items-center gap-2 px-3">
+      <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", toneDot[tone])} />
+      <h4 className="min-w-0 truncate text-sm font-semibold">{title}</h4>
+      <Badge variant="secondary" className="tabular-nums">{count}</Badge>
+    </div>
+  );
+}
+
+const columnClass = "flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/60 sm:w-auto sm:min-w-0 sm:flex-1 sm:shrink";
+const dropAreaClass = (isDraggingOver: boolean) =>
+  cn(
+    "min-h-48 flex-1 space-y-2 rounded-b-lg p-2 transition-colors",
+    isDraggingOver && "bg-brand-soft/60 ring-1 ring-gold-300 ring-inset"
+  );
+
+function TicketCardBody({ ticket }: { ticket: { title?: string; points: number | null } }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="line-clamp-2 text-sm font-medium">{ticket.title}</span>
+      {ticket.points != null && (
+        <Badge variant="secondary" className="shrink-0 tabular-nums">{ticket.points}</Badge>
+      )}
+    </div>
+  );
+}
+
 export function SprintPlanningPanel({ sprint, backlogTickets, onDragEnd, onDone }: SprintPlanningPanelProps) {
   const handleDone = useCallback(() => onDone(), [onDone]);
+  const sprintTickets = sprint.tickets || [];
 
   return (
-    <Card className="border-primary/50">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m16 3 4 4-4 4" />
-              <path d="M20 7H4" />
-              <path d="m8 21-4-4 4-4" />
-              <path d="M4 17h16" />
-            </svg>
-            Planning: {sprint.name}
-          </CardTitle>
-          <Button variant="outline" size="sm" onClick={handleDone}>
-            Done Planning
-          </Button>
-        </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 border-b border-border py-3">
+        <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+          <IconChip icon={ArrowRightLeft} tone="brand" size="sm" />
+          <span className="truncate">Planning: {sprint.name}</span>
+        </CardTitle>
+        <Button variant="outline" size="sm" onClick={handleDone}>
+          Done Planning
+        </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-sm font-semibold mb-2">Backlog ({backlogTickets.length})</h4>
+          <KanbanCanvas>
+            <div className={columnClass}>
+              <ColumnHeader title="Backlog" tone="neutral" count={backlogTickets.length} />
               <Droppable droppableId="backlog">
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     aria-label="Backlog tickets"
-                    className={cn(
-                      "min-h-[200px] rounded-lg border border-dashed p-2 space-y-1",
-                      snapshot.isDraggingOver && "bg-primary/5 border-primary/30"
-                    )}
+                    className={dropAreaClass(snapshot.isDraggingOver)}
                   >
                     {backlogTickets.map((ticket, index) => (
                       <Draggable key={ticket.id} draggableId={ticket.id.toString()} index={index}>
-                        {(dragProvided) => (
+                        {(dragProvided, dragSnapshot) => (
                           <div
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
                             {...dragProvided.dragHandleProps}
-                            className="p-2 bg-card rounded border text-sm flex items-center justify-between"
+                            className={kanbanCardClass(dragSnapshot.isDragging)}
                           >
-                            <span className="truncate">{ticket.title}</span>
-                            {ticket.points != null && (
-                              <Badge variant="secondary" className="text-xs ml-2 shrink-0">{ticket.points}</Badge>
-                            )}
+                            <TicketCardBody ticket={ticket} />
                           </div>
                         )}
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                    {backlogTickets.length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-8">No backlog tickets</p>
-                    )}
+                    {backlogTickets.length === 0 && <KanbanEmptyDrop label="No backlog tickets" />}
                   </div>
                 )}
               </Droppable>
             </div>
-            <div>
-              <h4 className="text-sm font-semibold mb-2">{sprint.name} ({(sprint.tickets || []).length})</h4>
+            <div className={columnClass}>
+              <ColumnHeader title={sprint.name} tone="brand" count={sprintTickets.length} />
               <Droppable droppableId={sprint.id.toString()}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     aria-label={`${sprint.name} tickets`}
-                    className={cn(
-                      "min-h-[200px] rounded-lg border border-dashed p-2 space-y-1",
-                      snapshot.isDraggingOver && "bg-primary/5 border-primary/30"
-                    )}
+                    className={dropAreaClass(snapshot.isDraggingOver)}
                   >
-                    {(sprint.tickets || []).map((ticket, index) => (
+                    {sprintTickets.map((ticket, index) => (
                       <Draggable key={ticket.id} draggableId={ticket.id.toString()} index={index}>
-                        {(dragProvided) => (
+                        {(dragProvided, dragSnapshot) => (
                           <div
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
                             {...dragProvided.dragHandleProps}
-                            className="p-2 bg-card rounded border text-sm flex items-center justify-between"
+                            className={kanbanCardClass(dragSnapshot.isDragging)}
                           >
-                            <span className="truncate">{ticket.title}</span>
-                            {ticket.points != null && (
-                              <Badge variant="secondary" className="text-xs ml-2 shrink-0">{ticket.points}</Badge>
-                            )}
+                            <TicketCardBody ticket={ticket} />
                           </div>
                         )}
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                    {(sprint.tickets || []).length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-8">Drag tickets here</p>
-                    )}
+                    {sprintTickets.length === 0 && <KanbanEmptyDrop label="Drag tickets here" />}
                   </div>
                 )}
               </Droppable>
             </div>
-          </div>
+          </KanbanCanvas>
         </DragDropContext>
       </CardContent>
     </Card>

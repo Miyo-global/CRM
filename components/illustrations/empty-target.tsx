@@ -10,7 +10,7 @@ export function EmptyTargetIllustration({ className }: IllustrationProps) {
       <rect x="128" y="70" width="3" height="85" rx="1.5" fill={BLUE} opacity="0.15" />
       <rect x="115" y="150" width="30" height="4" rx="2" fill={BLUE} opacity="0.12" />
 
-      <circle cx="130" cy="60" r="38" fill="white" stroke={BLUE} strokeWidth="2" />
+      <circle cx="130" cy="60" r="38" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <circle cx="130" cy="60" r="30" fill="none" stroke={GOLD} strokeWidth="2" opacity="0.25" />
       <circle cx="130" cy="60" r="22" fill="none" stroke={GOLD} strokeWidth="2" opacity="0.4" />
       <circle cx="130" cy="60" r="14" fill="none" stroke={GOLD} strokeWidth="2" opacity="0.6" />

@@ -14,16 +14,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { formatINR } from "@/lib/format-utils";
 import { BONUS_TYPE_LABELS, type BonusType } from "@/lib/validations/bonus";
 import type { BonusRow } from "@/lib/hr/bonus-filters";
 import { useHrMyBonuses } from "@/lib/api/hooks/hr/bonuses";
 
-function statusBadgeVariant(status: string | null): "default" | "secondary" | "outline" {
-  if (status === "PAID") return "default";
-  if (status === "APPROVED") return "secondary";
-  return "outline";
+function statusTone(status: string | null): Tone {
+  if (status === "PAID") return "success";
+  if (status === "APPROVED") return "info";
+  if (status === "REJECTED") return "danger";
+  return "warning";
 }
 
 function formatBonusPeriod(bonus: BonusRow): string {
@@ -43,7 +47,7 @@ function formatPaidDate(bonus: BonusRow): string {
 }
 
 export function MyBonusesView() {
-  const { data: bonuses, isLoading } = useHrMyBonuses();
+  const { data: bonuses, isLoading, isError, error, refetch } = useHrMyBonuses();
 
   if (isLoading) {
     return (
@@ -57,10 +61,14 @@ export function MyBonusesView() {
     );
   }
 
+  if (isError) {
+    return <QueryErrorState title="Couldn't load your bonuses" error={error} onRetry={() => refetch()} />;
+  }
+
   if (!bonuses?.length) {
     return (
       <EmptyState
-        illustration={<EmptyExpensesIllustration className="h-32 w-32" />}
+        illustration={<EmptyExpensesIllustration />}
         title="No bonuses yet"
         description="When HR records a bonus for you, it will appear here with its status and payment details."
       />
@@ -68,7 +76,7 @@ export function MyBonusesView() {
   }
 
   return (
-    <Card>
+    <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="p-0">
         <ScrollArea className="w-full" type="auto">
           <div className="min-w-[640px]">
@@ -76,7 +84,7 @@ export function MyBonusesView() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Paid Date</TableHead>
@@ -86,18 +94,18 @@ export function MyBonusesView() {
                 {bonuses.map((bonus) => (
                   <TableRow key={bonus.id}>
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline">
                         {bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "Bonus"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium tabular-nums">{formatINR(bonus.amount)}</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">{formatINR(bonus.amount)}</TableCell>
                     <TableCell>
-                      <Badge variant={statusBadgeVariant(bonus.status)} className="text-[10px]">
+                      <StatusPill tone={statusTone(bonus.status)} dot>
                         {bonus.status ?? "PENDING"}
-                      </Badge>
+                      </StatusPill>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{formatBonusPeriod(bonus)}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatPaidDate(bonus)}</TableCell>
+                    <TableCell className="tabular-nums text-muted-foreground">{formatBonusPeriod(bonus)}</TableCell>
+                    <TableCell className="tabular-nums text-muted-foreground">{formatPaidDate(bonus)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

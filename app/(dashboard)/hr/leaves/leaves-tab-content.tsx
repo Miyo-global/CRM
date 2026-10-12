@@ -11,9 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyLeaveIllustration } from "@/components/illustrations";
+import { EmptyLeaveIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared"
 import { BalanceCard, LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 
-const DONUT_COLORS = ["#bd882c", "#3b82f6", "#ef4444", "#10b981", "#8b5cf6"];
+const DONUT_COLORS = ["var(--chart-1)", "var(--chart-3)", "var(--chart-8)", "var(--chart-7)", "var(--chart-5)"];
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
   { value: "ALL", label: "All status" },
@@ -74,13 +74,13 @@ function LeaveBalanceDonut({ balances }: { balances: LeaveBalance[] }) {
   ]);
 
   return (
-    <Card className="border-border h-full flex flex-col">
+    <Card className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold">Balance Overview</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex items-center">
         <div className="flex w-full items-center gap-6">
-          <div className="h-[120px] w-[120px] shrink-0">
+          <div className="size-30 shrink-0" role="img" aria-label="Leave balance overview chart">
               <PieChart width={120} height={120}>
                 <Pie
                   data={chartData}
@@ -100,7 +100,13 @@ function LeaveBalanceDonut({ balances }: { balances: LeaveBalance[] }) {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ fontSize: 11 }}
+                  contentStyle={{
+                    fontSize: 12,
+                    background: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    color: "var(--popover-foreground)",
+                  }}
                   formatter={(value, name) => [`${value} days`, String(name)]}
                 />
               </PieChart>
@@ -111,18 +117,18 @@ function LeaveBalanceDonut({ balances }: { balances: LeaveBalance[] }) {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      className="size-2 shrink-0 rounded-full"
                       style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
                     />
                     <span className="text-xs text-muted-foreground truncate">{item.name}</span>
                   </div>
-                  <span className="text-xs font-semibold text-foreground shrink-0">
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
                     {formatLeaveBalanceDisplay(item.remaining)}/{item.total}
                   </span>
                 </div>
                 <div className="h-1 rounded-full bg-muted overflow-hidden ml-4">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none"
                     style={{
                       width: `${item.total > 0 ? (item.remaining / item.total) * 100 : 0}%`,
                       backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length],
@@ -176,10 +182,10 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
   const todayStr = format(today, "yyyy-MM-dd");
 
   return (
-    <Card className="border-border">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-primary" aria-hidden="true" />
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <IconChip icon={CalendarDays} size="sm" />
           Who&apos;s Out This Week
         </CardTitle>
       </CardHeader>
@@ -191,36 +197,36 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
               <div
                 key={day.toISOString()}
                 className={cn(
-                  "rounded-lg p-1.5 min-h-[64px] flex flex-col",
+                  "flex min-h-16 flex-col rounded-lg border p-1.5",
                   isToday
-                    ? "bg-gold/10 border border-gold/30"
-                    : "bg-muted/30 border border-transparent",
+                    ? "border-primary/40 bg-brand-soft"
+                    : "border-transparent bg-surface-sunken",
                 )}
               >
                 <div
                   className={cn(
-                    "text-[10px] font-medium text-center leading-tight mb-1",
-                    isToday ? "text-gold" : "text-muted-foreground",
+                    "mb-1 text-center text-2xs font-medium leading-tight tabular-nums",
+                    isToday ? "text-brand-text" : "text-muted-foreground",
                   )}
                 >
                   {format(day, "EEE")}
                   <br />
-                  <span className={cn("text-[11px]", isToday && "font-bold")}>
+                  <span className={cn("text-2xs", isToday && "font-bold")}>
                     {format(day, "d")}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-0.5 justify-center">
                   {leaves.slice(0, 3).map((l) => (
                     <Avatar key={l.id} className="h-5 w-5" title={`${l.user?.firstName} ${l.user?.lastName}`}>
-                      <AvatarImage src={resolveImageUrl(l.user?.image)} />
-                      <AvatarFallback className="text-[8px] bg-amber-100 text-amber-700">
+                      <AvatarImage src={resolveImageUrl(l.user?.image)} alt="" />
+                      <AvatarFallback className="text-3xs bg-warning-soft text-warning-strong">
                         {l.user?.firstName?.[0]}
                         {l.user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                   {leaves.length > 3 && (
-                    <span className="text-[9px] text-muted-foreground self-end">
+                    <span className="text-3xs text-muted-foreground self-end">
                       +{leaves.length - 3}
                     </span>
                   )}
@@ -249,11 +255,11 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                 return (
                   <li
                     key={leave.id}
-                    className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-muted/20 px-2.5 py-2"
+                    className="flex items-start gap-2.5 rounded-lg border border-border bg-surface-sunken px-2.5 py-2"
                   >
                     <Avatar className="h-8 w-8 shrink-0 mt-0.5">
-                      <AvatarImage src={resolveImageUrl(leave.user?.image)} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      <AvatarImage src={resolveImageUrl(leave.user?.image)} alt="" />
+                      <AvatarFallback className="text-2xs bg-brand-soft text-brand-soft-foreground">
                         {leave.user?.firstName?.[0]}
                         {leave.user?.lastName?.[0]}
                       </AvatarFallback>
@@ -262,8 +268,8 @@ function LeaveCalendarWidget({ approvedLeaves }: { approvedLeaves: ApprovedLeave
                       <p className="text-sm font-medium text-foreground leading-tight truncate">
                         {name}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{range}</p>
-                      <p className="text-[11px] text-primary/90 font-medium mt-1">{typeName}</p>
+                      <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{range}</p>
+                      <p className="text-2xs text-brand-text font-medium mt-1">{typeName}</p>
                     </div>
                   </li>
                 );
@@ -412,7 +418,7 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <h2 className="text-base font-semibold text-foreground">Overview</h2>
+        <h2 className="font-display text-lg font-bold text-foreground">Overview</h2>
         <p className="text-sm text-muted-foreground">
           Your leave balances and history for {currentYear}.
         </p>
@@ -436,7 +442,7 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
         <LeaveCalendarWidget approvedLeaves={approvedLeavesThisWeek} />
       </div>
 
-      <Card className="border-border">
+      <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="space-y-1">
@@ -450,24 +456,19 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
             <div className="flex items-center gap-3 shrink-0">
               <Popover>
                 <PopoverTrigger asChild>
-                  <button
+                  <Button
                     type="button"
-                    className={cn(
-                      "flex items-center gap-1.5 text-xs transition-colors",
-                      hasActiveFilters
-                        ? "text-foreground font-medium"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
+                    variant="outline"
+                    size="sm"
+                    className={cn(hasActiveFilters && "border-border-strong bg-accent")}
                     aria-label="Filter requests"
                   >
-                    <Filter className="h-3.5 w-3.5" />
+                    <Filter className="size-4" aria-hidden="true" />
                     Filter
                     {hasActiveFilters ? (
-                      <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">
-                        !
-                      </Badge>
+                      <span className="size-1.5 rounded-full bg-gold-400" aria-hidden="true" />
                     ) : null}
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-72 space-y-3 p-4">
                   <p className="text-sm font-medium">Filter requests</p>
@@ -523,15 +524,16 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
                   ) : null}
                 </PopoverContent>
               </Popover>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleExportExcel}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Export to Excel"
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download className="size-4" aria-hidden="true" />
                 Export
-              </button>
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -544,7 +546,7 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
             />
           ) : filteredRequests.length === 0 ? (
             <EmptyState
-              illustration={<EmptyLeaveIllustration />}
+              illustration={<EmptySearchIllustration />}
               title="No matching requests"
               description="Try adjusting your filters to see more results."
               action={{ label: "Clear filters", onClick: handleClearFilters }}

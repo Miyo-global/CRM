@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyApprovalIllustration, EmptyCalendarIllustration } from "@/components/illustrations";
-import { Home, CheckCircle2, XCircle, Loader2, CalendarDays, Search } from "lucide-react";
+import { EmptyApprovalIllustration, EmptyCalendarIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { Home, CheckCircle2, XCircle, CalendarDays, Search } from "lucide-react";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
 
@@ -150,20 +151,21 @@ function LeaveApprovalsTable({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative w-full sm:w-64">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
           <Input
+            type="search"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Search employee, type, or reason..."
-            className="pl-8 h-9"
+            className="h-9 pl-9"
             aria-label="Search leave requests"
           />
         </div>
         <div className="flex flex-wrap gap-2">
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[130px] h-9">
+            <SelectTrigger className="h-9 w-32" aria-label="Status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -173,7 +175,7 @@ function LeaveApprovalsTable({
             </SelectContent>
           </Select>
           <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[130px] h-9">
+            <SelectTrigger className="h-9 w-32" aria-label="Priority">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -183,7 +185,7 @@ function LeaveApprovalsTable({
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[150px] h-9">
+            <SelectTrigger className="h-9 w-36" aria-label="Leave type">
               <SelectValue placeholder="Leave type" />
             </SelectTrigger>
             <SelectContent>
@@ -194,20 +196,24 @@ function LeaveApprovalsTable({
             </SelectContent>
           </Select>
           {hasActiveFilters && (
-            <Button type="button" variant="ghost" size="sm" className="h-9" onClick={handleClearFilters}>
+            <Button type="button" variant="ghost" size="sm" onClick={handleClearFilters}>
               Clear filters
             </Button>
           )}
         </div>
-        <Badge variant="secondary" className="w-fit text-xs ml-auto">
+        <Badge variant="secondary" className="ml-auto w-fit tabular-nums">
           {filteredRequests.length} of {requests.length} requests
         </Badge>
       </div>
 
       {paginatedRequests.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          {hasActiveFilters ? "No leave requests match your filters." : "No leave requests to display."}
-        </p>
+        <EmptyState
+          compact
+          illustration={<EmptySearchIllustration />}
+          title={hasActiveFilters ? "No results for these filters" : "No leave requests"}
+          description={hasActiveFilters ? "No leave requests match your filters." : "No leave requests to display."}
+          action={hasActiveFilters ? { label: "Clear filters", onClick: handleClearFilters } : undefined}
+        />
       ) : (
         <div className="w-full overflow-x-auto">
           <LeaveRequestTable
@@ -458,10 +464,10 @@ export function LeaveApprovalsContent({
   return (
     <>
       <div className="space-y-6 min-h-0">
-        <Card className="border-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-primary" aria-hidden="true" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconChip icon={CalendarDays} size="sm" />
               Leave Requests
               {allIncomingLeaveRequests.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{allIncomingLeaveRequests.length}</Badge>
@@ -470,8 +476,8 @@ export function LeaveApprovalsContent({
           </CardHeader>
           <CardContent className="space-y-4">
             {ownPendingRequests.length > 0 && (
-              <div className="rounded-lg border border-dashed border-amber-300/50 bg-amber-50/50 dark:bg-amber-950/10 px-4 py-3">
-                <p className="text-sm font-medium text-foreground">
+              <div className="rounded-lg bg-warning-soft px-4 py-3" role="note">
+                <p className="text-sm font-medium text-warning-strong">
                   You have {ownPendingRequests.length} pending leave request{ownPendingRequests.length === 1 ? "" : "s"} awaiting another approver.
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -485,45 +491,41 @@ export function LeaveApprovalsContent({
               onValueChange={(value) => setStatusTab(value as StatusTab)}
               className="space-y-4"
             >
-              <TabsList className="bg-muted/50 border border-border p-1 rounded-lg h-auto gap-1">
+              <TabsList variant="underline" className="overflow-x-auto">
                 <TabsTrigger
                   value="all"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   All
-                  <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                  <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 justify-center px-1.5 tabular-nums">
                     {allIncomingLeaveRequests.length}
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger
                   value="pending"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Pending
                   {actionablePendingRequests.length > 0 && (
-                    <Badge className="ml-1.5 h-5 min-w-5 px-1.5 bg-amber-500 text-white text-[10px] font-bold border-0">
+                    <Badge variant="warning" className="ml-1.5 h-5 min-w-5 justify-center px-1.5 tabular-nums">
                       {actionablePendingRequests.length}
                     </Badge>
                   )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="approved"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Approved
                   {approvedCount > 0 && (
-                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 justify-center px-1.5 tabular-nums">
                       {approvedCount}
                     </Badge>
                   )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="rejected"
-                  className="data-[state=active]:bg-gold data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-xs font-medium transition-all"
                 >
                   Rejected
                   {rejectedCount > 0 && (
-                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px]">
+                    <Badge variant="secondary" className="ml-1.5 h-5 min-w-5 justify-center px-1.5 tabular-nums">
                       {rejectedCount}
                     </Badge>
                   )}
@@ -542,10 +544,10 @@ export function LeaveApprovalsContent({
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Home className="h-4 w-4 text-primary" aria-hidden="true" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconChip icon={Home} size="sm" tone="info" />
               Pending WFH Requests
               {pendingWfhRequests && pendingWfhRequests.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{pendingWfhRequests.length}</Badge>
@@ -566,14 +568,14 @@ export function LeaveApprovalsContent({
       </div>
 
       <Sheet open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <SheetContent className="sm:max-w-sm p-0 flex flex-col">
-          <SheetHeader className="p-5 pb-4 border-b">
-            <SheetTitle className="text-base">Reject WFH Request</SheetTitle>
+        <SheetContent size="sm" className="flex flex-col gap-0 p-0">
+          <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
+            <SheetTitle className="font-display text-lg font-bold">Reject WFH Request</SheetTitle>
             <p className="text-sm text-muted-foreground">
               Provide a reason for rejecting this request (optional).
             </p>
           </SheetHeader>
-          <div className="flex-1 p-5 space-y-4">
+          <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Rejection Reason</label>
               <Textarea
@@ -585,34 +587,30 @@ export function LeaveApprovalsContent({
               />
             </div>
           </div>
-          <div className="flex gap-2 p-5 pt-4 border-t">
-            <Button variant="outline" className="flex-1" onClick={() => setRejectDialogOpen(false)}>
+          <SheetFooter>
+            <Button variant="ghost" onClick={() => setRejectDialogOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="destructive"
-              className="flex-1"
               onClick={handleWfhRejectConfirm}
-              disabled={processWfhRequestMutation.isPending}
+              loading={processWfhRequestMutation.isPending}
             >
-              {processWfhRequestMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              )}
               Reject Request
             </Button>
-          </div>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
 
       <Sheet open={leaveRejectOpen} onOpenChange={setLeaveRejectOpen}>
-        <SheetContent className="sm:max-w-sm p-0 flex flex-col">
-          <SheetHeader className="p-5 pb-4 border-b">
-            <SheetTitle className="text-base">Reject Leave Request</SheetTitle>
+        <SheetContent size="sm" className="flex flex-col gap-0 p-0">
+          <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
+            <SheetTitle className="font-display text-lg font-bold">Reject Leave Request</SheetTitle>
             <p className="text-sm text-muted-foreground">
               Provide a reason for rejecting this request (optional).
             </p>
           </SheetHeader>
-          <div className="flex-1 p-5 space-y-4">
+          <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Rejection Reason</label>
               <Textarea
@@ -624,22 +622,18 @@ export function LeaveApprovalsContent({
               />
             </div>
           </div>
-          <div className="flex gap-2 p-5 pt-4 border-t">
-            <Button variant="outline" className="flex-1" onClick={() => setLeaveRejectOpen(false)}>
+          <SheetFooter>
+            <Button variant="ghost" onClick={() => setLeaveRejectOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="destructive"
-              className="flex-1"
               onClick={handleLeaveRejectConfirm}
-              disabled={rejectMutation.isPending}
+              loading={rejectMutation.isPending}
             >
-              {rejectMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              )}
               Reject Request
             </Button>
-          </div>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
 
@@ -669,12 +663,12 @@ function WfhApprovalActions({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="default" onClick={handleApprove} disabled={isProcessing} className="h-8">
-        {isThisRequest ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
+      <Button size="sm" variant="default" onClick={handleApprove} loading={isThisRequest} disabled={isProcessing}>
+        {!isThisRequest && <CheckCircle2 className="size-4" aria-hidden="true" />}
         Approve
       </Button>
-      <Button size="sm" variant="outline" onClick={handleReject} disabled={isProcessing} className="h-8">
-        <XCircle className="h-3 w-3 mr-1" />
+      <Button size="sm" variant="outline" onClick={handleReject} disabled={isProcessing}>
+        <XCircle className="size-4" aria-hidden="true" />
         Reject
       </Button>
     </div>

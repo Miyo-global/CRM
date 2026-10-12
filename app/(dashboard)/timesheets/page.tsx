@@ -24,8 +24,9 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -50,7 +51,7 @@ import { LogTimeDialog } from "@/components/timesheets/log-time-dialog";
 import { EditTimeEntryDialog } from "@/components/timesheets/edit-time-entry-dialog";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { toast } from "sonner";
-import { Loader2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { TimesheetTableRow, type EditEntry } from "@/features/timesheets/timesheet-table-row";
 
 const ITEMS_PER_PAGE = 10;
@@ -133,7 +134,7 @@ export default function TimesheetsPage() {
     }
   }, [dateRange, startDate, endDate]);
 
-  const { data: entries, isLoading } = useTimeEntries({
+  const { data: entries, isLoading, isError, error, refetch } = useTimeEntries({
     projectId: selectedProject === "all" ? undefined : parseInt(selectedProject),
     startDate: computedRange.start,
     endDate: computedRange.end,
@@ -175,8 +176,10 @@ export default function TimesheetsPage() {
     [updateParams],
   );
 
-  const handleViewModeCurrent = useCallback(() => handleViewMode("current"), [handleViewMode]);
-  const handleViewModeHistory = useCallback(() => handleViewMode("history"), [handleViewMode]);
+  const handleViewModeChange = useCallback(
+    (v: string) => handleViewMode(v as ViewMode),
+    [handleViewMode],
+  );
 
   const handleProjectChange = useCallback(
     (v: string) => updateParams({ project: v === "all" ? null : v, page: null }),
@@ -248,40 +251,36 @@ export default function TimesheetsPage() {
   }
 
   const filtersBar = (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Project:</span>
-        <Select value={selectedProject} onValueChange={handleProjectChange}>
-          <SelectTrigger aria-label="Filter by project" className="h-auto border-0 bg-transparent p-0 shadow-none text-sm font-medium min-w-[100px] focus:ring-0">
-            <SelectValue placeholder="All" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Projects</SelectItem>
-            {projects?.map((p) => (
-              <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <Select value={selectedProject} onValueChange={handleProjectChange}>
+        <SelectTrigger aria-label="Filter by project" className="w-full sm:w-48">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Project:</span>
+          <SelectValue placeholder="All" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Projects</SelectItem>
+          {projects?.map((p) => (
+            <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Period:</span>
-        <Select value={dateRange} onValueChange={handlePeriodChange}>
-          <SelectTrigger aria-label="Filter by time period" className="h-auto border-0 bg-transparent p-0 shadow-none text-sm font-medium min-w-[100px] focus:ring-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="this-quarter">{currentQuarter} {currentYear}</SelectItem>
-            <SelectItem value="last-quarter">Last Quarter</SelectItem>
-            <SelectItem value="this-week">This Week</SelectItem>
-            <SelectItem value="last-week">Last Week</SelectItem>
-            <SelectItem value="this-month">This Month</SelectItem>
-            <SelectItem value="last-month">Last Month</SelectItem>
-            <SelectItem value="custom">Custom Range</SelectItem>
-            <SelectItem value="all">All Time</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={dateRange} onValueChange={handlePeriodChange}>
+        <SelectTrigger aria-label="Filter by time period" className="w-full sm:w-48">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Period:</span>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="this-quarter">{currentQuarter} {currentYear}</SelectItem>
+          <SelectItem value="last-quarter">Last Quarter</SelectItem>
+          <SelectItem value="this-week">This Week</SelectItem>
+          <SelectItem value="last-week">Last Week</SelectItem>
+          <SelectItem value="this-month">This Month</SelectItem>
+          <SelectItem value="last-month">Last Month</SelectItem>
+          <SelectItem value="custom">Custom Range</SelectItem>
+          <SelectItem value="all">All Time</SelectItem>
+        </SelectContent>
+      </Select>
 
       {dateRange === "custom" && (
         <>
@@ -290,24 +289,12 @@ export default function TimesheetsPage() {
         </>
       )}
 
-      <div className="h-7 w-px bg-border mx-1 hidden sm:block" />
-
-      <button
-        onClick={handleViewModeCurrent}
-        className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-          viewMode === "current" ? "bg-gold/10 text-gold" : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        Current Quarter
-      </button>
-      <button
-        onClick={handleViewModeHistory}
-        className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-          viewMode === "history" ? "bg-gold/10 text-gold" : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        History
-      </button>
+      <Tabs value={viewMode} onValueChange={handleViewModeChange} className="ml-auto">
+        <TabsList>
+          <TabsTrigger value="current">Current Quarter</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   );
 
@@ -318,8 +305,8 @@ export default function TimesheetsPage() {
       actions={
         <LogTimeDialog
           trigger={
-            <Button className="bg-gold hover:bg-gold/90 text-white font-bold shadow-sm">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button>
+              <Plus className="size-4" aria-hidden="true" />
               Add New Log
             </Button>
           }
@@ -330,7 +317,7 @@ export default function TimesheetsPage() {
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
         {entries && entries.length > 0 && (
           <motion.div variants={fadeUp}>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm tabular-nums text-muted-foreground">
               <span className="font-semibold text-foreground">{entries.length}</span>{" "}
               {entries.length === 1 ? "entry" : "entries"} —{" "}
               <span className="font-semibold text-foreground">{totalHours.toFixed(1)}h</span> logged
@@ -341,7 +328,9 @@ export default function TimesheetsPage() {
         <motion.div variants={fadeUp}>
           <Card className="overflow-hidden">
             <CardContent className="p-0">
-              {isLoading ? (
+              {isError ? (
+                <QueryErrorState error={error} onRetry={() => refetch()} className="py-12" />
+              ) : isLoading ? (
                 <div className="p-6 space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-14 w-full" />
@@ -353,14 +342,14 @@ export default function TimesheetsPage() {
                     <div className="min-w-max">
                     <Table>
                       <caption className="sr-only">Your daily work logs</caption>
-                      <TableHeader className="sticky top-0 z-10">
-                        <TableRow className="bg-muted/30">
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Date</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Project</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Task Description</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Duration</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4">Status</TableHead>
-                          <TableHead scope="col" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-6 py-4 text-right">Actions</TableHead>
+                      <TableHeader className="sticky top-0 z-sticky bg-surface-sunken">
+                        <TableRow>
+                          <TableHead scope="col" className="px-4 sm:px-6">Date</TableHead>
+                          <TableHead scope="col" className="px-4 sm:px-6">Project</TableHead>
+                          <TableHead scope="col" className="px-4 sm:px-6">Task Description</TableHead>
+                          <TableHead scope="col" className="px-4 sm:px-6">Duration</TableHead>
+                          <TableHead scope="col" className="px-4 sm:px-6">Status</TableHead>
+                          <TableHead scope="col" className="px-4 sm:px-6 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -375,15 +364,22 @@ export default function TimesheetsPage() {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                              <div className="flex flex-col items-center gap-3">
-                                <EmptyTimeIllustration />
-                                <p>
-                                  {selectedProject !== "all" || dateRange !== "this-quarter"
-                                    ? "No work logs found matching your filters."
-                                    : "No work logs found. Add your first log!"}
-                                </p>
-                              </div>
+                            <TableCell colSpan={6} className="p-0">
+                              {selectedProject !== "all" || dateRange !== "this-quarter" ? (
+                                <EmptyState
+                                  compact
+                                  illustration={<EmptyTimeIllustration />}
+                                  title="No results for these filters"
+                                  description="No work logs found matching your filters."
+                                />
+                              ) : (
+                                <EmptyState
+                                  compact
+                                  illustration={<EmptyTimeIllustration />}
+                                  title="No work logs yet"
+                                  description="No work logs found. Add your first log!"
+                                />
+                              )}
                             </TableCell>
                           </TableRow>
                         )}
@@ -393,16 +389,15 @@ export default function TimesheetsPage() {
                   </ScrollArea>
 
                   {entries && entries.length > 0 && (
-                    <div className="px-6 py-4 bg-muted/20 border-t flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 sm:px-6">
+                      <span className="text-sm tabular-nums text-muted-foreground">
                         Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, entries.length)}–{Math.min(page * ITEMS_PER_PAGE, entries.length)} of {entries.length} entries
                       </span>
                       {totalPages > 1 && (
                         <div className="flex items-center gap-1.5">
                           <Button
                             variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
+                            size="icon-sm"
                             disabled={page <= 1}
                             onClick={handlePrevPage}
                             aria-label="Previous page"
@@ -414,10 +409,8 @@ export default function TimesheetsPage() {
                               key={num}
                               data-page={num}
                               variant={num === page ? "default" : "outline"}
-                              size="icon"
-                              className={`h-8 w-8 text-sm font-bold ${
-                                num === page ? "bg-gold hover:bg-gold/90 text-white border-gold" : ""
-                              }`}
+                              size="icon-sm"
+                              className="tabular-nums"
                               onClick={handlePageNumber}
                               {...(num === page ? { "aria-current": "page" as const } : {})}
                             >
@@ -426,8 +419,7 @@ export default function TimesheetsPage() {
                           ))}
                           <Button
                             variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
+                            size="icon-sm"
                             disabled={page >= totalPages}
                             onClick={handleNextPage}
                             aria-label="Next page"

@@ -4,22 +4,30 @@ import * as React from "react"
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 
 import { cn } from "@/lib/utils"
+import { toneBar, type Tone } from "@/lib/design/tones"
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { valueLabel?: string }
->(({ className, value, valueLabel, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+    valueLabel?: string
+    /** Indicator color; defaults to the primary gold. */
+    tone?: Tone
+  }
+>(({ className, value, valueLabel, tone, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     aria-valuetext={valueLabel ?? `${value || 0}%`}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      "relative h-1.5 w-full overflow-hidden rounded-full bg-muted",
       className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
+      className={cn(
+        "h-full w-full flex-1 rounded-full transition-transform duration-260 ease-out",
+        tone ? toneBar[tone] : "bg-primary"
+      )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>

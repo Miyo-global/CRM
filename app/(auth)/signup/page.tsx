@@ -16,16 +16,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { getPasswordStrength } from "@/lib/password-utils";
+import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-function Loader2({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
 
 function Eye({ className }: { className?: string }) {
   return (
@@ -98,6 +93,8 @@ export default function SignupPage() {
     defaultValues: { firstName: "", lastName: "", email: "", password: "", companyName: "", phone: "" },
   });
 
+  const password = form.watch("password");
+
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
@@ -130,10 +127,10 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="w-full max-w-lg space-y-6">
+    <div className="w-full max-w-[400px] space-y-8 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Create your account</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           {step === 1 ? "Choose a plan that fits your team" : "Enter your details to get started"}
         </p>
       </div>
@@ -143,19 +140,19 @@ export default function SignupPage() {
           <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan} className="grid gap-3">
             {PLANS.map((plan) => (
               <Label key={plan.id} htmlFor={plan.id} className="cursor-pointer">
-                <Card className={`transition-all ${selectedPlan === plan.id ? "ring-2 ring-gold border-gold" : "hover:border-gold/50"}`}>
+                <Card className={cn("transition-colors", selectedPlan === plan.id ? "border-primary ring-1 ring-primary" : "hover:border-border-strong")}>
                   <CardContent className="flex items-start gap-4 p-4">
                     <RadioGroupItem value={plan.id} id={plan.id} className="mt-1" />
                     <div className="flex-1">
                       <div className="flex items-baseline gap-2">
                         <span className="font-semibold">{plan.name}</span>
-                        <span className="text-lg font-bold text-gold">INR {plan.price}</span>
+                        <span className="font-display text-lg font-bold tabular-nums text-brand-text">INR {plan.price}</span>
                         <span className="text-xs text-muted-foreground">/month</span>
                       </div>
                       <ul className="mt-2 space-y-1">
                         {plan.features.map((f) => (
                           <li key={f} className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Check className="h-3 w-3 text-green-500" /> {f}
+                            <Check className="size-3 text-success-strong" /> {f}
                           </li>
                         ))}
                       </ul>
@@ -166,50 +163,50 @@ export default function SignupPage() {
             ))}
           </RadioGroup>
 
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-xs text-subtle-foreground">
             All plans include a 14-day free trial. No credit card required.
           </p>
 
-          <Button onClick={() => setStep(2)} className="w-full">
-            Continue <ArrowRight className="ml-2 h-4 w-4" />
+          <Button onClick={() => setStep(2)} size="lg" className="w-full">
+            Continue <ArrowRight className="size-4" />
           </Button>
         </div>
       ) : (
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>First Name</Label>
-              <Input {...form.register("firstName")} placeholder="John" />
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input id="firstName" {...form.register("firstName")} aria-invalid={!!form.formState.errors.firstName} placeholder="John" />
               {form.formState.errors.firstName && (
-                <p className="text-xs text-destructive mt-1">{form.formState.errors.firstName.message}</p>
+                <p className="text-xs text-destructive">{form.formState.errors.firstName.message}</p>
               )}
             </div>
-            <div>
-              <Label>Last Name</Label>
-              <Input {...form.register("lastName")} placeholder="Doe" />
+            <div className="space-y-1.5">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input id="lastName" {...form.register("lastName")} aria-invalid={!!form.formState.errors.lastName} placeholder="Doe" />
               {form.formState.errors.lastName && (
-                <p className="text-xs text-destructive mt-1">{form.formState.errors.lastName.message}</p>
+                <p className="text-xs text-destructive">{form.formState.errors.lastName.message}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <Label>Company Name</Label>
-            <Input {...form.register("companyName")} placeholder="Acme Corp" />
+          <div className="space-y-1.5">
+            <Label htmlFor="companyName">Company Name</Label>
+            <Input id="companyName" {...form.register("companyName")} aria-invalid={!!form.formState.errors.companyName} placeholder="Acme Corp" />
             {form.formState.errors.companyName && (
-              <p className="text-xs text-destructive mt-1">{form.formState.errors.companyName.message}</p>
+              <p className="text-xs text-destructive">{form.formState.errors.companyName.message}</p>
             )}
           </div>
 
-          <div>
-            <Label>Work Email</Label>
-            <Input {...form.register("email")} type="email" placeholder="john@company.com" />
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Work Email</Label>
+            <Input id="email" {...form.register("email")} aria-invalid={!!form.formState.errors.email} type="email" placeholder="john@company.com" />
             {form.formState.errors.email && (
-              <p className="text-xs text-destructive mt-1">{form.formState.errors.email.message}</p>
+              <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
             )}
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label>Phone (optional)</Label>
             <Controller
               name="phone"
@@ -222,51 +219,52 @@ export default function SignupPage() {
               )}
             />
             {form.formState.errors.phone && (
-              <p className="text-xs text-destructive mt-1">{form.formState.errors.phone.message}</p>
+              <p className="text-xs text-destructive">{form.formState.errors.phone.message}</p>
             )}
           </div>
 
-          <div>
-            <Label>Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
-                {...form.register("password")}
+                id="password" {...form.register("password")} aria-invalid={!!form.formState.errors.password}
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a strong password"
+                className="pr-9 hide-native-password-reveal"
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3"
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground transition-colors hover:text-foreground"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
             </div>
+            {password && <PasswordStrengthIndicator strength={getPasswordStrength(password)} />}
             {form.formState.errors.password && (
-              <p className="text-xs text-destructive mt-1">{form.formState.errors.password.message}</p>
+              <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
             )}
-            <p className="text-[10px] text-muted-foreground mt-1">
+            <p className="text-xs text-subtle-foreground">
               8+ chars, uppercase, lowercase, number, special character
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">
+          <div className="mt-2 flex gap-2">
+            <Button type="button" variant="outline" size="lg" onClick={() => setStep(1)} className="flex-1">
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            <Button type="submit" size="lg" loading={isSubmitting} className="flex-1">
               {isSubmitting ? "Creating..." : "Start Free Trial"}
             </Button>
           </div>
         </form>
       )}
 
-      <p className="text-sm text-center text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/signin" className="text-gold hover:underline font-medium">
+        <Link href="/signin" className="text-brand-text hover:underline font-medium">
           Sign in
         </Link>
       </p>

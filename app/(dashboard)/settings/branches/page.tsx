@@ -2,9 +2,10 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -25,7 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EmptyTeamIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Plus, MapPin, Phone, Mail, Pencil, Trash2, Check, ChevronsUpDown, ArrowLeft } from "lucide-react";
+import { Plus, MapPin, Phone, Mail, Pencil, Trash2, Check, ChevronsUpDown, ArrowLeft, Building2 } from "lucide-react";
 import { useBranches, useCreateBranch, useUpdateBranch, useDeleteBranch } from "@/lib/api/hooks/branches";
 import { getStatesForCountry, hasStatesForCountry } from "@/lib/data/country-states";
 import { getIndianCitiesForState } from "@/lib/data/india-locations";
@@ -476,9 +477,9 @@ function BranchManagementContent() {
 
     return (
       <div className="px-4 py-4 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Branch Name *</Label>
+            <Label className="text-sm">Branch Name *</Label>
             <Input
               value={data.name}
               onChange={setter("name")}
@@ -488,10 +489,10 @@ function BranchManagementContent() {
               placeholder="e.g., Mumbai Office"
               maxLength={100}
             />
-            {errors.name && <p className="text-[11px] text-destructive">{errors.name}</p>}
+            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Branch Code *</Label>
+            <Label className="text-sm">Branch Code *</Label>
             <Input
               value={data.code}
               onChange={setter("code")}
@@ -501,12 +502,12 @@ function BranchManagementContent() {
               placeholder="e.g., MUM-01"
               maxLength={20}
             />
-            {errors.code && <p className="text-[11px] text-destructive">{errors.code}</p>}
+            {errors.code && <p className="text-xs text-destructive">{errors.code}</p>}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">Country</Label>
+          <Label className="text-sm">Country</Label>
           <SearchableSelect
             options={COUNTRIES.map((c) => ({ value: c, label: c }))}
             value={data.country}
@@ -517,9 +518,9 @@ function BranchManagementContent() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">State / Region</Label>
+            <Label className="text-sm">State / Region</Label>
             <StateCombobox
               key={data.country}
               country={data.country}
@@ -527,10 +528,10 @@ function BranchManagementContent() {
               onValueChange={(v) => selectSetter("state", v)}
               invalid={!!errors.state}
             />
-            {errors.state && <p className="text-[11px] text-destructive">{errors.state}</p>}
+            {errors.state && <p className="text-xs text-destructive">{errors.state}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">City</Label>
+            <Label className="text-sm">City</Label>
             {isIndia ? (
               <SearchableCombobox
                 options={indianCityOptions}
@@ -555,12 +556,12 @@ function BranchManagementContent() {
                 maxLength={100}
               />
             )}
-            {errors.city && <p className="text-[11px] text-destructive">{errors.city}</p>}
+            {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">Pin / ZIP Code</Label>
+          <Label className="text-sm">Pin / ZIP Code</Label>
           <Input
             value={data.pincode}
             onChange={setter("pincode")}
@@ -570,11 +571,11 @@ function BranchManagementContent() {
             placeholder={isIndia ? "e.g., 400001" : "e.g., 10001"}
             maxLength={12}
           />
-          {errors.pincode && <p className="text-[11px] text-destructive">{errors.pincode}</p>}
+          {errors.pincode && <p className="text-xs text-destructive">{errors.pincode}</p>}
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">Address</Label>
+          <Label className="text-sm">Address</Label>
           <Input
             value={data.address}
             onChange={(e) => onAddressChange(e.target.value)}
@@ -585,22 +586,22 @@ function BranchManagementContent() {
             maxLength={BRANCH_ADDRESS_MAX}
           />
           {errors.address ? (
-            <p className="text-[11px] text-destructive">{errors.address}</p>
+            <p className="text-xs text-destructive">{errors.address}</p>
           ) : (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Up to {BRANCH_ADDRESS_MAX} characters. {NAME_ALLOWED_HINT}.
             </p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Phone</Label>
+            <Label className="text-sm">Phone</Label>
             <PhoneInput value={data.phone} onChange={(v) => onPhoneChange(v ?? "")} />
-            {errors.phone && <p className="text-[11px] text-destructive">{errors.phone}</p>}
+            {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Email</Label>
+            <Label className="text-sm">Email</Label>
             <Input
               value={data.email}
               onChange={setter("email")}
@@ -610,7 +611,7 @@ function BranchManagementContent() {
               placeholder="branch@company.com"
               type="email"
             />
-            {errors.email && <p className="text-[11px] text-destructive">{errors.email}</p>}
+            {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
           </div>
         </div>
       </div>
@@ -626,12 +627,12 @@ function BranchManagementContent() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard/branches">
-              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+              <ArrowLeft aria-hidden />
               Back
             </Link>
           </Button>
-          <Button onClick={handleOpenCreate} className="bg-gold hover:bg-gold/80 text-white">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={handleOpenCreate}>
+            <Plus aria-hidden />
             Add Branch
           </Button>
         </div>
@@ -639,119 +640,132 @@ function BranchManagementContent() {
     >
       <div className="space-y-6">
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-48" />)}
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-14" />)}
         </div>
       ) : branches.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyTeamIllustration className="size-32" />}
           title="No branches yet"
           description="Create a branch to set up your multi-branch hierarchy."
           action={{ label: "Add Branch", onClick: handleOpenCreate }}
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {branches.map((branch) => (
-            <Card key={branch.id} className="hover:border-gold/30 transition-colors">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base">{branch.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{branch.code}</p>
+        <Table className="min-w-200">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Branch</TableHead>
+              <TableHead>Location &amp; contact</TableHead>
+              <TableHead>Branch Manager</TableHead>
+              <TableHead>Branch HR</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {branches.map((branch) => (
+              <TableRow key={branch.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <IconChip icon={Building2} tone="neutral" size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{branch.name}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{branch.code}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Badge variant="outline" className={cn("text-[10px]",
-                      branch.status === "ACTIVE" ? "text-emerald-400 bg-emerald-500/10" : "text-muted-foreground"
-                    )}>
-                      {branch.status}
-                    </Badge>
+                </TableCell>
+                <TableCell className="max-w-64 whitespace-normal">
+                  <div className="space-y-0.5 text-xs text-muted-foreground">
+                    {(branch.city || branch.state) && (
+                      <p className="flex items-center gap-1.5">
+                        <MapPin className="size-3 shrink-0" aria-hidden />
+                        <span>
+                          {[branch.city, branch.state, branch.country].filter(Boolean).join(", ")}
+                          {branch.pincode && <span className="font-mono tabular-nums"> — {branch.pincode}</span>}
+                        </span>
+                      </p>
+                    )}
+                    {branch.address && <p className="line-clamp-2" title={branch.address}>{branch.address}</p>}
+                    {branch.phone && (
+                      <p className="flex items-center gap-1.5 tabular-nums">
+                        <Phone className="size-3 shrink-0" aria-hidden /> {branch.phone}
+                      </p>
+                    )}
+                    {branch.email && (
+                      <p className="flex items-center gap-1.5">
+                        <Mail className="size-3 shrink-0" aria-hidden /> <span className="truncate">{branch.email}</span>
+                      </p>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {branch.branchManager ? (
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="size-6">
+                        <AvatarFallback className="text-3xs">{branch.branchManager.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{branch.branchManager.name}</span>
+                    </div>
+                  ) : <span className="text-xs text-subtle-foreground">Not assigned</span>}
+                </TableCell>
+                <TableCell>
+                  {branch.branchHr ? (
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="size-6">
+                        <AvatarFallback className="text-3xs">{branch.branchHr.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{branch.branchHr.name}</span>
+                    </div>
+                  ) : <span className="text-xs text-subtle-foreground">Not assigned</span>}
+                </TableCell>
+                <TableCell>
+                  <StatusPill tone={branch.status === "ACTIVE" ? "success" : "neutral"} dot>
+                    {branch.status}
+                  </StatusPill>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-sm"
                       onClick={() => setEditingBranch(branch)}
+                      aria-label={`Edit ${branch.name}`}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil aria-hidden />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:bg-danger-soft hover:text-destructive"
                       onClick={() => setDeletingBranch(branch)}
+                      aria-label={`Delete ${branch.name}`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 aria-hidden />
                     </Button>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 pb-4">
-                {(branch.city || branch.state) && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    {[branch.city, branch.state, branch.country].filter(Boolean).join(", ")}
-                    {branch.pincode && <span className="font-mono">— {branch.pincode}</span>}
-                  </p>
-                )}
-                {branch.address && (
-                  <p className="text-xs text-muted-foreground">{branch.address}</p>
-                )}
-                {branch.phone && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 shrink-0" /> {branch.phone}
-                  </p>
-                )}
-                {branch.email && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Mail className="h-3 w-3 shrink-0" /> {branch.email}
-                  </p>
-                )}
-
-                <div className="pt-2 border-t space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Branch Manager</span>
-                    {branch.branchManager ? (
-                      <div className="flex items-center gap-1.5">
-                        <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[8px]">{branch.branchManager.name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs">{branch.branchManager.name}</span>
-                      </div>
-                    ) : <span className="text-xs text-muted-foreground">Not assigned</span>}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Branch HR</span>
-                    {branch.branchHr ? (
-                      <div className="flex items-center gap-1.5">
-                        <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[8px]">{branch.branchHr.name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs">{branch.branchHr.name}</span>
-                      </div>
-                    ) : <span className="text-xs text-muted-foreground">Not assigned</span>}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
       </div>
 
       <Sheet open={showCreate} onOpenChange={(open) => { if (!open) handleCloseCreate(); else setShowCreate(true); }}>
-        <SheetContent className="sm:max-w-md p-0 gap-0">
-          <SheetHeader className="px-4 py-3 border-b">
-            <SheetTitle className="text-sm">Create Branch</SheetTitle>
+        <SheetContent size="sm" className="p-0 gap-0">
+          <SheetHeader className="border-b border-border">
+            <SheetTitle>Create Branch</SheetTitle>
           </SheetHeader>
 
           <ScrollArea className="flex-1 min-h-0">
             {branchFormFields(formData, set, setSelectField, formErrors, setFormPhone, setFormAddress, setFormErrors)}
           </ScrollArea>
 
-          <div className="shrink-0 border-t px-4 py-3 bg-background">
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleCloseCreate}>Cancel</Button>
+          <div className="shrink-0 border-t border-border px-4 py-3 bg-background">
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={handleCloseCreate}>Cancel</Button>
               <Button
-                className="flex-1"
+                loading={createMutation.isPending}
                 disabled={!formData.name || !formData.code || createMutation.isPending}
                 onClick={handleCreate}
               >
@@ -763,20 +777,20 @@ function BranchManagementContent() {
       </Sheet>
 
       <Sheet open={!!editingBranch} onOpenChange={(open) => { if (!open) handleCloseEdit(); }}>
-        <SheetContent className="sm:max-w-md p-0 gap-0">
-          <SheetHeader className="px-4 py-3 border-b">
-            <SheetTitle className="text-sm">Edit Branch</SheetTitle>
+        <SheetContent size="sm" className="p-0 gap-0">
+          <SheetHeader className="border-b border-border">
+            <SheetTitle>Edit Branch</SheetTitle>
           </SheetHeader>
 
           <ScrollArea className="flex-1 min-h-0">
             {branchFormFields(editFormData, setEdit, setEditSelectField, editFormErrors, setEditFormPhone, setEditFormAddress, setEditFormErrors)}
           </ScrollArea>
 
-          <div className="shrink-0 border-t px-4 py-3 bg-background">
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleCloseEdit}>Cancel</Button>
+          <div className="shrink-0 border-t border-border px-4 py-3 bg-background">
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={handleCloseEdit}>Cancel</Button>
               <Button
-                className="flex-1"
+                loading={updateMutation.isPending}
                 disabled={!editFormData.name || !editFormData.code || updateMutation.isPending}
                 onClick={handleUpdate}
               >

@@ -14,12 +14,14 @@ export const LEVEL_NAMES: Record<number, string> = {
   5: "Expert",
 };
 
+// Ordinal skill level as a gold heat scale 50→700 (§8.8, 5 buckets). Each step
+// pairs a fixed fill with a fixed ink/gold text so it reads in both themes.
 export const LEVEL_COLORS: Record<number, string> = {
-  1: "bg-muted text-muted-foreground border border-border/60",
-  2: "bg-gold/10 text-gold border border-gold/20",
-  3: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
-  4: "bg-gold/20 text-gold border border-gold/30",
-  5: "bg-gold/30 text-gold font-semibold border border-gold/40 ring-1 ring-gold/20",
+  1: "bg-gold-50 text-ink-900",
+  2: "bg-gold-100 text-ink-900",
+  3: "bg-gold-300 text-ink-900",
+  4: "bg-gold-500 text-ink-950",
+  5: "bg-gold-700 text-gold-50",
 };
 
 export type SortOption = "relevance" | "name" | "experience" | "level";

@@ -55,13 +55,13 @@ export function AdminExpenseFilters({
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
             statusFilter === item.key
               ? "bg-foreground text-background border-foreground"
-              : "bg-white dark:bg-background text-muted-foreground border-border hover:border-foreground/20 hover:bg-muted/50"
+              : "bg-card text-muted-foreground border-border hover:border-foreground/20 hover:bg-muted/50"
           }`}
         >
           {item.label}
           {item.count !== null && (
             <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
-              statusFilter === item.key ? "bg-white/20 dark:bg-black/20" : "bg-muted"
+              statusFilter === item.key ? "bg-card" : "bg-muted"
             }`}>
               {item.count}
             </span>

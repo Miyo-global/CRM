@@ -5,27 +5,26 @@ import {
 } from "@/lib/constants/hr-separation";
 import type { TerminationStatus } from "@/lib/api/hooks/hr";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import type { Tone } from "@/lib/design/tones";
 
 export { getInitials } from "@/lib/format-utils";
 
-export function statusVariant(
-  status: TerminationStatus | null
-): "default" | "secondary" | "outline" | "destructive" {
+export function statusTone(status: TerminationStatus | null): Tone {
   switch (status) {
     case "DRAFT":
-      return "outline";
+      return "neutral";
     case "PENDING_CEO":
-      return "secondary";
+      return "warning";
     case "APPROVED":
-      return "default";
+      return "brand";
     case "REJECTED":
-      return "destructive";
+      return "danger";
     case "SENT":
-      return "secondary";
+      return "info";
     case "COMPLETED":
-      return "default";
+      return "success";
     default:
-      return "outline";
+      return "neutral";
   }
 }
 

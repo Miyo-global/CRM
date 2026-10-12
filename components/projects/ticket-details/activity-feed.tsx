@@ -25,7 +25,7 @@ import {
 import { isExpenseAdmin } from "@/lib/auth/role-guards";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import type { TicketComment, TicketUser, CommentImage } from "@/types/projects";
 import { cn } from "@/lib/utils";
 
@@ -169,11 +169,11 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
 
   return (
     <div className="space-y-4">
-      <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
         <MessageSquare className="h-3.5 w-3.5" />
         Activity
         {comments.length > 0 && (
-          <span className="text-muted-foreground/70">({comments.length})</span>
+          <span className="tabular-nums text-subtle-foreground">({comments.length})</span>
         )}
       </h4>
 
@@ -200,7 +200,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
                 ) : (
                   <div className="h-16 w-40 flex items-center gap-2 rounded border bg-background px-3">
                     <AttachmentIcon mimeType={att.mimeType} className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span className="text-[11px] truncate text-foreground/80">{att.fileName}</span>
+                    <span className="text-2xs truncate text-foreground/80">{att.fileName}</span>
                   </div>
                 )}
                 <button
@@ -241,7 +241,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
               )}
             </Button>
             {uploadingCount > 0 && (
-              <span className="text-[11px] text-muted-foreground">Uploading…</span>
+              <span className="text-2xs text-muted-foreground">Uploading…</span>
             )}
           </div>
           <Button
@@ -266,7 +266,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
       </div>
 
       {comments.length > 0 && (
-        <div className="space-y-3">
+        <ol className="relative space-y-5 before:absolute before:top-3.5 before:bottom-3.5 before:left-3.5 before:w-px before:-translate-x-1/2 before:bg-border">
           {comments
             .sort(
               (a, b) =>
@@ -283,7 +283,7 @@ export function ActivityFeed({ ticketId, projectId, comments }: ActivityFeedProp
                 canModerate={canModerate}
               />
             ))}
-        </div>
+        </ol>
       )}
 
       {comments.length === 0 && (
@@ -314,8 +314,9 @@ function CommentItem({
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const user = comment.user as TicketUser | undefined;
-  const timeAgo = comment.createdAt
-    ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })
+  const createdAt = comment.createdAt ? new Date(comment.createdAt) : null;
+  const timeAgo = createdAt
+    ? formatDistanceToNow(createdAt, { addSuffix: true })
     : "";
 
   const commentAuthorId = String(
@@ -370,21 +371,27 @@ function CommentItem({
   const displayContent = comment.content.trim();
 
   return (
-    <>
-      <div className="flex gap-2.5 group">
-        <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+    <li className="relative flex gap-3 group">
+        <Avatar className="relative size-7 shrink-0 ring-4 ring-surface-raised">
           <AvatarImage src={resolveImageUrl(user?.image)} />
-          <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-            {user?.firstName?.[0]}
-            {user?.lastName?.[0]}
+          <AvatarFallback className="bg-brand-soft text-brand-text">
+            <MessageSquare className="size-3.5" aria-hidden="true" />
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium">
+        <div className="flex-1 min-w-0 pt-1">
+          <div className="flex items-center gap-x-2 gap-y-0.5 flex-wrap">
+            <span className="text-sm font-semibold text-foreground">
               {user?.firstName} {user?.lastName}
             </span>
-            <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
+            {createdAt && (
+              <time
+                dateTime={createdAt.toISOString()}
+                title={format(createdAt, "PPpp")}
+                className="text-xs text-muted-foreground"
+              >
+                {timeAgo}
+              </time>
+            )}
             {showActions && !editing && (
               <span className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <Button
@@ -477,7 +484,7 @@ function CommentItem({
                         href={resolveAttachmentUrl(att)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded border bg-muted/40 hover:bg-muted/70 transition-colors px-3 py-2 text-[12px] text-foreground/80 max-w-[220px]"
+                        className="flex items-center gap-2 rounded border bg-muted/40 hover:bg-muted/70 transition-colors px-3 py-2 text-xs text-foreground/80 max-w-[220px]"
                         title={att.fileName}
                       >
                         <AttachmentIcon mimeType={att.mimeType} className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -490,16 +497,15 @@ function CommentItem({
             </div>
           )}
         </div>
-      </div>
 
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-popover flex items-center justify-center bg-overlay backdrop-blur-sm"
           onClick={() => setLightboxSrc(null)}
         >
           <button
             type="button"
-            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-card hover:bg-accent flex items-center justify-center text-foreground"
             onClick={() => setLightboxSrc(null)}
           >
             <X className="h-4 w-4" />
@@ -507,7 +513,7 @@ function CommentItem({
           <img
             src={lightboxSrc}
             alt="Preview"
-            className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl object-contain"
+            className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-lg object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -540,6 +546,6 @@ function CommentItem({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </li>
   );
 }

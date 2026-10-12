@@ -6,6 +6,7 @@ import { useSprintBurndown } from "@/lib/api/hooks/projects";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { TrendingDown } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
 
 interface BurndownChartProps {
   sprintId: number;
@@ -48,27 +49,28 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <TrendingDown className="h-5 w-5 text-primary" />
-          Burndown Chart
-          <span className="text-sm font-normal text-muted-foreground ml-auto">{totalPoints} total points</span>
-        </CardTitle>
+      <CardHeader className="space-y-3">
+        <div className="flex items-center gap-2">
+          <IconChip icon={TrendingDown} size="sm" />
+          <CardTitle className="text-base">Burndown Chart</CardTitle>
+          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{totalPoints} total points</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex h-6 items-center gap-1.5 rounded-full border border-border px-2.5 text-xs text-muted-foreground">
+            <svg width="14" height="2" aria-hidden="true">
+              <line x1="0" y1="1" x2="14" y2="1" stroke="var(--chart-axis)" strokeWidth="2" strokeDasharray="3 2" />
+            </svg>
+            Ideal ({totalPoints} pts)
+          </span>
+          <span className="inline-flex h-6 items-center gap-1.5 rounded-full border border-border px-2.5 text-xs text-muted-foreground">
+            <span aria-hidden="true" className="size-2 rounded-full bg-chart-1" />
+            Actual
+          </span>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="relative" style={{ height: `${chartHeight}px` }}>
-          <svg width="100%" height={chartHeight} className="overflow-visible">
-            <defs>
-              <linearGradient id="idealGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#3B82F6" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="actualGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#10B981" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-
+          <svg width="100%" height={chartHeight} className="overflow-visible" role="img" aria-label={`Burndown chart, ${totalPoints} total points`}>
             {yTicks.map((tick) => {
               const y = paddingTop + ((maxPoints - tick) / maxPoints) * plotHeight;
               return (
@@ -78,16 +80,15 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
                     y1={y}
                     x2="100%"
                     y2={y}
-                    stroke="currentColor"
-                    strokeOpacity={0.08}
-                    strokeDasharray="4 4"
+                    stroke="var(--chart-grid)"
+                    strokeDasharray="3 3"
                   />
                   <text
                     x={paddingLeft - 8}
                     y={y + 4}
                     textAnchor="end"
-                    className="fill-muted-foreground"
-                    fontSize="10"
+                    fill="var(--chart-axis)"
+                    fontSize="11"
                   >
                     {tick}
                   </text>
@@ -108,9 +109,9 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
                 <motion.line
                   key={`ideal-${index}`}
                   x1={x1} y1={y1} x2={x2} y2={y2}
-                  stroke="#3B82F6"
-                  strokeWidth="2"
-                  strokeDasharray="6 3"
+                  stroke="var(--chart-axis)"
+                  strokeWidth="1.5"
+                  strokeDasharray="6 4"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.01 }}
@@ -143,8 +144,8 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
                       y1={y}
                       x2={`${paddingLeft + (nextDateIndex / len) * (100 - paddingLeft - paddingRight)}%`}
                       y2={paddingTop + ((maxPoints - Number(nextPoint.points)) / maxPoints) * plotHeight}
-                      stroke="#10B981"
-                      strokeWidth="2.5"
+                      stroke="var(--chart-1)"
+                      strokeWidth="2"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.5, delay: index * 0.01 }}
@@ -154,8 +155,8 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
                     cx={`${paddingLeft + xPct}%`}
                     cy={y}
                     r="4"
-                    fill="#10B981"
-                    stroke="white"
+                    fill="var(--chart-1)"
+                    stroke="var(--card)"
                     strokeWidth="2"
                     className="cursor-pointer"
                     initial={{ scale: 0 }}
@@ -179,15 +180,15 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
 
           {hoveredPoint && (
             <div
-              className="fixed z-50 bg-popover border shadow-md rounded-md px-3 py-2 text-xs pointer-events-none"
+              className="pointer-events-none fixed z-popover rounded-md border border-border bg-popover px-3 py-2 text-xs shadow-md"
               style={{ left: hoveredPoint.x + 10, top: hoveredPoint.y - 40 }}
             >
-              <div className="font-medium">{hoveredPoint.date}</div>
-              <div className="text-muted-foreground">{hoveredPoint.points} pts remaining</div>
+              <div className="font-medium tabular-nums">{hoveredPoint.date}</div>
+              <div className="tabular-nums text-muted-foreground">{hoveredPoint.points} pts remaining</div>
             </div>
           )}
 
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-muted-foreground" style={{ paddingLeft: `${paddingLeft}px`, paddingRight: `${paddingRight}px` }}>
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-2xs tabular-nums text-muted-foreground" style={{ paddingLeft: `${paddingLeft}px`, paddingRight: `${paddingRight}px` }}>
             {idealBurndown.map((point, index) => {
               if (index % Math.ceil(idealBurndown.length / 6) !== 0 && index !== idealBurndown.length - 1) return null;
               return <span key={index}>{format(point.date, "MMM dd")}</span>;
@@ -195,16 +196,6 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-4 justify-center">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-blue-500 border-dashed border-t-2 border-blue-500" />
-            <span className="text-xs text-muted-foreground">Ideal ({totalPoints} pts)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full" />
-            <span className="text-xs text-muted-foreground">Actual</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

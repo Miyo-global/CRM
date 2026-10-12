@@ -123,29 +123,36 @@ export function InterviewFeedbackForm({ interview, open, onOpenChange }: Intervi
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Scoring Rubric</label>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">Avg: {avgScore}/10</Badge>
-            <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={handleAddCategory}>
-              <Plus className="h-3 w-3 mr-1" />Add
+            <Badge variant="secondary" className="tabular-nums">Avg: {avgScore}/10</Badge>
+            <Button type="button" variant="ghost" size="xs" onClick={handleAddCategory}>
+              <Plus className="size-3.5" aria-hidden="true" />Add
             </Button>
           </div>
         </div>
         <div className="space-y-3">
           {rubric.map((entry, index) => (
-            <div key={rubricKeys[index] ?? index} className="rounded-lg border p-3 space-y-2">
+            <div key={rubricKeys[index] ?? index} className="space-y-2 rounded-lg border border-border bg-surface-sunken p-3">
               <div className="flex items-center gap-2">
                 <Input
                   value={entry.category}
                   onChange={(e) => handleCategoryNameChange(index, e.target.value)}
                   placeholder="Category name"
-                  className="h-7 text-xs font-medium flex-1"
+                  className="h-7 min-w-0 flex-1 bg-background text-xs font-medium"
                 />
-                <div className="flex items-center gap-1 shrink-0">
-                  <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-                  <span className="text-sm font-bold w-6 text-center">{entry.score}</span>
-                  <span className="text-[10px] text-muted-foreground">/{entry.maxScore}</span>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Star className="size-3.5 fill-warning-500 text-warning-strong" aria-hidden="true" />
+                  <span className="w-6 text-center text-sm font-bold tabular-nums">{entry.score}</span>
+                  <span className="text-2xs text-muted-foreground">/{entry.maxScore}</span>
                 </div>
-                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleRemoveCategory(index)}>
-                  <X className="h-3 w-3" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => handleRemoveCategory(index)}
+                  aria-label="Remove category"
+                >
+                  <X className="size-3.5" aria-hidden="true" />
                 </Button>
               </div>
               <Slider
@@ -159,7 +166,7 @@ export function InterviewFeedbackForm({ interview, open, onOpenChange }: Intervi
                 value={entry.comment ?? ""}
                 onChange={(e) => handleRubricCommentChange(index, e.target.value)}
                 placeholder="Notes for this category..."
-                className="h-7 text-xs"
+                className="h-7 bg-background text-xs"
               />
             </div>
           ))}

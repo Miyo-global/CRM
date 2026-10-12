@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, ExternalLink, Download, Loader2 } from "lucide-react";
+import { FileText, ExternalLink, Download } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,13 +40,13 @@ export function ResumeCard({ resumeUrl, candidateName }: ResumeCardProps) {
   if (!resumeUrl) {
     return (
       <Card>
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm">Résumé</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-base">Résumé</CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
+        <CardContent>
           <EmptyState
             compact
-            icon={FileText}
+            illustration={<EmptyDocumentsIllustration className="size-24" />}
             title="No résumé uploaded"
             description="This candidate hasn't uploaded a résumé yet."
             className="border-0 bg-transparent"
@@ -70,39 +72,34 @@ export function ResumeCard({ resumeUrl, candidateName }: ResumeCardProps) {
 
   return (
     <Card>
-      <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-sm flex items-center gap-1.5 min-w-0">
-          <FileText className="h-3.5 w-3.5 shrink-0" />
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+          <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className="truncate">Résumé</span>
         </CardTitle>
         <div className="flex items-center gap-1.5 shrink-0">
-          <Button asChild size="sm" variant="outline" className="h-7 text-xs">
+          <Button asChild size="xs" variant="outline">
             <a href={openSrc} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3 w-3 mr-1" />
+              <ExternalLink aria-hidden="true" />
               Open
             </a>
           </Button>
           <Button
-            size="sm"
+            size="xs"
             variant="outline"
-            className="h-7 text-xs"
-            disabled={downloading}
+            loading={downloading}
             onClick={handleDownload}
           >
-            {downloading ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Download className="h-3 w-3 mr-1" />
-            )}
+            <Download aria-hidden="true" />
             Download
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent>
         {pdf ? (
           iframeError ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-muted/20 px-4 py-10 text-center">
-              <FileText className="h-8 w-8 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-surface-sunken/40 px-4 py-10 text-center">
+              <IconChip icon={FileText} tone="neutral" />
               <p className="text-sm text-muted-foreground">
                 Couldn&apos;t preview this résumé inline.
               </p>
@@ -116,7 +113,7 @@ export function ResumeCard({ resumeUrl, candidateName }: ResumeCardProps) {
             <iframe
               src={`${previewSrc}#toolbar=0&navpanes=0`}
               title={`${candidateName} résumé`}
-              className="w-full h-[640px] rounded-md border bg-muted/30"
+              className="h-160 w-full rounded-md border border-border bg-surface-sunken"
               onError={() => setIframeError(true)}
             />
           )
@@ -125,16 +122,16 @@ export function ResumeCard({ resumeUrl, candidateName }: ResumeCardProps) {
             href={openSrc}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-md border px-4 py-3 text-sm hover:bg-muted/40 transition-colors"
+            className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm outline-none transition-colors hover:bg-accent focus-visible:focus-ring"
           >
-            <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+            <IconChip icon={FileText} tone="info" />
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{name}</p>
               <p className="text-xs text-muted-foreground">
                 Preview isn&apos;t available for Word files — click to open.
               </p>
             </div>
-            <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+            <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </a>
         )}
       </CardContent>

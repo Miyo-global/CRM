@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { isPresentAttendanceStatus } from "@/lib/hr/attendance-summary";
@@ -103,7 +103,7 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
       <div className="flex flex-wrap items-center gap-3">
         {period === "month" && (
           <Select value={date.getMonth().toString()} onValueChange={handleMonthChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-44" aria-label="Month">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
             <SelectContent>
@@ -118,7 +118,7 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
 
         {period === "quarter" && (
           <Select value={quarter.toString()} onValueChange={handleQuarterChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-36" aria-label="Quarter">
               <SelectValue placeholder="Quarter" />
             </SelectTrigger>
             <SelectContent>
@@ -132,7 +132,7 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
         )}
 
         <Select value={date.getFullYear().toString()} onValueChange={handleYearChange}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-28" aria-label="Year">
             <SelectValue placeholder="Year" />
           </SelectTrigger>
           <SelectContent>
@@ -230,14 +230,14 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
             </div>
           ) : (
             <div className="max-h-[480px] overflow-auto">
-              <Table>
-                <TableHeader>
+              <Table className="tabular-nums">
+                <TableHeader className="sticky top-0 z-sticky bg-card">
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Check In</TableHead>
                     <TableHead>Check Out</TableHead>
-                    <TableHead>Work Hours</TableHead>
+                    <TableHead className="text-right">Work Hours</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -245,13 +245,9 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
                     <TableRow key={record.id}>
                       <TableCell>{format(new Date(record.date + "T12:00:00"), "MMM d, yyyy")}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            isPresentAttendanceStatus(record.status) ? "default" : "secondary"
-                          }
-                        >
+                        <StatusPill tone={isPresentAttendanceStatus(record.status) ? "success" : "neutral"} dot>
                           {record.status}
-                        </Badge>
+                        </StatusPill>
                       </TableCell>
                       <TableCell>
                         {record.checkIn ? format(new Date(record.checkIn), "hh:mm a") : "-"}
@@ -259,12 +255,12 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
                       <TableCell>
                         {record.checkOut ? format(new Date(record.checkOut), "hh:mm a") : "-"}
                       </TableCell>
-                      <TableCell className="font-bold">{record.workHours}h</TableCell>
+                      <TableCell className="text-right font-semibold">{record.workHours}h</TableCell>
                     </TableRow>
                   ))}
                   {!attendance?.length && (
                     <TableRow>
-                      <TableCell colSpan={5} className="py-4 text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                         {emptyMessage}
                       </TableCell>
                     </TableRow>

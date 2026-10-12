@@ -6,6 +6,7 @@ import { getEmployee } from "@/server/queries/hr";
 import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 type Params = { params: Promise<{ employeeId: string }> };
 
@@ -52,15 +53,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
   <title>Employee Profile — ${name}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #111; background: #fff; padding: 32px; }
-    h1 { font-size: 22px; font-weight: 700; color: #0f2b7f; margin-bottom: 4px; }
-    .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; }
-    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #bd882c; margin-bottom: 8px; margin-top: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+    body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: ${BRAND.ink}; background: ${BRAND.white}; padding: 32px; }
+    h1 { font-size: 22px; font-weight: 700; color: ${BRAND.ink}; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: ${BRAND.inkMuted}; margin-bottom: 24px; }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: ${BRAND.goldDark}; margin-bottom: 8px; margin-top: 20px; border-bottom: 1px solid ${BRAND.border}; padding-bottom: 4px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-bottom: 8px; }
-    .field-label { font-size: 11px; color: #888; margin-bottom: 2px; }
-    .field-value { font-size: 13px; color: #111; }
-    .badge { display: inline-block; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; font-size: 12px; color: #374151; margin-right: 4px; }
-    .bio { font-size: 13px; color: #444; line-height: 1.6; white-space: pre-wrap; }
+    .field-label { font-size: 11px; color: ${BRAND.inkSubtle}; margin-bottom: 2px; }
+    .field-value { font-size: 13px; color: ${BRAND.ink}; }
+    .badge { display: inline-block; background: ${BRAND.sunken}; border: 1px solid ${BRAND.border}; border-radius: 4px; padding: 2px 8px; font-size: 12px; color: ${BRAND.inkMuted}; margin-right: 4px; }
+    .bio { font-size: 13px; color: ${BRAND.inkMuted}; line-height: 1.6; white-space: pre-wrap; }
     @media print { body { padding: 0; } }
   </style>
 </head>
@@ -125,7 +126,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   <div class="section-title">Skills</div>
   <div>${skillsList}</div>
 
-  <div style="margin-top:32px;font-size:11px;color:#aaa;border-top:1px solid #e5e7eb;padding-top:12px;">
+  <div style="margin-top:32px;font-size:11px;color:${BRAND.inkSubtle};border-top:1px solid ${BRAND.border};padding-top:12px;">
     Generated on ${format(new Date(), "dd MMM yyyy HH:mm")} — Confidential HR Record
   </div>
 </body>

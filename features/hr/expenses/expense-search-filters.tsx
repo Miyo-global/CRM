@@ -149,12 +149,12 @@ export function ExpenseSearchFilters({
         </div>
       </div>
       {searchTooShort && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Type at least {SEARCH_MIN_LENGTH} characters to search.
         </p>
       )}
       {(minInvalid || maxInvalid || rangeInvalid) && (
-        <p className="text-[11px] text-destructive">
+        <p className="text-2xs text-destructive">
           {rangeInvalid
             ? "Minimum amount must be less than or equal to the maximum amount."
             : "Amount must be a positive number."}

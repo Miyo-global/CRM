@@ -3,9 +3,11 @@
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyProjectsIllustration } from "@/components/illustrations";
@@ -113,7 +115,7 @@ export default function JobRolesSettingsPage() {
     return (
       <PageWrapper title="Job Roles" subtitle="Manage the catalog of job titles for your organization">
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="Access restricted"
           description="Only Owners and Admins can manage job roles."
         />
@@ -127,19 +129,19 @@ export default function JobRolesSettingsPage() {
       subtitle="Maintain reusable job titles. Scope them to a department or make them available org-wide. These power the job title picker on employee forms."
       actions={
         <Button size="sm" onClick={handleAdd}>
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus aria-hidden />
           Add Job Role
         </Button>
       }
     >
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+          <Skeleton className="h-32 w-full rounded-lg" />
         </div>
       ) : roles.length === 0 ? (
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="No job roles yet"
           description="Add your first job title to start building a reusable catalog for onboarding and employee records."
           action={{ label: "Add Job Role", onClick: handleAdd }}
@@ -147,72 +149,73 @@ export default function JobRolesSettingsPage() {
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (
-            <Card key={group.key} className="rounded-xl border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-gold" />
-                  {group.label}
-                  <Badge variant="secondary" className="ml-1 font-normal">
-                    {group.roles.length}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  {group.departmentId == null
-                    ? "Available across every department."
-                    : `Shown when the ${group.label} department is selected.`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {group.roles.map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center gap-3 rounded-lg border px-3 py-2.5"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                      {r.title}
+            <Card key={group.key} className="overflow-hidden">
+              <div className="flex items-start gap-3 border-b border-border px-5 py-4">
+                <IconChip icon={Briefcase} tone="brand" size="sm" className="mt-0.5" />
+                <div className="min-w-0">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold">
+                    {group.label}
+                    <span className="inline-flex h-5 items-center rounded-full bg-neutral-soft px-2 text-2xs font-semibold tabular-nums text-neutral-strong">
+                      {group.roles.length}
                     </span>
-                    {r.isActive === false && (
-                      <Badge variant="outline" className="text-muted-foreground">
-                        Inactive
-                      </Badge>
-                    )}
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleToggleActive(r)}
-                        disabled={updateRole.isPending}
-                        aria-label={r.isActive === false ? "Activate role" : "Deactivate role"}
-                        title={r.isActive === false ? "Activate" : "Deactivate"}
-                      >
-                        <Power className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleEdit(r)}
-                        aria-label="Edit role"
-                        title="Edit"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => setPendingDelete(r)}
-                        disabled={deleteRole.isPending}
-                        aria-label="Delete role"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
+                  </h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {group.departmentId == null
+                      ? "Available across every department."
+                      : `Shown when the ${group.label} department is selected.`}
+                  </p>
+                </div>
+              </div>
+              <Table>
+                <TableBody>
+                  {group.roles.map((r) => (
+                    <TableRow key={r.id} className="group">
+                      <TableCell className="w-full max-w-0 truncate font-medium" title={r.title}>
+                        {r.title}
+                      </TableCell>
+                      <TableCell>
+                        <StatusPill tone={r.isActive === false ? "neutral" : "success"} dot>
+                          {r.isActive === false ? "Inactive" : "Active"}
+                        </StatusPill>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleToggleActive(r)}
+                            disabled={updateRole.isPending}
+                            aria-label={r.isActive === false ? "Activate role" : "Deactivate role"}
+                            title={r.isActive === false ? "Activate" : "Deactivate"}
+                          >
+                            <Power aria-hidden />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleEdit(r)}
+                            aria-label="Edit role"
+                            title="Edit"
+                          >
+                            <Pencil aria-hidden />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:bg-danger-soft hover:text-destructive"
+                            onClick={() => setPendingDelete(r)}
+                            disabled={deleteRole.isPending}
+                            aria-label="Delete role"
+                            title="Delete"
+                          >
+                            <Trash2 aria-hidden />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           ))}
         </div>

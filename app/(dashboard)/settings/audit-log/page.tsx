@@ -2,14 +2,17 @@
 
 import { useState, useCallback, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 import { EmptyState } from "@/components/ui/empty-state";
 import { format } from "date-fns";
 import { Shield, ChevronLeft, ChevronRight, Activity, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -20,7 +23,6 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -40,29 +42,29 @@ import {
   DEFAULT_PAGE_SIZE,
 } from "@/lib/pagination-constants";
 
-const ACTION_COLORS: Record<string, string> = {
-  "user.login": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "user.logout": "bg-slate-500/10 text-slate-600 border-slate-200",
-  "user.password_reset": "bg-amber-500/10 text-amber-700 border-amber-200",
-  "user.deactivated": "bg-red-500/10 text-red-600 border-red-200",
-  "org.member_invited": "bg-blue-500/10 text-blue-600 border-blue-200",
-  "org.member_removed": "bg-red-500/10 text-red-600 border-red-200",
-  "org.member_role_changed": "bg-purple-500/10 text-purple-600 border-purple-200",
-  "expense.approved": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "expense.rejected": "bg-red-500/10 text-red-600 border-red-200",
-  "hr.leave_approved": "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-  "hr.leave_rejected": "bg-red-500/10 text-red-600 border-red-200",
-  "hr.payroll_generated": "bg-blue-500/10 text-blue-600 border-blue-200",
-  "hr.payroll_deleted": "bg-red-500/10 text-red-600 border-red-200",
-  "settings.updated": "bg-amber-500/10 text-amber-700 border-amber-200",
-  "file.upload": "bg-sky-500/10 text-sky-600 border-sky-200",
+const ACTION_TONES: Record<string, Tone> = {
+  "user.login": "success",
+  "user.logout": "neutral",
+  "user.password_reset": "warning",
+  "user.deactivated": "danger",
+  "org.member_invited": "info",
+  "org.member_removed": "danger",
+  "org.member_role_changed": "plum",
+  "expense.approved": "success",
+  "expense.rejected": "danger",
+  "hr.leave_approved": "success",
+  "hr.leave_rejected": "danger",
+  "hr.payroll_generated": "info",
+  "hr.payroll_deleted": "danger",
+  "settings.updated": "warning",
+  "file.upload": "info",
 };
 
-function actionBadgeClass(action: string) {
-  for (const [key, cls] of Object.entries(ACTION_COLORS)) {
-    if (action.startsWith(key)) return cls;
+function actionTone(action: string): Tone {
+  for (const [key, tone] of Object.entries(ACTION_TONES)) {
+    if (action.startsWith(key)) return tone;
   }
-  return "bg-muted text-muted-foreground border-border";
+  return "neutral";
 }
 
 interface LogTableRowProps {
@@ -73,38 +75,43 @@ interface LogTableRowProps {
 function LogTableRow({ log, onSelect }: LogTableRowProps) {
   const handleClick = useCallback(() => onSelect(log), [log, onSelect]);
   return (
-    <TableRow className="cursor-pointer" onClick={handleClick}>
-      <TableCell className="text-[12px] text-muted-foreground font-mono whitespace-nowrap">
+    <TableRow
+      className="cursor-pointer focus-visible:bg-accent focus-visible:outline-none"
+      onClick={handleClick}
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter") handleClick(); }}
+    >
+      <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap" title={format(new Date(log.createdAt), "PPpp")}>
         {format(new Date(log.createdAt), "dd MMM, HH:mm:ss")}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2 min-w-[140px]">
-          <Avatar className="h-6 w-6 shrink-0">
+        <div className="flex items-center gap-2 min-w-36">
+          <Avatar className="size-6 shrink-0">
             <AvatarImage src={resolveImageUrl(log.userImage)} />
-            <AvatarFallback className="text-[9px]">{getInitials(log.userName)}</AvatarFallback>
+            <AvatarFallback className="text-3xs">{getInitials(log.userName)}</AvatarFallback>
           </Avatar>
-          <span className="text-[13px] font-medium truncate max-w-[120px]">
+          <span className="text-sm font-medium truncate max-w-32" title={log.userName ?? log.userEmail ?? log.userId}>
             {log.userName ?? log.userEmail ?? log.userId}
           </span>
         </div>
       </TableCell>
       <TableCell className="whitespace-nowrap">
-        <Badge variant="outline" className={`text-[11px] ${actionBadgeClass(log.action)}`}>
+        <StatusPill tone={actionTone(log.action)} className="font-mono">
           {log.action}
-        </Badge>
+        </StatusPill>
       </TableCell>
-      <TableCell className="text-[12px] text-muted-foreground capitalize whitespace-nowrap">
+      <TableCell className="text-xs text-muted-foreground capitalize whitespace-nowrap">
         {log.targetType ?? ""}
         {log.targetId && (
-          <span className="text-[11px] opacity-60"> #{log.targetId}</span>
+          <span className="text-2xs text-subtle-foreground tabular-nums"> #{log.targetId}</span>
         )}
       </TableCell>
-      <TableCell className="text-[12px] font-mono text-muted-foreground whitespace-nowrap">
+      <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
         {log.ipAddress ?? ""}
       </TableCell>
       <TableCell>
-        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="View details">
-          <Info className="h-3.5 w-3.5 text-muted-foreground" />
+        <Button variant="ghost" size="icon-xs" className="text-muted-foreground" aria-label="View details" tabIndex={-1}>
+          <Info aria-hidden />
         </Button>
       </TableCell>
     </TableRow>
@@ -114,7 +121,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
 function DetailField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
       {children}
     </div>
   );
@@ -123,24 +130,24 @@ function DetailField({ label, children }: { label: string; children: React.React
 function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => void }) {
   return (
     <Sheet open onOpenChange={(v) => !v && onClose()}>
-      <SheetContent className="flex flex-col p-0 w-[380px] sm:max-w-[380px]">
-        <SheetHeader className="px-4 py-3 border-b shrink-0">
-          <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
-            <Activity className="h-4 w-4 text-muted-foreground" />
+      <SheetContent size="sm" className="flex flex-col gap-0 p-0 w-full">
+        <SheetHeader className="border-b border-border shrink-0">
+          <SheetTitle className="flex items-center gap-2">
+            <IconChip icon={Activity} tone="neutral" size="sm" />
             Event Details
           </SheetTitle>
         </SheetHeader>
         <div className="flex-1 min-h-0 px-4 py-3 space-y-4 overflow-hidden">
           <DetailField label="Action">
-            <Badge variant="outline" className={`text-xs ${actionBadgeClass(log.action)}`}>
+            <StatusPill tone={actionTone(log.action)} className="font-mono">
               {log.action}
-            </Badge>
+            </StatusPill>
           </DetailField>
           <DetailField label="User">
             <div className="flex items-center gap-2.5">
-              <Avatar className="h-7 w-7">
+              <Avatar className="size-7">
                 <AvatarImage src={resolveImageUrl(log.userImage)} />
-                <AvatarFallback className="text-[10px]">{getInitials(log.userName)}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{getInitials(log.userName)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="text-sm font-medium leading-tight truncate">{log.userName ?? "Unknown"}</p>
@@ -157,7 +164,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
             </DetailField>
           )}
           <DetailField label="Timestamp">
-            <p className="text-sm">{format(new Date(log.createdAt), "PPpp")}</p>
+            <p className="text-sm tabular-nums">{format(new Date(log.createdAt), "PPpp")}</p>
           </DetailField>
           {log.ipAddress && (
             <DetailField label="IP Address">
@@ -166,7 +173,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
           )}
           {log.metadata && Object.keys(log.metadata).length > 0 && (
             <DetailField label="Metadata">
-              <pre className="text-[11px] bg-muted/60 rounded-md p-3 border text-foreground overflow-y-auto overflow-x-hidden whitespace-pre-wrap wrap-break-word max-h-none h-[calc(100vh-360px)] min-h-[120px]">
+              <pre className="font-mono text-2xs bg-surface-sunken rounded-md p-3 border border-border text-foreground overflow-y-auto overflow-x-hidden whitespace-pre-wrap wrap-break-word max-h-none h-[calc(100vh-360px)] min-h-30">
                 {JSON.stringify(log.metadata, null, 2)}
               </pre>
             </DetailField>
@@ -213,7 +220,7 @@ function AuditLogContent() {
     [searchParams, router, pathname],
   );
 
-  const { data, isLoading } = useAuditLogs({
+  const { data, isLoading, isError, error, refetch } = useAuditLogs({
     page,
     pageSize,
     action: actionFilter !== "all" ? actionFilter : undefined,
@@ -274,8 +281,8 @@ function AuditLogContent() {
 
   const filtersBar = (
     <div className="flex flex-wrap gap-2 items-end">
-      <div className="flex flex-col gap-1 min-w-[160px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">Action</p>
+      <div className="flex flex-col gap-1 min-w-40 flex-1">
+        <p className="text-2xs font-medium text-muted-foreground">Action</p>
         <Select value={actionFilter} onValueChange={handleActionFilter}>
           <SelectTrigger className="h-8 text-sm w-full">
             <SelectValue placeholder="All actions" />
@@ -288,8 +295,8 @@ function AuditLogContent() {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-col gap-1 min-w-[130px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">Entity Type</p>
+      <div className="flex flex-col gap-1 min-w-32 flex-1">
+        <p className="text-2xs font-medium text-muted-foreground">Entity Type</p>
         <Select value={targetTypeFilter} onValueChange={handleTargetTypeFilter}>
           <SelectTrigger className="h-8 text-sm w-full">
             <SelectValue placeholder="All types" />
@@ -302,16 +309,16 @@ function AuditLogContent() {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-col gap-1 min-w-[140px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">From</p>
+      <div className="flex flex-col gap-1 min-w-36 flex-1">
+        <p className="text-2xs font-medium text-muted-foreground">From</p>
         <DatePicker value={dateFrom} onChange={handleDateFrom} placeholder="From date" className="w-full" />
       </div>
-      <div className="flex flex-col gap-1 min-w-[140px] flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">To</p>
+      <div className="flex flex-col gap-1 min-w-36 flex-1">
+        <p className="text-2xs font-medium text-muted-foreground">To</p>
         <DatePicker value={dateTo} onChange={handleDateTo} placeholder="To date" className="w-full" />
       </div>
       {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={resetFilters} className="h-8 text-sm self-end">
+        <Button variant="ghost" size="sm" onClick={resetFilters} className="self-end">
           Clear
         </Button>
       )}
@@ -325,8 +332,8 @@ function AuditLogContent() {
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground font-medium">
+          <Shield className="size-4 text-muted-foreground" aria-hidden />
+          <span className="text-sm text-muted-foreground font-medium tabular-nums">
             {total.toLocaleString()} events
           </span>
         </div>
@@ -342,50 +349,56 @@ function AuditLogContent() {
                   <Skeleton key={i} className="h-11 w-full" />
                 ))}
               </div>
+            ) : isError ? (
+              <div className="p-4">
+                <QueryErrorState error={error} onRetry={() => void refetch()} />
+              </div>
             ) : logs.length === 0 ? (
-              <EmptyState
-                illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
-                title="No audit events found"
-                description="Activity across your workspace will appear here as it happens."
-                action={hasActiveFilters ? { label: "Clear filters", onClick: resetFilters } : undefined}
-              />
+              <div className="p-4">
+                {hasActiveFilters ? (
+                  <EmptyState
+                    illustration={<EmptySearchIllustration className="size-32" />}
+                    title="No results for these filters"
+                    description="Try a different action, entity type or date range."
+                    action={{ label: "Clear filters", onClick: resetFilters }}
+                  />
+                ) : (
+                  <EmptyState
+                    illustration={<EmptyDocumentsIllustration className="size-32" />}
+                    title="No audit events found"
+                    description="Activity across your workspace will appear here as it happens."
+                  />
+                )}
+              </div>
             ) : (
-              <div className="flex flex-col flex-1 min-h-0">
-                <div className="min-w-[700px] border-b border-border/60 bg-card">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-[170px] bg-card">Timestamp</TableHead>
-                        <TableHead className="w-[190px] bg-card">User</TableHead>
-                        <TableHead className="bg-card">Action</TableHead>
-                        <TableHead className="w-[110px] bg-card">Entity</TableHead>
-                        <TableHead className="w-[110px] bg-card">IP Address</TableHead>
-                        <TableHead className="w-[50px] bg-card" />
-                      </TableRow>
-                    </TableHeader>
-                  </Table>
-                </div>
-                <ScrollArea className="w-full flex-1 min-h-0" type="auto">
-                  <div className="min-w-[700px]">
-                    <Table>
-                      <TableBody>
-                        {logs.map((log) => (
-                          <LogTableRow key={log.id} log={log} onSelect={setSelectedLog} />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </ScrollArea>
+              <div className="flex-1 min-h-0">
+                <Table className="min-w-175">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-44">Timestamp</TableHead>
+                      <TableHead className="w-48">User</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead className="w-28">Entity</TableHead>
+                      <TableHead className="w-28">IP Address</TableHead>
+                      <TableHead className="w-12"><span className="sr-only">Details</span></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => (
+                      <LogTableRow key={log.id} log={log} onSelect={setSelectedLog} />
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
 
             {total > 0 && (
-              <div className="shrink-0 border-t border-border/60 bg-card">
+              <div className="shrink-0 border-t border-border bg-card">
                 <div className="p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[12px]">Rows per page</span>
+                    <span className="text-xs">Rows per page</span>
                     <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                      <SelectTrigger className="h-7 w-[64px] text-xs">
+                      <SelectTrigger className="h-7 w-16 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -394,7 +407,7 @@ function AuditLogContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <span className="text-[12px] tabular-nums">
+                    <span className="text-xs tabular-nums">
                       {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, total)} of {total.toLocaleString()}
                     </span>
                   </div>
@@ -403,47 +416,43 @@ function AuditLogContent() {
                     <div className="flex items-center gap-1.5 min-w-max">
                       <Button
                         variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-xs"
                         onClick={handleFirstPage}
                         disabled={page <= 1}
                         aria-label="First page"
                       >
-                        <ChevronsLeft className="h-3.5 w-3.5" />
+                        <ChevronsLeft aria-hidden />
                       </Button>
                       <Button
                         variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-xs"
                         onClick={handlePrevPage}
                         disabled={page <= 1}
                         aria-label="Previous page"
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft aria-hidden />
                       </Button>
                       <span className="text-sm font-medium tabular-nums px-1">{page} / {totalPages}</span>
                       <Button
                         variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-xs"
                         onClick={handleNextPage}
                         disabled={page >= totalPages}
                         aria-label="Next page"
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight aria-hidden />
                       </Button>
                       <Button
                         variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-xs"
                         onClick={handleLastPage}
                         disabled={page >= totalPages}
                         aria-label="Last page"
                       >
-                        <ChevronsRight className="h-3.5 w-3.5" />
+                        <ChevronsRight aria-hidden />
                       </Button>
                       <div className="flex items-center gap-1.5 ml-1">
-                        <span className="text-[12px]">Go to</span>
+                        <span className="text-xs">Go to</span>
                         <Input
                           type="number"
                           min={1}

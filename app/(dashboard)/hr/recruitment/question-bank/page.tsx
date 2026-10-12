@@ -45,19 +45,23 @@ import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { type PageSizeOption } from "@/lib/pagination-constants";
 import { toast } from "sonner";
-import { Plus, Search, MoreHorizontal, Trash2, BookOpen, X, Check, ChevronsUpDown, Pencil } from "lucide-react";
+import { Plus, MoreHorizontal, Trash2, BookOpen, X, Check, ChevronsUpDown, Pencil } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatusPill } from "@/components/ui/status-pill";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import type { Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 import { parseInterviewQuestionText, parseInterviewQuestionTagsField } from "@/lib/validations/interview-questions";
 
 const CATEGORIES = ["GENERAL", "TECHNICAL", "BEHAVIOURAL", "SITUATIONAL", "ROLE_SPECIFIC", "CULTURE_FIT"];
 const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"];
 
-const DIFFICULTY_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
-  EASY: "secondary",
-  MEDIUM: "default",
-  HARD: "destructive",
+const DIFFICULTY_TONE: Record<string, Tone> = {
+  EASY: "success",
+  MEDIUM: "warning",
+  HARD: "danger",
 };
 
 function matchesSearch(question: InterviewQuestion, query: string): boolean {
@@ -234,7 +238,7 @@ function QuestionFormFields({
           value={form.tags}
           onChange={(e) => onChange({ tags: e.target.value })}
         />
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Letters, numbers, spaces, and hyphens only. Separate with commas.
         </p>
       </div>
@@ -258,7 +262,7 @@ function QuestionFormFields({
           value={form.keywords}
           onChange={(e) => onChange({ keywords: e.target.value })}
         />
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Letters, numbers, spaces, and hyphens only. Separate with commas.
         </p>
       </div>
@@ -389,9 +393,9 @@ function QuestionDetailSheet({
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Difficulty</p>
-                  <Badge variant={DIFFICULTY_VARIANT[question.difficulty] ?? "secondary"} className="text-xs">
+                  <StatusPill tone={DIFFICULTY_TONE[question.difficulty] ?? "neutral"} dot>
                     {question.difficulty}
-                  </Badge>
+                  </StatusPill>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Role</p>
@@ -433,7 +437,7 @@ function QuestionDetailSheet({
         {editing && (
           <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
             <Button variant="outline" className="flex-1" onClick={() => setEditing(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleSave} disabled={updateQuestion.isPending}>
+            <Button className="flex-1" onClick={handleSave} loading={updateQuestion.isPending}>
               {updateQuestion.isPending ? "Saving…" : "Save Changes"}
             </Button>
           </SheetFooter>
@@ -461,7 +465,7 @@ export default function QuestionBankPage() {
   const { page, pageSize, setPage, setPageSize, resetPage } = usePaginationParams({ defaultPageSize: 10 });
 
   const { status: sessionStatus } = useSession();
-  const { data: allQuestions, isLoading, isError, error } = useInterviewQuestions();
+  const { data: allQuestions, isLoading, isError, error, refetch } = useInterviewQuestions();
   const listLoading = sessionStatus === "loading" || isLoading;
   const createQuestion = useCreateInterviewQuestion();
   const deleteQuestion = useDeleteInterviewQuestion();
@@ -640,6 +644,13 @@ export default function QuestionBankPage() {
     );
   }, [form, allQuestions, createQuestion, requireManagePermission]);
 
+  const hasFilters = search.trim() !== "" || category !== "ALL" || difficulty !== "ALL";
+  const clearFilters = useCallback(() => {
+    setSearch("");
+    setCategory("ALL");
+    setDifficulty("ALL");
+  }, []);
+
   const deleteDialogOpen = deleteTarget !== null;
   const deletePending = deleteTarget === "bulk" ? bulkDelete.isPending : deleteQuestion.isPending;
   const deleteDescription =
@@ -678,7 +689,7 @@ export default function QuestionBankPage() {
                 </div>
                 <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setAddSheetOpen(false)}>Cancel</Button>
-                  <Button className="flex-1" onClick={handleCreate} disabled={createQuestion.isPending}>
+                  <Button className="flex-1" onClick={handleCreate} loading={createQuestion.isPending}>
                     {createQuestion.isPending ? "Adding…" : "Add Question"}
                   </Button>
                 </SheetFooter>
@@ -688,18 +699,13 @@ export default function QuestionBankPage() {
         </div>
       }
       filters={
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              className="pl-8 h-8 w-[200px] text-sm"
-              placeholder="Search questions…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        <ListToolbar
+          className="w-full"
+          search={{ value: search, onChange: setSearch, placeholder: "Search questions…" }}
+          filters={
+        <>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-[150px] h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Categories</SelectItem>
               {CATEGORIES.map((c) => (
@@ -708,7 +714,7 @@ export default function QuestionBankPage() {
             </SelectContent>
           </Select>
           <Select value={difficulty} onValueChange={setDifficulty}>
-            <SelectTrigger className="w-[120px] h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Levels</SelectItem>
               {DIFFICULTIES.map((d) => (
@@ -716,15 +722,23 @@ export default function QuestionBankPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
+          {hasFilters && (
+            <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
+              <X aria-hidden="true" />
+              Clear
+            </Button>
+          )}
+        </>
+          }
+        />
       }
     >
       {canManage && selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5 mb-4">
-          <span className="text-sm font-medium text-primary">
+        <div className="fixed bottom-6 left-1/2 z-topbar flex h-11 max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-secondary px-4 text-secondary-foreground shadow-lg">
+          <span className="truncate text-sm font-medium tabular-nums">
             {selectedIds.size} selected
             {filteredSelectedCount !== selectedIds.size && (
-              <span className="text-muted-foreground font-normal">
+              <span className="font-normal opacity-70">
                 {" "}({filteredSelectedCount} in current filters)
               </span>
             )}
@@ -733,15 +747,15 @@ export default function QuestionBankPage() {
             <Button
               size="sm"
               variant="destructive"
-              className="h-8 text-xs"
+              className="rounded-full"
               onClick={requestBulkDelete}
-              disabled={bulkDelete.isPending}
+              loading={bulkDelete.isPending}
             >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              {!bulkDelete.isPending && <Trash2 aria-hidden="true" />}
               Delete selected
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={clearSelection}>
-              <X className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon-sm" className="rounded-full text-secondary-foreground" onClick={clearSelection}>
+              <X aria-hidden="true" />
               <span className="sr-only">Clear selection</span>
             </Button>
           </div>
@@ -755,23 +769,27 @@ export default function QuestionBankPage() {
               {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : isError ? (
-            <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
+            <QueryErrorState
               title="Failed to load questions"
-              description={getErrorMessage(error)}
+              error={error}
+              onRetry={() => void refetch()}
+              className="border-0"
             />
           ) : !allQuestions?.length ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
+              illustration={<EmptyDocumentsIllustration className="size-28" />}
               title="No questions yet"
               description="Add questions to build your interview bank."
               {...(canManage ? { action: { label: "Add question", onClick: () => setAddSheetOpen(true) } } : {})}
             />
           ) : !filteredQuestions.length ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
-              title="No matching questions"
+              compact
+              illustration={<EmptySearchIllustration className="size-20" />}
+              title="No results for these filters"
               description="Try a different search or filter."
+              action={{ label: "Clear filters", onClick: clearFilters }}
+              className="border-0 bg-transparent"
             />
           ) : (
             <>
@@ -792,7 +810,7 @@ export default function QuestionBankPage() {
                     <TableHead>Difficulty</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Tags</TableHead>
-                    {canManage && <TableHead className="w-[50px]" />}
+                    {canManage && <TableHead className="w-12" />}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -801,9 +819,13 @@ export default function QuestionBankPage() {
                       key={q.id}
                       className={cn(
                         "cursor-pointer",
-                        selectedIds.has(q.id) ? "bg-primary/5" : undefined,
+                        selectedIds.has(q.id) ? "bg-brand-soft" : undefined,
                       )}
+                      tabIndex={0}
                       onClick={() => setDetailQuestion(q)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.target === e.currentTarget) setDetailQuestion(q);
+                      }}
                     >
                       {canManage && (
                         <TableCell onClick={(e) => e.stopPropagation()}>
@@ -814,10 +836,10 @@ export default function QuestionBankPage() {
                           />
                         </TableCell>
                       )}
-                      <TableCell className="max-w-[400px]">
+                      <TableCell className="max-w-md">
                         <p className="text-sm line-clamp-2">{q.question}</p>
                         {(q.keywords ?? []).length > 0 && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                          <p className="text-2xs text-muted-foreground mt-0.5">
                             Keywords: {(q.keywords ?? []).slice(0, 3).join(", ")}{(q.keywords ?? []).length > 3 ? "…" : ""}
                           </p>
                         )}
@@ -829,18 +851,18 @@ export default function QuestionBankPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={DIFFICULTY_VARIANT[q.difficulty] ?? "secondary"} className="text-xs">
+                        <StatusPill tone={DIFFICULTY_TONE[q.difficulty] ?? "neutral"} dot>
                           {q.difficulty}
-                        </Badge>
+                        </StatusPill>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">{q.role ?? ""}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {(q.tags ?? []).slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0">{tag}</Badge>
+                            <Badge key={tag} variant="secondary" className="text-2xs px-1 py-0">{tag}</Badge>
                           ))}
                           {(q.tags ?? []).length > 3 && (
-                            <Badge variant="secondary" className="text-[10px] px-1 py-0">+{(q.tags ?? []).length - 3}</Badge>
+                            <Badge variant="secondary" className="text-2xs px-1 py-0">+{(q.tags ?? []).length - 3}</Badge>
                           )}
                         </div>
                       </TableCell>
@@ -848,7 +870,7 @@ export default function QuestionBankPage() {
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon-sm" aria-label="Question actions"><MoreHorizontal /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setDetailQuestion(q)}>

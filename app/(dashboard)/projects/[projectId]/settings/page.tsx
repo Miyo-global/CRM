@@ -9,7 +9,11 @@ import {
   useDeleteProject,
 } from "@/lib/api/hooks/projects";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { NotFoundIllustration } from "@/components/illustrations";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -63,7 +67,6 @@ import { useSession } from "next-auth/react";
 import { isAdminOrOwner } from "@/lib/auth/role-guards";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Separator } from "@/components/ui/separator";
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -78,7 +81,7 @@ export default function ProjectSettingsPage({ params }: PageProps) {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { data: project, isLoading } = useProject(projectId);
+  const { data: project, isLoading, isError, error, refetch } = useProject(projectId);
   const deleteMutation = useDeleteProject();
 
   const form = useForm<FormValues>({
@@ -156,7 +159,7 @@ export default function ProjectSettingsPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <PageWrapper title="Settings">
-        <div className="max-w-xl mx-auto space-y-6 pb-8">
+        <div className="max-w-4xl space-y-6 pb-8">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-10 w-full" />
@@ -167,18 +170,23 @@ export default function ProjectSettingsPage({ params }: PageProps) {
     );
   }
 
+  if (isError) {
+    return (
+      <PageWrapper title="Settings">
+        <QueryErrorState error={error} onRetry={refetch} />
+      </PageWrapper>
+    );
+  }
+
   if (!project) {
     return (
       <PageWrapper title="Settings">
-        <div className="flex items-center justify-center h-64" role="alert">
-          <div className="text-center space-y-2">
-            <h2 className="text-lg font-semibold text-destructive">
-              Project not found
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              The requested project could not be loaded.
-            </p>
-          </div>
+        <div role="alert">
+          <EmptyState
+            illustration={<NotFoundIllustration className="h-32 w-32 opacity-95" />}
+            title="Project not found"
+            description="The requested project could not be loaded."
+          />
         </div>
       </PageWrapper>
     );
@@ -218,39 +226,37 @@ export default function ProjectSettingsPage({ params }: PageProps) {
       title="Settings"
       subtitle={project.name}
     >
-      <div className="mx-auto w-full max-w-3xl space-y-6 px-3 pb-8 sm:px-4 lg:px-0">
-
+      <div className="w-full max-w-4xl space-y-6 pb-8">
         <Card>
-          <CardContent className="space-y-5 p-4 pt-5 sm:p-6 sm:pt-6">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Settings className="h-4 w-4 text-muted-foreground" />
-              General
+          <div className="flex items-start gap-3 border-b border-border px-5 py-4">
+            <IconChip icon={Settings} tone="neutral" size="sm" />
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold leading-tight">General</h2>
+              {!canEdit && (
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  You have read-only access. Only project managers and admins can
+                  edit these settings.
+                </p>
+              )}
             </div>
-            <Separator />
+          </div>
 
-            {!canEdit && (
-              <p className="text-sm text-muted-foreground">
-                You have read-only access. Only project managers and admins can
-                edit these settings.
-              </p>
-            )}
-
-            <fieldset disabled={!canEdit} className="contents">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4 sm:space-y-5"
-              >
+          <fieldset disabled={!canEdit} className="contents">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="divide-y divide-border px-5">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Enter project name" />
-                      </FormControl>
-                      <FormMessage />
+                    <FormItem className="grid gap-2 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start sm:gap-6">
+                      <FormLabel className="sm:pt-2">Project Name</FormLabel>
+                      <div className="grid min-w-0 gap-1.5">
+                        <FormControl>
+                          <Input {...field} placeholder="Enter project name" />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -259,16 +265,18 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                   control={form.control}
                   name="description"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder="Project description"
-                          className="min-h-[80px] resize-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
+                    <FormItem className="grid gap-2 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start sm:gap-6">
+                      <FormLabel className="sm:pt-2">Description</FormLabel>
+                      <div className="grid min-w-0 gap-1.5">
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Project description"
+                            className="min-h-20 resize-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -277,92 +285,100 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                   control={form.control}
                   name="status"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="ACTIVE">Active</SelectItem>
-                          <SelectItem value="COMPLETED">Completed</SelectItem>
-                          <SelectItem value="ARCHIVED">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
+                    <FormItem className="grid gap-2 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start sm:gap-6">
+                      <FormLabel className="sm:pt-2">Status</FormLabel>
+                      <div className="grid min-w-0 gap-1.5">
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="ACTIVE">Active</SelectItem>
+                            <SelectItem value="COMPLETED">Completed</SelectItem>
+                            <SelectItem value="ARCHIVED">Archived</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
 
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="grid gap-2 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start sm:gap-6">
+                  <div className="flex items-center gap-2 text-sm font-medium sm:pt-2">
+                    <Users className="size-4 text-muted-foreground" aria-hidden="true" />
                     Team Members
                   </div>
-                  <MembersSelector
-                    form={form}
-                    originalMemberIds={
-                      project.members?.map((m: { userId: string }) => m.userId) ?? []
-                    }
-                    onMemberRemoved={handleMemberRemoved}
-                  />
+                  <div className="min-w-0">
+                    <MembersSelector
+                      form={form}
+                      originalMemberIds={
+                        project.members?.map((m: { userId: string }) => m.userId) ?? []
+                      }
+                      onMemberRemoved={handleMemberRemoved}
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div className="pt-1">
-                  <Button
-                    type="submit"
-                    disabled={updateMutation.isPending}
-                    className="w-full sm:w-auto sm:min-w-40"
-                  >
-                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-            </fieldset>
-          </CardContent>
+              <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-3 rounded-b-lg border-t border-border bg-card/90 px-5 py-3 backdrop-blur">
+                {form.formState.isDirty && (
+                  <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>
+                )}
+                <Button
+                  type="submit"
+                  loading={updateMutation.isPending}
+                  className="w-full sm:w-auto sm:min-w-40"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </Form>
+          </fieldset>
         </Card>
 
         {isOwner && (
-          <Card className="border-destructive/30">
-            <CardContent className="space-y-4 p-4 pt-5 sm:p-6 sm:pt-6">
-              <div className="flex items-center gap-2 text-sm font-medium text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                Danger Zone
-              </div>
-              <Separator />
-              <div className="rounded-md border border-destructive/25 bg-destructive/5 p-4">
-                <p className="text-sm leading-relaxed text-muted-foreground">
+          <Card className="border-danger-soft">
+            <div className="flex items-center gap-2 border-b border-border px-5 py-4 text-lg font-semibold text-destructive">
+              <AlertTriangle className="size-4" aria-hidden="true" />
+              <h2>Danger Zone</h2>
+            </div>
+            <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">Delete Project</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
                   Deleting a project is irreversible. It will remove all
                   tickets, sprints, and associated data.
                 </p>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="mt-4 w-full sm:w-auto"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Project
-                </Button>
               </div>
-              <ConfirmDialog
-                open={deleteDialogOpen}
-                onOpenChange={setDeleteDialogOpen}
-                title="Are you absolutely sure?"
-                description={`This action cannot be undone. This will permanently delete "${project.name}" and remove all associated data.`}
-                confirmLabel={
-                  deleteMutation.isPending ? "Deleting..." : "Delete Project"
-                }
-                destructive
-                onConfirm={handleDeleteConfirm}
-              />
-            </CardContent>
+              <Button
+                type="button"
+                variant="destructive"
+                className="w-full shrink-0 sm:w-auto"
+                onClick={() => setDeleteDialogOpen(true)}
+                loading={deleteMutation.isPending}
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+                Delete Project
+              </Button>
+            </div>
+            <ConfirmDialog
+              open={deleteDialogOpen}
+              onOpenChange={setDeleteDialogOpen}
+              title="Are you absolutely sure?"
+              description={`This action cannot be undone. This will permanently delete "${project.name}" and remove all associated data.`}
+              confirmLabel={
+                deleteMutation.isPending ? "Deleting..." : "Delete Project"
+              }
+              destructive
+              onConfirm={handleDeleteConfirm}
+            />
           </Card>
         )}
       </div>
@@ -417,7 +433,7 @@ function ReassignDialog({
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <UserX className="h-4 w-4 text-amber-500" />
+            <UserX className="size-4 text-warning-strong" aria-hidden="true" />
             Reassign open tickets
           </SheetTitle>
           <SheetDescription>
@@ -427,7 +443,7 @@ function ReassignDialog({
         </SheetHeader>
 
         <div className="space-y-2 py-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
             Reassign to
           </p>
           <Select value={reassignTo} onValueChange={onReassignToChange}>
@@ -502,17 +518,17 @@ function MembersSelector({
                   {field.value?.length && field.value.length > 0
                     ? `${field.value.length} member${field.value.length > 1 ? "s" : ""} selected`
                     : "Select members"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                  <ChevronsUpDown className="size-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-[var(--radix-popover-trigger-width)] p-2 max-h-[60vh] overflow-hidden flex flex-col"
+                className="flex max-h-[60vh] w-(--radix-popover-trigger-width) flex-col overflow-hidden p-2"
                 align="start"
                 collisionPadding={16}
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 <div className="relative mb-2">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                   <Input
                     placeholder="Search by name or email..."
                     value={searchQuery}
@@ -531,7 +547,7 @@ function MembersSelector({
                       <button
                         key={emp.id}
                         type="button"
-                        className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-accent text-left"
+                        className="flex w-full items-center gap-2 rounded-md p-2 text-left hover:bg-accent focus-visible:focus-ring"
                         onClick={() => {
                           const current = field.value || [];
                           if (selected) {
@@ -553,27 +569,27 @@ function MembersSelector({
                           className="pointer-events-none"
                           aria-hidden
                         />
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-medium shrink-0">
+                        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-3xs font-semibold text-brand-soft-foreground">
                           {emp.name?.charAt(0) || (
-                            <User className="h-3 w-3" />
+                            <User className="size-3" aria-hidden="true" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
                             {emp.name}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
+                          <p className="text-2xs text-muted-foreground truncate">
                             {emp.email}
                           </p>
                         </div>
                         {selected && (
-                          <Check className="h-4 w-4 text-primary shrink-0" />
+                          <Check className="size-4 shrink-0 text-brand-text" aria-hidden="true" />
                         )}
                       </button>
                     );
                   })}
                   {!filteredEmployees?.length && (
-                    <p className="text-sm text-center py-4 text-muted-foreground">
+                    <p className="py-4 text-center text-sm text-muted-foreground">
                       No employees found
                     </p>
                   )}

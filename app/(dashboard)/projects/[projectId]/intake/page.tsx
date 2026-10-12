@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -62,7 +65,7 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("pending");
 
-  const { data: intakeData, isLoading } = useIntakeRequests(projectId);
+  const { data: intakeData, isLoading, isError, error, refetch } = useIntakeRequests(projectId);
   const { data: members } = useProjectMembers(projectId);
   const { data: cycles } = useCycles(projectId);
   const { data: modules } = useModules(projectId);
@@ -170,33 +173,33 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
     <PageWrapper
       title="Intake"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleCopyFormUrl}>
-            <ExternalLink className="h-4 w-4 mr-1" /> Copy Form URL
+            <ExternalLink className="size-4" aria-hidden="true" /> Copy Form URL
           </Button>
           <Sheet open={createOpen} onOpenChange={setCreateOpen}>
             <SheetTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" /> New Item
+                <Plus className="size-4" aria-hidden="true" /> New Item
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetContent side="right" size="sm" className="overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Create Intake Item</SheetTitle>
               </SheetHeader>
               <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4 p-4">
-                <div>
+                <div className="space-y-1.5">
                   <Label htmlFor="intake-title">Title</Label>
                   <Input id="intake-title" {...createForm.register("title")} />
                   {createForm.formState.errors.title && (
                     <p className="text-xs text-destructive mt-1">{createForm.formState.errors.title.message}</p>
                   )}
                 </div>
-                <div>
+                <div className="space-y-1.5">
                   <Label htmlFor="intake-desc">Description</Label>
                   <Textarea id="intake-desc" {...createForm.register("description")} />
                 </div>
-                <Button type="submit" disabled={createMutation.isPending} className="w-full">
+                <Button type="submit" loading={createMutation.isPending} className="w-full">
                   {createMutation.isPending ? "Creating..." : "Create Item"}
                 </Button>
               </form>
@@ -205,21 +208,33 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
         </div>
       }
     >
+      {isError ? (
+        <QueryErrorState error={error} onRetry={refetch} />
+      ) : (
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-          <ExternalLink className="h-4 w-4 shrink-0" />
-          <span className="truncate">Public form: {formUrl}</span>
-          <Button variant="ghost" size="sm" className="h-6 px-2 shrink-0" onClick={handleCopyFormUrl}>
-            <Copy className="h-3 w-3" />
+        <StatsStrip
+          items={[
+            { label: "Pending", value: pendingCount, tone: "warning" },
+            { label: "Accepted", value: allItems.filter((i) => i.status === "accepted").length, tone: "success" },
+            { label: "Declined", value: allItems.filter((i) => i.status === "declined").length, tone: "danger" },
+            { label: "All", value: allItems.length },
+          ]}
+        />
+
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-sunken/40 px-3 py-2 text-sm text-muted-foreground">
+          <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate font-mono text-xs" title={formUrl}>Public form: {formUrl}</span>
+          <Button variant="ghost" size="icon-xs" className="shrink-0" onClick={handleCopyFormUrl} aria-label="Copy form URL">
+            <Copy className="size-3.5" />
           </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList variant="underline">
             <TabsTrigger value="pending">
               Pending
               {pendingCount > 0 && (
-                <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{pendingCount}</Badge>
+                <Badge variant="secondary" className="ml-1.5 px-1.5 tabular-nums">{pendingCount}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="accepted">Accepted</TabsTrigger>
@@ -229,22 +244,16 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
 
           <TabsContent value={activeTab} className="mt-4">
             {filteredItems.length === 0 ? (
-              <div className="text-center py-16">
-                <EmptyInboxIllustration className="mx-auto mb-4 w-36 h-36" />
-                <h3 className="text-lg font-semibold mb-1">
-                  {activeTab === "pending" ? "No pending items" : `No ${activeTab} items`}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {activeTab === "pending"
+              <EmptyState
+                illustration={<EmptyInboxIllustration className="h-32 w-32 opacity-95" />}
+                title={activeTab === "pending" ? "No pending items" : `No ${activeTab} items`}
+                description={
+                  activeTab === "pending"
                     ? "Share the form URL to start receiving submissions."
-                    : "Items will appear here once triaged."}
-                </p>
-                {activeTab === "pending" && (
-                  <Button onClick={handleOpenCreate}>
-                    <Plus className="h-4 w-4 mr-1" /> Create First Item
-                  </Button>
-                )}
-              </div>
+                    : "Items will appear here once triaged."
+                }
+                action={activeTab === "pending" ? { label: "Create First Item", onClick: handleOpenCreate } : undefined}
+              />
             ) : (
               <div className="space-y-3">
                 {filteredItems.map((item) => (
@@ -261,14 +270,15 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
           </TabsContent>
         </Tabs>
       </div>
+      )}
 
       <Sheet open={acceptOpen} onOpenChange={setAcceptOpen}>
-        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+        <SheetContent side="right" size="sm" className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Accept Intake Item</SheetTitle>
           </SheetHeader>
           <form onSubmit={acceptForm.handleSubmit(onAcceptSubmit)} className="space-y-4 p-4">
-            <div>
+            <div className="space-y-1.5">
               <Label>State</Label>
               <Controller
                 control={acceptForm.control}
@@ -290,7 +300,7 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
                 <p className="text-xs text-destructive mt-1">{acceptForm.formState.errors.state.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Assignee</Label>
               <Controller
                 control={acceptForm.control}
@@ -321,7 +331,7 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
                 )}
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Cycle</Label>
               <Controller
                 control={acceptForm.control}
@@ -341,7 +351,7 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
                 )}
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Module</Label>
               <Controller
                 control={acceptForm.control}
@@ -361,21 +371,21 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
                 )}
               />
             </div>
-            <Button type="submit" disabled={updateMutation.isPending} className="w-full">
+            <Button type="submit" loading={updateMutation.isPending} className="w-full">
               {updateMutation.isPending ? "Accepting..." : "Accept & Create Work Item"}
-              <ArrowRight className="h-4 w-4 ml-1" />
+              <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
           </form>
         </SheetContent>
       </Sheet>
 
       <Sheet open={declineOpen} onOpenChange={setDeclineOpen}>
-        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+        <SheetContent side="right" size="sm" className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Decline Intake Item</SheetTitle>
           </SheetHeader>
           <form onSubmit={declineForm.handleSubmit(onDeclineSubmit)} className="space-y-4 p-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="decline-reason">Reason</Label>
               <Textarea
                 id="decline-reason"
@@ -386,7 +396,7 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
                 <p className="text-xs text-destructive mt-1">{declineForm.formState.errors.reason.message}</p>
               )}
             </div>
-            <Button type="submit" variant="destructive" disabled={updateMutation.isPending} className="w-full">
+            <Button type="submit" variant="destructive" loading={updateMutation.isPending} className="w-full">
               {updateMutation.isPending ? "Declining..." : "Decline Item"}
             </Button>
           </form>

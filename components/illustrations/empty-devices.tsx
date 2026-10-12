@@ -7,7 +7,7 @@ export function EmptyDevicesIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="78" fill={BLUE} opacity="0.03" />
 
-      <rect x="30" y="40" width="120" height="80" rx="6" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="30" y="40" width="120" height="80" rx="6" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
 
       <rect x="36" y="46" width="108" height="64" rx="3" fill={BLUE} opacity="0.04" />
 
@@ -18,7 +18,7 @@ export function EmptyDevicesIllustration({ className }: IllustrationProps) {
 
       <circle cx="90" cy="43" r="1.5" fill={BLUE} opacity="0.2" />
 
-      <path d="M20 120h140l-10 16H30l-10-16z" fill="white" stroke={BLUE} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M20 120h140l-10 16H30l-10-16z" fill="var(--card)" stroke={BLUE} strokeWidth="2" strokeLinejoin="round" />
       <line x1="70" y1="128" x2="110" y2="128" stroke={BLUE} strokeWidth="1.5" strokeLinecap="round" opacity="0.2" />
 
       <circle cx="90" cy="122" r="2" fill={GOLD} opacity="0.4" />

@@ -6,6 +6,7 @@ import { eq, and, ne, sql, count } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { createAuditLog } from "@/lib/audit-log";
 import { logger } from "@/lib/logger";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export async function POST(_req: NextRequest) {
   return withAdmin(async (session) => {
@@ -48,15 +49,15 @@ export async function POST(_req: NextRequest) {
             subject: "Onboarding Reminder — Pending Tasks",
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0f2b7f;">Onboarding Reminder</h2>
+                <h2 style="color: ${BRAND.ink};">Onboarding Reminder</h2>
                 <p>Hi ${user.userName || "there"},</p>
                 <p>You have <strong>${user.pendingTasks}</strong> pending onboarding task(s) out of <strong>${user.totalTasks}</strong> total.</p>
                 <p>Please log in and complete your remaining tasks to finish your onboarding process.</p>
                 <a href="${process.env.NEXTAUTH_URL || ""}/hr/onboarding/my-tasks"
-                   style="display: inline-block; padding: 10px 24px; background: #bd882c; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px;">
+                   style="display: inline-block; padding: 10px 24px; background: ${BRAND.gold}; color: ${BRAND.ink}; text-decoration: none; border-radius: 6px; margin-top: 10px;">
                   Complete Tasks
                 </a>
-                <p style="color: #666; margin-top: 20px; font-size: 12px;">
+                <p style="color: ${BRAND.inkMuted}; margin-top: 20px; font-size: 12px;">
                   This is an automated reminder from your HR team.
                 </p>
               </div>

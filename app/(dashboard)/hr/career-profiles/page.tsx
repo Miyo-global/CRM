@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,9 @@ import { Plus, UserCheck } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptyPersonIllustration } from "@/components/illustrations";
 import { format } from "date-fns";
 import type { EmployeeCareerProfile, CareerLadder, CareerLevel } from "@/types/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
@@ -38,7 +41,7 @@ export default function CareerProfilesPage() {
   const isAdmin = ["CEO", "HR", "ADMIN"].includes(session?.user?.role ?? "");
   const qc = useQueryClient();
 
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading, isError, error, refetch } = useQuery({
     queryKey: profileKeys.list(),
     queryFn: () => apiClient.get<EmployeeCareerProfile[]>("/hr/career-profiles"),
   });
@@ -150,7 +153,7 @@ export default function CareerProfilesPage() {
     return (
       <PageWrapper title="Career Profiles" subtitle="Employee career positions">
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
       </PageWrapper>
     );
@@ -224,90 +227,74 @@ export default function CareerProfilesPage() {
       actions={
         isAdmin ? (
           <Button size="sm" onClick={openAdd}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="size-4" aria-hidden="true" />
             Assign Profile
           </Button>
         ) : undefined
       }
     >
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[620px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Ladder</TableHead>
-                  <TableHead>Level</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                  {isAdmin && <TableHead className="text-right w-[80px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                      <div className="flex flex-col items-center gap-2">
-                        <UserCheck className="h-10 w-10 opacity-30" />
-                        <p className="text-sm">No career profiles yet.</p>
-                        {isAdmin && (
-                          <Button size="sm" variant="outline" onClick={openAdd}>
-                            <Plus className="h-3.5 w-3.5 mr-1.5" />
-                            Assign Profile
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">{p.employeeName ?? p.userId}</span>
-                          {p.employeeEmail && (
-                            <span className="text-xs text-muted-foreground">{p.employeeEmail}</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {p.ladderTitle ? (
-                          <Badge variant="outline" className="text-[11px]">{p.ladderTitle}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">Unassigned</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {p.currentLevel ? (
-                          <Badge variant="secondary" className="text-[11px]">L{p.currentLevel}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {p.updatedAt ? format(new Date(p.updatedAt), "dd MMM yyyy") : "—"}
-                      </TableCell>
-                      {isAdmin && (
-                        <TableCell className="text-right">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-xs"
-                            onClick={() => openEdit(p)}
-                          >
-                            Edit
-                          </Button>
-                        </TableCell>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          illustration={<EmptyPersonIllustration className="size-32" />}
+          title="No career profiles yet."
+          {...(isAdmin ? { action: { label: "Assign Profile", onClick: openAdd } } : {})}
+        />
+      ) : (
+        <Table className="min-w-[620px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Employee</TableHead>
+              <TableHead>Ladder</TableHead>
+              <TableHead>Level</TableHead>
+              <TableHead>Last Updated</TableHead>
+              {isAdmin && <TableHead className="w-20 text-right">Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <IconChip icon={UserCheck} tone="neutral" size="sm" />
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-medium">{p.employeeName ?? p.userId}</span>
+                      {p.employeeEmail && (
+                        <span className="truncate text-xs text-muted-foreground">{p.employeeEmail}</span>
                       )}
-                    </TableRow>
-                  ))
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm">
+                  {p.ladderTitle ? (
+                    <Badge variant="outline">{p.ladderTitle}</Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Unassigned</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {p.currentLevel ? (
+                    <Badge variant="default" className="tabular-nums">L{p.currentLevel}</Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-xs tabular-nums text-muted-foreground">
+                  {p.updatedAt ? format(new Date(p.updatedAt), "dd MMM yyyy") : "—"}
+                </TableCell>
+                {isAdmin && (
+                  <TableCell className="text-right">
+                    <Button type="button" size="xs" variant="ghost" onClick={() => openEdit(p)}>
+                      Edit
+                    </Button>
+                  </TableCell>
                 )}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
-      </div>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       <HrSheet
         open={addOpen}

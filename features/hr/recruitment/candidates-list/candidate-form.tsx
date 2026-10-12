@@ -13,6 +13,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { FileUpload } from "@/components/storage/file-upload";
 import { cn } from "@/lib/utils";
+import { Plus, Trash2, X } from "lucide-react";
 import {
   CANDIDATE_SOURCE_OPTIONS,
   GENDER_OPTIONS,
@@ -142,9 +143,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3 border-t border-border pt-5 first:border-t-0 first:pt-0">
       <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <h3 className="font-display text-sm font-semibold text-foreground">{title}</h3>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -174,7 +175,7 @@ function Field({
         {required && <span className="text-destructive"> *</span>}
       </label>
       {children}
-      {error ? <p className="text-[11px] text-destructive">{error}</p> : null}
+      {error ? <p className="text-2xs text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -188,10 +189,10 @@ function inputClass(invalid: boolean) {
 }
 
 const SKILL_TYPE_COLOR: Record<string, string> = {
-  PRIMARY: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  SECONDARY: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
-  TECHNICAL: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-  SOFT: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+  PRIMARY: "bg-info-soft text-info-strong",
+  SECONDARY: "bg-plum-soft text-plum-strong",
+  TECHNICAL: "bg-warning-soft text-warning-strong",
+  SOFT: "bg-success-soft text-success-strong",
 };
 
 const SKILL_TYPE_LABEL: Record<string, string> = {
@@ -243,14 +244,14 @@ function SkillsInput({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap">
         <Input
           value={name}
           placeholder="Skill name (e.g. React, Leadership)"
           maxLength={60}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1"
+          className="min-w-0 basis-full sm:basis-auto sm:flex-1"
         />
         <SearchableSelect
           options={SKILL_TYPE_OPTIONS}
@@ -274,7 +275,7 @@ function SkillsInput({
         <div className="space-y-2">
           {grouped.map((g) => (
             <div key={g.type}>
-              <p className="mb-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{g.label} Skills</p>
+              <p className="mb-1 text-2xs font-medium text-muted-foreground uppercase tracking-wide">{g.label} Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {g.skills.map((s) => (
                   <span
@@ -291,9 +292,7 @@ function SkillsInput({
                       aria-label={`Remove ${s.name}`}
                       className="ml-0.5 opacity-70 hover:opacity-100"
                     >
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                        <path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
+                      <X className="size-2.5" aria-hidden="true" />
                     </button>
                   </span>
                 ))}
@@ -303,7 +302,7 @@ function SkillsInput({
         </div>
       )}
       {value.length === 0 && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Type a skill, choose its type (Primary/Secondary/Technical/Soft) and proficiency level, then press Enter or click Add.
         </p>
       )}
@@ -355,12 +354,10 @@ function EducationInput({
               aria-label="Remove qualification"
               className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-              </svg>
+              <Trash2 className="size-3.5" aria-hidden="true" />
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             <div>
             <Input
               value={row.qualification}
@@ -369,7 +366,7 @@ function EducationInput({
               onChange={(e) => update(i, { qualification: e.target.value })}
             />
             {(errors?.[`education.${i}.qualification`] || (i === 0 && errors?.["education.0.qualification"])) && (
-              <p className="mt-1 text-[11px] text-destructive">
+              <p className="mt-1 text-2xs text-destructive">
                 {errors[`education.${i}.qualification`] ?? errors["education.0.qualification"]}
               </p>
             )}
@@ -380,7 +377,7 @@ function EducationInput({
               onChange={(e) => update(i, { specialization: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             <Input
               value={row.institution ?? ""}
               placeholder="University / Institution"
@@ -401,9 +398,7 @@ function EducationInput({
         className="w-full"
         onClick={add}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <Plus className="size-3.5" aria-hidden="true" />
         Add qualification
       </Button>
     </div>
@@ -448,10 +443,9 @@ function UploadField({
             type="button"
             onClick={() => onChange("")}
             aria-label={`Remove ${label}`}
+            className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-ring"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <X className="size-3.5" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -477,7 +471,7 @@ export const CandidateForm = memo(function CandidateForm({
     <div className="space-y-6">
       {/* ── Basic Information ── */}
       <Section title="Basic Information">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="First Name" required error={err("firstName")} fieldKey="firstName">
             <Input
               value={form.firstName}
@@ -507,7 +501,7 @@ export const CandidateForm = memo(function CandidateForm({
             onChange={(e) => setField("email", e.target.value)}
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Phone Number" required error={err("phone")} fieldKey="phone">
             <PhoneInput
               value={form.phone}
@@ -523,7 +517,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Date of Birth" error={err("dateOfBirth")} fieldKey="dateOfBirth">
             <DatePicker
               value={form.dateOfBirth}
@@ -540,7 +534,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Current Location" required error={err("location")} fieldKey="location">
             <Input
               value={form.location}
@@ -593,7 +587,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         )}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Job Requisition ID" error={err("requisitionId")} fieldKey="requisitionId">
             <Input
               value={form.requisitionId}
@@ -612,7 +606,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Source of Application" required error={err("source")} fieldKey="source">
             <SearchableSelect
               options={CANDIDATE_SOURCE_OPTIONS}
@@ -643,7 +637,7 @@ export const CandidateForm = memo(function CandidateForm({
 
       {/* ── Professional Information ── */}
       <Section title="Professional Information">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Total Experience (years)" required error={err("experienceYears")} fieldKey="experienceYears">
             <Input
               type="number"
@@ -668,7 +662,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Current Company" error={err("currentCompany")} fieldKey="currentCompany">
             <Input
               value={form.currentCompany}
@@ -687,7 +681,7 @@ export const CandidateForm = memo(function CandidateForm({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Current Employment Status" fieldKey="currentEmploymentStatus">
             <SearchableSelect
               options={EMPLOYMENT_STATUS_OPTIONS}
@@ -727,7 +721,7 @@ export const CandidateForm = memo(function CandidateForm({
           errors={errors}
         />
         {err("education") && (
-          <p className="text-[11px] text-destructive">{err("education")}</p>
+          <p className="text-2xs text-destructive">{err("education")}</p>
         )}
       </Section>
 
@@ -741,13 +735,13 @@ export const CandidateForm = memo(function CandidateForm({
           onChange={(v) => setField("skillEntries", v)}
         />
         {err("skillEntries") && (
-          <p className="text-[11px] text-destructive">{err("skillEntries")}</p>
+          <p className="text-2xs text-destructive">{err("skillEntries")}</p>
         )}
       </Section>
 
       {/* ── Compensation Details ── */}
       <Section title="Compensation Details">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           <Field label="Salary Currency">
             <SearchableSelect
               options={SALARY_CURRENCY_OPTIONS}
@@ -804,7 +798,7 @@ export const CandidateForm = memo(function CandidateForm({
             onChange={(e) => setField("portfolioUrl", e.target.value)}
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="LinkedIn Profile URL" error={err("linkedinUrl")} fieldKey="linkedinUrl">
             <Input
               value={form.linkedinUrl}
@@ -826,7 +820,7 @@ export const CandidateForm = memo(function CandidateForm({
 
       {/* ── Additional Details ── */}
       <Section title="Additional Details">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Work Authorization / Visa Status">
             <SearchableSelect
               options={WORK_AUTHORIZATION_OPTIONS}

@@ -7,8 +7,11 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +20,7 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, FileSpreadsheet, DollarSign, CheckCircle2, Clock } from "lucide-react";
+import { Plus, DollarSign, CheckCircle2 } from "lucide-react";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -29,15 +32,19 @@ interface FnfSettlement {
 
 const fnfKeys = { all: [...queryKeys.hr.all, "fnf"] as const, list: () => [...fnfKeys.all, "list"] as const };
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" {
-  if (s === "COMPLETED") return "default";
-  if (s === "IN_PROGRESS") return "secondary";
-  return "outline";
+function statusTone(s: string | null): Tone {
+  if (s === "COMPLETED") return "success";
+  if (s === "IN_PROGRESS") return "info";
+  return "warning";
+}
+
+function money(v: string | null) {
+  return v ? `$${Number(v).toLocaleString()}` : "—";
 }
 
 function FnfContent() {
   const qc = useQueryClient();
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, isError, error, refetch } = useQuery({
     queryKey: fnfKeys.list(),
     queryFn: () => apiClient.get<FnfSettlement[]>("/hr/fnf"),
   });
@@ -86,7 +93,7 @@ function FnfContent() {
   if (isLoading) {
     return (
       <PageWrapper title="Full & Final" subtitle="Employee settlement processing">
-        <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+        <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
   }
@@ -96,41 +103,61 @@ function FnfContent() {
       title="Full & Final Settlement"
       subtitle="Process employee exit settlements"
       badge={`${items?.length ?? 0} settlements`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />New Settlement</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Settlement</Button>}
     >
-      {!items?.length ? (
+      {isError ? (
+        <QueryErrorState title="Couldn't load settlements" error={error} onRetry={() => refetch()} />
+      ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration className="h-32 w-32 opacity-95" />}
+          illustration={<EmptyExpensesIllustration />}
           title="No FnF settlements"
           description="Exit settlements you process will appear here."
           action={{ label: "New Settlement", onClick: () => setSheetOpen(true) }}
         />
       ) : (
-        <div className="space-y-2">
-          {items.map((f: FnfSettlement) => (
-            <Card key={f.id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{f.employeeName ?? "Employee"}</p>
-                    <Badge variant={statusBadge(f.status)} className="text-[10px]">{f.status ?? "PENDING"}</Badge>
-                  </div>
-                  <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
-                    {f.netPay && <span className="font-medium text-foreground">Net: ${Number(f.netPay).toLocaleString()}</span>}
-                    {f.grossPay && <span>Gross: ${Number(f.grossPay).toLocaleString()}</span>}
-                    {f.deductions && <span>Ded: ${Number(f.deductions).toLocaleString()}</span>}
-                    {f.lastWorkingDate && <span>{format(new Date(f.lastWorkingDate), "MMM d, yyyy")}</span>}
-                  </div>
-                </div>
-                {f.status !== "COMPLETED" && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setCompleteId(f.id)}>
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Complete
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table className="min-w-[760px] tabular-nums">
+            <caption className="sr-only">Full and final settlements</caption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Employee</TableHead>
+                <TableHead>Last working day</TableHead>
+                <TableHead className="text-right">Gross</TableHead>
+                <TableHead className="text-right">Deductions</TableHead>
+                <TableHead className="text-right">Net</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((f: FnfSettlement) => (
+                <TableRow key={f.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <span className="text-sm font-medium">{f.employeeName ?? "Employee"}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {f.lastWorkingDate ? format(new Date(f.lastWorkingDate), "MMM d, yyyy") : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">{money(f.grossPay)}</TableCell>
+                  <TableCell className="text-right text-danger-strong">{money(f.deductions)}</TableCell>
+                  <TableCell className="text-right font-semibold">{money(f.netPay)}</TableCell>
+                  <TableCell>
+                    <StatusPill tone={statusTone(f.status)} dot>{f.status ?? "PENDING"}</StatusPill>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {f.status !== "COMPLETED" && (
+                      <Button size="sm" variant="outline" onClick={() => setCompleteId(f.id)}>
+                        <CheckCircle2 className="size-4" aria-hidden="true" />Complete
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -143,7 +170,7 @@ function FnfContent() {
           <label className="text-sm font-medium">Last Working Date</label>
           <Input type="date" value={lwd} onChange={(e) => setLwd(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Gross Pay</label>
             <Input type="number" placeholder="0.00" value={grossPay} onChange={(e) => setGrossPay(e.target.value)} />

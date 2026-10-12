@@ -189,13 +189,13 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
             <div className="relative shrink-0">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={resolveImageUrl(imageUrl || null)} />
-                <AvatarFallback className="text-lg bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="text-lg bg-brand-soft text-brand-soft-foreground font-bold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               {uploading && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
-                  <Loader2 className="h-5 w-5 text-white animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-overlay">
+                  <Loader2 className="h-5 w-5 text-ink-50 animate-spin" />
                 </div>
               )}
             </div>
@@ -221,7 +221,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
                 <Upload className="h-3.5 w-3.5" />
                 {uploading ? "Uploading…" : "Upload Photo"}
               </Button>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 PNG or JPG · Max 5 MB
               </p>
             </div>
@@ -243,7 +243,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
           />
           <div className="flex justify-between">
             {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
-            <p className="text-[11px] text-muted-foreground ml-auto">
+            <p className="text-2xs text-muted-foreground ml-auto">
               {(watch("bio") ?? "").length}/500
             </p>
           </div>
@@ -255,7 +255,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Skills
           </Label>
-          <div className="flex flex-wrap gap-1.5 min-h-[2rem]">
+          <div className="flex flex-wrap gap-1.5 min-h-8">
             {skills.map((skill) => (
               <Badge key={skill} variant="secondary" className="text-xs gap-1 pr-1">
                 {skill}
@@ -290,7 +290,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
               Add
             </Button>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Letters, numbers, spaces, +, #, ., - allowed. Skills are case-insensitive.
           </p>
         </CardContent>
@@ -304,14 +304,14 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
           <div className="space-y-2">
             <SocialField
               id="linkedinUrl"
-              icon={<Linkedin className="h-3.5 w-3.5 text-blue-600" />}
+              icon={<Linkedin className="h-3.5 w-3.5 text-info-strong" />}
               placeholder="https://linkedin.com/in/yourhandle"
               error={errors.linkedinUrl?.message}
               {...register("linkedinUrl")}
             />
             <SocialField
               id="twitterUrl"
-              icon={<Twitter className="h-3.5 w-3.5 text-sky-500" />}
+              icon={<Twitter className="h-3.5 w-3.5 text-info-strong" />}
               placeholder="https://twitter.com/yourhandle"
               error={errors.twitterUrl?.message}
               {...register("twitterUrl")}
@@ -328,11 +328,11 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
       </Card>
 
       {hasPendingEdits && (
-        <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
+        <div className="sticky bottom-0 z-sticky -mx-4 flex items-center justify-end gap-3 border-t border-border bg-background/90 px-4 py-3 backdrop-blur">
+          <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>
           <Button
             type="submit"
-            className="w-full"
-            disabled={updateProfile.isPending}
+            loading={updateProfile.isPending}
           >
             {updateProfile.isPending ? "Saving…" : "Save Profile"}
           </Button>
@@ -353,8 +353,8 @@ interface SocialFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const SocialField = ({ id, icon, placeholder, error, ...rest }: SocialFieldProps) => (
   <div>
     <div className="flex items-center gap-2">
-      <div className="flex items-center justify-center w-7 h-8 shrink-0">{icon}</div>
-      <Input id={id} {...rest} placeholder={placeholder} className="h-8 text-sm" />
+      <div className="flex h-9 w-7 shrink-0 items-center justify-center text-muted-foreground" aria-hidden="true">{icon}</div>
+      <Input id={id} {...rest} placeholder={placeholder} />
     </div>
     {error && <p className="text-xs text-destructive mt-0.5 pl-9">{error}</p>}
   </div>

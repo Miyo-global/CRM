@@ -7,7 +7,7 @@ export function EmptyExpensesIllustration({ className }: IllustrationProps) {
 
       <ellipse cx="100" cy="110" rx="78" ry="55" fill={GOLD} opacity="0.04" />
 
-      <path d="M55 25h90v130l-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7V25z" fill="white" stroke={BLUE} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M55 25h90v130l-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7V25z" fill="var(--card)" stroke={BLUE} strokeWidth="2" strokeLinejoin="round" />
 
       <rect x="55" y="25" width="90" height="22" fill={BLUE} opacity="0.06" />
       <line x1="75" y1="36" x2="125" y2="36" stroke={BLUE} strokeWidth="2" strokeLinecap="round" opacity="0.25" />

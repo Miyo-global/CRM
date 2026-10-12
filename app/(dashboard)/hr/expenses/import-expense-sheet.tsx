@@ -282,7 +282,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
       <div className="space-y-4">
         <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-gold/10 flex items-center justify-center text-xs font-bold text-gold">1</div>
+              <div className="h-6 w-6 rounded-full bg-brand-soft flex items-center justify-center text-xs font-bold text-brand-text">1</div>
               <Label className="text-sm font-semibold">Download Template</Label>
             </div>
             <p className="text-xs text-muted-foreground pl-8">
@@ -313,12 +313,12 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
           {!file ? (
             <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-gold/10 flex items-center justify-center text-xs font-bold text-gold">2</div>
+                <div className="h-6 w-6 rounded-full bg-brand-soft flex items-center justify-center text-xs font-bold text-brand-text">2</div>
                 <Label className="text-sm font-semibold">Upload File</Label>
               </div>
 
               <div className="pl-8 cursor-pointer min-h-[92px]" onClick={handleClickUploadArea}>
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 transition-colors hover:border-gold/50 hover:bg-gold/5">
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong bg-surface-sunken/40 p-6 transition-colors hover:border-primary hover:bg-brand-soft">
                   <FileSpreadsheet className="h-8 w-8 text-muted-foreground/50 mb-2" />
                   <p className="text-sm font-medium text-foreground">Click to upload</p>
                   <p className="text-xs text-muted-foreground mt-1">CSV or Excel (.xlsx, .xls) — Max 5MB</p>
@@ -336,8 +336,8 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
             </div>
           ) : (
             <div className="-mx-4 -mt-4 px-4 pt-4 pb-3 bg-background border-b mb-4">
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
-                <FileText className="h-8 w-8 text-gold shrink-0" />
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken p-3">
+                <FileText className="h-8 w-8 text-brand-text shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{file.name}</p>
                   <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB uploaded</p>
@@ -390,11 +390,11 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
             <div className={cn(
               "rounded-lg border p-4",
               importResult.success
-                ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20"
+                ? "border-success-strong/25 bg-success-soft"
                 : "border-destructive bg-destructive/10",
             )}>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-success-strong" />
                 <div>
                   <p className="text-sm font-medium">Successfully imported {importResult.count} expense(s)</p>
                   {importResult.skipped > 0 && (
@@ -403,7 +403,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
                 </div>
               </div>
               {importResult.skipped > 0 && (importResult.skippedReasons?.length ?? 0) > 0 && (
-                <details className="mt-3 border-t border-emerald-200/60 pt-3 text-xs">
+                <details className="mt-3 border-t border-success-200/60 pt-3 text-xs">
                   <summary className="cursor-pointer font-medium text-foreground">
                     View skipped row reasons
                   </summary>

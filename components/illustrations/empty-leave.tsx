@@ -7,7 +7,7 @@ export function EmptyLeaveIllustration({ className }: IllustrationProps) {
 
       <circle cx="100" cy="100" r="78" fill={GOLD} opacity="0.03" />
 
-      <rect x="40" y="45" width="110" height="100" rx="8" fill="white" stroke={BLUE} strokeWidth="2" />
+      <rect x="40" y="45" width="110" height="100" rx="8" fill="var(--card)" stroke={BLUE} strokeWidth="2" />
       <rect x="40" y="45" width="110" height="28" rx="8" fill={BLUE} opacity="0.06" />
       <rect x="40" y="65" width="110" height="8" fill={BLUE} opacity="0.06" />
 

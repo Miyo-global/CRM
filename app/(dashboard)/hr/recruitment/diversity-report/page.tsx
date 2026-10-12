@@ -4,11 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { PageBackButton } from "@/components/ui/page-back-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, MapPin, Globe, BarChart3 } from "lucide-react";
+import { Users, MapPin, Globe, type LucideIcon } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { EmptyState } from "@/components/ui/empty-state";
-import { cn } from "@/lib/utils";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { AnalyticsChartCard } from "@/components/charts/analytics-chart-card";
+import { CHART_AXIS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
+import { CHART_VARS, toneVar } from "@/lib/design/tones";
 
 interface DiversityReport {
   total: number;
@@ -27,48 +32,85 @@ function useDiversityReport() {
 }
 
 const GENDER_COLORS: Record<string, string> = {
-  MALE: "bg-blue-500",
-  FEMALE: "bg-pink-500",
-  OTHER: "bg-purple-500",
-  PREFER_NOT_TO_SAY: "bg-gray-400",
-  Unknown: "bg-gray-300",
+  MALE: toneVar.info,
+  FEMALE: toneVar.plum,
+  OTHER: toneVar.plum,
+  PREFER_NOT_TO_SAY: toneVar.neutral,
+  Unknown: "var(--ink-200)",
 };
 
-function HorizontalBar({
+interface BreakdownItem {
+  label: string;
+  count: number;
+}
+
+function BreakdownCard({
+  title,
+  filename,
   items,
   total,
+  color,
   colorFn,
+  empty,
 }: {
-  items: { label: string; count: number }[];
+  title: string;
+  filename: string;
+  items: BreakdownItem[];
   total: number;
+  color: string;
   colorFn?: (label: string) => string;
+  empty?: { icon: LucideIcon; title: string; description: string };
 }) {
+  const rows = items.map((item) => ({
+    label: item.label,
+    count: item.count,
+    percent: total > 0 ? Math.round((item.count / total) * 100) : 0,
+  }));
+  const height = Math.max(200, rows.length * 36 + 24);
+  const summary = rows.map((r) => `${r.label}: ${r.count} (${r.percent}%)`).join(", ");
+
   return (
-    <div className="space-y-2">
-      {items.map((item) => {
-        const pct = total > 0 ? (item.count / total) * 100 : 0;
-        const color = colorFn?.(item.label) ?? "bg-primary";
-        return (
-          <div key={item.label} className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-32 truncate text-right">{item.label}</span>
-            <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn("h-full rounded-full transition-all", color)}
-                style={{ width: `${Math.max(pct, 1)}%` }}
-              />
-            </div>
-            <span className="text-xs tabular-nums w-12 text-right">
-              {item.count} <span className="text-muted-foreground">({Math.round(pct)}%)</span>
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <AnalyticsChartCard
+      title={title}
+      data={rows}
+      filename={filename}
+      ariaLabel={summary ? `${title}: ${summary}` : title}
+      bodyClassName="min-h-0"
+    >
+      {rows.length === 0 && empty ? (
+        <EmptyState
+          compact
+          icon={empty.icon}
+          title={empty.title}
+          description={empty.description}
+          className="border-0 bg-transparent"
+        />
+      ) : (
+        <ResponsiveContainer width="100%" height={height}>
+          <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
+            <CartesianGrid {...CHART_GRID} horizontal={false} vertical />
+            <XAxis type="number" allowDecimals={false} {...CHART_AXIS} />
+            <YAxis type="category" dataKey="label" width={120} {...CHART_AXIS} />
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              cursor={{ fill: "var(--muted)" }}
+              formatter={(value, _name, entry) => [
+                `${value} (${(entry?.payload as { percent?: number } | undefined)?.percent ?? 0}%)`,
+                "Applicants",
+              ]}
+            />
+            <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={28} fill={color}>
+              {colorFn && rows.map((r) => <Cell key={r.label} fill={colorFn(r.label)} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </AnalyticsChartCard>
   );
 }
 
 export default function DiversityReportPage() {
-  const { data, isLoading } = useDiversityReport();
+  const { data, isLoading, isError, error, refetch } = useDiversityReport();
 
   return (
     <PageWrapper
@@ -77,132 +119,69 @@ export default function DiversityReportPage() {
       actions={<PageBackButton fallback="/hr/recruitment" showIcon />}
     >
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}><CardContent className="pt-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
-          ))}
+        <div className="space-y-4">
+          <Skeleton className="h-20 w-full" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}><CardContent className="pt-6"><Skeleton className="h-60 w-full" /></CardContent></Card>
+            ))}
+          </div>
         </div>
-      ) : !data ? (
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            Failed to load report data.
-          </CardContent>
-        </Card>
+      ) : isError || !data ? (
+        <QueryErrorState title="Failed to load report data." error={error} onRetry={() => refetch()} />
       ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-4 mb-6">
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4 text-center">
-                <p className="text-2xl font-bold">{data.total}</p>
-                <p className="text-xs text-muted-foreground">Total Applicants</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4 text-center">
-                <p className="text-2xl font-bold">{data.genderBreakdown.length}</p>
-                <p className="text-xs text-muted-foreground">Gender Categories</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4 text-center">
-                <p className="text-2xl font-bold">{data.locationBreakdown.length}</p>
-                <p className="text-xs text-muted-foreground">Locations</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4 text-center">
-                <p className="text-2xl font-bold">{data.sourceBreakdown.length}</p>
-                <p className="text-xs text-muted-foreground">Sources</p>
-              </CardContent>
-            </Card>
+        <div className="space-y-4">
+          <StatsStrip
+            items={[
+              { label: "Total Applicants", value: data.total, icon: Users },
+              { label: "Gender Categories", value: data.genderBreakdown.length, icon: Users },
+              { label: "Locations", value: data.locationBreakdown.length, icon: MapPin },
+              { label: "Sources", value: data.sourceBreakdown.length, icon: Globe },
+            ]}
+          />
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <BreakdownCard
+              title="Gender Distribution"
+              filename="diversity-gender"
+              items={data.genderBreakdown.map((g) => ({ label: g.gender, count: g.count }))}
+              total={data.total}
+              color={toneVar.neutral}
+              colorFn={(label) => GENDER_COLORS[label] ?? toneVar.neutral}
+              empty={{
+                icon: Users,
+                title: "No gender data recorded yet",
+                description: "Gender breakdown will appear once applicants share it.",
+              }}
+            />
+            <BreakdownCard
+              title="Location Distribution"
+              filename="diversity-location"
+              items={data.locationBreakdown.map((l) => ({ label: l.location, count: l.count }))}
+              total={data.total}
+              color={CHART_VARS[0]}
+              empty={{
+                icon: MapPin,
+                title: "No location data recorded yet",
+                description: "Applicant locations will appear here once available.",
+              }}
+            />
+            <BreakdownCard
+              title="Source Breakdown"
+              filename="diversity-source"
+              items={data.sourceBreakdown.map((s) => ({ label: s.source, count: s.count }))}
+              total={data.total}
+              color={CHART_VARS[1]}
+            />
+            <BreakdownCard
+              title="Pipeline Stage Distribution"
+              filename="diversity-stage"
+              items={data.stageBreakdown.map((s) => ({ label: s.stage, count: s.count }))}
+              total={data.total}
+              color={CHART_VARS[2]}
+            />
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  Gender Distribution
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data.genderBreakdown.length === 0 ? (
-                  <EmptyState
-                    compact
-                    icon={Users}
-                    title="No gender data recorded yet"
-                    description="Gender breakdown will appear once applicants share it."
-                    className="border-0 bg-transparent"
-                  />
-                ) : (
-                  <HorizontalBar
-                    items={data.genderBreakdown.map((g) => ({ label: g.gender, count: g.count }))}
-                    total={data.total}
-                    colorFn={(label) => GENDER_COLORS[label] ?? "bg-gray-400"}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  Location Distribution
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data.locationBreakdown.length === 0 ? (
-                  <EmptyState
-                    compact
-                    icon={MapPin}
-                    title="No location data recorded yet"
-                    description="Applicant locations will appear here once available."
-                    className="border-0 bg-transparent"
-                  />
-                ) : (
-                  <HorizontalBar
-                    items={data.locationBreakdown.map((l) => ({ label: l.location, count: l.count }))}
-                    total={data.total}
-                    colorFn={() => "bg-emerald-500"}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  Source Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HorizontalBar
-                  items={data.sourceBreakdown.map((s) => ({ label: s.source, count: s.count }))}
-                  total={data.total}
-                  colorFn={() => "bg-blue-500"}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  Pipeline Stage Distribution
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HorizontalBar
-                  items={data.stageBreakdown.map((s) => ({ label: s.stage, count: s.count }))}
-                  total={data.total}
-                  colorFn={() => "bg-amber-500"}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </>
+        </div>
       )}
     </PageWrapper>
   );

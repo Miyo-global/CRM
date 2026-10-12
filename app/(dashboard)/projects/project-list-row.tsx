@@ -3,14 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { Progress } from "@/components/ui/progress";
-import {
-  getColorSafe,
-  projectStatusColors,
-  projectStatusDisplayLabels,
-} from "@/lib/theme-constants";
+import { projectStatusDisplayLabels } from "@/lib/theme-constants";
+import { projectStatusTone } from "./project-status-tone";
 import { format } from "date-fns";
 
 interface ProjectListRowProps {
@@ -30,7 +28,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
 }: ProjectListRowProps) {
   const status = project.status ?? "ACTIVE";
   const displayLabel = projectStatusDisplayLabels[status] ?? status;
-  const statusColor = getColorSafe(projectStatusColors, status);
+  const statusTone = projectStatusTone[status] ?? "neutral";
   const dateStr = project.startDate
     ? format(new Date(project.startDate), "MMM d")
     : null;
@@ -39,53 +37,51 @@ export const ProjectListRow = React.memo(function ProjectListRow({
     <Link
       href={`/projects/${project.id}`}
       aria-label={`${project.name} — ${displayLabel}`}
+      className="group block rounded-lg outline-none focus-visible:focus-ring"
     >
-      <div
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg border bg-card hover:shadow-sm hover:bg-muted/30 transition-all group"
+      <Card
+        interactive
+        className="flex-row items-center gap-3 px-4 py-3"
         role="listitem"
       >
-
-        <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0 w-14 text-center">
+        <span className="w-14 shrink-0 rounded-xs bg-muted px-1.5 py-0.5 text-center font-mono text-2xs text-muted-foreground">
           {project.key}
         </span>
 
-        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate flex-1 min-w-0">
+        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground transition-colors group-hover:text-brand-text">
           {project.name}
         </p>
 
         {project.progress.total > 0 && (
-          <div className="hidden sm:flex items-center gap-2 shrink-0 w-28">
-            <Progress value={project.progress.percentage} className="h-1 flex-1" />
-            <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">
+          <div className="hidden w-32 shrink-0 items-center gap-2 sm:flex">
+            <Progress value={project.progress.percentage} className="h-1.5 flex-1" />
+            <span className="w-9 text-right text-xs tabular-nums text-muted-foreground">
               {Math.round(project.progress.percentage)}%
             </span>
           </div>
         )}
 
-        <Badge
-          variant="secondary"
-          className={`text-[10px] font-medium shrink-0 hidden md:inline-flex ${statusColor}`}
-        >
+        <StatusPill tone={statusTone} dot className="hidden shrink-0 md:inline-flex">
           {displayLabel}
-        </Badge>
+        </StatusPill>
 
-        <div className="hidden lg:block shrink-0">
+        <div className="hidden shrink-0 lg:block">
           <AvatarStack
             users={project.members}
             limit={3}
-            className="[&>div]:h-6 [&>div]:w-6"
+            className="[&>div]:size-6"
           />
         </div>
 
         {dateStr && (
-          <div className="hidden lg:flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
-            <Calendar className="h-3 w-3" />
+          <div className="hidden shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground lg:flex">
+            <Calendar className="size-3.5" aria-hidden="true" />
             {dateStr}
           </div>
         )}
 
-        <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-      </div>
+        <ChevronRight className="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />
+      </Card>
     </Link>
   );
 });

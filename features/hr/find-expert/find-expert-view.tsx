@@ -24,7 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyPersonIllustration } from "@/components/illustrations";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { StatusPill } from "@/components/ui/status-pill";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import {
   Select,
@@ -61,7 +62,7 @@ function SkillLevelBadge({ level }: { level: number | null }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
+        "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-semibold tabular-nums",
         LEVEL_COLORS[clamped],
       )}
       title={LEVEL_NAMES[clamped]}
@@ -75,13 +76,13 @@ function AvailabilityBadge({ available, status }: { available: boolean; status: 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-2xs font-medium",
         available
-          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+          ? "bg-success-soft text-success-strong"
+          : "bg-warning-soft text-warning-strong",
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", available ? "bg-emerald-500" : "bg-amber-500")} />
+      <span className={cn("h-1.5 w-1.5 rounded-full", available ? "bg-success-500" : "bg-warning-500")} />
       {status}
     </span>
   );
@@ -106,11 +107,11 @@ function ExpertRow({
     null;
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl border border-border bg-card shadow-noir hover:border-gold/30 transition-colors sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md sm:flex-row sm:items-center">
       <div className="flex items-center gap-3 min-w-0 sm:w-[220px] shrink-0">
-        <Avatar className="h-10 w-10 shrink-0 ring-2 ring-gold/10">
-          <AvatarImage src={resolveImageUrl(expert.image)} />
-          <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+        <Avatar className="size-10 shrink-0">
+          <AvatarImage src={resolveImageUrl(expert.image)} alt="" />
+          <AvatarFallback className="bg-brand-soft text-sm font-semibold text-brand-soft-foreground">
             {getInitials(expert.name)}
           </AvatarFallback>
         </Avatar>
@@ -118,9 +119,9 @@ function ExpertRow({
           <div className="flex items-center gap-2 min-w-0">
             <p className="font-medium text-sm truncate">{expert.name ?? "Unknown"}</p>
             {!expert.isActive && (
-              <Badge variant="destructive" className="shrink-0 text-[9px] px-1.5 py-0">
+              <StatusPill tone="neutral" className="shrink-0">
                 Inactive
-              </Badge>
+              </StatusPill>
             )}
           </div>
           <p className="text-xs text-muted-foreground truncate">
@@ -152,8 +153,8 @@ function ExpertRow({
                 <Badge
                   variant={isMatch ? "default" : "secondary"}
                   className={cn(
-                    "text-[11px] font-normal",
-                    isMatch && "bg-gold hover:bg-gold/90 text-white border-gold",
+                    "text-2xs font-normal",
+                    isMatch && "bg-primary text-primary-foreground",
                     !recognized && !isMatch && "border-dashed text-muted-foreground",
                   )}
                   title={recognized ? undefined : "Unrecognised skill — not in the skills catalog"}
@@ -166,7 +167,7 @@ function ExpertRow({
             );
           })}
           {expert.skillLevels.length > 6 && (
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-2xs">
               +{expert.skillLevels.length - 6}
             </Badge>
           )}
@@ -183,11 +184,11 @@ function ExpertRow({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 shrink-0 sm:ml-auto">
-        <Button asChild variant="default" size="sm" className="h-8 text-xs bg-gold hover:bg-gold/90 text-white">
+        <Button asChild variant="default" size="sm">
           <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
         </Button>
         {expert.email ? (
-          <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1 border-border">
+          <Button asChild variant="outline" size="sm" className="gap-1">
             <a href={`mailto:${expert.email}`}>
               <Mail className="h-3.5 w-3.5" />
               Email
@@ -211,12 +212,12 @@ function ExpertGridCard({
   const q = activeQuery.toLowerCase();
 
   return (
-    <Card className="shadow-noir border-border hover:border-gold/30 transition-colors">
+    <Card interactive className="cursor-default">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-gold/10">
-            <AvatarImage src={resolveImageUrl(expert.image)} />
-            <AvatarFallback className="bg-gold/10 text-gold font-semibold text-sm">
+          <Avatar className="size-10">
+            <AvatarImage src={resolveImageUrl(expert.image)} alt="" />
+            <AvatarFallback className="bg-brand-soft text-sm font-semibold text-brand-soft-foreground">
               {getInitials(expert.name)}
             </AvatarFallback>
           </Avatar>
@@ -224,7 +225,7 @@ function ExpertGridCard({
             <div className="flex items-center gap-2 min-w-0">
               <p className="font-medium text-sm truncate">{expert.name ?? "Unknown"}</p>
               {!expert.isActive && (
-                <Badge variant="destructive" className="shrink-0 text-[9px] px-1.5 py-0">
+                <Badge variant="destructive" className="shrink-0 text-3xs px-1.5 py-0">
                   Inactive
                 </Badge>
               )}
@@ -246,8 +247,8 @@ function ExpertGridCard({
                 key={name}
                 variant={isMatch ? "default" : "secondary"}
                 className={cn(
-                  "text-[10px]",
-                  isMatch && "bg-gold text-white border-gold",
+                  "text-2xs",
+                  isMatch && "bg-primary text-primary-foreground border-primary/40",
                   !recognized && !isMatch && "border-dashed text-muted-foreground",
                 )}
                 title={recognized ? undefined : "Unrecognised skill — not in the skills catalog"}
@@ -263,11 +264,11 @@ function ExpertGridCard({
           <AvailabilityBadge available={expert.available} status={expert.status} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="default" className="flex-1 h-8 text-xs bg-gold hover:bg-gold/90 text-white">
+          <Button asChild size="sm" variant="default" className="flex-1">
             <Link href={`/hr/employees/${expert.userId}`}>View profile</Link>
           </Button>
           {expert.email ? (
-            <Button asChild size="sm" variant="outline" className="h-8 px-2 text-xs border-border" aria-label="Email expert">
+            <Button asChild size="sm" variant="outline" className="px-2" aria-label="Email expert">
               <a href={`mailto:${expert.email}`}>
                 <Mail className="h-3.5 w-3.5" />
               </a>
@@ -487,7 +488,7 @@ export function FindExpertView() {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-border"
+          className="gap-2"
           type="button"
           onClick={() => {
             router.push("/hr");
@@ -499,23 +500,20 @@ export function FindExpertView() {
       }
     >
       {activeQuery && !isLoading && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Experts Found" value={stats.count} icon={Users} color="gold" index={0} />
-          <StatCard label="Departments" value={stats.departments} icon={Building2} color="gold" index={1} />
-          <StatCard label="Locations" value={stats.locations} icon={MapPin} color="gold" index={2} />
-          <StatCard
-            label="Avg. Skill Level"
-            value={stats.avgLevel || ""}
-            icon={Star}
-            color="gold"
-            index={3}
-          />
-        </div>
+        <StatsStrip
+          className="mb-4"
+          items={[
+            { label: "Experts Found", value: stats.count, icon: Users },
+            { label: "Departments", value: stats.departments, icon: Building2 },
+            { label: "Locations", value: stats.locations, icon: MapPin },
+            { label: "Avg. Skill Level", value: stats.avgLevel || "", icon: Star },
+          ]}
+        />
       )}
 
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 z-base size-4 -translate-y-1/2 text-subtle-foreground" aria-hidden="true" />
           <Input
             value={query}
             onChange={(e) => {
@@ -528,17 +526,18 @@ export function FindExpertView() {
               if (e.key === "Escape") setShowSuggestions(false);
             }}
             placeholder="e.g. React, Financial Modelling, Python…"
-            className="pl-9 h-10 border-border shadow-noir"
+            data-page-search
+            className="h-10 pl-9"
             aria-label="Skill search"
             autoComplete="off"
           />
           {showSuggestions && debouncedQuery && (suggestions?.length ?? 0) > 0 && (
-            <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-popover shadow-lg">
+            <div className="absolute left-0 right-0 top-full z-dropdown mt-1 max-h-72 overflow-y-auto rounded-lg border border-border bg-popover shadow-md">
               {suggestions!.map((s) => (
                 <button
                   key={s.skill}
                   type="button"
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/60"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     runSearch(s.skill);
@@ -548,7 +547,7 @@ export function FindExpertView() {
                     <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
                     <span className="truncate">{s.skill}</span>
                     {s.category && (
-                      <Badge variant="outline" className="shrink-0 text-[9px]">
+                      <Badge variant="outline" className="shrink-0 text-3xs">
                         {s.category}
                       </Badge>
                     )}
@@ -564,7 +563,7 @@ export function FindExpertView() {
         <Button
           type="submit"
           disabled={!query.trim()}
-          className="h-10 px-6 bg-gold hover:bg-gold/90 text-white shadow-noir glow-gold"
+          className="h-10 px-6"
         >
           Search
         </Button>
@@ -693,7 +692,7 @@ export function FindExpertView() {
               )}
               </div>
               {sortBy === "relevance" && (
-                <p className="text-[11px] text-muted-foreground max-w-md leading-snug">
+                <p className="text-2xs text-muted-foreground max-w-md leading-snug">
                   Relevance: match quality, structured level (when rated), experience, skill breadth; ties break by level, tenure, skill count, then name.
                 </p>
               )}
@@ -715,7 +714,7 @@ export function FindExpertView() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className={cn("h-8 px-2.5 rounded-none", viewMode === "list" && "bg-gold/10 text-gold")}
+                  className={cn("h-8 px-2.5 rounded-none", viewMode === "list" && "bg-brand-soft text-brand-text")}
                   onClick={() => setViewMode("list")}
                   aria-label="List view"
                 >
@@ -725,7 +724,7 @@ export function FindExpertView() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className={cn("h-8 px-2.5 rounded-none border-l border-border", viewMode === "grid" && "bg-gold/10 text-gold")}
+                  className={cn("h-8 px-2.5 rounded-none border-l border-border", viewMode === "grid" && "bg-brand-soft text-brand-text")}
                   onClick={() => setViewMode("grid")}
                   aria-label="Grid view"
                 >
@@ -748,7 +747,7 @@ export function FindExpertView() {
           ) : isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-xl" />
+                <Skeleton key={i} className="h-20 w-full rounded-lg" />
               ))}
             </div>
           ) : filteredExperts.length === 0 ? (
@@ -807,7 +806,7 @@ export function FindExpertView() {
 
         {activeQuery && !isLoading && filteredExperts.length > 0 && (
           <aside className="hidden lg:flex flex-col gap-4 mt-6 lg:mt-0">
-            <Card className="shadow-noir border-border">
+            <Card>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-medium">Top Skills</CardTitle>
               </CardHeader>
@@ -823,7 +822,7 @@ export function FindExpertView() {
                 <Button
                   variant="link"
                   size="sm"
-                  className="h-auto p-0 text-xs text-gold"
+                  className="h-auto p-0 text-xs text-brand-text"
                   onClick={() => router.push("/hr/employees/skills-matrix")}
                 >
                   View all skills
@@ -832,7 +831,7 @@ export function FindExpertView() {
             </Card>
 
             {relatedSkills.length > 0 && (
-              <Card className="shadow-noir border-border">
+              <Card>
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm font-medium">Related Skills</CardTitle>
                 </CardHeader>
@@ -842,7 +841,7 @@ export function FindExpertView() {
                       <button
                         key={skill}
                         type="button"
-                        className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/50 hover:border-gold/40 hover:bg-gold/5 transition-colors"
+                        className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs transition-colors hover:border-border-strong hover:bg-brand-soft"
                         onClick={() => {
                           setQuery(skill);
                           setActiveQuery(skill);
@@ -857,14 +856,14 @@ export function FindExpertView() {
               </Card>
             )}
 
-            <Card className="shadow-noir border-border bg-gold/5 border-gold/20">
+            <Card className="border-primary/40 bg-brand-soft">
               <CardContent className="p-4 space-y-3">
                 <p className="text-sm text-muted-foreground leading-snug">
                   Can&apos;t find the right expert? Raise a request and we&apos;ll help you.
                 </p>
                 <Button
                   asChild
-                  className="w-full bg-gold hover:bg-gold/90 text-white glow-gold"
+                  className="w-full"
                 >
                   <Link href="/hr/helpdesk">Request Expert</Link>
                 </Button>

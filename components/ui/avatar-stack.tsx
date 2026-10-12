@@ -24,7 +24,7 @@ export function AvatarStack({ users, limit = 5, className, onSelect, selectedIds
   const remainingCount = Math.max(0, users.length - limit);
 
   return (
-    <div className={cn("flex -space-x-3 items-center", className)}>
+    <div className={cn("flex -space-x-2 items-center", className)}>
       <TooltipProvider>
         {visibleUsers.map((user) => {
            const isSelected = selectedIds.includes(user.id);
@@ -33,17 +33,17 @@ export function AvatarStack({ users, limit = 5, className, onSelect, selectedIds
               <TooltipTrigger asChild>
                 <div
                     className={cn(
-                        "relative transition-transform hover:z-10 hover:scale-110 cursor-pointer",
-                        isSelected && "z-20 scale-110"
+                        "relative cursor-pointer rounded-full transition-transform duration-150 hover:z-10 hover:-translate-y-0.5 motion-reduce:transition-none",
+                        isSelected && "z-20 -translate-y-0.5"
                     )}
                     onClick={() => onSelect?.(user.id)}
                 >
                   <Avatar className={cn(
-                      "h-8 w-8 border-2 border-background",
-                      isSelected && "ring-2 ring-primary border-primary"
+                      "size-8 ring-2 ring-card",
+                      isSelected && "ring-primary"
                   )}>
                     <AvatarImage src={resolveImageUrl(user.image)} />
-                    <AvatarFallback className="text-xs bg-muted text-muted-foreground">
+                    <AvatarFallback>
                       {user.firstName?.[0]}
                       {user.lastName?.[0]}
                     </AvatarFallback>
@@ -59,7 +59,7 @@ export function AvatarStack({ users, limit = 5, className, onSelect, selectedIds
       </TooltipProvider>
 
       {remainingCount > 0 && (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-medium text-muted-foreground hover:bg-muted/80 z-0">
+        <div className="z-0 flex size-8 items-center justify-center rounded-full bg-neutral-soft text-2xs font-semibold text-neutral-strong ring-2 ring-card tabular-nums">
           +{remainingCount}
         </div>
       )}

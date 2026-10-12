@@ -21,3 +21,11 @@ export const typeIcons: Record<TicketType, React.ComponentType<{ className?: str
 };
 
 export const DEFAULT_TICKET_ICON = CheckCircle2;
+
+/** Ticket type → tone (§6.2: Bug danger, Story success, Task info, Epic plum). */
+export const typeTones: Record<TicketType, import("@/lib/design/tones").Tone> = {
+  BUG: "danger",
+  STORY: "success",
+  TASK: "info",
+  EPIC: "plum",
+};

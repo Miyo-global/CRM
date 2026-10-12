@@ -15,8 +15,9 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import {
   Plus,
-  Loader2,
   Clock,
+  ChevronLeft,
+  Inbox,
   AlertTriangle,
   CheckCircle2,
   Pause,
@@ -25,8 +26,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { PropertyList } from "@/components/shared/property-list";
+import type { Tone } from "@/lib/design/tones";
 import {
   Select,
   SelectContent,
@@ -39,6 +43,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,11 +60,19 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
 
-const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "bg-slate-100 text-slate-700",
-  MEDIUM: "bg-blue-100 text-blue-700",
-  HIGH: "bg-amber-100 text-amber-700",
-  URGENT: "bg-red-100 text-red-700",
+const PRIORITY_TONES: Record<string, Tone> = {
+  LOW: "neutral",
+  MEDIUM: "info",
+  HIGH: "warning",
+  URGENT: "danger",
+};
+
+const STATUS_TONES: Record<string, Tone> = {
+  OPEN: "info",
+  IN_PROGRESS: "brand",
+  WAITING: "warning",
+  RESOLVED: "success",
+  CLOSED: "neutral",
 };
 
 const STATUS_ICONS: Record<string, typeof Clock> = {
@@ -107,7 +120,7 @@ function InboxContent() {
     });
   }, [searchParams, router, pathname]);
 
-  const { data: ticketsData, isLoading } = useSupportTickets({
+  const { data: ticketsData, isLoading, isError, error, refetch } = useSupportTickets({
     ...(statusFilter !== "all" ? { status: statusFilter as SupportTicketStatus } : {}),
     ...(priorityFilter !== "all" ? { priority: priorityFilter as SupportTicketPriority } : {}),
   });
@@ -120,6 +133,8 @@ function InboxContent() {
   const handlePriorityFilter = useCallback((v: string) => updateFilter("priority", v), [updateFilter]);
   const handleBackFromTicket = useCallback(() => setSelectedTicketId(null), []);
 
+  const hasActiveFilters = statusFilter !== "all" || priorityFilter !== "all";
+
   return (
     <>
       <PageWrapper
@@ -130,14 +145,14 @@ function InboxContent() {
             : `${(stats?.open ?? 0) + (stats?.in_progress ?? 0)} active tickets${(stats?.sla_breached ?? 0) > 0 ? ` · ${stats?.sla_breached} SLA breached` : ""}`
         }
         actions={
-          <Button onClick={handleOpenCreate} size="sm" className="gap-1.5 bg-gold hover:bg-gold/80 text-white">
-            <Plus className="h-3.5 w-3.5" /> New Ticket
+          <Button onClick={handleOpenCreate} size="sm">
+            <Plus aria-hidden /> New Ticket
           </Button>
         }
         filters={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[130px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="h-8 w-32 text-xs" aria-label="Filter by status"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="OPEN">Open</SelectItem>
@@ -148,7 +163,7 @@ function InboxContent() {
               </SelectContent>
             </Select>
             <Select value={priorityFilter} onValueChange={handlePriorityFilter}>
-              <SelectTrigger className="w-full sm:w-[120px] h-8 text-xs"><SelectValue placeholder="Priority" /></SelectTrigger>
+              <SelectTrigger className="h-8 w-32 text-xs" aria-label="Filter by priority"><SelectValue placeholder="Priority" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Priority</SelectItem>
                 <SelectItem value="LOW">Low</SelectItem>
@@ -157,27 +172,46 @@ function InboxContent() {
                 <SelectItem value="URGENT">Urgent</SelectItem>
               </SelectContent>
             </Select>
-          </>
+          </div>
         }
         noInternalScroll
-        contentClassName="flex overflow-hidden !py-0 !px-0"
+        contentClassName="flex h-[calc(100dvh-14rem)] min-h-96 overflow-hidden px-0 pt-0 pb-0 sm:px-0 xl:px-0"
       >
-        <div className={cn("w-full md:w-[360px] border-r border-border/40 flex flex-col overflow-hidden", selectedTicketId && "hidden md:flex")}>
+        <div className={cn("flex w-full flex-col overflow-hidden border-border lg:w-90 lg:shrink-0 lg:border-r", selectedTicketId && "hidden lg:flex")}>
           <ScrollArea className="flex-1">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <div className="space-y-px" aria-busy="true">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-2 px-4 py-3">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="p-4">
+                <QueryErrorState error={error} onRetry={() => void refetch()} className="min-h-0 py-8" />
               </div>
             ) : tickets.length === 0 ? (
-              <EmptyState
-                compact
-                title="No tickets found"
-                description="New tickets will appear here."
-                action={{ label: "New Ticket", onClick: handleOpenCreate }}
-                className="border-0 bg-transparent"
-              />
+              hasActiveFilters ? (
+                <EmptyState
+                  compact
+                  icon={Inbox}
+                  title="No results for these filters"
+                  className="m-4"
+                />
+              ) : (
+                <EmptyState
+                  compact
+                  illustration={<EmptyTicketIllustration className="size-24" />}
+                  title="No tickets found"
+                  description="New tickets will appear here."
+                  action={{ label: "New Ticket", onClick: handleOpenCreate }}
+                  className="m-4"
+                />
+              )
             ) : (
-              <div className="divide-y divide-border/30">
+              <div className="divide-y divide-border">
                 {tickets.map((ticket) => (
                   <TicketListItem
                     key={ticket.id}
@@ -191,16 +225,17 @@ function InboxContent() {
           </ScrollArea>
         </div>
 
-        <div className={cn("flex-1 flex flex-col", !selectedTicketId && "hidden md:flex")}>
+        <div className={cn("flex min-w-0 flex-1 flex-col", !selectedTicketId && "hidden lg:flex")}>
           {selectedTicketId ? (
             <TicketDetail ticketId={selectedTicketId} onBack={handleBackFromTicket} />
           ) : (
-            <div className="flex-1 flex items-center justify-center text-center px-6">
-              <div>
-                <EmptyTicketIllustration className="mx-auto mb-3 w-40 h-40" />
-                <p className="text-sm font-medium text-foreground">Select a ticket</p>
-                <p className="text-xs text-muted-foreground mt-1">Choose a ticket from the list to view its details</p>
-              </div>
+            <div className="flex flex-1 items-center justify-center p-6">
+              <EmptyState
+                illustration={<EmptyTicketIllustration className="size-40" />}
+                title="Select a ticket"
+                description="Choose a ticket from the list to view its details"
+                className="border-0 bg-transparent"
+              />
             </div>
           )}
         </div>
@@ -224,32 +259,38 @@ function TicketListItem({ ticket, isSelected, onSelect }: TicketListItemProps) {
 
   return (
     <button
+      type="button"
       onClick={handleClick}
+      aria-current={isSelected ? "true" : undefined}
       className={cn(
-        "w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors",
-        isSelected && "bg-muted/50 border-l-2 border-gold"
+        "relative w-full px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:focus-ring",
+        isSelected && "bg-brand-soft hover:bg-brand-soft"
       )}
     >
+      {isSelected && <span className="absolute inset-y-0 left-0 w-0.5 bg-primary" aria-hidden />}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold truncate">{toTitleCase(ticket.title)}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            #{ticket.id} {ticket.client?.name ? `- ${ticket.client.name}` : ""}
+          <p className="truncate text-sm font-semibold" title={toTitleCase(ticket.title)}>{toTitleCase(ticket.title)}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            <span className="font-mono">#{ticket.id}</span> {ticket.client?.name ? `- ${ticket.client.name}` : ""}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0", PRIORITY_COLORS[ticket.priority])}>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <StatusPill tone={PRIORITY_TONES[ticket.priority] ?? "neutral"}>
             {ticket.priority}
-          </Badge>
+          </StatusPill>
           {isBreached && (
-            <Badge variant="destructive" className="text-[9px] px-1 py-0">SLA</Badge>
+            <StatusPill tone="danger" dot>SLA</StatusPill>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 mt-1.5">
-        <StatusIcon className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] text-muted-foreground">{ticket.status.replace("_", " ")}</span>
-        <span className="text-[10px] text-muted-foreground ml-auto">
+      <div className="mt-1.5 flex items-center gap-2">
+        <StatusIcon className="size-3 text-muted-foreground" aria-hidden />
+        <span className="text-xs text-muted-foreground">{ticket.status.replace("_", " ")}</span>
+        <span
+          className="ml-auto text-xs text-muted-foreground tabular-nums"
+          title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+        >
           {ticket.createdAt ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true }) : ""}
         </span>
       </div>
@@ -304,7 +345,6 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
   }, [ticket, updateTicket]);
 
   const handleStatusValueChange = useCallback((v: string) => handleStatusChange(v as SupportTicketStatus), [handleStatusChange]);
-  const handleToggleInternal = useCallback(() => setIsInternal((v) => !v), []);
   const handleReplyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value), []);
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -315,117 +355,158 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
 
   if (isLoading || !ticket) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      <div className="flex-1 space-y-4 p-4" aria-busy="true">
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-16 w-3/4" />
+        <Skeleton className="h-16 w-2/3" />
       </div>
     );
   }
 
   const isBreached = ticket.slaDeadline && new Date(ticket.slaDeadline) < new Date() && !["RESOLVED", "CLOSED"].includes(ticket.status);
   const messages = [...(ticket.messages ?? [])].reverse();
+  const fmtDate = (d: Date | string | null) => (d ? new Date(d).toLocaleString() : null);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-border/40 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onBack} className="md:hidden h-7 px-2">Back</Button>
-            <div>
-              <h3 className="text-sm font-bold">{toTitleCase(ticket.title)}</h3>
-              <p className="text-[11px] text-muted-foreground">#{ticket.id} {ticket.client?.name ? `- ${ticket.client.name}` : ""}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className={cn("text-xs", PRIORITY_COLORS[ticket.priority])}>{ticket.priority}</Badge>
-            {isBreached && <Badge variant="destructive" className="text-xs">SLA Breached</Badge>}
-            <Select value={ticket.status} onValueChange={handleStatusValueChange}>
-              <SelectTrigger className="h-7 text-xs w-[120px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="OPEN">Open</SelectItem>
-                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="WAITING">Waiting</SelectItem>
-                <SelectItem value="RESOLVED">Resolved</SelectItem>
-                <SelectItem value="CLOSED">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <ScrollArea className="flex-1 px-4 py-3">
-        {ticket.description && (
-          <div className="bg-muted/30 rounded-lg p-3 mb-4 text-sm">{toSentenceCase(ticket.description)}</div>
-        )}
-        <div className="space-y-3">
-          {messages.map((msg) => (
-            <div key={msg.id} className="flex gap-2.5">
-              <Avatar className="h-7 w-7 shrink-0 mt-0.5">
-                <AvatarImage src={resolveImageUrl(msg.author?.image)} />
-                <AvatarFallback className="text-[9px]">{getInitials(msg.author?.name)}</AvatarFallback>
-              </Avatar>
-              <div className={cn(
-                "flex-1 min-w-0 rounded-lg px-3 py-2",
-                msg.isInternal
-                  ? "bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
-                  : "bg-muted/20"
-              )}>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold">{msg.author?.name}</span>
-                  {msg.isInternal && (
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 gap-0.5 border-amber-400 text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-700">
-                      <Lock className="h-2.5 w-2.5" /> Internal
-                    </Badge>
-                  )}
-                  <span className="text-[10px] text-muted-foreground">
-                    {msg.createdAt ? formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true }) : ""}
-                  </span>
-                </div>
-                <p className="text-[13px] mt-0.5 whitespace-pre-wrap">{msg.body}</p>
+    <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="shrink-0 border-b border-border px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Button variant="ghost" size="icon-sm" onClick={onBack} className="lg:hidden" aria-label="Back">
+                <ChevronLeft aria-hidden />
+              </Button>
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-semibold">{toTitleCase(ticket.title)}</h2>
+                <p className="truncate text-xs text-muted-foreground">
+                  <span className="font-mono">#{ticket.id}</span> {ticket.client?.name ? `- ${ticket.client.name}` : ""}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      </ScrollArea>
-
-      <div className="px-4 py-3 border-t border-border/40 shrink-0">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2">
-            <Switch checked={isInternal} onCheckedChange={setIsInternal} className="h-4 w-7" />
-            <Label className="text-[11px] text-muted-foreground cursor-pointer" onClick={handleToggleInternal}>
-              {isInternal ? "Internal note (not visible to client)" : "Public reply"}
-            </Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusPill tone={PRIORITY_TONES[ticket.priority] ?? "neutral"}>{ticket.priority}</StatusPill>
+              {isBreached && <StatusPill tone="danger" dot>SLA Breached</StatusPill>}
+              <Select value={ticket.status} onValueChange={handleStatusValueChange}>
+                <SelectTrigger className="h-8 w-32 text-xs" aria-label="Ticket status"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OPEN">Open</SelectItem>
+                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                  <SelectItem value="WAITING">Waiting</SelectItem>
+                  <SelectItem value="RESOLVED">Resolved</SelectItem>
+                  <SelectItem value="CLOSED">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleAiReply}
-            disabled={aiReply.isPending}
-            className="h-6 text-[11px] text-muted-foreground gap-1 px-2"
-            aria-label="Generate AI reply suggestion"
-          >
-            {aiReply.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-            AI Reply
-          </Button>
         </div>
-        <div className="flex gap-2">
-          <Textarea
-            value={replyText}
-            onChange={handleReplyChange}
-            placeholder={isInternal ? "Add internal note..." : "Type your reply..."}
-            className="min-h-[60px] max-h-[120px] text-sm resize-none"
-            onKeyDown={handleKeyDown}
-          />
-          <Button
-            onClick={handleReply}
-            disabled={!replyText.trim() || addMessage.isPending}
-            size="icon"
-            className="h-[60px] w-10 shrink-0 bg-gold hover:bg-gold/80 text-white"
-            aria-label="Send reply"
-          >
-            {addMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
+
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-4 py-4">
+            {ticket.description && (
+              <div className="mb-4 rounded-lg bg-surface-sunken p-3 text-sm">{toSentenceCase(ticket.description)}</div>
+            )}
+            <div className="space-y-3">
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex gap-2.5">
+                  <Avatar className="mt-0.5 size-7 shrink-0">
+                    <AvatarImage src={resolveImageUrl(msg.author?.image)} />
+                    <AvatarFallback className="text-3xs">{getInitials(msg.author?.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className={cn(
+                    "min-w-0 flex-1 rounded-lg border px-3 py-2",
+                    msg.isInternal
+                      ? "border-warning-soft bg-warning-soft"
+                      : "border-border bg-card"
+                  )}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold">{msg.author?.name}</span>
+                      {msg.isInternal && (
+                        <StatusPill tone="warning">
+                          <Lock className="size-2.5" aria-hidden /> Internal
+                        </StatusPill>
+                      )}
+                      <span
+                        className="text-xs text-muted-foreground tabular-nums"
+                        title={fmtDate(msg.createdAt) ?? undefined}
+                      >
+                        {msg.createdAt ? formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true }) : ""}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 whitespace-pre-wrap text-sm">{msg.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
+
+        <div className="shrink-0 border-t border-border bg-card px-4 py-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Switch id="reply-internal" checked={isInternal} onCheckedChange={setIsInternal} />
+              <Label htmlFor="reply-internal" className="cursor-pointer text-xs text-muted-foreground">
+                {isInternal ? "Internal note (not visible to client)" : "Public reply"}
+              </Label>
+            </div>
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={handleAiReply}
+              disabled={aiReply.isPending}
+              loading={aiReply.isPending}
+              className="text-muted-foreground"
+              aria-label="Generate AI reply suggestion"
+            >
+              {!aiReply.isPending && <Sparkles aria-hidden />}
+              AI Reply
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Textarea
+              value={replyText}
+              onChange={handleReplyChange}
+              placeholder={isInternal ? "Add internal note..." : "Type your reply..."}
+              className="max-h-30 min-h-15 resize-none text-sm"
+              onKeyDown={handleKeyDown}
+              aria-label={isInternal ? "Internal note" : "Reply"}
+            />
+            <Button
+              onClick={handleReply}
+              disabled={!replyText.trim() || addMessage.isPending}
+              loading={addMessage.isPending}
+              size="icon"
+              className="h-15 w-10 shrink-0"
+              aria-label="Send reply"
+            >
+              {!addMessage.isPending && <Send aria-hidden />}
+            </Button>
+          </div>
         </div>
       </div>
+
+      <aside className="hidden w-72 shrink-0 overflow-y-auto border-l border-border p-4 xl:block" aria-label="Ticket properties">
+        <h3 className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Properties</h3>
+        <PropertyList
+          className="grid-cols-[96px_1fr]"
+          items={[
+            { label: "Status", value: <StatusPill tone={STATUS_TONES[ticket.status] ?? "neutral"} dot>{ticket.status.replace("_", " ")}</StatusPill> },
+            { label: "Priority", value: <StatusPill tone={PRIORITY_TONES[ticket.priority] ?? "neutral"}>{ticket.priority}</StatusPill> },
+            { label: "Client", value: ticket.client?.name ?? null },
+            { label: "Assignee", value: ticket.assignee?.name ?? null },
+            { label: "Created by", value: ticket.creator?.name ?? null },
+            { label: "Created", value: fmtDate(ticket.createdAt) ? <span className="tabular-nums">{fmtDate(ticket.createdAt)}</span> : null },
+            {
+              label: "SLA due",
+              value: ticket.slaDeadline ? (
+                <span className={cn("tabular-nums", isBreached && "font-medium text-danger-strong")}>
+                  {fmtDate(ticket.slaDeadline)}
+                </span>
+              ) : null,
+            },
+          ]}
+        />
+      </aside>
     </div>
   );
 }
@@ -509,11 +590,11 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader><SheetTitle>New Support Ticket</SheetTitle></SheetHeader>
-        <div className="space-y-3">
+      <SheetContent size="sm" className="w-full">
+        <SheetHeader className="border-b border-border"><SheetTitle>New Support Ticket</SheetTitle></SheetHeader>
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
           <div>
-            <Label className="text-xs">Title <span className="text-destructive">*</span></Label>
+            <Label className="text-sm">Title <span className="text-destructive">*</span></Label>
             <Input
               value={title}
               onChange={handleTitleChange}
@@ -521,10 +602,10 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               className={`mt-1 ${titleError ? "border-destructive" : ""}`}
               maxLength={200}
             />
-            {titleError && <p className="text-[11px] text-destructive mt-1">{titleError}</p>}
+            {titleError && <p className="text-xs text-destructive mt-1">{titleError}</p>}
           </div>
           <div>
-            <Label className="text-xs">Category <span className="text-destructive">*</span></Label>
+            <Label className="text-sm">Category <span className="text-destructive">*</span></Label>
             <Select value={category} onValueChange={handleCategoryChange}>
               <SelectTrigger className={cn("mt-1", categoryError ? "border-destructive" : "")}><SelectValue placeholder="Select a category" /></SelectTrigger>
               <SelectContent>
@@ -533,14 +614,14 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                 ))}
               </SelectContent>
             </Select>
-            {categoryError && <p className="text-[11px] text-destructive mt-1">{categoryError}</p>}
+            {categoryError && <p className="text-xs text-destructive mt-1">{categoryError}</p>}
           </div>
           <div>
-            <Label className="text-xs">Description</Label>
-            <Textarea value={description} onChange={handleDescChange} placeholder="Detailed description..." className="mt-1 min-h-[80px]" />
+            <Label className="text-sm">Description</Label>
+            <Textarea value={description} onChange={handleDescChange} placeholder="Detailed description..." className="mt-1 min-h-20" />
           </div>
           <div>
-            <Label className="text-xs">Priority</Label>
+            <Label className="text-sm">Priority</Label>
             <Select value={priority} onValueChange={handlePriorityChange}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -551,14 +632,13 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!title.trim() || !category || create.isPending} className="bg-gold hover:bg-gold/80 text-white">
-              {create.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-              Create Ticket
-            </Button>
-          </div>
         </div>
+        <SheetFooter>
+          <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleCreate} disabled={!title.trim() || !category || create.isPending} loading={create.isPending}>
+            Create Ticket
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

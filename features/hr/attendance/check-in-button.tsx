@@ -13,7 +13,8 @@ import {
   useHrToggleBreak,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
-import { Clock, Coffee, LogIn, LogOut, Loader2, Play, Pause } from "lucide-react";
+import { Clock, Coffee, LogIn, LogOut, Play, Pause } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
 import { formatDuration, formatTimerSegment } from "./attendance-utils";
 import { OvertimeWorklogSheet } from "./overtime-worklog-sheet";
 
@@ -175,9 +176,16 @@ export const TimerCard = memo(function TimerCard() {
     <>
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-gold" />
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <IconChip icon={Clock} />
           Time Tracker
+          <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <span
+              className={`size-2 rounded-full ${isActive ? (isOnBreak ? "bg-warning-500" : "bg-success-500 motion-safe:animate-pulse") : "bg-ink-300"}`}
+              aria-hidden="true"
+            />
+            <span className="sr-only">{isActive ? (isOnBreak ? "On break" : "Clocked in") : "Not clocked in"}</span>
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 pb-5">
@@ -186,44 +194,44 @@ export const TimerCard = memo(function TimerCard() {
           aria-label={`Session time: ${sessionTimer.hours} hours, ${sessionTimer.minutes} minutes, ${sessionTimer.seconds} seconds`}
         >
           <div className="flex flex-col items-center">
-            <div className="bg-muted rounded-lg px-3 py-3 min-w-[56px] text-center">
+            <div className="min-w-14 rounded-lg bg-surface-sunken px-3 py-3 text-center">
               <span className="font-mono text-3xl font-bold tabular-nums text-foreground">
                 {formatTimerSegment(sessionTimer.hours)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               HRS
             </span>
           </div>
 
-          <span className="text-2xl font-bold text-gold animate-pulse mb-5">:</span>
+          <span className="mb-5 text-2xl font-bold text-brand-text motion-safe:animate-pulse" aria-hidden="true">:</span>
 
           <div className="flex flex-col items-center">
-            <div className="bg-muted rounded-lg px-3 py-3 min-w-[56px] text-center">
+            <div className="min-w-14 rounded-lg bg-surface-sunken px-3 py-3 text-center">
               <span className="font-mono text-3xl font-bold tabular-nums text-foreground">
                 {formatTimerSegment(sessionTimer.minutes)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               MIN
             </span>
           </div>
 
-          <span className="text-2xl font-bold text-gold animate-pulse mb-5">:</span>
+          <span className="mb-5 text-2xl font-bold text-brand-text motion-safe:animate-pulse" aria-hidden="true">:</span>
 
           <div className="flex flex-col items-center">
-            <div className="bg-muted rounded-lg px-3 py-3 min-w-[56px] text-center">
+            <div className="min-w-14 rounded-lg bg-surface-sunken px-3 py-3 text-center">
               <span className="font-mono text-3xl font-bold tabular-nums text-foreground">
                 {formatTimerSegment(sessionTimer.seconds)}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">
               SEC
             </span>
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground text-center italic">
+        <p className="text-center text-sm tabular-nums text-muted-foreground">
           {isOnBreak && "On break"}
           {!isOnBreak && isCheckedIn && checkInTime && `Checked in at ${format(new Date(checkInTime), "hh:mm a")}`}
           {!isOnBreak && !isCheckedIn && !isActive && !isInCooldown && "Not clocked in"}
@@ -232,8 +240,8 @@ export const TimerCard = memo(function TimerCard() {
 
         {isOnBreak && (
           <div className="flex justify-center">
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-800">
-              <Coffee className="h-3 w-3 mr-1" /> On Break
+            <Badge variant="warning">
+              <Coffee className="size-3" aria-hidden="true" /> On Break
             </Badge>
           </div>
         )}
@@ -242,18 +250,11 @@ export const TimerCard = memo(function TimerCard() {
           <Button
             onClick={handleCheckIn}
             disabled={isActive || isPending || isInCooldown}
-            variant={isActive ? "secondary" : "default"}
-            className={`font-semibold ${
-              !isActive && !isInCooldown
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : ""
-            }`}
+            loading={checkInMutation.isPending}
+            variant={isActive ? "outline" : "default"}
+            className="font-semibold"
           >
-            {checkInMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <LogIn className="h-4 w-4 mr-2" />
-            )}
+            {!checkInMutation.isPending && <LogIn className="size-4" aria-hidden="true" />}
             {isInCooldown
               ? `Wait ${Math.floor(localCooldown / 60)}:${String(localCooldown % 60).padStart(2, "0")}`
               : "Check In"}
@@ -262,18 +263,11 @@ export const TimerCard = memo(function TimerCard() {
           <Button
             onClick={handleClockAction}
             disabled={!isActive || isPending}
-            variant={isActive ? "default" : "secondary"}
-            className={`font-semibold ${
-              isActive
-                ? "bg-rose-600 hover:bg-rose-700 text-white"
-                : ""
-            }`}
+            loading={checkOutMutation.isPending}
+            variant={isActive ? "secondary" : "outline"}
+            className="font-semibold"
           >
-            {checkOutMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <LogOut className="h-4 w-4 mr-2" />
-            )}
+            {!checkOutMutation.isPending && <LogOut className="size-4" aria-hidden="true" />}
             Check Out
           </Button>
         </div>
@@ -282,15 +276,13 @@ export const TimerCard = memo(function TimerCard() {
           <Button
             variant="outline"
             onClick={handleBreakToggle}
-            disabled={breakMutation.isPending}
+            loading={breakMutation.isPending}
             className="w-full"
           >
-            {breakMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : isOnBreak ? (
-              <Play className="h-4 w-4 mr-2" />
+            {breakMutation.isPending ? null : isOnBreak ? (
+              <Play className="size-4" aria-hidden="true" />
             ) : (
-              <Pause className="h-4 w-4 mr-2" />
+              <Pause className="size-4" aria-hidden="true" />
             )}
             {isOnBreak ? "Resume Work" : "Take Break"}
           </Button>
@@ -299,12 +291,12 @@ export const TimerCard = memo(function TimerCard() {
         {dailyStats && (
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
             <div className="text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Work</p>
-              <p className="text-sm font-semibold">{formatDuration(dailyStats.workHours)}</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Work</p>
+              <p className="text-sm font-semibold tabular-nums">{formatDuration(dailyStats.workHours)}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Break</p>
-              <p className="text-sm font-semibold">{formatDuration(dailyStats.breakHours)}</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Break</p>
+              <p className="text-sm font-semibold tabular-nums">{formatDuration(dailyStats.breakHours)}</p>
             </div>
           </div>
         )}

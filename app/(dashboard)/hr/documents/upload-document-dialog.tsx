@@ -311,11 +311,11 @@ export function UploadDocumentDialog({
   }, [files, uploadFileFn, createDocumentMutation, onSuccess]);
 
   const getFileIcon = (f: File) => {
-    if (f.type.startsWith("image/")) return <FileText className="h-5 w-5 text-amber-500" />;
-    if (f.type === "application/pdf") return <FileText className="h-5 w-5 text-red-500" />;
-    if (f.type.includes("word")) return <FileText className="h-5 w-5 text-blue-500" />;
-    if (f.type.includes("excel") || f.type.includes("spreadsheet")) return <FileText className="h-5 w-5 text-emerald-500" />;
-    return <FileText className="h-5 w-5 text-slate-400" />;
+    if (f.type.startsWith("image/")) return <FileText className="size-5 shrink-0 text-warning-strong" />;
+    if (f.type === "application/pdf") return <FileText className="size-5 shrink-0 text-danger-strong" />;
+    if (f.type.includes("word")) return <FileText className="size-5 shrink-0 text-info-strong" />;
+    if (f.type.includes("excel") || f.type.includes("spreadsheet")) return <FileText className="size-5 shrink-0 text-success-strong" />;
+    return <FileText className="size-5 shrink-0 text-subtle-foreground" />;
   };
 
   return (
@@ -336,17 +336,19 @@ export function UploadDocumentDialog({
     >
       <Form {...form}>
         <div className="space-y-4">
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-6 cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors">
-            <Upload className="h-7 w-7 text-muted-foreground mb-1.5" />
+          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong bg-surface-sunken/40 p-6 text-center transition-colors hover:border-primary hover:bg-brand-soft focus-within:border-primary focus-within:ring-2 focus-within:ring-ring">
+            <span className="mb-2 flex size-10 items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground">
+              <Upload className="size-5" aria-hidden />
+            </span>
             <span className="text-sm font-medium text-foreground">
               {files.length > 0 ? "Add more files" : "Click or drag to upload"}
             </span>
-            <span className="text-[11px] text-muted-foreground mt-0.5">
+            <span className="text-2xs text-muted-foreground mt-0.5">
               PDF, DOC, XLS, PNG, JPG up to 10MB {files.length === 0 && "• Multiple files supported"}
             </span>
             <input
               type="file"
-              className="hidden"
+              className="sr-only"
               multiple
               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp"
               onChange={handleFileChange}
@@ -356,14 +358,14 @@ export function UploadDocumentDialog({
           {files.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider tabular-nums">
                   {files.length} file{files.length > 1 ? "s" : ""} selected
                 </span>
-                <Button type="button" variant="ghost" size="sm" className="h-6 text-[11px] text-muted-foreground" onClick={handleClearAllFiles}>
+                <Button type="button" variant="ghost" size="xs" className="text-muted-foreground" onClick={handleClearAllFiles}>
                   Clear all
                 </Button>
               </div>
-              <div className="max-h-[140px] overflow-y-auto space-y-1.5">
+              <div className="max-h-36 overflow-y-auto space-y-1.5">
                 {files.map((f, i) => (
                   <UploadFileRow
                     key={`${f.name}-${i}`}
@@ -412,29 +414,29 @@ function UploadFileRow({
   onRemove: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-md border min-w-0">
+    <div className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-card p-2">
       {getFileIcon(file)}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-foreground truncate" title={file.name}>
           {file.name}
         </p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground tabular-nums">
           {file.size < 1024 * 1024
             ? `${(file.size / 1024).toFixed(0)} KB`
             : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
         </p>
-        {error ? <p className="text-[10px] text-destructive mt-0.5">{error}</p> : null}
+        {error ? <p className="text-2xs text-danger-strong mt-0.5">{error}</p> : null}
       </div>
       <Button
         type="button"
         variant="ghost"
-        size="icon"
-        className="h-6 w-6 shrink-0"
+        size="icon-xs"
+        className="shrink-0"
         data-index={index}
         onClick={onRemove}
         aria-label="Remove file"
       >
-        <X className="h-3 w-3" />
+        <X className="size-3.5" aria-hidden />
       </Button>
     </div>
   );

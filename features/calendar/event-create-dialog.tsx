@@ -49,6 +49,8 @@ import {
 } from "@/lib/validations/calendar-event";
 import { isAllowedNameChar } from "@/lib/validations/text-rules";
 import { toast } from "sonner";
+import { toneVar } from "@/lib/design/tones";
+import { EVENT_COLOR_TONES } from "./event-tones";
 
 function Check({ className }: { className?: string }) {
   return (
@@ -84,14 +86,9 @@ function Search({ className }: { className?: string }) {
   );
 }
 
-const EVENT_COLORS: Record<string, string> = {
-  blue: "#3b82f6",
-  green: "#22c55e",
-  red: "#ef4444",
-  yellow: "#f59e0b",
-  purple: "#a855f7",
-  gold: "#bd882c",
-};
+const EVENT_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(EVENT_COLOR_TONES).map(([key, tone]) => [key, toneVar[tone]]),
+);
 
 const EVENT_CATEGORIES = [
   "general",
@@ -431,17 +428,17 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-[480px]">
-        <SheetHeader className="px-6 border-b shrink-0">
-          <SheetTitle className="text-base font-semibold">
+      <SheetContent side="right" size="md" className="flex w-full flex-col gap-0 p-0">
+        <SheetHeader className="shrink-0 border-b border-border px-6 py-4 pr-12">
+          <SheetTitle className="text-lg">
             {isEdit ? "Edit Event" : "New Calendar Event"}
           </SheetTitle>
         </SheetHeader>
 
         <ScrollArea className="flex-1 min-h-0">
-          <div className="px-6 space-y-5">
+          <div className="space-y-5 px-6 py-5">
             <div className="space-y-1.5">
-              <Label htmlFor="ev-title" className="text-xs font-medium">
+              <Label htmlFor="ev-title" className="text-sm font-medium">
                 Title <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -457,21 +454,21 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 aria-describedby={displayedTitleError ? "ev-title-error" : "ev-title-hint"}
               />
               {displayedTitleError ? (
-                <p id="ev-title-error" role="alert" className="text-[11px] text-destructive">
+                <p id="ev-title-error" role="alert" className="text-2xs text-destructive">
                   {displayedTitleError}
                 </p>
               ) : (
-                <p id="ev-title-hint" className="text-[11px] text-muted-foreground">
+                <p id="ev-title-hint" className="text-2xs text-muted-foreground">
                   Use letters in the title; numbers-only titles are not allowed.
                 </p>
               )}
-              <p className="text-[10px] text-muted-foreground text-right">
+              <p className="text-2xs text-muted-foreground text-right">
                 {form.title.length}/{CALENDAR_TITLE_MAX}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ev-desc" className="text-xs font-medium">Description</Label>
+              <Label htmlFor="ev-desc" className="text-sm font-medium">Description</Label>
               <Input
                 id="ev-desc"
                 value={form.description}
@@ -482,17 +479,17 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 aria-describedby={descError ? "ev-desc-error" : undefined}
               />
               {descError && (
-                <p id="ev-desc-error" className="text-[11px] text-destructive">
+                <p id="ev-desc-error" className="text-2xs text-destructive">
                   {descError}
                 </p>
               )}
-              <p className="text-[10px] text-muted-foreground text-right">
+              <p className="text-2xs text-muted-foreground text-right">
                 {form.description.length}/{CALENDAR_DESC_MAX}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ev-location" className="text-xs font-medium">Location / Meet Link</Label>
+              <Label htmlFor="ev-location" className="text-sm font-medium">Location / Meet Link</Label>
               <div className="flex gap-2">
                 <Input
                   id="ev-location"
@@ -540,7 +537,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 )}
               </div>
               {meetStatus?.connected && meetStatus.googleEmail && (
-                <p className="text-[11px] text-muted-foreground">Google: {meetStatus.googleEmail}</p>
+                <p className="text-2xs text-muted-foreground">Google: {meetStatus.googleEmail}</p>
               )}
             </div>
 
@@ -551,7 +548,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="ev-start-date" className="text-xs font-medium">Start Date</Label>
+                <Label htmlFor="ev-start-date" className="text-sm font-medium">Start Date</Label>
                 <DatePicker
                   id="ev-start-date"
                   value={form.startDate}
@@ -564,7 +561,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
               </div>
               {!form.allDay && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="ev-start-time" className="text-xs font-medium">
+                  <Label htmlFor="ev-start-time" className="text-sm font-medium">
                     Start Time <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -580,7 +577,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="ev-end-date" className="text-xs font-medium">End Date</Label>
+                <Label htmlFor="ev-end-date" className="text-sm font-medium">End Date</Label>
                 <DatePicker
                   id="ev-end-date"
                   value={form.endDate}
@@ -594,7 +591,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
               </div>
               {!form.allDay && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="ev-end-time" className="text-xs font-medium">
+                  <Label htmlFor="ev-end-time" className="text-sm font-medium">
                     End Time <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -611,14 +608,14 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
               )}
             </div>
             {scheduleError ? (
-              <p id="ev-schedule-error" role="alert" className="text-[11px] text-destructive -mt-3">
+              <p id="ev-schedule-error" role="alert" className="text-2xs text-destructive -mt-3">
                 {scheduleError}
               </p>
             ) : null}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Category</Label>
+                <Label className="text-sm font-medium">Category</Label>
                 <Select value={form.category} onValueChange={handleCategoryChange}>
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue />
@@ -633,7 +630,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor={colorSelectId} className="text-xs font-medium">
+                <Label htmlFor={colorSelectId} className="text-sm font-medium">
                   Color
                   <span className="font-normal text-muted-foreground"> (calendar)</span>
                 </Label>
@@ -646,7 +643,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                     <SelectValue placeholder="Color">
                       <span className="flex min-w-0 items-center gap-2">
                         <span
-                          className="size-3 shrink-0 rounded-full border border-black/10 dark:border-white/15"
+                          className="size-3 shrink-0 rounded-full border border-border"
                           style={{
                             backgroundColor: EVENT_COLORS[form.color] ?? EVENT_COLORS.blue,
                           }}
@@ -676,9 +673,9 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
             {members.length > 0 && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="text-xs font-medium">Attendees</Label>
+                  <Label className="text-sm font-medium">Attendees</Label>
                   {form.attendeeIds.length > 0 && (
-                    <Badge variant="secondary" className="text-[11px] shrink-0">
+                    <Badge variant="secondary" className="text-2xs shrink-0">
                       {form.attendeeIds.length} selected
                     </Badge>
                   )}
@@ -719,13 +716,13 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
           </div>
         </ScrollArea>
 
-        <SheetFooter className="px-6 border-t shrink-0 flex-row gap-2 justify-end">
-          <Button variant="outline" className="flex-1" onClick={handleClose} disabled={isPending}>
+        <SheetFooter className="shrink-0 flex-row justify-end gap-2 border-t border-border px-6 py-3">
+          <Button variant="ghost" onClick={handleClose} disabled={isPending}>
             Cancel
           </Button>
           <Button
-            className="flex-1"
             onClick={handleSave}
+            loading={isPending}
             disabled={saveDisabled}
           >
             {isPending
@@ -758,24 +755,24 @@ function AttendeeRow({ memberId, name, email, image, selected, onToggle }: Atten
       onClick={handleClick}
       className={cn(
         "w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors text-left",
-        selected ? "bg-gold/10 ring-1 ring-gold/30" : "hover:bg-muted"
+        selected ? "bg-brand-soft" : "hover:bg-accent"
       )}
     >
       <Avatar className="h-7 w-7 shrink-0">
         <AvatarImage src={resolveImageUrl(image)} />
-        <AvatarFallback className="text-[10px]">{getInitials(name)}</AvatarFallback>
+        <AvatarFallback className="text-2xs">{getInitials(name)}</AvatarFallback>
       </Avatar>
       <span className="flex-1 min-w-0 text-left">
         <span className={cn("block truncate text-sm", selected && "font-medium")}>{name}</span>
         {email ? (
-          <span className="block truncate text-[10px] text-muted-foreground">{email}</span>
+          <span className="block truncate text-2xs text-muted-foreground">{email}</span>
         ) : null}
       </span>
       <div className={cn(
-        "h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0",
-        selected ? "border-gold bg-gold" : "border-muted-foreground/30"
+        "flex size-4 shrink-0 items-center justify-center rounded-full border-2",
+        selected ? "border-primary bg-primary" : "border-border-strong"
       )}>
-        {selected && <Check className="h-2.5 w-2.5 text-white" />}
+        {selected && <Check className="size-2.5 text-primary-foreground" />}
       </div>
     </button>
   );

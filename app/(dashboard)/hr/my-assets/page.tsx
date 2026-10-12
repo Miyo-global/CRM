@@ -31,7 +31,7 @@ export default function MyAssetsPage() {
       subtitle="Company equipment currently assigned to you"
       actions={
         <Button variant="ghost" size="sm" onClick={handleGoBack}>
-          <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+          <ArrowLeft className="size-3.5" aria-hidden="true" />
           Back
         </Button>
       }

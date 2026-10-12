@@ -13,6 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHrMonthlyAttendance, useHrWfhRequests, useHrHolidaysForCalendar } from "@/lib/api/hooks/hr";
 import { CalendarDays } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
 import { WEEKDAY_LABELS, CalendarDay, statusConfig } from "./attendance-utils";
 
 const MONTH_NAMES = [
@@ -87,13 +88,11 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 4 + i);
 
   return (
-    <Card className="overflow-hidden border-border shadow-sm">
-      <CardHeader className="sticky top-0 z-10 bg-card pb-3 pt-5 border-b border-border/60">
+    <Card className="gap-0 overflow-hidden">
+      <CardHeader className="border-b border-border bg-card pb-3 pt-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/10">
-              <CalendarDays className="h-4 w-4 text-gold" />
-            </div>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <IconChip icon={CalendarDays} />
             Attendance Calendar
           </CardTitle>
           <div className="flex shrink-0 flex-wrap items-stretch gap-2 sm:justify-end">
@@ -103,13 +102,14 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
             >
               <SelectTrigger
                 size="sm"
-                className="h-9 w-auto min-w-[10.5rem] max-w-[12rem] border-border text-xs font-medium shadow-xs sm:min-w-[11rem]"
+                aria-label="Month"
+                className="h-9 w-40"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="end" className="min-w-[var(--radix-select-trigger-width)]">
                 {MONTH_NAMES.map((m, i) => (
-                  <SelectItem key={m} value={String(i)} className="text-xs">
+                  <SelectItem key={m} value={String(i)}>
                     {m}
                   </SelectItem>
                 ))}
@@ -121,13 +121,14 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
             >
               <SelectTrigger
                 size="sm"
-                className="h-9 w-auto min-w-[5.5rem] border-border text-xs font-medium tabular-nums shadow-xs sm:min-w-[5.75rem]"
+                aria-label="Year"
+                className="h-9 w-24 tabular-nums"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="end" className="min-w-[var(--radix-select-trigger-width)]">
                 {yearOptions.map((y) => (
-                  <SelectItem key={y} value={String(y)} className="text-xs tabular-nums">
+                  <SelectItem key={y} value={String(y)} className="tabular-nums">
                     {y}
                   </SelectItem>
                 ))}
@@ -136,8 +137,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 pb-6">
-        <div className="max-w-[340px] mx-auto">
+      <CardContent className="space-y-4 py-5">
+        <div className="mx-auto max-w-sm">
           {isLoading ? (
             <div className="grid grid-cols-7 gap-1.5">
               {Array.from({ length: 35 }).map((_, i) => (
@@ -148,7 +149,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
             <>
               <div className="grid grid-cols-7 gap-1.5">
                 {WEEKDAY_LABELS.map((day) => (
-                  <div key={day} className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider py-1">
+                  <div key={day} className="py-1 text-center text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {day}
                   </div>
                 ))}
@@ -166,23 +167,25 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
                   return (
                     <div
                       key={`${format(day.date, "yyyy-MM-dd")}-${dayNum}`}
-                      className={`relative aspect-square flex min-w-0 items-center justify-center rounded-md text-xs font-medium transition-colors ${
+                      className={`relative flex aspect-square min-w-0 items-center justify-center rounded-md text-xs font-medium tabular-nums transition-colors ${
                         isFutureOrNone
-                          ? "text-muted-foreground/40"
+                          ? "text-subtle-foreground"
                           : `${config.bg} ${config.text}`
-                      } ${isTodayDate ? "ring-2 ring-gold ring-offset-1 ring-offset-background" : ""}`}
+                      } ${isTodayDate ? "ring-2 ring-gold-400 ring-offset-1 ring-offset-card" : ""}`}
                       title={title}
+                      aria-current={isTodayDate ? "date" : undefined}
                     >
                       {dayNum}
+                      {!isFutureOrNone && config.label ? <span className="sr-only">{`, ${config.label}`}</span> : null}
                     </div>
                   );
                 })}
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-3 mt-1 border-t border-border" role="list" aria-label="Calendar legend">
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-3" role="list" aria-label="Calendar legend">
                 {(["present", "wfh", "leave", "absent", "holiday", "weekend"] as const).map((status) => (
                   <div key={status} className="flex items-center gap-2 text-xs text-muted-foreground" role="listitem">
-                    <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig[status].dot}`} />
+                    <div className={`size-2 shrink-0 rounded-full ${statusConfig[status].dot}`} aria-hidden="true" />
                     <span>{statusConfig[status].label}</span>
                   </div>
                 ))}

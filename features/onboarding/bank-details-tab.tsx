@@ -138,7 +138,7 @@ export function BankDetailsTab({ onComplete, onBack, defaultValues }: BankDetail
               <Input id="taxId" {...form.register("taxId")} placeholder="ABCDE1234F" aria-describedby="taxId-hint" className="text-base sm:text-sm focus-visible:ring-primary" />
               <p id="taxId-hint" className="sr-only">Optional tax identification number</p>
             </motion.div>
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="sticky bottom-0 z-sticky">
               <FormNavButtons onBack={onBack} isLoading={isLoading} />
             </motion.div>
         </form>

@@ -195,7 +195,7 @@ function TeamTimesheetsContent() {
         <LogTimeDialog
           trigger={
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="size-4" aria-hidden="true" />
               Add New Log
             </Button>
           }
@@ -203,7 +203,17 @@ function TeamTimesheetsContent() {
       }
     >
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
-        <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div variants={fadeUp}>
+          <TeamSummary
+            totalHours={statistics.totalHours}
+            uniqueEmployees={statistics.uniqueEmployees}
+            uniqueProjects={statistics.uniqueProjects}
+            avgHoursPerDay={statistics.avgHoursPerDay}
+            entryCount={timesheets?.length ?? 0}
+          />
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <WeeklyProductivityChart
             timesheets={timesheets}
             totalHours={statistics.totalHours}
@@ -223,16 +233,6 @@ function TeamTimesheetsContent() {
             calendarMonth={calendarMonth}
             onCalendarMonthChange={setCalendarMonth}
             onDateSelect={handleDateSelect}
-          />
-        </motion.div>
-
-        <motion.div variants={fadeUp}>
-          <TeamSummary
-            totalHours={statistics.totalHours}
-            uniqueEmployees={statistics.uniqueEmployees}
-            uniqueProjects={statistics.uniqueProjects}
-            avgHoursPerDay={statistics.avgHoursPerDay}
-            entryCount={timesheets?.length ?? 0}
           />
         </motion.div>
 

@@ -46,7 +46,7 @@ export function InterviewFormatFields({
         <label className="text-sm font-medium">
           Interview Mode <span className="text-destructive">*</span>
         </label>
-        <div className="flex gap-2" role="group" aria-label="Interview mode">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Interview mode">
           {INTERVIEW_FORMATS.map(({ value, label }) => {
             const Icon = FORMAT_ICONS[value];
             const selected = format === value;
@@ -57,13 +57,13 @@ export function InterviewFormatFields({
                 onClick={() => handleFormatChange(value)}
                 aria-pressed={selected}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  "flex h-9 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border px-3 text-sm font-medium transition-colors focus-ring",
                   selected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-background text-foreground hover:bg-muted",
+                    ? "border-primary bg-brand-soft text-brand-soft-foreground"
+                    : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="size-4" aria-hidden="true" />
                 {label}
               </button>
             );

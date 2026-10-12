@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CreateTicketDialog } from "./create-ticket-dialog";
 
 export function QuickAddInput({ columnId, projectId }: { columnId: string; projectId: number }) {
@@ -10,13 +11,15 @@ export function QuickAddInput({ columnId, projectId }: { columnId: string; proje
 
   return (
     <>
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={handleClick}
-        className="flex items-center gap-1.5 w-full p-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+        className="w-full justify-start gap-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus className="size-3.5" aria-hidden="true" />
         Add ticket
-      </button>
+      </Button>
       <CreateTicketDialog
         projectId={projectId}
         open={open}

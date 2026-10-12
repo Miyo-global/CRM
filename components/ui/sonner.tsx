@@ -8,7 +8,10 @@ import {
   Loader2,
   XCircle,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Toaster as Sonner, useSonner, type ToasterProps } from "sonner";
+
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function playNotificationSound(type: "success" | "error" | "other") {
   try {
@@ -80,42 +83,45 @@ function ToastSoundListener() {
 
 const toastClassNames = {
   toast:
-    "group toast vc-toast !flex !items-start !gap-3 !w-[min(22rem,calc(100vw-2rem))] !rounded-xl !border !border-border/70 !shadow-medium !p-4 !pr-11 !font-sans !transition-all",
-  title: "!text-sm !font-semibold !text-foreground !leading-snug !tracking-tight",
-  description:
-    "!text-xs !text-muted-foreground !leading-relaxed !mt-1 !opacity-90",
-  content: "!gap-0.5",
-  icon: "!mt-0.5 !mr-0 !size-5 !shrink-0",
-  closeButton: "vc-toast-close",
+    "group toast mg-toast !flex !items-center !gap-3 !w-[min(22rem,calc(100vw-2rem))] !p-3 !pl-4 !pr-11 !font-sans",
+  title: "!text-sm !font-semibold !text-foreground !leading-snug",
+  description: "!text-xs !text-muted-foreground !leading-relaxed !mt-0.5",
+  content: "!gap-0.5 !min-w-0",
+  icon: "!m-0 !shrink-0",
+  closeButton: "mg-toast-close",
   actionButton:
-    "!rounded-md !bg-primary !text-primary-foreground !text-xs !font-medium !px-3 !h-8 !shadow-xs hover:!opacity-90",
+    "!h-7 !rounded-md !bg-primary !px-2.5 !text-xs !font-semibold !text-primary-foreground !shadow-xs hover:!bg-primary-hover",
   cancelButton:
-    "!rounded-md !bg-muted !text-muted-foreground !text-xs !font-medium !px-3 !h-8 hover:!bg-muted/80",
-  success: "vc-toast-success",
-  error: "vc-toast-error",
-  warning: "vc-toast-warning",
-  info: "vc-toast-info",
-  loading: "vc-toast-loading",
+    "!h-7 !rounded-md !bg-transparent !px-2.5 !text-xs !font-medium !text-muted-foreground hover:!bg-accent hover:!text-foreground",
+  success: "mg-toast-success",
+  error: "mg-toast-error",
+  warning: "mg-toast-warning",
+  info: "mg-toast-info",
+  loading: "mg-toast-loading",
 } as const;
 
 const Toaster = ({ toastOptions, className, ...props }: ToasterProps) => {
+  const { resolvedTheme } = useTheme();
+  const isMobile = useIsMobile(640);
+
   return (
     <>
       <ToastSoundListener />
       <Sonner
-        theme="light"
-        position="top-right"
+        theme={resolvedTheme === "dark" ? "dark" : "light"}
+        position={isMobile ? "top-center" : "bottom-right"}
         expand={false}
         visibleToasts={4}
         gap={12}
         offset={20}
+        mobileOffset={16}
         closeButton
         icons={{
-          success: <CheckCircle2 className="size-5 text-success" aria-hidden />,
-          error: <XCircle className="size-5 text-destructive" aria-hidden />,
-          warning: <AlertTriangle className="size-5 text-warning" aria-hidden />,
-          info: <Info className="size-5 text-info" aria-hidden />,
-          loading: <Loader2 className="size-5 text-primary animate-spin" aria-hidden />,
+          success: <CheckCircle2 className="size-4" aria-hidden />,
+          error: <XCircle className="size-4" aria-hidden />,
+          warning: <AlertTriangle className="size-4" aria-hidden />,
+          info: <Info className="size-4" aria-hidden />,
+          loading: <Loader2 className="size-4 animate-spin" aria-hidden />,
         }}
         className={["toaster group", className].filter(Boolean).join(" ")}
         toastOptions={{

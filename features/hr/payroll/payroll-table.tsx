@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
@@ -34,9 +33,18 @@ import {
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { Check, CreditCard, Download, Eye, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { getColorSafe, payrollStatusColors } from "@/lib/theme-constants";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import type { Tone } from "@/lib/design/tones";
 import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+
+const PAYROLL_STATUS_TONE: Record<string, Tone> = {
+  DRAFT: "neutral",
+  PENDING_APPROVAL: "warning",
+  APPROVED: "info",
+  PAID: "success",
+};
 
 function fmtInr(value: string | number | null | undefined): string {
   const n = Math.round(parseFloat(String(value ?? "0")) || 0);
@@ -146,8 +154,8 @@ export function PayrollTable({
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="gap-0 overflow-hidden py-0">
+        <CardHeader className="border-b">
           <CardTitle>
             Payroll for {selectedMonthLabel}
           </CardTitle>
@@ -157,8 +165,9 @@ export function PayrollTable({
           </CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
             <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
               value={year}
+              aria-label="Year"
               onChange={(e) => onYearChange(e.target.value)}
             >
               {yearOptions.map((y) => (
@@ -168,8 +177,9 @@ export function PayrollTable({
               ))}
             </select>
             <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
               value={month}
+              aria-label="Month"
               onChange={(e) => onMonthChange(e.target.value)}
             >
               {Array.from({ length: 12 }, (_, i) => ({
@@ -182,8 +192,9 @@ export function PayrollTable({
               ))}
             </select>
             <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
               value={employeeFilter}
+              aria-label="Employee"
               onChange={(e) => onEmployeeFilterChange(e.target.value)}
             >
               <option value="all">All employees</option>
@@ -199,22 +210,22 @@ export function PayrollTable({
           {payrollRows.length > 0 ? (
             <div className="overflow-x-auto">
               <div className="min-w-[720px]">
-                <Table className="[&_th]:py-3 [&_td]:py-3">
+                <Table className="tabular-nums [&_td]:py-3 [&_th]:py-3">
                   <caption className="sr-only">Payroll records for selected month</caption>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="pl-4">Employee</TableHead>
-                      <TableHead>Gross Salary</TableHead>
-                      <TableHead>Deductions</TableHead>
-                      <TableHead>Net Salary</TableHead>
+                      <TableHead className="sticky left-0 z-sticky bg-card pl-4">Employee</TableHead>
+                      <TableHead className="text-right">Gross Salary</TableHead>
+                      <TableHead className="text-right">Deductions</TableHead>
+                      <TableHead className="text-right">Net Salary</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pagedRows.map((payroll) => (
-                      <TableRow key={payroll.id}>
-                        <TableCell className="pl-4">
+                      <TableRow key={payroll.id} className="group">
+                        <TableCell className="sticky left-0 z-base bg-card pl-4 group-hover:bg-muted">
                           <div>
                             <p className="font-medium whitespace-nowrap">
                               {payroll.user?.firstName} {payroll.user?.lastName}
@@ -222,30 +233,27 @@ export function PayrollTable({
                             <p className="text-xs text-muted-foreground">
                               {payroll.user?.designation}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               Created: {fmtDateTime(payroll.createdAt)}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               Approved: {fmtDateTime(payroll.approvedAt)} | Paid: {fmtDateTime(payroll.paidAt)}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap text-right">
                           ₹{fmtInr(payroll.grossSalary)}
                         </TableCell>
-                        <TableCell className="text-destructive whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap text-right text-danger-strong">
                           -₹{fmtInr(Math.min(num(payroll.deductions), num(payroll.grossSalary)))}
                         </TableCell>
-                        <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap text-right font-semibold text-success-strong">
                           ₹{fmtInr(Math.max(0, num(payroll.netSalary)))}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={getColorSafe(payrollStatusColors, payroll.status ?? "DRAFT")}
-                          >
+                          <StatusPill tone={PAYROLL_STATUS_TONE[payroll.status ?? "DRAFT"] ?? "neutral"} dot>
                             {payroll.status}
-                          </Badge>
+                          </StatusPill>
                         </TableCell>
                         <TableCell className="text-right pr-4">
                           <div className="flex flex-wrap justify-end gap-2">
@@ -255,18 +263,18 @@ export function PayrollTable({
                               className="gap-1"
                               onClick={() => onPreview(payroll)}
                             >
-                              <Eye className="h-3 w-3 shrink-0" aria-hidden />
+                              <Eye className="size-3.5 shrink-0" aria-hidden />
                               Preview
                             </Button>
                             {payroll.status === "DRAFT" && (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                className="gap-1 text-destructive hover:bg-danger-soft hover:text-destructive"
                                 onClick={() => setDeleteTarget(payroll)}
                                 disabled={isDeletePending}
                               >
-                                <Trash2 className="h-3 w-3 shrink-0" aria-hidden />
+                                <Trash2 className="size-3.5 shrink-0" aria-hidden />
                                 Delete
                               </Button>
                             )}
@@ -279,12 +287,12 @@ export function PayrollTable({
                                   onClick={() => setApproveTarget(payroll)}
                                   disabled={isApprovePending}
                                 >
-                                  <Check className="h-3 w-3 shrink-0" aria-hidden />
+                                  <Check className="size-3.5 shrink-0" aria-hidden />
                                   Approve
                                 </Button>
                               ) : (
                                 <span
-                                  className="inline-flex items-center gap-1 rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1 text-[11px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-400"
+                                  className="inline-flex items-center gap-1 rounded-md bg-warning-soft px-2 py-1 text-2xs font-medium text-warning-strong"
                                   title="Only the CEO can approve payrolls. This payroll stays in DRAFT until the CEO approves it."
                                 >
                                   Awaiting CEO approval
@@ -297,7 +305,7 @@ export function PayrollTable({
                                 onClick={() => setMarkPaidTarget(payroll)}
                                 disabled={isMarkPaidPending}
                               >
-                                <CreditCard className="h-3 w-3 shrink-0" aria-hidden />
+                                <CreditCard className="size-3.5 shrink-0" aria-hidden />
                                 Mark Paid
                               </Button>
                             )}
@@ -308,7 +316,7 @@ export function PayrollTable({
                                 className="gap-1"
                                 onClick={() => onDownload?.(payroll.id)}
                               >
-                                <Download className="h-3 w-3 shrink-0" aria-hidden />
+                                <Download className="size-3.5 shrink-0" aria-hidden />
                                 Download
                               </Button>
                             )}
@@ -321,7 +329,7 @@ export function PayrollTable({
                                 disabled={isResendPending}
                                 title="Resend the payslip email to this employee"
                               >
-                                <Mail className="h-3 w-3 shrink-0" aria-hidden />
+                                <Mail className="size-3.5 shrink-0" aria-hidden />
                                 Resend
                               </Button>
                             )}
@@ -344,13 +352,12 @@ export function PayrollTable({
               </div>
             </div>
           ) : (
-            <div className="text-center px-4 py-12 text-muted-foreground">
-              <EmptyExpensesIllustration className="mx-auto mb-4 w-40 h-40" />
-              <p>No payroll records for this month</p>
-              <p className="text-sm">
-                Click &ldquo;Generate All&rdquo; to create payroll for all employees
-              </p>
-            </div>
+            <EmptyState
+              className="rounded-none border-0"
+              illustration={<EmptyExpensesIllustration />}
+              title="No payroll records for this month"
+              description="Click “Generate All” to create payroll for all employees"
+            />
           )}
         </CardContent>
       </Card>

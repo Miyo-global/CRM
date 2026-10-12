@@ -11,6 +11,7 @@ import {
   BadgeDollarSign,
   Check,
   Paperclip,
+  Clock,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
 import type { Termination } from "@/lib/api/hooks/hr";
-import { statusVariant, statusLabel, getInitials } from "../_lib/utils";
+import { statusTone, statusLabel, getInitials } from "../_lib/utils";
+import { StatusPill } from "@/components/ui/status-pill";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface TerminationCardProps {
@@ -59,9 +61,10 @@ export function TerminationCard({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-9 w-9 shrink-0 mt-0.5">
-            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+          <Avatar className="mt-0.5 size-9 shrink-0">
+            <AvatarFallback className="bg-brand-soft text-xs text-brand-soft-foreground">
               {getInitials(employee?.name ?? null)}
             </AvatarFallback>
           </Avatar>
@@ -69,49 +72,49 @@ export function TerminationCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-semibold truncate">{employee?.name ?? "Employee"}</p>
-              <Badge variant={statusVariant(status)} className="text-[10px] shrink-0">
+              <StatusPill tone={statusTone(status)} dot className="shrink-0">
                 {statusLabel(status)}
-              </Badge>
+              </StatusPill>
               {emailStatus === "failed" && (
-                <Badge variant="destructive" className="text-[10px] shrink-0">
+                <StatusPill tone="danger" className="shrink-0">
                   Email Failed
-                </Badge>
+                </StatusPill>
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
               {employee?.designation && (
                 <span className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
+                  <User className="size-3.5" aria-hidden="true" />
                   {employee.designation}
                 </span>
               )}
               {employee?.employeeId && <span>ID: {employee.employeeId}</span>}
               {effectiveDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
+                  <Calendar className="size-3.5" aria-hidden="true" />
                   Effective: {format(new Date(effectiveDate), "MMM d, yyyy")}
                 </span>
               )}
               {severanceAmount && Number(severanceAmount) > 0 && (
                 <span className="flex items-center gap-1">
-                  <BadgeDollarSign className="h-3 w-3" />
+                  <BadgeDollarSign className="size-3.5" aria-hidden="true" />
                   ₹{Number(severanceAmount).toLocaleString(DEFAULT_LOCALE)}
                 </span>
               )}
               {noticePeriodWaived && (
-                <span className="text-amber-600 dark:text-amber-400">Notice waived</span>
+                <span className="text-warning-strong">Notice waived</span>
               )}
               {evidenceCount > 0 && (
                 <span className="flex items-center gap-1">
-                  <Paperclip className="h-3 w-3" />
+                  <Paperclip className="size-3.5" aria-hidden="true" />
                   {evidenceCount} evidence
                 </span>
               )}
             </div>
 
             {status === "REJECTED" && record.ceoRemarks && (
-              <p className="text-[11px] text-destructive mt-1 line-clamp-2">
+              <p className="mt-1 line-clamp-2 text-xs text-danger-strong">
                 CEO: {record.ceoRemarks}
               </p>
             )}
@@ -119,44 +122,43 @@ export function TerminationCard({
             {reasonsList.length > 0 && (
               <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                 {visibleReasons.map((r) => (
-                  <Badge key={r} variant="outline" className="text-[9px] py-0 h-4">
+                  <Badge key={r} variant="outline">
                     {r}
                   </Badge>
                 ))}
                 {extraCount > 0 && (
-                  <Badge variant="outline" className="text-[9px] py-0 h-4">
+                  <Badge variant="outline">
                     +{extraCount} more
                   </Badge>
                 )}
               </div>
             )}
           </div>
+          </div>
 
-          <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
             {isHR && status === "DRAFT" && (
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onSubmit(record.id)}
                 disabled={isSubmitting}
                 aria-label={`Submit termination for ${employee?.name ?? "employee"} for CEO approval`}
               >
-                <AlertTriangle className="h-3 w-3 mr-1" />
+                <AlertTriangle aria-hidden="true" />
                 Submit for Approval
               </Button>
             )}
 
             {isHR && status === "REJECTED" && (
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onSubmit(record.id)}
                 disabled={isSubmitting}
                 aria-label={`Resubmit termination for ${employee?.name ?? "employee"} for CEO approval`}
               >
-                <AlertTriangle className="h-3 w-3 mr-1" />
+                <AlertTriangle aria-hidden="true" />
                 Resubmit
               </Button>
             )}
@@ -164,23 +166,22 @@ export function TerminationCard({
             {isCEO && status === "PENDING_CEO" && (
               <>
                 <Button
-                  size="sm"
+                  size="xs"
                   variant="outline"
-                  className="h-7 text-xs"
                   onClick={() => onApprove(record.id)}
                   aria-label={`Approve termination for ${employee?.name ?? "employee"}`}
                 >
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  <CheckCircle2 aria-hidden="true" />
                   Approve
                 </Button>
                 <Button
-                  size="sm"
+                  size="xs"
                   variant="outline"
-                  className="h-7 text-xs text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive"
                   onClick={() => onReject(record.id)}
                   aria-label={`Reject termination for ${employee?.name ?? "employee"}`}
                 >
-                  <XCircle className="h-3 w-3 mr-1" />
+                  <XCircle aria-hidden="true" />
                   Reject
                 </Button>
               </>
@@ -188,55 +189,53 @@ export function TerminationCard({
 
             {isHR && status === "APPROVED" && (
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onSendEmail(record)}
                 aria-label={`Send termination email to ${employee?.name ?? "employee"}`}
               >
-                <Mail className="h-3 w-3 mr-1" />
+                <Mail aria-hidden="true" />
                 Send Email
               </Button>
             )}
 
             {isHR && status === "SENT" && (
               <Button
-                size="sm"
+                size="xs"
                 variant="outline"
-                className="h-7 text-xs"
                 onClick={() => onComplete(record.id)}
                 disabled={isCompleting}
                 aria-label={`Complete termination for ${employee?.name ?? "employee"}`}
               >
-                <Check className="h-3 w-3 mr-1" />
+                <Check aria-hidden="true" />
                 Complete
               </Button>
             )}
 
             {status === "COMPLETED" && (
-              <span className="text-[11px] text-muted-foreground italic">Completed</span>
+              <StatusPill tone="success">Completed</StatusPill>
             )}
           </div>
         </div>
 
         <Separator className="my-3" />
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs tabular-nums text-muted-foreground">
           {record.initiator?.name && record.createdAt && (
             <span className="flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <Clock className="size-3" aria-hidden="true" />
               Initiated by <span className="font-medium text-foreground">{record.initiator.name}</span> on {format(new Date(record.createdAt), "d MMM yyyy")}
             </span>
           )}
           {record.ceoReviewer?.name && record.ceoReviewedAt && (
             <span className="flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <Check className="size-3" aria-hidden="true" />
               {status === "REJECTED" ? "Rejected" : "Reviewed"} by <span className="font-medium text-foreground">{record.ceoReviewer.name}</span> on {format(new Date(record.ceoReviewedAt), "d MMM yyyy")}
             </span>
           )}
           {record.emailSentAt && (
             <span className="flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <Mail className="size-3" aria-hidden="true" />
               Email sent {format(new Date(record.emailSentAt), "d MMM yyyy")}
             </span>
           )}

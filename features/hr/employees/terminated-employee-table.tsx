@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Eye } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
+import { StatusPill } from "@/components/ui/status-pill";
 import { getDisplayName, getInitials, ROLE_LABELS } from "./hr-types";
 import type { TerminatedEmployee } from "@/types/hr/employees";
 
@@ -25,54 +26,52 @@ interface TerminatedEmployeeTableProps {
 
 export function TerminatedEmployeeTable({ employees }: TerminatedEmployeeTableProps) {
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
+    <Card className="gap-0 overflow-hidden py-0">
+      <CardContent className="overflow-x-auto p-0">
+        <Table className="min-w-[760px]">
           <caption className="sr-only">Terminated employees</caption>
           <TableHeader>
-            <TableRow className="text-xs">
+            <TableRow>
               <TableHead scope="col">Employee</TableHead>
-              <TableHead scope="col" className="w-[140px]">Employee ID</TableHead>
-              <TableHead scope="col" className="w-[160px]">Department</TableHead>
-              <TableHead scope="col" className="w-[140px]">Role</TableHead>
-              <TableHead scope="col" className="w-[160px]">Terminated</TableHead>
-              <TableHead scope="col" className="w-[80px] text-right">Actions</TableHead>
+              <TableHead scope="col" className="w-36">Employee ID</TableHead>
+              <TableHead scope="col" className="w-40">Department</TableHead>
+              <TableHead scope="col" className="w-36">Role</TableHead>
+              <TableHead scope="col" className="w-40">Terminated</TableHead>
+              <TableHead scope="col" className="w-20 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {employees.map((employee) => {
               const displayName = getDisplayName(employee);
               return (
-                <TableRow key={employee.id} className="hover:bg-muted/50">
+                <TableRow key={employee.id} className="group">
                   <TableCell>
                     <EmployeeIdentityCell employee={employee} displayName={displayName} />
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="font-mono text-sm text-muted-foreground">
                     {employee.employeeId ?? ""}
                   </TableCell>
                   <TableCell className="text-sm">
                     {employee.department?.name ? (
-                      <Badge variant="secondary" className="text-[10px] h-5 px-2">
+                      <Badge variant="secondary">
                         {employee.department.name}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] h-5 px-2 border-amber-300/60 bg-amber-500/10 text-amber-800 dark:text-amber-300">
-                        Unassigned
-                      </Badge>
+                      <StatusPill tone="warning">Unassigned</StatusPill>
                     )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {employee.designation ?? ROLE_LABELS[employee.role] ?? employee.role}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
                     {employee.terminatedAt
                       ? format(new Date(employee.terminatedAt), "MMM d, yyyy")
                       : ""}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="h-8 px-2" asChild>
+                    <Button variant="ghost" size="sm" asChild>
                       <Link href={`/hr/employees/${employee.id}`}>
-                        <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
+                        <Eye className="size-4" aria-hidden="true" />
                         View
                       </Link>
                     </Button>

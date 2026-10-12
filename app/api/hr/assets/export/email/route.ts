@@ -11,6 +11,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config";
 import { assetsExportEmailSchema, assetsStatusLabel } from "@/lib/hr/assets-export-filters";
 import { logger } from "@/lib/logger";
+import { BRAND } from "@/lib/design/brand-hex";
 
 function escapeHtml(s: string): string {
   return s
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     const messageHtml = message?.trim()
       ? `<p>${escapeHtml(message.trim()).replace(/\n/g, "<br/>")}</p>`
       : `<p>Please find attached the <strong>assets inventory</strong> export for <strong>${escapeHtml(orgName)}</strong> (${escapeHtml(scopeLabel)}).</p>`;
-    const summaryHtml = `<p style="color:#666;font-size:13px">Rows: ${rows.length} · Format: ${format.toUpperCase()}</p>`;
+    const summaryHtml = `<p style="color:${BRAND.inkMuted};font-size:13px">Rows: ${rows.length} · Format: ${format.toUpperCase()}</p>`;
 
     try {
       await sendEmail({
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
         html: `
           ${messageHtml}
           ${summaryHtml}
-          <p style="margin-top:16px;font-size:12px;color:#888">Sent from Miyo Global CRM — Assets.</p>
+          <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global CRM — Assets.</p>
         `,
         attachments: [attachment],
         ...(cc?.length ? { cc } : {}),

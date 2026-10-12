@@ -4,6 +4,7 @@ import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf
 import sharp from "sharp";
 import fs from "fs/promises";
 import { LOGO_SVG_PATH } from "@/lib/constants/paths";
+import { BRAND } from "@/lib/design/brand-hex";
 
 
 export interface TerminationLetterData {
@@ -19,11 +20,13 @@ export interface TerminationLetterData {
 }
 
 
-const NAVY = rgb(0.059, 0.169, 0.498);
-const GOLD = rgb(0.741, 0.533, 0.173);
-const WHITE = rgb(1, 1, 1);
-const BLACK = rgb(0, 0, 0);
-const GRAY = rgb(0.35, 0.35, 0.35);
+const hexRgb = (hex: string) =>
+  rgb(parseInt(hex.slice(1, 3), 16) / 255, parseInt(hex.slice(3, 5), 16) / 255, parseInt(hex.slice(5, 7), 16) / 255);
+
+const NAVY = hexRgb(BRAND.ink);
+const GOLD = hexRgb(BRAND.gold);
+const BLACK = hexRgb(BRAND.ink);
+const GRAY = hexRgb(BRAND.inkMuted);
 
 
 function createDt(page: PDFPage) {
@@ -140,7 +143,7 @@ export async function generateTerminationLetterPdf(
     dt("MIYO GLOBAL", margin + 62, y - 18, bold, 26, NAVY);
   } else {
     page.drawRectangle({ x: margin, y: y - 52, width: 50, height: 50, color: GOLD });
-    dt("M", margin + 14, y - 40, bold, 30, WHITE);
+    dt("M", margin + 14, y - 40, bold, 30, BLACK);
     dt("MIYO GLOBAL", margin + 60, y - 18, bold, 26, NAVY);
   }
 

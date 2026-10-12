@@ -54,7 +54,7 @@ export function AttendanceContent({ userId, isAdmin = false }: { userId: string;
 
   return (
     <Tabs defaultValue="my" className="flex-1 min-h-0 flex flex-col">
-      <TabsList className="shrink-0 w-fit">
+      <TabsList variant="underline" className="shrink-0">
         <TabsTrigger value="my">My Attendance</TabsTrigger>
         <TabsTrigger value="team">Team Monitor</TabsTrigger>
       </TabsList>

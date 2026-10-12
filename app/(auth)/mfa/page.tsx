@@ -9,16 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { IconChip } from "@/components/ui/icon-chip";
+import { cn } from "@/lib/utils";
+import { CircleAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-
-function Loader2({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
 
 function ShieldCheck({ className }: { className?: string }) {
   return (
@@ -80,29 +75,35 @@ export default function MfaChallengePage() {
   const canSubmit = useBackup ? code.trim().length > 0 : code.trim().length === 6;
 
   return (
-    <div className="w-full max-w-sm space-y-6">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-12 w-12 rounded-xl bg-gold/10 ring-1 ring-gold/25 flex items-center justify-center text-gold">
-          <ShieldCheck className="h-6 w-6" />
+    <div className="w-full max-w-[400px] animate-fade-up">
+      <IconChip icon={ShieldCheck} tone="brand" size="lg" className="mb-5" />
+      <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
+        Two-factor authentication
+      </h1>
+      <p className="mt-2 text-base text-muted-foreground">
+        {useBackup
+          ? "Enter one of your backup codes to continue."
+          : "Enter the 6-digit code from your authenticator app."}
+      </p>
+
+      {verifyMutation.isError && (
+        <div
+          role="alert"
+          className="mt-6 flex items-start gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-danger-strong"
+        >
+          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p className="text-sm">{getErrorMessage(verifyMutation.error)}</p>
         </div>
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">Two-factor authentication</h1>
-          <p className="text-sm text-muted-foreground">
-            {useBackup
-              ? "Enter one of your backup codes to continue."
-              : "Enter the 6-digit code from your authenticator app."}
-          </p>
-        </div>
-      </div>
+      )}
 
       <form
-        className="space-y-4 text-left"
+        className="mt-8 flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           if (canSubmit) verifyMutation.mutate();
         }}
       >
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="mfa-code">{useBackup ? "Backup code" : "Authentication code"}</Label>
           <Input
             id="mfa-code"
@@ -114,18 +115,28 @@ export default function MfaChallengePage() {
             onChange={(e) =>
               setCode(useBackup ? e.target.value : e.target.value.replace(/\D/g, "").slice(0, 6))
             }
+            className={cn(
+              "h-14 text-center font-mono text-2xl tabular-nums",
+              useBackup ? "tracking-widest" : "tracking-[0.5em]"
+            )}
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={!canSubmit || verifyMutation.isPending}>
-          {verifyMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify"}
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          loading={verifyMutation.isPending}
+          disabled={!canSubmit}
+        >
+          Verify
         </Button>
       </form>
 
-      <div className="flex flex-col items-center gap-2 text-sm">
+      <div className="mt-8 flex flex-col items-start gap-2 text-sm">
         <button
           type="button"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="rounded-sm font-medium text-brand-text outline-none hover:underline focus-visible:focus-ring"
           onClick={() => {
             setUseBackup((v) => !v);
             setCode("");
@@ -135,7 +146,7 @@ export default function MfaChallengePage() {
         </button>
         <button
           type="button"
-          className="text-muted-foreground/70 hover:text-foreground transition-colors"
+          className="rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
           onClick={() => signOut({ callbackUrl: "/signin" })}
         >
           Sign out

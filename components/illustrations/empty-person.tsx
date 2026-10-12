@@ -20,7 +20,7 @@ export function EmptyPersonIllustration({ className }: IllustrationProps) {
       <rect x="34" y="127" width="7" height="22" rx="3" fill={BLUE} opacity="0.7" />
       <rect x="45" y="127" width="7" height="22" rx="3" fill={BLUE} opacity="0.7" />
 
-      <circle cx="150" cy="108" r="16" fill="white" stroke={GOLD} strokeWidth="2" />
+      <circle cx="150" cy="108" r="16" fill="var(--card)" stroke={GOLD} strokeWidth="2" />
       <line x1="161" y1="119" x2="174" y2="132" stroke={GOLD} strokeWidth="3.5" strokeLinecap="round" />
 
       <circle cx="168" cy="60" r="3" fill={GOLD} opacity="0.2" />

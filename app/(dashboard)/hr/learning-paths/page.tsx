@@ -17,6 +17,9 @@ import { toast } from "sonner";
 import { Plus, GraduationCap, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface LearningPath {
@@ -32,7 +35,7 @@ export default function LearningPathsPage() {
   const qc = useQueryClient();
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: paths, isLoading } = useQuery({
+  const { data: paths, isLoading, isError, error, refetch } = useQuery({
     queryKey: lpKeys.list(),
     queryFn: () => apiClient.get<LearningPath[]>("/hr/learning-paths"),
   });
@@ -78,8 +81,8 @@ export default function LearningPathsPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Learning Paths" subtitle="Structured learning programs">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
       </PageWrapper>
     );
@@ -90,34 +93,41 @@ export default function LearningPathsPage() {
       title="Learning Paths"
       subtitle="Structured learning programs and career development"
       badge={`${paths?.length ?? 0} paths`}
-      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Create Path</Button> : undefined}
+      actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Path</Button> : undefined}
     >
-      {!paths?.length ? (
-        <Card><CardContent className="py-12 text-center">
-          <EmptyDocumentsIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">No learning paths available.</p>
-        </CardContent></Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !paths?.length ? (
+        <EmptyState
+          illustration={<EmptyDocumentsIllustration className="size-32" />}
+          title="No learning paths available."
+          {...(isAdmin ? { action: { label: "Create Path", onClick: () => setSheetOpen(true) } } : {})}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {paths.map((lp: LearningPath) => (
-            <Card key={lp.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-start justify-between">
-                  <GraduationCap className="h-4 w-4 text-primary" />
-                  {lp.level && <Badge variant="outline" className="text-[10px]">{lp.level}</Badge>}
+            <Card key={lp.id}>
+              <CardContent className="flex h-full flex-col gap-3 p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <IconChip icon={GraduationCap} tone="brand" />
+                  {lp.level && <Badge variant="outline" className="text-2xs">{lp.level}</Badge>}
                 </div>
-                <h3 className="text-sm font-semibold leading-tight">{lp.title}</h3>
-                {lp.description && <p className="text-xs text-muted-foreground line-clamp-2">{lp.description}</p>}
-                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{lp.courseCount} courses</span>
-                  {lp.estimatedHours && <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{lp.estimatedHours}h</span>}
-                  <span className="flex items-center gap-0.5"><BarChart3 className="h-3 w-3" />{lp.enrolledCount} enrolled</span>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold leading-tight">{lp.title}</h3>
+                  {lp.description && <p className="text-xs text-muted-foreground line-clamp-2">{lp.description}</p>}
                 </div>
-                {lp.isEnrolled ? (
-                  <Badge variant="default" className="text-[10px] w-full justify-center">Enrolled</Badge>
-                ) : (
-                  <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => handleEnroll(lp.id)}>Enroll</Button>
-                )}
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
+                  <span className="flex items-center gap-1"><BookOpen className="size-3.5" aria-hidden="true" />{lp.courseCount} courses</span>
+                  {lp.estimatedHours && <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{lp.estimatedHours}h</span>}
+                  <span className="flex items-center gap-1"><BarChart3 className="size-3.5" aria-hidden="true" />{lp.enrolledCount} enrolled</span>
+                </div>
+                <div className="mt-auto">
+                  {lp.isEnrolled ? (
+                    <Badge variant="success" dot className="w-full justify-center">Enrolled</Badge>
+                  ) : (
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleEnroll(lp.id)} loading={enroll.isPending && enroll.variables === lp.id}>Enroll</Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

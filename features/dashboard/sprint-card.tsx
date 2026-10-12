@@ -1,11 +1,10 @@
 "use client";
 
 import { memo } from "react";
-import Link from "next/link";
-import { Zap, ArrowUpRight, AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+import { Zap, AlertTriangle } from "lucide-react";
+import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
+import { ViewAllLink } from "@/components/dashboard/widgets/view-all-link";
+import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptySprintIllustration } from "@/components/illustrations";
@@ -32,22 +31,14 @@ interface SprintCardProps {
 }
 
 export const SprintCard = memo(function SprintCard({ summary, isLoading }: SprintCardProps) {
+  const urgent = summary ? summary.daysRemaining <= SPRINT_DANGER_DAYS : false;
   return (
-    <Card className="bg-card border-border shadow-noir flex flex-col h-full w-full">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between px-4 py-3">
-        <CardTitle className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Zap className="h-4 w-4 text-gold" aria-hidden="true" />
-          Active Sprint
-        </CardTitle>
-        {summary?.projectId && (
-          <Link href={`/projects/${summary.projectId}`}>
-            <Button variant="ghost" size="sm" className="hover:bg-gold/10 hover:text-gold" aria-label="View sprint project">
-              <ArrowUpRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        )}
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden px-4 pt-0 pb-4" aria-live="polite">
+    <WidgetCard
+      title="Active Sprint"
+      icon={Zap}
+      actions={summary?.projectId && <ViewAllLink href={`/projects/${summary.projectId}`} ariaLabel="View sprint project" />}
+    >
+      <div aria-live="polite">
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-6 w-48" />
@@ -55,82 +46,69 @@ export const SprintCard = memo(function SprintCard({ summary, isLoading }: Sprin
             <Skeleton className="h-20 w-full" />
           </div>
         ) : summary ? (
-          <ScrollArea className="h-full pr-3">
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-foreground">{summary.name}</h3>
-              <p className="text-sm text-muted-foreground">{summary.projectName}</p>
+              <h4 className="truncate font-sans text-base font-semibold text-foreground">{summary.name}</h4>
+              <p className="truncate text-sm text-muted-foreground">{summary.projectName}</p>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-gold">{summary.progress}%</span>
+                <span className="font-semibold tabular-nums text-foreground">{summary.progress}%</span>
               </div>
-              <div className="h-2.5 bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={summary.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Sprint progress" aria-valuetext={`${summary.progress}% complete — ${summary.completedPoints} of ${summary.totalPoints} points`}>
+              <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={summary.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Sprint progress" aria-valuetext={`${summary.progress}% complete — ${summary.completedPoints} of ${summary.totalPoints} points`}>
                 <div
-                  className="h-full rounded-full transition-all gold-gradient"
+                  className="h-full rounded-full bg-primary transition-all"
                   style={{ width: `${Math.min(100, Math.max(0, summary.progress))}%` }}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className={`p-2.5 rounded-lg border ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "bg-red-500/10 border-red-500/30" : "bg-muted/50 border-border"}`}>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <dl className="grid grid-cols-2 gap-3">
+              <div className={cn("rounded-md p-3", urgent ? "bg-danger-soft" : "bg-surface-sunken/60")}>
+                <dt className="flex items-center gap-1 text-xs text-muted-foreground">
                   Days Left
-                  {summary.daysRemaining <= SPRINT_DANGER_DAYS && (
-                    <AlertTriangle className="h-3 w-3 text-red-500" aria-hidden="true" />
-                  )}
-                </p>
-                <p className={`text-lg font-bold ${summary.daysRemaining <= SPRINT_DANGER_DAYS ? "text-red-500" : "text-foreground"}`}>
+                  {urgent && <AlertTriangle className="size-3 text-danger-strong" aria-hidden="true" />}
+                </dt>
+                <dd className={cn("font-display text-xl font-bold tabular-nums", urgent ? "text-danger-strong" : "text-foreground")}>
                   {summary.daysRemaining}
-                  {summary.daysRemaining <= SPRINT_DANGER_DAYS && (
-                    <span className="text-xs font-medium ml-1">Urgent</span>
-                  )}
-                </p>
+                  {urgent && <span className="ml-1 font-sans text-xs font-medium">Urgent</span>}
+                </dd>
               </div>
-              <div className="p-2.5 rounded-lg bg-muted/50 border border-border">
-                <p className="text-xs text-muted-foreground">Points</p>
-                <p className="text-lg font-bold text-foreground">
+              <div className="rounded-md bg-surface-sunken/60 p-3">
+                <dt className="text-xs text-muted-foreground">Points</dt>
+                <dd className="font-display text-xl font-bold tabular-nums text-foreground">
                   {summary.completedPoints}/{summary.totalPoints}
-                </p>
+                </dd>
               </div>
-            </div>
+            </dl>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${sprintStatusColors.done}`} aria-hidden="true" />
-                  Done
-                </span>
-                <span className="font-medium">{summary.doneTickets}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${sprintStatusColors.inProgress}`} aria-hidden="true" />
-                  In Progress
-                </span>
-                <span className="font-medium">{summary.inProgressTickets}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${sprintStatusColors.todo}`} aria-hidden="true" />
-                  To Do
-                </span>
-                <span className="font-medium">{summary.todoTickets}</span>
-              </div>
-            </div>
+            <dl className="space-y-2 text-sm">
+              {[
+                { label: "Done", value: summary.doneTickets, dot: sprintStatusColors.done },
+                { label: "In Progress", value: summary.inProgressTickets, dot: sprintStatusColors.inProgress },
+                { label: "To Do", value: summary.todoTickets, dot: sprintStatusColors.todo },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between">
+                  <dt className="flex items-center gap-2">
+                    <span className={cn("size-2 rounded-full", row.dot)} aria-hidden="true" />
+                    {row.label}
+                  </dt>
+                  <dd className="font-medium tabular-nums">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          </ScrollArea>
         ) : (
           <EmptyState
-            illustration={<EmptySprintIllustration />}
+            compact
+            illustration={<EmptySprintIllustration className="h-20 w-20" />}
             title="No active sprint"
             description="Start a sprint in your project to see progress here."
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </WidgetCard>
   );
 });

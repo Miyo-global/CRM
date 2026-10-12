@@ -97,19 +97,19 @@ function LeaveCalendarWidget() {
               <div key={leave.id} className="flex items-center gap-2 py-1">
                 <Avatar className="h-7 w-7 shrink-0">
                   {leave.userImage && <AvatarImage src={leave.userImage} alt={leave.userName} />}
-                  <AvatarFallback className="text-[10px]">
+                  <AvatarFallback className="text-2xs">
                     {leave.userName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium truncate">{leave.userName}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {formatDateLabel(leave.startDate)} – {formatDateLabel(leave.endDate)}
                     {" · "}
                     {leave.leaveType}
                   </p>
                 </div>
-                <Badge variant="secondary" className="text-[10px] shrink-0">
+                <Badge variant="secondary" className="text-2xs shrink-0">
                   {leave.status}
                 </Badge>
               </div>
@@ -168,17 +168,17 @@ function UpcomingBirthdaysWidget({
                 <div key={b.id} className="flex items-center gap-2 py-0.5">
                   <Avatar className="h-7 w-7 shrink-0">
                     {b.image && <AvatarImage src={b.image} alt={displayName} />}
-                    <AvatarFallback className="text-[10px]">
+                    <AvatarFallback className="text-2xs">
                       {getInitials(b.name, b.firstName, b.lastName)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{displayName}</p>
                     {b.birthdayMonthDay ? (
-                      <p className="text-[10px] text-muted-foreground">{b.birthdayMonthDay}</p>
+                      <p className="text-2xs text-muted-foreground">{b.birthdayMonthDay}</p>
                     ) : null}
                   </div>
-                  <Badge variant={b.daysUntil === 0 ? "default" : "secondary"} className="text-[10px] shrink-0">
+                  <Badge variant={b.daysUntil === 0 ? "default" : "secondary"} className="text-2xs shrink-0">
                     {b.daysUntil === 0 ? "Today!" : `in ${b.daysUntil}d`}
                   </Badge>
                 </div>
@@ -226,11 +226,11 @@ function OnboardingStatusWidget() {
         ) : (
           <div className="space-y-3">
             <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1 text-amber-500">
+              <span className="flex items-center gap-1 text-warning-strong">
                 <Clock className="h-3 w-3" />
                 {data.inProgress} in progress
               </span>
-              <span className="flex items-center gap-1 text-emerald-500">
+              <span className="flex items-center gap-1 text-success-strong">
                 <CheckCircle2 className="h-3 w-3" />
                 {data.completed} completed
               </span>
@@ -240,7 +240,7 @@ function OnboardingStatusWidget() {
             </div>
             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all"
+                className="h-full bg-success-500 rounded-full transition-all"
                 style={{ width: `${data.completionPct}%` }}
               />
             </div>
@@ -258,7 +258,7 @@ function OnboardingStatusWidget() {
                           style={{ width: `${hire.pct}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground tabular-nums w-7 text-right">
+                      <span className="text-2xs text-muted-foreground tabular-nums w-7 text-right">
                         {hire.pct}%
                       </span>
                     </div>
@@ -281,9 +281,9 @@ const GENDER_LABELS: Record<string, string> = {
 };
 
 const GENDER_COLORS: Record<string, string> = {
-  MALE: "bg-blue-500",
-  FEMALE: "bg-pink-500",
-  OTHER: "bg-purple-500",
+  MALE: "bg-info-500",
+  FEMALE: "bg-plum-500",
+  OTHER: "bg-plum-500",
   NOT_SPECIFIED: "bg-muted",
 };
 
@@ -304,7 +304,7 @@ function DiversityWidget() {
         ) : (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Gender</p>
+              <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Gender</p>
               {(data?.genderBreakdown ?? []).map((g) => {
                 const pct = totalGender > 0 ? Math.round((g.count / totalGender) * 100) : 0;
                 return (
@@ -318,7 +318,7 @@ function DiversityWidget() {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right shrink-0">
+                    <span className="text-2xs tabular-nums text-muted-foreground w-8 text-right shrink-0">
                       {g.count} ({pct}%)
                     </span>
                   </div>
@@ -326,7 +326,7 @@ function DiversityWidget() {
               })}
             </div>
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Age Groups</p>
+              <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Age Groups</p>
               {(data?.ageDistribution ?? []).map((a) => (
                 <div key={a.range} className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-14 shrink-0">{a.range}</span>
@@ -338,7 +338,7 @@ function DiversityWidget() {
                       }}
                     />
                   </div>
-                  <span className="text-[10px] tabular-nums text-muted-foreground w-5 text-right shrink-0">
+                  <span className="text-2xs tabular-nums text-muted-foreground w-5 text-right shrink-0">
                     {a.count}
                   </span>
                 </div>
@@ -373,11 +373,11 @@ function TimeToFillWidget() {
             </div>
             {data.byDepartment.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">By Department</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">By Department</p>
                 {data.byDepartment.slice(0, 4).map((d) => (
                   <div key={d.department} className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground flex-1 truncate">{d.department}</span>
-                    <Badge variant="secondary" className="text-[10px] tabular-nums shrink-0">
+                    <Badge variant="secondary" className="text-2xs tabular-nums shrink-0">
                       {d.avgDays}d · {d.filledCount} filled
                     </Badge>
                   </div>
@@ -409,7 +409,7 @@ function PayrollSummaryWidget() {
           <CardTitle className="text-sm font-medium">Payroll Summary</CardTitle>
         </div>
         {data?.month && (
-          <Badge variant="outline" className="text-[10px]">{data.month}</Badge>
+          <Badge variant="outline" className="text-2xs">{data.month}</Badge>
         )}
       </CardHeader>
       <CardContent className="p-4 pt-0">
@@ -420,11 +420,11 @@ function PayrollSummaryWidget() {
         ) : (
           <div className="space-y-2">
             <div>
-              <p className="text-[10px] text-muted-foreground">Net Payout</p>
+              <p className="text-2xs text-muted-foreground">Net Payout</p>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold">{formatINR(data.totalNet)}</span>
                 {data.momChangePct !== null && (
-                  <span className={`flex items-center gap-0.5 text-xs ${data.momChangePct >= 0 ? "text-destructive" : "text-emerald-500"}`}>
+                  <span className={`flex items-center gap-0.5 text-xs ${data.momChangePct >= 0 ? "text-destructive" : "text-success-strong"}`}>
                     {data.momChangePct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {Math.abs(data.momChangePct)}%
                   </span>
@@ -441,7 +441,7 @@ function PayrollSummaryWidget() {
                 <p className="font-medium">{formatINR(data.totalDeductions)}</p>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">{data.employeeCount} employees processed</p>
+            <p className="text-2xs text-muted-foreground">{data.employeeCount} employees processed</p>
           </div>
         )}
       </CardContent>
@@ -469,24 +469,24 @@ function LeaveAnalyticsWidget() {
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">By Department</p>
+              <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">By Department</p>
               {data.byDepartment.map((d) => (
                 <div key={d.department} className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-24 truncate shrink-0">{d.department}</span>
                   <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gold/70"
+                      className="h-full rounded-full bg-brand-soft"
                       style={{ width: `${(d.total / maxCount) * 100}%` }}
                     />
                   </div>
-                  <Badge variant="secondary" className="text-[10px] tabular-nums shrink-0">
+                  <Badge variant="secondary" className="text-2xs tabular-nums shrink-0">
                     {d.approved}✓ {d.pending}⋯
                   </Badge>
                 </div>
               ))}
             </div>
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Monthly Trend</p>
+              <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Monthly Trend</p>
               <div className="flex items-end gap-0.5 h-20">
                 {data.monthlyTrend.map((m) => {
                   const maxM = Math.max(...data.monthlyTrend.map((x) => x.count), 1);
@@ -494,11 +494,11 @@ function LeaveAnalyticsWidget() {
                   return (
                     <div key={m.month} className="flex flex-col items-center gap-0.5 flex-1">
                       <div
-                        className="w-full rounded-sm bg-gold/60"
+                        className="w-full rounded-sm bg-brand-soft"
                         style={{ height: `${Math.max(4, pct)}%`, minHeight: "2px" }}
                         title={`${m.month}: ${m.count}`}
                       />
-                      <span className="text-[8px] text-muted-foreground">{m.month}</span>
+                      <span className="text-3xs text-muted-foreground">{m.month}</span>
                     </div>
                   );
                 })}
@@ -540,17 +540,17 @@ function SalaryBandWidget() {
         ) : (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Distribution</p>
+              <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Distribution</p>
               {data.bandDistribution.map((band) => (
                 <div key={band.label} className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-12 shrink-0">{band.label}</span>
                   <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-blue/70"
+                      className="h-full rounded-full bg-secondary"
                       style={{ width: `${(band.count / maxCount) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[10px] tabular-nums text-muted-foreground w-5 text-right shrink-0">
+                  <span className="text-2xs tabular-nums text-muted-foreground w-5 text-right shrink-0">
                     {band.count}
                   </span>
                 </div>
@@ -558,11 +558,11 @@ function SalaryBandWidget() {
             </div>
             {data.byDepartment.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Avg by Dept</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Avg by Dept</p>
                 {data.byDepartment.slice(0, 4).map((d) => (
                   <div key={d.department} className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-muted-foreground truncate flex-1">{d.department}</span>
-                    <Badge variant="secondary" className="text-[10px] tabular-nums shrink-0">
+                    <Badge variant="secondary" className="text-2xs tabular-nums shrink-0">
                       avg {formatLakh(d.avgAnnual)}
                     </Badge>
                   </div>
@@ -581,9 +581,9 @@ function ComplianceWidget() {
 
   const ringColor =
     (data?.overallPct ?? 0) >= 80
-      ? "text-emerald-500"
+      ? "text-success-strong"
       : (data?.overallPct ?? 0) >= 60
-        ? "text-amber-500"
+        ? "text-warning-strong"
         : "text-destructive";
 
   function handleExport() {
@@ -599,7 +599,7 @@ function ComplianceWidget() {
         </div>
         <button
           onClick={handleExport}
-          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground transition-colors"
           title="Export HR Report"
         >
           <Download className="h-3 w-3" />
@@ -619,7 +619,7 @@ function ComplianceWidget() {
               </span>
               <div>
                 <p className="text-xs font-medium">Overall Compliance</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   {data.overallCompliant} / {data.total} employees fully profiled
                 </p>
               </div>
@@ -630,11 +630,11 @@ function ComplianceWidget() {
                   <span className="text-xs text-muted-foreground flex-1 truncate">{c.label}</span>
                   <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
                     <div
-                      className={`h-full rounded-full ${c.pct >= 80 ? "bg-emerald-500" : c.pct >= 60 ? "bg-amber-500" : "bg-destructive"}`}
+                      className={`h-full rounded-full ${c.pct >= 80 ? "bg-success-500" : c.pct >= 60 ? "bg-warning-500" : "bg-destructive"}`}
                       style={{ width: `${c.pct}%` }}
                     />
                   </div>
-                  <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right shrink-0">
+                  <span className="text-2xs tabular-nums text-muted-foreground w-8 text-right shrink-0">
                     {c.pct}%
                   </span>
                 </div>

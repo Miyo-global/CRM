@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
+import { IconChip } from "@/components/ui/icon-chip";
 import {
   UserPlus,
   BarChart3,
@@ -15,11 +16,12 @@ import {
   CheckSquare,
   Network,
   Ticket,
+  type LucideIcon,
 } from "lucide-react";
 
 interface QuickAction {
   label: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   href: string;
 }
 
@@ -80,24 +82,19 @@ export const QuickActions = memo(function QuickActions() {
   if (actions.length === 0) return null;
 
   return (
-    <div className={`grid ${actions.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-3 sm:grid-cols-3 ${actions.length >= 5 ? "md:grid-cols-5" : actions.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-      {actions.map((action) => {
-        const ActionIcon = action.icon;
-        return (
-          <motion.div key={action.label} variants={fadeUp}>
-            <Link href={action.href} aria-label={action.label}>
-              <div className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-noir transition-all duration-200 hover:border-gold/40 hover:shadow-md hover:bg-gold/5 cursor-pointer">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 transition-colors group-hover:bg-gold/20">
-                  <ActionIcon className="h-5 w-5 text-gold" aria-hidden="true" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                  {action.label}
-                </span>
-              </div>
-            </Link>
-          </motion.div>
-        );
-      })}
+    <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${actions.length >= 5 ? "md:grid-cols-5" : actions.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+      {actions.map((action) => (
+        <motion.div key={action.label} variants={fadeUp}>
+          <Link
+            href={action.href}
+            aria-label={action.label}
+            className="flex h-14 items-center gap-3 rounded-lg border border-border bg-card px-3 shadow-xs outline-none transition-[background-color,border-color] hover:border-border-strong hover:bg-accent focus-visible:focus-ring"
+          >
+            <IconChip icon={action.icon} tone="brand" size="sm" className="size-8" />
+            <span className="truncate text-sm font-medium text-foreground">{action.label}</span>
+          </Link>
+        </motion.div>
+      ))}
     </div>
   );
 });

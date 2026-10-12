@@ -9,8 +9,13 @@ import {
 } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -24,17 +29,15 @@ import {
 import { useSession } from "next-auth/react";
 import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
-function ackBadge(
-  status: string | null,
-): "default" | "secondary" | "outline" | "destructive" {
-  if (status === "ACKNOWLEDGED") return "default";
-  if (status === "DECLINED") return "destructive";
-  return "outline";
+function ackTone(status: string | null): Tone {
+  if (status === "ACKNOWLEDGED") return "success";
+  if (status === "DECLINED") return "danger";
+  return "warning";
 }
 
 export default function CompliancePage() {
   const { data: session } = useSession();
-  const { data: acks, isLoading } = usePolicyAcknowledgments();
+  const { data: acks, isLoading, isError, error, refetch } = usePolicyAcknowledgments();
   const acknowledgePolicy = useAcknowledgePolicy();
 
   const handleAcknowledge = useCallback(
@@ -63,7 +66,7 @@ export default function CompliancePage() {
       >
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20" />
+            <Skeleton key={i} className="h-16 rounded-lg" />
           ))}
         </div>
       </PageWrapper>
@@ -82,93 +85,108 @@ export default function CompliancePage() {
       subtitle="Policy acknowledgments and document tracking"
       badge={pending.length > 0 ? `${pending.length} pending` : undefined}
     >
-      <div className="space-y-4">
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : (
+      <div className="space-y-6">
         {pending.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-500" />
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Clock className="size-4 text-warning-strong" aria-hidden="true" />
               Pending Acknowledgments
-            </h3>
+            </h2>
             {pending.map((ack: PolicyAcknowledgment) => (
               <Card key={ack.id}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">
-                      {ack.document?.name ?? "Document"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Type: {ack.document?.type} &middot; Sent{" "}
-                      {ack.createdAt
-                        ? formatDistanceToNow(new Date(ack.createdAt), {
-                            addSuffix: true,
-                          })
-                        : ""}
-                    </p>
+                <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <IconChip icon={FileText} tone="warning" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {ack.document?.name ?? "Document"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Type: {ack.document?.type} &middot; Sent{" "}
+                        {ack.createdAt
+                          ? formatDistanceToNow(new Date(ack.createdAt), {
+                              addSuffix: true,
+                            })
+                          : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex gap-1.5 shrink-0">
+                  <div className="flex shrink-0 gap-2">
                     <Button
                       size="sm"
-                      className="h-7 text-xs"
                       onClick={() => handleAcknowledge(ack.id, "ACKNOWLEDGED")}
                       disabled={acknowledgePolicy.isPending}
+                      loading={acknowledgePolicy.isPending && acknowledgePolicy.variables?.acknowledgmentId === ack.id && acknowledgePolicy.variables?.status === "ACKNOWLEDGED"}
                     >
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      <CheckCircle2 className="size-4" aria-hidden="true" />
                       Acknowledge
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 text-xs"
                       onClick={() => handleAcknowledge(ack.id, "DECLINED")}
                       disabled={acknowledgePolicy.isPending}
+                      loading={acknowledgePolicy.isPending && acknowledgePolicy.variables?.acknowledgmentId === ack.id && acknowledgePolicy.variables?.status === "DECLINED"}
                     >
-                      <XCircle className="h-3 w-3 mr-1" />
+                      <XCircle className="size-4" aria-hidden="true" />
                       Decline
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </section>
         )}
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <FileCheck className="size-4 text-muted-foreground" aria-hidden="true" />
             All Acknowledgments
-          </h3>
+          </h2>
           {all.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <EmptyDocumentsIllustration className="mx-auto mb-4 h-40 w-40 opacity-95" />
-            <p className="text-sm text-muted-foreground">
-                  No policy acknowledgments yet.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
+              title="No policy acknowledgments yet."
+            />
           ) : (
-            all.map((ack: PolicyAcknowledgment) => (
-              <Card key={ack.id}>
-                <CardContent className="p-3 flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">
-                      {ack.document?.name ?? "Document"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Document</TableHead>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {all.map((ack: PolicyAcknowledgment) => (
+                  <TableRow key={ack.id}>
+                    <TableCell>
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <IconChip icon={FileText} tone="neutral" size="sm" />
+                        <span className="truncate font-medium text-foreground">
+                          {ack.document?.name ?? "Document"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {ack.user?.name ?? ack.user?.email}
-                    </p>
-                  </div>
-                  <Badge variant={ackBadge(ack.status)} className="text-[10px]">
-                    {ack.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))
+                    </TableCell>
+                    <TableCell>
+                      <StatusPill tone={ackTone(ack.status)} dot>
+                        {ack.status}
+                      </StatusPill>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </div>
+        </section>
       </div>
+      )}
     </PageWrapper>
   );
 }

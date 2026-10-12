@@ -1,13 +1,16 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-const Calendar = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" /></svg>
-);
+import { Calendar, CheckCircle2, Clock, UserX, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyCalendarIllustration } from "@/components/illustrations";
+import { Timeline } from "@/components/shared/timeline";
+import type { IconChipProps } from "@/components/ui/icon-chip";
+import type { Tone } from "@/lib/design/tones";
 
 interface Interview {
   id: number;
@@ -17,36 +20,12 @@ interface Interview {
   result?: string | null;
 }
 
-interface InterviewRowProps {
-  interview: Interview;
-}
-
-const InterviewRow = memo(function InterviewRow({ interview }: InterviewRowProps) {
-  return (
-    <div className="border rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between p-3">
-        <div>
-          <p className="text-sm font-medium">{interview.type ?? "Unknown"} Interview</p>
-          <p className="text-xs text-muted-foreground">
-            {format(new Date(interview.scheduledAt), "PPp")} &middot; {interview.duration ?? "?"}min
-          </p>
-        </div>
-        <Badge
-          variant={
-            interview.result === "PASSED"
-              ? "default"
-              : interview.result === "FAILED"
-                ? "destructive"
-                : "outline"
-          }
-          className="text-[10px]"
-        >
-          {interview.result ?? "PENDING"}
-        </Badge>
-      </div>
-    </div>
-  );
-});
+const RESULT_META: Record<string, { tone: Tone; icon: IconChipProps["icon"] }> = {
+  PENDING: { tone: "warning", icon: Clock },
+  PASSED: { tone: "success", icon: CheckCircle2 },
+  FAILED: { tone: "danger", icon: XCircle },
+  NO_SHOW: { tone: "neutral", icon: UserX },
+};
 
 interface InterviewsTabProps {
   interviews?: Interview[] | null;
@@ -61,23 +40,42 @@ export const InterviewsTab = memo(function InterviewsTab({
 
   return (
     <Card>
-      <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">Interviews</CardTitle>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleScheduleClick}>
-          <Calendar className="h-3 w-3 mr-1" />Schedule
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <CardTitle className="text-base">Interviews</CardTitle>
+        <Button size="sm" variant="outline" onClick={handleScheduleClick}>
+          <Calendar className="size-4" aria-hidden="true" />Schedule
         </Button>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent>
         {!interviews?.length ? (
-          <p className="text-xs text-muted-foreground py-4 text-center">
-            No interviews scheduled.
-          </p>
+          <EmptyState
+            compact
+            illustration={<EmptyCalendarIllustration className="size-24" />}
+            title="No interviews scheduled."
+            className="border-0 bg-transparent"
+          />
         ) : (
-          <div className="space-y-3">
-            {interviews.map((interview) => (
-              <InterviewRow key={interview.id} interview={interview} />
-            ))}
-          </div>
+          <Timeline
+            items={interviews.map((interview) => {
+              const result = interview.result ?? "PENDING";
+              const meta = RESULT_META[result] ?? RESULT_META.PENDING;
+              return {
+                id: String(interview.id),
+                icon: meta.icon,
+                tone: meta.tone,
+                title: <span className="font-medium">{interview.type ?? "Unknown"} Interview</span>,
+                body: (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="tabular-nums">
+                      {format(new Date(interview.scheduledAt), "PPp")} &middot; {interview.duration ?? "?"}min
+                    </span>
+                    <StatusPill tone={meta.tone} dot>{result}</StatusPill>
+                  </span>
+                ),
+                timestamp: interview.scheduledAt,
+              };
+            })}
+          />
         )}
       </CardContent>
     </Card>

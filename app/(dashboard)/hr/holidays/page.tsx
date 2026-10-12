@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, memo } from "react";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -25,7 +28,7 @@ import { sanitizeSimpleName } from "@/lib/validations/text-rules";
 import { cn } from "@/lib/utils";
 import {
   Plus, ChevronLeft, ChevronRight, Pencil, Trash2,
-  CalendarDays, Sun, Star, Clock,
+  Sun, Star, Clock,
 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
 import type { Holiday } from "@/types/hr";
@@ -39,9 +42,9 @@ interface FullHoliday extends Holiday {
 }
 
 const TYPE_CONFIG: Record<HolidayType, { label: string; className: string; icon: React.ElementType }> = {
-  NATIONAL: { label: "National",  className: "bg-red-50 text-red-700 border-red-200",    icon: Star },
-  PUBLIC:   { label: "Public",    className: "bg-blue-50 text-blue-700 border-blue-200",  icon: Sun },
-  OPTIONAL: { label: "Optional",  className: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
+  NATIONAL: { label: "National",  className: "bg-danger-soft text-danger-strong border-transparent",  icon: Star },
+  PUBLIC:   { label: "Public",    className: "bg-info-soft text-info-strong border-transparent",      icon: Sun },
+  OPTIONAL: { label: "Optional",  className: "bg-warning-soft text-warning-strong border-transparent", icon: Clock },
 };
 
 const MONTHS = [
@@ -83,15 +86,15 @@ const HolidayRow = memo(function HolidayRow({
       className={cn(
         "flex items-center justify-between gap-3 px-4 py-3 transition-colors",
         isPast && !isToday && "opacity-50",
-        isToday && "bg-primary/5",
+        isToday && "bg-brand-soft",
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className={cn(
-          "flex items-center justify-center h-9 w-9 rounded-lg shrink-0 border",
+          "flex size-9 shrink-0 items-center justify-center rounded-full",
           typeCfg.className,
         )}>
-          <TypeIcon className="h-4 w-4" />
+          <TypeIcon className="size-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -102,17 +105,17 @@ const HolidayRow = memo(function HolidayRow({
               {holiday.name}
             </span>
             {isToday && (
-              <Badge className="text-[10px] py-0 px-1.5 bg-primary text-primary-foreground">Today</Badge>
+              <Badge>Today</Badge>
             )}
             {holiday.isHalfDay && (
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5">Half Day</Badge>
+              <Badge variant="outline">Half Day</Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
             {formatHolidayDate(holiday.date)} &middot; {getDayOfWeek(holiday.date)}
           </p>
           {holiday.message && (
-            <p className="text-xs text-muted-foreground/70 mt-0.5 line-clamp-1 italic">
+            <p className="mt-0.5 line-clamp-1 text-xs text-subtle-foreground" title={holiday.message ?? undefined}>
               {holiday.message}
             </p>
           )}
@@ -121,7 +124,7 @@ const HolidayRow = memo(function HolidayRow({
 
       <div className="flex items-center gap-2 shrink-0">
         <span className={cn(
-          "hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+          "hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium",
           typeCfg.className,
         )}>
           {typeCfg.label}
@@ -142,7 +145,7 @@ const HolidayRow = memo(function HolidayRow({
               type="button"
               size="icon"
               variant="ghost"
-              className="h-7 w-7 text-destructive hover:text-destructive"
+              className="size-8 text-destructive hover:bg-danger-soft hover:text-destructive"
               onClick={() => onDelete(holiday)}
               disabled={isDeleting}
               aria-label={`Delete ${holiday.name}`}
@@ -164,7 +167,7 @@ export default function HolidaysPage() {
   const currentYear = new Date().getFullYear();
   const [viewYear, setViewYear] = useState(currentYear);
 
-  const { data: rawHolidays, isLoading } = useHrHolidaysForYear(viewYear);
+  const { data: rawHolidays, isLoading, isError, error, refetch } = useHrHolidaysForYear(viewYear);
   const holidays = (rawHolidays ?? []) as FullHoliday[];
 
   const addMutation    = useAddHoliday();
@@ -332,7 +335,7 @@ export default function HolidaysPage() {
           />
           {isAdmin && (
             <Button size="sm" onClick={openAdd}>
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="size-4" aria-hidden="true" />
               Add Holiday
             </Button>
           )}
@@ -340,23 +343,23 @@ export default function HolidaysPage() {
       }
     >
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setViewYear((y) => y - 1)}>
-            <ChevronLeft className="h-4 w-4" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="outline" size="icon-sm" onClick={() => setViewYear((y) => y - 1)} aria-label="Previous year">
+            <ChevronLeft className="size-4" aria-hidden="true" />
           </Button>
-          <span className="text-sm font-semibold w-12 text-center">{viewYear}</span>
+          <span className="w-12 text-center font-display text-base font-bold tabular-nums" aria-live="polite">{viewYear}</span>
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            className="h-8 w-8"
+            size="icon-sm"
             onClick={() => setViewYear((y) => y + 1)}
             disabled={viewYear >= currentYear + 2}
+            aria-label="Next year"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="size-4" aria-hidden="true" />
           </Button>
           {viewYear !== currentYear && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setViewYear(currentYear)}>
+            <Button variant="ghost" size="sm" onClick={() => setViewYear(currentYear)}>
               Back to {currentYear}
             </Button>
           )}
@@ -365,8 +368,8 @@ export default function HolidaysPage() {
             {Object.entries(TYPE_CONFIG).map(([t, cfg]) => {
               const Icon = cfg.icon;
               return (
-                <span key={t} className={cn("hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", cfg.className)}>
-                  <Icon className="h-2.5 w-2.5" />
+                <span key={t} className={cn("hidden sm:inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium", cfg.className)}>
+                  <Icon className="size-3" aria-hidden="true" />
                   {cfg.label}
                 </span>
               );
@@ -374,22 +377,23 @@ export default function HolidaysPage() {
           </div>
         </div>
 
-        {sortedHolidays.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border py-14 text-center">
-            <CalendarDays className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm font-medium text-foreground mb-1">No holidays for {viewYear}</p>
-            <p className="text-xs text-muted-foreground">
-              {isAdmin ? "Add holidays using the button above." : "Your HR team hasn't added any holidays for this year yet."}
-            </p>
-          </div>
+        {isError ? (
+          <QueryErrorState title="Couldn't load holidays" error={error} onRetry={() => refetch()} />
+        ) : sortedHolidays.length === 0 ? (
+          <EmptyState
+            illustration={<EmptyCalendarIllustration />}
+            title={`No holidays for ${viewYear}`}
+            description={isAdmin ? "Add holidays using the button above." : "Your HR team hasn't added any holidays for this year yet."}
+            action={isAdmin ? { label: "Add Holiday", onClick: openAdd } : undefined}
+          />
         ) : (
           <div className="space-y-5">
             {Array.from(byMonth.entries()).map(([monthIdx, monthHolidays]) => (
               <div key={monthIdx}>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                <h3 className="mb-2 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {MONTHS[monthIdx]}
                 </h3>
-                <div className="rounded-lg border border-border overflow-hidden divide-y divide-border">
+                <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
                   {monthHolidays.map((h) => (
                     <HolidayRow
                       key={h.id}
@@ -443,7 +447,7 @@ export default function HolidaysPage() {
               <DatePicker value={date} onChange={setDate} placeholder="Select date" />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Type</label>
                 <Select value={type} onValueChange={(v) => setType(v as HolidayType)}>
@@ -483,12 +487,12 @@ export default function HolidaysPage() {
                 maxLength={HOLIDAY_MESSAGE_MAX}
               />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Employees receive a reminder email one day before. This message is included.
                 </p>
                 <p
                   className={cn(
-                    "text-[10px] tabular-nums shrink-0",
+                    "text-2xs tabular-nums shrink-0",
                     message.length >= HOLIDAY_MESSAGE_MAX
                       ? "text-destructive"
                       : "text-muted-foreground",

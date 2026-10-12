@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Loader2, Mail } from "lucide-react";
+import { Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -126,7 +126,7 @@ export function RecognitionExportSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg">
+      <SheetContent size="md" className="flex w-full flex-col gap-0 overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Export recognition history</SheetTitle>
           <SheetDescription>
@@ -134,11 +134,11 @@ export function RecognitionExportSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-4 flex flex-1 flex-col gap-4 px-1 pb-6">
-          <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-            <p className="font-medium text-sm mb-1">Current filters</p>
+        <div className="flex flex-1 flex-col gap-4 px-4 pb-6">
+          <div className="rounded-lg border border-border bg-surface-sunken/60 p-3 text-sm">
+            <p className="mb-1 text-sm font-medium">Current filters</p>
             <p className="text-xs text-muted-foreground">{scopeLabel}</p>
-            <p className="text-xs font-medium text-foreground mt-2">
+            <p className="mt-2 text-xs font-medium tabular-nums text-foreground">
               {hasRows
                 ? `${rowCount} record${rowCount === 1 ? "" : "s"} in this export.`
                 : "No records match the current filters."}
@@ -148,11 +148,11 @@ export function RecognitionExportSheet({
           <Tabs value={tab} onValueChange={(v) => setTab(v as "download" | "email")} className="flex-1">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="download" className="gap-1.5">
-                <Download className="h-3.5 w-3.5" />
+                <Download className="size-4" aria-hidden="true" />
                 Download CSV
               </TabsTrigger>
               <TabsTrigger value="email" className="gap-1.5" disabled={!canEmailExport}>
-                <Mail className="h-3.5 w-3.5" />
+                <Mail className="size-4" aria-hidden="true" />
                 Send mail
               </TabsTrigger>
             </TabsList>
@@ -162,11 +162,12 @@ export function RecognitionExportSheet({
                 Exports date, people, department, category, and message for each recognition in the current view.
               </p>
               <Button
-                className="w-full gap-2"
+                className="w-full"
                 onClick={handleDownload}
-                disabled={downloading || !hasRows}
+                disabled={!hasRows}
+                loading={downloading}
               >
-                {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {!downloading && <Download className="size-4" aria-hidden="true" />}
                 {hasRows ? `Download CSV (${rowCount})` : "Download CSV"}
               </Button>
             </TabsContent>

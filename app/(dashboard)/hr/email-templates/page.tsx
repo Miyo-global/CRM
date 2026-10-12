@@ -49,6 +49,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyMailIllustration } from "@/components/illustrations";
 import { HR_EMAIL_EMPLOYEE_AUTO_MERGE_KEY_SET } from "@/lib/hr/hr-email-auto-merge-keys";
 import {
@@ -155,7 +157,7 @@ function extractMergeKeys(subject: string, body: string): Set<string> {
 function EmailTemplatesContent() {
   const qc = useQueryClient();
 
-  const { data: templates, isLoading } = useQuery({
+  const { data: templates, isLoading, isError, error, refetch } = useQuery({
     queryKey: etKeys.list(),
     queryFn: () => apiClient.get<EmailTemplate[]>("/hr/email-templates"),
   });
@@ -491,7 +493,7 @@ function EmailTemplatesContent() {
       <PageWrapper title="Email Templates" subtitle="Manage HR email templates">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-36" />
+            <Skeleton key={i} className="h-36 rounded-lg" />
           ))}
         </div>
       </PageWrapper>
@@ -505,44 +507,43 @@ function EmailTemplatesContent() {
       badge={`${templates?.length ?? 0} templates`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="h-3.5 w-3.5 mr-1" />
+          <Plus className="size-3.5" aria-hidden="true" />
           New Template
         </Button>
       }
     >
-      <Card className="mb-4 border-dashed">
-        <CardContent className="py-3 px-4 space-y-2">
+      <Card className="mb-4 border-dashed bg-surface-sunken/40 shadow-none">
+        <CardContent className="space-y-2 px-4 py-3">
           <p className="text-xs font-medium text-foreground">Merge variables</p>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
             {MERGE_VARIABLES_LINES.map((line, i) => (
               <li key={i}>{line}</li>
             ))}
           </ul>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Use double curly braces in subject and body, e.g.{" "}
-            <code className="rounded bg-muted px-1">Dear {"{{name}}"}</code>. HTML is supported in
+            <code className="rounded-xs bg-muted px-1 font-mono">Dear {"{{name}}"}</code>. HTML is supported in
             the body.
           </p>
         </CardContent>
       </Card>
 
-      {!templates?.length ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <EmptyState
-              illustration={<EmptyMailIllustration className="h-32 w-32 opacity-95" />}
-              title="No email templates yet"
-              description="Create a reusable template to streamline your HR communications."
-              action={{ label: "New Template", onClick: () => setSheetOpen(true) }}
-            />
-          </CardContent>
-        </Card>
+      {isError ? (
+        <QueryErrorState error={error} onRetry={() => void refetch()} />
+      ) : !templates?.length ? (
+        <EmptyState
+          illustration={<EmptyMailIllustration className="size-32" />}
+          title="No email templates yet"
+          description="Create a reusable template to streamline your HR communications."
+          action={{ label: "New Template", onClick: () => setSheetOpen(true) }}
+        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {templates.map((t: EmailTemplate) => (
             <Card
               key={t.id}
-              className="hover:shadow-sm transition-shadow cursor-pointer"
+              interactive
+              className="cursor-pointer focus-visible:focus-ring outline-none"
               role="button"
               tabIndex={0}
               onClick={() => openSend(t)}
@@ -555,45 +556,44 @@ function EmailTemplatesContent() {
             >
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <Mail className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <IconChip icon={Mail} tone="brand" size="sm" />
                   <div className="flex flex-wrap gap-0.5 justify-end" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-xs"
                       title="Send"
                       onClick={() => openSend(t)}
                     >
-                      <Send className="h-3.5 w-3.5" />
+                      <Send className="size-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-xs"
                       title="Preview"
                       onClick={() => setPreviewTemplate(t)}
                     >
-                      <Eye className="h-3.5 w-3.5" />
+                      <Eye className="size-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-xs"
                       title="Edit"
                       onClick={() => startEdit(t)}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="size-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(t)}>
-                      <Copy className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon-xs" title="Duplicate" aria-label="Duplicate" onClick={() => handleCopy(t)}>
+                      <Copy className="size-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive"
+                      size="icon-xs"
+                      className="text-destructive hover:text-destructive"
+                      title="Delete"
+                      aria-label="Delete"
                       onClick={() => setDeleteId(t.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -608,7 +608,7 @@ function EmailTemplatesContent() {
                 <p className="text-xs text-muted-foreground line-clamp-2">{t.body}</p>
                 <div className="flex gap-2 flex-wrap">
                   {t.category && (
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-2xs">
                       {t.category}
                     </Badge>
                   )}
@@ -675,7 +675,7 @@ function EmailTemplatesContent() {
       <Sheet open={previewTemplate !== null} onOpenChange={(o) => !o && setPreviewTemplate(null)}>
         <SheetContent className="sm:max-w-lg flex flex-col">
           <SheetHeader>
-            <SheetTitle className="text-base break-words">
+            <SheetTitle className="break-words font-display text-lg font-bold">
               {previewTemplate?.name ?? "Preview"}
             </SheetTitle>
             <p className="text-xs text-muted-foreground">Preview with sample data</p>
@@ -683,7 +683,7 @@ function EmailTemplatesContent() {
           {previewTemplate && (
             <ScrollArea className="flex-1 pr-3">
               {previewTemplate.category && (
-                <Badge variant="outline" className="text-[10px] mb-3">
+                <Badge variant="outline" className="text-2xs mb-3">
                   {previewTemplate.category}
                 </Badge>
               )}
@@ -693,7 +693,7 @@ function EmailTemplatesContent() {
               </p>
               <p className="text-xs font-medium text-muted-foreground mb-1">Body</p>
               <div
-                className="text-sm max-w-none border rounded-md p-3 bg-muted/30 break-words [&_a]:underline"
+                className="max-w-none break-words rounded-md border bg-surface-sunken/40 p-3 text-sm [&_a]:text-brand-text [&_a]:underline"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(mergePreviewText(previewTemplate.body)) }}
               />
             </ScrollArea>
@@ -742,11 +742,11 @@ function EmailTemplatesContent() {
             <TabsContent value="directory" className="mt-3 space-y-2">
               <p className="text-xs text-muted-foreground">
                 Sends to each employee&apos;s work email. Profile fields fill{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">{"{{name}}"}</code>,{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">{"{{employee_name}}"}</code>, etc.
+                <code className="rounded-xs bg-muted px-1 font-mono text-2xs">{"{{name}}"}</code>,{" "}
+                <code className="rounded-xs bg-muted px-1 font-mono text-2xs">{"{{employee_name}}"}</code>, etc.
               </p>
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   className="pl-8 h-9 text-sm"
                   placeholder="Search employees…"
@@ -765,10 +765,10 @@ function EmailTemplatesContent() {
                   {selectedUserIds.size} selected
                 </span>
               </div>
-              <ScrollArea className="h-[200px] border rounded-md">
+              <ScrollArea className="h-50 rounded-md border">
                 {employeesLoading ? (
                   <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
                     Loading employees…
                   </div>
                 ) : (
@@ -779,7 +779,7 @@ function EmailTemplatesContent() {
                           ? `${e.firstName} ${e.lastName}`
                           : e.name) || e.email;
                       return (
-                        <li key={e.id} className="flex items-center gap-2 py-1.5 px-1 rounded hover:bg-muted/50">
+                        <li key={e.id} className="flex items-center gap-2 rounded-sm px-1 py-1.5 hover:bg-accent">
                           <Checkbox
                             id={`send-${e.id}`}
                             checked={selectedUserIds.has(e.id)}
@@ -804,7 +804,7 @@ function EmailTemplatesContent() {
                 department / etc. into the template; mail still goes to the addresses you list.
               </p>
               <Textarea
-                className="text-xs min-h-[80px] font-mono"
+                className="text-xs min-h-20 font-mono"
                 placeholder={"someone@gmail.com\nother@company.com"}
                 value={customEmailsRaw}
                 onChange={(e) => setCustomEmailsRaw(e.target.value)}
@@ -837,12 +837,12 @@ function EmailTemplatesContent() {
           {keysNeedingManualInput.length > 0 && (
             <div className="space-y-2 border-t pt-3">
               <p className="text-xs font-medium">Template fields</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Fill placeholders not covered by the employee profile
                 {mergeFilledFromEmployeeProfile ? "" : " (custom send: pick “Merge fields from employee” or fill every field below)"}.
                 Custom fields use the input type you defined in Settings.
               </p>
-              <div className="grid gap-2 max-h-[240px] overflow-y-auto pr-1">
+              <div className="grid gap-2 max-h-60 overflow-y-auto pr-1">
                 {keysNeedingManualInput.map((key) => (
                   <TemplateFieldInput
                     key={key}
@@ -859,7 +859,7 @@ function EmailTemplatesContent() {
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Extra variables (optional)</label>
             <Textarea
-              className="text-xs font-mono min-h-[56px]"
+              className="text-xs font-mono min-h-14"
               placeholder={"One per line: customKey=value"}
               value={sendExtraVars}
               onChange={(e) => setSendExtraVars(e.target.value)}

@@ -17,10 +17,14 @@ import { useHrHelpdeskTickets, useCreateHelpdeskTicket } from "@/lib/api/hooks/h
 import { AISuggestReplyButton } from "@/features/hr/helpdesk/ai-suggest-reply-button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { StatusPill } from "@/components/ui/status-pill";
+import { EmptyState } from "@/components/ui/empty-state";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatsStrip } from "@/components/shared/stats-strip";
+import { ListToolbar } from "@/components/shared/list-toolbar";
+import { EmptySearchIllustration } from "@/components/illustrations";
+import type { Tone } from "@/lib/design/tones";
 import {
   Select,
   SelectContent,
@@ -38,7 +42,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea as SheetScrollArea } from "@/components/ui/scroll-area";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -49,7 +52,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Search, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-react";
+import { Plus, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { TicketPriority, TicketStatus, HelpdeskTicket } from "@/types/hr";
 
@@ -78,21 +81,21 @@ const CATEGORY_OPTIONS = [
   "Other",
 ];
 
-function statusBadgeVariant(status: string | null): "default" | "secondary" | "outline" | "destructive" {
+function statusTone(status: string | null): Tone {
   switch (status) {
-    case "DONE": return "default";
-    case "IN_PROGRESS": return "secondary";
-    case "IN_REVIEW": return "outline";
-    default: return "destructive";
+    case "DONE": return "success";
+    case "IN_PROGRESS": return "info";
+    case "IN_REVIEW": return "plum";
+    default: return "warning";
   }
 }
 
-function priorityBadgeVariant(priority: string | null): "default" | "secondary" | "outline" | "destructive" {
+function priorityTone(priority: string | null): Tone {
   switch (priority) {
-    case "URGENT": return "destructive";
-    case "HIGH": return "default";
-    case "MEDIUM": return "secondary";
-    default: return "outline";
+    case "URGENT": return "danger";
+    case "HIGH": return "warning";
+    case "MEDIUM": return "brand";
+    default: return "neutral";
   }
 }
 
@@ -106,7 +109,7 @@ export default function HelpdeskPage() {
 
   const isAdmin = isAdminOrOwner(session?.user?.role);
 
-  const { data: tickets, isLoading } = useHrHelpdeskTickets(undefined, statusFilter);
+  const { data: tickets, isLoading, isError, error, refetch } = useHrHelpdeskTickets(undefined, statusFilter);
   const createTicket = useCreateHelpdeskTicket();
   const { data: assignees } = useHelpdeskAssignees(isAdmin);
 
@@ -134,6 +137,13 @@ export default function HelpdeskPage() {
     },
     [searchParams, router]
   );
+
+  const clearFilters = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    params.delete("status");
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [searchParams, router]);
 
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
@@ -196,24 +206,13 @@ export default function HelpdeskPage() {
   if (isLoading) {
     return (
       <PageWrapper title="Helpdesk" subtitle="Submit and track your support tickets">
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="pt-6">
-                  <Skeleton className="h-4 w-20 mb-2" />
-                  <Skeleton className="h-8 w-12" />
-                </CardContent>
-              </Card>
+        <div className="space-y-4">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-md" />
             ))}
           </div>
-          <Card>
-            <CardContent className="pt-6 space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </CardContent>
-          </Card>
         </div>
       </PageWrapper>
     );
@@ -228,7 +227,7 @@ export default function HelpdeskPage() {
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="size-4" aria-hidden="true" />
               New Ticket
             </Button>
           </SheetTrigger>
@@ -244,7 +243,7 @@ export default function HelpdeskPage() {
                 onValidityChange={setCanSubmitTicket}
               />
             </SheetScrollArea>
-            <SheetFooter className="shrink-0 px-4 py-3 border-t flex-row gap-2">
+            <SheetFooter className="shrink-0 flex-row gap-2 border-t bg-background px-4 py-3">
               <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
                 Cancel
               </Button>
@@ -253,6 +252,7 @@ export default function HelpdeskPage() {
                 form="helpdesk-create-ticket"
                 className="flex-1"
                 disabled={createTicket.isPending || !canSubmitTicket}
+                loading={createTicket.isPending}
               >
                 {createTicket.isPending ? "Creating..." : "Create Ticket"}
               </Button>
@@ -261,58 +261,62 @@ export default function HelpdeskPage() {
         </Sheet>
       }
       filters={
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search tickets..."
-              value={searchQuery}
-              onChange={(e) => setFilter("q", e.target.value || null)}
-              className="pl-9 w-[200px]"
-            />
-          </div>
-          <Select
-            value={statusFilter ?? "ALL"}
-            onValueChange={(v) => setFilter("status", v)}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <ListToolbar
+          className="w-full"
+          search={{
+            value: searchQuery,
+            onChange: (v) => setFilter("q", v || null),
+            placeholder: "Search tickets...",
+          }}
+          filters={
+            <Select
+              value={statusFilter ?? "ALL"}
+              onValueChange={(v) => setFilter("status", v)}
+            >
+              <SelectTrigger className="w-40" aria-label="Status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          }
+        />
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
+        <StatsStrip
+          items={[
+            { label: "Total", value: stats.total, icon: Ticket },
+            { label: "Open", value: stats.open, icon: AlertCircle, tone: "warning" },
+            { label: "In Progress", value: stats.inProgress, icon: Clock, tone: "info" },
+            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, tone: "success" },
+          ]}
+        />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: "Total", value: stats.total, icon: Ticket, color: "" },
-            { label: "Open", value: stats.open, icon: AlertCircle, color: "text-orange-500" },
-            { label: "In Progress", value: stats.inProgress, icon: Clock, color: "text-blue-500" },
-            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, color: "text-green-500" },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Icon className={`h-3.5 w-3.5 ${color}`} />
-                  <span className="text-xs">{label}</span>
-                </div>
-                <p className="text-xl font-bold">{value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Card>
+        {isError ? (
+          <QueryErrorState error={error} onRetry={() => void refetch()} />
+        ) : filteredTickets.length === 0 ? (
+          searchQuery || statusFilter ? (
+            <EmptyState
+              illustration={<EmptySearchIllustration className="h-32 w-32" />}
+              title="No results for these filters"
+              description={searchQuery ? "No tickets match your search." : undefined}
+              action={{ label: "Clear filters", onClick: clearFilters }}
+            />
+          ) : (
+            <EmptyState
+              illustration={<EmptyTicketIllustration className="h-36 w-36" />}
+              title="No tickets yet. Create your first one!"
+              action={{ label: "New Ticket", onClick: () => setSheetOpen(true) }}
+            />
+          )
+        ) : (
+        <Card className="overflow-hidden">
           <CardContent className="p-0">
-            <ScrollArea className="w-full" type="auto">
-              <div className="min-w-[700px]">
-                <Table>
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -321,48 +325,45 @@ export default function HelpdeskPage() {
                       <TableHead>Status</TableHead>
                       <TableHead>Assignee</TableHead>
                       <TableHead>Created</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTickets.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <EmptyTicketIllustration className="h-36 w-36 opacity-95" />
-                            <p>{searchQuery ? "No tickets match your search." : "No tickets yet. Create your first one!"}</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      paginatedTickets.map((ticket) => (
+                    {paginatedTickets.map((ticket) => (
                         <TableRow
                           key={ticket.id}
-                          className="cursor-pointer"
+                          className="cursor-pointer focus-visible:focus-ring"
+                          tabIndex={0}
                           onClick={() => { setSelectedTicket(ticket); setDetailOpen(true); }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && e.target === e.currentTarget) {
+                              setSelectedTicket(ticket);
+                              setDetailOpen(true);
+                            }
+                          }}
                         >
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{ticket.title}</p>
+                          <TableCell className="max-w-80">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-foreground" title={ticket.title}>{ticket.title}</p>
                               {ticket.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-1">
+                                <p className="line-clamp-1 text-xs text-muted-foreground">
                                   {ticket.description}
                                 </p>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <span className="text-sm">{ticket.category ?? ""}</span>
+                          <TableCell className="text-muted-foreground">
+                            {ticket.category ?? ""}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={priorityBadgeVariant(ticket.priority)}>
+                            <StatusPill tone={priorityTone(ticket.priority)}>
                               {ticket.priority ?? "MEDIUM"}
-                            </Badge>
+                            </StatusPill>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusBadgeVariant(ticket.status)}>
+                            <StatusPill tone={statusTone(ticket.status)} dot>
                               {(ticket.status ?? "TODO").replace("_", " ")}
-                            </Badge>
+                            </StatusPill>
                           </TableCell>
                           <TableCell>
                             {ticket.assigneeId ? (
@@ -370,9 +371,9 @@ export default function HelpdeskPage() {
                                 const a = assigneeById.get(ticket.assigneeId);
                                 return (
                                   <div className="flex items-center gap-2">
-                                    <Avatar className="h-6 w-6">
+                                    <Avatar className="size-6">
                                       {a?.image && <AvatarImage src={a.image} alt={a.name ?? ""} />}
-                                      <AvatarFallback className="text-[10px]">
+                                      <AvatarFallback className="text-3xs">
                                         {(a?.name ?? a?.email ?? "?")
                                           .split(" ")
                                           .map((p) => p[0])
@@ -382,17 +383,20 @@ export default function HelpdeskPage() {
                                           .toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="text-sm truncate max-w-[120px]">
+                                    <span className="max-w-32 truncate">
                                       {a?.name ?? a?.email ?? "Assigned"}
                                     </span>
                                   </div>
                                 );
                               })()
                             ) : (
-                              <span className="text-sm text-muted-foreground">Unassigned</span>
+                              <span className="text-muted-foreground">Unassigned</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell
+                            className="whitespace-nowrap text-muted-foreground tabular-nums"
+                            title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+                          >
                             {ticket.createdAt
                               ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })
                               : ""}
@@ -402,38 +406,33 @@ export default function HelpdeskPage() {
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs"
+                                size="xs"
                                 onClick={() => {
                                   setSelectedTicket(ticket);
                                   setDetailOpen(true);
                                 }}
                               >
-                                <Eye className="h-3.5 w-3.5 mr-1" />
+                                <Eye aria-hidden="true" />
                                 View
                               </Button>
                               {isAdmin && <AISuggestReplyButton ticketId={ticket.id} compact />}
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
-              </div>
-            </ScrollArea>
-            {filteredTickets.length > 0 && (
-              <DataTablePagination
-                page={page}
-                totalPages={ticketTotalPages}
-                total={filteredTickets.length}
-                limit={pageSize}
-                onPageChange={setPage}
-                onLimitChange={(limit) => setPageSize(limit as import("@/lib/pagination-constants").PageSizeOption)}
-              />
-            )}
+            <DataTablePagination
+              page={page}
+              totalPages={ticketTotalPages}
+              total={filteredTickets.length}
+              limit={pageSize}
+              onPageChange={setPage}
+              onLimitChange={(limit) => setPageSize(limit as import("@/lib/pagination-constants").PageSizeOption)}
+            />
           </CardContent>
         </Card>
+        )}
       </div>
 
       <TicketDetailSheet

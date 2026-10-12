@@ -12,7 +12,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { TicketPriority, TicketType } from "@/types/projects";
+
+/** Select trigger styled as a filter pill (matches FilterChip); gold-soft when a value is applied. */
+const pillTrigger = (active: boolean) =>
+  cn(
+    "w-auto shrink-0 gap-1 rounded-full data-[size=default]:h-7 px-3 text-xs font-medium shadow-none",
+    active
+      ? "border-gold-300 bg-brand-soft text-brand-soft-foreground"
+      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+  );
 
 const STATUSES = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"] as const;
 const PRIORITIES: TicketPriority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
@@ -84,13 +94,17 @@ export function TicketFilterBar({
   return (
     <Fragment>
 
-      <div className="relative min-w-[140px] max-w-[200px] flex-1">
-        <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative w-full min-w-40 sm:w-56 sm:flex-none">
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
+          data-page-search
           placeholder="Search..."
           value={q}
           onChange={(e) => setParam("q", e.target.value)}
-          className="h-8 pl-7 text-sm"
+          className="h-8 pl-8 text-sm"
         />
       </div>
 
@@ -98,7 +112,7 @@ export function TicketFilterBar({
         value={status || "ALL"}
         onValueChange={(v) => setParam("status", v === "ALL" ? "" : v)}
       >
-        <SelectTrigger className="h-8 w-auto min-w-[90px] text-xs shrink-0">
+        <SelectTrigger className={pillTrigger(!!status)}>
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -115,7 +129,7 @@ export function TicketFilterBar({
         value={priority || "ALL"}
         onValueChange={(v) => setParam("priority", v === "ALL" ? "" : v)}
       >
-        <SelectTrigger className="h-8 w-auto min-w-[90px] text-xs shrink-0">
+        <SelectTrigger className={pillTrigger(!!priority)}>
           <SelectValue placeholder="Priority" />
         </SelectTrigger>
         <SelectContent>
@@ -133,7 +147,7 @@ export function TicketFilterBar({
           value={type || "ALL"}
           onValueChange={(v) => setParam("type", v === "ALL" ? "" : v)}
         >
-          <SelectTrigger className="h-8 w-auto min-w-[80px] text-xs shrink-0">
+          <SelectTrigger className={pillTrigger(!!type)}>
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -152,7 +166,7 @@ export function TicketFilterBar({
           value={sprintId || "ALL"}
           onValueChange={(v) => setParam("sprintId", v === "ALL" ? "" : v)}
         >
-          <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs shrink-0">
+          <SelectTrigger className={pillTrigger(!!sprintId)}>
             <SelectValue placeholder="Sprint" />
           </SelectTrigger>
           <SelectContent>
@@ -171,7 +185,7 @@ export function TicketFilterBar({
           value={assigneeId || "ALL"}
           onValueChange={(v) => setParam("assigneeId", v === "ALL" ? "" : v)}
         >
-          <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs shrink-0">
+          <SelectTrigger className={pillTrigger(!!assigneeId)}>
             <SelectValue placeholder="Assignee" />
           </SelectTrigger>
           <SelectContent>
@@ -190,9 +204,9 @@ export function TicketFilterBar({
           variant="ghost"
           size="sm"
           onClick={clearAll}
-          className="h-8 px-2 text-xs text-muted-foreground shrink-0"
+          className="h-7 shrink-0 px-2 text-xs text-muted-foreground"
         >
-          <X className="mr-1 h-3 w-3" />
+          <X aria-hidden="true" className="size-3" />
           Clear
         </Button>
       )}

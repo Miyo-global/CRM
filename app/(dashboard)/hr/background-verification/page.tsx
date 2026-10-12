@@ -11,6 +11,11 @@ import { useBgvComplianceDashboard, type BgvComplianceRow } from "@/lib/api/hook
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,55 +36,53 @@ import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 const BGV_TYPES = ["Identity", "Education", "Employment", "Criminal", "Address", "Credit"];
 
-function statusBadge(s: string | null): "default" | "secondary" | "outline" | "destructive" {
-  if (s === "CLEAR") return "default";
-  if (s === "IN_PROGRESS") return "secondary";
-  if (s === "FLAGGED") return "destructive";
-  return "outline";
+function statusTone(s: string | null): Tone {
+  if (s === "CLEAR") return "success";
+  if (s === "IN_PROGRESS") return "info";
+  if (s === "FLAGGED") return "danger";
+  return "warning";
 }
 
 function ComplianceDashboard() {
-  const { data: rows, isLoading } = useBgvComplianceDashboard();
+  const { data: rows, isLoading, isError, error, refetch } = useBgvComplianceDashboard();
 
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>;
+    return <div className="grid gap-4 lg:grid-cols-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}</div>;
+  }
+
+  if (isError) {
+    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
   }
 
   if (!rows?.length) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <EmptyState
-            compact
-            icon={BarChart2}
-            title="No candidate BgV data yet"
-            description="Candidate compliance appears here once background checks are initiated."
-            className="border-0 bg-transparent"
-          />
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={BarChart2}
+        title="No candidate BgV data yet"
+        description="Candidate compliance appears here once background checks are initiated."
+      />
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid gap-4 lg:grid-cols-2">
       {rows.map((row: BgvComplianceRow) => (
         <Card key={row.jobPostingId}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">{row.jobTitle}</CardTitle>
+            <CardTitle className="truncate text-sm font-semibold" title={row.jobTitle}>{row.jobTitle}</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 space-y-2">
-            <div className="flex items-center gap-2">
-              <Progress value={row.clearedPct} className="flex-1 h-2" />
-              <span className="text-xs font-medium text-muted-foreground w-12 text-right">{row.clearedPct}%</span>
+          <CardContent className="pt-0 space-y-3">
+            <div className="flex items-center gap-3">
+              <Progress value={row.clearedPct} className="h-2 flex-1" />
+              <span className="w-12 text-right font-display text-sm font-semibold tabular-nums text-foreground">{row.clearedPct}%</span>
             </div>
-            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground tabular-nums">
               <span>Total: <span className="font-medium text-foreground">{row.total}</span></span>
-              <span className="text-green-600">Cleared: <span className="font-medium">{row.cleared}</span></span>
-              <span className="text-yellow-600">Pending: <span className="font-medium">{row.pending}</span></span>
-              <span className="text-blue-600">Initiated: <span className="font-medium">{row.initiated}</span></span>
-              <span className="text-destructive">Failed: <span className="font-medium">{row.failed}</span></span>
-              <span className="text-muted-foreground">Not initiated: <span className="font-medium">{row.notInitiated}</span></span>
+              <span className="text-success-strong">Cleared: <span className="font-medium">{row.cleared}</span></span>
+              <span className="text-warning-strong">Pending: <span className="font-medium">{row.pending}</span></span>
+              <span className="text-info-strong">Initiated: <span className="font-medium">{row.initiated}</span></span>
+              <span className="text-danger-strong">Failed: <span className="font-medium">{row.failed}</span></span>
+              <span>Not initiated: <span className="font-medium">{row.notInitiated}</span></span>
             </div>
           </CardContent>
         </Card>
@@ -89,7 +92,7 @@ function ComplianceDashboard() {
 }
 
 function BGVContent() {
-  const { data: items, isLoading } = useBackgroundVerifications();
+  const { data: items, isLoading, isError, error, refetch } = useBackgroundVerifications();
   const { data: employeesRaw } = useHrEmployees();
   const create = useCreateBackgroundVerification();
   const update = useUpdateBackgroundVerification();
@@ -132,58 +135,71 @@ function BGVContent() {
       title="Background Verification"
       subtitle="Initiate, track employee background checks, and view candidate compliance"
       badge={`${items?.length ?? 0} checks`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Initiate BGV</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Initiate BGV</Button>}
     >
       <Tabs defaultValue="employee-bgv">
-        <TabsList className="mb-4">
+        <TabsList variant="underline" className="mb-4">
           <TabsTrigger value="employee-bgv">Employee BGV</TabsTrigger>
           <TabsTrigger value="candidate-compliance">Candidate Compliance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="employee-bgv">
           {isLoading ? (
-            <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+            <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}</div>
+          ) : isError ? (
+            <QueryErrorState error={error} onRetry={() => void refetch()} />
           ) : !items?.length ? (
-            <Card><CardContent className="py-12 text-center">
-              <EmptyState
-                illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
-                title="No background verifications initiated"
-                description="Initiate a background check to start tracking employee verifications."
-                action={{ label: "Initiate BGV", onClick: () => setSheetOpen(true) }}
-              />
-            </CardContent></Card>
+            <EmptyState
+              illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
+              title="No background verifications initiated"
+              description="Initiate a background check to start tracking employee verifications."
+              action={{ label: "Initiate BGV", onClick: () => setSheetOpen(true) }}
+            />
           ) : (
-            <div className="space-y-2">
-              {items.map((bgv: BackgroundVerification) => (
-                <Card key={bgv.id}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold">{bgv.user?.name ?? "Employee"}</p>
-                        <Badge variant="outline" className="text-[10px]">{bgv.type}</Badge>
-                        <Badge variant={statusBadge(bgv.status)} className="text-[10px]">{bgv.status ?? "PENDING"}</Badge>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Initiated</TableHead>
+                  <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((bgv: BackgroundVerification) => (
+                  <TableRow key={bgv.id}>
+                    <TableCell>
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <IconChip icon={ShieldCheck} tone={statusTone(bgv.status)} size="sm" />
+                        <span className="truncate font-medium text-foreground">{bgv.user?.name ?? "Employee"}</span>
                       </div>
-                      <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
-                        {bgv.provider && <span>Provider: {bgv.provider}</span>}
-                        {bgv.referenceNumber && <span>Ref: {bgv.referenceNumber}</span>}
-                        {bgv.createdAt && <span>{format(new Date(bgv.createdAt), "MMM d, yyyy")}</span>}
-                      </div>
-                    </div>
-                    {(!bgv.status || bgv.status === "IN_PROGRESS") && (
-                      <div className="flex gap-1.5 shrink-0">
-                        <Button size="sm" className="h-7 text-xs" onClick={() => handleUpdateStatus(bgv.id, "CLEAR")} disabled={update.isPending}>
-                          <CheckCircle2 className="h-3 w-3 mr-1" />Clear
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleUpdateStatus(bgv.id, "FLAGGED")} disabled={update.isPending}>
-                          <XCircle className="h-3 w-3 mr-1" />Flag
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </TableCell>
+                    <TableCell><Badge variant="outline">{bgv.type}</Badge></TableCell>
+                    <TableCell><StatusPill tone={statusTone(bgv.status)} dot>{bgv.status ?? "PENDING"}</StatusPill></TableCell>
+                    <TableCell className="text-muted-foreground">{bgv.provider ?? "—"}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{bgv.referenceNumber ?? "—"}</TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
+                      {bgv.createdAt ? format(new Date(bgv.createdAt), "MMM d, yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(!bgv.status || bgv.status === "IN_PROGRESS") && (
+                        <div className="flex justify-end gap-2">
+                          <Button size="xs" onClick={() => handleUpdateStatus(bgv.id, "CLEAR")} disabled={update.isPending} loading={update.isPending && update.variables?.id === bgv.id && update.variables?.status === "CLEAR"}>
+                            <CheckCircle2 aria-hidden="true" />Clear
+                          </Button>
+                          <Button size="xs" variant="outline" onClick={() => handleUpdateStatus(bgv.id, "FLAGGED")} disabled={update.isPending} loading={update.isPending && update.variables?.id === bgv.id && update.variables?.status === "FLAGGED"}>
+                            <XCircle aria-hidden="true" />Flag
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </TabsContent>
 

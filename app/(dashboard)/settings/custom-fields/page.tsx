@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -42,7 +44,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { EmptyTargetIllustration } from "@/components/illustrations";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   GripVertical,
   Plus,
@@ -140,7 +141,7 @@ function EntityFieldsTab({ entityType }: { entityType: EntityType }) {
     return (
       <div className="space-y-3 py-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-14 rounded-lg bg-muted animate-pulse" />
+          <Skeleton key={i} className="h-14 w-full" />
         ))}
       </div>
     );
@@ -149,72 +150,78 @@ function EntityFieldsTab({ entityType }: { entityType: EntityType }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button size="sm" onClick={openCreate} className="gap-2">
-          <Plus className="h-4 w-4" />
+        <Button size="sm" onClick={openCreate}>
+          <Plus aria-hidden />
           Add Field
         </Button>
       </div>
 
       {fields.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTargetIllustration className="h-24 w-24" />}
+          illustration={<EmptyTargetIllustration className="size-24" />}
           title="No custom fields yet"
           description={`Add custom fields to capture additional information on ${entityType}s.`}
           compact
           action={{ label: "Add Field", onClick: openCreate }}
         />
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {fields.map((field) => (
-                <div
-                  key={field.id}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
-                  <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" aria-hidden="true" />
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm">{field.label}</span>
-                      <Badge variant="outline" className="text-xs font-mono">
-                        {field.name}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {FIELD_TYPE_LABELS[field.fieldType]}
-                      </Badge>
-                      {field.isRequired && (
-                        <Badge variant="destructive" className="text-xs">
-                          Required
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Switch
-                      checked={field.isActive}
-                      onCheckedChange={() => handleToggleActive(field)}
-                      aria-label={`Toggle ${field.label} active`}
-                    />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-8"><span className="sr-only">Order</span></TableHead>
+              <TableHead>Field</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Required</TableHead>
+              <TableHead>Active</TableHead>
+              <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {fields.map((field) => (
+              <TableRow key={field.id}>
+                <TableCell className="pr-0">
+                  <GripVertical className="size-4 text-subtle-foreground" aria-hidden="true" />
+                </TableCell>
+                <TableCell>
+                  <p className="text-sm font-medium">{field.label}</p>
+                  <p className="font-mono text-xs text-muted-foreground">{field.name}</p>
+                </TableCell>
+                <TableCell>
+                  <StatusPill tone="neutral">{FIELD_TYPE_LABELS[field.fieldType]}</StatusPill>
+                </TableCell>
+                <TableCell>
+                  {field.isRequired ? (
+                    <StatusPill tone="danger">Required</StatusPill>
+                  ) : (
+                    <span className="text-subtle-foreground" aria-hidden>—</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={field.isActive}
+                    onCheckedChange={() => handleToggleActive(field)}
+                    aria-label={`Toggle ${field.label} active`}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                      size="icon-sm"
                       onClick={() => openEdit(field)}
                       aria-label={`Edit ${field.label}`}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil aria-hidden />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:bg-danger-soft hover:text-destructive"
                           aria-label={`Delete ${field.label}`}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 aria-hidden />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -229,7 +236,7 @@ function EntityFieldsTab({ entityType }: { entityType: EntityType }) {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className={buttonVariants({ variant: "destructive" })}
                             onClick={() => handleDelete(field)}
                           >
                             Delete
@@ -238,11 +245,11 @@ function EntityFieldsTab({ entityType }: { entityType: EntityType }) {
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <FieldSheet
@@ -398,14 +405,14 @@ function FieldSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
+      <SheetContent size="sm" className="w-full overflow-y-auto">
+        <SheetHeader className="border-b border-border">
           <SheetTitle>
             {isCreate ? "Add Custom Field" : "Edit Custom Field"}
           </SheetTitle>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col space-y-5 px-4 pt-5">
           <div className="space-y-1.5">
             <Label htmlFor="cf-label">
               Label <span className="text-destructive">*</span>
@@ -541,16 +548,15 @@ function FieldSheet({
             </p>
           </div>
 
-          <SheetFooter className="flex-row gap-2 border-t pt-4">
+          <SheetFooter className="sticky bottom-0 -mx-4 bg-background">
             <Button
               type="button"
-              variant="outline"
-              className="flex-1"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isBusy}>
+            <Button type="submit" disabled={isBusy} loading={isBusy}>
               {isBusy ? "Saving…" : isCreate ? "Create Field" : "Save Changes"}
             </Button>
           </SheetFooter>
@@ -568,7 +574,7 @@ export default function CustomFieldsPage() {
       subtitle="Define custom data fields for leads, deals, and contacts"
     >
       <Tabs defaultValue="lead">
-        <TabsList className="mb-6">
+        <TabsList variant="underline" className="mb-6">
           <TabsTrigger value="lead">Leads</TabsTrigger>
           <TabsTrigger value="deal">Deals</TabsTrigger>
           <TabsTrigger value="contact">Contacts</TabsTrigger>

@@ -1,6 +1,7 @@
 import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
 import { REJECTION_COOLDOWN_DAYS } from "@/lib/constants/recruitment";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+import { BRAND } from "@/lib/design/brand-hex";
 
 export function getLeaveRequestEmailTemplate(
   approverName: string,
@@ -35,9 +36,9 @@ export function getLeaveRequestEmailTemplate(
       </div>
     </div>
 
-    <div style="background: #f8fafc; border-left: 4px solid #0f2b7f; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #1e293b; font-size: 14px;">💬 Reason:</p>
-      <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">${sReason}</p>
+    <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.ink}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">💬 Reason:</p>
+      <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.6;">${sReason}</p>
     </div>
 
     <div style="text-align: center;">
@@ -90,9 +91,9 @@ export function getWfhRequestEmailTemplate(
       </div>
     </div>
 
-    <div style="background: #f8fafc; border-left: 4px solid #0f2b7f; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Reason</p>
-      <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">${sReason}</p>
+    <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.ink}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">Reason</p>
+      <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.6;">${sReason}</p>
     </div>
 
     <div style="text-align: center;">
@@ -125,7 +126,7 @@ export function getLeaveStatusUpdateEmailTemplate(
   rejectionReason?: string
 ): string {
   const isApproved = status === "APPROVED";
-  const statusColor = isApproved ? "#22c55e" : "#ef4444";
+  const statusColor = isApproved ? BRAND.success : BRAND.danger;
   const sLeaveType = escapeHtml(leaveType);
   const sApprover = escapeHtml(approverName);
   const sRejection = rejectionReason ? escapeHtml(rejectionReason) : undefined;
@@ -152,9 +153,9 @@ export function getLeaveStatusUpdateEmailTemplate(
     </div>
 
     ${!isApproved && sRejection ? `
-    <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #991b1b; font-size: 14px;">💬 Reason for Rejection:</p>
-      <p style="margin: 0; color: #b91c1c; font-size: 14px; line-height: 1.6;">${sRejection}</p>
+    <div style="background: ${BRAND.dangerSoft}; border-left: 4px solid ${BRAND.danger}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.danger}; font-size: 14px;">💬 Reason for Rejection:</p>
+      <p style="margin: 0; color: ${BRAND.danger}; font-size: 14px; line-height: 1.6;">${sRejection}</p>
     </div>
     ` : ''}
 
@@ -229,10 +230,10 @@ function buildLeaveEscalationTableRows(rows: LeaveEscalationRow[]): string {
     .map(
       (row) => `
         <tr>
-          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0">${escapeHtml(row.employeeName)}</td>
-          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0">${escapeHtml(row.leaveType)}</td>
-          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0">${escapeHtml(row.startDate)} → ${escapeHtml(row.endDate)}</td>
-          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0">${escapeHtml(row.submittedAt)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid ${BRAND.border}">${escapeHtml(row.employeeName)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid ${BRAND.border}">${escapeHtml(row.leaveType)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid ${BRAND.border}">${escapeHtml(row.startDate)} → ${escapeHtml(row.endDate)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid ${BRAND.border}">${escapeHtml(row.submittedAt)}</td>
         </tr>`,
     )
     .join("");
@@ -242,7 +243,7 @@ function buildLeaveEscalationTable(rows: LeaveEscalationRow[]): string {
   return `
     <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
       <thead>
-        <tr style="background:#f8fafc;color:#555">
+        <tr style="background:${BRAND.sunken};color:${BRAND.inkMuted}">
           <th style="padding:8px 10px;text-align:left">Employee</th>
           <th style="padding:8px 10px;text-align:left">Type</th>
           <th style="padding:8px 10px;text-align:left">Dates</th>
@@ -367,13 +368,13 @@ export function getResignationSubmittedEmailTemplate(
       </div>
       <div class="credential-item">
         <span class="credential-label">Last Working Date:</span>
-        <span class="credential-value" style="color: #dc2626; font-weight: 700;">${lastWorkingDate}</span>
+        <span class="credential-value" style="color: ${BRAND.danger}; font-weight: 700;">${lastWorkingDate}</span>
       </div>
     </div>
 
-    <div style="background: #f8fafc; border-left: 4px solid #0f2b7f; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Reason for Resignation:</p>
-      <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.7;">${sReason}</p>
+    <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.ink}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">Reason for Resignation:</p>
+      <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.7;">${sReason}</p>
     </div>
 
     <div style="text-align: center;">
@@ -429,13 +430,13 @@ export function getResignationApprovedEmailTemplate(
       </div>
       <div class="credential-item">
         <span class="credential-label">Last Working Date:</span>
-        <span class="credential-value" style="color: #0f2b7f; font-weight: 700;">${lastWorkingDate}</span>
+        <span class="credential-value" style="color: ${BRAND.ink}; font-weight: 700;">${lastWorkingDate}</span>
       </div>
     </div>
 
-    <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #15803d; font-size: 14px;">Next Steps</p>
-      <ul style="margin: 0; padding-left: 20px; color: #166534; font-size: 14px; line-height: 1.8;">
+    <div style="background: ${BRAND.successSoft}; border-left: 4px solid ${BRAND.success}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.success}; font-size: 14px;">Next Steps</p>
+      <ul style="margin: 0; padding-left: 20px; color: ${BRAND.success}; font-size: 14px; line-height: 1.8;">
         <li>Complete all pending work and handover responsibilities before your last working day</li>
         <li>An exit interview will be scheduled before your last working date</li>
         <li>Return all company assets, access cards, and equipment on or before ${lastWorkingDate}</li>
@@ -500,7 +501,7 @@ export function getTerminationEmailTemplate(
       </div>
       <div class="credential-item">
         <span class="credential-label">Effective Date:</span>
-        <span class="credential-value" style="color: #dc2626; font-weight: 700;">${terminationDate}</span>
+        <span class="credential-value" style="color: ${BRAND.danger}; font-weight: 700;">${terminationDate}</span>
       </div>
       <div class="credential-item">
         <span class="credential-label">Authorised By:</span>
@@ -508,14 +509,14 @@ export function getTerminationEmailTemplate(
       </div>
     </div>
 
-    <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: #991b1b; font-size: 14px;">Reason:</p>
-      <p style="margin: 0; color: #b91c1c; font-size: 14px; line-height: 1.7;">${sReason}</p>
+    <div style="background: ${BRAND.dangerSoft}; border-left: 4px solid ${BRAND.danger}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.danger}; font-size: 14px;">Reason:</p>
+      <p style="margin: 0; color: ${BRAND.danger}; font-size: 14px; line-height: 1.7;">${sReason}</p>
     </div>
 
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; margin: 24px 0; border-radius: 8px;">
-      <p style="margin: 0 0 12px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Important Information</p>
-      <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+    <div style="background: ${BRAND.sunken}; border: 1px solid ${BRAND.border}; padding: 20px; margin: 24px 0; border-radius: 8px;">
+      <p style="margin: 0 0 12px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">Important Information</p>
+      <ul style="margin: 0; padding-left: 20px; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.8;">
         <li>All system access and company accounts will be revoked immediately</li>
         <li>Please return all company property, assets, and access cards on or before ${terminationDate}</li>
         <li>Your Full &amp; Final settlement will be processed within 30–45 working days</li>
@@ -528,7 +529,7 @@ export function getTerminationEmailTemplate(
 
     <p class="email-text" style="font-size: 14px;">
       For queries regarding your final settlement, relieving letter, or any other matter,
-      please contact HR at <a href="mailto:${sHrEmail}" style="color: #0f2b7f; text-decoration: none; font-weight: 500;">${sHrEmail}</a>.
+      please contact HR at <a href="mailto:${sHrEmail}" style="color: ${BRAND.ink}; text-decoration: none; font-weight: 500;">${sHrEmail}</a>.
     </p>
     <p class="email-text" style="font-size: 14px;">
       We thank you for your time and service with Miyo Global.
@@ -549,8 +550,8 @@ export function getDocumentExpiryReminderEmailTemplate(
   expiryDate: string,
   daysRemaining: number
 ): string {
-  const urgencyColor = daysRemaining <= 7 ? '#dc2626' : daysRemaining <= 14 ? '#f59e0b' : '#2563eb';
-  const urgencyBg = daysRemaining <= 7 ? '#fee2e2' : daysRemaining <= 14 ? '#fef3c7' : '#dbeafe';
+  const urgencyColor = daysRemaining <= 7 ? BRAND.danger : daysRemaining <= 14 ? BRAND.warning : BRAND.info;
+  const urgencyBg = daysRemaining <= 7 ? BRAND.dangerSoft : daysRemaining <= 14 ? BRAND.warningSoft : BRAND.infoSoft;
   const sEmployee = escapeHtml(employeeName);
   const sDocName = escapeHtml(documentName);
   const sDocType = escapeHtml(documentType);
@@ -568,19 +569,19 @@ export function getDocumentExpiryReminderEmailTemplate(
     <div class="credential-box" style="border-left-color: ${urgencyColor};">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Document:</td>
-          <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${sDocName}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Document:</td>
+          <td style="padding: 8px 0; color: ${BRAND.ink}; font-weight: 600;">${sDocName}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Type:</td>
-          <td style="padding: 8px 0; color: #475569;">${sDocType}</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Type:</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted};">${sDocType}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Expiry Date:</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Expiry Date:</td>
           <td style="padding: 8px 0; color: ${urgencyColor}; font-weight: 700;">${expiryDate}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Time Remaining:</td>
+          <td style="padding: 8px 0; color: ${BRAND.inkMuted}; font-size: 14px;">Time Remaining:</td>
           <td style="padding: 8px 0;"><span style="background: ${urgencyBg}; color: ${urgencyColor}; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 13px;">${daysRemaining} days</span></td>
         </tr>
       </table>
@@ -588,7 +589,7 @@ export function getDocumentExpiryReminderEmailTemplate(
 
     <div class="divider"></div>
 
-    <p class="email-text" style="font-size: 14px; color: #64748b;">
+    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted};">
       Please ensure to renew or update this document before it expires to avoid any compliance issues.
     </p>
   `;
@@ -628,7 +629,7 @@ export function getCandidateRejectionEmail(params: {
       After careful consideration, we regret to inform you that we will not be moving
       forward with your application for ${roleClause} at this time.
     </p>
-    ${params.notes ? `<p class="email-text" style="color: #475569;">${escapeHtml(params.notes)}</p>` : ""}
+    ${params.notes ? `<p class="email-text" style="color: ${BRAND.inkMuted};">${escapeHtml(params.notes)}</p>` : ""}
     <p class="email-text">
       You're welcome to apply for other roles at <strong>${sCompanyName}</strong> after a
       ${REJECTION_COOLDOWN_DAYS}-day waiting period.
@@ -674,9 +675,9 @@ export function getPayslipEmailTemplate(params: {
       as a PDF. You can also view it anytime from the <strong>My Payslips</strong> section of your
       account.
     </p>
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px;margin:20px 0;text-align:center;">
-      <p style="margin:0;color:#166534;font-size:13px;">Net Salary — ${sMonth}</p>
-      <p style="margin:6px 0 0 0;color:#166534;font-size:26px;font-weight:700;">${CURRENCY_SYMBOL}${sNet}</p>
+    <div style="background:${BRAND.successSoft};border:1px solid ${BRAND.success};border-radius:8px;padding:20px;margin:20px 0;text-align:center;">
+      <p style="margin:0;color:${BRAND.success};font-size:13px;">Net Salary — ${sMonth}</p>
+      <p style="margin:6px 0 0 0;color:${BRAND.success};font-size:26px;font-weight:700;">${CURRENCY_SYMBOL}${sNet}</p>
     </div>
     ${
       params.payslipUrl
@@ -768,7 +769,7 @@ export function getInterviewInviteEmail(params: {
         sMeetLink
           ? `<div class="credential-item">
                <span class="credential-label">Meeting Link:</span>
-               <span class="credential-value"><a href="${sMeetLink}" style="color:#1e40af">${sMeetLink}</a></span>
+               <span class="credential-value"><a href="${sMeetLink}" style="color:${BRAND.ink}">${sMeetLink}</a></span>
              </div>`
           : ""
       }
@@ -834,27 +835,27 @@ export function getHolidayWorkRequestEmailToHr(params: {
   const content = `
     <p class="email-text">A team member has informed HR that they are working on a non-working day.</p>
 
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0;">
-      <table style="width:100%;font-size:13px;color:#0f172a;border-collapse:collapse;">
-        <tr><td style="padding:4px 8px;color:#64748b;width:40%;">Employee</td><td style="padding:4px 8px;font-weight:600;">${sName}</td></tr>
-        <tr><td style="padding:4px 8px;color:#64748b;">Email</td><td style="padding:4px 8px;">${sEmail}</td></tr>
-        <tr><td style="padding:4px 8px;color:#64748b;">Date</td><td style="padding:4px 8px;font-weight:600;">${sDate} (${sDay})</td></tr>
-        <tr><td style="padding:4px 8px;color:#64748b;">Compensation</td><td style="padding:4px 8px;">${sComp}</td></tr>
-        <tr><td style="padding:4px 8px;color:#64748b;vertical-align:top;">Reason</td><td style="padding:4px 8px;">${sReason}</td></tr>
-        <tr><td style="padding:4px 8px;color:#64748b;">Submitted at</td><td style="padding:4px 8px;font-family:monospace;font-size:12px;">${sSubmitted}</td></tr>
+    <div style="background:${BRAND.sunken};border:1px solid ${BRAND.border};border-radius:8px;padding:16px;margin:16px 0;">
+      <table style="width:100%;font-size:13px;color:${BRAND.ink};border-collapse:collapse;">
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};width:40%;">Employee</td><td style="padding:4px 8px;font-weight:600;">${sName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};">Email</td><td style="padding:4px 8px;">${sEmail}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};">Date</td><td style="padding:4px 8px;font-weight:600;">${sDate} (${sDay})</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};">Compensation</td><td style="padding:4px 8px;">${sComp}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};vertical-align:top;">Reason</td><td style="padding:4px 8px;">${sReason}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND.inkMuted};">Submitted at</td><td style="padding:4px 8px;font-family:monospace;font-size:12px;">${sSubmitted}</td></tr>
       </table>
     </div>
 
     <p class="email-text" style="margin-top:16px;">
-      <a href="${reviewUrl}" style="background:#0f2b7f;color:#ffffff;padding:10px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;display:inline-block;">
+      <a href="${reviewUrl}" style="background:${BRAND.ink};color:${BRAND.white};padding:10px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;display:inline-block;">
         Review request
       </a>
     </p>
 
-    <p class="email-text" style="font-size:12px;color:#64748b;margin-top:16px;">
+    <p class="email-text" style="font-size:12px;color:${BRAND.inkMuted};margin-top:16px;">
       Status is <strong>PENDING</strong> until you approve or reject from the HR Attendance page.
     </p>
-    <p class="email-text" style="font-size:12px;color:#64748b;">— ${sOrg}</p>
+    <p class="email-text" style="font-size:12px;color:${BRAND.inkMuted};">— ${sOrg}</p>
   `;
 
   return {

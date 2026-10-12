@@ -7,7 +7,10 @@ import {
 import { CreateSprintDialog } from "@/components/projects/create-sprint-dialog";
 import { BurndownChart } from "@/components/projects/burndown-chart";
 import { VelocityChart } from "@/components/projects/velocity-chart";
-import { Play, Calendar, CheckCircle2, Loader2 } from "lucide-react";
+import { Play, Calendar, CheckCircle2 } from "lucide-react";
+import { IconChip } from "@/components/ui/icon-chip";
+import { QueryErrorState } from "@/components/ui/query-error-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EmptySprintIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
@@ -26,7 +29,7 @@ export default function SprintsPage({ params }: PageProps) {
   const { projectId: projectIdStr } = use(params);
   const projectId = parseInt(projectIdStr);
 
-  const { data: sprints, isLoading } = useSprints(projectId);
+  const { data: sprints, isLoading, isError, error, refetch } = useSprints(projectId);
   const { data: project } = useProject(projectId);
 
   const [planningSprintId, setPlanningSprintId] = useState<number | null>(null);
@@ -106,11 +109,22 @@ export default function SprintsPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="p-6 md:p-8 lg:p-12">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <PageWrapper title="Sprints">
+        <div className="space-y-4" aria-busy="true">
+          <Skeleton className="h-6 w-40" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-lg" />
+          ))}
         </div>
-      </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper title="Sprints" actions={<CreateSprintDialog projectId={projectId} />}>
+        <QueryErrorState title="Couldn't load sprints" error={error} onRetry={() => void refetch()} />
+      </PageWrapper>
     );
   }
 
@@ -139,91 +153,89 @@ export default function SprintsPage({ params }: PageProps) {
       subtitle={subtitle}
       actions={<CreateSprintDialog projectId={projectId} />}
     >
+      <div className="space-y-8">
+        {planningSprintId && planningSprint && (
+          <SprintPlanningPanel
+            sprint={planningSprint}
+            backlogTickets={backlogTickets}
+            onDragEnd={handlePlanningDragEnd}
+            onDone={handleClosePlanningSheet}
+          />
+        )}
 
-      {planningSprintId && planningSprint && (
-        <SprintPlanningPanel
-          sprint={planningSprint}
-          backlogTickets={backlogTickets}
-          onDragEnd={handlePlanningDragEnd}
-          onDone={handleClosePlanningSheet}
-        />
-      )}
+        {activeSprints.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              <IconChip icon={Play} tone="info" size="sm" />
+              Active Sprints
+            </h2>
+            <div className="grid gap-4">
+              {activeSprints.map((sprint) => (
+                <div key={sprint.id} className="space-y-4">
+                  <SprintCard
+                    sprint={sprint}
+                    projectId={projectId}
+                    onComplete={handleOpenCompletionSheet}
+                    onPlan={handleOpenPlanningSheet}
+                    isUpdating={updateSprint.isPending}
+                  />
+                  <BurndownChart sprintId={sprint.id} projectId={projectId} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {activeSprints.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Play className="h-5 w-5 text-blue-500" />
-            Active Sprints
-          </h2>
-          <div className="grid gap-4">
-            {activeSprints.map((sprint) => (
-              <div key={sprint.id} className="space-y-4">
+        {plannedSprints.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              <IconChip icon={Calendar} tone="neutral" size="sm" />
+              Planned Sprints
+            </h2>
+            <div className="grid gap-4 xl:grid-cols-2">
+              {plannedSprints.map((sprint) => (
                 <SprintCard
+                  key={sprint.id}
                   sprint={sprint}
                   projectId={projectId}
-                  onComplete={handleOpenCompletionSheet}
+                  onStart={handleStartSprint}
                   onPlan={handleOpenPlanningSheet}
                   isUpdating={updateSprint.isPending}
                 />
-                <BurndownChart sprintId={sprint.id} projectId={projectId} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        )}
 
-      {plannedSprints.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-gray-500" />
-            Planned Sprints
-          </h2>
-          <div className="grid gap-4">
-            {plannedSprints.map((sprint) => (
-              <SprintCard
-                key={sprint.id}
-                sprint={sprint}
-                projectId={projectId}
-                onStart={handleStartSprint}
-                onPlan={handleOpenPlanningSheet}
-                isUpdating={updateSprint.isPending}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+        {completedSprints.length > 0 && <VelocityChart sprints={completedSprints} />}
 
-      {completedSprints.length > 0 && <VelocityChart sprints={completedSprints} />}
+        {completedSprints.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              <IconChip icon={CheckCircle2} tone="success" size="sm" />
+              Completed Sprints
+            </h2>
+            <div className="grid gap-4 xl:grid-cols-2">
+              {completedSprints.map((sprint) => (
+                <SprintCard
+                  key={sprint.id}
+                  sprint={sprint}
+                  projectId={projectId}
+                  isUpdating={updateSprint.isPending}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {completedSprints.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            Completed Sprints
-          </h2>
-          <div className="grid gap-4">
-            {completedSprints.map((sprint) => (
-              <SprintCard
-                key={sprint.id}
-                sprint={sprint}
-                projectId={projectId}
-                isUpdating={updateSprint.isPending}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {sprints?.length === 0 && (
-        <div className="flex flex-col items-center gap-4">
+        {sprints?.length === 0 && (
           <EmptyState
             illustration={<EmptySprintIllustration className="h-32 w-32 opacity-95" />}
             title="No sprints yet"
             description="Create your first sprint to start organizing your work."
           />
-          <CreateSprintDialog projectId={projectId} />
-        </div>
-      )}
+        )}
+      </div>
 
       <CompleteSprintSheet
         sprint={completionSprint ?? null}

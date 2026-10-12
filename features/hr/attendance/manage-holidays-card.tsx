@@ -3,6 +3,7 @@
 import { useState, memo, useCallback, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { formatDisplayDate, fromISODateString, getTodayString } from "@/lib/date-utils";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,7 +108,7 @@ function EditRow({
   };
 
   return (
-    <li className="flex items-start gap-2 py-3 px-3 bg-muted/30 rounded">
+    <li className="flex items-start gap-2 rounded-md bg-surface-sunken px-3 py-3">
       <div className="flex-1 space-y-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Input
@@ -130,7 +131,7 @@ function EditRow({
         type="button"
         size="icon"
         variant="ghost"
-        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+        className="h-8 w-8 text-success-strong hover:text-success-strong hover:bg-success-soft"
         onClick={handleSave}
         disabled={isSaving}
         aria-label="Save changes"
@@ -177,7 +178,7 @@ const HolidayRow = memo(function HolidayRow({
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{holiday.message}</p>
         )}
         {isPast && (
-          <span className="ml-2 text-[10px] text-muted-foreground/60 italic">(past)</span>
+          <span className="ml-2 text-2xs text-muted-foreground/60 italic">(past)</span>
         )}
       </div>
       <div className="flex items-center gap-1 shrink-0">
@@ -185,7 +186,7 @@ const HolidayRow = memo(function HolidayRow({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-muted-foreground hover:text-primary"
+          className="h-7 w-7 text-muted-foreground hover:text-brand-text"
           onClick={() => onEdit(holiday)}
           aria-label={`Edit ${holiday.name}`}
         >
@@ -351,18 +352,16 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
 
   return (
     <>
-      <Card className="overflow-hidden border-border shadow-sm">
+      <Card className="gap-0 overflow-hidden">
         <CardHeader className="pb-3 pt-5">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/10">
-              <PartyPopper className="h-4 w-4 text-gold" />
-            </div>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <IconChip icon={PartyPopper} />
             Company Holidays
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pb-6">
           {/* ── Add form ── */}
-          <form onSubmit={handleSubmitCreate} className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+          <form onSubmit={handleSubmitCreate} className="space-y-3 rounded-lg border border-border bg-surface-sunken p-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="holiday-name">Name</Label>
@@ -389,7 +388,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
                 className="bg-background"
                 maxLength={HOLIDAY_MESSAGE_MAX}
               />
-              <p className="text-[10px] text-muted-foreground text-right tabular-nums">
+              <p className="text-2xs text-muted-foreground text-right tabular-nums">
                 {message.length}/{HOLIDAY_MESSAGE_MAX}
               </p>
             </div>
@@ -464,7 +463,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
                 )}
               </ul>
               {sortedHolidays.length > 0 ? (
-                <div className="border-t border-border px-2 bg-muted/20">
+                <div className="border-t border-border px-2">
                   <DataTablePagination
                     page={safePage}
                     totalPages={totalPages}

@@ -1,9 +1,11 @@
 "use client";
 
 import { usePendingApprovals, type PendingApprovalsCount } from "@/lib/api/hooks/dashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, CalendarCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IconChip } from "@/components/ui/icon-chip";
+import { StatusPill } from "@/components/ui/status-pill";
+import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import Link from "next/link";
 
 export function PendingApprovalsCard() {
@@ -11,57 +13,53 @@ export function PendingApprovalsCard() {
   const counts = data as PendingApprovalsCount | undefined;
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 flex flex-row items-center gap-2 space-y-0">
-        <Bell className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
-        <CardTitle className="text-sm font-semibold">Pending Approvals</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1">
-        {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-          </div>
-        ) : !counts || counts.total === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
-            All caught up!
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <Link
-              href="/hr/leaves"
-              className="flex items-center justify-between rounded-lg border px-3 py-2 hover:bg-muted/50 transition-colors"
-              aria-label={`${counts.pendingLeaves} pending leave requests`}
-            >
-              <div className="flex items-center gap-2">
-                <CalendarCheck className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <span className="text-sm">Leave Requests</span>
-              </div>
-              {counts.pendingLeaves > 0 && (
-                <span className="inline-flex items-center justify-center rounded-full bg-destructive/10 text-destructive text-xs font-semibold min-w-[1.5rem] px-1.5 py-0.5">
-                  {counts.pendingLeaves}
-                </span>
-              )}
-            </Link>
-            <Link
-              href="/hr/exit"
-              className="flex items-center justify-between rounded-lg border px-3 py-2 hover:bg-muted/50 transition-colors"
-              aria-label={`${counts.pendingResignations} pending resignations`}
-            >
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <span className="text-sm">Resignations</span>
-              </div>
-              {counts.pendingResignations > 0 && (
-                <span className="inline-flex items-center justify-center rounded-full bg-destructive/10 text-destructive text-xs font-semibold min-w-[1.5rem] px-1.5 py-0.5">
-                  {counts.pendingResignations}
-                </span>
-              )}
-            </Link>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WidgetCard title="Pending Approvals" icon={Bell} tone="warning" count={counts?.total || undefined}>
+      {isLoading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+      ) : !counts || counts.total === 0 ? (
+        <div className="flex items-center gap-3 rounded-md bg-success-soft px-3 py-2.5 text-sm text-success-strong">
+          <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
+          All caught up!
+        </div>
+      ) : (
+        <div className="-mx-2">
+          <Link
+            href="/hr/leaves"
+            aria-label={`${counts.pendingLeaves} pending leave requests`}
+            className="block rounded-md outline-none focus-visible:focus-ring"
+          >
+            <WidgetListRow
+              className="hover:bg-accent"
+              leading={<IconChip icon={CalendarCheck} tone="info" size="sm" />}
+              title="Leave Requests"
+              trailing={
+                counts.pendingLeaves > 0 && (
+                  <StatusPill tone="danger" className="tabular-nums">{counts.pendingLeaves}</StatusPill>
+                )
+              }
+            />
+          </Link>
+          <Link
+            href="/hr/exit"
+            aria-label={`${counts.pendingResignations} pending resignations`}
+            className="block rounded-md outline-none focus-visible:focus-ring"
+          >
+            <WidgetListRow
+              className="hover:bg-accent"
+              leading={<IconChip icon={AlertTriangle} tone="danger" size="sm" />}
+              title="Resignations"
+              trailing={
+                counts.pendingResignations > 0 && (
+                  <StatusPill tone="danger" className="tabular-nums">{counts.pendingResignations}</StatusPill>
+                )
+              }
+            />
+          </Link>
+        </div>
+      )}
+    </WidgetCard>
   );
 }

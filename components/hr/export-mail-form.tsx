@@ -276,7 +276,7 @@ export function ExportRecipientCombobox({
                           checked={selected}
                           tabIndex={-1}
                           aria-hidden
-                          className="pointer-events-none rounded-[3px]"
+                          className="pointer-events-none rounded-xs"
                         />
                         <span className="truncate">{p.label}</span>
                       </CommandItem>
@@ -296,12 +296,12 @@ export function ExportRecipientCombobox({
             return (
               <span
                 key={email}
-                className="inline-flex max-w-full items-center gap-1 rounded-[3px] border bg-muted/40 px-2 py-1 text-xs"
+                className="inline-flex max-w-full items-center gap-1 rounded-xs border bg-muted/40 px-2 py-1 text-xs"
               >
                 <span className="truncate">{label}</span>
                 <button
                   type="button"
-                  className="ml-0.5 rounded-[2px] p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="ml-0.5 rounded-xs p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label={`Remove ${label}`}
                   onClick={() => onChange(values.filter((v) => v !== email))}
                 >
