@@ -66,6 +66,16 @@ export const CSAT_MANAGE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.
 
 export const ONBOARDING_MUTATE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.BRANCH_HR];
 
+/**
+ * Roles that manage new-employee onboarding (Add Employee wizard, onboarding
+ * progress, onboarding documents for other employees). Matches `withAdmin`.
+ */
+export const ONBOARDING_MANAGER_ROLES: readonly string[] = ADMIN_ROLES;
+
+export function isOnboardingManager(role: string | undefined | null): boolean {
+  return hasRole(role, ONBOARDING_MANAGER_ROLES);
+}
+
 export const MANAGEMENT_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR, ROLES.BRANCH_MANAGER];
 
 export function hasRole(role: string | undefined | null, allowed: readonly string[]): boolean {

@@ -1,4 +1,5 @@
 import { withAuth, ok, err, parseBody, parseQuery } from "@/lib/api/helpers";
+import { isOnboardingManager } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { documentTypes, onboardingDocuments, documentAuditLogs, departments } from "@/lib/db/schema/hr";
 import { users, organizationMembers } from "@/lib/db/schema/auth";
@@ -107,10 +108,7 @@ const reviewerUsers = aliasedTable(users, "reviewer");
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session): Promise<NextResponse<unknown>> => {
-    const isAdmin =
-      session.user.role === "CEO" ||
-      session.user.role === "HR" ||
-      session.user.role === "ADMIN";
+    const isAdmin = isOnboardingManager(session.user.role);
 
     if (isAdmin) {
       const query = parseQuery(req, querySchema);
@@ -352,7 +350,7 @@ export async function POST(req: NextRequest) {
     });
     if (!docType) return err("Document type not found or inactive.", 404);
 
-    const isHrOrCeo = session.user.role === "HR" || session.user.role === "CEO";
+    const isHrOrCeo = isOnboardingManager(session.user.role);
     const targetUserId =
       body.userId && isHrOrCeo ? body.userId : session.user.id;
 

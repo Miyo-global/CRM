@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import { isOnboardingManager } from "@/lib/constants/roles";
 import { eq, and } from "drizzle-orm";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
@@ -12,7 +13,7 @@ export async function GET(
     const { userId } = await params;
 
     const role = session.user.role;
-    const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
+    const isAdmin = isOnboardingManager(role);
 
     if (!isAdmin && session.user.id !== userId) {
       return err("Forbidden", 403);

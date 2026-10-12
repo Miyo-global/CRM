@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { isOnboardingManager } from "@/lib/constants/roles";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -686,7 +687,7 @@ function HrDocumentsTab() {
 export default function OnboardingPage() {
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const isHROrCEO = role === "HR" || role === "CEO";
+  const isHROrCEO = isOnboardingManager(role);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
