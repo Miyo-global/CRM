@@ -106,7 +106,7 @@ export async function getSupportTicket(orgId: string, id: number) {
   });
 }
 
-const SUPPORT_TEAM_ROLES = ["CEO", "ADMIN", "HR", "BRANCH_HR", "CUSTOMER_SUPPORT"] as const;
+const SUPPORT_TEAM_ROLES = ["CEO", "ADMIN", "HR", "CUSTOMER_SUPPORT"] as const;
 
 export interface SupportTicketStats {
   open: number;

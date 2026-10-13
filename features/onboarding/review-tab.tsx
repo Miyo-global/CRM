@@ -18,8 +18,6 @@ const ROLE_LABELS: Record<string, string> = {
   ENGINEERING: "Engineering",
   SALES: "Sales",
   DIGITAL_MARKETING: "Digital Marketing",
-  BRANCH_MANAGER: "Branch Manager",
-  BRANCH_HR: "Branch HR",
   CUSTOMER_SUPPORT: "Customer Support",
   DESIGN: "Design",
   VIDEO_EDITOR: "Video Editor",

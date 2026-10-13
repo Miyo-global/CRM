@@ -14,7 +14,7 @@ type RouteParams = {
   params: Promise<{ candidateId: string; offerId: string }>;
 };
 
-const HR_ROLES = ["CEO", "ADMIN", "HR", "BRANCH_HR"];
+const HR_ROLES = ["CEO", "ADMIN", "HR"];
 
 const bodySchema = z.object({
   templateId: z.number().int().positive(),

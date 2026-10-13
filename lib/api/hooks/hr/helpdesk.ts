@@ -81,7 +81,7 @@ interface MembersResponse {
   pagination: { page: number; limit: number; total: number; totalPages: number };
 }
 
-const SUPPORT_ROLES = ["CEO", "ADMIN", "HR", "BRANCH_HR", "IT", "OPERATIONS"];
+const SUPPORT_ROLES = ["CEO", "ADMIN", "HR", "IT", "OPERATIONS"];
 
 export function useHelpdeskAssignees(enabled = true) {
   return useQuery({

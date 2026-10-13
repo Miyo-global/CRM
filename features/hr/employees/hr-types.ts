@@ -35,8 +35,6 @@ export const ROLE_LABELS: Record<string, string> = {
   DESIGN: "Design",
   VIDEO_EDITOR: "Video Editor",
   DIGITAL_MARKETING: "Digital Marketing",
-  BRANCH_MANAGER: "Branch Manager",
-  BRANCH_HR: "Branch HR",
   ADMIN: "Admin",
 };
 

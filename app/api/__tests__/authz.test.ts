@@ -45,7 +45,7 @@ const req = (path: string, init?: ConstructorParameters<typeof NextRequest>[1]) 
 beforeEach(() => authMock.mockReset());
 
 describe("rbac permission catalog", () => {
-  it.each(["ENGINEERING", "SALES", "BRANCH_HR"])("forbids %s", async (role) => {
+  it.each(["ENGINEERING", "SALES"])("forbids %s", async (role) => {
     signIn(role);
     const { GET } = await import("@/app/api/rbac/permissions/route");
     expect((await GET()).status).toBe(403);

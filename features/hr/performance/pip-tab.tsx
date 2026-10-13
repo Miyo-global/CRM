@@ -84,8 +84,7 @@ function isHrRepEligible(e: Employee): boolean {
     dept.includes("hr") ||
     dept.includes("human resource") ||
     dept.includes("people") ||
-    role === "HR" ||
-    role === "BRANCH_HR"
+    role === "HR"
   );
 }
 

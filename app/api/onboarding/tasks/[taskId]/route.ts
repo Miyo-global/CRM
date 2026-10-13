@@ -33,7 +33,7 @@ export async function PATCH(
     }
 
     const role = session.user.role;
-    const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN" || role === "BRANCH_MANAGER";
+    const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
 
     if (!isAdmin && task.userId !== session.user.id) {
       return err("Forbidden", 403);

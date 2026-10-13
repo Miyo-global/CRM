@@ -34,7 +34,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function TeamTimesheetsPage() {
   return (
-    <DashboardGate allowedRoles={["CEO", "HR", "BRANCH_MANAGER"]}>
+    <DashboardGate allowedRoles={["CEO", "HR"]}>
       <TeamTimesheetsContent />
     </DashboardGate>
   );

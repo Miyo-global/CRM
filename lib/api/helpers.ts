@@ -151,7 +151,7 @@ export async function withAdmin<T>(
   });
 }
 
-export const HR_EMAIL_TEMPLATE_ROLES = new Set(["CEO", "HR", "ADMIN", "BRANCH_HR"]);
+export const HR_EMAIL_TEMPLATE_ROLES = new Set(["CEO", "HR", "ADMIN"]);
 
 export async function withHrEmailTemplateAccess<T>(
   handler: (session: AuthSession) => Promise<NextResponse<T>>

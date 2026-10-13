@@ -22,7 +22,7 @@ describe("canAccessRoute", () => {
 
   it("uses the longest matching prefix", () => {
     expect(canAccessRoute("/hr/leaves", "ENGINEERING")).toBe(true);
-    expect(canAccessRoute("/hr/payroll", "BRANCH_MANAGER")).toBe(false);
+    expect(canAccessRoute("/hr/payroll", "ENGINEERING")).toBe(false);
   });
 
   it("lets ADMIN into admin areas", () => {
@@ -39,7 +39,7 @@ describe("canAccessRoute", () => {
   });
 
   it("lets every role reach notifications", () => {
-    for (const role of ["SALES", "ENGINEERING", "BRANCH_MANAGER", "BRANCH_HR"]) {
+    for (const role of ["SALES", "ENGINEERING"]) {
       expect(canAccessRoute("/notifications", role)).toBe(true);
     }
   });

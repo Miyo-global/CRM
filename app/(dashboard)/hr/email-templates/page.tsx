@@ -885,7 +885,7 @@ function EmailTemplatesContent() {
 
 export default function EmailTemplatesPage() {
   return (
-    <DashboardGate allowedRoles={["HR", "CEO", "BRANCH_HR"]}>
+    <DashboardGate allowedRoles={["HR", "CEO"]}>
       <EmailTemplatesContent />
     </DashboardGate>
   );

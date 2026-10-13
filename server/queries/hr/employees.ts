@@ -60,10 +60,6 @@ export async function getEmployees(
     .filter((u) => {
       if (u.isActive === false) return false;
 
-      if (branch?.branchId !== null && branch?.branchId !== undefined &&
-          ["BRANCH_MANAGER", "BRANCH_HR"].includes(branch.role)) {
-        return u.branchId === branch.branchId;
-      }
       return true;
     })
     .map((u) => ({

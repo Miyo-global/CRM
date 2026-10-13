@@ -33,4 +33,4 @@ export const LOAN_MAX_AMOUNT = envNumber("NEXT_PUBLIC_LOAN_MAX_AMOUNT", 1_000_00
 export const BONUS_MAX_AMOUNT = envNumber("NEXT_PUBLIC_BONUS_MAX_AMOUNT", 100_000);
 
 /** Roles that can view all org bonuses and create or disburse them. */
-export const BONUS_MANAGE_ROLES = ["CEO", "HR", "ADMIN", "BRANCH_HR"] as const;
+export const BONUS_MANAGE_ROLES = ["CEO", "HR", "ADMIN"] as const;

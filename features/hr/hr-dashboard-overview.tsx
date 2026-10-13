@@ -43,7 +43,7 @@ import Link from "next/link";
 import { getInitials } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const HR_ADMIN_ROLES = ["CEO", "HR", "ADMIN", "BRANCH_HR", "BRANCH_MANAGER"];
+const HR_ADMIN_ROLES = ["CEO", "HR", "ADMIN"];
 
 function formatDateLabel(dateStr: string) {
   const d = new Date(dateStr);
@@ -522,7 +522,7 @@ function SalaryBandWidget() {
   const role = session?.user?.role;
   const { data, isLoading } = useHrSalaryBands();
 
-  if (!role || !["CEO", "ADMIN", "HR", "BRANCH_HR"].includes(role)) return null;
+  if (!role || !["CEO", "ADMIN", "HR"].includes(role)) return null;
 
   const maxCount = Math.max(...(data?.bandDistribution ?? []).map((b) => b.count), 1);
 

@@ -35,19 +35,11 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
       ];
     case "HR":
     case "ADMIN":
-    case "BRANCH_HR":
       return [
         { label: "Add Employee", icon: UserPlus, href: "/hr/onboarding?tab=wizard" },
         { label: "View Reports", icon: BarChart3, href: "/reports" },
         { label: "Team Schedule", icon: CalendarDays, href: "/hr/attendance" },
         { label: "Org Chart", icon: Network, href: "/hr/org-chart" },
-      ];
-    case "BRANCH_MANAGER":
-      return [
-        { label: "View Reports", icon: BarChart3, href: "/reports" },
-        { label: "Team Schedule", icon: CalendarDays, href: "/hr/attendance" },
-        { label: "Org Chart", icon: Network, href: "/hr/org-chart" },
-        { label: "Check In", icon: Clock, href: "/hr/attendance" },
       ];
     case "SALES":
       return [

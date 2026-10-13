@@ -1,4 +1,5 @@
 import { withAuth, withAdmin, ok, err, parseBody } from "@/lib/api/helpers";
+import { isOnboardingManager } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { documentTypes, onboardingDocuments, documentAuditLogs } from "@/lib/db/schema/hr";
 import { users } from "@/lib/db/schema/auth";
@@ -23,10 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const docId = Number(rawId);
     if (!Number.isFinite(docId)) return err("Invalid document ID.", 400);
 
-    const isAdmin =
-      session.user.role === "CEO" ||
-      session.user.role === "HR" ||
-      session.user.role === "ADMIN";
+    const isAdmin = isOnboardingManager(session.user.role);
 
     const whereConditions = isAdmin
       ? and(

@@ -38,8 +38,6 @@ export const FIND_EXPERT_ROLE_SLUGS = [
   "DESIGN",
   "VIDEO_EDITOR",
   "DIGITAL_MARKETING",
-  "BRANCH_MANAGER",
-  "BRANCH_HR",
 ] as const;
 
 export { getInitials } from "@/lib/format-utils";

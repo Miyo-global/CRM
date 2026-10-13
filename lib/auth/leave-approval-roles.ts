@@ -1,5 +1,5 @@
 
-export const LEAVE_APPROVER_ROLES = ["CEO", "HR", "ADMIN", "BRANCH_HR", "BRANCH_MANAGER"] as const;
+export const LEAVE_APPROVER_ROLES = ["CEO", "HR", "ADMIN"] as const;
 
 export function hasLeaveApproverRole(role: string | null | undefined): boolean {
   return !!role && (LEAVE_APPROVER_ROLES as readonly string[]).includes(role);

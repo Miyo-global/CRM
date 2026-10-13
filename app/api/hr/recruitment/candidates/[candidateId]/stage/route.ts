@@ -129,7 +129,7 @@ export async function PATCH(
     const candidateName = `${existing.firstName} ${existing.lastName}`;
 
     if (newStage === "SCREENING") {
-      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN", "BRANCH_HR"], {
+      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN"], {
         type: "INFO",
         title: "Candidate Shortlisted",
         message: `${candidateName} has been moved to Screening.`,
@@ -160,7 +160,7 @@ export async function PATCH(
     }
 
     if (newStage === "REJECTED") {
-      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN", "BRANCH_HR"], {
+      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN"], {
         type: "INFO",
         title: "Candidate Rejected",
         message: `${candidateName} has been moved to Rejected.`,
@@ -196,7 +196,7 @@ export async function PATCH(
     }
 
     if (newStage === "HIRED") {
-      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN", "BRANCH_HR"], {
+      void notifyByRoles(session.orgId, ["CEO", "HR", "ADMIN"], {
         type: "SUCCESS" as const,
         title: "Candidate Hired",
         message: `${candidateName} has been marked as Hired. Please initiate the onboarding process.`,

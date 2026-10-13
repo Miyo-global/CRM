@@ -5,7 +5,7 @@ import { and, eq, desc } from "drizzle-orm";
 import { handbookVersionSchema } from "@/lib/validations/handbook";
 import type { NextRequest } from "next/server";
 
-const ADMIN_ROLES = new Set(["CEO", "ADMIN", "HR", "BRANCH_MANAGER", "BRANCH_HR"]);
+const ADMIN_ROLES = new Set(["CEO", "ADMIN", "HR"]);
 
 function mapHandbookRow(row: typeof handbookVersions.$inferSelect) {
   return {

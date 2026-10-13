@@ -67,8 +67,7 @@ export default function DashboardPage() {
   const isCeo = role === "CEO";
   const isHrAdmin = role === "HR" || role === "ADMIN";
   const isAdmin = isCeo || isHrAdmin;
-  const isManager = role === "BRANCH_MANAGER" || role === "BRANCH_HR";
-  const isEmployee = !isAdmin && !isManager;
+  const isEmployee = !isAdmin;
 
   const { data: stats, isLoading, error, refetch } = useDashboardStats({
     retry: 2,
@@ -297,38 +296,6 @@ export default function DashboardPage() {
 
         {isHrAdmin && <HrHomeSection />}
 
-        {isManager && (
-          <>
-            <div className={SPAN.twoThirds}>
-              <Suspense fallback={<WidgetSkeleton rows={6} />}>
-                <MyTasksWidget />
-              </Suspense>
-            </div>
-            <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
-              <Suspense fallback={<WidgetSkeleton rows={2} />}>
-                <PendingApprovalsWidgetNew />
-              </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={2} />}>
-                <QuickActionsWidget />
-              </Suspense>
-            </div>
-            <div className={SPAN.third}>
-              <Suspense fallback={<WidgetSkeleton rows={4} />}>
-                <TeamAttendanceWidgetNew />
-              </Suspense>
-            </div>
-            <div className={SPAN.third}>
-              <Suspense fallback={<WidgetSkeleton rows={3} />}>
-                <UpcomingLeavesWidget />
-              </Suspense>
-            </div>
-            <div className={SPAN.third}>
-              <Suspense fallback={<WidgetSkeleton rows={3} />}>
-                <AnnouncementsWidget />
-              </Suspense>
-            </div>
-          </>
-        )}
 
         {isEmployee && (
           <>
