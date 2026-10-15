@@ -18,7 +18,10 @@ import { PropertyList } from "@/components/shared/property-list";
 import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
 
+import { useSession } from "next-auth/react";
 import { useUserOnboarding, useCompleteOnboardingTask } from "@/lib/api/hooks/hr/onboarding";
+import { useHrEmployees } from "@/lib/api/hooks/hr";
+import type { Employee } from "@/types/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getTodayIST, normalizeDeadlineDate } from "@/lib/careers/application-deadline";
 import { formatDisplayDate } from "@/lib/date-utils";
@@ -109,7 +112,21 @@ export default function UserOnboardingPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = use(params);
+  const { data: session } = useSession();
+  const isOwnChecklist = session?.user?.id === userId;
   const { data: tasks, isLoading, isError, error, refetch } = useUserOnboarding(userId);
+  // Someone else's checklist is named, so an admin is not told to finish their
+  // own onboarding (A23).
+  const { data: employeesRaw } = useHrEmployees(undefined, { enabled: !isOwnChecklist });
+  const employeeName = (() => {
+    if (isOwnChecklist) return null;
+    const list = (Array.isArray(employeesRaw)
+      ? employeesRaw
+      : (employeesRaw as { data?: Employee[] } | undefined)?.data ?? []) as Employee[];
+    const match = list.find((e) => e.id === userId);
+    if (!match) return null;
+    return `${match.firstName ?? ""} ${match.lastName ?? ""}`.trim() || match.email || null;
+  })();
   const completeTask = useCompleteOnboardingTask();
 
   const handleToggle = useCallback(
@@ -134,7 +151,13 @@ export default function UserOnboardingPage({
   return (
     <PageWrapper
       title="Onboarding Checklist"
-      subtitle="Complete each task to finish your onboarding."
+      subtitle={
+        isOwnChecklist
+          ? "Complete each task to finish your onboarding."
+          : employeeName
+            ? `Onboarding tasks for ${employeeName}`
+            : "Onboarding tasks for this employee"
+      }
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/onboarding">

@@ -58,6 +58,16 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
   // Only real (persisted) departments scope the job-role catalog. The wizard
   // uses negative placeholder ids for not-yet-created "common" departments;
   // for those we fall back to org-wide roles only.
+  const joiningDate = form.watch("joiningDate");
+  const isJoiningDateInPast = useMemo(() => {
+    if (!joiningDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const picked = new Date(joiningDate);
+    picked.setHours(0, 0, 0, 0);
+    return picked < today;
+  }, [joiningDate]);
+
   const catalogDepartmentId = useMemo(
     () => (typeof selectedDepartmentId === "number" && selectedDepartmentId > 0 ? selectedDepartmentId : undefined),
     [selectedDepartmentId],
@@ -123,6 +133,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
             <FormDescription className="text-xs">
               {EMPLOYMENT_FIELD_COPY.department.description}
             </FormDescription>
+            {isJoiningDateInPast && (
+              <p className="text-xs text-muted-foreground">
+                Joining date is in the past — attendance and payroll will start from this date.
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}
@@ -140,7 +155,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
               <JobRoleCombobox
                 value={field.value ?? ""}
                 onValueChange={field.onChange}
-                departmentId={catalogDepartmentId}
+                departmentId={catalogDepartmentId ?? null}
                 placeholder={EMPLOYMENT_FIELD_COPY.designation.placeholder}
                 aria-invalid={fieldState.invalid}
               />

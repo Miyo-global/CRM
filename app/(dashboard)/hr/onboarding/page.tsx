@@ -685,7 +685,7 @@ function HrDocumentsTab() {
 
 
 export default function OnboardingPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const role = session?.user?.role;
   const isHROrCEO = isOnboardingManager(role);
   const searchParams = useSearchParams();
@@ -708,6 +708,19 @@ export default function OnboardingPage() {
     },
     [pathname, router, searchParams],
   );
+
+  // Until the role is known, show a neutral skeleton rather than another
+  // role's view (A22).
+  if (status === "loading" || !role) {
+    return (
+      <PageWrapper title="Onboarding">
+        <div className="space-y-4">
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper

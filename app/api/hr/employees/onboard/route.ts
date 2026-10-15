@@ -1,5 +1,6 @@
 import { withRoles, ok, err, parseBody } from "@/lib/api/helpers";
 import { ONBOARDING_MUTATE_ROLES } from "@/lib/constants/roles";
+import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
 import { db } from "@/lib/db";
 import { users, organizationMembers, salaryStructures, passwordResetTokens } from "@/lib/db/schema";
 import { formatDateOnly } from "@/lib/date-utils";
@@ -150,6 +151,21 @@ export async function POST(req: NextRequest) {
       metadata: { employeeId: newUser.id },
       excludeUserId: session.user.id,
     }).catch(() => {});
+
+    // Start the checklist straight away, so a successful hire always shows in
+    // Onboarding › Progress (A21). A failure here must not fail the hire.
+    try {
+      await startOnboardingForUser({
+        orgId: session.orgId,
+        userId: newUser.id,
+        joiningDate: body.joiningDate ?? null,
+      });
+    } catch (onboardingErr) {
+      logger.error("Failed to start onboarding checklist", {
+        userId: newUser.id,
+        error: onboardingErr instanceof Error ? onboardingErr.message : "Unknown",
+      });
+    }
 
     void inngest.send({
       name: "hr/employee.onboarded",
