@@ -18,6 +18,7 @@ import {
   getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
+  getCelebrationEmailTemplate,
   getHolidayAnnouncementEmailTemplate,
   getCompanyAnnouncementEmailTemplate,
   getExpenseSubmittedEmailTemplate,
@@ -326,6 +327,23 @@ export async function sendAccountDeactivationEmail(
     to: email,
     subject: 'Account Deactivated - Miyo Global',
     html: getAccountDeactivationEmailTemplate(employeeName, deactivatedBy, reason),
+  });
+}
+
+/** Birthday or work-anniversary greeting to the person celebrating (A34). */
+export async function sendCelebrationEmail(
+  email: string,
+  name: string,
+  kind: "birthday" | "anniversary",
+  yearsCompleted?: number,
+) {
+  await sendEmail({
+    to: email,
+    subject:
+      kind === "birthday"
+        ? "Happy birthday from Miyo Global"
+        : "Happy work anniversary from Miyo Global",
+    html: getCelebrationEmailTemplate(name, kind, yearsCompleted),
   });
 }
 

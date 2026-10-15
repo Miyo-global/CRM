@@ -27,6 +27,7 @@ export {
 } from "./project";
 
 export {
+  getCelebrationEmailTemplate,
   getLeaveRequestEmailTemplate,
   getWfhRequestEmailTemplate,
   getLeaveStatusUpdateEmailTemplate,

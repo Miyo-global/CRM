@@ -9,6 +9,7 @@ import {
   useTeamAvailability,
   useActiveSprintSummary,
   useRecentActivity,
+  useBirthdays,
   useRoleStats,
   useTodayActivities,
 } from "@/lib/api/hooks/dashboard";
@@ -40,6 +41,7 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { getGreeting, getFirstName } from "@/lib/format-utils";
+import { isoDateInTimezone } from "@/lib/constants/locale";
 import { QuickActions, getQuickActionsForRole } from "@/features/dashboard/quick-actions";
 import { SprintCard } from "@/features/dashboard/sprint-card";
 import { TeamCard } from "@/features/dashboard/team-card";
@@ -83,6 +85,16 @@ export default function DashboardPage() {
   );
 
   const { data: sprintSummary, isLoading: sprintLoading } = useActiveSprintSummary();
+
+  // Greet the person celebrating on their own dashboard (A34).
+  const { data: celebrations } = useBirthdays();
+  const myCelebration = useMemo(
+    () =>
+      (celebrations ?? []).find(
+        (c) => c.id === currentUserId && c.date === isoDateInTimezone(),
+      ),
+    [celebrations, currentUserId],
+  );
 
   const { data: roleStats } = useRoleStats();
   const { data: todayActivities } = useTodayActivities();
@@ -269,6 +281,15 @@ export default function DashboardPage() {
       subtitle={<span className="tabular-nums">{todayFormatted} · {stats.orgName}</span>}
       actions={<ClockInWidget />}
     >
+      {myCelebration && (
+        <p className="mb-4 text-sm text-foreground">
+          {myCelebration.type === "birthday"
+            ? "Happy birthday! The team wishes you a great year ahead."
+            : `Happy work anniversary — ${myCelebration.yearsCompleted ?? 1} ${
+                (myCelebration.yearsCompleted ?? 1) === 1 ? "year" : "years"
+              } with us.`}
+        </p>
+      )}
       <motion.div
         variants={fadeUp}
         initial="hidden"

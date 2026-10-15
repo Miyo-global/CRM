@@ -1,4 +1,5 @@
 import { dailyNotifications } from "./daily-notifications";
+import { celebrationGreetings } from "./celebration-greetings";
 import { autoCheckout } from "./auto-checkout";
 import { notificationHandler } from "./notification-handler";
 import { webhookDispatcher } from "./webhook-dispatcher";
@@ -54,4 +55,5 @@ export const inngestFunctions = [
   leaveEscalation,
   candidateFeedbackEmail,
   autoPayrollGeneration,
+  celebrationGreetings,
 ];

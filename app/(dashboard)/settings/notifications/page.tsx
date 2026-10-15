@@ -13,8 +13,11 @@ import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/lib/api/hooks/hr/leaves-expenses";
 import { toast } from "sonner";
 import { SettingsSection, SettingRow } from "@/features/settings/settings-row";
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
-const CATEGORIES = [
+const CRM_CATEGORY_KEYS = new Set(["deals", "leads", "contacts"]);
+
+const ALL_CATEGORIES = [
   { key: "leaves", label: "Leave Requests", description: "Approvals, rejections, and new requests" },
   { key: "expenses", label: "Expense Claims", description: "Submitted, approved, or rejected expenses" },
   { key: "payroll", label: "Payroll", description: "Payslip ready and payment processed" },
@@ -25,6 +28,11 @@ const CATEGORIES = [
   { key: "hr", label: "HR Updates", description: "Resignations, terminations, and onboarding" },
   { key: "system", label: "System", description: "Security alerts and account changes" },
 ];
+
+/** CRM categories only when the CRM module is on (A36). */
+const CATEGORIES = ALL_CATEGORIES.filter(
+  (c) => CRM_MODULE_ENABLED || !CRM_CATEGORY_KEYS.has(c.key),
+);
 
 export default function NotificationPreferencesPage() {
   const { data: prefs, isLoading } = useNotificationPreferences();
