@@ -174,6 +174,7 @@ export interface TicketComment {
   content: string;
   parentCommentId: number | null;
   images?: CommentImage[] | null;
+  reactions?: { emoji: string; userId: string }[];
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   user?: TicketUser;

@@ -248,7 +248,13 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
             <TicketAttachments attachments={ticket.attachments ?? []} />
             <TicketSubtasks ticketId={ticketId} projectId={projectId} subtasks={subtasks || []} />
             <TicketRelations ticketId={ticketId} projectId={projectId} />
-            <ActivityFeed ticketId={ticketId} projectId={projectId} comments={ticket.comments || []} />
+            <ActivityFeed
+              ticketId={ticketId}
+              projectId={projectId}
+              comments={ticket.comments || []}
+              people={members.map((m) => ({ id: m.id, name: m.name || m.email, email: m.email }))}
+              canComment={canEdit}
+            />
             <TicketHistory projectId={projectId} ticketId={ticketId} />
           </div>
         </div>

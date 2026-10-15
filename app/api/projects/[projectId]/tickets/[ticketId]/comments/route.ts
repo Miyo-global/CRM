@@ -20,10 +20,13 @@ const commentImageSchema = z.object({
 }).strict();
 
 const commentSchema = z.object({
-  content: z.string().trim().min(1, "Comment cannot be empty").max(20000),
+  content: z.string().trim().max(20000),
   images: z.array(commentImageSchema).max(10).optional(),
   parentCommentId: z.number().int().positive().optional(),
-}).strict();
+}).strict().refine((v) => v.content.length > 0 || (v.images?.length ?? 0) > 0, {
+  message: "Write a comment or attach a file",
+  path: ["content"],
+});
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {

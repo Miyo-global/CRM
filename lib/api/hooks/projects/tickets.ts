@@ -585,3 +585,45 @@ export function useAddAttachment(
     },
   }, options));
 }
+
+export function useToggleReaction(projectId: number, ticketId: number) {
+  const queryClient = useQueryClient();
+  const key = queryKeys.projects.ticket(ticketId);
+  return useMutation<unknown, Error, { commentId: number; emoji: string; userId: string; remove: boolean }, { previous?: Ticket | null }>({
+    mutationFn: ({ commentId, emoji, remove }) => {
+      const url = `/projects/${projectId}/tickets/${ticketId}/comments/${commentId}/reactions`;
+      return remove ? apiClient.delete(url, { params: { emoji } }) : apiClient.post(url, { emoji });
+    },
+    onMutate: async ({ commentId, emoji, userId, remove }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Ticket | null>(key);
+      queryClient.setQueryData<Ticket | null>(key, (old) =>
+        old
+          ? {
+              ...old,
+              comments: old.comments?.map((c) => {
+                if (c.id !== commentId) return c;
+                const rest = (c.reactions ?? []).filter((r) => !(r.emoji === emoji && r.userId === userId));
+                return { ...c, reactions: remove ? rest : [...rest, { emoji, userId }] };
+              }),
+            }
+          : old,
+      );
+      return { previous };
+    },
+    onError: (_e, _v, context) => {
+      if (context?.previous !== undefined) queryClient.setQueryData(key, context.previous);
+    },
+  });
+}
+
+export function useRestoreComment(projectId: number, ticketId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { commentId: number }>({
+    mutationFn: ({ commentId }) => apiClient.post(`/projects/${projectId}/tickets/${ticketId}/comments/${commentId}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticketId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticketActivity(ticketId) });
+    },
+  });
+}
