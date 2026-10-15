@@ -38,6 +38,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import type { Tone } from "@/lib/design/tones";
 import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { formatIST } from "@/lib/date-utils";
 
 const PAYROLL_STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -55,11 +56,9 @@ function num(value: string | number | null | undefined): number {
   return parseFloat(String(value ?? "0")) || 0;
 }
 
+/** Timestamps are stored in UTC and always shown in IST (A7, A38). */
 function fmtDateTime(value: Date | string | null | undefined): string {
-  if (!value) return "";
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return format(d, "dd MMM yyyy, hh:mm a");
+  return formatIST(value) || "—";
 }
 
 interface PayrollTableProps {
@@ -236,9 +235,16 @@ export function PayrollTable({
                             <p className="text-2xs text-muted-foreground">
                               Created: {fmtDateTime(payroll.createdAt)}
                             </p>
-                            <p className="text-2xs text-muted-foreground">
-                              Approved: {fmtDateTime(payroll.approvedAt)} | Paid: {fmtDateTime(payroll.paidAt)}
-                            </p>
+                            {payroll.approvedAt && (
+                              <p className="text-2xs text-muted-foreground">
+                                Approved: {fmtDateTime(payroll.approvedAt)}
+                              </p>
+                            )}
+                            {payroll.paidAt && (
+                              <p className="text-2xs text-muted-foreground">
+                                Paid: {fmtDateTime(payroll.paidAt)}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-right">

@@ -114,7 +114,10 @@ export function formatDisplayDate(
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(locale, options ?? { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(locale, {
+    timeZone: DEFAULT_TIMEZONE,
+    ...(options ?? { day: "numeric", month: "short", year: "numeric" }),
+  });
 }
 
 export function formatDisplayDateTime(
@@ -125,6 +128,7 @@ export function formatDisplayDateTime(
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
   return d.toLocaleString(locale, {
+    timeZone: DEFAULT_TIMEZONE,
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -132,6 +136,35 @@ export function formatDisplayDateTime(
     minute: "2-digit",
     hour12: true,
   });
+}
+
+/**
+ * Date and time in the organisation timezone (IST by default), whatever the
+ * viewer's browser is set to. Timestamps are stored in UTC; every display of
+ * one goes through here (A38).
+ */
+export function formatIST(
+  date: Date | string | null | undefined,
+  options?: Intl.DateTimeFormatOptions,
+): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString(DEFAULT_LOCALE, {
+    timeZone: DEFAULT_TIMEZONE,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    ...options,
+  });
+}
+
+/** Clock time only, in the organisation timezone. */
+export function formatISTTime(date: Date | string | null | undefined): string {
+  return formatIST(date, { day: undefined, month: undefined, year: undefined });
 }
 
 export function timeAgo(date: Date | string | null | undefined): string {

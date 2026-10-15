@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
-import { attendance, holidays, leaveRequests, leaveTypes } from "@/lib/db/schema";
+import { attendance, holidays, leaveRequests, leaveTypes, resignations, users } from "@/lib/db/schema";
 import { and, eq, gte, lte, inArray, isNotNull, ne } from "drizzle-orm";
 import {
   calendarDaysInMonth,
@@ -18,6 +18,7 @@ import {
   previousCalendarMonth,
 } from "@/lib/hr/casual-leave-monthly";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
+import { employmentWindow } from "@/lib/payroll/rules";
 
 function monthBounds(month: string): { start: string; end: string } {
   const calDays = calendarDaysInMonth(month);
@@ -65,7 +66,8 @@ export async function getStrictPayrollAttendanceBatch(
   const prev = previousCalendarMonth(Number(yearStr), Number(monthStr) - 1);
   const prevBounds = monthBoundsYyyyMm(prev.yyyyMm);
 
-  const [attendanceRows, holidayRows, leaveRows, casualType, prevCasualRows] = await Promise.all([
+  const [attendanceRows, holidayRows, leaveRows, casualType, prevCasualRows, employeeRows, exitRows] =
+    await Promise.all([
     db
       .select({
         userId: attendance.userId,
@@ -125,7 +127,31 @@ export async function getStrictPayrollAttendanceBatch(
           gte(leaveRequests.endDate, prevBounds.start),
         ),
       ),
-  ]);
+    db
+      .select({ id: users.id, joiningDate: users.joiningDate })
+      .from(users)
+      .where(inArray(users.id, userIds)),
+    db
+      .select({ userId: resignations.userId, lastWorkingDate: resignations.lastWorkingDate })
+      .from(resignations)
+      .where(
+        and(
+          eq(resignations.orgId, orgId),
+          inArray(resignations.userId, userIds),
+          inArray(resignations.status, ["APPROVED", "COMPLETED"]),
+          isNotNull(resignations.lastWorkingDate),
+        ),
+      ),
+    ]);
+
+  const joiningByUser = new Map(employeeRows.map((r) => [r.id, r.joiningDate ?? null]));
+  const exitByUser = new Map<string, string>();
+  for (const row of exitRows) {
+    const date = row.lastWorkingDate?.slice(0, 10);
+    if (!date) continue;
+    const existing = exitByUser.get(row.userId);
+    if (!existing || date < existing) exitByUser.set(row.userId, date);
+  }
 
   const prevCasualUsed = new Map<string, number>();
   if (casualType) {
@@ -179,6 +205,26 @@ export async function getStrictPayrollAttendanceBatch(
 
   for (const userId of userIds) {
     const freeLeaveDays = casualMaxUsableInMonth(prevCasualUsed.get(userId) ?? 0);
+    // Employment window first: days before joining or after the last working
+    // day are not employed days, so they can never become loss of pay (A2).
+    const window = employmentWindow({
+      month,
+      joiningDate: joiningByUser.get(userId) ?? null,
+      exitDate: exitByUser.get(userId) ?? null,
+      todayIst: today,
+    });
+    if (window.empty || !window.end) {
+      result.set(userId, {
+        calDays: calendarDaysInMonth(month),
+        workingDays: 0,
+        weekendDays: 0,
+        holidayDays: 0,
+        fullPresentDays: 0,
+        paidLeaveDays: 0,
+        lopDays: 0,
+      });
+      continue;
+    }
     result.set(
       userId,
       computeStrictAttendance({
@@ -187,7 +233,8 @@ export async function getStrictPayrollAttendanceBatch(
         holidayDates,
         leaveByDate: leaveByUser.get(userId) ?? new Map(),
         freeLeaveDays,
-        evaluateThroughDate: through,
+        evaluateThroughDate: through < window.end ? through : window.end,
+        employedFromDate: window.start,
       }),
     );
   }

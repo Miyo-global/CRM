@@ -9,7 +9,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, Check } from "lucide-react";
+import { useEffect, useState } from "react";
 import { format, getDaysInMonth } from "date-fns";
+import { isoDateInTimezone } from "@/lib/constants/locale";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import type { Employee } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -56,6 +58,15 @@ export function PayslipDetailSheet({
   onConfirmGenerate,
   isGenerating,
 }: PayslipDetailSheetProps) {
+  // A5: a run for a month that has not ended yet assumes the remaining days
+  // are worked. Block it until the user says so explicitly.
+  const today = isoDateInTimezone();
+  const monthEnded = today > `${selectedMonth}-${getDaysInMonth(new Date(`${selectedMonth}-01`))}`;
+  const [overrideIncompleteMonth, setOverrideIncompleteMonth] = useState(false);
+  useEffect(() => {
+    setOverrideIncompleteMonth(false);
+  }, [selectedMonth, selectedEmployeeData?.id]);
+
   return (
     <HrSheet
       open={open}
@@ -77,7 +88,28 @@ export function PayslipDetailSheet({
         </>
       }
       isPending={isGenerating}
+      submitDisabled={!monthEnded && !overrideIncompleteMonth}
     >
+      {!monthEnded && (
+        <div className="rounded-md border border-border p-3 space-y-2">
+          <p className="text-sm font-medium">
+            {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")} has not ended
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Attendance is counted to {format(new Date(`${today}T00:00:00`), "dd MMM yyyy")} only.
+            The remaining days of the month are paid as present.
+          </p>
+          <label className="flex items-start gap-2 text-xs">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={overrideIncompleteMonth}
+              onChange={(e) => setOverrideIncompleteMonth(e.target.checked)}
+            />
+            <span>Generate anyway for this incomplete month</span>
+          </label>
+        </div>
+      )}
       <Card className="gap-0">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">

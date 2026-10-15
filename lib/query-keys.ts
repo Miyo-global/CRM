@@ -81,6 +81,7 @@ export const queryKeys = {
     compOffGrants: (userId?: string) => [...base, "hr", "compOffGrants", userId] as const,
     lateArrivalWarnings: (userId?: string) => [...base, "hr", "lateArrivalWarnings", userId] as const,
     overtimePreview: (params: { userId: string; month: string }) => [...base, "hr", "overtimePreview", params] as const,
+    payrollPreview: (params: Record<string, unknown>) => [...base, "hr", "payrollPreview", params] as const,
   },
 
   leads: {

@@ -190,6 +190,60 @@ export function useOvertimePreview(params: { userId: string; month: string }) {
 }
 
 
+export interface PayrollPreview {
+  month: string;
+  calendarDays: number;
+  daysEmployed: number;
+  employedFrom: string;
+  evaluatedThrough: string;
+  notEmployed: boolean;
+  monthlySalary: number;
+  earnedSalary: number;
+  basicSalary: number;
+  hra: number;
+  specialAllowance: number;
+  perDay: number;
+  lopDays: number;
+  paidLeaveDays: number;
+  lopDeduction: number;
+  professionalTax: number;
+  pfEmployee: number;
+  pfEmployer: number;
+  esiEmployee: number;
+  esiEmployer: number;
+  structureDeductions: number;
+  otherDeductions: number;
+  advanceRecoveryAmount: number;
+  bonus: number;
+  overtimeDays: number;
+  overtimeHours: number;
+  overtimeAmount: number;
+  grossSalary: number;
+  totalDeductions: number;
+  netSalary: number;
+}
+
+/**
+ * Server-computed payroll preview. Same loader and same pure function as the
+ * generate route, so the preview equals the saved record (A3).
+ */
+export function usePayrollPreview(params: {
+  userId: string;
+  month: string;
+  bonus?: number;
+  otherDeductions?: number;
+  periodEnd?: string;
+  enabled?: boolean;
+}) {
+  const { enabled = true, ...query } = params;
+  return useQuery({
+    queryKey: queryKeys.hr.payrollPreview(query),
+    queryFn: () =>
+      apiClient.get<PayrollPreview>("/hr/payrolls/preview", query as unknown as Record<string, unknown>),
+    enabled: enabled && !!params.userId && !!params.month,
+  });
+}
+
 export interface PayrollSchedule {
   id: number | null;
   frequency: "MONTHLY";
