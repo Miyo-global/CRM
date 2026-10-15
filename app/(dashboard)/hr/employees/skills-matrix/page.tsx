@@ -145,7 +145,6 @@ export default function SkillsMatrixPage() {
 
   const allEmployees = data?.employees ?? [];
   const allSkills = data?.skills ?? [];
-  const roleGaps = data?.roleGaps ?? [];
 
   const filteredEmployees = useMemo(() => {
     let list = allEmployees;
@@ -604,82 +603,6 @@ export default function SkillsMatrixPage() {
                 </div>
               </div>
 
-              {roleGaps.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-2 pt-4 px-4">
-                    <CardTitle className="text-sm font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="inline-flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-brand-text" />
-                        Role Skill Gaps
-                      </span>
-                      <span className="text-xs font-normal text-muted-foreground">
-                        Open roles vs. skills available across the team
-                      </span>
-                    </CardTitle>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground pt-1">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-success-strong/30 bg-success-soft px-2 text-2xs text-success-strong">
-                          Skill
-                        </span>
-                        Covered in team
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="inline-flex h-4 items-center rounded-full border border-dashed border-warning-strong/40 bg-warning-soft px-2 text-2xs text-warning-strong">
-                          Skill
-                        </span>
-                        Missing from team
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-4 pb-4 space-y-3">
-                    {roleGaps.map((gap) => (
-                      <div key={gap.jobId} className="rounded-lg border p-3 space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex items-center gap-2">
-                            <span className="font-medium text-sm truncate">{gap.title}</span>
-                            <Badge variant="outline" className="text-3xs shrink-0">{gap.status}</Badge>
-                          </div>
-                          <Badge
-                            variant={gap.missingCount === 0 ? "success" : "warning"}
-                            className="shrink-0 tabular-nums text-xs font-semibold"
-                          >
-                            {gap.missingCount === 0
-                              ? "All skills covered"
-                              : `${gap.missingCount} skill${gap.missingCount === 1 ? "" : "s"} missing`}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {gap.required.map((req) => (
-                            <span
-                              key={req.skill}
-                              className={cn(
-                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs",
-                                req.covered
-                                  ? "border-success-strong/30 bg-success-soft text-success-strong"
-                                  : "border-warning-strong/40 bg-warning-soft text-warning-strong border-dashed",
-                              )}
-                              title={req.covered ? "Available in the team" : "Missing — no one in the team has this skill"}
-                            >
-                              <span
-                                className={cn(
-                                  "h-1.5 w-1.5 rounded-full shrink-0",
-                                  req.covered ? "bg-success-500" : "bg-warning-500",
-                                )}
-                              />
-                              <span>{req.skill}</span>
-                              {!req.covered && (
-                                <span className="text-3xs font-medium uppercase tracking-wide opacity-80">
-                                  missing
-                                </span>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
             </>
           ) : (
             <div className="space-y-4">

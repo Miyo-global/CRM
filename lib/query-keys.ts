@@ -33,6 +33,10 @@ export const queryKeys = {
     pendingWfhRequests: () => [...base, "hr", "pendingWfhRequests"] as const,
     holidaysYear: (year: number) => [...base, "hr", "holidaysYear", year] as const,
     holidaysCalendar: (params: { year: number; month: number }) => [...base, "hr", "holidaysCalendar", params] as const,
+    // Prefixes so a holiday mutation can invalidate every year/month it may
+    // have changed without invalidating the whole HR cache (A43, A44).
+    holidaysYearAll: () => [...base, "hr", "holidaysYear"] as const,
+    holidaysCalendarAll: () => [...base, "hr", "holidaysCalendar"] as const,
     monthlyAttendance: (params: { userId: string; year: number; month: number }) => [...base, "hr", "monthlyAttendance", params] as const,
     attendanceSummary: (params: {
       userId: string;

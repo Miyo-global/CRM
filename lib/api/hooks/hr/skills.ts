@@ -71,15 +71,6 @@ export function useUpdateSkill() {
 }
 
 
-export interface RoleSkillGap {
-  jobId: number;
-  title: string;
-  status: string;
-  required: { skill: string; covered: boolean }[];
-  missingCount: number;
-  coveredCount: number;
-}
-
 export interface SkillCertInfo {
   certified: boolean;
   validUntil: string | null;
@@ -94,7 +85,6 @@ export interface SkillsMatrixData {
     certs?: Record<string, SkillCertInfo>;
   }[];
   skills: string[];
-  roleGaps: RoleSkillGap[];
 }
 
 export function useSkillsMatrix() {

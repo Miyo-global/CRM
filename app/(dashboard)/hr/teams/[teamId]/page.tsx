@@ -41,7 +41,7 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
       }
       actions={
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/hr/employees">
+          <Link href="/hr">
             <ArrowLeft className="size-4" aria-hidden="true" />
             Directory
           </Link>

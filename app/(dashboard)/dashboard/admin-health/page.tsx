@@ -88,7 +88,7 @@ export default function AdminHealthDashboardPage() {
         if (active === total) return "All roster members have active accounts";
         return `${active} active · ${total - active} inactive on roster`;
       })(),
-      link: "/hr/employees",
+      link: "/hr",
     },
   ];
 

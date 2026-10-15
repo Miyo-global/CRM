@@ -11,7 +11,7 @@ export const GO_SHORTCUTS: Record<string, { label: string; hrefs: string[] }> = 
   d: { label: "Dashboard", hrefs: ["/dashboard"] },
   l: { label: "Leads", hrefs: ["/crm/leads"] },
   p: { label: "Deals (pipeline)", hrefs: ["/crm/deals"] },
-  e: { label: "Employees", hrefs: ["/hr/employees", "/hr"] },
+  e: { label: "Employees", hrefs: ["/hr"] },
   j: { label: "Projects", hrefs: ["/projects"] },
   c: { label: "Calendar", hrefs: ["/calendar"] },
   n: { label: "Notifications", hrefs: ["/notifications"] },

@@ -50,7 +50,6 @@ import {
   Mail,
   Phone,
   Download,
-  Building2,
   Calendar,
   Briefcase,
   Clock,
@@ -489,7 +488,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   <InfoItem icon={Mail} label="Email" value={employee.email} />
                   <InfoItem icon={Phone} label="Phone" value={employee.phone} />
-                  <InfoItem icon={Building2} label="Dept" value={typeof employee.departmentName === "string" && employee.departmentName.trim() ? employee.departmentName : (employee.department?.name ?? null)} />
+                  {/* Department lives in the Employment card below; showing it
+                      here too made the same badge appear twice (A43). */}
                   <InfoItem icon={Calendar} label="Joined" value={employee.joiningDate ? format(new Date(String(employee.joiningDate)), "MMM yyyy") : null} />
                 </div>
 
@@ -559,7 +559,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               <div className="grid gap-3 lg:grid-cols-2">
                 <DetailCard icon={Briefcase} title="Employment">
                   <DetailRow label="Designation" value={asStr(employee.designation)} />
-                  <DetailRow label="Department" value={asStr(e.departmentName)} />
+                  <DetailRow label="Department" value={asStr(e.departmentName) || asStr(employee.department?.name)} />
                   <DetailRow
                     label="Reporting to"
                     value={

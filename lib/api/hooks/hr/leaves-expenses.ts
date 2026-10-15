@@ -698,7 +698,12 @@ export function useAddHoliday() {
   return useMutation({
     mutationFn: (data: AddHolidayInput) =>
       apiClient.post<{ success: boolean }>("/hr/holidays", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 
@@ -707,7 +712,12 @@ export function useDeleteHoliday() {
   return useMutation({
     mutationFn: ({ holidayId }: DeleteHolidayInput) =>
       apiClient.delete<{ success: boolean }>(`/hr/holidays/${holidayId}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 
@@ -729,7 +739,12 @@ export function useUpdateHoliday() {
         `/hr/holidays/${holidayId}`,
         patch,
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 
