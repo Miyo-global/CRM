@@ -6,6 +6,7 @@ export const ROLES = {
   SALES: "SALES",
   ENGINEERING: "ENGINEERING",
   DESIGN: "DESIGN",
+  RECRUITER: "RECRUITER",
   CUSTOMER_SUPPORT: "CUSTOMER_SUPPORT",
   VIDEO_EDITOR: "VIDEO_EDITOR",
   DIGITAL_MARKETING: "DIGITAL_MARKETING",
@@ -21,7 +22,14 @@ export const RECRUITMENT_HR_ROLES: readonly string[] = [
   ROLES.CEO,
   ROLES.HR,
   ROLES.ADMIN,
+  ROLES.RECRUITER,
 ];
+
+/**
+ * Whether a RECRUITER may run the Add Employee wizard.
+ * OPEN QUESTION for Tarun: recruiters hire, but onboarding also sets salary.
+ */
+export const RECRUITER_CAN_ONBOARD = true;
 
 export function isRecruitmentHr(role: string | undefined | null): boolean {
   return !!role && RECRUITMENT_HR_ROLES.includes(role);
@@ -61,19 +69,46 @@ export const CHURN_ALERT_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.
 
 export const CSAT_MANAGE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.CUSTOMER_SUPPORT];
 
-export const ONBOARDING_MUTATE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
+export const ONBOARDING_MUTATE_ROLES: readonly string[] = RECRUITER_CAN_ONBOARD
+  ? [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.RECRUITER]
+  : [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
 
 /**
  * Roles that manage new-employee onboarding (Add Employee wizard, onboarding
  * progress, onboarding documents for other employees). Matches `withAdmin`.
  */
-export const ONBOARDING_MANAGER_ROLES: readonly string[] = ADMIN_ROLES;
+export const ONBOARDING_MANAGER_ROLES: readonly string[] = RECRUITER_CAN_ONBOARD
+  ? [...ADMIN_ROLES, ROLES.RECRUITER]
+  : ADMIN_ROLES;
 
 export function isOnboardingManager(role: string | undefined | null): boolean {
   return hasRole(role, ONBOARDING_MANAGER_ROLES);
 }
 
 export const MANAGEMENT_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR];
+
+/**
+ * Roles that hold every permission (see ROLE_DEFAULT_PERMISSIONS in
+ * lib/rbac/permissions.ts). They pass every role gate, so the UI never shows
+ * them a link they cannot open (A9).
+ */
+export const FULL_ACCESS_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
+
+export function hasFullAccess(role: string | undefined | null): boolean {
+  return !!role && FULL_ACCESS_ROLES.includes(role);
+}
+
+/**
+ * The one page-level access check. `allowed` lists the extra roles a page is
+ * open to; CEO and ADMIN always pass.
+ */
+export function canAccess(
+  role: string | undefined | null,
+  allowed: readonly string[],
+): boolean {
+  if (!role) return false;
+  return hasFullAccess(role) || allowed.includes(role);
+}
 
 export function hasRole(role: string | undefined | null, allowed: readonly string[]): boolean {
   return !!role && allowed.includes(role);

@@ -47,17 +47,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
+import { ROLE_OPTIONS } from "@/lib/rbac/roles";
 
-const ALL_ROLES = [
-  { value: "CEO", label: "CEO" },
-  { value: "HR", label: "HR" },
-  { value: "SALES", label: "Sales" },
-  { value: "CUSTOMER_SUPPORT", label: "Customer Support" },
-  { value: "ENGINEERING", label: "Engineering" },
-  { value: "DESIGN", label: "Design" },
-  { value: "VIDEO_EDITOR", label: "Video Editor" },
-  { value: "DIGITAL_MARKETING", label: "Digital Marketing" },
-];
+/** Every system role, labelled (A12, A13). */
+const ALL_ROLES = ROLE_OPTIONS;
 
 const ROLE_TONES: Record<string, Tone> = {
   CEO: "brand",

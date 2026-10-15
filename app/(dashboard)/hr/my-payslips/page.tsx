@@ -26,7 +26,6 @@ import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { format, parseISO } from "date-fns";
 import { Download, FileText, Loader2, ArrowLeft } from "lucide-react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { toast } from "sonner";
 
 export default function MyPayslipsPage() {
@@ -143,7 +142,7 @@ export default function MyPayslipsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="My Payslips" subtitle="View and download your salary slips">
+      <PageWrapper title="My payslips">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-18 w-full rounded-lg" />
@@ -155,8 +154,7 @@ export default function MyPayslipsPage() {
 
   return (
     <PageWrapper
-      title="My Payslips"
-      subtitle="View and download your salary slips"
+      title="My payslips"
       actions={
         <div className="flex items-center gap-2">
           <Button
@@ -196,9 +194,8 @@ export default function MyPayslipsPage() {
         <EmptyState
           compact={!!payslips?.length}
           className="mb-6"
-          illustration={<EmptyDocumentsIllustration />}
-          title="Select a month to view your payslip"
-          description="Choose a month from the dropdown above, or open a recent payslip below. Only finalized (PAID) payrolls can be downloaded."
+          title={payslips?.length ? "Select a month to view your payslip." : "No payslips yet."}
+          description={payslips?.length ? "Only payslips marked paid can be downloaded." : undefined}
         />
       ) : selectedPayslip ? (
         <div className="space-y-4">
@@ -244,9 +241,8 @@ export default function MyPayslipsPage() {
         </div>
       ) : (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration />}
-          title="No finalized payslip for this month"
-          description="Your payslip appears here only after payroll for that month has been marked PAID. If you expected a slip, confirm with HR that processing is complete."
+          title="No payslip for this month."
+          description="A payslip appears once HR marks that month paid."
         />
       )}
 

@@ -127,14 +127,7 @@ export function StepReview({
         <ReviewField label="WhatsApp" value={whatsappDisplay} />
         <ReviewField label="Gender" value={GENDER_LABELS[values.gender]} />
         <ReviewField label="Date of birth" value={formatDate(values.dateOfBirth)} />
-        <ReviewField
-          label="Password"
-          value={
-            values.password?.trim()
-              ? "Custom password will be set"
-              : "System-generated on first login"
-          }
-        />
+        <ReviewField label="Password" value="Set by the employee from the welcome email" />
       </ReviewSection>
 
       <ReviewSection title="Employment details">

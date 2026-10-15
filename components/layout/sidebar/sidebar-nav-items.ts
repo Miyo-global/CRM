@@ -16,6 +16,8 @@ import {
   FormInput, CalendarRange, FileSearch, LayoutTemplate, Grid3X3,
 } from "lucide-react";
 
+import { RECRUITER_CAN_ONBOARD } from "@/lib/constants/roles";
+
 export interface NavRoute {
   label: string;
   icon: React.ElementType;
@@ -308,6 +310,46 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
             { label: "Notifications", icon: Bell, href: "/settings/notifications", isSubItem: true },
+          ],
+        },
+      ];
+
+    case "RECRUITER":
+      return [
+        {
+          label: "Core",
+          routes: [
+            { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+            { label: "Calendar", icon: CalendarDays, href: "/calendar" },
+            { label: "Notifications", icon: Bell, href: "/notifications" },
+          ],
+        },
+        {
+          label: "Recruitment",
+          routes: [
+            { label: "Recruitment Hub", icon: UserSearch, href: "/hr/recruitment" },
+            { label: "Jobs", icon: Briefcase, href: "/hr/recruitment/jobs", isSubItem: true },
+            { label: "Candidates", icon: Users, href: "/hr/recruitment/candidates", isSubItem: true },
+            { label: "Pipeline", icon: TrendingUp, href: "/hr/recruitment/pipeline", isSubItem: true },
+            { label: "Interviews", icon: Video, href: "/hr/recruitment/interviews", isSubItem: true },
+            { label: "Question Bank", icon: BookOpen, href: "/hr/recruitment/question-bank", isSubItem: true },
+            { label: "Hiring Flows", icon: LayoutTemplate, href: "/hr/recruitment/hiring-flows", isSubItem: true },
+            ...(RECRUITER_CAN_ONBOARD
+              ? [{ label: "Onboarding", icon: ClipboardList, href: "/hr/onboarding?tab=workflow" }]
+              : []),
+          ],
+        },
+        {
+          label: "My HR",
+          defaultCollapsed: true,
+          routes: [
+            { label: "My Leaves", icon: CalendarCheck, href: "/hr/leaves" },
+            { label: "My Expenses", icon: Receipt, href: "/hr/expenses" },
+            { label: "My Attendance", icon: Clock, href: "/hr/attendance" },
+            { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips" },
+            { label: "My Documents", icon: FileText, href: "/hr/my-documents" },
+            { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
+            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];

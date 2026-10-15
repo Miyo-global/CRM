@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { professionalTax } from "@/lib/payroll/rules";
 import { z } from "zod";
 import type { PayslipPdfData } from "@/lib/payslip-pdf-core";
 import type { PayslipMoneyLine } from "@/lib/hr/payslip-view-model";
@@ -33,7 +34,8 @@ export const manualPayslipPdfBodySchema = z
     leaveDaysInMonth: z.number().nonnegative().optional().default(0),
     lopDeductionAmount: z.number().nonnegative().optional().default(0),
     advanceRecoveryAmount: z.number().nonnegative().optional().default(0),
-    professionalTax: z.number().nonnegative().optional().default(200),
+    /** Omitted means "use the band for the gross" (A1). */
+    professionalTax: z.number().nonnegative().optional(),
     pfEmployee: z.number().nonnegative().optional().default(0),
     esiEmployee: z.number().nonnegative().optional().default(0),
     grossSalary: z.number().nonnegative(),
@@ -76,7 +78,7 @@ export function manualPayslipBodyToPdfData(body: ManualPayslipPdfBody): PayslipP
   }
 
   const deductions: PayslipMoneyLine[] = [];
-  const pt = body.professionalTax;
+  const pt = body.professionalTax ?? professionalTax(body.grossSalary);
   if (pt > 0) deductions.push({ label: "Professional Tax", amount: pt });
   if (body.pfEmployee > 0) deductions.push({ label: "Provident Fund (PF)", amount: body.pfEmployee });
   if (body.esiEmployee > 0) deductions.push({ label: "Employee State Insurance (ESI)", amount: body.esiEmployee });

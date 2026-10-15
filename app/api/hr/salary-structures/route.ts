@@ -9,6 +9,24 @@ import { snapSalaryEffectiveFrom, dayBeforeIsoDate } from "@/lib/hr/salary-effec
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { professionalTax } from "@/lib/payroll/rules";
+
+/**
+ * Professional tax for a structure: the band for its monthly CTC (A1), unless
+ * the caller sets it explicitly (0 where the state does not levy it).
+ */
+function ptForStructure(body: {
+  basicSalary: number;
+  hraPercentage?: number;
+  specialAllowance?: number;
+  allowances?: number;
+  professionalTax?: number;
+}): number {
+  if (body.professionalTax != null) return body.professionalTax;
+  const hra = (body.basicSalary * (body.hraPercentage ?? 50)) / 100;
+  const monthly = body.basicSalary + hra + (body.specialAllowance ?? 0) + (body.allowances ?? 0);
+  return professionalTax(monthly);
+}
 
 const createSalaryStructureSchema = z
   .object({
@@ -18,7 +36,7 @@ const createSalaryStructureSchema = z
     specialAllowance: z.number().min(0).default(0),
     allowances: z.number().min(0).default(0),
     deductions: z.number().min(0).default(0),
-    professionalTax: z.number().default(200),
+    professionalTax: z.number().optional(),
     effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     effectiveTo: z
       .string()
@@ -98,7 +116,7 @@ export async function POST(req: NextRequest) {
           specialAllowance: (body.specialAllowance ?? 0).toString(),
           allowances: (body.allowances ?? 0).toString(),
           deductions: (body.deductions ?? 0).toString(),
-          professionalTax: (body.professionalTax ?? 200).toString(),
+          professionalTax: ptForStructure(body).toString(),
           effectiveFrom: effectiveFromSnapped,
           effectiveTo: body.effectiveTo ? formatDateOnly(new Date(body.effectiveTo)) : undefined,
           isActive: true,
@@ -117,7 +135,7 @@ export async function POST(req: NextRequest) {
         newBasic: body.basicSalary.toString(),
         newHraPct: (body.hraPercentage ?? 50).toString(),
         newSpecialAllowance: (body.specialAllowance ?? 0).toString(),
-        newPt: (body.professionalTax ?? 200).toString(),
+        newPt: ptForStructure(body).toString(),
         effectiveFrom: effectiveFromSnapped,
         reason: body.reason ?? null,
         changedBy: session.user.id,

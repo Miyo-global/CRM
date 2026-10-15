@@ -10,19 +10,10 @@ import { Info, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PERMISSIONS, ROLE_DEFAULT_PERMISSIONS, SYSTEM_ROLES } from "@/lib/rbac/permissions";
 import type { SystemRole } from "@/lib/rbac/permissions";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { ROLE_LABELS } from "@/lib/rbac/roles";
 import { cn } from "@/lib/utils";
 
-const ROLE_LABELS: Record<SystemRole, string> = {
-  CEO: "CEO",
-  HR: "HR",
-  ADMIN: "Admin",
-  SALES: "Sales",
-  CUSTOMER_SUPPORT: "Support",
-  ENGINEERING: "Engineering",
-  DESIGN: "Design",
-  VIDEO_EDITOR: "Video Editor",
-  DIGITAL_MARKETING: "DM",
-};
+
 
 function groupByResource(permissions: typeof PERMISSIONS) {
   const groups: Record<string, typeof PERMISSIONS> = {};

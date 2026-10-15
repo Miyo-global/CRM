@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { isOnboardingManager, ONBOARDING_MANAGER_ROLES } from "./roles";
 
 describe("isOnboardingManager", () => {
-  it("lets CEO, HR and ADMIN manage onboarding", () => {
-    for (const role of ["CEO", "HR", "ADMIN"]) {
+  it("lets CEO, HR, ADMIN and RECRUITER manage onboarding", () => {
+    for (const role of ["CEO", "HR", "ADMIN", "RECRUITER"]) {
       expect(isOnboardingManager(role)).toBe(true);
     }
   });
@@ -14,7 +14,12 @@ describe("isOnboardingManager", () => {
     }
   });
 
-  it("matches the roles withAdmin lets through on the onboarding APIs", () => {
-    expect([...ONBOARDING_MANAGER_ROLES].sort()).toEqual(["ADMIN", "CEO", "HR"]);
+  it("matches the roles the onboarding APIs let through", () => {
+    expect([...ONBOARDING_MANAGER_ROLES].sort()).toEqual([
+      "ADMIN",
+      "CEO",
+      "HR",
+      "RECRUITER",
+    ]);
   });
 });

@@ -74,13 +74,13 @@ export function SidebarUserMenu({ isCollapsed }: SidebarUserMenuProps) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link href="/settings#profile">
             <User />
             Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link href="/settings#preferences">
             <SlidersHorizontal />
             Preferences
           </Link>

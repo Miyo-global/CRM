@@ -9,6 +9,7 @@ import { isValidPhoneNumber } from "libphonenumber-js";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { bankDetailsSchema } from "@/lib/validations/bank-details";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
 
 /**
  * Department ↔ System-Role compatibility (D10).
@@ -156,7 +157,7 @@ export function checkMinMonthlySalary(
   return null;
 }
 
-const PERSON_NAME_PATTERN = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
 
 function startOfCalendarDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -171,7 +172,7 @@ function personNameSchema(label: string) {
     .max(PERSON_NAME_MAX_LENGTH, `${label} must be at most ${PERSON_NAME_MAX_LENGTH} characters`)
     .regex(
       PERSON_NAME_PATTERN,
-      `${label} may only contain letters with single spaces between words`,
+      `${label} may only contain ${PERSON_NAME_HINT}`,
     );
 }
 
@@ -622,19 +623,11 @@ export const onboardEmployeeInputSchema = z
     phone: requiredPhoneSchema("Phone number"),
     whatsappSameAsPhone: z.boolean().default(true),
     whatsappNumber: optionalPhoneSchema("WhatsApp number"),
-    password: z
-      .string()
-      .max(128, "Password must be at most 128 characters")
-      .optional()
-      .transform((val) => (val && val.trim().length > 0 ? val : undefined))
-      .refine(
-        (val) =>
-          val === undefined ||
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(val),
-        {
-          message: "Password must contain uppercase, lowercase, number, and special character",
-        }
-      ),
+    /**
+     * Onboarding never sets a password. The employee sets one through the
+     * emailed set-up link, which also verifies their address — an admin-set
+     * password left the account unverified and unable to sign in (A15).
+     */
     designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number"),
     departmentId: z.coerce.number().int().refine((val) => val !== 0 && !isNaN(val), {
       message: "Department is required",

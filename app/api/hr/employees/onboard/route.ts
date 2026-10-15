@@ -1,4 +1,5 @@
-import { withAdmin, ok, err, parseBody } from "@/lib/api/helpers";
+import { withRoles, ok, err, parseBody } from "@/lib/api/helpers";
+import { ONBOARDING_MUTATE_ROLES } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { users, organizationMembers, salaryStructures, passwordResetTokens } from "@/lib/db/schema";
 import { formatDateOnly } from "@/lib/date-utils";
@@ -23,7 +24,7 @@ import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 
 export async function POST(req: NextRequest) {
-  return withAdmin(async (session) => {
+  return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
     const body = await parseBody(req, onboardEmployeeInputSchema);
 
     const existing = await db.query.users.findFirst({
@@ -58,10 +59,10 @@ export async function POST(req: NextRequest) {
       return err(minSalaryError, 400);
     }
 
-    // No shared default: the employee sets their own password through the
-    // emailed setup link below, so an unsupplied password becomes an
-    // unguessable random one rather than a company-wide constant.
-    const passwordHash = await hash(body.password || nanoid(48), 12);
+    // The employee sets their own password through the emailed set-up link
+    // below, which also verifies their address. Until then the stored hash is
+    // of an unguessable random string (A15).
+    const passwordHash = await hash(nanoid(48), 12);
     const userId = randomUUID();
 
     let employeeId = normalizeEmployeeIdInput(body.employeeId);

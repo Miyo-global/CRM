@@ -24,11 +24,16 @@ export async function GET(
       where: and(eq(payrolls.id, payrollId), eq(payrolls.orgId, session.orgId)),
     });
     if (!payroll) return err("Payroll not found.", 404);
-    if (payroll.status !== "PAID") return err("Payslip only available for PAID payrolls.", 400);
 
     const isAdmin = isAdminOrOwner(session.user.role);
     if (!isAdmin && payroll.userId !== session.user.id) {
       return err("Access denied.", 403);
+    }
+    // HR, Admin and the CEO review a payslip before it is paid; it carries the
+    // status as a watermark. Employees still only see a PAID payslip (A8).
+    const isPaid = payroll.status === "PAID";
+    if (!isPaid && !isAdmin) {
+      return err("Payslip is available once the payroll is marked paid.", 400);
     }
 
     const employee = await db.query.users.findFirst({
@@ -47,7 +52,8 @@ export async function GET(
 
     const vmOpts = {
       leaveDaysInMonth: leaveDays,
-      showPaidBadge: true,
+      showPaidBadge: isPaid,
+      watermark: isPaid ? undefined : (payroll.status ?? "DRAFT"),
       orgFullNameOverride: ORG_FULL_NAME_HEADER,
     } as const;
 

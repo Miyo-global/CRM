@@ -55,6 +55,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     letterSpacing: 0.5,
   },
+  draftBadge: {
+    backgroundColor: BRAND.inkMuted,
+    color: BRAND.white,
+    fontSize: 8,
+    fontWeight: 700,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    letterSpacing: 0.5,
+  },
   twoCol: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: BRAND.border },
   col: { flex: 1, paddingVertical: 12, paddingHorizontal: 14 },
   colLeft: { borderRightWidth: 1, borderRightColor: BRAND.border },
@@ -197,7 +206,13 @@ function PayslipPdfPage({ vm, logoDataUri }: { vm: PayslipViewModel; logoDataUri
           <Text style={styles.orgName}>{vm.orgFullName}</Text>
           {vm.orgAddressLine ? <Text style={styles.orgAddr}>{vm.orgAddressLine}</Text> : null}
         </View>
-        <View style={styles.paidWrap}>{vm.showPaidBadge ? <Text style={styles.paidBadge}>PAID</Text> : null}</View>
+        <View style={styles.paidWrap}>
+          {vm.showPaidBadge ? (
+            <Text style={styles.paidBadge}>PAID</Text>
+          ) : vm.watermark ? (
+            <Text style={styles.draftBadge}>{vm.watermark}</Text>
+          ) : null}
+        </View>
       </View>
 
       <View style={styles.twoCol}>

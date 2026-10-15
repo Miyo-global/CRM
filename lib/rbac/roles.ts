@@ -7,6 +7,7 @@ export const ROLE_LABELS: Record<SystemRole, string> = {
   CEO: "CEO",
   HR: "HR",
   ADMIN: "Admin",
+  RECRUITER: "Recruiter",
   SALES: "Sales",
   CUSTOMER_SUPPORT: "Customer Support",
   ENGINEERING: "Engineering",
@@ -16,6 +17,15 @@ export const ROLE_LABELS: Record<SystemRole, string> = {
 };
 
 export const ADMIN_ROLES: readonly string[] = ["CEO", "HR", "ADMIN"] as const;
+
+/**
+ * Every system role as a {value,label} pair — the one list every role select,
+ * badge and filter renders from, so a role added here is assignable everywhere
+ * and never shows as a raw enum (A12, A13).
+ */
+export const ROLE_OPTIONS: ReadonlyArray<{ value: SystemRole; label: string }> = SYSTEM_ROLES.map(
+  (role) => ({ value: role, label: ROLE_LABELS[role] }),
+);
 
 export const CRM_ROLES: ReadonlyArray<SystemRole> = ["CEO", "HR", "SALES"] as const;
 

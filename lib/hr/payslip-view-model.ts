@@ -9,6 +9,8 @@ export type PayslipViewModel = {
   orgShortName: string;
   orgAddressLine?: string;
   showPaidBadge: boolean;
+  /** Status stamped across an unpaid payslip, e.g. "DRAFT" (A8). */
+  watermark?: string;
   employeeName: string;
   designation: string;
   employeeId: string;
@@ -127,6 +129,7 @@ type OrgLike = {
 export type BuildPayslipViewModelOptions = {
   leaveDaysInMonth?: number;
   showPaidBadge?: boolean;
+  watermark?: string;
   orgFullNameOverride?: string;
 };
 
@@ -230,6 +233,7 @@ export function buildPayslipViewModelFromPayroll(
     orgShortName: org?.name ?? "Miyo Global",
     orgAddressLine: addressLine || undefined,
     showPaidBadge: opts?.showPaidBadge ?? true,
+    watermark: opts?.watermark,
     employeeName: employee.name ?? "Employee",
     designation: employee.designation ?? "",
     employeeId: employee.employeeId ?? "",
