@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyDevicesIllustration } from "@/components/illustrations";
 import { useMyAssignedAssets } from "@/lib/api/hooks";
 
 function assetIcon(type: string) {
@@ -41,7 +40,6 @@ export function MyAssignedAssetsView() {
   if (!assets?.length) {
     return (
       <EmptyState
-        illustration={<EmptyDevicesIllustration className="size-32" />}
         title="No assets assigned"
         description="When HR assigns company equipment to you, it will appear here."
       />

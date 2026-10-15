@@ -20,7 +20,6 @@ import { apiClient } from "@/lib/api-client";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyMailIllustration } from "@/components/illustrations";
 
 import {
   getVerificationEmailTemplate,
@@ -652,8 +651,7 @@ function EmailTemplatesContent() {
 
   return (
     <PageWrapper
-      title="Email Templates"
-      subtitle="Preview and test all transactional email templates used in the system"
+      title="Email templates"
       actions={
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Input
@@ -732,7 +730,6 @@ function EmailTemplatesContent() {
           </Card>
         ) : (
           <EmptyState
-            illustration={<EmptyMailIllustration className="size-32" />}
             title="Select a template to preview it here"
           />
         )}

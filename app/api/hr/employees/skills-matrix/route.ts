@@ -1,6 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { employeeSkills, organizationMembers, users, jobPostings } from "@/lib/db/schema";
+import { employeeSkills, organizationMembers, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { cached, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { backfillEmployeeSkillsForOrg } from "@/lib/hr/sync-employee-skills";
@@ -31,6 +31,7 @@ export async function GET() {
             userId: organizationMembers.userId,
             name: users.name,
             image: users.image,
+            profileSkills: users.skills,
           })
           .from(organizationMembers)
           .leftJoin(users, eq(users.id, organizationMembers.userId))
@@ -80,6 +81,21 @@ export async function GET() {
           });
         }
 
+        // Skills typed into a profile are synced into employee_skills on the
+        // employee PATCH path only, so anyone edited elsewhere (an admin
+        // editing their own profile) never showed up in the matrix (A43).
+        // Fold the profile list in here so the matrix reflects both sources.
+        for (const member of members) {
+          for (const name of member.profileSkills ?? []) {
+            const canonical = resolveCanonical(name);
+            if (!canonical) continue;
+            skillSet.add(canonical);
+            if (!matrixMap.has(member.userId)) matrixMap.set(member.userId, new Map());
+            const userSkills = matrixMap.get(member.userId)!;
+            if (userSkills.get(canonical) == null) userSkills.set(canonical, 1);
+          }
+        }
+
         const skillNames = [...skillSet].sort((a, b) => a.localeCompare(b));
 
         const employeesWithSkills = members
@@ -96,48 +112,7 @@ export async function GET() {
           }))
           .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
 
-        const openSkillNorms = new Set<string>();
-        for (const skillSetMap of matrixMap.values()) {
-          for (const skillName of skillSetMap.keys()) openSkillNorms.add(normalizeSkill(skillName));
-        }
-
-        const openings = await db
-          .select({
-            id: jobPostings.id,
-            title: jobPostings.title,
-            requiredSkills: jobPostings.requiredSkills,
-            status: jobPostings.status,
-          })
-          .from(jobPostings)
-          .where(eq(jobPostings.orgId, session.orgId));
-
-        const roleGaps = openings
-          .filter((j) => j.status === "OPEN" || j.status === "DRAFT" || j.status === "PAUSED")
-          .map((job) => {
-            const seen = new Set<string>();
-            const required: { skill: string; covered: boolean }[] = [];
-            for (const raw of job.requiredSkills ?? []) {
-              const canonical = resolveCanonical(raw);
-              if (!canonical) continue;
-              const norm = normalizeSkill(canonical);
-              if (seen.has(norm)) continue;
-              seen.add(norm);
-              required.push({ skill: canonical, covered: openSkillNorms.has(norm) });
-            }
-            const missing = required.filter((r) => !r.covered).length;
-            return {
-              jobId: job.id,
-              title: job.title,
-              status: job.status,
-              required,
-              missingCount: missing,
-              coveredCount: required.length - missing,
-            };
-          })
-          .filter((g) => g.required.length > 0)
-          .sort((a, b) => b.missingCount - a.missingCount || a.title.localeCompare(b.title));
-
-        return { employees: employeesWithSkills, skills: skillNames, roleGaps };
+        return { employees: employeesWithSkills, skills: skillNames };
       },
       { ttlSeconds: CACHE_TTL.MEDIUM },
     );

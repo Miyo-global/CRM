@@ -34,7 +34,6 @@ import { recognitionExportFilename } from "@/lib/hr/recognition-export-filters";
 import { buildRecognitionCsvText } from "@/lib/hr/recognition-export-rows";
 import { Input } from "@/components/ui/input";
 import type { Employee } from "@/types/hr";
-import { EmptyTeamIllustration, EmptySearchIllustration, EmptyActivityIllustration } from "@/components/illustrations";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
 import { useSession } from "next-auth/react";
@@ -433,7 +432,7 @@ export default function RecognitionPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Recognition" subtitle="Celebrate your team">
+      <PageWrapper title="Recognition">
         <div className="space-y-4">
           <Skeleton className="h-20 rounded-lg" />
           <div className="max-w-2xl space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}</div>
@@ -456,7 +455,6 @@ export default function RecognitionPage() {
   return (
     <PageWrapper
       title="Recognition"
-      subtitle="Celebrate achievements and recognize great work"
       badge={`${stats.total} kudos`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
@@ -477,7 +475,6 @@ export default function RecognitionPage() {
         <TabsContent value="wall">
           {stats.total === 0 ? (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No recognition yet. Be the first to celebrate a teammate!"
               action={{ label: "Give Kudos", onClick: () => setSheetOpen(true) }}
             />
@@ -724,14 +721,12 @@ export default function RecognitionPage() {
             {historyRows.length === 0 ? (
               hasActiveFilters ? (
                 <EmptyState
-                  illustration={<EmptySearchIllustration className="size-32" />}
                   title="No results for these filters"
                   description="No records match the current filters."
                   action={{ label: "Clear filters", onClick: clearFilters }}
                 />
               ) : (
                 <EmptyState
-                  illustration={<EmptyActivityIllustration className="size-32" />}
                   title="No recognition records found."
                 />
               )
@@ -772,7 +767,7 @@ export default function RecognitionPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Give Recognition"
+        title="Give recognition"
         onSubmit={handleSend}
         submitLabel={toUserIds.length > 1 ? `Send Kudos (${toUserIds.length})` : "Send Kudos"}
         isPending={createRecognition.isPending || isSendingBulk}

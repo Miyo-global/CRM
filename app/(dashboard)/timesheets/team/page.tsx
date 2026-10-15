@@ -189,8 +189,7 @@ function TeamTimesheetsContent() {
 
   return (
     <PageWrapper
-      title="Daily Work Logs"
-      subtitle="Monitor team efficiency and task allocation for HR performance reviews."
+      title="Daily work logs"
       actions={
         <LogTimeDialog
           trigger={

@@ -117,12 +117,9 @@ export default function SignInPage() {
   return (
     <div className="w-full max-w-[400px] animate-fade-up">
       <div className="mb-8">
-        <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
-          Welcome back
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+          Sign in
         </h1>
-        <p className="mt-2 text-base text-muted-foreground">
-          Enter your credentials to continue
-        </p>
       </div>
 
       {lockedSeconds !== null ? (
@@ -267,11 +264,6 @@ export default function SignInPage() {
             </Link>
           </p>
         )}
-
-        <p className="text-xs leading-relaxed text-subtle-foreground">
-          <span className="font-medium">Secure sign-in.</span> Your session is protected with
-          end-to-end encryption. Never share your credentials with anyone.
-        </p>
       </div>
     </div>
   );

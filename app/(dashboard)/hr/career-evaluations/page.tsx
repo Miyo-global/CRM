@@ -19,7 +19,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { format } from "date-fns";
 import type { CareerEvaluation, CareerLadder, CareerReadinessStatus } from "@/types/hr";
@@ -121,7 +120,7 @@ export default function CareerEvaluationsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Career Evaluations" subtitle="Manager readiness assessments">
+      <PageWrapper title="Career evaluations">
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
@@ -131,8 +130,7 @@ export default function CareerEvaluationsPage() {
 
   return (
     <PageWrapper
-      title="Career Evaluations"
-      subtitle="Assess employee readiness for promotion"
+      title="Career evaluations"
       badge={`${rows.length} evaluations`}
       actions={
         isAdmin ? (
@@ -147,7 +145,6 @@ export default function CareerEvaluationsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyApprovalIllustration className="size-32" />}
           title="No evaluations yet."
           {...(isAdmin ? { action: { label: "New Evaluation", onClick: () => { setForm(EMPTY_FORM); setAddOpen(true); } } } : {})}
         />
@@ -196,7 +193,7 @@ export default function CareerEvaluationsPage() {
       <HrSheet
         open={addOpen}
         onOpenChange={(o) => { setAddOpen(o); if (!o) setForm(EMPTY_FORM); }}
-        title="New Evaluation"
+        title="New evaluation"
         description="Submit a readiness assessment for an employee."
         onSubmit={handleCreate}
         submitLabel="Submit Evaluation"

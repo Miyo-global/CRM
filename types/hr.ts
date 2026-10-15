@@ -921,7 +921,6 @@ export interface OnboardEmployeeInput {
   whatsappSameAsPhone?: boolean;
   whatsappNumber?: string;
   gender?: string;
-  password: string;
   designation: string;
   departmentId?: number;
   role: string;

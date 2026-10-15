@@ -7,13 +7,31 @@ import { snapSalaryEffectiveFrom, dayBeforeIsoDate } from "@/lib/hr/salary-effec
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { professionalTax } from "@/lib/payroll/rules";
+
+/**
+ * Professional tax for a structure: the band for its monthly CTC (A1), unless
+ * the caller sets it explicitly (0 where the state does not levy it).
+ */
+function ptForStructure(body: {
+  basicSalary: number;
+  hraPercentage?: number;
+  specialAllowance?: number;
+  allowances?: number;
+  professionalTax?: number;
+}): number {
+  if (body.professionalTax != null) return body.professionalTax;
+  const hra = (body.basicSalary * (body.hraPercentage ?? 50)) / 100;
+  const monthly = body.basicSalary + hra + (body.specialAllowance ?? 0) + (body.allowances ?? 0);
+  return professionalTax(monthly);
+}
 
 const reviseSchema = z.object({
   basicSalary: z.number().positive(),
   hraPercentage: z.number().min(0).max(100).default(50),
   specialAllowance: z.number().min(0).default(0),
   deductions: z.number().min(0).default(0),
-  professionalTax: z.number().min(0).default(200),
+  professionalTax: z.number().min(0).optional(),
   effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   reason: z.string().optional(),
 });
@@ -69,7 +87,7 @@ export async function POST(
           specialAllowance: body.specialAllowance.toString(),
           allowances: "0",
           deductions: body.deductions.toString(),
-          professionalTax: body.professionalTax.toString(),
+          professionalTax: ptForStructure(body).toString(),
           effectiveFrom: effectiveFromSnapped,
           isActive: true,
           createdBy: session.user.id,
@@ -87,7 +105,7 @@ export async function POST(
         newBasic: body.basicSalary.toString(),
         newHraPct: body.hraPercentage.toString(),
         newSpecialAllowance: body.specialAllowance.toString(),
-        newPt: body.professionalTax.toString(),
+        newPt: ptForStructure(body).toString(),
         effectiveFrom: effectiveFromSnapped,
         reason: body.reason ?? null,
         changedBy: session.user.id,

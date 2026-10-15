@@ -27,9 +27,12 @@ describe("canonicalizeSkill", () => {
     expect(r?.canonical).toBe("Reactdfdwfwf");
   });
 
-  it("title-cases unknown skills consistently for dedupe", () => {
-    expect(canonicalizeSkill("foo bar")?.canonical).toBe("Foo Bar");
-    expect(canonicalizeSkill("FOO BAR")?.canonical).toBe("Foo Bar");
+  it("keeps an unknown skill's typed casing, only tidying whitespace (A43)", () => {
+    expect(canonicalizeSkill("foo bar")?.canonical).toBe("foo bar");
+    expect(canonicalizeSkill("FOO BAR")?.canonical).toBe("FOO BAR");
+    expect(canonicalizeSkill("  QA   Automation ")?.canonical).toBe("QA Automation");
+    // Dedupe stays case-insensitive: the API compares on lower(skill_name).
+    expect(canonicalizeSkill("iOS")?.canonical).toBe("iOS");
   });
 
   it("returns null for empty input", () => {

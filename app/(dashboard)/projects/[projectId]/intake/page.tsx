@@ -8,7 +8,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EmptyInboxIllustration } from "@/components/illustrations";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
@@ -245,7 +244,6 @@ export default function IntakePage({ params }: { params: Promise<{ projectId: st
           <TabsContent value={activeTab} className="mt-4">
             {filteredItems.length === 0 ? (
               <EmptyState
-                illustration={<EmptyInboxIllustration className="h-32 w-32 opacity-95" />}
                 title={activeTab === "pending" ? "No pending items" : `No ${activeTab} items`}
                 description={
                   activeTab === "pending"

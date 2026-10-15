@@ -53,8 +53,7 @@ export default function OverdueTasksPage() {
 
   return (
     <PageWrapper
-      title="Overdue Tasks"
-      subtitle="Pending tasks past their due date across the organization"
+      title="Overdue tasks"
       actions={
         <Button
           type="button"

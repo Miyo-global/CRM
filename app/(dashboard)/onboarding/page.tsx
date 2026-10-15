@@ -99,7 +99,7 @@ export default function OnboardingPage() {
 
   return (
     <PageWrapper
-      title="Employee Onboarding"
+      title="Employee onboarding"
       subtitle={
         <span className="tabular-nums">
           Complete your profile to get started · Step {currentStepIndex + 1} of {ONBOARDING_STEPS.length}

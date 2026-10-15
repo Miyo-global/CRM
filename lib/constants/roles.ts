@@ -17,6 +17,7 @@ export const ADMIN_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN]
 
 export const EXPENSE_ADMIN_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
 
+/** Roles that act on hiring-adjacent HR records (asset handover, documents). */
 export const RECRUITMENT_HR_ROLES: readonly string[] = [
   ROLES.CEO,
   ROLES.HR,
@@ -74,6 +75,29 @@ export function isOnboardingManager(role: string | undefined | null): boolean {
 }
 
 export const MANAGEMENT_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR];
+
+/**
+ * Roles that hold every permission (see ROLE_DEFAULT_PERMISSIONS in
+ * lib/rbac/permissions.ts). They pass every role gate, so the UI never shows
+ * them a link they cannot open (A9).
+ */
+export const FULL_ACCESS_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
+
+export function hasFullAccess(role: string | undefined | null): boolean {
+  return !!role && FULL_ACCESS_ROLES.includes(role);
+}
+
+/**
+ * The one page-level access check. `allowed` lists the extra roles a page is
+ * open to; CEO and ADMIN always pass.
+ */
+export function canAccess(
+  role: string | undefined | null,
+  allowed: readonly string[],
+): boolean {
+  if (!role) return false;
+  return hasFullAccess(role) || allowed.includes(role);
+}
 
 export function hasRole(role: string | undefined | null, allowed: readonly string[]): boolean {
   return !!role && allowed.includes(role);

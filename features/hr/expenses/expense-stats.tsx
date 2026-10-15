@@ -4,7 +4,7 @@ import {
   AlertCircle,
   CheckCircle2,
   XCircle,
-  DollarSign,
+  IndianRupee,
   Clock,
   BarChart3,
 } from "lucide-react";
@@ -50,7 +50,7 @@ export function MemberExpenseStats({ stats }: MemberExpenseStatsProps) {
   return (
     <StatsStrip
       items={[
-        { label: "Total Reimbursed (YTD)", value: <Amount value={totalReimbursed} />, icon: DollarSign, tone: "success" },
+        { label: "Total Reimbursed (YTD)", value: <Amount value={totalReimbursed} />, icon: IndianRupee, tone: "success" },
         { label: "Pending Approval", value: <Amount value={stats?.pendingAmount || 0} />, icon: Clock, tone: "warning" },
         { label: "Rejected (30d)", value: <Amount value={stats?.rejectedAmount || 0} />, icon: XCircle, tone: "danger" },
       ]}

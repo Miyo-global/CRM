@@ -9,8 +9,8 @@ export default function HrcareerladdersError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Career Ladders Error"
-      fallbackMessage="Failed to load Career Ladders. Please try again."
+      title="Couldn't load career ladders"
+      fallbackMessage="Something went wrong loading career ladders. Try again."
     />
   );
 }

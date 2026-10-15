@@ -33,6 +33,10 @@ export const queryKeys = {
     pendingWfhRequests: () => [...base, "hr", "pendingWfhRequests"] as const,
     holidaysYear: (year: number) => [...base, "hr", "holidaysYear", year] as const,
     holidaysCalendar: (params: { year: number; month: number }) => [...base, "hr", "holidaysCalendar", params] as const,
+    // Prefixes so a holiday mutation can invalidate every year/month it may
+    // have changed without invalidating the whole HR cache (A43, A44).
+    holidaysYearAll: () => [...base, "hr", "holidaysYear"] as const,
+    holidaysCalendarAll: () => [...base, "hr", "holidaysCalendar"] as const,
     monthlyAttendance: (params: { userId: string; year: number; month: number }) => [...base, "hr", "monthlyAttendance", params] as const,
     attendanceSummary: (params: {
       userId: string;
@@ -47,21 +51,6 @@ export const queryKeys = {
     employeePayslips: (userId?: string) => [...base, "hr", "employeePayslips", userId] as const,
     myBonuses: () => [...base, "hr", "myBonuses"] as const,
 
-    recruitmentStats: () => [...base, "hr", "recruitmentStats"] as const,
-    jobPostings: (params?: Record<string, unknown>) => [...base, "hr", "jobPostings", params] as const,
-    jobPosting: (id: number) => [...base, "hr", "jobPosting", id] as const,
-    candidates: (params?: Record<string, unknown>) => [...base, "hr", "candidates", params] as const,
-    candidate: (id: number) => [...base, "hr", "candidate", id] as const,
-    interviews: (params?: Record<string, unknown>) => [...base, "hr", "interviews", params] as const,
-    recruitmentPipeline: () => [...base, "hr", "recruitmentPipeline"] as const,
-    jobPipeline: (jobId: number) => [...base, "hr", "jobPipeline", jobId] as const,
-    hiringFlows: () => [...base, "hr", "hiringFlows"] as const,
-    hiringFlow: (id: number) => [...base, "hr", "hiringFlow", id] as const,
-    scorecardTemplates: () => [...base, "hr", "scorecardTemplates"] as const,
-    interviewScorecard: (interviewId: number) => [...base, "hr", "interviewScorecard", interviewId] as const,
-    interviewerPerformance: (days: number) => [...base, "hr", "interviewerPerformance", days] as const,
-    interviewScorecardSummary: (interviewId: number) => [...base, "hr", "interviewScorecardSummary", interviewId] as const,
-    candidateVault: (candidateId: number) => [...base, "hr", "candidateVault", candidateId] as const,
     reviewCycles: () => [...base, "hr", "reviewCycles"] as const,
     reviewCycle: (id: number) => [...base, "hr", "reviewCycle", id] as const,
     appraisals: (params?: Record<string, unknown>) => [...base, "hr", "appraisals", params] as const,
@@ -74,13 +63,12 @@ export const queryKeys = {
     documentTemplate: (id: number) => [...base, "hr", "documentTemplate", id] as const,
     documentFolders: () => [...base, "hr", "documentFolders"] as const,
     orgDocumentVariables: () => [...base, "hr", "orgDocumentVariables"] as const,
-    candidateDocuments: (candidateId: number) => [...base, "hr", "candidateDocuments", candidateId] as const,
-    rolloutDocuments: (candidateId: number) => [...base, "hr", "rolloutDocuments", candidateId] as const,
     salaryRevisionHistory: (userId: string) => [...base, "hr", "salaryRevisionHistory", userId] as const,
     holidayWorkRequests: (params?: Record<string, unknown>) => [...base, "hr", "holidayWorkRequests", params] as const,
     compOffGrants: (userId?: string) => [...base, "hr", "compOffGrants", userId] as const,
     lateArrivalWarnings: (userId?: string) => [...base, "hr", "lateArrivalWarnings", userId] as const,
     overtimePreview: (params: { userId: string; month: string }) => [...base, "hr", "overtimePreview", params] as const,
+    payrollPreview: (params: Record<string, unknown>) => [...base, "hr", "payrollPreview", params] as const,
   },
 
   leads: {

@@ -22,12 +22,6 @@ const ROLE_TEMPLATES = [
     permissions: ["HR:READ", "HR:WRITE", "HR:DELETE", "LEAVES:READ", "LEAVES:WRITE", "PAYROLL:READ"],
   },
   {
-    id: "recruiter",
-    name: "Recruiter",
-    slug: "RECRUITER",
-    permissions: ["HR:READ", "RECRUITMENT:READ", "RECRUITMENT:WRITE", "CANDIDATES:READ", "CANDIDATES:WRITE"],
-  },
-  {
     id: "project_manager",
     name: "Project Manager",
     slug: "PROJECT_MANAGER",

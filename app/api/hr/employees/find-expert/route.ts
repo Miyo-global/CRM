@@ -5,7 +5,6 @@ import {
   users,
   organizationMembers,
   departments,
-  branches,
   employeeSkills,
   leaveRequests,
 } from "@/lib/db/schema";
@@ -47,14 +46,6 @@ const querySchema = z.object({
       const t = s?.trim();
       return t ? t : undefined;
     }),
-  branch: z
-    .string()
-    .max(200)
-    .optional()
-    .transform((s) => {
-      const t = s?.trim();
-      return t ? t : undefined;
-    }),
   /** When true, include users with is_active = false (default: active only). */
   includeInactive: z.preprocess((v) => v === "true" || v === "1", z.boolean()).default(false),
 });
@@ -73,8 +64,6 @@ export interface ExpertResult {
   designation: string | null;
   role: string;
   department: string | null;
-  branch: string | null;
-  location: string | null;
   email: string | null;
   skills: string[];
   skillLevels: ExpertSkillLevel[];
@@ -143,9 +132,6 @@ export async function GET(req: NextRequest) {
     if (q.role) {
       whereParts.push(eq(organizationMembers.role, q.role));
     }
-    if (q.branch) {
-      whereParts.push(eq(branches.name, q.branch));
-    }
 
     const rows = await db
       .select({
@@ -159,13 +145,10 @@ export async function GET(req: NextRequest) {
         experienceYears: users.experienceYears,
         isActive: users.isActive,
         department: departments.name,
-        branch: branches.name,
-        location: branches.city,
       })
       .from(users)
       .innerJoin(organizationMembers, eq(organizationMembers.userId, users.id))
       .leftJoin(departments, eq(users.departmentId, departments.id))
-      .leftJoin(branches, eq(users.branchId, branches.id))
       .where(and(...whereParts))
       .limit(q.limit);
 
@@ -362,8 +345,6 @@ export async function GET(req: NextRequest) {
         designation: r.designation,
         role: r.role,
         department: r.department,
-        branch: r.branch,
-        location: r.location,
         email: r.email,
         skills: skillLevels.map((s) => s.name),
         skillLevels,

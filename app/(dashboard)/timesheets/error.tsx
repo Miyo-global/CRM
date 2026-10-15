@@ -9,8 +9,8 @@ export default function TimesheetsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Timesheets Error"
-      fallbackMessage="Failed to load timesheets. Please try again."
+      title="Couldn't load timesheets"
+      fallbackMessage="Something went wrong loading timesheets. Try again."
     />
   );
 }

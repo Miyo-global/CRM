@@ -28,8 +28,8 @@ import {
 import {
   useAIScoreLead, useGenerateEmail, usePredictDeal, useNextBestAction,
   useObjectionHandler, useGenerateSubjectLines, useSentimentAnalysis,
-  useAIScoreCandidate, useAIGenerateReview, useAISuggestHelpdeskReply,
-  useAIAttritionRisk, useGenerateJobDescription,
+  useAIGenerateReview, useAISuggestHelpdeskReply,
+  useAIAttritionRisk,
   useMeetingPrep, useGenerateContentBrief,
 } from "@/lib/api/hooks/ai";
 
@@ -51,11 +51,9 @@ const AI_FEATURES: AiFeature[] = [
   { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", tone: "info" },
   { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", tone: "teal" },
   { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", tone: "plum" },
-  { id: "score-candidate", title: "Candidate Scoring", description: "Score job candidates against role requirements", icon: Users, category: "hr", tone: "teal" },
   { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", tone: "warning" },
   { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", tone: "success" },
   { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", tone: "danger" },
-  { id: "generate-jd", title: "JD Generator", description: "Generate complete job descriptions from role title", icon: FileText, category: "hr", tone: "plum" },
   { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", tone: "info" },
 ];
 
@@ -87,8 +85,7 @@ export default function AIHubPage() {
 
   return (
     <PageWrapper
-      title="AI Hub"
-      subtitle="Intelligent tools powered by AI to supercharge your workflow"
+      title="AI hub"
       filters={
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
           <TabsList variant="underline">
@@ -171,18 +168,16 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
   const objectionHandler = useObjectionHandler();
   const subjectLines = useGenerateSubjectLines();
   const sentiment = useSentimentAnalysis();
-  const scoreCandidate = useAIScoreCandidate();
   const generateReview = useAIGenerateReview();
   const helpdeskReply = useAISuggestHelpdeskReply();
   const attritionRisk = useAIAttritionRisk();
-  const generateJD = useGenerateJobDescription();
   const meetingPrep = useMeetingPrep();
   const contentBrief = useGenerateContentBrief();
 
   const isLoading = scoreLead.isPending || generateEmail.isPending || predictDeal.isPending ||
     nextAction.isPending || objectionHandler.isPending || subjectLines.isPending ||
-    sentiment.isPending || scoreCandidate.isPending || generateReview.isPending ||
-    helpdeskReply.isPending || attritionRisk.isPending || generateJD.isPending ||
+    sentiment.isPending || generateReview.isPending ||
+    helpdeskReply.isPending || attritionRisk.isPending ||
     meetingPrep.isPending || contentBrief.isPending;
 
   const handleSubmit = () => {
@@ -194,7 +189,7 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
     };
     const onError = (err: Error) => toast.error(err.message);
 
-    const numericFeatures = ["score-lead", "predict-deal", "next-action", "helpdesk-reply", "score-candidate"];
+    const numericFeatures = ["score-lead", "predict-deal", "next-action", "helpdesk-reply"];
     if (numericFeatures.includes(featureId)) {
       const parsed = Number(input.trim());
       if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -212,11 +207,9 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
       case "subject-lines": subjectLines.mutate({ campaignContext: input, count: 5 }, { onSuccess, onError }); break;
       case "content-brief": contentBrief.mutate({ topic: input, contentType: "blog" }, { onSuccess, onError }); break;
       case "sentiment": sentiment.mutate({ text: input }, { onSuccess, onError }); break;
-      case "score-candidate": scoreCandidate.mutate({ candidateId: Number(input) }, { onSuccess, onError }); break;
       case "generate-review": generateReview.mutate({ userId: input, periodStart: "2026-01-01", periodEnd: "2026-03-31" }, { onSuccess, onError }); break;
       case "helpdesk-reply": helpdeskReply.mutate(Number(input), { onSuccess, onError }); break;
       case "attrition-risk": attritionRisk.mutate(input, { onSuccess, onError }); break;
-      case "generate-jd": generateJD.mutate({ title: input, location: secondInput || undefined }, { onSuccess, onError }); break;
       case "meeting-prep": meetingPrep.mutate({ meetingTitle: input, attendeeType: "lead", attendeeId: Number(secondInput || "0"), scheduledAt: new Date().toISOString() }, { onSuccess, onError }); break;
       default: toast.error("Feature not implemented");
     }
@@ -232,11 +225,9 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
       case "subject-lines": return { label: "Topic", placeholder: "Campaign topic or product name", type: "text" };
       case "content-brief": return { label: "Topic", placeholder: "Content topic", type: "text" };
       case "sentiment": return { label: "Text to Analyze", placeholder: "Paste client message or email", type: "textarea" };
-      case "score-candidate": return { label: "Candidate ID", placeholder: "Enter candidate ID", type: "number" };
       case "generate-review": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
       case "helpdesk-reply": return { label: "Ticket ID", placeholder: "Enter helpdesk ticket ID", type: "number" };
       case "attrition-risk": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
-      case "generate-jd": return { label: "Job Title", placeholder: "e.g., Senior Frontend Engineer", type: "text", hasSecond: true, secondLabel: "Location", secondPlaceholder: "e.g., Mumbai, Remote" };
       case "meeting-prep": return { label: "Meeting Title", placeholder: "e.g., Quarterly review with client", type: "text", hasSecond: true, secondLabel: "Attendee ID (Lead)", secondPlaceholder: "Lead ID number" };
       default: return { label: "Input", placeholder: "Enter input", type: "text" };
     }

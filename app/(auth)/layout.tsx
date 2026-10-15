@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AuthRightPanel } from "@/features/auth/auth-right-panel";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -13,7 +12,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <div className="flex flex-1 basis-1/2 flex-col overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-y-auto">
         <header className="flex h-16 shrink-0 items-center px-8">
           <Link
             href="/"
@@ -41,10 +40,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </p>
         </footer>
       </div>
-
-      <aside className="hidden flex-1 basis-1/2 lg:flex">
-        <AuthRightPanel />
-      </aside>
     </div>
   );
 }

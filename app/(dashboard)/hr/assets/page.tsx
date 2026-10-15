@@ -67,7 +67,6 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import type { Asset, AssetStatus } from "@/types/hr";
-import { EmptyDevicesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import {
   buildAssetsCsvString,
   assetRowsToXlsxSheets,
@@ -613,7 +612,6 @@ export default function HrAssetsPage() {
   return (
     <PageWrapper
       title="Assets"
-      subtitle="Manage company assets and assignments"
       actions={
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <AssetExportSheet
@@ -678,14 +676,12 @@ export default function HrAssetsPage() {
         {!isLoading && filteredItems.length === 0 ? (
           hasActiveFilters ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="No assets match your filters."
               action={{ label: "Clear filters", onClick: () => { setStatusFilter(undefined); setSearchQuery(""); } }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyDevicesIllustration className="size-32" />}
               title="No assets found."
               action={{ label: "Add Asset", onClick: () => setSheetOpen(true) }}
             />
@@ -799,7 +795,7 @@ export default function HrAssetsPage() {
       </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Asset" description="Register asset details in inventory. Assign to an employee afterward from Edit." onSubmit={handleCreate} submitLabel="Add Asset" isPending={createAsset.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add asset" description="Register asset details in inventory. Assign to an employee afterward from Edit." onSubmit={handleCreate} submitLabel="Add Asset" isPending={createAsset.isPending}>
         {assetDetailFields}
       </HrSheet>
 
@@ -811,7 +807,7 @@ export default function HrAssetsPage() {
             resetForm();
           }
         }}
-        title="Edit Asset"
+        title="Edit asset"
         description="Update inventory details, then manage assignment and status below."
         onSubmit={handleUpdate}
         submitLabel="Save changes"

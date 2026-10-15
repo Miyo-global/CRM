@@ -1,41 +1,51 @@
+import { hasFullAccess } from "@/lib/constants/roles";
+import { SYSTEM_ROLES } from "@/lib/rbac/roles";
+
+/** Routes any signed-in employee may open. */
+const EVERYONE: string[] = [...SYSTEM_ROLES];
+/** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
+const HR_TEAM: string[] = ["CEO", "HR"];
+
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
-  "/hr": ["CEO", "HR"],
-  "/hr/onboarding": ["CEO", "HR"],
-  "/hr/payroll": ["CEO", "HR"],
-  "/hr/documents": ["CEO", "HR"],
-  "/hr/work-logs": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/career-ladders": ["CEO", "HR", "ADMIN", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/holidays": ["CEO", "HR", "ADMIN", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/performance": ["CEO", "HR"],
-  "/hr/org-chart": ["CEO", "HR"],
-  "/hr/incentives": ["CEO", "HR"],
-  "/hr/my-payslips": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/my-assets": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/my-bonuses": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/leaves": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/expenses": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/attendance": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/exit": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/hr/helpdesk": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/projects": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/timesheets": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/support": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/support/inbox": ["CEO", "HR", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING", "SALES"],
-  "/settings": ["CEO", "HR"],
-  "/settings/roles": ["CEO", "HR"],
-  "/settings/branches": ["CEO", "HR"],
-  "/notifications": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
-  "/ceo": ["CEO", "HR"],
+  "/hr": HR_TEAM,
+  "/hr/onboarding": HR_TEAM,
+  "/hr/payroll": HR_TEAM,
+  "/hr/documents": HR_TEAM,
+  "/hr/work-logs": EVERYONE,
+  "/hr/career-ladders": EVERYONE,
+  "/hr/holidays": EVERYONE,
+  "/hr/performance": HR_TEAM,
+  "/hr/org-chart": HR_TEAM,
+  "/hr/incentives": HR_TEAM,
+  "/hr/my-payslips": EVERYONE,
+  "/hr/my-documents": EVERYONE,
+  "/hr/my-assets": EVERYONE,
+  "/hr/my-bonuses": EVERYONE,
+  "/hr/leaves": EVERYONE,
+  "/hr/expenses": EVERYONE,
+  "/hr/attendance": EVERYONE,
+  "/hr/exit": EVERYONE,
+  "/hr/helpdesk": EVERYONE,
+  "/profile": EVERYONE,
+  "/projects": EVERYONE,
+  "/timesheets": EVERYONE,
+  "/support": EVERYONE,
+  "/support/inbox": EVERYONE,
+  "/settings": HR_TEAM,
+  "/settings/roles": HR_TEAM,
+  "/settings/branches": HR_TEAM,
+  "/notifications": EVERYONE,
+  "/ceo": HR_TEAM,
 
-  "/ai": ["CEO", "HR"],
-  "/dashboard/admin-health": ["CEO", "HR"],
-  "/dashboard/branches": ["CEO", "HR"],
+  "/ai": HR_TEAM,
+  "/dashboard/admin-health": HR_TEAM,
+  "/dashboard/branches": HR_TEAM,
 
-  "/calendar": ["CEO", "HR", "SALES", "CUSTOMER_SUPPORT", "ENGINEERING", "DESIGN", "VIDEO_EDITOR", "DIGITAL_MARKETING"],
+  "/calendar": EVERYONE,
 };
 
 export function canAccessRoute(pathname: string, role: string): boolean {
-  if (role === "CEO" || role === "ADMIN") return true;
+  if (hasFullAccess(role)) return true;
 
   const matchingRoutes = Object.keys(ROUTE_ROLE_MAP)
     .filter((route) => pathname === route || pathname.startsWith(route + "/"))

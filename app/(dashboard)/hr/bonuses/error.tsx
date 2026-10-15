@@ -9,8 +9,8 @@ export default function HrbonusesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Bonuses Error"
-      fallbackMessage="Failed to load Bonuses. Please try again."
+      title="Couldn't load bonuses"
+      fallbackMessage="Something went wrong loading bonuses. Try again."
     />
   );
 }

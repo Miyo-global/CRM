@@ -18,18 +18,18 @@ function getActionsForRole(role: string | undefined): QuickAction[] {
     case "ADMIN":
       return [
         { label: "Approve Leaves", icon: CalendarCheck, href: "/hr/leaves" },
-        { label: "Add Employee", icon: Users, href: "/hr/onboarding?tab=wizard" },
+        { label: "Add employee", icon: Users, href: "/hr/onboarding?tab=wizard" },
       ];
     case "HR":
       return [
         { label: "Approve Leaves", icon: CalendarCheck, href: "/hr/leaves" },
         { label: "Run Payroll", icon: Receipt, href: "/hr/payroll" },
-        { label: "Add Employee", icon: Users, href: "/hr/onboarding?tab=wizard" },
+        { label: "Add employee", icon: Users, href: "/hr/onboarding?tab=wizard" },
       ];
     default:
       return [
         { label: "Log Time", icon: Clock, href: "/timesheets" },
-        { label: "Request Leave", icon: CalendarCheck, href: "/hr/leaves" },
+        { label: "Request leave", icon: CalendarCheck, href: "/hr/leaves" },
         { label: "Overdue Tasks", icon: ListChecks, href: "/tasks/overdue" },
       ];
   }

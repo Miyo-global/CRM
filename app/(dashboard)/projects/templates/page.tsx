@@ -50,7 +50,6 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyProjectsIllustration } from "@/components/illustrations";
 
 interface TicketDraft {
   title: string;
@@ -439,8 +438,7 @@ export default function ProjectTemplatesPage() {
 
   return (
     <PageWrapper
-      title="Project Templates"
-      subtitle="Pre-built project structures to bootstrap new projects quickly"
+      title="Project templates"
       badge={templates ? `${templates.length} template${templates.length !== 1 ? "s" : ""}` : undefined}
       actions={
         <Button onClick={() => setCreateOpen(true)}>
@@ -469,7 +467,6 @@ export default function ProjectTemplatesPage() {
         </div>
       ) : (
         <EmptyState
-          illustration={<EmptyProjectsIllustration />}
           title="No templates yet"
           description="Create a template to bootstrap new projects with a ready-made task structure."
           action={{ label: "Create your first template", onClick: () => setCreateOpen(true) }}

@@ -7,7 +7,6 @@ import {
   type BackgroundVerification,
 } from "@/lib/api/hooks/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
-import { useBgvComplianceDashboard, type BgvComplianceRow } from "@/lib/api/hooks/hr/recruitment";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +31,6 @@ import { format } from "date-fns";
 import { Plus, ShieldCheck, CheckCircle2, XCircle, BarChart2 } from "lucide-react";
 import type { Employee } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 const BGV_TYPES = ["Identity", "Education", "Employment", "Criminal", "Address", "Credit"];
 
@@ -41,54 +39,6 @@ function statusTone(s: string | null): Tone {
   if (s === "IN_PROGRESS") return "info";
   if (s === "FLAGGED") return "danger";
   return "warning";
-}
-
-function ComplianceDashboard() {
-  const { data: rows, isLoading, isError, error, refetch } = useBgvComplianceDashboard();
-
-  if (isLoading) {
-    return <div className="grid gap-4 lg:grid-cols-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}</div>;
-  }
-
-  if (isError) {
-    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
-  }
-
-  if (!rows?.length) {
-    return (
-      <EmptyState
-        icon={BarChart2}
-        title="No candidate BgV data yet"
-        description="Candidate compliance appears here once background checks are initiated."
-      />
-    );
-  }
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      {rows.map((row: BgvComplianceRow) => (
-        <Card key={row.jobPostingId}>
-          <CardHeader className="pb-2">
-            <CardTitle className="truncate text-sm font-semibold" title={row.jobTitle}>{row.jobTitle}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-3">
-            <div className="flex items-center gap-3">
-              <Progress value={row.clearedPct} className="h-2 flex-1" />
-              <span className="w-12 text-right font-display text-sm font-semibold tabular-nums text-foreground">{row.clearedPct}%</span>
-            </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground tabular-nums">
-              <span>Total: <span className="font-medium text-foreground">{row.total}</span></span>
-              <span className="text-success-strong">Cleared: <span className="font-medium">{row.cleared}</span></span>
-              <span className="text-warning-strong">Pending: <span className="font-medium">{row.pending}</span></span>
-              <span className="text-info-strong">Initiated: <span className="font-medium">{row.initiated}</span></span>
-              <span className="text-danger-strong">Failed: <span className="font-medium">{row.failed}</span></span>
-              <span>Not initiated: <span className="font-medium">{row.notInitiated}</span></span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
 }
 
 function BGVContent() {
@@ -132,15 +82,13 @@ function BGVContent() {
 
   return (
     <PageWrapper
-      title="Background Verification"
-      subtitle="Initiate, track employee background checks, and view candidate compliance"
+      title="Background verification"
       badge={`${items?.length ?? 0} checks`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Initiate BGV</Button>}
     >
       <Tabs defaultValue="employee-bgv">
         <TabsList variant="underline" className="mb-4">
           <TabsTrigger value="employee-bgv">Employee BGV</TabsTrigger>
-          <TabsTrigger value="candidate-compliance">Candidate Compliance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="employee-bgv">
@@ -150,7 +98,6 @@ function BGVContent() {
             <QueryErrorState error={error} onRetry={() => void refetch()} />
           ) : !items?.length ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
               title="No background verifications initiated"
               description="Initiate a background check to start tracking employee verifications."
               action={{ label: "Initiate BGV", onClick: () => setSheetOpen(true) }}
@@ -203,14 +150,6 @@ function BGVContent() {
           )}
         </TabsContent>
 
-        <TabsContent value="candidate-compliance">
-          <div className="mb-3">
-            <p className="text-sm text-muted-foreground">
-              BgV completion rate per job posting — percentage of candidates with cleared background verification.
-            </p>
-          </div>
-          <ComplianceDashboard />
-        </TabsContent>
       </Tabs>
 
       <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Initiate BGV" onSubmit={handleCreate} submitLabel="Initiate" isPending={create.isPending}>

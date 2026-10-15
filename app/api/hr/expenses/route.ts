@@ -9,6 +9,7 @@ import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendExpenseSubmittedEmail } from "@/lib/email";
 import { createExpenseBodySchema } from "@/lib/validations/expense";
+import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
 
 const createExpenseSchema = createExpenseBodySchema;
 
@@ -68,6 +69,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const requester = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { id: true, role: true, reportingTo: true },
+    });
+    const expenseApprover = await resolveLeaveApprover(session.orgId, {
+      id: session.user.id,
+      role: requester?.role ?? session.user.role,
+      reportingTo: requester?.reportingTo ?? null,
+    });
+
     const [expense] = await db
       .insert(expenses)
       .values({
@@ -83,9 +94,11 @@ export async function POST(req: NextRequest) {
         paymentMethod: body.paymentMethod,
         projectId: body.projectId,
         expenseDate: formatDateOnly(body.expenseDate),
-        status: isAdminRole ? "APPROVED" : "PENDING",
-        approverId: isAdminRole ? session.user.id : null,
-        approvedAt: isAdminRole ? new Date() : null,
+        // Nobody approves their own claim, admins included: route it up the
+        // same chain leave uses (A41).
+        status: expenseApprover.autoApprove ? "APPROVED" : "PENDING",
+        approverId: expenseApprover.approverId,
+        approvedAt: expenseApprover.autoApprove ? new Date() : null,
       })
       .returning();
 

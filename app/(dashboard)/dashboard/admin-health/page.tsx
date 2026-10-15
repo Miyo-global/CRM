@@ -33,7 +33,7 @@ export default function AdminHealthDashboardPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
+      <PageWrapper title="System health">
         <div className="grid grid-cols-12 gap-4 xl:gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="col-span-12 h-36 rounded-lg md:col-span-6 xl:col-span-4" />
@@ -45,7 +45,7 @@ export default function AdminHealthDashboardPage() {
 
   if (error) {
     return (
-      <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
+      <PageWrapper title="System health">
         <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
@@ -88,12 +88,12 @@ export default function AdminHealthDashboardPage() {
         if (active === total) return "All roster members have active accounts";
         return `${active} active · ${total - active} inactive on roster`;
       })(),
-      link: "/hr/employees",
+      link: "/hr",
     },
   ];
 
   return (
-    <PageWrapper title="System Health" subtitle="Live snapshot of open items that need attention across the organization">
+    <PageWrapper title="System health">
       <div className="grid grid-cols-12 gap-4 xl:gap-6">
         {kpis.map((kpi) => (
           <Link

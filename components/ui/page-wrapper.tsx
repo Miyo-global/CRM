@@ -4,6 +4,12 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, useAutoBreadcrumbs, type Crumb } from "./breadcrumbs";
 
+/**
+ * One page container for every page, so widths line up across the app (B1).
+ * Forms opt into the narrower measure with `contentClassName="max-w-[720px]"`.
+ */
+export const PAGE_CONTAINER = "mx-auto w-full max-w-[1200px] px-6";
+
 interface PageWrapperProps {
   title: string;
   subtitle?: React.ReactNode;
@@ -43,7 +49,7 @@ export function PageWrapper({
   const crumbs = breadcrumbs === false ? [] : (breadcrumbs ?? (autoCrumbs.length > 1 ? autoCrumbs : []));
 
   const titleBlock = (
-    <div className="px-4 sm:px-6 xl:px-8 pt-6 pb-4">
+    <div className={cn(PAGE_CONTAINER, "pt-6 pb-4")}>
       {/* Auto crumbs duplicate the topbar's on lg+; explicit crumbs always render. */}
       {crumbs.length > 0 && (
         <Breadcrumbs items={crumbs} className={cn("mb-2", breadcrumbs === undefined && "lg:hidden")} />
@@ -79,7 +85,7 @@ export function PageWrapper({
 
   const filtersBlock = filters ? (
     <div className="shrink-0 border-y border-border bg-background">
-      <div className="flex items-center gap-3 overflow-x-auto overflow-y-visible overscroll-x-contain px-4 py-2 sm:px-6 xl:px-8 mask-x-from-97%">
+      <div className={cn(PAGE_CONTAINER, "flex items-center gap-3 overflow-x-auto overflow-y-visible overscroll-x-contain py-2 mask-x-from-97%")}>
         {filters}
       </div>
     </div>
@@ -111,11 +117,11 @@ export function PageWrapper({
       )}
 
       {noInternalScroll ? (
-        <div className={cn("flex-1 min-h-0 overflow-hidden px-4 sm:px-6 xl:px-8 pt-4 pb-4", contentClassName)}>
+        <div className={cn(PAGE_CONTAINER, "flex-1 min-h-0 overflow-hidden pt-4 pb-4", contentClassName)}>
           {children}
         </div>
       ) : (
-        <div className={cn("px-4 sm:px-6 xl:px-8 pt-4 pb-10", contentClassName)}>{children}</div>
+        <div className={cn(PAGE_CONTAINER, "pt-4 pb-10", contentClassName)}>{children}</div>
       )}
     </div>
   );

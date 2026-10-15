@@ -9,8 +9,8 @@ export default function HrhandbookError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Handbook Error"
-      fallbackMessage="Failed to load Handbook. Please try again."
+      title="Couldn't load handbook"
+      fallbackMessage="Something went wrong loading handbook. Try again."
     />
   );
 }

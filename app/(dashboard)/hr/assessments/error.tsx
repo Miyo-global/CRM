@@ -9,8 +9,8 @@ export default function HrassessmentsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Assessments Error"
-      fallbackMessage="Failed to load Assessments. Please try again."
+      title="Couldn't load assessments"
+      fallbackMessage="Something went wrong loading assessments. Try again."
     />
   );
 }

@@ -9,7 +9,7 @@ export default function IncentivesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Incentives Error"
+      title="Couldn't load incentives"
       fallbackMessage="Failed to load incentives."
     />
   );

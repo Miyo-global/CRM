@@ -9,6 +9,7 @@ import {
   useTeamAvailability,
   useActiveSprintSummary,
   useRecentActivity,
+  useBirthdays,
   useRoleStats,
   useTodayActivities,
 } from "@/lib/api/hooks/dashboard";
@@ -34,12 +35,12 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { getGreeting, getFirstName } from "@/lib/format-utils";
+import { isoDateInTimezone } from "@/lib/constants/locale";
 import { QuickActions, getQuickActionsForRole } from "@/features/dashboard/quick-actions";
 import { SprintCard } from "@/features/dashboard/sprint-card";
 import { TeamCard } from "@/features/dashboard/team-card";
@@ -51,7 +52,6 @@ import { LeaveBalanceWidget as LeaveBalanceWidgetNew } from "@/components/dashbo
 import { TeamAttendanceWidget as TeamAttendanceWidgetNew } from "@/components/dashboard/widgets/team-attendance-widget";
 import { UpcomingLeavesWidget } from "@/components/dashboard/widgets/upcoming-leaves-widget";
 import { PendingApprovalsWidget as PendingApprovalsWidgetNew } from "@/components/dashboard/widgets/pending-approvals-widget";
-import { QuickActionsWidget } from "@/components/dashboard/widgets/quick-actions-widget";
 import { AnnouncementsWidget } from "@/components/dashboard/widgets/announcements-widget";
 import { WidgetSkeleton } from "@/components/dashboard/widgets/widget-skeleton";
 import { CeoAdminSection } from "@/features/dashboard/ceo-admin-section";
@@ -83,6 +83,16 @@ export default function DashboardPage() {
   );
 
   const { data: sprintSummary, isLoading: sprintLoading } = useActiveSprintSummary();
+
+  // Greet the person celebrating on their own dashboard (A34).
+  const { data: celebrations } = useBirthdays();
+  const myCelebration = useMemo(
+    () =>
+      (celebrations ?? []).find(
+        (c) => c.id === currentUserId && c.date === isoDateInTimezone(),
+      ),
+    [celebrations, currentUserId],
+  );
 
   const { data: roleStats } = useRoleStats();
   const { data: todayActivities } = useTodayActivities();
@@ -203,7 +213,6 @@ export default function DashboardPage() {
     return (
       <PageWrapper
         title="Dashboard"
-        subtitle="Loading your workspace..."
         actions={<Skeleton className="h-10 w-64 rounded-full" />}
       >
         <div className="grid grid-cols-12 gap-4 xl:gap-6" role="status" aria-live="polite" aria-label="Loading dashboard">
@@ -246,7 +255,6 @@ export default function DashboardPage() {
     return (
       <PageWrapper title="Dashboard">
         <EmptyState
-          illustration={<EmptyActivityIllustration className="h-40 w-40" />}
           title="No data available"
           description="Dashboard statistics are not available. Please try refreshing."
           action={{
@@ -269,6 +277,15 @@ export default function DashboardPage() {
       subtitle={<span className="tabular-nums">{todayFormatted} · {stats.orgName}</span>}
       actions={<ClockInWidget />}
     >
+      {myCelebration && (
+        <p className="mb-4 text-sm text-foreground">
+          {myCelebration.type === "birthday"
+            ? "Happy birthday! The team wishes you a great year ahead."
+            : `Happy work anniversary — ${myCelebration.yearsCompleted ?? 1} ${
+                (myCelebration.yearsCompleted ?? 1) === 1 ? "year" : "years"
+              } with us.`}
+        </p>
+      )}
       <motion.div
         variants={fadeUp}
         initial="hidden"
@@ -307,9 +324,6 @@ export default function DashboardPage() {
             <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <LeaveBalanceWidgetNew />
-              </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={2} />}>
-                <QuickActionsWidget />
               </Suspense>
             </div>
             <div className={SPAN.half}>

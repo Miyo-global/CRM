@@ -9,8 +9,8 @@ export default function LeavesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Leaves Error"
-      fallbackMessage="Failed to load leaves data. Please try again."
+      title="Couldn't load leaves"
+      fallbackMessage="Something went wrong loading leaves data. Try again."
     />
   );
 }

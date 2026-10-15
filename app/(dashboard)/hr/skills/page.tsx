@@ -29,7 +29,6 @@ import {
   Pencil, Trash2, Filter,
 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -337,7 +336,7 @@ export default function SkillsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Skills Matrix" subtitle="Track team competencies">
+      <PageWrapper title="Skills matrix">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
@@ -347,8 +346,7 @@ export default function SkillsPage() {
 
   return (
     <PageWrapper
-      title="Skills Matrix"
-      subtitle="Organisation-wide skill mapping and competency tracking"
+      title="Skills matrix"
       badge={`${uniqueSkillCount} skill${uniqueSkillCount !== 1 ? "s" : ""} · ${totalEntryCount} entries`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -396,13 +394,11 @@ export default function SkillsPage() {
         ) : filteredGroups.length === 0 ? (
           skillGroups.length === 0 ? (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No skills recorded yet. Add your first skill."
               action={{ label: "Add Skill", onClick: () => setSheetOpen(true) }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="No skills match your filters."
               action={{ label: "Clear filters", onClick: () => { setSearch(""); setCategoryFilter("all"); } }}
@@ -454,7 +450,7 @@ export default function SkillsPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Add Skill"
+        title="Add skill"
         onSubmit={handleAdd}
         submitLabel="Add Skill"
         isPending={addSkill.isPending}
@@ -520,7 +516,7 @@ export default function SkillsPage() {
       <ConfirmActionDialog
         open={!!deleteTarget}
         onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
-        title="Remove Skill"
+        title="Remove skill"
         description={`Remove "${deleteTarget?.skillName}" for ${deleteTarget?.user?.name ?? "this employee"}? This cannot be undone.`}
         confirmLabel="Remove"
         variant="destructive"

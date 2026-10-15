@@ -34,7 +34,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { handbookVersionSchema } from "@/lib/validations/handbook";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -403,7 +402,7 @@ function HandbookAdminContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Handbook" subtitle="Employee handbook versions">
+      <PageWrapper title="Handbook">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
@@ -413,8 +412,7 @@ function HandbookAdminContent() {
 
   return (
     <PageWrapper
-      title="Employee Handbook"
-      subtitle="Manage and publish handbook versions"
+      title="Employee handbook"
       badge={`${versions?.length ?? 0} versions`}
       actions={
         <Button size="sm" onClick={() => { form.reset(); setSheetOpen(true); }}>
@@ -434,7 +432,6 @@ function HandbookAdminContent() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !versions?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No handbook versions yet"
           description="Create your first handbook version to publish it to employees."
           action={{ label: "New Version", onClick: () => { form.reset(); setSheetOpen(true); } }}
@@ -519,7 +516,7 @@ function HandbookAdminContent() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={(open) => { setSheetOpen(open); if (!open) form.reset(); }}
-        title="New Handbook Version"
+        title="New handbook version"
         onSubmit={handleCreate}
         submitLabel="Save as draft"
         isPending={create.isPending}
@@ -537,7 +534,7 @@ function HandbookAdminContent() {
       <HrSheet
         open={editId !== null}
         onOpenChange={(open) => { if (!open) { setEditId(null); form.reset(); } }}
-        title="Edit Handbook Version"
+        title="Edit handbook version"
         onSubmit={handleUpdate}
         submitLabel="Save changes"
         isPending={update.isPending}
@@ -555,7 +552,7 @@ function HandbookAdminContent() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Version"
+        title="Delete version"
         description="Are you sure you want to delete this handbook version?"
         confirmLabel="Delete"
         variant="destructive"
@@ -574,7 +571,7 @@ function HandbookEmployeeView() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Employee Handbook" subtitle="Company policies and guidelines">
+      <PageWrapper title="Employee handbook">
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
         </div>
@@ -586,14 +583,12 @@ function HandbookEmployeeView() {
 
   return (
     <PageWrapper
-      title="Employee Handbook"
-      subtitle="Official company policies and guidelines"
+      title="Employee handbook"
     >
       {isError ? (
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !published.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No handbook published yet"
           description="The HR team hasn't published a handbook yet. Check back later."
         />
@@ -637,7 +632,7 @@ export default function HandbookPage() {
 
   if (status === "loading") {
     return (
-      <PageWrapper title="Handbook" subtitle="Loading…">
+      <PageWrapper title="Handbook">
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
         </div>

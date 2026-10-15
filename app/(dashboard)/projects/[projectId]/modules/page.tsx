@@ -17,7 +17,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Sheet,
@@ -372,7 +371,6 @@ export default function ModulesPage({
         ) : !modules?.length ? (
           <div className="flex flex-col items-center gap-3">
             <EmptyState
-              illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
               title="No modules yet"
               description="Create your first module to organize work into feature areas."
               action={

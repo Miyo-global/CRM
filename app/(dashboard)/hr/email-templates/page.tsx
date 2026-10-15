@@ -51,7 +51,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { IconChip } from "@/components/ui/icon-chip";
-import { EmptyMailIllustration } from "@/components/illustrations";
 import { HR_EMAIL_EMPLOYEE_AUTO_MERGE_KEY_SET } from "@/lib/hr/hr-email-auto-merge-keys";
 import {
   validateTemplateForm,
@@ -490,7 +489,7 @@ function EmailTemplatesContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Email Templates" subtitle="Manage HR email templates">
+      <PageWrapper title="Email templates">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-36 rounded-lg" />
@@ -502,8 +501,7 @@ function EmailTemplatesContent() {
 
   return (
     <PageWrapper
-      title="Email Templates"
-      subtitle="Manage reusable email templates for HR communications"
+      title="Email templates"
       badge={`${templates?.length ?? 0} templates`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
@@ -532,7 +530,6 @@ function EmailTemplatesContent() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !templates?.length ? (
         <EmptyState
-          illustration={<EmptyMailIllustration className="size-32" />}
           title="No email templates yet"
           description="Create a reusable template to streamline your HR communications."
           action={{ label: "New Template", onClick: () => setSheetOpen(true) }}
@@ -625,7 +622,7 @@ function EmailTemplatesContent() {
           setSheetOpen(o);
           if (!o) resetTemplateForm();
         }}
-        title="Create Email Template"
+        title="Create email template"
         onSubmit={handleCreate}
         submitLabel="Create"
         isPending={create.isPending}
@@ -653,7 +650,7 @@ function EmailTemplatesContent() {
             resetTemplateForm();
           }
         }}
-        title="Edit Email Template"
+        title="Edit email template"
         onSubmit={handleEditSubmit}
         submitLabel="Save"
         isPending={update.isPending}
@@ -872,7 +869,7 @@ function EmailTemplatesContent() {
         onOpenChange={(open) => {
           if (!open) setDeleteId(null);
         }}
-        title="Delete Template"
+        title="Delete template"
         description="Are you sure you want to delete this email template?"
         confirmLabel="Delete"
         variant="destructive"

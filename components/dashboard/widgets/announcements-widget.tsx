@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyMailIllustration } from "@/components/illustrations";
 import {
   useAnnouncements,
   useCreateAnnouncement,
@@ -129,7 +128,6 @@ export function AnnouncementsWidget() {
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : !data?.length ? (
         <EmptyState
-          illustration={<EmptyMailIllustration className="h-20 w-20" />}
           title="No announcements"
           description="Nothing to show yet."
           compact

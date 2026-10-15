@@ -25,18 +25,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
+import { ROLE_OPTIONS } from "@/lib/rbac/roles";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
-const FALLBACK_ROLES: Array<{ slug: string; name: string }> = [
-  { slug: "ENGINEERING", name: "Engineering" },
-  { slug: "HR", name: "HR" },
-  { slug: "SALES", name: "Sales" },
-  { slug: "CUSTOMER_SUPPORT", name: "Customer Support" },
-  { slug: "DESIGN", name: "Design" },
-  { slug: "VIDEO_EDITOR", name: "Video Editor" },
-  { slug: "DIGITAL_MARKETING", name: "Digital Marketing" },
-];
+/** Every system role except CEO, which is never assigned from the wizard (A12). */
+const FALLBACK_ROLES: Array<{ slug: string; name: string }> = ROLE_OPTIONS.filter(
+  (r) => r.value !== "CEO",
+).map((r) => ({ slug: r.value, name: r.label }));
 
 interface Department { id: number; name: string }
 interface Role { slug: string; name: string }
@@ -62,6 +58,16 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
   // Only real (persisted) departments scope the job-role catalog. The wizard
   // uses negative placeholder ids for not-yet-created "common" departments;
   // for those we fall back to org-wide roles only.
+  const joiningDate = form.watch("joiningDate");
+  const isJoiningDateInPast = useMemo(() => {
+    if (!joiningDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const picked = new Date(joiningDate);
+    picked.setHours(0, 0, 0, 0);
+    return picked < today;
+  }, [joiningDate]);
+
   const catalogDepartmentId = useMemo(
     () => (typeof selectedDepartmentId === "number" && selectedDepartmentId > 0 ? selectedDepartmentId : undefined),
     [selectedDepartmentId],
@@ -127,6 +133,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
             <FormDescription className="text-xs">
               {EMPLOYMENT_FIELD_COPY.department.description}
             </FormDescription>
+            {isJoiningDateInPast && (
+              <p className="text-xs text-muted-foreground">
+                Joining date is in the past — attendance and payroll will start from this date.
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}
@@ -144,7 +155,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
               <JobRoleCombobox
                 value={field.value ?? ""}
                 onValueChange={field.onChange}
-                departmentId={catalogDepartmentId}
+                departmentId={catalogDepartmentId ?? null}
                 placeholder={EMPLOYMENT_FIELD_COPY.designation.placeholder}
                 aria-invalid={fieldState.invalid}
               />

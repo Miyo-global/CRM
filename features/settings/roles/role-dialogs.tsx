@@ -44,15 +44,6 @@ const ROLE_TEMPLATES: Array<{ label: string; name: string; slug: string; permiss
     ],
   },
   {
-    label: "Recruiter",
-    name: "Recruiter",
-    slug: "RECRUITER",
-    permissions: [
-      "hr:employees:view",
-      "hr:documents:view", "hr:documents:create",
-    ],
-  },
-  {
     label: "Project Manager",
     name: "Project Manager",
     slug: "PROJECT_MANAGER",

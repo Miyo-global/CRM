@@ -92,7 +92,7 @@ export function OnboardingWizard() {
     defaultValues: {
       firstName: "", lastName: "", email: "", phone: "",
       whatsappSameAsPhone: true, whatsappNumber: "", gender: "MALE",
-      password: "", designation: "", departmentId: undefined, departmentName: "",
+      designation: "", departmentId: undefined, departmentName: "",
       role: "ENGINEERING", employeeId: "", joiningDate: new Date(),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
       taxId: "", monthlySalary: undefined,
@@ -116,6 +116,35 @@ export function OnboardingWizard() {
     }
   }, [currentStep]);
 
+  /** The wizard step a field belongs to, or null when it is not on a step. */
+  const stepOfField = useCallback((field: string): number | null => {
+    for (const [step, fields] of Object.entries(STEP_FIELDS)) {
+      if (fields.some((f) => f === field || field.startsWith(`${f}.`))) return Number(step);
+    }
+    return null;
+  }, []);
+
+  /**
+   * Show the first error instead of failing silently: go to its step, focus the
+   * field and let the message render (A16).
+   */
+  const goToFirstError = useCallback(() => {
+    const fields = Object.keys(form.formState.errors);
+    if (fields.length === 0) return false;
+    const steps = fields
+      .map((f) => stepOfField(f))
+      .filter((s): s is number => s != null)
+      .sort((a, b) => a - b);
+    const target = steps[0] ?? currentStep;
+    const field = fields.find((f) => stepOfField(f) === target) ?? fields[0];
+    setCurrentStep(target);
+    requestAnimationFrame(() => {
+      form.setFocus(field as FieldPath<FormValues>, { shouldSelect: true });
+    });
+    toast.error("Fix the highlighted field to continue");
+    return true;
+  }, [form, stepOfField, currentStep]);
+
   const handleNext = useCallback(async () => {
     // Check for a known duplicate error before form.trigger() clears it
     if (currentStep === 1 && form.formState.errors.email?.message?.includes("already registered")) {
@@ -125,7 +154,10 @@ export function OnboardingWizard() {
     const fields = STEP_FIELDS[currentStep];
     if (fields) {
       const valid = await form.trigger(fields);
-      if (!valid) return;
+      if (!valid) {
+        goToFirstError();
+        return;
+      }
     }
     if (currentStep === 1) {
       const email = form.getValues("email");
@@ -142,10 +174,13 @@ export function OnboardingWizard() {
     }
     if (currentStep === 4) {
       const fullValid = await form.trigger();
-      if (!fullValid) return;
+      if (!fullValid) {
+        goToFirstError();
+        return;
+      }
     }
     setCurrentStep((prev) => Math.min(STEPS.length, prev + 1));
-  }, [currentStep, form, checkEmailExists]);
+  }, [currentStep, form, checkEmailExists, goToFirstError]);
 
   const handlePrev = useCallback(() => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
@@ -157,15 +192,15 @@ export function OnboardingWizard() {
       onboardEmployee.mutate(
         {
           ...data,
-          firstName: toTitleCase(data.firstName),
-          lastName: toTitleCase(data.lastName),
+          // Names are stored exactly as typed, trimmed (A18).
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
           email: data.email.trim(),
           phone: data.phone.trim(),
           whatsappNumber: data.whatsappSameAsPhone
             ? data.phone.trim()
             : data.whatsappNumber?.trim(),
           designation: formatDesignation(data.designation),
-          password: data.password ?? "",
         } as import("@/types/hr").OnboardEmployeeInput,
         {
           onSuccess: () => {

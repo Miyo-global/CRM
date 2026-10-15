@@ -6,7 +6,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type {
   LeadScoreResult, EmailTone, GeneratedEmail, DealPredictionResult,
   NextActionResult, ChurnRiskResult, LeadEnrichmentResult,
-  CandidateScoreResult, ReviewDraftResult, HelpdeskReplyResult, AttritionRiskResult,
+  ReviewDraftResult, HelpdeskReplyResult, AttritionRiskResult,
 } from "@/lib/ai/prompts";
 
 export function useAIScoreLead() {
@@ -90,17 +90,6 @@ export function useEnrichLead() {
   return useMutation({
     mutationFn: (input: { name: string; company?: string; email?: string; designation?: string; city?: string }) =>
       apiClient.post<LeadEnrichmentResult>("/ai/enrich-lead", input),
-  });
-}
-
-export function useAIScoreCandidate() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { candidateId: number; jobId?: number }) =>
-      apiClient.post<CandidateScoreResult>("/ai/score-candidate", input),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.hr.candidates() });
-    },
   });
 }
 
@@ -265,13 +254,6 @@ export interface GenerateJdInput {
   salaryMin?: number;
   salaryMax?: number;
   field?: "description" | "requirements";
-}
-
-export function useGenerateJobDescription() {
-  return useMutation({
-    mutationFn: (input: GenerateJdInput) =>
-      apiClient.post<{ description?: string; requirements?: string }>("/ai/generate-jd", input),
-  });
 }
 
 export interface OrgFeatureFlags {

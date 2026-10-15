@@ -398,7 +398,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
               ) : (
                 <Plus className="h-4 w-4 mr-2" />
               )}
-              Add Holiday
+              Add holiday
             </Button>
           </form>
 
@@ -491,7 +491,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
       <AlertDialog open={confirmCreate} onOpenChange={setConfirmCreate}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Add Holiday</AlertDialogTitle>
+            <AlertDialogTitle>Add holiday</AlertDialogTitle>
             <AlertDialogDescription>
               Add <strong>{pendingCreate?.name}</strong> on{" "}
               <strong>{pendingCreate?.date ? formatHolidayDate(pendingCreate.date) : ""}</strong>?
@@ -510,7 +510,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
               {addMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Add Holiday
+              Add holiday
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

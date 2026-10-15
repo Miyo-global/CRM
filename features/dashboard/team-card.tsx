@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials, formatTime } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors } from "@/lib/theme-constants";
@@ -40,7 +39,7 @@ export const TeamCard = memo(function TeamCard({ members, isLoading }: TeamCardP
 
   return (
     <WidgetCard
-      title="Team Availability"
+      title="Team availability"
       icon={Users}
       tone="success"
       count={members?.length || undefined}
@@ -119,7 +118,6 @@ export const TeamCard = memo(function TeamCard({ members, isLoading }: TeamCardP
         ) : (
           <EmptyState
             compact
-            illustration={<EmptyTeamIllustration className="h-20 w-20" />}
             title="No team members online"
             description="Team availability will appear here when members clock in."
           />

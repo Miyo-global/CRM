@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { NotFoundIllustration } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Save, Globe, GlobeLock, ArrowLeft } from "lucide-react";
@@ -87,10 +86,9 @@ export default function DocumentEditorPage() {
 
   if (Number.isNaN(documentId)) {
     return (
-      <PageWrapper title="Document Not Found">
+      <PageWrapper title="Document not found">
         <EmptyState
-          illustration={<NotFoundIllustration />}
-          title="Document Not Found"
+          title="Document not found"
           description="The requested document could not be found."
           action={{ label: "Back to Documents", href: "/hr/documents" }}
         />
@@ -100,7 +98,7 @@ export default function DocumentEditorPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Document Editor" subtitle="Loading...">
+      <PageWrapper title="Document editor">
         <div className="space-y-4">
           <Skeleton className="h-10 w-full max-w-xl" />
           <Skeleton className="h-150 w-full rounded-lg" />
@@ -111,7 +109,7 @@ export default function DocumentEditorPage() {
 
   if (isError) {
     return (
-      <PageWrapper title="Document Editor">
+      <PageWrapper title="Document editor">
         <QueryErrorState title="Couldn't load document" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
@@ -119,10 +117,9 @@ export default function DocumentEditorPage() {
 
   if (!doc) {
     return (
-      <PageWrapper title="Document Not Found">
+      <PageWrapper title="Document not found">
         <EmptyState
-          illustration={<NotFoundIllustration />}
-          title="Document Not Found"
+          title="Document not found"
           description="The requested document could not be found."
           action={{ label: "Back to Documents", href: "/hr/documents" }}
         />
@@ -132,7 +129,7 @@ export default function DocumentEditorPage() {
 
   return (
     <PageWrapper
-      title="Document Editor"
+      title="Document editor"
       subtitle={doc.templateType ? `Template: ${doc.templateType}` : undefined}
       actions={
         <div className="flex items-center gap-2">

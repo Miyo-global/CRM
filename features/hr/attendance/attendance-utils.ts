@@ -4,7 +4,16 @@ export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] 
 
 export interface CalendarDay {
   date: Date;
-  status: "present" | "wfh" | "leave" | "absent" | "weekend" | "holiday" | "future" | "none";
+  status:
+    | "present"
+    | "wfh"
+    | "leave"
+    | "absent"
+    | "weekend"
+    | "holiday"
+    | "future"
+    | "notEmployed"
+    | "none";
   holidayName?: string;
 }
 
@@ -13,10 +22,13 @@ export const statusConfig = {
   present: { label: "Present", bg: "bg-success-soft", text: toneText.success, dot: toneDot.success },
   wfh: { label: "WFH", bg: "bg-info-soft", text: toneText.info, dot: toneDot.info },
   leave: { label: "Leave", bg: "bg-warning-soft", text: toneText.warning, dot: toneDot.warning },
-  absent: { label: "Absent", bg: "bg-danger-soft", text: toneText.danger, dot: toneDot.danger },
+  // Absent is a small red dot on a plain cell, not a pink fill (B7).
+  absent: { label: "Absent", bg: "", text: "text-foreground", dot: toneDot.danger },
   weekend: { label: "Weekend", bg: "bg-muted", text: "text-muted-foreground", dot: toneDot.neutral },
   holiday: { label: "Holiday", bg: "bg-brand-soft", text: toneText.brand, dot: toneDot.brand },
   future: { label: "", bg: "", text: "", dot: "" },
+  /** Before the joining date or after the last working day (A37). */
+  notEmployed: { label: "Not employed", bg: "", text: "", dot: "" },
   none: { label: "", bg: "", text: "", dot: "" },
 } as const;
 

@@ -9,8 +9,8 @@ export default function HrrecognitionError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Recognition Error"
-      fallbackMessage="Failed to load Recognition. Please try again."
+      title="Couldn't load recognition"
+      fallbackMessage="Something went wrong loading recognition. Try again."
     />
   );
 }

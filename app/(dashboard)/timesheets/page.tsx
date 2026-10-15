@@ -46,7 +46,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyTimeIllustration } from "@/components/illustrations";
 import { LogTimeDialog } from "@/components/timesheets/log-time-dialog";
 import { EditTimeEntryDialog } from "@/components/timesheets/edit-time-entry-dialog";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
@@ -300,8 +299,7 @@ export default function TimesheetsPage() {
 
   return (
     <PageWrapper
-      title="Daily Work Logs"
-      subtitle="Track and manage professional activity across projects."
+      title="Daily work logs"
       actions={
         <LogTimeDialog
           trigger={
@@ -368,14 +366,12 @@ export default function TimesheetsPage() {
                               {selectedProject !== "all" || dateRange !== "this-quarter" ? (
                                 <EmptyState
                                   compact
-                                  illustration={<EmptyTimeIllustration />}
                                   title="No results for these filters"
                                   description="No work logs found matching your filters."
                                 />
                               ) : (
                                 <EmptyState
                                   compact
-                                  illustration={<EmptyTimeIllustration />}
                                   title="No work logs yet"
                                   description="No work logs found. Add your first log!"
                                 />
@@ -448,7 +444,7 @@ export default function TimesheetsPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Delete Time Entry"
+        title="Delete time entry"
         description="Are you sure you want to delete this time entry? This action cannot be undone."
         confirmLabel="Delete"
         destructive

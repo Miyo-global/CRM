@@ -9,8 +9,8 @@ export default function HranalyticsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="HR Analytics Error"
-      fallbackMessage="Failed to load HR Analytics. Please try again."
+      title="Couldn't load hr analytics"
+      fallbackMessage="Something went wrong loading hr analytics. Try again."
     />
   );
 }

@@ -9,8 +9,8 @@ export default function NotificationsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Notifications Error"
-      fallbackMessage="Failed to load notifications. Please try again."
+      title="Couldn't load notifications"
+      fallbackMessage="Something went wrong loading notifications. Try again."
     />
   );
 }

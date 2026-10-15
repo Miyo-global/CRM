@@ -20,9 +20,9 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, DollarSign, CheckCircle2 } from "lucide-react";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
+import { Plus, IndianRupee, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatINRWhole } from "@/lib/format-utils";
 
 interface FnfSettlement {
   id: number; userId: string; employeeName: string | null; lastWorkingDate: string | null;
@@ -39,7 +39,7 @@ function statusTone(s: string | null): Tone {
 }
 
 function money(v: string | null) {
-  return v ? `$${Number(v).toLocaleString()}` : "—";
+  return v ? formatINRWhole(v) : "—";
 }
 
 function FnfContent() {
@@ -92,7 +92,7 @@ function FnfContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Full & Final" subtitle="Employee settlement processing">
+      <PageWrapper title="Full & final">
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -100,8 +100,7 @@ function FnfContent() {
 
   return (
     <PageWrapper
-      title="Full & Final Settlement"
-      subtitle="Process employee exit settlements"
+      title="Full & final settlement"
       badge={`${items?.length ?? 0} settlements`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Settlement</Button>}
     >
@@ -109,7 +108,6 @@ function FnfContent() {
         <QueryErrorState title="Couldn't load settlements" error={error} onRetry={() => refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration />}
           title="No FnF settlements"
           description="Exit settlements you process will appear here."
           action={{ label: "New Settlement", onClick: () => setSheetOpen(true) }}
@@ -134,7 +132,7 @@ function FnfContent() {
                 <TableRow key={f.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <span className="text-sm font-medium">{f.employeeName ?? "Employee"}</span>
                     </div>
                   </TableCell>
@@ -161,7 +159,7 @@ function FnfContent() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="New FnF Settlement" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="New FnF settlement" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee User ID</label>
           <Input placeholder="User ID" value={userId} onChange={(e) => setUserId(e.target.value)} />
@@ -189,7 +187,7 @@ function FnfContent() {
       <ConfirmActionDialog
         open={completeId !== null}
         onOpenChange={(open) => { if (!open) setCompleteId(null); }}
-        title="Complete Settlement"
+        title="Complete settlement"
         description="Mark this FnF settlement as completed? This action cannot be undone."
         confirmLabel="Complete"
         variant="default"

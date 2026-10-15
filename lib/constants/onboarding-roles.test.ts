@@ -14,7 +14,7 @@ describe("isOnboardingManager", () => {
     }
   });
 
-  it("matches the roles withAdmin lets through on the onboarding APIs", () => {
+  it("matches the roles the onboarding APIs let through", () => {
     expect([...ONBOARDING_MANAGER_ROLES].sort()).toEqual(["ADMIN", "CEO", "HR"]);
   });
 });

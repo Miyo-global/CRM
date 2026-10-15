@@ -16,7 +16,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { Plus, Award, Calendar, ExternalLink, AlertTriangle } from "lucide-react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 export default function CertificationsPage() {
   const { data: certs, isLoading, isError, error, refetch } = useCertifications();
@@ -51,7 +50,7 @@ export default function CertificationsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Certifications" subtitle="Employee certifications and credentials">
+      <PageWrapper title="Certifications">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
@@ -62,7 +61,6 @@ export default function CertificationsPage() {
   return (
     <PageWrapper
       title="Certifications"
-      subtitle="Track professional certifications and renewals"
       badge={`${certs?.length ?? 0} certifications`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Add Certification</Button>}
     >
@@ -70,7 +68,6 @@ export default function CertificationsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !certs?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
           title="No certifications recorded yet."
           action={{ label: "Add Certification", onClick: () => setSheetOpen(true) }}
         />
@@ -109,7 +106,7 @@ export default function CertificationsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Certification" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add certification" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Certification Name</label>
           <Input placeholder="e.g., AWS Solutions Architect" value={name} onChange={(e) => setName(e.target.value)} />

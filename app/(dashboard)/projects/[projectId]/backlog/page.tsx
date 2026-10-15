@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useMemo, useCallback, useState, memo } from "react";
-import { EmptySearchIllustration, EmptyTasksIllustration } from "@/components/illustrations";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useProject, useSprints } from "@/lib/hooks/trpc-hooks";
@@ -262,7 +261,7 @@ export default function BacklogPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Backlog" subtitle="All tickets">
+      <PageWrapper title="Backlog">
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
@@ -274,7 +273,7 @@ export default function BacklogPage({ params }: PageProps) {
 
   if (isError) {
     return (
-      <PageWrapper title="Backlog" subtitle="All tickets">
+      <PageWrapper title="Backlog">
         <QueryErrorState title="Couldn't load the backlog" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
@@ -292,13 +291,11 @@ export default function BacklogPage({ params }: PageProps) {
     >
       {tickets.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
           title="No tickets yet"
           description="Create your first ticket to start building the backlog."
         />
       ) : filteredTickets.length === 0 ? (
         <EmptyState
-          illustration={<EmptySearchIllustration className="h-32 w-32 opacity-95" />}
           title="No results for these filters"
           description="Try a different search or clear the filters."
           action={hasFilters ? { label: "Clear filters", onClick: clearFilters } : undefined}

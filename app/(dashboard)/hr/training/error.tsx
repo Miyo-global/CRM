@@ -9,8 +9,8 @@ export default function HrtrainingError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Training Error"
-      fallbackMessage="Failed to load Training. Please try again."
+      title="Couldn't load training"
+      fallbackMessage="Something went wrong loading training. Try again."
     />
   );
 }

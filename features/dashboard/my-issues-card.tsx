@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import type { Tone } from "@/lib/design/tones";
@@ -41,7 +40,7 @@ interface MyIssuesCardProps {
 export const MyIssuesCard = memo(function MyIssuesCard({ tickets, isLoading, error, onRetry }: MyIssuesCardProps) {
   return (
     <WidgetCard
-      title="My Issues"
+      title="My issues"
       icon={ListTodo}
       tone="info"
       actions={
@@ -110,7 +109,6 @@ export const MyIssuesCard = memo(function MyIssuesCard({ tickets, isLoading, err
         ) : (
           <EmptyState
             compact
-            illustration={<EmptyTasksIllustration className="h-20 w-20" />}
             title="No assigned issues"
             description="Issues assigned to you will appear here."
           />

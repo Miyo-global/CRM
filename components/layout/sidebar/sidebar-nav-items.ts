@@ -2,7 +2,7 @@
 
 import {
   LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays,
-  Receipt, FileText, Timer, QrCode, DollarSign, Handshake,
+  Receipt, FileText, Timer, QrCode, IndianRupee, Handshake,
   Contact2, Trophy, BarChart3, UserCheck, Network, ClipboardList,
   Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, UserSearch,
   TrendingUp, BookOpen, Heart, UserMinus, Target, Megaphone, Mail, Package,
@@ -15,6 +15,8 @@ import {
   Activity, FlaskConical, Sparkles, Brain, Copy, Search, ShieldAlert, Sliders,
   FormInput, CalendarRange, FileSearch, LayoutTemplate, Grid3X3,
 } from "lucide-react";
+
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 export interface NavRoute {
   label: string;
@@ -45,7 +47,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
-            { label: "Branches", icon: Building2, href: "/dashboard/branches" },
             { label: "AI Hub", icon: Sparkles, href: "/ai" },
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "QR Codes", icon: QrCode, href: "/ceo/qr-code" },
@@ -67,11 +68,14 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
+            { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
             { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips", isSubItem: true },
             { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses", isSubItem: true },
             { label: "My Assets", icon: Package, href: "/hr/my-assets", isSubItem: true },
             { label: "Expenses", icon: Receipt, href: "/hr/expenses" },
+            { label: "Reimbursements", icon: Coins, href: "/hr/reimbursements", isSubItem: true },
+            { label: "Loans", icon: Wallet, href: "/hr/loans", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
           ],
@@ -131,19 +135,11 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
-            { label: "Incentives", icon: Coins, href: "/hr/incentives" },
-          ],
-        },
-        {
-          label: "Recruitment",
-          routes: [
-            { label: "Recruitment Hub", icon: UserSearch, href: "/hr/recruitment" },
-            { label: "Jobs", icon: Briefcase, href: "/hr/recruitment/jobs", isSubItem: true },
-            { label: "Candidates", icon: Users, href: "/hr/recruitment/candidates", isSubItem: true },
-            { label: "Pipeline", icon: TrendingUp, href: "/hr/recruitment/pipeline", isSubItem: true },
-            { label: "Interviews", icon: Video, href: "/hr/recruitment/interviews", isSubItem: true },
-            { label: "Question Bank", icon: BookOpen, href: "/hr/recruitment/question-bank", isSubItem: true },
-            { label: "Hiring Flows", icon: LayoutTemplate, href: "/hr/recruitment/hiring-flows", isSubItem: true },
+            // Incentives are computed from CRM conversions, so they follow the
+            // CRM module flag (A36, A41).
+            ...(CRM_MODULE_ENABLED
+              ? [{ label: "Incentives", icon: Coins, href: "/hr/incentives" }]
+              : []),
           ],
         },
         {
@@ -161,17 +157,21 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Settings", icon: Settings, href: "/settings" },
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
-            { label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true },
+            // CRM-only: leads, deals and contacts (A36).
+            ...(CRM_MODULE_ENABLED
+              ? [{ label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true }]
+              : []),
             { label: "Roles & Permissions", icon: Shield, href: "/settings/roles" },
             { label: "Permission Matrix", icon: ShieldAlert, href: "/settings/permissions", isSubItem: true },
             { label: "Audit Log", icon: ShieldCheck, href: "/settings/audit-log" },
             { label: "Webhooks", icon: Zap, href: "/settings/webhooks" },
             { label: "AI Settings", icon: Brain, href: "/settings/ai" },
             { label: "Notifications", icon: Bell, href: "/settings/notifications", isSubItem: true },
-            { label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true },
+            // CRM-only: leads, deals and contacts (A36).
+            ...(CRM_MODULE_ENABLED
+              ? [{ label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true }]
+              : []),
             { label: "Data Hub", icon: FileText, href: "/settings/data-hub" },
-            { label: "Recruitment Integrations", icon: Globe, href: "/settings/integrations/recruitment", isSubItem: true },
-            { label: "Job office locations", icon: MapPin, href: "/settings/job-office-locations", isSubItem: true },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
@@ -187,7 +187,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
-            { label: "Branches", icon: Building2, href: "/dashboard/branches" },
             { label: "AI Hub", icon: Sparkles, href: "/ai" },
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
@@ -208,11 +207,14 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
+            { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
             { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips", isSubItem: true },
             { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses", isSubItem: true },
             { label: "My Assets", icon: Package, href: "/hr/my-assets", isSubItem: true },
             { label: "Expenses", icon: Receipt, href: "/hr/expenses" },
+            { label: "Reimbursements", icon: Coins, href: "/hr/reimbursements", isSubItem: true },
+            { label: "Loans", icon: Wallet, href: "/hr/loans", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
           ],
@@ -272,19 +274,11 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
-            { label: "Incentives", icon: Coins, href: "/hr/incentives" },
-          ],
-        },
-        {
-          label: "Recruitment",
-          routes: [
-            { label: "Recruitment Hub", icon: UserSearch, href: "/hr/recruitment" },
-            { label: "Jobs", icon: Briefcase, href: "/hr/recruitment/jobs", isSubItem: true },
-            { label: "Candidates", icon: Users, href: "/hr/recruitment/candidates", isSubItem: true },
-            { label: "Pipeline", icon: TrendingUp, href: "/hr/recruitment/pipeline", isSubItem: true },
-            { label: "Interviews", icon: Video, href: "/hr/recruitment/interviews", isSubItem: true },
-            { label: "Question Bank", icon: BookOpen, href: "/hr/recruitment/question-bank", isSubItem: true },
-            { label: "Hiring Flows", icon: LayoutTemplate, href: "/hr/recruitment/hiring-flows", isSubItem: true },
+            // Incentives are computed from CRM conversions, so they follow the
+            // CRM module flag (A36, A41).
+            ...(CRM_MODULE_ENABLED
+              ? [{ label: "Incentives", icon: Coins, href: "/hr/incentives" }]
+              : []),
           ],
         },
         {
@@ -302,8 +296,6 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
             { label: "Data Hub", icon: FileText, href: "/settings/data-hub", isSubItem: true },
-            { label: "Recruitment Integrations", icon: Globe, href: "/settings/integrations/recruitment", isSubItem: true },
-            { label: "Job office locations", icon: MapPin, href: "/settings/job-office-locations", isSubItem: true },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
@@ -526,4 +518,52 @@ export function getLongestMatchingNavPath(
     }
   }
   return best;
+}
+
+/**
+ * Modules for the top nav (B5). A group label like "HR – People" belongs to
+ * the "HR" module, so the top nav lists modules and the sidebar only has to
+ * show the groups of the module you are in.
+ */
+export function moduleOfGroup(groupLabel: string): string {
+  return groupLabel.split("–")[0].trim();
+}
+
+export interface NavModule {
+  label: string;
+  /** Where clicking the module in the top nav goes: its first route. */
+  href: string;
+  groupLabels: string[];
+}
+
+export function getModules(navGroups: NavGroup[]): NavModule[] {
+  // `Map` here is lucide's icon, not the global, so keep this plain.
+  const modules: NavModule[] = [];
+  for (const group of navGroups) {
+    const label = moduleOfGroup(group.label);
+    const existing = modules.find((m) => m.label === label);
+    if (existing) {
+      existing.groupLabels.push(group.label);
+      continue;
+    }
+    const first = group.routes[0];
+    if (!first) continue;
+    modules.push({ label, href: first.href, groupLabels: [group.label] });
+  }
+  return modules;
+}
+
+/** The module that owns the current pathname, or null when nothing matches. */
+export function getActiveModule(
+  pathname: string,
+  navGroups: NavGroup[],
+): string | null {
+  const longest = getLongestMatchingNavPath(pathname, navGroups);
+  if (!longest) return null;
+  for (const group of navGroups) {
+    if (group.routes.some((route) => navHrefPath(route.href) === longest)) {
+      return moduleOfGroup(group.label);
+    }
+  }
+  return null;
 }

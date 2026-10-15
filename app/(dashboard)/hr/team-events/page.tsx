@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, PartyPopper, Calendar, MapPin, Users, UserPlus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
@@ -82,7 +81,7 @@ export default function TeamEventsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Team Events" subtitle="Company events and celebrations">
+      <PageWrapper title="Team events">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
@@ -92,8 +91,7 @@ export default function TeamEventsPage() {
 
   return (
     <PageWrapper
-      title="Team Events"
-      subtitle="Company events, outings, and celebrations"
+      title="Team events"
       badge={`${events?.length ?? 0} events`}
       actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Event</Button> : undefined}
     >
@@ -101,7 +99,6 @@ export default function TeamEventsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !events?.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="size-32" />}
           title="No upcoming events"
           description="Company events, outings, and celebrations will show up here."
           {...(isAdmin ? { action: { label: "Create Event", onClick: () => setSheetOpen(true) } } : {})}
@@ -136,7 +133,7 @@ export default function TeamEventsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create Event" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create event" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Event Title</label>
           <Input placeholder="e.g., Team Lunch" value={title} onChange={(e) => setTitle(e.target.value)} />

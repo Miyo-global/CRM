@@ -8,7 +8,6 @@ import { Plus, Pencil } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyUploadIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -297,8 +296,7 @@ export default function DocumentTypesPage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Document Types"
-        subtitle="Configure required onboarding documents"
+        title="Document types"
       >
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -311,8 +309,7 @@ export default function DocumentTypesPage() {
 
   return (
     <PageWrapper
-      title="Document Types"
-      subtitle="Configure required onboarding documents"
+      title="Document types"
       badge={`${list.length} types`}
       actions={
         isHROrCEO ? (
@@ -327,7 +324,6 @@ export default function DocumentTypesPage() {
         <QueryErrorState title="Couldn't load document types" error={error} onRetry={() => void refetch()} />
       ) : list.length === 0 ? (
         <EmptyState
-          illustration={<EmptyUploadIllustration />}
           title="No document types configured"
           description="Add document types to define what employees must submit during onboarding."
           action={
@@ -607,7 +603,7 @@ export default function DocumentTypesPage() {
         onOpenChange={(open) => {
           if (!open) setDeactivateTarget(null);
         }}
-        title="Deactivate Document Type"
+        title="Deactivate document type"
         description={`Are you sure you want to deactivate "${deactivateTarget?.name}"? It will no longer appear in new onboarding checklists.`}
         confirmLabel="Deactivate"
         variant="destructive"
@@ -620,7 +616,7 @@ export default function DocumentTypesPage() {
         onOpenChange={(open) => {
           if (!open) setReactivateTarget(null);
         }}
-        title="Reactivate Document Type"
+        title="Reactivate document type"
         description={`Are you sure you want to reactivate "${reactivateTarget?.name}"? It will appear again in new onboarding checklists.`}
         confirmLabel="Reactivate"
         variant="default"

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { Briefcase, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useHrDepartments } from "@/lib/api/hooks/hr";
@@ -113,9 +112,8 @@ export default function JobRolesSettingsPage() {
 
   if (!canEdit) {
     return (
-      <PageWrapper title="Job Roles" subtitle="Manage the catalog of job titles for your organization">
+      <PageWrapper title="Job roles">
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="Access restricted"
           description="Only Owners and Admins can manage job roles."
         />
@@ -125,8 +123,7 @@ export default function JobRolesSettingsPage() {
 
   return (
     <PageWrapper
-      title="Job Roles"
-      subtitle="Maintain reusable job titles. Scope them to a department or make them available org-wide. These power the job title picker on employee forms."
+      title="Job roles"
       actions={
         <Button size="sm" onClick={handleAdd}>
           <Plus aria-hidden />
@@ -141,7 +138,6 @@ export default function JobRolesSettingsPage() {
         </div>
       ) : roles.length === 0 ? (
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="No job roles yet"
           description="Add your first job title to start building a reusable catalog for onboarding and employee records."
           action={{ label: "Add Job Role", onClick: handleAdd }}

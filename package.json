@@ -24,7 +24,6 @@
     "seed:demo": "npx tsx --env-file=.env scripts/seed-demo-accounts.ts",
     "seed:career-ladders": "npx tsx --env-file=.env scripts/seed-career-ladders.ts",
     "seed:hr-email-templates": "npx tsx --env-file=.env scripts/seed-hr-email-templates.ts",
-    "seed:interview-questions": "npx tsx --env-file=.env scripts/seed-interview-questions.ts",
     "send:perf-notice-test": "npx tsx --env-file=.env scripts/send-performance-notice-test.ts",
     "send:all-emails-test": "npx tsx --env-file=.env scripts/send-all-emails-test.ts",
     "send:mail-test": "npx tsx --env-file=.env scripts/send-zeptomail-test.ts",

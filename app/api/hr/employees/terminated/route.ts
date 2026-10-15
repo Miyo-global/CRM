@@ -8,13 +8,8 @@ export async function GET() {
     if (!isAdminOrOwner(session.user.role)) {
       return err("Forbidden", 403);
     }
-    const branchCtx = {
-      role: session.user.role ?? "",
-      branchId: session.branchId,
-      userId: session.user.id,
-    };
 
-    const data = await getTerminatedEmployees(session.orgId, branchCtx);
+    const data = await getTerminatedEmployees(session.orgId);
     return ok(data);
   });
 }

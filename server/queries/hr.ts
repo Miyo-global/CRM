@@ -25,7 +25,6 @@ import { incentives, incentiveConfig } from "@/lib/db/schema/crm";
 import { eq, and, desc, gte, lte, asc, isNull, sql, ilike, or, count, inArray } from "drizzle-orm";
 import { resolveWorkLogWindow } from "@/lib/hr/work-log-window";
 import { formatDateOnly, getTodayString } from "@/lib/date-utils";
-import { branchIdFilter, type BranchContext } from "@/lib/db/branch-filter";
 import { resolveAttendancePeriod, summarizeAttendanceLogs } from "@/lib/hr/attendance-summary";
 import type { DocumentExportFilters } from "@/lib/hr/documents-export-filters";
 import type {
@@ -81,7 +80,6 @@ function departmentFromId(
 
 export async function getEmployees(
   orgId: string,
-  branch?: BranchContext
 ): Promise<Employee[]> {
   const [members, deptRows] = await Promise.all([
     db.query.organizationMembers.findMany({
@@ -138,7 +136,6 @@ export async function getEmployees(
 
 export async function getTerminatedEmployees(
   orgId: string,
-  branch?: BranchContext,
 ): Promise<TerminatedEmployee[]> {
   const [members, deptRows] = await Promise.all([
     db.query.organizationMembers.findMany({

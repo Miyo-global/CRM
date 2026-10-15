@@ -4,8 +4,12 @@ import axios, { type AxiosRequestConfig } from "axios";
 
 const BASE_URL = "/api";
 
+/** No request may hang the UI forever. */
+const DEFAULT_TIMEOUT_MS = 20_000;
+
 const _axios = axios.create({
   baseURL: BASE_URL,
+  timeout: DEFAULT_TIMEOUT_MS,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });

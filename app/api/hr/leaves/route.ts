@@ -1,22 +1,22 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
-import { eq, and, lte, gte, inArray, desc, notInArray } from "drizzle-orm";
+import { eq, and, lte, gte, desc, notInArray } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 import { ALLOWED_LEAVE_TYPE_NAMES, LEAVE_POLICY, isUnpaidLeaveType } from "@/lib/leave-policy";
-import { ROLES } from "@/lib/constants/roles";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
 import {
   ensureLeaveTypes,
   ensureUserBalances,
   getCasualMonthlyCapError,
 } from "@/server/actions/leave-actions/leave-balance";
-import { notifyByRoles } from "@/server/actions/create-notification";
+import { createNotification } from "@/server/actions/create-notification";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { sendLeaveRequestEmail } from "@/lib/email";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
+import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
 
 const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
@@ -182,6 +182,18 @@ export async function POST(req: NextRequest) {
         if (capError) return err(capError, 400);
       }
 
+      // Route the request up the approver chain before inserting, so the
+      // approvals list and badge have an owner for it (A27).
+      const requester = await db.query.users.findFirst({
+        where: eq(users.id, session.user.id),
+        columns: { id: true, role: true, reportingTo: true },
+      });
+      const approver = await resolveLeaveApprover(session.orgId, {
+        id: session.user.id,
+        role: requester?.role ?? session.user.role,
+        reportingTo: requester?.reportingTo ?? null,
+      });
+
       const inserted = await db.transaction(async (tx) => {
         const overlapping = await tx.query.leaveRequests.findFirst({
           where: and(
@@ -195,7 +207,7 @@ export async function POST(req: NextRequest) {
 
         if (overlapping) return false;
 
-        await tx.insert(leaveRequests).values({
+        const [row] = await tx.insert(leaveRequests).values({
           orgId: session.orgId,
           userId: session.user.id,
           leaveTypeId: body.leaveTypeId,
@@ -203,13 +215,14 @@ export async function POST(req: NextRequest) {
           endDate: normalizedEnd,
           reason: body.reason,
           priority: body.priority ?? "MEDIUM",
-          approverId: null,
+          approverId: approver.approverId,
           attachmentUrl: body.attachmentUrl ?? null,
           isHalfDay: body.isHalfDay ?? false,
           halfDayPeriod: body.halfDayPeriod ?? null,
-          status: "PENDING",
-        });
-        return true;
+          // Nobody in the org can approve this one (see resolveLeaveApprover).
+          status: approver.autoApprove ? "APPROVED" : "PENDING",
+        }).returning({ id: leaveRequests.id });
+        return row?.id ?? false;
       });
 
       if (!inserted) {
@@ -225,60 +238,48 @@ export async function POST(req: NextRequest) {
       const reasonText = body.reason ?? "No reason provided";
       const employeeName = session.user.name ?? "Employee";
 
+      // Notify once, after the insert succeeded, and only the people who can
+      // act on it — the all-HR fan-out sent duplicates, including for requests
+      // that were rejected as overlapping (A31).
       void (async () => {
-        const hrMembers = await db
-          .select({ userId: organizationMembers.userId })
-          .from(organizationMembers)
-          .where(
-            and(
-              eq(organizationMembers.orgId, session.orgId),
-              eq(organizationMembers.role, ROLES.HR)
-            )
-          );
+        if (approver.autoApprove) return;
 
-        const emailed = new Set<string>();
-
-        for (const m of hrMembers) {
-          const hrUser = await db.query.users.findFirst({
-            where: eq(users.id, m.userId),
+        const recipients = new Map<string, string>();
+        if (approver.approverId) {
+          const approverUser = await db.query.users.findFirst({
+            where: eq(users.id, approver.approverId),
             columns: { email: true, name: true },
           });
-          if (!hrUser?.email) continue;
-          const key = hrUser.email.trim().toLowerCase();
-          if (emailed.has(key)) continue;
-          emailed.add(key);
+          if (approverUser?.email) {
+            recipients.set(approverUser.email.trim().toLowerCase(), approverUser.name ?? "Approver");
+          }
+        }
+        if (HR_LEAVE_NOTIFY_EMAIL) {
+          recipients.set(HR_LEAVE_NOTIFY_EMAIL.toLowerCase(), "HR");
+        }
+
+        for (const [email, name] of recipients) {
           await sendLeaveRequestEmail(
-            hrUser.email,
-            hrUser.name ?? "HR",
+            email,
+            name,
             employeeName,
             leaveLabel,
             startStr,
             endStr,
-            reasonText
+            reasonText,
           );
         }
 
-        const inboxKey = HR_LEAVE_NOTIFY_EMAIL.toLowerCase();
-        if (!emailed.has(inboxKey)) {
-          emailed.add(inboxKey);
-          await sendLeaveRequestEmail(
-            HR_LEAVE_NOTIFY_EMAIL,
-            "HR",
-            employeeName,
-            leaveLabel,
-            startStr,
-            endStr,
-            reasonText
-          );
+        if (approver.approverId) {
+          await createNotification({
+            orgId: session.orgId,
+            userId: approver.approverId,
+            type: "WARNING",
+            title: "Leave request pending",
+            message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
+            link: "/hr/leaves",
+          });
         }
-
-        await notifyByRoles(session.orgId, [ROLES.HR], {
-          type: "WARNING",
-          title: "Leave request pending",
-          message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
-          link: "/hr/leaves",
-          excludeUserId: session.user.id,
-        });
       })().catch(() => {});
 
       return ok({ success: true });

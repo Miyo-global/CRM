@@ -9,8 +9,8 @@ export default function HrbackgroundverificationError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Background Verification Error"
-      fallbackMessage="Failed to load Background Verification. Please try again."
+      title="Couldn't load background verification"
+      fallbackMessage="Something went wrong loading background verification. Try again."
     />
   );
 }

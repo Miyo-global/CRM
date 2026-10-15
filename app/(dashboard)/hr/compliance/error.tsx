@@ -9,8 +9,8 @@ export default function HrcomplianceError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Compliance Error"
-      fallbackMessage="Failed to load Compliance. Please try again."
+      title="Couldn't load compliance"
+      fallbackMessage="Something went wrong loading compliance. Try again."
     />
   );
 }

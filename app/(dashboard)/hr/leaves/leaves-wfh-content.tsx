@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import {
@@ -17,14 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatsStrip } from "@/components/shared/stats-strip";
 import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Users, Home, CalendarCheck, Clock3, BadgeCheck } from "lucide-react";
+import {Plus, Users, Home} from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
+import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 
 import { LeaveRequestSheet } from "@/features/hr/leaves/leave-request-sheet";
 import { WfhRequestSheet } from "@/features/hr/leaves/wfh-request-sheet";
@@ -76,13 +76,29 @@ export function LeavesWfhContent() {
     : 0;
   const totalPendingApprovals = actionableLeaveCount + actionableWfhCount;
 
-  const totalAvailable = balances.reduce((sum, b) => sum + Number(b.balance ?? 0), 0);
-  const pendingCount = myLeaveRequests.filter((r) => r.status === "PENDING").length;
-  const approvedCount = myLeaveRequests.filter((r) => r.status === "APPROVED").length;
+  // Days already awaiting approval, so the balance hint and validation count
+  // them against the balance (A29).
+  const pendingDaysByType = useMemo(() => {
+    const byType: Record<string, number> = {};
+    for (const request of myLeaveRequests) {
+      if (request.status !== "PENDING") continue;
+      const typeName = request.leaveType?.name;
+      if (!typeName) continue;
+      byType[typeName] =
+        (byType[typeName] ?? 0) +
+        calculateLeaveWorkingDays({
+          startDate: String(request.startDate),
+          endDate: String(request.endDate),
+          isHalfDay: request.isHalfDay ?? false,
+        });
+    }
+    return byType;
+  }, [myLeaveRequests]);
+
 
   if (contextLoading || myLoading) {
     return (
-      <PageWrapper title="Leaves & Time Off" subtitle="Manage your leave requests, work from home, and approvals.">
+      <PageWrapper title="Leaves">
         <div className="space-y-4">
           <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-64" />
@@ -94,8 +110,11 @@ export function LeavesWfhContent() {
   return (
     <>
       <PageWrapper
-        title="Leaves & Time Off"
-        subtitle="Manage your leave requests, work from home, and approvals."
+        title="Leaves"
+        breadcrumbs={[
+          { label: "My HR", href: "/hr" },
+          { label: "Leaves" },
+        ]}
         stickyHeader
         actions={
           <>
@@ -114,20 +133,12 @@ export function LeavesWfhContent() {
               className="gap-1.5"
             >
               <Plus className="size-4" aria-hidden="true" />
-              Request Leave
+              Request leave
             </Button>
           </>
         }
       >
         <div className="space-y-5">
-
-          <StatsStrip
-            items={[
-              { label: "Available Days", value: totalAvailable, icon: CalendarCheck, tone: "success" },
-              { label: "Pending Requests", value: pendingCount, icon: Clock3, tone: pendingCount > 0 ? "warning" : undefined },
-              { label: "Approved (YTD)", value: approvedCount, icon: BadgeCheck },
-            ]}
-          />
 
           {approvedLeavesThisWeek.length > 0 && (
             <Card className="gap-0">
@@ -245,6 +256,7 @@ export function LeavesWfhContent() {
         leaveTypes={leaveTypes}
         joiningDate={joiningDate}
         balances={balances}
+        pendingDaysByType={pendingDaysByType}
       />
       <WfhRequestSheet
         open={wfhSheetOpen}

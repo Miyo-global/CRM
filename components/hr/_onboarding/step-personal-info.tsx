@@ -217,20 +217,10 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
           )}
         />
       )}
-      <FormField
-        control={form.control}
-        name="password"
-        render={({ field }) => (
-          <FormItem className="sm:col-span-2">
-            <FormLabel>Initial Password</FormLabel>
-            <FormControl>
-              <Input type="password" placeholder="Leave blank for invite link" {...field} />
-            </FormControl>
-            <FormDescription className="text-xs">Optional. Employee will set their own if left blank.</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <p className="text-xs text-muted-foreground sm:col-span-2">
+        The employee sets their own password from the set-up link in their
+        welcome email. No password is set here.
+      </p>
     </div>
   );
 }

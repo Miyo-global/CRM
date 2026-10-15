@@ -131,7 +131,6 @@ function TerminationReasonsContent() {
   return (
     <PageWrapper
       title="Termination reasons"
-      subtitle="Configure the reasons available when creating a termination."
       actions={
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" asChild>
@@ -160,8 +159,7 @@ function TerminationReasonsContent() {
                 Termination Management
               </Link>
               . Deactivated reasons are hidden from new terminations but kept for
-              historical records. Defaults are seeded automatically the first time
-              this page loads.
+              historical records.
             </p>
           </div>
           {!isLoading && sorted.length > 0 && (

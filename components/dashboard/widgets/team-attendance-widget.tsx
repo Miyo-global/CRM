@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { useManagerDashboard } from "@/lib/api/hooks/dashboard";
@@ -29,7 +28,7 @@ export function TeamAttendanceWidget() {
 
   return (
     <WidgetCard
-      title="Team Attendance"
+      title="Team attendance"
       icon={Users}
       tone="success"
       count={members.length || undefined}
@@ -50,7 +49,6 @@ export function TeamAttendanceWidget() {
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : !members.length ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="h-20 w-20" />}
           title="No team members"
           compact
         />

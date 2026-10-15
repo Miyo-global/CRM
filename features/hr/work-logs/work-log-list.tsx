@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTimeIllustration } from "@/components/illustrations";
 import type { WorkLog } from "@/types/hr";
 
 function userLabel(u: WorkLog["user"]): string {
@@ -55,7 +54,6 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
   if (groups.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyTimeIllustration />}
         title="No work logs found"
         description="No logged work matches the selected filters for this department."
       />

@@ -9,8 +9,8 @@ export default function HrcertificationsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Certifications Error"
-      fallbackMessage="Failed to load Certifications. Please try again."
+      title="Couldn't load certifications"
+      fallbackMessage="Something went wrong loading certifications. Try again."
     />
   );
 }

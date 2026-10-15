@@ -11,7 +11,6 @@ import { ProjectListRow } from "./project-list-row";
 import { ProjectFilterBar } from "./project-filter-bar";
 import { ProjectPagination } from "./project-pagination";
 import { ProjectsEmptyState } from "./projects-empty-state";
-import { EmptySearchIllustration } from "@/components/illustrations";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useDebouncedValue } from "@/hooks/use-expense-filters";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,7 +151,6 @@ export default function ProjectsPage() {
         <ProjectsEmptyState onCreate={() => setCreateOpen(true)} />
       ) : projects.length === 0 ? (
         <EmptyState
-          illustration={<EmptySearchIllustration className="size-36" />}
           title="No results for these filters"
           description="No projects match your filters."
           action={{

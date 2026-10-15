@@ -16,7 +16,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { Plus, GraduationCap, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -80,7 +79,7 @@ export default function LearningPathsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Learning Paths" subtitle="Structured learning programs">
+      <PageWrapper title="Learning paths">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
@@ -90,8 +89,7 @@ export default function LearningPathsPage() {
 
   return (
     <PageWrapper
-      title="Learning Paths"
-      subtitle="Structured learning programs and career development"
+      title="Learning paths"
       badge={`${paths?.length ?? 0} paths`}
       actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Path</Button> : undefined}
     >
@@ -99,7 +97,6 @@ export default function LearningPathsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !paths?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No learning paths available."
           {...(isAdmin ? { action: { label: "Create Path", onClick: () => setSheetOpen(true) } } : {})}
         />
@@ -134,7 +131,7 @@ export default function LearningPathsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create Learning Path" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create learning path" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Title</label>
           <Input placeholder="e.g., Frontend Engineering Track" value={title} onChange={(e) => setTitle(e.target.value)} />

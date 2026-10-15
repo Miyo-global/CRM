@@ -868,3 +868,36 @@ export function getHolidayWorkRequestEmailToHr(params: {
   };
 }
 
+
+/**
+ * Birthday / work-anniversary greeting, in the same branded shell as the
+ * welcome email (A34).
+ */
+export function getCelebrationEmailTemplate(
+  name: string,
+  kind: "birthday" | "anniversary",
+  yearsCompleted?: number,
+): string {
+  const sName = escapeHtml(name);
+  const heading =
+    kind === "birthday"
+      ? `Happy birthday, ${sName}!`
+      : `Happy work anniversary, ${sName}!`;
+  const body =
+    kind === "birthday"
+      ? "The whole Miyo Global team wishes you a great year ahead."
+      : `Thank you for ${yearsCompleted ?? 1} ${
+          (yearsCompleted ?? 1) === 1 ? "year" : "years"
+        } with Miyo Global. We are glad you are here.`;
+
+  const content = `
+    <h2 class="email-title">${heading}</h2>
+    <p class="email-text">${body}</p>
+  `;
+
+  return getEmailTemplate({
+    title: `${heading} - Miyo Global`,
+    preheader: heading,
+    content,
+  });
+}

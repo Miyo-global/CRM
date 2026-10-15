@@ -9,7 +9,7 @@ export default function AuthError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Authentication Error"
+      title="Couldn't load authentication"
       fallbackMessage="Something went wrong. Please try again."
     />
   );

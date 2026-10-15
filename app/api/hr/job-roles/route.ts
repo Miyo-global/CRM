@@ -10,11 +10,16 @@ const JOB_ROLE_TITLE_MIN = 2;
 const JOB_ROLE_TITLE_MAX = 120;
 
 const listQuerySchema = z.object({
+  /**
+   * A department id scopes the catalog to that department plus org-wide roles.
+   * "none" asks for org-wide roles only — a wizard with no saved department
+   * must not be offered every other department's titles (A20).
+   */
   departmentId: z
     .string()
     .optional()
-    .transform((v) => (v == null || v === "" ? undefined : Number(v)))
-    .refine((v) => v === undefined || (Number.isInteger(v) && v > 0), {
+    .transform((v) => (v == null || v === "" ? undefined : v === "none" ? "none" : Number(v)))
+    .refine((v) => v === undefined || v === "none" || (Number.isInteger(v) && v > 0), {
       message: "Invalid departmentId",
     }),
   includeInactive: z
@@ -45,7 +50,9 @@ export async function GET(req: NextRequest) {
     }
     // When a department is supplied, return that department's roles plus
     // org-wide roles (departmentId IS NULL). With no department, return all.
-    if (departmentId !== undefined) {
+    if (departmentId === "none") {
+      conditions.push(isNull(jobRoles.departmentId));
+    } else if (departmentId !== undefined) {
       const scoped = or(eq(jobRoles.departmentId, departmentId), isNull(jobRoles.departmentId));
       if (scoped) conditions.push(scoped);
     }

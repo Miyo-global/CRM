@@ -17,6 +17,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import type { PageSizeOption } from "@/lib/pagination-constants";
@@ -30,7 +37,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { Check, CreditCard, Download, Eye, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -53,13 +59,6 @@ function fmtInr(value: string | number | null | undefined): string {
 
 function num(value: string | number | null | undefined): number {
   return parseFloat(String(value ?? "0")) || 0;
-}
-
-function fmtDateTime(value: Date | string | null | undefined): string {
-  if (!value) return "";
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return format(d, "dd MMM yyyy, hh:mm a");
 }
 
 interface PayrollTableProps {
@@ -159,51 +158,42 @@ export function PayrollTable({
           <CardTitle>
             Payroll for {selectedMonthLabel}
           </CardTitle>
-          <CardDescription>
-            Manage payroll status and generate payslips. HR/Admins can generate payslips, but
-            only the CEO can approve them — including payrolls the CEO generated.
-          </CardDescription>
+          <CardDescription>Only the CEO can approve a payroll.</CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={year}
-              aria-label="Year"
-              onChange={(e) => onYearChange(e.target.value)}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={month}
-              aria-label="Month"
-              onChange={(e) => onMonthChange(e.target.value)}
-            >
-              {Array.from({ length: 12 }, (_, i) => ({
-                value: String(i + 1).padStart(2, "0"),
-                label: format(new Date(2000, i, 1), "MMMM"),
-              })).map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={employeeFilter}
-              aria-label="Employee"
-              onChange={(e) => onEmployeeFilterChange(e.target.value)}
-            >
-              <option value="all">All employees</option>
-              {employeeOptions.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <Select value={year} onValueChange={onYearChange}>
+              <SelectTrigger className="h-9" aria-label="Year">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((y) => (
+                  <SelectItem key={y} value={y}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={month} onValueChange={onMonthChange}>
+              <SelectTrigger className="h-9" aria-label="Month">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => ({
+                  value: String(i + 1).padStart(2, "0"),
+                  label: format(new Date(2000, i, 1), "MMMM"),
+                })).map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={employeeFilter} onValueChange={onEmployeeFilterChange}>
+              <SelectTrigger className="h-9" aria-label="Employee">
+                <SelectValue placeholder="All employees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All employees</SelectItem>
+                {employeeOptions.map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent aria-live="polite" className="px-0 pb-0 pt-0">
@@ -215,16 +205,21 @@ export function PayrollTable({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="sticky left-0 z-sticky bg-card pl-4">Employee</TableHead>
-                      <TableHead className="text-right">Gross Salary</TableHead>
-                      <TableHead className="text-right">Deductions</TableHead>
-                      <TableHead className="text-right">Net Salary</TableHead>
+                      <TableHead className="text-right">Gross</TableHead>
+                      <TableHead className="text-right">LOP days</TableHead>
+                      <TableHead className="text-right">PT</TableHead>
+                      <TableHead className="text-right">Net</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pagedRows.map((payroll) => (
-                      <TableRow key={payroll.id} className="group">
+                      <TableRow
+                        key={payroll.id}
+                        className="group cursor-pointer"
+                        onClick={() => onPreview(payroll)}
+                      >
                         <TableCell className="sticky left-0 z-base bg-card pl-4 group-hover:bg-muted">
                           <div>
                             <p className="font-medium whitespace-nowrap">
@@ -233,21 +228,18 @@ export function PayrollTable({
                             <p className="text-xs text-muted-foreground">
                               {payroll.user?.designation}
                             </p>
-                            <p className="text-2xs text-muted-foreground">
-                              Created: {fmtDateTime(payroll.createdAt)}
-                            </p>
-                            <p className="text-2xs text-muted-foreground">
-                              Approved: {fmtDateTime(payroll.approvedAt)} | Paid: {fmtDateTime(payroll.paidAt)}
-                            </p>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right">
+                        <TableCell className="whitespace-nowrap text-right font-mono">
                           ₹{fmtInr(payroll.grossSalary)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right text-danger-strong">
-                          -₹{fmtInr(Math.min(num(payroll.deductions), num(payroll.grossSalary)))}
+                        <TableCell className="whitespace-nowrap text-right font-mono">
+                          {num(payroll.lopDays) > 0 ? num(payroll.lopDays) : "—"}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-semibold text-success-strong">
+                        <TableCell className="whitespace-nowrap text-right font-mono">
+                          {num(payroll.ptAmount) > 0 ? `₹${fmtInr(payroll.ptAmount)}` : "—"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-right font-mono font-semibold">
                           ₹{fmtInr(Math.max(0, num(payroll.netSalary)))}
                         </TableCell>
                         <TableCell>
@@ -255,7 +247,7 @@ export function PayrollTable({
                             {payroll.status}
                           </StatusPill>
                         </TableCell>
-                        <TableCell className="text-right pr-4">
+                        <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-2">
                             <Button
                               size="sm"
@@ -292,7 +284,7 @@ export function PayrollTable({
                                 </Button>
                               ) : (
                                 <span
-                                  className="inline-flex items-center gap-1 rounded-md bg-warning-soft px-2 py-1 text-2xs font-medium text-warning-strong"
+                                  className="text-2xs text-muted-foreground"
                                   title="Only the CEO can approve payrolls. This payroll stays in DRAFT until the CEO approves it."
                                 >
                                   Awaiting CEO approval
@@ -354,7 +346,6 @@ export function PayrollTable({
           ) : (
             <EmptyState
               className="rounded-none border-0"
-              illustration={<EmptyExpensesIllustration />}
               title="No payroll records for this month"
               description="Click “Generate All” to create payroll for all employees"
             />

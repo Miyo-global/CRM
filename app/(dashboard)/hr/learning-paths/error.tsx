@@ -9,8 +9,8 @@ export default function HrlearningpathsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Learning Paths Error"
-      fallbackMessage="Failed to load Learning Paths. Please try again."
+      title="Couldn't load learning paths"
+      fallbackMessage="Something went wrong loading learning paths. Try again."
     />
   );
 }

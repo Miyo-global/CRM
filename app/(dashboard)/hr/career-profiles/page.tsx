@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyPersonIllustration } from "@/components/illustrations";
 import { format } from "date-fns";
 import type { EmployeeCareerProfile, CareerLadder, CareerLevel } from "@/types/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
@@ -151,7 +150,7 @@ export default function CareerProfilesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Career Profiles" subtitle="Employee career positions">
+      <PageWrapper title="Career profiles">
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
@@ -221,8 +220,7 @@ export default function CareerProfilesPage() {
 
   return (
     <PageWrapper
-      title="Career Profiles"
-      subtitle="Track each employee's position on a career ladder"
+      title="Career profiles"
       badge={`${rows.length} profiles`}
       actions={
         isAdmin ? (
@@ -237,7 +235,6 @@ export default function CareerProfilesPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="size-32" />}
           title="No career profiles yet."
           {...(isAdmin ? { action: { label: "Assign Profile", onClick: openAdd } } : {})}
         />
@@ -299,7 +296,7 @@ export default function CareerProfilesPage() {
       <HrSheet
         open={addOpen}
         onOpenChange={(o) => { setAddOpen(o); }}
-        title="Assign Career Profile"
+        title="Assign career profile"
         description="Assign an employee to a career ladder and level."
         onSubmit={handleCreate}
         submitLabel="Assign"
@@ -311,7 +308,7 @@ export default function CareerProfilesPage() {
       <HrSheet
         open={editProfile !== null}
         onOpenChange={(o) => { if (!o) setEditProfile(null); }}
-        title="Edit Career Profile"
+        title="Edit career profile"
         description={editProfile ? `Update career position for ${editProfile.employeeName ?? editProfile.userId}` : ""}
         onSubmit={handleUpdate}
         submitLabel="Save Changes"

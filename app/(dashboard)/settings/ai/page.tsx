@@ -59,8 +59,9 @@ const FLAG_META: {
 function formatCost(usd: string): string {
   const val = parseFloat(usd);
   if (val === 0) return "$0.00";
-  if (val < 0.01) return `$${val.toFixed(4)}`;
-  return `$${val.toFixed(2)}`;
+  // Model usage is billed by the provider in USD, so this one stays USD.
+    if (val < 0.01) return `USD ${val.toFixed(4)}`;
+  return `USD ${val.toFixed(2)}`;
 }
 
 function formatTokens(n: number): string {
@@ -81,8 +82,7 @@ export default function AiSettingsPage() {
   return (
     <DashboardGate allowedRoles={["CEO", "HR"]}>
     <PageWrapper
-      title="AI Settings"
-      subtitle="Manage AI features and monitor token usage across your organization."
+      title="AI settings"
     >
       <div className="space-y-6">
         <SettingsSection

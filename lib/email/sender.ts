@@ -29,8 +29,36 @@ function toList(value: string | string[] | undefined): string[] {
   return [...seen];
 }
 
-function htmlToText(html: string): string {
-  return html.replace(/<[^>]*>/g, "");
+/**
+ * Plain-text alternative for an HTML email.
+ *
+ * Stripping tags alone left the whole <style> block in the text part, so every
+ * mail opened as raw CSS in a text-only client (A24). Style, script and head
+ * content is dropped, links keep their URL, and block tags become line breaks.
+ */
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<(style|script|head)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, label) => {
+      const text = String(label).replace(/<[^>]*>/g, "").trim();
+      return text && text !== href ? `${text}: ${href}` : String(href);
+    })
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|tr|h[1-6]|li|table|section)>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .trim();
 }
 
 function normalize(options: EmailOptions): NormalizedEmail {

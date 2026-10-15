@@ -9,7 +9,7 @@ export default function InboxError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Inbox Error"
+      title="Couldn't load inbox"
       fallbackMessage="Failed to load inbox."
     />
   );

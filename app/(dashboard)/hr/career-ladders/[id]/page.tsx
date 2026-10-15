@@ -18,7 +18,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { DetailHeader, DetailLayout } from "@/components/shared/detail-header";
 import { PropertyList } from "@/components/shared/property-list";
-import { NotFoundIllustration, EmptySprintIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
@@ -259,7 +258,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
   if (isLoading) {
     return (
-      <PageWrapper title="Career Ladder" subtitle="Loading…">
+      <PageWrapper title="Career ladder">
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="grid gap-4 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
@@ -272,7 +271,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
   if (isError && !ladder) {
     return (
-      <PageWrapper title="Career Ladder">
+      <PageWrapper title="Career ladder">
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
@@ -280,9 +279,8 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
 
   if (!ladder) {
     return (
-      <PageWrapper title="Not Found" subtitle="">
+      <PageWrapper title="Not found">
         <EmptyState
-          illustration={<NotFoundIllustration className="size-32" />}
           title="Career ladder not found."
           action={{ label: "Back", href: "/hr/career-ladders" }}
         />
@@ -367,7 +365,6 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
         main={
           levels.length === 0 ? (
             <EmptyState
-              illustration={<EmptySprintIllustration className="size-32" />}
               title="No levels defined yet."
               {...(isAdmin ? { action: { label: "Add First Level", onClick: openAdd } } : {})}
             />
@@ -498,7 +495,7 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
         <HrSheet
           open={editMeta}
           onOpenChange={(o) => { if (!o) setEditMeta(false); }}
-          title="Edit Ladder Info"
+          title="Edit ladder info"
           description="Update the metadata for this career ladder."
           onSubmit={handleSaveMeta}
           submitLabel="Save Changes"

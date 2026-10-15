@@ -11,7 +11,6 @@ import type { HelpdeskTicketFormValues } from "@/lib/validations/common-forms";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { useSearchParams, useRouter } from "next/navigation";
-import { EmptyTicketIllustration } from "@/components/illustrations";
 import { useSession } from "next-auth/react";
 import { useHrHelpdeskTickets, useCreateHelpdeskTicket } from "@/lib/api/hooks/hr";
 import { AISuggestReplyButton } from "@/features/hr/helpdesk/ai-suggest-reply-button";
@@ -23,7 +22,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { ListToolbar } from "@/components/shared/list-toolbar";
-import { EmptySearchIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import {
   Select,
@@ -55,6 +53,7 @@ import { toast } from "sonner";
 import { Plus, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { TicketPriority, TicketStatus, HelpdeskTicket } from "@/types/hr";
+import { formatIST } from "@/lib/date-utils";
 
 const STATUS_OPTIONS: { value: TicketStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Status" },
@@ -205,7 +204,7 @@ export default function HelpdeskPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Helpdesk" subtitle="Submit and track your support tickets">
+      <PageWrapper title="Helpdesk">
         <div className="space-y-4">
           <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-2">
@@ -221,7 +220,6 @@ export default function HelpdeskPage() {
   return (
     <PageWrapper
       title="Helpdesk"
-      subtitle="Submit and track your support tickets"
       badge={`${stats.total} tickets`}
       actions={
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -301,14 +299,12 @@ export default function HelpdeskPage() {
         ) : filteredTickets.length === 0 ? (
           searchQuery || statusFilter ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="h-32 w-32" />}
               title="No results for these filters"
               description={searchQuery ? "No tickets match your search." : undefined}
               action={{ label: "Clear filters", onClick: clearFilters }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyTicketIllustration className="h-36 w-36" />}
               title="No tickets yet. Create your first one!"
               action={{ label: "New Ticket", onClick: () => setSheetOpen(true) }}
             />
@@ -395,7 +391,7 @@ export default function HelpdeskPage() {
                           </TableCell>
                           <TableCell
                             className="whitespace-nowrap text-muted-foreground tabular-nums"
-                            title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+                            title={ticket.createdAt ? formatIST(ticket.createdAt) : undefined}
                           >
                             {ticket.createdAt
                               ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })

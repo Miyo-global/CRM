@@ -4,7 +4,6 @@ import { use, useState, useMemo, useCallback, memo } from "react";
 import { usePages, useCreatePage, useUpdatePage } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Sheet,
@@ -353,7 +352,6 @@ export default function PagesPage({
       ) : !pages?.length ? (
         <div className="p-4 sm:p-6">
           <EmptyState
-            illustration={<EmptyDocumentsIllustration className="h-32 w-32 opacity-95" />}
             title="No pages yet"
             description="Create your first page to start documenting your project."
             action={{ label: "Create First Page", onClick: handleOpenCreatePage }}
@@ -423,7 +421,6 @@ export default function PagesPage({
                 <EmptyState
                   compact
                   className="border-0 bg-transparent"
-                  illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
                   title="Select a page"
                   description="Choose a page from the list to start editing"
                 />

@@ -19,7 +19,7 @@ import {
   Inbox,
   User,
   Diamond,
-  DollarSign,
+  IndianRupee,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,7 +63,7 @@ function navItems(baseUrl: string): NavItem[] {
     { label: "Wiki", icon: FileText, href: `${baseUrl}/pages` },
     { label: "Intake", icon: Inbox, href: `${baseUrl}/intake` },
     { label: "Milestones", icon: Diamond, href: `${baseUrl}/milestones` },
-    { label: "Budget", icon: DollarSign, href: `${baseUrl}/budget` },
+    { label: "Budget", icon: IndianRupee, href: `${baseUrl}/budget` },
     { label: "Reports", icon: BarChart3, href: `${baseUrl}/analytics` },
     { label: "My Tickets", icon: User, href: `${baseUrl}/my-tickets` },
     { label: "Settings", icon: Settings, href: `${baseUrl}/settings` },

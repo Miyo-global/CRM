@@ -7,6 +7,7 @@ export type PayslipPdfData = PayslipViewModel;
 export type BuildPayslipPdfOptions = {
   leaveDaysInMonth?: number;
   showPaidBadge?: boolean;
+  watermark?: string;
   orgFullNameOverride?: string;
 };
 
@@ -23,6 +24,7 @@ export function buildPayslipPdfDataFromPayroll(
   return buildPayslipViewModelFromPayroll(payroll, employee, org, {
     leaveDaysInMonth: opts?.leaveDaysInMonth,
     showPaidBadge: opts?.showPaidBadge,
+    watermark: opts?.watermark,
     orgFullNameOverride: opts?.orgFullNameOverride,
   });
 }

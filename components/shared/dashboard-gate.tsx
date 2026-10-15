@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { AccessDenied } from "./access-denied";
 import { Skeleton } from "@/components/ui/skeleton";
+import { canAccess } from "@/lib/constants/roles";
 
 interface DashboardGateProps {
   allowedRoles: string[];
@@ -28,7 +29,7 @@ export function DashboardGate({ allowedRoles, children }: DashboardGateProps) {
 
   const userRole = session?.user?.role;
 
-  if (!userRole || (!allowedRoles.includes(userRole) && userRole !== "CEO")) {
+  if (!canAccess(userRole, allowedRoles)) {
     return (
       <AccessDenied
         currentRole={userRole ?? undefined}

@@ -42,7 +42,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTargetIllustration } from "@/components/illustrations";
 import { Separator } from "@/components/ui/separator";
 import {
   GripVertical,
@@ -158,7 +157,6 @@ function EntityFieldsTab({ entityType }: { entityType: EntityType }) {
 
       {fields.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTargetIllustration className="size-24" />}
           title="No custom fields yet"
           description={`Add custom fields to capture additional information on ${entityType}s.`}
           compact
@@ -570,8 +568,7 @@ function FieldSheet({
 export default function CustomFieldsPage() {
   return (
     <PageWrapper
-      title="Custom Fields"
-      subtitle="Define custom data fields for leads, deals, and contacts"
+      title="Custom fields"
     >
       <Tabs defaultValue="lead">
         <TabsList variant="underline" className="mb-6">

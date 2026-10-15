@@ -23,7 +23,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
@@ -522,8 +521,7 @@ export default function DocumentReviewPage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Document Review"
-        subtitle="Review employee onboarding documents"
+        title="Document review"
       >
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -536,8 +534,7 @@ export default function DocumentReviewPage() {
 
   return (
     <PageWrapper
-      title="Document Review"
-      subtitle="Review employee onboarding documents"
+      title="Document review"
       badge={`${list.length} of ${allEmployees.length} employees`}
       filters={allEmployees.length > 0 ? (
           <div className="flex w-full flex-wrap items-center gap-2">
@@ -610,7 +607,6 @@ export default function DocumentReviewPage() {
         <QueryErrorState title="Couldn't load document review" error={error} onRetry={() => void refetch()} />
       ) : allEmployees.length === 0 ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration />}
           title="No documents to review"
           description="Once employees submit onboarding documents, they will appear here."
         />
@@ -619,7 +615,6 @@ export default function DocumentReviewPage() {
         <div className="space-y-3">
           {list.length === 0 ? (
             <EmptyState
-              illustration={<EmptySearchIllustration />}
               title="No results for these filters"
               description="No employees match your filters."
               action={{ label: "Clear filters", onClick: () => { setSearch(""); setRoleFilter("ALL"); setStatusFilter("ALL"); setDepartmentFilter("ALL"); } }}
@@ -810,7 +805,6 @@ export default function DocumentReviewPage() {
                 </div>
               ) : checklist.length === 0 ? (
                 <EmptyState
-                  illustration={<EmptyDocumentsIllustration className="size-24" />}
                   title="No document types configured"
                   description="Configure document types and role requirements in Document Types before reviewing submissions."
                   compact
@@ -931,7 +925,7 @@ export default function DocumentReviewPage() {
       <ConfirmActionDialog
         open={approveDoc !== null}
         onOpenChange={(open) => { if (!open) setApproveDoc(null); }}
-        title="Approve Document"
+        title="Approve document"
         description={`Approve "${approveDoc?.documentTypeName}" submitted by ${toTitleCase(reviewUserName)}?`}
         confirmLabel="Approve"
         variant="default"

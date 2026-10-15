@@ -14,6 +14,14 @@ import {
   FormMessage,
 } from "../../ui/form";
 
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import {
+  PT_BANDS,
+  professionalTax,
+  professionalTaxBandLabel,
+  splitEarnings,
+} from "@/lib/payroll/rules";
+
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
 interface StepSkillsPayProps {
@@ -21,6 +29,10 @@ interface StepSkillsPayProps {
 }
 
 export function StepSkillsPay({ form }: StepSkillsPayProps) {
+  const salaryEntered = Number(form.watch("monthlySalary")) || 0;
+  const earnings = splitEarnings(salaryEntered);
+  const pt = professionalTax(salaryEntered);
+
   return (
     <div className="space-y-5">
       <FormField
@@ -144,26 +156,31 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
                 </div>
               </FormControl>
               <FormDescription>
-                Salary breakdown: Basic (50%) + HRA (25%) + Special Allowance (25%) - Professional Tax (&#8377;200)
+                Basic (50%) + HRA (25%) + Special allowance (25%), less professional tax by band
+                (&#8377;{PT_BANDS[0]!.amount} up to &#8377;{PT_BANDS[0]!.upTo.toLocaleString(DEFAULT_LOCALE)},
+                &#8377;{PT_BANDS[1]!.amount} above it)
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {form.watch("monthlySalary") && Number(form.watch("monthlySalary")) > 0 && (
+        {salaryEntered > 0 && (
           <div className="mt-4 rounded-lg border bg-surface-sunken/40 p-4 text-sm tabular-nums">
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <span className="text-muted-foreground">Basic Pay:</span>
-              <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.5).toLocaleString()}</span>
+              <span className="font-medium">&#8377;{earnings.basicSalary.toLocaleString(DEFAULT_LOCALE)}</span>
               <span className="text-muted-foreground">HRA:</span>
-              <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.25).toLocaleString()}</span>
+              <span className="font-medium">&#8377;{earnings.hra.toLocaleString(DEFAULT_LOCALE)}</span>
               <span className="text-muted-foreground">Special Allowance:</span>
-              <span className="font-medium">&#8377;{(Number(form.watch("monthlySalary")) * 0.25).toLocaleString()}</span>
+              <span className="font-medium">&#8377;{earnings.specialAllowance.toLocaleString(DEFAULT_LOCALE)}</span>
               <span className="text-muted-foreground">Professional Tax:</span>
-              <span className="font-medium text-danger-strong">-&#8377;200</span>
+              <span className="font-medium text-danger-strong">-&#8377;{pt.toLocaleString(DEFAULT_LOCALE)}</span>
               <span className="text-muted-foreground font-semibold border-t pt-2">Net Salary:</span>
-              <span className="font-bold text-success-strong border-t pt-2">&#8377;{(Number(form.watch("monthlySalary")) - 200).toLocaleString()}</span>
+              <span className="font-bold text-success-strong border-t pt-2">
+                &#8377;{(salaryEntered - pt).toLocaleString(DEFAULT_LOCALE)}
+              </span>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">{professionalTaxBandLabel(salaryEntered)}</p>
           </div>
         )}
       </div>

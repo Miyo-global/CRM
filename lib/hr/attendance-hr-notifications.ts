@@ -36,7 +36,10 @@ export function notifyHrEmployeeCheckIn(params: {
     context = " (Sunday).";
   }
 
+  // In-app only: HR was getting an email for every single check-in (A35).
+  // The weekly attendance report covers the summary.
   void notifyByRoles(params.orgId, [ROLES.HR], {
+    email: false,
     type: "INFO",
     title: "Attendance — check-in",
     message: `${who} checked in on ${params.date} at ${when} (IST).${context}`,
@@ -64,6 +67,7 @@ export function notifyHrEmployeeCheckOut(params: {
   const when = formatIst(params.at);
 
   void notifyByRoles(params.orgId, [ROLES.HR], {
+    email: false,
     type: "INFO",
     title: "Attendance — check-out",
     message: `${who} checked out on ${params.date} at ${when} (IST).`,

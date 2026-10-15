@@ -13,7 +13,6 @@ import { Card } from "@/components/ui/card";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { NotFoundIllustration } from "@/components/illustrations";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -183,7 +182,6 @@ export default function ProjectSettingsPage({ params }: PageProps) {
       <PageWrapper title="Settings">
         <div role="alert">
           <EmptyState
-            illustration={<NotFoundIllustration className="h-32 w-32 opacity-95" />}
             title="Project not found"
             description="The requested project could not be loaded."
           />

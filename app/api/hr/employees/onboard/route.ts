@@ -1,4 +1,6 @@
-import { withAdmin, ok, err, parseBody } from "@/lib/api/helpers";
+import { withRoles, ok, err, parseBody } from "@/lib/api/helpers";
+import { ONBOARDING_MUTATE_ROLES } from "@/lib/constants/roles";
+import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
 import { db } from "@/lib/db";
 import { users, organizationMembers, salaryStructures, passwordResetTokens } from "@/lib/db/schema";
 import { formatDateOnly } from "@/lib/date-utils";
@@ -23,7 +25,7 @@ import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 
 export async function POST(req: NextRequest) {
-  return withAdmin(async (session) => {
+  return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
     const body = await parseBody(req, onboardEmployeeInputSchema);
 
     const existing = await db.query.users.findFirst({
@@ -58,10 +60,10 @@ export async function POST(req: NextRequest) {
       return err(minSalaryError, 400);
     }
 
-    // No shared default: the employee sets their own password through the
-    // emailed setup link below, so an unsupplied password becomes an
-    // unguessable random one rather than a company-wide constant.
-    const passwordHash = await hash(body.password || nanoid(48), 12);
+    // The employee sets their own password through the emailed set-up link
+    // below, which also verifies their address. Until then the stored hash is
+    // of an unguessable random string (A15).
+    const passwordHash = await hash(nanoid(48), 12);
     const userId = randomUUID();
 
     let employeeId = normalizeEmployeeIdInput(body.employeeId);
@@ -149,6 +151,21 @@ export async function POST(req: NextRequest) {
       metadata: { employeeId: newUser.id },
       excludeUserId: session.user.id,
     }).catch(() => {});
+
+    // Start the checklist straight away, so a successful hire always shows in
+    // Onboarding › Progress (A21). A failure here must not fail the hire.
+    try {
+      await startOnboardingForUser({
+        orgId: session.orgId,
+        userId: newUser.id,
+        joiningDate: body.joiningDate ?? null,
+      });
+    } catch (onboardingErr) {
+      logger.error("Failed to start onboarding checklist", {
+        userId: newUser.id,
+        error: onboardingErr instanceof Error ? onboardingErr.message : "Unknown",
+      });
+    }
 
     void inngest.send({
       name: "hr/employee.onboarded",

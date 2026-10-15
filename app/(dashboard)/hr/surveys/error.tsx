@@ -9,8 +9,8 @@ export default function HrsurveysError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Surveys Error"
-      fallbackMessage="Failed to load Surveys. Please try again."
+      title="Couldn't load surveys"
+      fallbackMessage="Something went wrong loading surveys. Try again."
     />
   );
 }

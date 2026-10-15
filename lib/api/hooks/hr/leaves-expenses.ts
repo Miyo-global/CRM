@@ -95,6 +95,40 @@ export function useHrTeamLeaves() {
   });
 }
 
+const LEAVE_TEAM_KEY = ["miyoglobal", "hr", "leaves", "team"] as const;
+
+interface TeamLeaveCache {
+  pending?: Array<{ id: number; status?: string | null }>;
+  all?: Array<{ id: number; status?: string | null }>;
+}
+
+/**
+ * Move a decided request out of the pending list straight away, so Approve and
+ * Reject feel instant instead of waiting ~5s for the refetch (A33).
+ */
+function optimisticLeaveDecision(
+  qc: ReturnType<typeof useQueryClient>,
+  leaveId: number,
+  status: "APPROVED" | "REJECTED",
+) {
+  const previous = qc.getQueryData<TeamLeaveCache>(LEAVE_TEAM_KEY);
+  if (previous) {
+    qc.setQueryData<TeamLeaveCache>(LEAVE_TEAM_KEY, {
+      ...previous,
+      pending: (previous.pending ?? []).filter((r) => r.id !== leaveId),
+      all: (previous.all ?? []).map((r) => (r.id === leaveId ? { ...r, status } : r)),
+    });
+  }
+  return previous;
+}
+
+function rollbackLeaveDecision(
+  qc: ReturnType<typeof useQueryClient>,
+  previous: TeamLeaveCache | undefined,
+) {
+  if (previous) qc.setQueryData(LEAVE_TEAM_KEY, previous);
+}
+
 export function useApproveLeaveDedicated() {
   const qc = useQueryClient();
   return useMutation({
@@ -102,7 +136,9 @@ export function useApproveLeaveDedicated() {
       apiClient.put<{ success: boolean }>(`/hr/leaves/${leaveId}/approve`, {
         comment,
       }),
-    onSuccess: () => {
+    onMutate: ({ leaveId }) => ({ previous: optimisticLeaveDecision(qc, leaveId, "APPROVED") }),
+    onError: (_err, _vars, context) => rollbackLeaveDecision(qc, context?.previous),
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leaves", "team"] });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leavesMyRequests"] });
@@ -127,7 +163,9 @@ export function useRejectLeaveDedicated() {
         reason,
         comment,
       }),
-    onSuccess: () => {
+    onMutate: ({ leaveId }) => ({ previous: optimisticLeaveDecision(qc, leaveId, "REJECTED") }),
+    onError: (_err, _vars, context) => rollbackLeaveDecision(qc, context?.previous),
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leaves", "team"] });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leavesMyRequests"] });
@@ -660,7 +698,12 @@ export function useAddHoliday() {
   return useMutation({
     mutationFn: (data: AddHolidayInput) =>
       apiClient.post<{ success: boolean }>("/hr/holidays", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 
@@ -669,7 +712,12 @@ export function useDeleteHoliday() {
   return useMutation({
     mutationFn: ({ holidayId }: DeleteHolidayInput) =>
       apiClient.delete<{ success: boolean }>(`/hr/holidays/${holidayId}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 
@@ -691,7 +739,12 @@ export function useUpdateHoliday() {
         `/hr/holidays/${holidayId}`,
         patch,
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+    onSuccess: () => {
+      // Holiday edits only affect holiday lists; invalidating the whole HR
+      // cache made every page on screen refetch and flash a skeleton (A43).
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
+      qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
+    },
   });
 }
 

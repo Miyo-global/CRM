@@ -3,7 +3,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { usePersonalDashboard } from "@/lib/api/hooks/dashboard";
@@ -30,7 +29,7 @@ export function MyTasksWidget() {
 
   return (
     <WidgetCard
-      title="My Tasks"
+      title="My tasks"
       icon={ListChecks}
       tone="info"
       count={tasks.length || undefined}
@@ -46,7 +45,6 @@ export function MyTasksWidget() {
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : !tasks.length ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="h-20 w-20" />}
           title="No pending tasks"
           description="You're all caught up."
           compact

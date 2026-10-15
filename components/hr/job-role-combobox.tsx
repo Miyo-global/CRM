@@ -26,16 +26,20 @@ export interface JobRole {
 
 // Local query key — kept out of the shared lib/query-keys.ts on purpose.
 const jobRolesKey = (departmentId?: number | null) =>
-  ["miyoglobal", "hr", "jobRoles", departmentId ?? null] as const;
+  ["miyoglobal", "hr", "jobRoles", departmentId ?? "none"] as const;
 
+/**
+ * `departmentId` scopes the catalog: a number gives that department plus
+ * org-wide titles, null gives org-wide titles only, and undefined gives every
+ * title in the org (A20).
+ */
 function useJobRoles(departmentId?: number | null) {
   return useQuery<JobRole[], Error>({
     queryKey: jobRolesKey(departmentId),
     queryFn: () =>
-      apiClient.get<JobRole[]>(
-        "/hr/job-roles",
-        departmentId != null ? { departmentId: String(departmentId) } : undefined,
-      ),
+      apiClient.get<JobRole[]>("/hr/job-roles", {
+        departmentId: departmentId == null ? "none" : String(departmentId),
+      }),
     staleTime: 60_000,
   });
 }

@@ -156,7 +156,7 @@ function WebhooksContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Webhooks" subtitle="Send real-time events to external endpoints">
+      <PageWrapper title="Webhooks">
         <div className="space-y-4">
           {[1, 2].map(i => <Skeleton key={i} className="h-32" />)}
         </div>
@@ -167,7 +167,6 @@ function WebhooksContent() {
   return (
     <PageWrapper
       title="Webhooks"
-      subtitle="Send real-time events to external systems when things happen in the CRM"
       actions={
         <Button onClick={() => setSheetOpen(true)}>
           <Plus aria-hidden />

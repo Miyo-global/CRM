@@ -9,7 +9,7 @@ export default function OnboardingError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      fallbackMessage="Failed to load onboarding. Please try again."
+      fallbackMessage="Something went wrong loading onboarding. Try again."
       layout="centered"
     />
   );

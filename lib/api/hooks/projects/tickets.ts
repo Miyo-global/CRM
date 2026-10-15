@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { mergeMutationOptions } from "@/lib/api/hooks/mutation-options";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   Ticket,
@@ -76,7 +77,7 @@ export function useCreateTicket(
   options?: Omit<UseMutationOptions<Ticket, Error, CreateTicketInput>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<Ticket, Error, CreateTicketInput>({
+  return useMutation<Ticket, Error, CreateTicketInput>(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }) =>
       apiClient.post<Ticket>(`/projects/${projectId}/tickets`, data),
     onSuccess: (_data, variables) => {
@@ -87,8 +88,7 @@ export function useCreateTicket(
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateTicket(
@@ -96,7 +96,7 @@ export function useUpdateTicket(
   options?: Omit<UseMutationOptions<{ success: boolean }, Error, UpdateTicketInput>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, UpdateTicketInput>({
+  return useMutation<{ success: boolean }, Error, UpdateTicketInput>(mergeMutationOptions({
     mutationFn: ({ ticketId, ...data }) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}`,
@@ -110,8 +110,7 @@ export function useUpdateTicket(
         queryKey: queryKeys.projects.tickets({ projectId }),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteTicket(
@@ -119,7 +118,7 @@ export function useDeleteTicket(
   options?: Omit<UseMutationOptions<{ success: boolean }, Error, { ticketId: number }>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, { ticketId: number }>({
+  return useMutation<{ success: boolean }, Error, { ticketId: number }>(mergeMutationOptions({
     mutationFn: ({ ticketId }) =>
       apiClient.delete<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}`
@@ -132,13 +131,12 @@ export function useDeleteTicket(
         queryKey: queryKeys.projects.detail(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useMoveTicket(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, items }: MoveTicketInput) =>
       apiClient.patch<{ success: boolean }>(`/projects/${projectId}/tickets/reorder`, { items }),
     onSuccess: (_data: unknown, variables: MoveTicketInput) => {
@@ -146,8 +144,7 @@ export function useMoveTicket(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useCustomStates(
@@ -297,7 +294,7 @@ export function useUpdateTicketComment(
     { id: number; content: string; updatedAt: string | Date | null },
     Error,
     { ticketId: number; projectId?: number; commentId: number; content: string }
-  >({
+  >(mergeMutationOptions({
     mutationFn: ({ ticketId, projectId = 0, commentId, content }) =>
       apiClient.patch<{ id: number; content: string; updatedAt: string | Date | null }>(
         `/projects/${projectId}/tickets/${ticketId}/comments/${commentId}`,
@@ -322,8 +319,7 @@ export function useUpdateTicketComment(
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteTicketComment(
@@ -341,7 +337,7 @@ export function useDeleteTicketComment(
     { success: boolean },
     Error,
     { ticketId: number; projectId?: number; commentId: number }
-  >({
+  >(mergeMutationOptions({
     mutationFn: ({ ticketId, projectId = 0, commentId }) =>
       apiClient.delete<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}/comments/${commentId}`
@@ -361,15 +357,14 @@ export function useDeleteTicketComment(
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useAddLabelToTicket(
   options?: Omit<UseMutationOptions<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>({
+  return useMutation<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>(mergeMutationOptions({
     mutationFn: ({ ticketId, projectId = 0, labelId }) =>
       apiClient.post<{ success: boolean }>(`/projects/${projectId}/tickets/${ticketId}/labels`, { labelId }),
     onSuccess: (_data, variables) => {
@@ -377,15 +372,14 @@ export function useAddLabelToTicket(
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useRemoveLabelFromTicket(
   options?: Omit<UseMutationOptions<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>({
+  return useMutation<{ success: boolean }, Error, { ticketId: number; projectId?: number; labelId: number }>(mergeMutationOptions({
     mutationFn: ({ ticketId, projectId = 0, labelId }) =>
       apiClient.delete<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}/labels/${labelId}`
@@ -395,8 +389,7 @@ export function useRemoveLabelFromTicket(
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useSubtasks(
@@ -420,14 +413,13 @@ export function useCreateOrgLabel(
   options?: Omit<UseMutationOptions<TicketLabel, Error, CreateLabelInput>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<TicketLabel, Error, CreateLabelInput>({
+  return useMutation<TicketLabel, Error, CreateLabelInput>(mergeMutationOptions({
     mutationFn: (data) =>
       apiClient.post<TicketLabel>("/projects/labels", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.labels() });
     },
-    ...options,
-  });
+  }, options));
 }
 
 type AddAttachmentInput = {
@@ -521,7 +513,7 @@ export function useAddAttachment(
   options?: Omit<UseMutationOptions<{ id: number }, Error, AddAttachmentInput>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ id: number }, Error, AddAttachmentInput>({
+  return useMutation<{ id: number }, Error, AddAttachmentInput>(mergeMutationOptions({
     mutationFn: ({ ticketId, projectId = 0, fileName, fileUrl, fileKey, fileSize, mimeType }) =>
       apiClient.post<{ id: number }>(`/projects/${projectId}/tickets/${ticketId}/attachments`, {
         fileName,
@@ -535,6 +527,5 @@ export function useAddAttachment(
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }

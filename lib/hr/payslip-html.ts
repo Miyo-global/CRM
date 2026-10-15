@@ -29,9 +29,15 @@ export function buildPayslipHtml(vm: PayslipViewModel, options: BuildPayslipHtml
     );
   }
 
-  const paidBlock = vm.showPaidBadge
-    ? `<div class="header-slip" style="min-width:72px;text-align:right;"><div class="paid-badge">PAID</div></div>`
-    : `<div class="header-slip" style="min-width:72px;text-align:right;"></div>`;
+  const statusBadge = vm.showPaidBadge
+    ? `<div class="paid-badge">PAID</div>`
+    : vm.watermark
+      ? `<div class="draft-badge">${esc(vm.watermark)}</div>`
+      : "";
+  const paidBlock = `<div class="header-slip" style="min-width:72px;text-align:right;">${statusBadge}</div>`;
+  const watermarkBlock = vm.watermark
+    ? `<div class="watermark" aria-hidden="true">${esc(vm.watermark)}</div>`
+    : "";
 
   const printBlock = includePrintToolbar
     ? `<div class="no-print" style="text-align:center;padding:12px;background:${BRAND.sunken};">
@@ -58,6 +64,8 @@ export function buildPayslipHtml(vm: PayslipViewModel, options: BuildPayslipHtml
     .header-company h1 { font-size: 20px; font-weight: 700; color: ${BRAND.ink}; }
     .header-company p { font-size: 11px; color: ${BRAND.inkMuted}; margin-top: 2px; }
     .header-slip { text-align: right; }
+    .draft-badge { display: inline-block; background: ${BRAND.inkMuted}; color: ${BRAND.white}; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-top: 4px; letter-spacing: 0.05em; }
+    .watermark { position: fixed; top: 45%; left: 0; right: 0; text-align: center; font-size: 96px; font-weight: 800; color: ${BRAND.ink}; opacity: 0.08; transform: rotate(-24deg); pointer-events: none; letter-spacing: 0.1em; }
     .paid-badge { display: inline-block; background: ${BRAND.success}; color: ${BRAND.white}; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-top: 4px; letter-spacing: 0.05em; }
     .detail-section { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid ${BRAND.border}; }
     .detail-col { padding: 14px 20px; }
@@ -94,6 +102,7 @@ export function buildPayslipHtml(vm: PayslipViewModel, options: BuildPayslipHtml
   </style>
 </head>
 <body>
+  ${watermarkBlock}
   ${printBlock}
   <div class="page">
     <div class="header" style="border-bottom:1px solid ${BRAND.border};padding-bottom:12px;">

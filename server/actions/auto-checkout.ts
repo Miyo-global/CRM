@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { attendance } from "@/lib/db/schema";
 import { eq, and, isNull, lte } from "drizzle-orm";
 import { istSevenPmUtcForDateStr, DEFAULT_AUTO_CHECKOUT_BREAK_HOURS } from "@/lib/attendance-auto-checkout";
-import { getTodayIST } from "@/lib/careers/application-deadline";
+import { getTodayIST } from "@/lib/hr/application-dates";
 
 export async function processAutoCheckout() {
   const openRecords = await db.query.attendance.findMany({

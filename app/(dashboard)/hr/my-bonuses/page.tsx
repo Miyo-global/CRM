@@ -27,8 +27,7 @@ export default function MyBonusesPage() {
 
   return (
     <PageWrapper
-      title="My Bonuses"
-      subtitle="View your bonus history and payment status"
+      title="My bonuses"
       actions={
         <Button variant="ghost" size="sm" onClick={handleGoBack}>
           <ArrowLeft className="size-4" aria-hidden="true" />

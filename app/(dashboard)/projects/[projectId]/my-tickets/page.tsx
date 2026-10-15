@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useMemo, useCallback } from "react";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useSession } from "next-auth/react";
 import { useProject } from "@/lib/hooks/trpc-hooks";
@@ -107,7 +106,7 @@ export default function MyTicketsPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <PageWrapper title="My Tickets" subtitle="Tickets assigned to you">
+      <PageWrapper title="My tickets">
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
@@ -121,7 +120,7 @@ export default function MyTicketsPage({ params }: PageProps) {
 
   return (
     <PageWrapper
-      title="My Tickets"
+      title="My tickets"
       subtitle={`${myTickets.length} ticket${myTickets.length !== 1 ? "s" : ""} assigned to you`}
       badge={String(myTickets.length)}
       filters={
@@ -133,7 +132,6 @@ export default function MyTicketsPage({ params }: PageProps) {
     >
       {myTickets.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration />}
           title="No tickets assigned to you"
           description="Tickets you create or get assigned to will appear here."
         />
@@ -164,7 +162,6 @@ export default function MyTicketsPage({ params }: PageProps) {
                   <TableCell colSpan={6}>
                     <EmptyState
                       compact
-                      illustration={<EmptyTasksIllustration className="size-24" />}
                       title="No results for these filters"
                       description="No tickets match your current filters."
                       className="border-0 bg-transparent"

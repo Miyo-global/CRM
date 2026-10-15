@@ -5,7 +5,6 @@ import {
   useRoles,
   useDeleteRole,
 } from "@/lib/api/hooks/roles";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import {
   Plus,
   Trash2,
@@ -102,8 +101,7 @@ function RolesContent() {
 
   return (
     <PageWrapper
-      title="Roles & Permissions"
-      subtitle="Configure access controls for each role"
+      title="Roles & permissions"
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">
@@ -159,7 +157,6 @@ function RolesContent() {
         ) : (
           <EmptyState
             className="min-h-64 lg:min-h-0 lg:h-full"
-            illustration={<EmptyApprovalIllustration className="size-40" />}
             title="Select a role"
             description="Choose a role from the list to view and edit permissions"
           />
@@ -172,7 +169,7 @@ function RolesContent() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={handleDeleteDialogClose}
-        title="Delete Role"
+        title="Delete role"
         description={`Are you sure you want to delete ${deleteTarget?.name ?? "this role"}? Users with this role will lose their assigned permissions.`}
         confirmLabel="Delete"
         destructive

@@ -9,7 +9,7 @@ export default function SettingsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Settings Error"
+      title="Couldn't load settings"
       fallbackMessage="Failed to load settings."
     />
   );

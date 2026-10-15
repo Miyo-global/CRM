@@ -25,7 +25,6 @@ import {
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyPersonIllustration, EmptyUploadIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -343,7 +342,6 @@ function EmployeeDocumentsTab() {
   if (checklist.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyUploadIllustration className="size-24" />}
         title="No documents required"
         description="Your HR team hasn't configured any required documents yet."
         compact
@@ -561,7 +559,7 @@ function HrWorkflowTab() {
   return (
     <div className="space-y-4">
       <p className="rounded-lg border bg-surface-sunken/40 px-4 py-3 text-sm text-muted-foreground">
-        New hires are created under the <strong>Add Employee</strong> tab. Their onboarding
+        New hires are created under the <strong>Add employee</strong> tab. Their onboarding
         checklist starts automatically after you submit that form. Use the action below only
         for an <strong>existing</strong> employee who still needs a checklist.
       </p>
@@ -579,7 +577,6 @@ function HrWorkflowTab() {
 
       {rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="size-24" />}
           title="No onboardings in progress"
           description="Add a new employee first, or initiate a checklist for someone who already exists in the directory."
           compact
@@ -685,7 +682,7 @@ function HrDocumentsTab() {
 
 
 export default function OnboardingPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const role = session?.user?.role;
   const isHROrCEO = isOnboardingManager(role);
   const searchParams = useSearchParams();
@@ -708,6 +705,19 @@ export default function OnboardingPage() {
     },
     [pathname, router, searchParams],
   );
+
+  // Until the role is known, show a neutral skeleton rather than another
+  // role's view (A22).
+  if (status === "loading" || !role) {
+    return (
+      <PageWrapper title="Onboarding">
+        <div className="space-y-4">
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper
@@ -733,7 +743,7 @@ export default function OnboardingPage() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList variant="underline">
             <TabsTrigger value="wizard">
-              Add Employee
+              Add employee
             </TabsTrigger>
             <TabsTrigger value="workflow">
               Onboarding progress

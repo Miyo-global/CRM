@@ -20,11 +20,11 @@ import { ReimbursementRequestForm } from "@/features/hr/reimbursements/reimburse
 import type { ReimbursementRequestFormValues } from "@/lib/validations/common-forms";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2, XCircle, DollarSign } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { formatINRWhole } from "@/lib/format-utils";
 
 function statusTone(s: string | null): Tone {
   if (s === "APPROVED" || s === "PAID") return "success";
@@ -80,7 +80,7 @@ export default function ReimbursementsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Reimbursements" subtitle="Expense reimbursement requests">
+      <PageWrapper title="Reimbursements">
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -89,18 +89,16 @@ export default function ReimbursementsPage() {
   return (
     <PageWrapper
       title="Reimbursements"
-      subtitle="Submit and track expense reimbursements"
       badge={`${items?.length ?? 0} requests`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Request</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New request</Button>}
     >
       {isError ? (
         <QueryErrorState title="Couldn't load reimbursements" error={error} onRetry={() => refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration />}
           title="No reimbursement requests yet"
           description="Submit an expense to start tracking reimbursement requests."
-          action={{ label: "New Request", onClick: () => setSheetOpen(true) }}
+          action={{ label: "New request", onClick: () => setSheetOpen(true) }}
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -120,7 +118,7 @@ export default function ReimbursementsPage() {
                 <TableRow key={r.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.category}</p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
@@ -129,7 +127,7 @@ export default function ReimbursementsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-semibold">${Number(r.amount).toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-mono font-semibold tabular-nums">{formatINRWhole(r.amount)}</TableCell>
                   <TableCell>
                     <StatusPill tone={statusTone(r.status)} dot>{r.status}</StatusPill>
                   </TableCell>
@@ -160,7 +158,7 @@ export default function ReimbursementsPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Submit Reimbursement"
+        title="Submit reimbursement"
         showSubmit={false}
         footer={
           <div className="flex justify-end gap-2 py-1">
@@ -179,7 +177,7 @@ export default function ReimbursementsPage() {
       <ConfirmActionDialog
         open={rejectId !== null}
         onOpenChange={(open) => { if (!open) setRejectId(null); }}
-        title="Reject Reimbursement"
+        title="Reject reimbursement"
         description="Are you sure you want to reject this reimbursement request?"
         confirmLabel="Reject"
         variant="destructive"

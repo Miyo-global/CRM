@@ -14,10 +14,10 @@ import {
 } from "@/lib/api/hooks/hr";
 import {
   useOvertimePreview,
+  usePayrollPreview,
   usePayrollSchedule,
   useGeneratePayslipWithPeriod,
 } from "@/lib/api/hooks/hr/payroll-extended";
-import { useSalaryLoans } from "@/lib/api/hooks/hr/loans";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -35,11 +35,10 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { PayrollRunStepper } from "@/features/hr/payroll/payroll-run-stepper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Users, DollarSign, CreditCard, Plus } from "lucide-react";
+import { Users, IndianRupee, CreditCard, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import type { Employee, PayrollWithUser } from "@/types/hr";
@@ -48,10 +47,6 @@ import { isAxiosError } from "axios";
 import { PayrollTable } from "@/features/hr/payroll/payroll-table";
 import { PayrollRecordPreviewSheet } from "@/features/hr/payroll/payroll-record-preview-sheet";
 import { GeneratePayrollSheet, type PayrollPeriodMode } from "@/features/hr/payroll/generate-payroll-sheet";
-import {
-  buildPayslipPreviewFromEmployee,
-  PROFESSIONAL_TAX_INR,
-} from "@/lib/hr/payroll-calculations";
 import {
   pickSalaryStructureForPayrollMonth,
   resolvePayrollMonthlyCtc,
@@ -147,9 +142,6 @@ export default function PayrollPage() {
     [salaryStructureList, selectedMonth]
   );
 
-  const salaryRowForPreview = pickedStructureForMonth ?? activeSalary;
-
-  const { data: salaryLoans } = useSalaryLoans();
 
   const generateWithPeriodMutation = useGeneratePayslipWithPeriod();
   const approvePayrollMutation = useApprovePayroll();
@@ -162,69 +154,40 @@ export default function PayrollPage() {
     return employees.find((e) => e.id === selectedEmployee) ?? null;
   }, [selectedEmployee, employees]);
 
+  // Preview comes from the server: same loader, same pure function as generate,
+  // so the preview is exactly what gets saved (A3).
+  const { data: serverPreview, isFetching: isPreviewLoading } = usePayrollPreview({
+    userId: selectedEmployee,
+    month: selectedMonth,
+    bonus: parseFloat(bonus) || 0,
+    otherDeductions: parseFloat(otherDeductions) || 0,
+    ...(periodMode === "custom" && periodEnd ? { periodEnd } : {}),
+    enabled: !!selectedEmployee,
+  });
+
   const payslipPreview = useMemo(() => {
-    if (!selectedEmployeeData) return null;
-
-    const otAmt = overtimePreview?.overtimeAmount ?? 0;
-    const employeeMonthlySalary = parseFloat(selectedEmployeeData.monthlySalary || "0");
-    const structureDeductions = parseFloat(salaryRowForPreview?.deductions ?? "0");
-
-    const targetCtc = resolvePayrollMonthlyCtc({
-      picked: pickedStructureForMonth,
-      fallbackStructure: activeSalary,
-      employeeMonthlySalary,
-    });
-    if (targetCtc <= 0) return null;
-
-    const s = salaryRowForPreview;
-    const statutory = s
-      ? {
-          pfApplicable: s.pfApplicable ?? false,
-          pfEmployeeRate: parseFloat(s.pfEmployeeRate ?? "12"),
-          pfEmployerRate: parseFloat(s.pfEmployerRate ?? "12"),
-          pfWageCeiling: parseFloat(s.pfWageCeiling ?? "15000"),
-          esiApplicable: s.esiApplicable ?? false,
-          esiEmployeeRate: parseFloat(s.esiEmployeeRate ?? "0.75"),
-          esiEmployerRate: parseFloat(s.esiEmployerRate ?? "3.25"),
-          esiWageCeiling: parseFloat(s.esiWageCeiling ?? "21000"),
-        }
-      : undefined;
-
-    const activeLoan = (salaryLoans ?? []).find(
-      (l) =>
-        l.userId === selectedEmployeeData.id &&
-        l.status === "ACTIVE" &&
-        (l.totalEmis ?? 0) > 0 &&
-        (l.paidEmis ?? 0) < (l.totalEmis ?? 0)
-    );
-    const advanceRecoveryAmount = activeLoan ? parseFloat(activeLoan.emiAmount ?? "0") : 0;
-
-    return buildPayslipPreviewFromEmployee({
-      monthlySalary: targetCtc,
-      month: selectedMonth,
-      lopDays: overtimePreview?.lopDays ?? 0,
-      otherDeductions: parseFloat(otherDeductions) || 0,
-      bonus: parseFloat(bonus) || 0,
-      overtimeAmount: otAmt,
-      overtimeType: otAmt > 0 ? "days" : "",
-      overtimeDays: overtimePreview?.overtimeDays ?? 0,
-      overtimeHours: 0,
-      salaryStructureDeductions: structureDeductions,
-      professionalTax: PROFESSIONAL_TAX_INR,
-      statutory,
-      advanceRecoveryAmount,
-    });
-  }, [
-    selectedEmployeeData,
-    selectedMonth,
-    otherDeductions,
-    bonus,
-    overtimePreview,
-    pickedStructureForMonth,
-    salaryRowForPreview,
-    activeSalary,
-    salaryLoans,
-  ]);
+    if (!serverPreview) return null;
+    return {
+      basicPay: serverPreview.basicSalary,
+      hra: serverPreview.hra,
+      allowances: serverPreview.specialAllowance,
+      grossSalary: serverPreview.grossSalary,
+      lopDeduction: serverPreview.lopDeduction,
+      professionalTax: serverPreview.professionalTax,
+      otherDeductions: serverPreview.otherDeductions,
+      bonus: serverPreview.bonus,
+      overtimeAmount: serverPreview.overtimeAmount,
+      overtimeType: serverPreview.overtimeDays > 0 ? "days" : "",
+      overtimeDays: serverPreview.overtimeDays,
+      overtimeHours: serverPreview.overtimeHours,
+      totalDeductions: serverPreview.totalDeductions,
+      netSalary: serverPreview.netSalary,
+      lopDays: serverPreview.lopDays,
+      workingDays: serverPreview.daysEmployed,
+      effectiveDays: Math.max(0, serverPreview.daysEmployed - serverPreview.lopDays),
+      salaryStructureDeductions: serverPreview.structureDeductions,
+    };
+  }, [serverPreview]);
 
   const resetSheet = () => {
     setGenerateSheetOpen(false);
@@ -389,7 +352,7 @@ export default function PayrollPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Payroll Management" subtitle="Generate and manage employee payrolls">
+      <PageWrapper title="Payroll management">
         <div className="space-y-6">
           <Skeleton className="h-16 w-full rounded-lg" />
           <Skeleton className="h-20 w-full rounded-lg" />
@@ -419,8 +382,7 @@ export default function PayrollPage() {
 
   return (
     <PageWrapper
-      title="Payroll Management"
-      subtitle="Generate and manage employee payrolls"
+      title="Payroll management"
       actions={
         <div className="flex gap-2 flex-wrap items-center">
           <div className="flex items-center gap-1.5">
@@ -509,7 +471,7 @@ export default function PayrollPage() {
             {
               label: "Total Gross",
               value: `${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`,
-              icon: DollarSign,
+              icon: IndianRupee,
             },
             {
               label: "Total Net Payout",
@@ -526,9 +488,8 @@ export default function PayrollPage() {
           <QueryErrorState title="Couldn't load payroll" error={error} onRetry={() => refetch()} />
         ) : (allPayrolls?.length ?? 0) === 0 ? (
           <EmptyState
-            illustration={<EmptyExpensesIllustration />}
-            title="No payroll records yet"
-            description={`No payroll generated for ${format(new Date(selectedMonth + "-01"), "MMMM yyyy")}. Generate payroll for all employees or create one for an individual.`}
+            title={`No payroll for ${format(new Date(selectedMonth + "-01"), "MMMM yyyy")}.`}
+            action={{ label: "Generate payroll", onClick: () => setGenerateSheetOpen(true) }}
           />
         ) : (
           <PayrollTable
@@ -556,9 +517,7 @@ export default function PayrollPage() {
         {(allPayrolls?.length ?? 0) > 0 && filteredPayrolls.length === 0 && (
           <EmptyState
             compact
-            illustration={<EmptySearchIllustration />}
-            title="No records for selected filters"
-            description="Try a different employee or month/year combination."
+            title="No records for these filters."
             action={employeeFilter !== "all" ? { label: "Clear filters", onClick: () => setEmployeeFilter("all") } : undefined}
           />
         )}

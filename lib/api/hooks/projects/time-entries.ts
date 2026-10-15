@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { mergeMutationOptions } from "@/lib/api/hooks/mutation-options";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   TimeEntry,
@@ -43,7 +44,7 @@ export function useMyTimeEntries(
 
 export function useLogTime(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ticketId, ...data }: LogTimeInput) =>
       apiClient.post<TimeEntry>(
         `/projects/${projectId}/tickets/${ticketId}/time-entries`,
@@ -57,13 +58,12 @@ export function useLogTime(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.ticket(variables.ticketId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateTimeEntry(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ entryId, ...data }: UpdateTimeEntryInput) =>
       apiClient.patch<TimeEntry>(`/projects/time-entries/${entryId}`, data),
     onSuccess: () => {
@@ -71,13 +71,12 @@ export function useUpdateTimeEntry(options?: Parameters<typeof useMutation>[0]) 
         queryKey: queryKeys.projects.timeEntries(),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteTimeEntry(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ entryId }: { entryId: number }) =>
       apiClient.delete<{ success: boolean }>(`/projects/time-entries/${entryId}`),
     onSuccess: () => {
@@ -85,8 +84,7 @@ export function useDeleteTimeEntry(options?: Parameters<typeof useMutation>[0]) 
         queryKey: queryKeys.projects.timeEntries(),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export interface TeamTimesheetFilters {
@@ -111,26 +109,24 @@ export function useAllTeamTimesheets(
 
 export function useApproveTimesheet(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ timesheetId }: { timesheetId: number }) =>
       apiClient.patch<{ success: boolean }>(`/projects/time-entries/${timesheetId}/approve`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.timeEntries() });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useRejectTimesheet(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ timesheetId, reason }: { timesheetId: number; reason?: string }) =>
       apiClient.patch<{ success: boolean }>(`/projects/time-entries/${timesheetId}/reject`, { reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.timeEntries() });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export interface BillingSummaryItem {

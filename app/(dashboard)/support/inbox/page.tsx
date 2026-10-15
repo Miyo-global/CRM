@@ -54,11 +54,11 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn, resolveImageUrl } from "@/lib/utils";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { EmptyTicketIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
+import { formatIST } from "@/lib/date-utils";
 
 const PRIORITY_TONES: Record<string, Tone> = {
   LOW: "neutral",
@@ -138,7 +138,7 @@ function InboxContent() {
   return (
     <>
       <PageWrapper
-        title="Support Inbox"
+        title="Support inbox"
         subtitle={
           statsLoading
             ? "Loading..."
@@ -203,7 +203,6 @@ function InboxContent() {
               ) : (
                 <EmptyState
                   compact
-                  illustration={<EmptyTicketIllustration className="size-24" />}
                   title="No tickets found"
                   description="New tickets will appear here."
                   action={{ label: "New Ticket", onClick: handleOpenCreate }}
@@ -231,7 +230,6 @@ function InboxContent() {
           ) : (
             <div className="flex flex-1 items-center justify-center p-6">
               <EmptyState
-                illustration={<EmptyTicketIllustration className="size-40" />}
                 title="Select a ticket"
                 description="Choose a ticket from the list to view its details"
                 className="border-0 bg-transparent"
@@ -289,7 +287,7 @@ function TicketListItem({ ticket, isSelected, onSelect }: TicketListItemProps) {
         <span className="text-xs text-muted-foreground">{ticket.status.replace("_", " ")}</span>
         <span
           className="ml-auto text-xs text-muted-foreground tabular-nums"
-          title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+          title={ticket.createdAt ? formatIST(ticket.createdAt) : undefined}
         >
           {ticket.createdAt ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true }) : ""}
         </span>
@@ -366,7 +364,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
 
   const isBreached = ticket.slaDeadline && new Date(ticket.slaDeadline) < new Date() && !["RESOLVED", "CLOSED"].includes(ticket.status);
   const messages = [...(ticket.messages ?? [])].reverse();
-  const fmtDate = (d: Date | string | null) => (d ? new Date(d).toLocaleString() : null);
+  const fmtDate = (d: Date | string | null) => (d ? formatIST(d) : null);
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">

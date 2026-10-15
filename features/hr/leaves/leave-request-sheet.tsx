@@ -41,10 +41,12 @@ interface LeaveRequestSheetProps {
   leaveTypes: LeaveType[];
   joiningDate: string | null;
   balances?: LeaveBalance[];
+  /** Days already requested and awaiting approval, by leave type name (A29). */
+  pendingDaysByType?: Record<string, number>;
 }
 
 export function LeaveRequestSheet({
-  open, onOpenChange, leaveTypes, joiningDate, balances = [],
+  open, onOpenChange, leaveTypes, joiningDate, balances = [], pendingDaysByType = {},
 }: LeaveRequestSheetProps) {
   const requestLeaveMutation = useRequestLeave();
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
@@ -59,10 +61,13 @@ export function LeaveRequestSheet({
           const matchedBal = balances.find((b) => b.leaveTypeId === selectedType.id);
           if (!matchedBal) return null;
           const available = Number(matchedBal.balance ?? 0);
-          return Number.isFinite(available) ? available : null;
+          if (!Number.isFinite(available)) return null;
+          // Pending requests already claim part of the balance (A29).
+          const pending = pendingDaysByType[selectedType.name] ?? 0;
+          return Math.max(0, available - pending);
         },
       }),
-    [leaveTypes, balances],
+    [leaveTypes, balances, pendingDaysByType],
   );
 
   const minDate = (() => {
@@ -113,11 +118,14 @@ export function LeaveRequestSheet({
     if (!matchedBal) return { requestedDays: days, balancePreview: null };
 
     const available = Number(matchedBal.balance ?? 0);
+    const pending = pendingDaysByType[selectedType.name] ?? 0;
+    const usable = Math.max(0, available - pending);
     return {
       requestedDays: days,
       balancePreview: {
-        available,
-        after: available - days,
+        available: usable,
+        pending,
+        after: usable - days,
         typeName: selectedType.name,
       },
     };
@@ -181,7 +189,7 @@ export function LeaveRequestSheet({
     <HrSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Request Leave"
+      title="Request leave"
       description="Requests are sent to HR automatically. You will be notified when they are reviewed."
       onSubmit={form.handleSubmit(onSubmit)}
       onCancel={handleCancel}
@@ -250,6 +258,7 @@ export function LeaveRequestSheet({
                       value={field.value}
                       onChange={field.onChange}
                       fromDate={watchedStartDate ? new Date(watchedStartDate) : (minDate ? new Date(minDate) : undefined)}
+                      defaultMonth={watchedStartDate ? new Date(watchedStartDate) : undefined}
                       placeholder="End date"
                     />
                   </FormControl>
@@ -371,9 +380,6 @@ export function LeaveRequestSheet({
                     onUploadComplete={handleAttachmentUpload}
                   />
                 </FormControl>
-                <p className="text-xs text-muted-foreground">
-                  {LEAVE_ATTACHMENT_UPLOAD_FORMAT_HINT}
-                </p>
                 {attachmentUrl && (
                   <p className="text-xs text-muted-foreground truncate">
                     Uploaded: {attachmentKey ?? attachmentUrl}
@@ -385,17 +391,22 @@ export function LeaveRequestSheet({
           />
 
           {balancePreview && requestedDays > 0 && (
-            <div className={`flex items-start gap-2 rounded-lg p-3 text-xs ${
+            <div className={`flex items-start gap-2 text-xs ${
               balancePreview.after < 0
-                ? "bg-danger-soft text-danger-strong"
-                : "bg-surface-sunken text-foreground"
+                ? "rounded-md bg-danger-soft p-3 text-danger-strong"
+                : "text-muted-foreground"
             }`}>
-              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {balancePreview.after < 0 && (
+                <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              )}
               <span>
                 This will consume{" "}
                 <strong>{requestedDays} day{requestedDays !== 1 ? "s" : ""}</strong>{" "}
                 of your{" "}
-                <strong>{balancePreview.available} remaining {balancePreview.typeName} days.</strong>
+                <strong>
+                  {balancePreview.available} available {balancePreview.typeName} days
+                  {balancePreview.pending > 0 ? ` (${balancePreview.pending} pending)` : ""}.
+                </strong>
                 {balancePreview.after >= 0 ? (
                   <> You will have <strong>{balancePreview.after} day{balancePreview.after !== 1 ? "s" : ""}</strong> left.</>
                 ) : (

@@ -9,8 +9,8 @@ export default function DocumentReviewError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Document Review Error"
-      fallbackMessage="Failed to load the document review dashboard. Please try again."
+      title="Couldn't load document review"
+      fallbackMessage="Something went wrong loading the document review dashboard. Try again."
     />
   );
 }

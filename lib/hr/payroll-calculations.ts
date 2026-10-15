@@ -347,6 +347,11 @@ export interface StrictAttendanceInput {
   leaveByDate: ReadonlyMap<string, LeaveCoverage>;
   freeLeaveDays?: number;
   evaluateThroughDate?: string;
+  /**
+   * First day the employee was on the payroll (YYYY-MM-DD). Days before it are
+   * not employed days: they are neither present, absent nor loss of pay (A2).
+   */
+  employedFromDate?: string;
 }
 
 export interface StrictAttendanceResult {
@@ -381,9 +386,12 @@ export function computeStrictAttendance(input: StrictAttendanceInput): StrictAtt
   let workingDays = 0;
   let leaveBudget = input.freeLeaveDays ?? MONTHLY_FREE_LEAVE_DAYS;
 
+  const employedFrom = input.employedFromDate?.slice(0, 10) ?? "";
+
   for (let day = 1; day <= calDays; day++) {
     const dateStr = `${input.month}-${String(day).padStart(2, "0")}`;
     if (dateStr > through) break;
+    if (employedFrom && dateStr < employedFrom) continue;
 
     const dow = new Date(year, month1 - 1, day).getDay();
     if (dow === 0) {

@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   Calendar,
   User,
-  BadgeDollarSign,
+  BadgeIndianRupee,
   Check,
   Paperclip,
   Clock,
@@ -98,7 +98,7 @@ export function TerminationCard({
               )}
               {severanceAmount && Number(severanceAmount) > 0 && (
                 <span className="flex items-center gap-1">
-                  <BadgeDollarSign className="size-3.5" aria-hidden="true" />
+                  <BadgeIndianRupee className="size-3.5" aria-hidden="true" />
                   ₹{Number(severanceAmount).toLocaleString(DEFAULT_LOCALE)}
                 </span>
               )}

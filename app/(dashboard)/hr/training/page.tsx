@@ -25,7 +25,6 @@ import {
   Trash2, Play, Archive, UserPlus,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -111,7 +110,7 @@ export default function TrainingPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Training" subtitle="Programs and development">
+      <PageWrapper title="Training">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-lg" />)}
         </div>
@@ -121,8 +120,7 @@ export default function TrainingPage() {
 
   return (
     <PageWrapper
-      title="Training & Development"
-      subtitle="Programs, courses, and certifications"
+      title="Training & development"
       badge={`${programs?.length ?? 0} programs`}
       actions={
         isAdmin ? (
@@ -136,7 +134,6 @@ export default function TrainingPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !programs?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No training programs yet"
           description="Programs, courses, and certifications will appear here."
           {...(isAdmin ? { action: { label: "New Program", onClick: () => setSheetOpen(true) } } : {})}
@@ -193,7 +190,7 @@ export default function TrainingPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create Training Program" onSubmit={handleCreate} submitLabel="Create" isPending={createProgram.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create training program" onSubmit={handleCreate} submitLabel="Create" isPending={createProgram.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Title</label>
           <Input placeholder="e.g., React Advanced Workshop" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -231,7 +228,7 @@ export default function TrainingPage() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Program"
+        title="Delete program"
         description="Are you sure? All enrollments will also be removed."
         confirmLabel="Delete"
         variant="destructive"

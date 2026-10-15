@@ -24,6 +24,8 @@ interface DashboardShellProps {
   userId: string;
   hasDashboardAccess: boolean;
   defaultCollapsed: boolean;
+  /** Resolved on the server so the sidebar badge needs no client round trip (A44). */
+  pendingLeaveApprovals?: number;
   children: React.ReactNode;
 }
 
@@ -31,6 +33,7 @@ export function DashboardShell({
   userId,
   hasDashboardAccess,
   defaultCollapsed,
+  pendingLeaveApprovals = 0,
   children,
 }: DashboardShellProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(defaultCollapsed);
@@ -68,7 +71,11 @@ export function DashboardShell({
             style={{ width: sidebarW }}
             className="relative z-sidebar hidden h-full min-h-0 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-out motion-reduce:transition-none lg:flex"
           >
-            <AppSidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+            <AppSidebar
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={handleToggleSidebar}
+              initialPendingLeaves={pendingLeaveApprovals}
+            />
           </aside>
         )}
 
@@ -87,7 +94,7 @@ export function DashboardShell({
                     className="z-modal w-64 gap-0 border-sidebar-border bg-sidebar p-0 [&>button]:text-sidebar-muted [&>button]:hover:bg-sidebar-accent [&>button]:hover:text-sidebar-accent-foreground"
                   >
                     <SheetTitle className="sr-only">Navigation</SheetTitle>
-                    <AppSidebar onNavigate={handleCloseMobileMenu} />
+                    <AppSidebar onNavigate={handleCloseMobileMenu} initialPendingLeaves={pendingLeaveApprovals} />
                   </SheetContent>
                 </Sheet>
               )}

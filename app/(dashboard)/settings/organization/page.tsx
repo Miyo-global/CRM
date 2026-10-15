@@ -10,9 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Clock, Globe, DollarSign, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
+import { Shield, Clock, Globe, IndianRupee, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useOrgSettings, useUpdateOrgSettings, useUpdateOrgSecuritySettings } from "@/lib/api/hooks/organization";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -228,7 +227,7 @@ export default function OrganizationSettingsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+      <PageWrapper title="Organization">
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-48 mb-2" />
@@ -245,10 +244,9 @@ export default function OrganizationSettingsPage() {
 
   if (!org) {
     return (
-      <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+      <PageWrapper title="Organization">
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="size-32" />}
-          title="No Organization Found"
+          title="No organization found"
           description="Please contact your administrator to set up an organization."
         />
       </PageWrapper>
@@ -256,7 +254,7 @@ export default function OrganizationSettingsPage() {
   }
 
   return (
-    <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+    <PageWrapper title="Organization">
       <div className="space-y-6">
         <Card>
           <CardHeader className="pb-2">
@@ -427,7 +425,7 @@ export default function OrganizationSettingsPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="currency" className="text-sm flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                    <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
                     Default Currency
                   </Label>
                   {isEditingConfig ? (

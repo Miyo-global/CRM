@@ -9,7 +9,7 @@ export default function BacklogError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Backlog Error"
+      title="Couldn't load backlog"
       fallbackMessage="Failed to load backlog."
     />
   );

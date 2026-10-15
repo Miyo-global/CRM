@@ -325,7 +325,6 @@ export interface ExecutiveDashboard {
   mrr: number;
   pipelineValue: number;
   headcount: number;
-  openRoles: number;
   newLeadsThisWeek: number;
   activeProjects: number;
   conversionRate: number;

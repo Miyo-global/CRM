@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -327,8 +326,7 @@ function AuditLogContent() {
 
   return (
     <PageWrapper
-      title="Audit Log"
-      subtitle="Track all system actions, logins, and changes across your organization."
+      title="Audit log"
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">
@@ -357,14 +355,12 @@ function AuditLogContent() {
               <div className="p-4">
                 {hasActiveFilters ? (
                   <EmptyState
-                    illustration={<EmptySearchIllustration className="size-32" />}
                     title="No results for these filters"
                     description="Try a different action, entity type or date range."
                     action={{ label: "Clear filters", onClick: resetFilters }}
                   />
                 ) : (
                   <EmptyState
-                    illustration={<EmptyDocumentsIllustration className="size-32" />}
                     title="No audit events found"
                     description="Activity across your workspace will appear here as it happens."
                   />

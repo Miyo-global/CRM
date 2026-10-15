@@ -17,6 +17,8 @@ interface DatePickerProps {
   className?: string;
   fromDate?: Date;
   toDate?: Date;
+  /** Month the calendar opens on when nothing is selected yet. */
+  defaultMonth?: Date;
   fromYear?: number;
   toYear?: number;
   id?: string;
@@ -45,6 +47,7 @@ export function DatePicker({
   className,
   fromDate,
   toDate,
+  defaultMonth: defaultMonthProp,
   fromYear = 1950,
   toYear = new Date().getFullYear() + 5,
   id,
@@ -87,6 +90,20 @@ export function DatePicker({
 
   const handleOpenChange = useCallback((o: boolean) => setOpen(o), []);
 
+  /**
+   * Month the calendar opens on: the selected date, else today clamped into
+   * the allowed range. Without this a date-of-birth picker opened on a month
+   * where every day was already out of range (A23).
+   */
+  const defaultMonth = useMemo(() => {
+    if (selected) return selected;
+    if (defaultMonthProp) return startOfDay(defaultMonthProp);
+    const today = startOfDay(new Date());
+    if (fromDate && today < startOfDay(fromDate)) return startOfDay(fromDate);
+    if (toDate && today > startOfDay(toDate)) return startOfDay(toDate);
+    return today;
+  }, [selected, fromDate, toDate, defaultMonthProp]);
+
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -111,6 +128,7 @@ export function DatePicker({
           mode="single"
           selected={selected}
           onSelect={handleSelect}
+          defaultMonth={defaultMonth}
           fromDate={fromDate}
           toDate={toDate}
           fromYear={fromYear}

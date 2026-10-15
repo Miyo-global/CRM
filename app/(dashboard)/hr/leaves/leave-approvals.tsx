@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyApprovalIllustration, EmptyCalendarIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Home, CheckCircle2, XCircle, CalendarDays, Search } from "lucide-react";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
@@ -141,7 +141,6 @@ function LeaveApprovalsTable({
   if (requests.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyApprovalIllustration />}
         title="No leave requests"
         description="There are no leave requests to display."
         compact
@@ -209,7 +208,6 @@ function LeaveApprovalsTable({
       {paginatedRequests.length === 0 ? (
         <EmptyState
           compact
-          illustration={<EmptySearchIllustration />}
           title={hasActiveFilters ? "No results for these filters" : "No leave requests"}
           description={hasActiveFilters ? "No leave requests match your filters." : "No leave requests to display."}
           action={hasActiveFilters ? { label: "Clear filters", onClick: handleClearFilters } : undefined}
@@ -283,7 +281,6 @@ function PendingWfhApprovalsPanel({
   if (requests.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyCalendarIllustration />}
         title="No pending WFH requests"
         description="All WFH requests have been processed."
         compact
@@ -349,6 +346,7 @@ export function LeaveApprovalsContent({
   const [leaveRejectingId, setLeaveRejectingId] = useState<number | null>(null);
   const [leaveRejectionReason, setLeaveRejectionReason] = useState("");
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const [approvingId, setApprovingId] = useState<number | null>(null);
 
   const { data: pendingWfhRequests } = useHrPendingWfhRequests();
   const processWfhRequestMutation = useProcessWfhRequest();
@@ -385,15 +383,22 @@ export function LeaveApprovalsContent({
     [statusTab, incomingLeaveRequests, allIncomingLeaveRequests],
   );
 
+  // Approving pays out leave, so confirm first (A33).
   const handleApprove = useCallback((requestId: number) => {
+    setApprovingId(requestId);
+  }, []);
+
+  const handleApproveConfirm = useCallback(() => {
+    if (approvingId === null) return;
     approveMutation.mutate(
-      { leaveId: requestId },
+      { leaveId: approvingId },
       {
-        onSuccess: () => toast.success("Request approved successfully"),
+        onSuccess: () => toast.success("Request approved"),
         onError: (err) => toast.error(getErrorMessage(err)),
       },
     );
-  }, [approveMutation]);
+    setApprovingId(null);
+  }, [approveMutation, approvingId]);
 
   const handleRejectRequest = useCallback((requestId: number) => {
     setLeaveRejectingId(requestId);
@@ -636,6 +641,17 @@ export function LeaveApprovalsContent({
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <ConfirmDialog
+        open={approvingId !== null}
+        onOpenChange={(open: boolean) => {
+          if (!open) setApprovingId(null);
+        }}
+        title="Approve this leave?"
+        description="The employee is told straight away and the days come off their balance."
+        confirmLabel="Approve"
+        onConfirm={handleApproveConfirm}
+      />
 
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {processWfhRequestMutation.isPending && "Processing WFH request..."}

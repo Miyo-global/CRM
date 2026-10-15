@@ -111,7 +111,7 @@ export function GeneratePayrollSheet({
       open={open}
       onOpenChange={onOpenChange}
       title="Generate Payslip"
-      description="Select an employee and adjust attendance and bonus before previewing. Salary changes are ad hoc with no suggested increment; a new salary always takes effect from the 1st of a calendar month (see HR policy / OPEN_QUESTIONS.md)."
+      description="Select an employee, then adjust bonus and deductions before previewing."
       onSubmit={onShowPreview}
       submitLabel="Preview Payslip"
       isPending={false}
@@ -237,11 +237,6 @@ export function GeneratePayrollSheet({
             <p className="text-2xs text-muted-foreground">
               LOP and leave are computed from attendance check-ins for {selectedMonth}. A working day is paid when the employee checked in; weekends and declared holidays are also paid.
             </p>
-            {!overtimePreview && selectedEmployeeData && (
-              <p className="text-xs text-warning-strong bg-warning-soft border border-warning-strong/25 rounded px-2 py-1.5">
-                No attendance records found for this period. Preview shows full salary — LOP deductions will be ₹0.
-              </p>
-            )}
           </div>
 
           <Separator />

@@ -10,7 +10,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { ArrowLeft, Download } from "lucide-react";
 import { TerminatedEmployeeTable } from "@/features/hr/employees/terminated-employee-table";
 import { ROLE_LABELS } from "@/features/hr/employees/hr-types";
@@ -73,7 +72,7 @@ export default function TerminatedEmployeesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Terminated Employees" subtitle="Former team members">
+      <PageWrapper title="Terminated employees">
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-14 w-full" />
@@ -85,8 +84,7 @@ export default function TerminatedEmployeesPage() {
 
   return (
     <PageWrapper
-      title="Terminated Employees"
-      subtitle="Track and review employees whose access has been deactivated"
+      title="Terminated employees"
       badge={String(filtered.length)}
       actions={
         <div className="flex items-center gap-2">
@@ -121,14 +119,12 @@ export default function TerminatedEmployeesPage() {
         <TerminatedEmployeeTable employees={filtered} />
       ) : employees.length > 0 ? (
         <EmptyState
-          illustration={<EmptySearchIllustration />}
           title="No results found"
           description="No terminated employees match your search."
           action={{ label: "Clear filters", onClick: () => setSearch("") }}
         />
       ) : (
         <EmptyState
-          illustration={<EmptyTeamIllustration />}
           title="No terminated employees"
           description="Employees you terminate from the active directory will appear here for tracking."
           action={{ label: "View active employees", href: "/hr" }}

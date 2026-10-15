@@ -1,5 +1,6 @@
 "use client";
 
+import { notFound, useParams } from "next/navigation";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card } from "@/components/ui/card";
 import { SettingsProfile } from "@/features/settings/settings-profile";
@@ -23,10 +24,14 @@ function SectionHeading({ title, description }: { title: string; description: st
 }
 
 export default function SettingsPage() {
+  // Only /settings itself is account settings. Any unknown child path is a 404
+  // rather than silently rendering this page (A14).
+  const params = useParams<{ rest?: string[] }>();
+  if (params?.rest?.length) notFound();
+
   return (
     <PageWrapper
-      title="Account Settings"
-      subtitle="Manage your profile, preferences, and security."
+      title="Account settings"
       filters={
         <nav aria-label="Account settings sections" className="flex items-center gap-1">
           {SECTIONS.map(({ id, label }) => (

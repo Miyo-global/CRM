@@ -85,8 +85,7 @@ export default function PayrollSchedulePage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Payroll Schedule"
-        subtitle="Automate monthly payroll generation for your organization"
+        title="Payroll schedule"
       >
         <div className="space-y-4">
           {[1, 2].map((i) => (
@@ -101,8 +100,7 @@ export default function PayrollSchedulePage() {
 
   return (
     <PageWrapper
-      title="Payroll Schedule"
-      subtitle="Automate monthly payroll generation for your organization"
+      title="Payroll schedule"
       actions={
         canEdit ? (
           <>

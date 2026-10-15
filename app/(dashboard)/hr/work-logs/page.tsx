@@ -22,7 +22,6 @@ import {
 import { WorkLogMonthGroup } from "@/features/hr/work-logs/work-log-month-group";
 import { WorkLogList } from "@/features/hr/work-logs/work-log-list";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptySearchIllustration } from "@/components/illustrations";
 import { resolveWorkLogWindow, normalizeWorkLogFilters } from "@/lib/hr/work-log-window";
 import { normalizeWorkLogPeopleFilters } from "@/lib/hr/work-log-people-filters";
 import { resolveWorkLogView } from "@/lib/hr/work-log-view";
@@ -413,7 +412,7 @@ export default function WorkLogsPage() {
 
   return (
     <PageWrapper
-      title="Work Logs"
+      title="Work logs"
       subtitle={subtitle}
       actions={
         <WorkLogFilterActions
@@ -442,7 +441,6 @@ export default function WorkLogsPage() {
           <WorkLogList logs={logs ?? []} searchTerm={searchTerm} />
         ) : !hasSearchResults ? (
           <EmptyState
-            illustration={<EmptySearchIllustration />}
             title="No matches"
             description="Try adjusting your search or filters."
             action={{ label: "Clear filters", onClick: () => setSearchTerm("") }}

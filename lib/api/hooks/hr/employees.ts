@@ -166,10 +166,16 @@ export function useOnboardEmployee() {
   });
 }
 
+/** Email uniqueness check for the onboarding wizard. Short timeout: the
+ *  wizard must not sit on "Checking…" (A17). */
 export function useCheckEmailExists() {
   return useMutation({
     mutationFn: (email: string) =>
-      apiClient.get<{ exists: boolean }>("/hr/employees/check-email", { email }),
+      apiClient.get<{ exists: boolean }>(
+        "/hr/employees/check-email",
+        { email },
+        { timeout: 5_000 },
+      ),
   });
 }
 

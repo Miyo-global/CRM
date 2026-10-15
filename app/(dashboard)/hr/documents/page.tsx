@@ -34,6 +34,7 @@ import { DocumentExportSheet } from "@/features/hr/documents/document-export-she
 import { DocumentTable, type FolderItem } from "@/features/hr/documents/document-table";
 import { NewFolderDialog } from "@/features/hr/documents/new-folder-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { formatIST } from "@/lib/date-utils";
 
 const DOCUMENT_CATEGORIES = [
   "Personal Documents",
@@ -246,8 +247,7 @@ export default function DocumentsPage() {
 
   return (
     <PageWrapper
-      title="Document Library"
-      subtitle="Centralized repository for all company-wide HR documents, contracts, and policy files."
+      title="Document library"
       actions={pageActions}
       filters={
         <DocumentFilters
@@ -381,7 +381,7 @@ function RichDocumentsSection() {
                     {doc.updatedAt && (
                       <span
                         className="text-2xs text-muted-foreground tabular-nums"
-                        title={new Date(doc.updatedAt).toLocaleString()}
+                        title={formatIST(doc.updatedAt)}
                       >
                         {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                       </span>

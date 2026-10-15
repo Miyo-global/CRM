@@ -3,6 +3,11 @@
 import { useState, useCallback } from "react";
 import { EditEmployeeForm, type EmployeeData } from "./edit-employee-form";
 import { EmployeeAttendanceHistory } from "@/components/hr/employee-attendance-history";
+import {
+  EmployeeDocumentsTab,
+  EmployeeLeaveTab,
+  EmployeePayslipsTab,
+} from "./employee-profile-tabs";
 import { SelfEditProfileForm } from "@/components/hr/self-edit-profile-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -17,7 +22,7 @@ import {
 import {
   useOfferLetterTemplates,
   useGenerateEmployeeLetter,
-} from "@/lib/api/hooks/hr/recruitment";
+} from "@/lib/api/hooks/hr/letter-templates";
 import { EmployeeProjectsList } from "@/components/hr/employee-projects-list";
 import { EmployeeTicketsList } from "@/components/hr/employee-tickets-list";
 import { Badge } from "@/components/ui/badge";
@@ -48,10 +53,7 @@ import {
   ArrowLeft,
   UserX,
   Mail,
-  Phone,
   Download,
-  Building2,
-  Calendar,
   Briefcase,
   Clock,
   FileCheck,
@@ -84,17 +86,6 @@ import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function getInitials(first?: string | null, last?: string | null) {
   return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
-}
-
-function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | null | undefined }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span className="sr-only">{label}:</span>
-      <span className="truncate text-foreground" title={value}>{value}</span>
-    </div>
-  );
 }
 
 function StatBlock({ label, value, color }: { label: string; value: string | number; color?: string }) {
@@ -402,9 +393,10 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
   const genderLabel = asStr(employee.gender)
     ? String(employee.gender).charAt(0) + String(employee.gender).slice(1).toLowerCase()
     : null;
+  // "1 yr", not "1 yrs" (A43).
   const experienceLabel =
     e.experienceYears != null && String(e.experienceYears).trim()
-      ? `${e.experienceYears} yrs`
+      ? `${e.experienceYears} ${Number(e.experienceYears) === 1 ? "yr" : "yrs"}`
       : null;
 
   let safeDefaultTab = defaultTab;
@@ -474,10 +466,11 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               </div>
 
               <div className="min-w-0 flex-1 space-y-2 sm:pt-3">
+                {/* Plain header: name, title, department and one status pill.
+                    Role, employee ID, email, phone and joining date all repeat
+                    in the cards below (B6, A43). */}
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-xl font-bold">{employeeName}</h2>
-                  {employee.role && <Badge variant="secondary">{employee.role}</Badge>}
-                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="font-mono">ID: {employee.employeeId}</Badge>}
                   {employee.isActive === false || e.terminatedAt ? (
                     <StatusPill tone="danger" dot>Terminated</StatusPill>
                   ) : (
@@ -485,12 +478,11 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <InfoItem icon={Mail} label="Email" value={employee.email} />
-                  <InfoItem icon={Phone} label="Phone" value={employee.phone} />
-                  <InfoItem icon={Building2} label="Dept" value={typeof employee.departmentName === "string" && employee.departmentName.trim() ? employee.departmentName : (employee.department?.name ?? null)} />
-                  <InfoItem icon={Calendar} label="Joined" value={employee.joiningDate ? format(new Date(String(employee.joiningDate)), "MMM yyyy") : null} />
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {[asStr(employee.designation), asStr(e.departmentName) || asStr(employee.department?.name)]
+                    .filter(Boolean)
+                    .join(" · ") || "—"}
+                </p>
 
                 <AvailabilityDot userId={employee.id} />
 
@@ -541,6 +533,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             <TabsTrigger value="attendance" className="gap-1.5">
               <Clock className="size-4" aria-hidden="true" />Attendance
             </TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="leave">Leave</TabsTrigger>
+            <TabsTrigger value="payslips">Payslips</TabsTrigger>
             {isSelf && (
               <TabsTrigger value="my-profile" className="gap-1.5">
                 <UserCircle className="size-4" aria-hidden="true" />My Profile
@@ -558,15 +553,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               <div className="grid gap-3 lg:grid-cols-2">
                 <DetailCard icon={Briefcase} title="Employment">
                   <DetailRow label="Designation" value={asStr(employee.designation)} />
-                  <DetailRow label="Department" value={asStr(e.departmentName)} />
-                  <DetailRow
-                    label="Branch"
-                    value={
-                      asStr(e.branchName)
-                        ? `${asStr(e.branchName)}${asStr(e.branchCity) ? ` · ${asStr(e.branchCity)}` : ""}`
-                        : asStr(e.branchCity)
-                    }
-                  />
+                  <DetailRow label="Department" value={asStr(e.departmentName) || asStr(employee.department?.name)} />
                   <DetailRow
                     label="Reporting to"
                     value={
@@ -612,7 +599,6 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   />
                   <DetailRow label="Phone" value={asStr(employee.phone)} />
                   <DetailRow label="WhatsApp" value={asStr(e.whatsappNumber)} />
-                  <DetailRow label="Work location" value={asStr(e.branchCity)} />
                   {(asStr(e.linkedinUrl) || asStr(e.githubUrl) || asStr(e.twitterUrl) || asStr(e.websiteUrl)) && (
                     <div className="flex items-center gap-3 pt-1">
                       {asStr(e.linkedinUrl) && (
@@ -735,6 +721,24 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             </div>
           </TabsContent>
 
+          <TabsContent value="documents" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeeDocumentsTab userId={employee.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="leave" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeeLeaveTab userId={employee.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payslips" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeePayslipsTab userId={employee.id} />
+            </div>
+          </TabsContent>
+
           {isSelf && (
             <TabsContent value="my-profile" className="flex-1 min-h-0 overflow-y-auto">
               <div className="pb-4">
@@ -759,7 +763,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
       <ConfirmDialog
         open={terminateOpen}
         onOpenChange={setTerminateOpen}
-        title="Terminate Employee"
+        title="Terminate employee"
         description={`Are you sure you want to terminate ${employeeName}? They will lose access immediately.`}
         confirmLabel="Terminate"
         destructive

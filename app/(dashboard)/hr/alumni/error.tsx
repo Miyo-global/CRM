@@ -9,8 +9,8 @@ export default function HralumniError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Alumni Error"
-      fallbackMessage="Failed to load Alumni. Please try again."
+      title="Couldn't load alumni"
+      fallbackMessage="Something went wrong loading alumni. Try again."
     />
   );
 }

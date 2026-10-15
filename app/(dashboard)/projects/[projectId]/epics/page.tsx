@@ -33,7 +33,6 @@ import {
   Plus,
   Link2,
 } from "lucide-react";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { getColorSafe, priorityColors } from "@/lib/theme-constants";
@@ -136,7 +135,6 @@ export default function EpicsPage({ params }: PageProps) {
         {epics.length === 0 ? (
           <div className="flex flex-col items-center gap-4">
             <EmptyState
-              illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
               title="No epics yet"
               description="Create your first epic to organize related stories and tasks."
               className="w-full"
@@ -377,7 +375,6 @@ function EpicCard({ epic, stories, projectId, unlinkedStories, onDeleteEpic, onL
             {stories.length === 0 && (
               <EmptyState
                 compact
-                illustration={<EmptyTasksIllustration className="h-24 w-24 opacity-95" />}
                 title="No stories linked yet"
               />
             )}

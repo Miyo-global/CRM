@@ -5,30 +5,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimerCard } from "@/features/hr/attendance/check-in-button";
 import { AttendanceCalendar } from "@/features/hr/attendance/attendance-calendar";
 import { AttendanceHeatmap } from "@/features/hr/attendance/attendance-heatmap";
-import { ManageHolidaysCard } from "@/features/hr/attendance/manage-holidays-card";
 import { DailyHistoryTable } from "@/features/hr/attendance/daily-history-table";
 import { HolidayWorkRequestCard } from "@/features/hr/attendance/holiday-work-request-card";
 import { TeamAttendanceMonitor } from "@/features/hr/attendance/team-attendance-monitor";
+import { useHrLeaveContext } from "@/lib/api/hooks/hr";
 
-function MyAttendancePanels({
-  userId,
-  isAdmin,
-}: {
-  userId: string;
-  isAdmin: boolean;
-}) {
+/**
+ * Two zones only: the time tracker, then the month calendar (B7). The heatmap
+ * and the day-by-day log live under History, and holidays are managed on the
+ * Holidays page rather than duplicated here (A39).
+ */
+function MyAttendancePanels({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
+  const { data: leaveContext } = useHrLeaveContext();
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pb-6">
-      <aside className="lg:col-span-4 xl:col-span-3 space-y-5 lg:sticky lg:top-0 lg:self-start">
-        <TimerCard />
-        <HolidayWorkRequestCard isAdmin={isAdmin} />
-        {isAdmin && <ManageHolidaysCard />}
-      </aside>
-      <div className="lg:col-span-8 xl:col-span-9 space-y-5 min-w-0">
-        <AttendanceCalendar userId={userId} />
-        <AttendanceHeatmap userId={userId} />
-        <DailyHistoryTable userId={userId} isAdmin={isAdmin} />
-      </div>
+    <div className="space-y-5 pb-6">
+      <TimerCard />
+      <AttendanceCalendar userId={userId} joiningDate={leaveContext?.joiningDate ?? null} />
+      <HolidayWorkRequestCard isAdmin={isAdmin} />
     </div>
   );
 }
@@ -44,28 +38,30 @@ export function AttendanceContent({ userId, isAdmin = false }: { userId: string;
     return () => window.clearTimeout(t);
   }, []);
 
-  if (!isAdmin) {
-    return (
-      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto">
-        <MyAttendancePanels userId={userId} isAdmin={false} />
-      </div>
-    );
-  }
-
   return (
     <Tabs defaultValue="my" className="flex-1 min-h-0 flex flex-col">
       <TabsList variant="underline" className="shrink-0">
-        <TabsTrigger value="my">My Attendance</TabsTrigger>
-        <TabsTrigger value="team">Team Monitor</TabsTrigger>
+        <TabsTrigger value="my">My attendance</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+        {isAdmin && <TabsTrigger value="team">Team monitor</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="my" className="flex-1 min-h-0 mt-4 overflow-y-auto">
         <MyAttendancePanels userId={userId} isAdmin={isAdmin} />
       </TabsContent>
 
-      <TabsContent value="team" className="flex-1 min-h-0 mt-4 overflow-y-auto">
-        <TeamAttendanceMonitor />
+      <TabsContent value="history" className="flex-1 min-h-0 mt-4 overflow-y-auto">
+        <div className="space-y-5 pb-6">
+          <AttendanceHeatmap userId={userId} />
+          <DailyHistoryTable userId={userId} isAdmin={isAdmin} />
+        </div>
       </TabsContent>
+
+      {isAdmin && (
+        <TabsContent value="team" className="flex-1 min-h-0 mt-4 overflow-y-auto">
+          <TeamAttendanceMonitor />
+        </TabsContent>
+      )}
     </Tabs>
   );
 }

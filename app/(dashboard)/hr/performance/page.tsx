@@ -75,7 +75,6 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
-import { EmptyLeaderboardIllustration, EmptyTargetIllustration, EmptyCalendarIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 
 const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
 const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
@@ -115,7 +114,7 @@ function PerformanceContent() {
   }, [searchParams, router]);
 
   return (
-    <PageWrapper title="Performance" subtitle="Reviews, goals, and team development">
+    <PageWrapper title="Performance">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList variant="underline" className="max-w-full overflow-x-auto">
           <TabsTrigger value="reviews"><Star className="size-4" />Reviews</TabsTrigger>
@@ -243,7 +242,6 @@ function ReviewsTab() {
 
       {reviewsList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyLeaderboardIllustration className="h-40 w-40" />}
           title="No reviews yet. Create your first one."
           action={{ label: "New Review", onClick: () => setSheetOpen(true) }}
         />
@@ -287,7 +285,7 @@ function ReviewsTab() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create Review" onSubmit={handleCreate} submitLabel="Create" isPending={createReview.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create review" onSubmit={handleCreate} submitLabel="Create" isPending={createReview.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee</label>
           <SearchableSelect
@@ -437,7 +435,6 @@ function GoalsTab() {
 
       {goalsList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTargetIllustration className="h-36 w-36" />}
           title="No goals set yet."
           action={{ label: "New Goal", onClick: () => setSheetOpen(true) }}
         />
@@ -474,7 +471,7 @@ function GoalsTab() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create Goal" onSubmit={handleCreate} submitLabel="Create" isPending={createGoal.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create goal" onSubmit={handleCreate} submitLabel="Create" isPending={createGoal.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee</label>
           <SearchableSelect
@@ -530,7 +527,7 @@ function GoalsTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Goal"
+        title="Delete goal"
         description="Are you sure you want to delete this goal? This cannot be undone."
         confirmLabel="Delete"
         variant="destructive"
@@ -677,7 +674,6 @@ function OneOnOnesTab() {
 
       {!meetings?.length ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="h-36 w-36" />}
           title="No 1-on-1 meetings scheduled."
           action={{ label: "Schedule 1-on-1", onClick: () => setSheetOpen(true) }}
         />
@@ -808,7 +804,7 @@ function OneOnOnesTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Meeting"
+        title="Delete meeting"
         description="Delete this 1-on-1 meeting?"
         confirmLabel="Delete"
         variant="destructive"
@@ -923,7 +919,6 @@ function CyclesTab() {
 
       {!cycles?.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="h-36 w-36" />}
           title="No review cycles yet. Create a quarterly or annual cycle."
           action={{ label: "New Cycle", onClick: openCreate }}
         />
@@ -1017,7 +1012,7 @@ function CyclesTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Review Cycle"
+        title="Delete review cycle"
         description="Are you sure you want to delete this review cycle? This action cannot be undone."
         confirmLabel="Delete"
         variant="destructive"

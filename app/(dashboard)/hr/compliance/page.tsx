@@ -27,7 +27,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 function ackTone(status: string | null): Tone {
   if (status === "ACKNOWLEDGED") return "success";
@@ -62,7 +61,6 @@ export default function CompliancePage() {
     return (
       <PageWrapper
         title="Compliance"
-        subtitle="Policy acknowledgments and document tracking"
       >
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -82,7 +80,6 @@ export default function CompliancePage() {
   return (
     <PageWrapper
       title="Compliance"
-      subtitle="Policy acknowledgments and document tracking"
       badge={pending.length > 0 ? `${pending.length} pending` : undefined}
     >
       {isError ? (
@@ -148,7 +145,6 @@ export default function CompliancePage() {
           </h2>
           {all.length === 0 ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
               title="No policy acknowledgments yet."
             />
           ) : (

@@ -15,7 +15,6 @@ function departmentFromId(
   // Orphaned departmentId: return null so the directory renders "" (D18).
   return null;
 }
-import { branchIdFilter, type BranchContext } from "@/lib/db/branch-filter";
 import { DEFAULT_PAGE_SIZE, clampPageSize } from "@/lib/pagination-constants";
 import { backfillMissingEmployeeIds } from "@/lib/hr/ensure-employee-ids";
 import type {
@@ -34,7 +33,6 @@ export async function getDepartments(orgId: string): Promise<Department[]> {
 
 export async function getEmployees(
   orgId: string,
-  branch?: BranchContext
 ): Promise<Employee[]> {
   const [members, deptRows] = await Promise.all([
     db.query.organizationMembers.findMany({
@@ -101,7 +99,6 @@ export async function getEmployeesPaginated(
   page: number = 1,
   limit: number = DEFAULT_PAGE_SIZE,
   filters?: EmployeeListFilters,
-  branch?: BranchContext
 ): Promise<PaginatedEmployees> {
   await backfillMissingEmployeeIds(orgId);
 
@@ -117,9 +114,6 @@ export async function getEmployeesPaginated(
   } else if (status === "inactive") {
     baseConditions.push(eq(users.isActive, false));
   }
-
-  const branchCond = branchIdFilter(users.branchId, branch ?? { role: "", branchId: null, userId: "" });
-  if (branchCond) baseConditions.push(branchCond);
 
   if (filters?.role && filters.role !== "All") {
     baseConditions.push(eq(users.role, filters.role));

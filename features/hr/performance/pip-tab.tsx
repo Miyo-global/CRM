@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -470,7 +469,6 @@ export function PipTab() {
 
       {list.length === 0 ? (
         <EmptyState
-          illustration={<EmptyApprovalIllustration className="h-36 w-36" />}
           title="No PIPs yet."
           action={admin ? { label: "New PIP", onClick: openCreate } : undefined}
         />

@@ -6,7 +6,6 @@ import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { useUpcomingLeaves } from "@/lib/api/hooks/dashboard";
 import { CalendarCheck } from "lucide-react";
 import {
@@ -76,7 +75,6 @@ export function UpcomingLeavesWidget() {
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : !leaves.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="h-20 w-20" />}
           title="No upcoming leaves"
           description="No approved leaves overlap the next 30 days."
           compact

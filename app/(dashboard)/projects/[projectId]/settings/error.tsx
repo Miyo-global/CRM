@@ -9,7 +9,7 @@ export default function ProjectSettingsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Project Settings Error"
+      title="Couldn't load project settings"
       fallbackMessage="Failed to load project settings."
     />
   );

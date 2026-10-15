@@ -9,6 +9,7 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, and, desc, sql, inArray, lte, gte, ne } from "drizzle-orm";
+import { countPendingLeaveApprovals } from "@/lib/hr/leave-approvals-server";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
@@ -485,23 +486,11 @@ export async function getPendingApprovalCount() {
   });
   if (!member) return 0;
 
-  const isAdminRole = EXPENSE_ADMIN_ROLES.includes(member.role);
-
-  const count = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(leaveRequests)
-    .where(
-      and(
-        eq(leaveRequests.orgId, member.orgId),
-        eq(leaveRequests.status, "PENDING"),
-        ne(leaveRequests.userId, session.user.id),
-        ...(isAdminRole
-          ? []
-          : [eq(leaveRequests.approverId, session.user.id)]),
-      ),
-    );
-
-  return Number(count[0]?.count || 0);
+  // One rule for the badge, the approvals list and the dashboard (A28).
+  return countPendingLeaveApprovals(member.orgId, {
+    id: session.user.id,
+    role: session.user.role ?? member.role,
+  });
 }
 
 export async function getAllIncomingRequests() {

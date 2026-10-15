@@ -9,8 +9,8 @@ export default function HrexitError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Exit Management Error"
-      fallbackMessage="Failed to load Exit Management. Please try again."
+      title="Couldn't load exit management"
+      fallbackMessage="Something went wrong loading exit management. Try again."
     />
   );
 }

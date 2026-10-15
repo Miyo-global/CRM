@@ -17,7 +17,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { HrSheet } from "@/features/hr/hr-sheet";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -205,7 +204,7 @@ export default function CareerLaddersPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Career Ladders" subtitle="Growth paths and career progression">
+      <PageWrapper title="Career ladders">
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-9 w-36 rounded-md" />)}
@@ -220,8 +219,7 @@ export default function CareerLaddersPage() {
 
   return (
     <PageWrapper
-      title="Career Ladders"
-      subtitle="Define and explore career progression paths across your organization"
+      title="Career ladders"
       badge={`${filteredLadders.length} path${filteredLadders.length !== 1 ? "s" : ""}`}
       actions={
         isAdmin ? (
@@ -301,14 +299,12 @@ export default function CareerLaddersPage() {
         ) : !filteredLadders.length ? (
           hasActiveFilters ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="Try clearing your filters to see all ladders"
               action={{ label: "Clear filters", onClick: () => { setStatusFilter(""); setTrackFilter(""); setDeptFilter(""); setSearch(""); } }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No career ladders defined yet"
               description={isAdmin
                 ? "Create your first career ladder to define growth paths"
@@ -384,7 +380,7 @@ export default function CareerLaddersPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }}
-        title="Create Career Ladder"
+        title="Create career ladder"
         description="Define a new career progression path for your organization."
         onSubmit={handleCreate}
         submitLabel="Create Ladder"

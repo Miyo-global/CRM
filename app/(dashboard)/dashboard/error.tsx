@@ -9,8 +9,8 @@ export default function DashboardError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Dashboard Error"
-      fallbackMessage="Failed to load the dashboard. Please try again."
+      title="Couldn't load dashboard"
+      fallbackMessage="Something went wrong loading the dashboard. Try again."
     />
   );
 }

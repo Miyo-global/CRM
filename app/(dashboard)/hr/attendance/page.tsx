@@ -13,7 +13,7 @@ export default function AttendancePage() {
 
   if (status === "loading") {
     return (
-      <PageWrapper title="Attendance" subtitle="Track your work hours and manage check-ins">
+      <PageWrapper title="Attendance">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           <div className="lg:col-span-4 space-y-4">
             <Skeleton className="h-64" />
@@ -36,7 +36,6 @@ export default function AttendancePage() {
   return (
     <PageWrapper
       title="Attendance"
-      subtitle="Track your work hours and manage check-ins"
       noInternalScroll
       contentClassName="flex flex-col"
       actions={canExport ? <AttendanceExportSheet /> : undefined}

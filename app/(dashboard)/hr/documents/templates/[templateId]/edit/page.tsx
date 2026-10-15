@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { NotFoundIllustration } from "@/components/illustrations";
 import { useDocumentTemplate } from "@/lib/api/hooks/hr/document-templates";
 import { TemplateEditor } from "@/features/hr/documents/template-editor";
 
@@ -17,7 +16,7 @@ interface EditTemplatePageProps {
 function EditTemplateSkeleton() {
   return (
     <PageWrapper
-      title="Edit Template"
+      title="Edit template"
       actions={
         <div className="flex items-center gap-2">
           <Skeleton className="h-8 w-16 rounded-md" />
@@ -68,7 +67,7 @@ export default function EditTemplatePage({ params }: EditTemplatePageProps) {
 
   if (isError) {
     return (
-      <PageWrapper title="Edit Template">
+      <PageWrapper title="Edit template">
         <QueryErrorState title="Couldn't load template" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );
@@ -76,10 +75,9 @@ export default function EditTemplatePage({ params }: EditTemplatePageProps) {
 
   if (!template) {
     return (
-      <PageWrapper title="Template Not Found">
+      <PageWrapper title="Template not found">
         <EmptyState
-          illustration={<NotFoundIllustration />}
-          title="Template Not Found"
+          title="Template not found"
           description="This template does not exist or has been removed."
         />
       </PageWrapper>

@@ -249,8 +249,7 @@ export default function ExpensesPage() {
   if (isAdmin) {
     return (
       <PageWrapper
-        title="Expense Approvals"
-        subtitle="Review and manage pending employee expense claims."
+        title="Expenses"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <Button
@@ -375,8 +374,8 @@ export default function ExpensesPage() {
 
   return (
     <PageWrapper
-      title="My Expenses"
-      subtitle="Track, manage, and submit your expense claims for reimbursement."
+      title="Expenses"
+
       actions={
         <Button
           className="gap-2"
