@@ -1,6 +1,6 @@
 
-import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, date, integer, foreignKey, index, uniqueIndex, unique } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, numeric, date, integer, foreignKey, index, uniqueIndex, unique } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
 import {
   ticketPriorityEnum, projectStatusEnum,
   stateGroupEnum, cycleStatusEnum, moduleStatusEnum,
@@ -29,7 +29,12 @@ export const projects = pgTable("projects", {
       wiki: boolean;
     };
   }>(),
-});
+  priority: text("priority"),
+  archivedAt: timestamp("archived_at"),
+  deletedAt: timestamp("deleted_at"),
+}, (table) => [
+  uniqueIndex("uniq_projects_org_key_live").on(table.orgId, table.key).where(sql`${table.deletedAt} is null`),
+]);
 
 export const sprints = pgTable("sprints", {
   id: serial("id").primaryKey(),
@@ -121,6 +126,10 @@ export const tickets = pgTable("tickets", {
   sequenceId: text("sequence_id"),
   estimate: integer("estimate"),
   completionPercentage: integer("completion_percentage").default(0),
+  version: integer("version").notNull().default(1),
+  rank: numeric("rank"),
+  clientVisible: boolean("client_visible").notNull().default(false),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (t) => ({
@@ -139,6 +148,7 @@ export const projectStatuses = pgTable("project_statuses", {
   name: text("name").notNull(),
   order: integer("order").notNull().default(0),
   color: text("color"),
+  wipLimit: integer("wip_limit"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -173,9 +183,51 @@ export const ticketComments = pgTable("ticket_comments", {
   content: text("content").notNull(),
   parentCommentId: integer("parent_comment_id"),
   images: jsonb("images").$type<{ url: string; key: string; fileName: string; mimeType?: string }[]>(),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const ticketCommentMentions = pgTable("ticket_comment_mentions", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  commentId: integer("comment_id").references(() => ticketComments.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("uniq_ticket_comment_mentions_comment_user").on(table.commentId, table.userId),
+  index("idx_ticket_comment_mentions_org_user").on(table.orgId, table.userId),
+]);
+
+export const ticketCommentReactions = pgTable("ticket_comment_reactions", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  commentId: integer("comment_id").references(() => ticketComments.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  emoji: text("emoji").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("uniq_ticket_comment_reactions_comment_user_emoji").on(table.commentId, table.userId, table.emoji),
+]);
+
+export const ticketActivity = pgTable("ticket_activity", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  ticketId: integer("ticket_id").references(() => tickets.id, { onDelete: "cascade" }).notNull(),
+  actorId: text("actor_id").references(() => users.id),
+  action: text("action").notNull(),
+  field: text("field"),
+  fromValue: text("from_value"),
+  toValue: text("to_value"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_ticket_activity_ticket_created").on(table.ticketId, table.createdAt),
+  index("idx_ticket_activity_project_created").on(table.projectId, table.createdAt),
+]);
 
 export const ticketAttachments = pgTable("ticket_attachments", {
   id: serial("id").primaryKey(),
@@ -375,6 +427,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   assignees: many(ticketAssignees),
   watchers: many(ticketWatchers),
   relations: many(workItemRelations),
+  activity: many(ticketActivity),
 }));
 
 export const ticketAssigneesRelations = relations(ticketAssignees, ({ one }) => ({
@@ -383,10 +436,28 @@ export const ticketAssigneesRelations = relations(ticketAssignees, ({ one }) => 
   assigner: one(users, { fields: [ticketAssignees.assignedBy], references: [users.id], relationName: "assigner" }),
 }));
 
-export const ticketCommentsRelations = relations(ticketComments, ({ one }) => ({
+export const ticketCommentsRelations = relations(ticketComments, ({ one, many }) => ({
   ticket: one(tickets, { fields: [ticketComments.ticketId], references: [tickets.id] }),
   user: one(users, { fields: [ticketComments.userId], references: [users.id] }),
   parent: one(ticketComments, { fields: [ticketComments.parentCommentId], references: [ticketComments.id], relationName: "parentComment" }),
+  mentions: many(ticketCommentMentions),
+  reactions: many(ticketCommentReactions),
+}));
+
+export const ticketCommentMentionsRelations = relations(ticketCommentMentions, ({ one }) => ({
+  comment: one(ticketComments, { fields: [ticketCommentMentions.commentId], references: [ticketComments.id] }),
+  user: one(users, { fields: [ticketCommentMentions.userId], references: [users.id] }),
+}));
+
+export const ticketCommentReactionsRelations = relations(ticketCommentReactions, ({ one }) => ({
+  comment: one(ticketComments, { fields: [ticketCommentReactions.commentId], references: [ticketComments.id] }),
+  user: one(users, { fields: [ticketCommentReactions.userId], references: [users.id] }),
+}));
+
+export const ticketActivityRelations = relations(ticketActivity, ({ one }) => ({
+  ticket: one(tickets, { fields: [ticketActivity.ticketId], references: [tickets.id] }),
+  project: one(projects, { fields: [ticketActivity.projectId], references: [projects.id] }),
+  actor: one(users, { fields: [ticketActivity.actorId], references: [users.id] }),
 }));
 
 export const ticketAttachmentsRelations = relations(ticketAttachments, ({ one }) => ({

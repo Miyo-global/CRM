@@ -28,6 +28,7 @@ const PENDING_TAGS = [
   "0151_remove_branch_roles",
   "0152_reimbursement_expense_link",
   "0153_dashboard_hot_path_indexes",
+  "0154_projects_build_port_phase1",
 ] as const;
 
 const TIMESTAMPS: Record<string, number> = {
@@ -44,6 +45,7 @@ const TIMESTAMPS: Record<string, number> = {
   "0151_remove_branch_roles": 1774390151000,
   "0152_reimbursement_expense_link": 1774390152000,
   "0153_dashboard_hot_path_indexes": 1774390153000,
+  "0154_projects_build_port_phase1": 1774390154000,
 };
 
 
