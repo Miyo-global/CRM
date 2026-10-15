@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useState, useMemo, useCallback, useRef } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { use, useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useProject,
@@ -31,41 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { updateProjectSettingsInputSchema } from "@/lib/validations/project";
 import { z } from "zod";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Check,
-  ChevronsUpDown,
-  User,
-  AlertTriangle,
-  Settings,
-  Users,
-  Trash2,
-  UserX,
-  Search,
-} from "lucide-react";
-import { useHrEmployees } from "@/lib/api/hooks/hr";
+import { AlertTriangle, Settings, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { isAdminOrOwner } from "@/lib/auth/role-guards";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ProjectMembersSection } from "@/features/projects/members/project-members-section";
+import { WipLimitsSection } from "@/features/projects/settings/wip-limits-section";
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -97,8 +73,6 @@ export default function ProjectSettingsPage({ params }: PageProps) {
           status:
             (project.status as "ACTIVE" | "COMPLETED" | "ARCHIVED") ||
             "ACTIVE",
-          memberIds:
-            project.members?.map((m: { userId: string }) => m.userId) || [],
         }
       : undefined,
   });
@@ -106,46 +80,12 @@ export default function ProjectSettingsPage({ params }: PageProps) {
   const updateMutation = useUpdateProject();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const [reassignDialog, setReassignDialog] = useState<{
-    memberId: string;
-    memberName: string;
-  } | null>(null);
-  const [reassignTo, setReassignTo] = useState<string>("__unassign__");
-  const reassignmentsRef = useRef<Record<string, string>>({});
-  const pendingFieldChangeRef = useRef<(() => void) | null>(null);
-
-  const handleMemberRemoved = useCallback(
-    (memberId: string, memberName: string, applyChange: () => void) => {
-      setReassignTo("__unassign__");
-      pendingFieldChangeRef.current = applyChange;
-      setReassignDialog({ memberId, memberName });
-    },
-    []
-  );
-
-  const confirmReassign = useCallback(() => {
-    if (!reassignDialog) return;
-    if (reassignTo && reassignTo !== "__unassign__") {
-      reassignmentsRef.current[reassignDialog.memberId] = reassignTo;
-    } else {
-      delete reassignmentsRef.current[reassignDialog.memberId];
-    }
-    pendingFieldChangeRef.current?.();
-    pendingFieldChangeRef.current = null;
-    setReassignDialog(null);
-  }, [reassignDialog, reassignTo]);
-
-  const cancelReassign = useCallback(() => {
-    pendingFieldChangeRef.current = null;
-    setReassignDialog(null);
-  }, []);
-
   const handleDeleteConfirm = useCallback(() => {
     deleteMutation.mutate(
       { projectId },
       {
         onSuccess: () => {
-          toast.success("Project deleted successfully");
+          toast.success("Deleted the project");
           router.push("/projects");
         },
         onError: (error) => {
@@ -191,26 +131,18 @@ export default function ProjectSettingsPage({ params }: PageProps) {
   }
 
   const isOwner = session?.user?.role === "CEO";
-  const canEdit =
-    isAdminOrOwner(session?.user?.role) ||
-    (!!session?.user?.id && project.managerId === session.user.id);
+  const canEdit = project.viewerRole === "OWNER" || project.viewerRole === "MANAGER";
 
   const onSubmit = (values: FormValues) => {
     if (!canEdit) {
       toast.error("You do not have permission to edit this project.");
       return;
     }
-    const reassignments =
-      Object.keys(reassignmentsRef.current).length > 0
-        ? { ...reassignmentsRef.current }
-        : undefined;
     updateMutation.mutate(
-      { projectId, ...values, ...(reassignments && { reassignments }) },
+      { projectId, ...values },
       {
         onSuccess: () => {
-          reassignmentsRef.current = {};
-          toast.success("Project settings updated");
-          router.push(`/projects/${projectId}`);
+          toast.success("Saved the project settings");
         },
         onError: (error) => {
           toast.error(getErrorMessage(error));
@@ -306,22 +238,6 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                     </FormItem>
                   )}
                 />
-
-                <div className="grid gap-2 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start sm:gap-6">
-                  <div className="flex items-center gap-2 text-sm font-medium sm:pt-2">
-                    <Users className="size-4 text-muted-foreground" aria-hidden="true" />
-                    Team Members
-                  </div>
-                  <div className="min-w-0">
-                    <MembersSelector
-                      form={form}
-                      originalMemberIds={
-                        project.members?.map((m: { userId: string }) => m.userId) ?? []
-                      }
-                      onMemberRemoved={handleMemberRemoved}
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-3 rounded-b-lg border-t border-border bg-card/90 px-5 py-3 backdrop-blur">
@@ -333,13 +249,17 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                   loading={updateMutation.isPending}
                   className="w-full sm:w-auto sm:min-w-40"
                 >
-                  Save Changes
+                  Save changes
                 </Button>
               </div>
             </form>
           </Form>
           </fieldset>
         </Card>
+
+        <ProjectMembersSection project={project} />
+
+        <WipLimitsSection projectId={projectId} statuses={project.statuses ?? []} canManage={canEdit} />
 
         {isOwner && (
           <Card className="border-danger-soft">
@@ -349,10 +269,10 @@ export default function ProjectSettingsPage({ params }: PageProps) {
             </div>
             <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-medium">Delete Project</p>
+                <p className="text-sm font-medium">Delete project</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  Deleting a project is irreversible. It will remove all
-                  tickets, sprints, and associated data.
+                  Removes the project and its tickets from every list. An
+                  organization owner can restore it from the deleted projects list.
                 </p>
               </div>
               <Button
@@ -363,17 +283,15 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                 loading={deleteMutation.isPending}
               >
                 <Trash2 className="size-4" aria-hidden="true" />
-                Delete Project
+                Delete project
               </Button>
             </div>
             <ConfirmDialog
               open={deleteDialogOpen}
               onOpenChange={setDeleteDialogOpen}
-              title="Are you absolutely sure?"
-              description={`This action cannot be undone. This will permanently delete "${project.name}" and remove all associated data.`}
-              confirmLabel={
-                deleteMutation.isPending ? "Deleting..." : "Delete Project"
-              }
+              title={`Delete ${project.name}?`}
+              description="The project, its tickets and comments leave every list. An organization owner can restore them later."
+              confirmLabel="Delete project"
               destructive
               onConfirm={handleDeleteConfirm}
             />
@@ -381,223 +299,6 @@ export default function ProjectSettingsPage({ params }: PageProps) {
         )}
       </div>
 
-      <ReassignDialog
-        open={reassignDialog !== null}
-        memberName={reassignDialog?.memberName ?? ""}
-        removedMemberId={reassignDialog?.memberId ?? ""}
-        currentMemberIds={form.getValues("memberIds") ?? []}
-        reassignTo={reassignTo}
-        onReassignToChange={setReassignTo}
-        onConfirm={confirmReassign}
-        onCancel={cancelReassign}
-      />
     </PageWrapper>
-  );
-}
-
-interface ReassignDialogProps {
-  open: boolean;
-  memberName: string;
-  removedMemberId: string;
-  currentMemberIds: string[];
-  reassignTo: string;
-  onReassignToChange: (value: string) => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function ReassignDialog({
-  open,
-  memberName,
-  removedMemberId,
-  currentMemberIds,
-  reassignTo,
-  onReassignToChange,
-  onConfirm,
-  onCancel,
-}: ReassignDialogProps) {
-  const { data: employeesData } = useHrEmployees();
-  const employees = Array.isArray(employeesData)
-    ? employeesData
-    : (employeesData?.data ?? []);
-
-  const remainingMembers = employees.filter(
-    (emp) =>
-      currentMemberIds.includes(emp.id) && emp.id !== removedMemberId
-  );
-
-  return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <UserX className="size-4 text-warning-strong" aria-hidden="true" />
-            Reassign open tickets
-          </SheetTitle>
-          <SheetDescription>
-            <strong>{memberName}</strong> has open tickets in this project.
-            Choose a team member to reassign them to, or leave them unassigned.
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="space-y-2 py-1">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Reassign to
-          </p>
-          <Select value={reassignTo} onValueChange={onReassignToChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a member…" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__unassign__">
-                <span className="text-muted-foreground">Leave unassigned</span>
-              </SelectItem>
-              {remainingMembers.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.name || emp.email}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <SheetFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={onCancel}>
-            Cancel removal
-          </Button>
-          <Button size="sm" onClick={onConfirm}>
-            Confirm
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function MembersSelector({
-  form,
-  originalMemberIds,
-  onMemberRemoved,
-}: {
-  form: UseFormReturn<FormValues>;
-  originalMemberIds: string[];
-  onMemberRemoved: (memberId: string, memberName: string, applyChange: () => void) => void;
-}) {
-  const { data: employeesData } = useHrEmployees();
-  const employees = Array.isArray(employeesData)
-    ? employeesData
-    : (employeesData?.data ?? []);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredEmployees = useMemo(
-    () =>
-      employees?.filter(
-        (emp) =>
-          emp.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          emp.email?.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
-    [employees, searchQuery]
-  );
-
-  return (
-    <FormField
-      control={form.control}
-      name="memberIds"
-      render={({ field }) => (
-        <FormItem>
-          <FormControl>
-            <Popover onOpenChange={(open) => { if (!open) setSearchQuery(""); }}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between text-left font-normal"
-                  role="combobox"
-                >
-                  {field.value?.length && field.value.length > 0
-                    ? `${field.value.length} member${field.value.length > 1 ? "s" : ""} selected`
-                    : "Select members"}
-                  <ChevronsUpDown className="size-4 opacity-50" aria-hidden="true" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="flex max-h-[60vh] w-(--radix-popover-trigger-width) flex-col overflow-hidden p-2"
-                align="start"
-                collisionPadding={16}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
-                <div className="relative mb-2">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                  <Input
-                    placeholder="Search by name or email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-8 pl-8"
-                    aria-label="Search team members"
-                  />
-                </div>
-                <div
-                  className="flex-1 min-h-0 overflow-y-auto space-y-0.5 overscroll-contain"
-                  onWheelCapture={(e) => e.stopPropagation()}
-                >
-                  {filteredEmployees?.map((emp) => {
-                    const selected = field.value?.includes(emp.id);
-                    return (
-                      <button
-                        key={emp.id}
-                        type="button"
-                        className="flex w-full items-center gap-2 rounded-md p-2 text-left hover:bg-accent focus-visible:focus-ring"
-                        onClick={() => {
-                          const current = field.value || [];
-                          if (selected) {
-                            const applyRemoval = () =>
-                              field.onChange(current.filter((id: string) => id !== emp.id));
-                            if (originalMemberIds.includes(emp.id)) {
-                              onMemberRemoved(emp.id, emp.name ?? emp.email ?? emp.id, applyRemoval);
-                            } else {
-                              applyRemoval();
-                            }
-                          } else {
-                            field.onChange([...current, emp.id]);
-                          }
-                        }}
-                      >
-                        <Checkbox
-                          checked={selected}
-                          tabIndex={-1}
-                          className="pointer-events-none"
-                          aria-hidden
-                        />
-                        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-3xs font-semibold text-brand-soft-foreground">
-                          {emp.name?.charAt(0) || (
-                            <User className="size-3" aria-hidden="true" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {emp.name}
-                          </p>
-                          <p className="text-2xs text-muted-foreground truncate">
-                            {emp.email}
-                          </p>
-                        </div>
-                        {selected && (
-                          <Check className="size-4 shrink-0 text-brand-text" aria-hidden="true" />
-                        )}
-                      </button>
-                    );
-                  })}
-                  {!filteredEmployees?.length && (
-                    <p className="py-4 text-center text-sm text-muted-foreground">
-                      No employees found
-                    </p>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
   );
 }

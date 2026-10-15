@@ -12,6 +12,8 @@ import { ProjectCard } from "./project-card";
 import { ProjectListRow } from "./project-list-row";
 import { ProjectFilterBar, type ViewMode } from "./project-filter-bar";
 import { ProjectTable } from "@/features/projects/project-list/project-table";
+import { DeletedProjects } from "@/features/projects/project-list/deleted-projects";
+import { FilterChip } from "@/components/ui/filter-chip";
 import type { ProjectGroupBy } from "@/features/projects/project-list/project-options";
 import type { ProjectFilters } from "@/types/projects";
 import { ProjectPagination } from "./project-pagination";
@@ -32,6 +34,8 @@ export default function ProjectsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const { data: session } = useSession();
   const canCreate = isAdminOrOwner(session?.user?.role);
+  const canRestore = session?.user?.role === "CEO";
+  const showDeleted = canRestore && searchParams.get("deleted") === "1";
 
   const search = searchParams.get("q") || "";
   const status = (searchParams.get("status") as StatusFilter) || "ALL";
@@ -125,7 +129,16 @@ export default function ProjectsPage() {
         />
       }
     >
-      {isLoading ? (
+      {canRestore && (
+        <div className="mb-4 flex justify-end">
+          <FilterChip active={showDeleted} onClick={() => updateParams({ deleted: showDeleted ? null : "1", page: null })}>
+            Deleted projects
+          </FilterChip>
+        </div>
+      )}
+      {showDeleted ? (
+        <DeletedProjects />
+      ) : isLoading ? (
         viewMode === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -231,7 +244,7 @@ export default function ProjectsPage() {
         </motion.div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
+      {!showDeleted && pagination && pagination.totalPages > 1 && (
         <ProjectPagination
           page={pagination.page}
           totalPages={pagination.totalPages}

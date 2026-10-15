@@ -93,13 +93,14 @@ export interface ProjectMember {
 }
 
 export interface ProjectWithDetails extends Project {
-  viewerRole?: "OWNER" | "MANAGER" | "CONTRIBUTOR" | "VIEWER";
+  viewerRole?: ProjectRoleValue;
   statuses?: ProjectStatusRecord[];
   members?: ProjectMember[];
   tickets?: Ticket[];
 }
 
 export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type ProjectRoleValue = "OWNER" | "MANAGER" | "CONTRIBUTOR" | "VIEWER";
 
 export interface ProjectListItem {
   id: number;
@@ -560,12 +561,6 @@ export interface UpdateTimeEntryInput {
 export interface CreateLabelInput {
   name: string;
   color?: string;
-}
-
-export interface AddProjectMemberInput {
-  projectId: number;
-  userId: string;
-  role?: string;
 }
 
 export interface CreateCycleInput {

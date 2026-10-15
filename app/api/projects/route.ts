@@ -8,7 +8,7 @@ import {
   users,
   tickets,
 } from "@/lib/db/schema";
-import { eq, and, asc, desc, inArray, or, sql, count, isNull } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, or, sql, count, isNull, isNotNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { sendProjectAssignmentEmail } from "@/lib/email";
 import { createAuditLog } from "@/lib/audit-log";
@@ -64,7 +64,8 @@ export async function GET(req: NextRequest) {
     const priority = searchParams.get("priority");
 
     const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-    const conditions = [eq(projects.orgId, session.orgId), isNull(projects.deletedAt)];
+    const showDeleted = searchParams.get("deleted") === "1" && session.user.role === "CEO";
+    const conditions = [eq(projects.orgId, session.orgId), showDeleted ? isNotNull(projects.deletedAt) : isNull(projects.deletedAt)];
     if (priority && PRIORITIES.has(priority)) conditions.push(eq(projects.priority, priority));
 
     if (!isOwnerOrAdmin) {

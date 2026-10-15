@@ -150,6 +150,8 @@ export const invitations = pgTable("invitations", {
   expiresAt: timestamp("expires_at").notNull(),
   acceptedAt: timestamp("accepted_at"),
   createdAt: timestamp("created_at").defaultNow(),
+  projectId: integer("project_id"),
+  projectRole: text("project_role"),
 });
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {

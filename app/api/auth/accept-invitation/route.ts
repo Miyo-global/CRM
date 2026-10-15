@@ -1,7 +1,8 @@
 import { type NextRequest } from "next/server";
 import { ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { users, organizationMembers, invitations } from "@/lib/db/schema";
+import { users, organizationMembers, invitations, projects, projectMembers } from "@/lib/db/schema";
+import { normalizeProjectRole } from "@/lib/projects/project-roles";
 import { eq, and, gt, isNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
@@ -74,6 +75,19 @@ export async function POST(req: NextRequest) {
       orgId: invitation.orgId,
       role: invitation.role,
     });
+
+    if (invitation.projectId) {
+      const project = await tx.query.projects.findFirst({
+        where: and(eq(projects.id, invitation.projectId), eq(projects.orgId, invitation.orgId), isNull(projects.deletedAt)),
+        columns: { id: true },
+      });
+      if (project) {
+        await tx
+          .insert(projectMembers)
+          .values({ projectId: project.id, userId, role: normalizeProjectRole(invitation.projectRole) })
+          .onConflictDoNothing();
+      }
+    }
 
     await tx
       .update(invitations)

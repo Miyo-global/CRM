@@ -15,8 +15,8 @@ import type {
   ProjectFilters,
   CreateProjectInput,
   UpdateProjectInput,
-  AddProjectMemberInput,
   CreateLabelInput,
+  ProjectRoleValue,
 } from "@/types/projects";
 
 export function useProjects(
@@ -92,19 +92,6 @@ export function useProjectMembers(
     enabled: !!projectId,
     ...options,
   });
-}
-
-export function useAddProjectMember(options?: Parameters<typeof useMutation>[0]) {
-  const queryClient = useQueryClient();
-  return useMutation(mergeMutationOptions({
-    mutationFn: ({ projectId, ...data }: AddProjectMemberInput) =>
-      apiClient.post<ProjectMember>(`/projects/${projectId}/members`, data),
-    onSuccess: (_data: unknown, variables: AddProjectMemberInput) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.members(variables.projectId),
-      });
-    },
-  }, options));
 }
 
 export function useRemoveProjectMember(options?: Parameters<typeof useMutation>[0]) {
@@ -185,6 +172,38 @@ export function useInlineUpdateProject() {
       for (const [key, value] of context?.snapshot ?? []) queryClient.setQueryData(key, value);
     },
     onSuccess: (_data, { projectId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+    },
+  });
+}
+
+export function useUpdateProjectMemberRole(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { userId: string; role: ProjectRoleValue }>({
+    mutationFn: (data) => apiClient.patch(`/projects/${projectId}/members`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+    },
+  });
+}
+
+export function useInviteToProject(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<{ added: boolean; invited: boolean }, Error, { email: string; role: ProjectRoleValue }>({
+    mutationFn: (data) => apiClient.post(`/projects/${projectId}/members/invite`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+    },
+  });
+}
+
+export function useUpdateWipLimit(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { statusId: number; wipLimit: number | null }>({
+    mutationFn: ({ statusId, wipLimit }) => apiClient.patch(`/projects/${projectId}/statuses/${statusId}`, { wipLimit }),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
     },
   });
