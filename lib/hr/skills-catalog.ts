@@ -117,13 +117,13 @@ for (const skill of SKILLS_CATALOG) {
   RELATED_BY_NORM.set(normalizeSkill(skill.name), skill.related);
 }
 
-function titleCaseSkill(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\s+/g, " ")
-    .split(" ")
-    .map((w) => (w ? w[0]!.toUpperCase() + w.slice(1).toLowerCase() : w))
-    .join(" ");
+/**
+ * Tidy an unrecognised skill without re-casing it: a catalog hit supplies the
+ * canonical spelling, and anything else keeps what the employee typed, so "QA"
+ * and "iOS" survive (A43).
+ */
+function tidySkillLabel(raw: string): string {
+  return raw.trim().replace(/\s+/g, " ");
 }
 
 export interface CanonicalResult {
@@ -137,7 +137,7 @@ export function canonicalizeSkill(raw: string): CanonicalResult | null {
   if (!norm) return null;
   const hit = CANONICAL_BY_NORM.get(norm);
   if (hit) return { canonical: hit.name, recognized: true, category: hit.category };
-  return { canonical: titleCaseSkill(raw), recognized: false, category: null };
+  return { canonical: tidySkillLabel(raw), recognized: false, category: null };
 }
 
 export function isRecognizedSkill(raw: string): boolean {

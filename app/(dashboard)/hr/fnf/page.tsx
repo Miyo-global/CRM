@@ -20,9 +20,10 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, DollarSign, CheckCircle2 } from "lucide-react";
+import { Plus, IndianRupee, CheckCircle2 } from "lucide-react";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatINRWhole } from "@/lib/format-utils";
 
 interface FnfSettlement {
   id: number; userId: string; employeeName: string | null; lastWorkingDate: string | null;
@@ -39,7 +40,7 @@ function statusTone(s: string | null): Tone {
 }
 
 function money(v: string | null) {
-  return v ? `$${Number(v).toLocaleString()}` : "—";
+  return v ? formatINRWhole(v) : "—";
 }
 
 function FnfContent() {
@@ -134,7 +135,7 @@ function FnfContent() {
                 <TableRow key={f.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <span className="text-sm font-medium">{f.employeeName ?? "Employee"}</span>
                     </div>
                   </TableCell>

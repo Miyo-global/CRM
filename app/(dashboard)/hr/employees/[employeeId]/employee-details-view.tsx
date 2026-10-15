@@ -17,7 +17,7 @@ import {
 import {
   useOfferLetterTemplates,
   useGenerateEmployeeLetter,
-} from "@/lib/api/hooks/hr/recruitment";
+} from "@/lib/api/hooks/hr/letter-templates";
 import { EmployeeProjectsList } from "@/components/hr/employee-projects-list";
 import { EmployeeTicketsList } from "@/components/hr/employee-tickets-list";
 import { Badge } from "@/components/ui/badge";
@@ -402,9 +402,10 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
   const genderLabel = asStr(employee.gender)
     ? String(employee.gender).charAt(0) + String(employee.gender).slice(1).toLowerCase()
     : null;
+  // "1 yr", not "1 yrs" (A43).
   const experienceLabel =
     e.experienceYears != null && String(e.experienceYears).trim()
-      ? `${e.experienceYears} yrs`
+      ? `${e.experienceYears} ${Number(e.experienceYears) === 1 ? "yr" : "yrs"}`
       : null;
 
   let safeDefaultTab = defaultTab;
@@ -560,14 +561,6 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   <DetailRow label="Designation" value={asStr(employee.designation)} />
                   <DetailRow label="Department" value={asStr(e.departmentName)} />
                   <DetailRow
-                    label="Branch"
-                    value={
-                      asStr(e.branchName)
-                        ? `${asStr(e.branchName)}${asStr(e.branchCity) ? ` · ${asStr(e.branchCity)}` : ""}`
-                        : asStr(e.branchCity)
-                    }
-                  />
-                  <DetailRow
                     label="Reporting to"
                     value={
                       asStr(e.managerName)
@@ -612,7 +605,6 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   />
                   <DetailRow label="Phone" value={asStr(employee.phone)} />
                   <DetailRow label="WhatsApp" value={asStr(e.whatsappNumber)} />
-                  <DetailRow label="Work location" value={asStr(e.branchCity)} />
                   {(asStr(e.linkedinUrl) || asStr(e.githubUrl) || asStr(e.twitterUrl) || asStr(e.websiteUrl)) && (
                     <div className="flex items-center gap-3 pt-1">
                       {asStr(e.linkedinUrl) && (

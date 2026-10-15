@@ -506,7 +506,7 @@ export default function IncentivesPage() {
                         <>
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={entry.createdBy.image || ""} />
-                            <AvatarFallback className="text-3xs">{entry.createdBy.name?.charAt(0) ?? "?"}</AvatarFallback>
+                            <AvatarFallback className="text-3xs">{entry.createdBy.name?.charAt(0) ?? "—"}</AvatarFallback>
                           </Avatar>
                           <span>{entry.createdBy.name ?? "Unknown"}</span>
                         </>

@@ -46,7 +46,6 @@ export function ExecutiveKpiWidget() {
   const kpis: Kpi[] = data
     ? [
         { label: "Headcount", value: data.headcount, icon: Users, tone: "success", href: "/hr" },
-        { label: "Open Roles", value: data.openRoles, icon: Briefcase, tone: "brand", href: "/hr/recruitment" },
         { label: "Active Projects", value: data.activeProjects, icon: BarChart2, tone: "info", href: "/projects" },
       ]
     : [];

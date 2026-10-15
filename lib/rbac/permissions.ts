@@ -410,7 +410,6 @@ export const SYSTEM_ROLES = [
   "CEO",
   "HR",
   "ADMIN",
-  "RECRUITER",
   "SALES",
   "CUSTOMER_SUPPORT",
   "ENGINEERING",
@@ -470,17 +469,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "dashboard:sales:view",
     "dashboard:customer-executive:view",
     "dashboard:support:view",
-  ],
-
-  /**
-   * Recruitment role: the hiring pipeline plus, when RECRUITER_CAN_ONBOARD is
-   * on, the Add Employee wizard (A11).
-   */
-  RECRUITER: [
-    ...EMPLOYEE_SELF_SERVICE,
-    "hr:employees:view",
-    "hr:employees:create",
-    "hr:documents:view",
   ],
 
   SALES: [

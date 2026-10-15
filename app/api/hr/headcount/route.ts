@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
 
 const querySchema = z.object({
-  groupBy: z.enum(["department", "role", "branch"]).default("department"),
+  groupBy: z.enum(["department", "role"]).default("department"),
 });
 
 export interface HeadcountGroup {
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       Object.fromEntries(req.nextUrl.searchParams.entries()),
     );
     if (!parsed.success) {
-      return err("Invalid groupBy value. Use: department | role | branch", 400);
+      return err("Invalid groupBy value. Use: department | role", 400);
     }
 
     const { groupBy } = parsed.data;
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         label: r.departmentId ? (deptMap.get(r.departmentId) ?? "Other") : "Unassigned",
         count: Number(r.count),
       }));
-    } else if (groupBy === "role") {
+    } else {
       const rows = await db
         .select({
           role: users.role,
@@ -64,21 +64,6 @@ export async function GET(req: NextRequest) {
 
       groups = rows.map((r) => ({
         label: r.role,
-        count: Number(r.count),
-      }));
-    } else {
-      const rows = await db
-        .select({
-          branchId: users.branchId,
-          count: count(),
-        })
-        .from(organizationMembers)
-        .innerJoin(users, eq(organizationMembers.userId, users.id))
-        .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true)))
-        .groupBy(users.branchId);
-
-      groups = rows.map((r) => ({
-        label: r.branchId ? `Branch ${r.branchId}` : "Head Office",
         count: Number(r.count),
       }));
     }

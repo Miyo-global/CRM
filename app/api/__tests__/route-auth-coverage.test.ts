@@ -18,19 +18,10 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "auth/validate-setup-token/route.ts": "token-verified setup",
   "health/route.ts": "health probe",
   "inngest/route.ts": "Inngest serve() verifies its signing key",
-  "careers/route.ts": "public job board",
-  "careers/apply/route.ts": "public job application",
-  "careers/apply/upload-resume/route.ts": "public job application",
-  "careers/apply/parse-resume/route.ts": "public job application",
   "public/intake/[projectId]/route.ts": "public project intake form",
-  "public/interview-booking/[token]/route.ts": "token-scoped booking",
-  "public/offer-acceptance/[token]/route.ts": "token-scoped offer",
   "push/vapid-public-key/route.ts": "public VAPID key",
   "hr/integrations/biometric/route.ts": "x-api-key header",
   "webhooks/esign/route.ts": "HMAC signature",
-  "webhooks/naukri/applications/route.ts": "HMAC signature",
-  "webhooks/indeed/applications/route.ts": "HMAC signature",
-  "webhooks/linkedin/applications/route.ts": "HMAC signature",
 };
 
 function routeFiles(dir: string): string[] {
@@ -45,7 +36,7 @@ const routes = routeFiles(API_ROOT).map((f) => path.relative(API_ROOT, f).split(
 
 describe("API route auth coverage", () => {
   it("finds the API routes", () => {
-    expect(routes.length).toBeGreaterThan(500);
+    expect(routes.length).toBeGreaterThan(400);
   });
 
   it("every route calls an auth guard or is an allowlisted public route", () => {

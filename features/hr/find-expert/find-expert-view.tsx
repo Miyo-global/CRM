@@ -37,7 +37,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useFindExpert, useHrDepartments, useSkillSuggestions, type ExpertResult } from "@/lib/api/hooks/hr";
-import { useBranches } from "@/lib/api/hooks/branches";
 import { canonicalizeSkill, getRelatedSkills, normalizeSkill } from "@/lib/hr/skills-catalog";
 import { ROLE_LABELS } from "@/features/hr/employees/hr-types";
 import { resolveImageUrl } from "@/lib/utils";
@@ -286,7 +285,6 @@ export function FindExpertView() {
   const [activeQuery, setActiveQuery] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [branchFilter, setBranchFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
@@ -300,13 +298,11 @@ export function FindExpertView() {
   const [includeInactive, setIncludeInactive] = useState(false);
 
   const { data: departments } = useHrDepartments();
-  const { data: branches } = useBranches();
 
   const { data: experts, isLoading } = useFindExpert({
     skill: activeQuery,
     department: deptFilter !== "all" ? deptFilter : undefined,
     role: roleFilter !== "all" ? roleFilter : undefined,
-    branch: branchFilter !== "all" ? branchFilter : undefined,
     includeInactive,
   });
 
@@ -461,7 +457,6 @@ export function FindExpertView() {
   const hasActiveFilters =
     deptFilter !== "all" ||
     roleFilter !== "all" ||
-    branchFilter !== "all" ||
     locationFilter !== "all" ||
     experienceFilter !== "all" ||
     levelFilter !== "all" ||
@@ -471,7 +466,6 @@ export function FindExpertView() {
   function clearFilters() {
     setDeptFilter("all");
     setRoleFilter("all");
-    setBranchFilter("all");
     setLocationFilter("all");
     setExperienceFilter("all");
     setLevelFilter("all");
@@ -604,17 +598,6 @@ export function FindExpertView() {
                   <SelectItem key={slug} value={slug}>
                     {ROLE_LABELS[slug] ?? slug}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={branchFilter} onValueChange={(v) => { setBranchFilter(v); setPage(1); }}>
-              <SelectTrigger className="h-8 w-[130px] text-xs">
-                <SelectValue placeholder="Branch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Branches</SelectItem>
-                {(branches ?? []).map((b) => (
-                  <SelectItem key={b.id} value={b.name}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

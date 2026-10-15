@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { mergeMutationOptions } from "@/lib/api/hooks/mutation-options";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   Sprint,
@@ -40,7 +41,7 @@ export function useSprint(
 
 export function useCreateSprint(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreateSprintInput) =>
       apiClient.post<Sprint>(`/projects/${projectId}/sprints`, data),
     onSuccess: (_data: unknown, variables: CreateSprintInput) => {
@@ -48,8 +49,7 @@ export function useCreateSprint(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.sprints(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateSprint(
@@ -57,7 +57,7 @@ export function useUpdateSprint(
   options?: Parameters<typeof useMutation>[0]
 ) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ sprintId, ...data }: UpdateSprintInput) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/sprints/${sprintId}`,
@@ -68,8 +68,7 @@ export function useUpdateSprint(
         queryKey: queryKeys.projects.sprints(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useStartSprint(
@@ -77,7 +76,7 @@ export function useStartSprint(
   options?: Parameters<typeof useMutation>[0]
 ) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ sprintId }: { sprintId: number }) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/sprints/${sprintId}`,
@@ -88,8 +87,7 @@ export function useStartSprint(
         queryKey: queryKeys.projects.sprints(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useCompleteSprint(
@@ -97,7 +95,7 @@ export function useCompleteSprint(
   options?: Parameters<typeof useMutation>[0]
 ) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ sprintId }: { sprintId: number }) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/sprints/${sprintId}`,
@@ -108,8 +106,7 @@ export function useCompleteSprint(
         queryKey: queryKeys.projects.sprints(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useSprintBurndown(

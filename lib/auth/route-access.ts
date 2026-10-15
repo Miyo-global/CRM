@@ -5,12 +5,10 @@ import { SYSTEM_ROLES } from "@/lib/rbac/roles";
 const EVERYONE: string[] = [...SYSTEM_ROLES];
 /** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
 const HR_TEAM: string[] = ["CEO", "HR"];
-const RECRUITMENT: string[] = ["CEO", "HR", "RECRUITER"];
 
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr": HR_TEAM,
-  "/hr/onboarding": RECRUITMENT,
-  "/hr/recruitment": RECRUITMENT,
+  "/hr/onboarding": HR_TEAM,
   "/hr/payroll": HR_TEAM,
   "/hr/documents": HR_TEAM,
   "/hr/work-logs": EVERYONE,

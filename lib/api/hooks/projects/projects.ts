@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { mergeMutationOptions } from "@/lib/api/hooks/mutation-options";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   Project,
@@ -45,18 +46,17 @@ export function useProject(
 
 export function useCreateProject(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: (data: CreateProjectInput) => apiClient.post<Project>("/projects", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateProject(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: UpdateProjectInput) =>
       apiClient.patch<{ success: boolean }>(`/projects/${projectId}`, data),
     onSuccess: (_data: unknown, variables: UpdateProjectInput) => {
@@ -65,22 +65,20 @@ export function useUpdateProject(options?: Parameters<typeof useMutation>[0]) {
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteProject(
   options?: Omit<UseMutationOptions<{ success: boolean }, Error, { projectId: number }>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, { projectId: number }>({
+  return useMutation<{ success: boolean }, Error, { projectId: number }>(mergeMutationOptions({
     mutationFn: ({ projectId }) =>
       apiClient.delete<{ success: boolean }>(`/projects/${projectId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useProjectMembers(
@@ -97,7 +95,7 @@ export function useProjectMembers(
 
 export function useAddProjectMember(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: AddProjectMemberInput) =>
       apiClient.post<ProjectMember>(`/projects/${projectId}/members`, data),
     onSuccess: (_data: unknown, variables: AddProjectMemberInput) => {
@@ -105,13 +103,12 @@ export function useAddProjectMember(options?: Parameters<typeof useMutation>[0])
         queryKey: queryKeys.projects.members(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useRemoveProjectMember(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, userId }: { projectId: number; userId: string }) =>
       apiClient.delete<{ success: boolean }>(`/projects/${projectId}/members`, {
         data: { userId },
@@ -121,8 +118,7 @@ export function useRemoveProjectMember(options?: Parameters<typeof useMutation>[
         queryKey: queryKeys.projects.members(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useProjectLabels(
@@ -144,7 +140,7 @@ export function useCreateLabel(
   options?: Parameters<typeof useMutation>[0]
 ) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: (data: CreateLabelInput) =>
       apiClient.post<TicketLabel>(`/projects/${projectId}/labels`, data),
     onSuccess: () => {
@@ -152,6 +148,5 @@ export function useCreateLabel(
         queryKey: queryKeys.projects.labels(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }

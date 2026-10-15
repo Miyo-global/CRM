@@ -160,8 +160,7 @@ function TerminationReasonsContent() {
                 Termination Management
               </Link>
               . Deactivated reasons are hidden from new terminations but kept for
-              historical records. Defaults are seeded automatically the first time
-              this page loads.
+              historical records.
             </p>
           </div>
           {!isLoading && sorted.length > 0 && (

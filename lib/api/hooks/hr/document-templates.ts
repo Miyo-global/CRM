@@ -128,28 +128,3 @@ export function useDocumentTemplateVersions(templateId: number) {
     enabled: !!templateId,
   });
 }
-
-export function useCandidateDocuments(candidateId: number) {
-  return useQuery({
-    queryKey: queryKeys.hr.candidateDocuments(candidateId),
-    queryFn: () =>
-      apiClient.get<CandidateDocument[]>(
-        `/hr/recruitment/candidates/${candidateId}/documents`
-      ),
-    enabled: !!candidateId,
-  });
-}
-
-export function useGenerateCandidateDocument(candidateId: number) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: GenerateCandidateDocumentInput) =>
-      apiClient.post<CandidateDocument>(
-        `/hr/recruitment/candidates/${candidateId}/documents`,
-        data
-      ),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.hr.candidateDocuments(candidateId) });
-    },
-  });
-}

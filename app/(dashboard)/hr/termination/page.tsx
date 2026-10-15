@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   Calendar,
   User,
-  BadgeDollarSign,
+  BadgeIndianRupee,
   Check,
   Paperclip,
   FileText,

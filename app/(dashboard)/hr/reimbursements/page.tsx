@@ -20,11 +20,12 @@ import { ReimbursementRequestForm } from "@/features/hr/reimbursements/reimburse
 import type { ReimbursementRequestFormValues } from "@/lib/validations/common-forms";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2, XCircle, DollarSign } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { formatINRWhole } from "@/lib/format-utils";
 
 function statusTone(s: string | null): Tone {
   if (s === "APPROVED" || s === "PAID") return "success";
@@ -120,7 +121,7 @@ export default function ReimbursementsPage() {
                 <TableRow key={r.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={DollarSign} size="sm" tone="neutral" />
+                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.category}</p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
@@ -129,7 +130,7 @@ export default function ReimbursementsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-semibold">${Number(r.amount).toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-mono font-semibold tabular-nums">{formatINRWhole(r.amount)}</TableCell>
                   <TableCell>
                     <StatusPill tone={statusTone(r.status)} dot>{r.status}</StatusPill>
                   </TableCell>

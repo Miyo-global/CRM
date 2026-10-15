@@ -295,9 +295,6 @@ export function AdminExpenseItem({
           <CatIcon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">{adminCatLabel}</span>
         </div>
-        {expense.description && (
-          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[130px]">{expense.description}</p>
-        )}
       </div>
 
       <div className="text-right min-w-[150px] flex-shrink-0">

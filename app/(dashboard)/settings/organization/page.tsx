@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Clock, Globe, DollarSign, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
+import { Shield, Clock, Globe, IndianRupee, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -427,7 +427,7 @@ export default function OrganizationSettingsPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="currency" className="text-sm flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                    <IndianRupee className="h-3.5 w-3.5 text-muted-foreground" />
                     Default Currency
                   </Label>
                   {isEditingConfig ? (

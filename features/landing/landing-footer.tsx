@@ -17,7 +17,6 @@ const footerCols = [
     links: [
       { label: "About", href: "/about" },
       { label: "Blog", href: "/blog" },
-      { label: "Careers", href: "/careers" },
     ],
   },
   {

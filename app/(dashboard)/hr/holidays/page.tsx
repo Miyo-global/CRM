@@ -53,8 +53,12 @@ const MONTHS = [
 ];
 
 function formatHolidayDate(date: string): string {
+  // Include the year: a confirm dialog that says only "26 January" is
+  // ambiguous when adding next year's holidays (A43).
   return formatDisplayDate(fromISODateString(date), {
-    day: "numeric", month: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 }
 

@@ -6,7 +6,6 @@ export const ROLES = {
   SALES: "SALES",
   ENGINEERING: "ENGINEERING",
   DESIGN: "DESIGN",
-  RECRUITER: "RECRUITER",
   CUSTOMER_SUPPORT: "CUSTOMER_SUPPORT",
   VIDEO_EDITOR: "VIDEO_EDITOR",
   DIGITAL_MARKETING: "DIGITAL_MARKETING",
@@ -18,18 +17,12 @@ export const ADMIN_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN]
 
 export const EXPENSE_ADMIN_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
 
+/** Roles that act on hiring-adjacent HR records (asset handover, documents). */
 export const RECRUITMENT_HR_ROLES: readonly string[] = [
   ROLES.CEO,
   ROLES.HR,
   ROLES.ADMIN,
-  ROLES.RECRUITER,
 ];
-
-/**
- * Whether a RECRUITER may run the Add Employee wizard.
- * OPEN QUESTION for Tarun: recruiters hire, but onboarding also sets salary.
- */
-export const RECRUITER_CAN_ONBOARD = true;
 
 export function isRecruitmentHr(role: string | undefined | null): boolean {
   return !!role && RECRUITMENT_HR_ROLES.includes(role);
@@ -69,17 +62,13 @@ export const CHURN_ALERT_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.
 
 export const CSAT_MANAGE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.CUSTOMER_SUPPORT];
 
-export const ONBOARDING_MUTATE_ROLES: readonly string[] = RECRUITER_CAN_ONBOARD
-  ? [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.RECRUITER]
-  : [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
+export const ONBOARDING_MUTATE_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN];
 
 /**
  * Roles that manage new-employee onboarding (Add Employee wizard, onboarding
  * progress, onboarding documents for other employees). Matches `withAdmin`.
  */
-export const ONBOARDING_MANAGER_ROLES: readonly string[] = RECRUITER_CAN_ONBOARD
-  ? [...ADMIN_ROLES, ROLES.RECRUITER]
-  : ADMIN_ROLES;
+export const ONBOARDING_MANAGER_ROLES: readonly string[] = ADMIN_ROLES;
 
 export function isOnboardingManager(role: string | undefined | null): boolean {
   return hasRole(role, ONBOARDING_MANAGER_ROLES);

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getTodayIST } from "@/lib/careers/application-deadline";
+import { getTodayIST } from "@/lib/hr/application-dates";
 import { formatJobPostingLocation, formatJobPostingTitle } from "@/lib/hr/job-posting-format";
 import { cleanRequiredName, cleanStrictName } from "@/lib/validations/text-rules";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";

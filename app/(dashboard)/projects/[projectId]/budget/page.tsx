@@ -13,7 +13,7 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { EmptyTimeIllustration } from "@/components/illustrations";
-import { DollarSign, Clock, TrendingUp, Pencil } from "lucide-react";
+import { IndianRupee, Clock, TrendingUp, Pencil } from "lucide-react";
 import { useProjectBudget, useUpdateProjectBudget } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -98,7 +98,7 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
           {
             label: "Planned Budget",
             value: fmt(budget?.plannedBudget ?? 0),
-            icon: DollarSign,
+            icon: IndianRupee,
             hint: budget?.plannedBudget ? "Project budget" : "Not set",
           },
           {
@@ -111,7 +111,7 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
           {
             label: "Remaining",
             value: fmt(Math.abs(budget?.remaining ?? 0)),
-            icon: DollarSign,
+            icon: IndianRupee,
             hint: overBudget ? "Over budget" : "Available",
             tone: overBudget ? "danger" : "success",
           },

@@ -553,6 +553,8 @@ export const reimbursements = pgTable("reimbursements", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
   userId: text("user_id").references(() => users.id).notNull(),
+  /** The approved expense this pays back, when it came from one (A41). */
+  expenseId: integer("expense_id"),
   category: text("category").notNull(),
   amount: decimal("amount").notNull(),
   description: text("description"),

@@ -38,7 +38,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Users, DollarSign, CreditCard, Plus } from "lucide-react";
+import { Users, IndianRupee, CreditCard, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import type { Employee, PayrollWithUser } from "@/types/hr";
@@ -472,7 +472,7 @@ export default function PayrollPage() {
             {
               label: "Total Gross",
               value: `${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`,
-              icon: DollarSign,
+              icon: IndianRupee,
             },
             {
               label: "Total Net Payout",

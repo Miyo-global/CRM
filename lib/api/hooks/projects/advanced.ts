@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { mergeMutationOptions } from "@/lib/api/hooks/mutation-options";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   Epic,
@@ -48,7 +49,7 @@ export type CreateEpicInput = {
 
 export function useCreateEpic(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: (variables: CreateEpicInput) => {
       const { projectId, ...data } = variables;
       return apiClient.post<Epic>(`/projects/${projectId}/epics`, data);
@@ -58,8 +59,7 @@ export function useCreateEpic(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.epics(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateEpic(
@@ -67,7 +67,7 @@ export function useUpdateEpic(
   options?: Parameters<typeof useMutation>[0]
 ) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ ticketId, ...data }: UpdateTicketInput) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}`,
@@ -78,8 +78,7 @@ export function useUpdateEpic(
         queryKey: queryKeys.projects.epics(projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useCycles(
@@ -96,7 +95,7 @@ export function useCycles(
 
 export function useCreateCycle(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreateCycleInput) =>
       apiClient.post<Cycle>(`/projects/${projectId}/cycles`, data),
     onSuccess: (_data: unknown, variables: CreateCycleInput) => {
@@ -104,13 +103,12 @@ export function useCreateCycle(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.cycles(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateCycle(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId, ...data }: UpdateCycleInput & { projectId: number }) =>
       apiClient.patch<Cycle>(`/projects/${projectId}/cycles/${id}`, data),
     onSuccess: (_data: unknown, variables: UpdateCycleInput & { projectId: number }) => {
@@ -121,8 +119,7 @@ export function useUpdateCycle(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useModules(
@@ -139,7 +136,7 @@ export function useModules(
 
 export function useCreateModule(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreateModuleInput) =>
       apiClient.post<Module>(`/projects/${projectId}/modules`, data),
     onSuccess: (_data: unknown, variables: CreateModuleInput) => {
@@ -147,13 +144,12 @@ export function useCreateModule(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.modules(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateModule(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId, ...data }: UpdateModuleInput & { projectId: number }) =>
       apiClient.patch<Module>(`/projects/${projectId}/modules/${id}`, data),
     onSuccess: (_data: unknown, variables: UpdateModuleInput & { projectId: number }) => {
@@ -164,13 +160,12 @@ export function useUpdateModule(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteModule(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, moduleId }: { projectId: number; moduleId: number }) =>
       apiClient.delete<{ success: boolean }>(
         `/projects/${projectId}/modules/${moduleId}`,
@@ -183,8 +178,7 @@ export function useDeleteModule(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function usePages(
@@ -201,7 +195,7 @@ export function usePages(
 
 export function useCreatePage(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreatePageInput) =>
       apiClient.post<ProjectPage>(`/projects/${projectId}/pages`, data),
     onSuccess: (_data: unknown, variables: CreatePageInput) => {
@@ -209,13 +203,12 @@ export function useCreatePage(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.pages(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdatePage(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId, ...data }: UpdatePageInput & { projectId: number }) =>
       apiClient.patch<ProjectPage>(`/projects/${projectId}/pages/${id}`, data),
     onSuccess: (_data: unknown, variables: UpdatePageInput & { projectId: number }) => {
@@ -223,8 +216,7 @@ export function useUpdatePage(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.pages(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useViews(
@@ -241,7 +233,7 @@ export function useViews(
 
 export function useCreateView(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreateViewInput) =>
       apiClient.post<ProjectView>(`/projects/${projectId}/views`, data),
     onSuccess: (_data: unknown, variables: CreateViewInput) => {
@@ -249,13 +241,12 @@ export function useCreateView(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.views(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateView(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId, ...data }: UpdateViewInput & { projectId: number }) =>
       apiClient.patch<ProjectView>(`/projects/${projectId}/views/${id}`, data),
     onSuccess: (_data: unknown, variables: UpdateViewInput & { projectId: number }) => {
@@ -263,13 +254,12 @@ export function useUpdateView(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.views(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useDeleteView(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId }: { id: number; projectId: number }) =>
       apiClient.delete<{ success: boolean }>(`/projects/${projectId}/views/${id}`),
     onSuccess: (_data: unknown, variables: { id: number; projectId: number }) => {
@@ -277,8 +267,7 @@ export function useDeleteView(options?: Parameters<typeof useMutation>[0]) {
         queryKey: queryKeys.projects.views(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useIntakeRequests(
@@ -303,7 +292,7 @@ export function useIntakeRequests(
 
 export function useCreateIntakeRequest(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ projectId, ...data }: CreateIntakeRequestInput) =>
       apiClient.post<IntakeRequest>(`/projects/${projectId}/intake`, data),
     onSuccess: (_data: unknown, variables: CreateIntakeRequestInput) => {
@@ -311,13 +300,12 @@ export function useCreateIntakeRequest(options?: Parameters<typeof useMutation>[
         queryKey: queryKeys.projects.intake(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useUpdateIntakeRequest(options?: Parameters<typeof useMutation>[0]) {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation(mergeMutationOptions({
     mutationFn: ({ id, projectId, ...data }: UpdateIntakeRequestInput & { projectId: number }) =>
       apiClient.patch<{ success: boolean }>(
         `/projects/${projectId}/intake/${id}`,
@@ -331,8 +319,7 @@ export function useUpdateIntakeRequest(options?: Parameters<typeof useMutation>[
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
     },
-    ...options,
-  });
+  }, options));
 }
 
 export function useProjectAnalytics(

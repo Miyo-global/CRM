@@ -1,6 +1,6 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { expenses, users } from "@/lib/db/schema";
+import { expenses, reimbursements, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
@@ -105,6 +105,26 @@ export async function PATCH(
           ...(body.status === "PAID" && { paidAt: new Date() }),
         })
         .where(eq(expenses.id, expenseId));
+
+      // An approved claim is money owed, so it shows up in Reimbursements
+      // ready to pay (A41). The unique expense_id makes this idempotent.
+      if (body.status === "APPROVED") {
+        await tx
+          .insert(reimbursements)
+          .values({
+            orgId: session.orgId,
+            userId: expense.userId,
+            expenseId,
+            category: expense.category ?? "Expense",
+            amount: expense.amount ?? "0",
+            description: expense.description,
+            receiptUrl: expense.receiptUrl,
+            status: "APPROVED",
+            approvedBy: session.user.id,
+            approvedAt: new Date(),
+          })
+          .onConflictDoNothing();
+      }
     });
 
     const auditAction = body.status === "APPROVED" ? "expense.approved" : body.status === "PAID" ? "expense.paid" : "expense.rejected";

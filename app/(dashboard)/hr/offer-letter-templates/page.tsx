@@ -39,7 +39,7 @@ import {
   useDeleteOfferLetterCustomVariable,
   type OfferLetterTemplate,
   type OfferLetterCustomVariable,
-} from "@/lib/api/hooks/hr/recruitment";
+} from "@/lib/api/hooks/hr/letter-templates";
 import {
   OFFER_LETTER_TOKEN_LEGEND,
   BUILT_IN_OFFER_TOKEN_KEYS,

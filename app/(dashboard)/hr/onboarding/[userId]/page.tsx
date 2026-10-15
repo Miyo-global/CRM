@@ -23,7 +23,7 @@ import { useUserOnboarding, useCompleteOnboardingTask } from "@/lib/api/hooks/hr
 import { useHrEmployees } from "@/lib/api/hooks/hr";
 import type { Employee } from "@/types/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { getTodayIST, normalizeDeadlineDate } from "@/lib/careers/application-deadline";
+import { getTodayIST, normalizeDeadlineDate } from "@/lib/hr/application-dates";
 import { formatDisplayDate } from "@/lib/date-utils";
 
 

@@ -541,7 +541,7 @@ export async function getExecutiveDashboard(orgId: string) {
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - 7);
 
-  const [mrrRows, pipelineRows, headcountRows, openRolesRows, newLeadsRows, activeProjectsRows, totalLeadsRows, wonLeadsRows] = await Promise.all([
+  const [mrrRows, pipelineRows, headcountRows, newLeadsRows, activeProjectsRows, totalLeadsRows, wonLeadsRows] = await Promise.all([
     db
       .select({ total: sum(deals.value) })
       .from(deals)
@@ -555,10 +555,6 @@ export async function getExecutiveDashboard(orgId: string) {
       .from(organizationMembers)
       .innerJoin(users, eq(organizationMembers.userId, users.id))
       .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true))),
-    db
-      .select({ cnt: count() })
-      .from(jobPostings)
-      .where(and(eq(jobPostings.orgId, orgId), eq(jobPostings.status, "OPEN"))),
     db
       .select({ cnt: count() })
       .from(leads)
@@ -578,7 +574,6 @@ export async function getExecutiveDashboard(orgId: string) {
     mrr: Number(mrrRows[0]?.total ?? 0),
     pipelineValue: Number(pipelineRows[0]?.total ?? 0),
     headcount: Number(headcountRows[0]?.cnt ?? 0),
-    openRoles: Number(openRolesRows[0]?.cnt ?? 0),
     newLeadsThisWeek: Number(newLeadsRows[0]?.cnt ?? 0),
     activeProjects: Number(activeProjectsRows[0]?.cnt ?? 0),
     conversionRate: total > 0 ? Math.round((won / total) * 100) : 0,
