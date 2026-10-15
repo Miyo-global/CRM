@@ -519,3 +519,51 @@ export function getLongestMatchingNavPath(
   }
   return best;
 }
+
+/**
+ * Modules for the top nav (B5). A group label like "HR – People" belongs to
+ * the "HR" module, so the top nav lists modules and the sidebar only has to
+ * show the groups of the module you are in.
+ */
+export function moduleOfGroup(groupLabel: string): string {
+  return groupLabel.split("–")[0].trim();
+}
+
+export interface NavModule {
+  label: string;
+  /** Where clicking the module in the top nav goes: its first route. */
+  href: string;
+  groupLabels: string[];
+}
+
+export function getModules(navGroups: NavGroup[]): NavModule[] {
+  // `Map` here is lucide's icon, not the global, so keep this plain.
+  const modules: NavModule[] = [];
+  for (const group of navGroups) {
+    const label = moduleOfGroup(group.label);
+    const existing = modules.find((m) => m.label === label);
+    if (existing) {
+      existing.groupLabels.push(group.label);
+      continue;
+    }
+    const first = group.routes[0];
+    if (!first) continue;
+    modules.push({ label, href: first.href, groupLabels: [group.label] });
+  }
+  return modules;
+}
+
+/** The module that owns the current pathname, or null when nothing matches. */
+export function getActiveModule(
+  pathname: string,
+  navGroups: NavGroup[],
+): string | null {
+  const longest = getLongestMatchingNavPath(pathname, navGroups);
+  if (!longest) return null;
+  for (const group of navGroups) {
+    if (group.routes.some((route) => navHrefPath(route.href) === longest)) {
+      return moduleOfGroup(group.label);
+    }
+  }
+  return null;
+}

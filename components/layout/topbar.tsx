@@ -13,7 +13,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { navHrefPath, type NavGroup } from "./sidebar/sidebar-nav-items";
+import {
+  getActiveModule,
+  getModules,
+  navHrefPath,
+  type NavGroup,
+} from "./sidebar/sidebar-nav-items";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { NotificationBell } from "./notification-bell";
 import { ThemeToggle } from "./theme-toggle";
 import { openCommandPalette } from "./shortcuts-provider";
@@ -34,6 +41,15 @@ interface TopbarProps {
 
 export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
   const crumbs = useAutoBreadcrumbs();
+  const pathname = usePathname();
+
+  // The modules live up here; the sidebar lists the pages of the one you are
+  // in (B5).
+  const modules = useMemo(() => getModules(navGroups), [navGroups]);
+  const activeModule = useMemo(
+    () => getActiveModule(pathname, navGroups),
+    [pathname, navGroups],
+  );
 
   const createItems = useMemo(() => {
     const paths = new Set(navGroups.flatMap((g) => g.routes.map((r) => navHrefPath(r.href))));
@@ -61,7 +77,25 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
       </Link>
 
       {/* Desktop */}
-      <Breadcrumbs items={crumbs} className="hidden lg:block" />
+      <nav aria-label="Modules" className="hidden items-center gap-1 lg:flex">
+        {modules.map((mod) => (
+          <Link
+            key={mod.label}
+            href={mod.href}
+            aria-current={mod.label === activeModule ? "page" : undefined}
+            className={cn(
+              "rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:focus-ring",
+              mod.label === activeModule
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {mod.label}
+          </Link>
+        ))}
+      </nav>
+
+      <Breadcrumbs items={crumbs} className="hidden xl:block" />
 
       <div className="flex-1" />
 

@@ -18,6 +18,8 @@ import { useUnreadNotificationCount } from "@/lib/api/hooks/notifications";
 import {
   getNavGroupsForRole,
   getLongestMatchingNavPath,
+  getActiveModule,
+  moduleOfGroup,
   navHrefPath,
 } from "./sidebar/sidebar-nav-items";
 import { SidebarSection } from "./sidebar/sidebar-section";
@@ -65,6 +67,20 @@ export function AppSidebar({
   const longestMatchingNavPath = useMemo(
     () => getLongestMatchingNavPath(pathname, navGroups),
     [navGroups, pathname],
+  );
+
+  // The top nav picks the module; the sidebar shows only that module's groups
+  // (B5). With no match — a page outside the nav — show everything.
+  const activeModule = useMemo(
+    () => getActiveModule(pathname, navGroups),
+    [navGroups, pathname],
+  );
+  const visibleGroups = useMemo(
+    () =>
+      activeModule
+        ? navGroups.filter((group) => moduleOfGroup(group.label) === activeModule)
+        : navGroups,
+    [navGroups, activeModule],
   );
 
   const activeGroupLabel = useMemo(() => {
@@ -237,7 +253,7 @@ export function AppSidebar({
 
         <ScrollArea className="min-h-0 flex-1 mask-y-from-97%">
           <nav aria-label="Main" className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
-            {navGroups.map((group, i) => {
+            {visibleGroups.map((group, i) => {
               const groupLabel = group.label;
               const isGroupCollapsed = groupLabel in collapsedGroups ? collapsedGroups[groupLabel] : true;
               return (
