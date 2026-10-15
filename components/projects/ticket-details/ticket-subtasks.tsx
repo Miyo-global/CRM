@@ -50,12 +50,14 @@ interface TicketSubtasksProps {
   ticketId: number;
   projectId: number;
   subtasks: Subtask[];
+  readOnly?: boolean;
 }
 
 export function TicketSubtasks({
   ticketId,
   projectId,
   subtasks,
+  readOnly = false,
 }: TicketSubtasksProps) {
   const queryClient = useQueryClient();
   const [subtaskTitle, setSubtaskTitle] = useState("");
@@ -197,7 +199,7 @@ export function TicketSubtasks({
               <Checkbox
                 checked={sub.status === "DONE"}
                 onCheckedChange={() => handleToggleSubtask(sub.id, sub.status)}
-                disabled={editingId === sub.id}
+                disabled={readOnly || editingId === sub.id}
               />
               {editingId === sub.id ? (
                 <div className="flex flex-1 items-center gap-1 min-w-0">
@@ -254,7 +256,7 @@ export function TicketSubtasks({
                       </AvatarFallback>
                     </Avatar>
                   )}
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div className={`${readOnly ? "hidden" : "flex"} items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity`}>
                     <Button
                       type="button"
                       variant="ghost"
@@ -304,6 +306,7 @@ export function TicketSubtasks({
           ))}
         </div>
 
+        {!readOnly && (
         <div className="flex gap-2">
           <Input
             value={subtaskTitle}
@@ -325,6 +328,7 @@ export function TicketSubtasks({
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
+        )}
       </section>
 
       <AlertDialog

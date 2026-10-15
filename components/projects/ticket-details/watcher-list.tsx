@@ -27,6 +27,7 @@ interface WatcherListProps {
   ticketId: number;
   members: ProjectMember[];
   canRemoveOtherWatchers?: boolean;
+  readOnly?: boolean;
 }
 
 export function WatcherList({
@@ -34,6 +35,7 @@ export function WatcherList({
   ticketId,
   members,
   canRemoveOtherWatchers = false,
+  readOnly = false,
 }: WatcherListProps) {
   const { data: session } = useSession();
   const { data: watchers = [], isLoading } = useWatchers(projectId, ticketId);
@@ -61,6 +63,7 @@ export function WatcherList({
         <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Eye className="h-3 w-3" /> Watchers
         </label>
+        {!readOnly && (
         <Button
           variant="ghost"
           size="sm"
@@ -80,6 +83,7 @@ export function WatcherList({
             </>
           )}
         </Button>
+        )}
       </div>
 
       {watchers.length > 0 && (
@@ -87,7 +91,7 @@ export function WatcherList({
           {watchers.map((w) => {
             const watcherIdStr = String(w.userId);
             const canRemoveSelf = !!currentIdStr && watcherIdStr === currentIdStr;
-            const canRemove = canRemoveSelf || canRemoveOtherWatchers;
+            const canRemove = !readOnly && (canRemoveSelf || canRemoveOtherWatchers);
             return (
               <div
                 key={watcherIdStr}
@@ -134,6 +138,7 @@ export function WatcherList({
         </div>
       )}
 
+      {!readOnly && (
       <Select
         value=""
         onValueChange={(userId) => {
@@ -157,6 +162,7 @@ export function WatcherList({
             ))}
         </SelectContent>
       </Select>
+      )}
     </div>
   );
 }

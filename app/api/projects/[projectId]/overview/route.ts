@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, asc, eq, isNull, lt, desc, inArray, notInArray, sql, count } from "drizzle-orm";
+import { and, asc, eq, gte, isNull, lt, desc, inArray, notInArray, sql, count } from "drizzle-orm";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projects, tickets, ticketActivity } from "@/lib/db/schema";
@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
         .select({ n: sql<number>`count(distinct ${ticketActivity.ticketId})` })
         .from(ticketActivity)
         .innerJoin(tickets, eq(tickets.id, ticketActivity.ticketId))
-        .where(and(live, eq(ticketActivity.action, "status_changed"), inArray(ticketActivity.toValue, DONE_STATUSES), sql`${ticketActivity.createdAt} >= ${weekAgo}`)),
+        .where(and(live, eq(ticketActivity.action, "status_changed"), inArray(ticketActivity.toValue, DONE_STATUSES), gte(ticketActivity.createdAt, weekAgo))),
     ]);
 
     let total = 0;

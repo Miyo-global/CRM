@@ -96,7 +96,7 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
   });
 
   const values = form.watch();
-  const managerName = people.find((p) => p.id === values.managerId)?.name ?? "You decide later";
+  const managerName = people.find((p) => p.id === values.managerId)?.name ?? "Not set";
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -168,9 +168,9 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
                   <dt className="text-muted-foreground">Manager</dt>
                   <dd>{managerName}</dd>
                   <dt className="text-muted-foreground">Members</dt>
-                  <dd>{values.memberIds.length === 0 ? "None yet" : `${values.memberIds.length} people`}</dd>
+                  <dd>{values.memberIds.length === 0 ? "None yet" : `${values.memberIds.length} ${values.memberIds.length === 1 ? "person" : "people"}`}</dd>
                   <dt className="text-muted-foreground">Dates</dt>
-                  <dd>{values.startDate || "No start"} to {values.endDate || "no due date"}</dd>
+                  <dd>{values.startDate || values.endDate ? `${values.startDate || "Open start"} to ${values.endDate || "no due date"}` : "Not set"}</dd>
                   <dt className="text-muted-foreground">Features</dt>
                   <dd>
                     {Object.entries(values.modules).filter(([, on]) => on).map(([k]) => k.replace("timeTracking", "time tracking")).join(", ") || "None"}

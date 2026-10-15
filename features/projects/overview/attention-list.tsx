@@ -36,7 +36,7 @@ export function AttentionList({
                   href={`/projects/${projectId}?ticket=${t.id}`}
                   className="flex min-h-10 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted focus-visible:focus-ring"
                 >
-                  <span className="w-20 shrink-0 font-mono text-xs text-muted-foreground">{key}</span>
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">{key}</span>
                   <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>
                   {t.dueDate && (
                     <span className="shrink-0 text-xs tabular-nums text-muted-foreground">

@@ -83,6 +83,7 @@ interface TicketSidebarProps {
   epics?: Array<{ id: number; title: string }>;
   statuses?: Array<{ name: string; id: number }>;
   onAutoSave: (field: Record<string, unknown>) => void;
+  readOnly?: boolean;
 }
 
 /** dt/dd pair styled like PropertyList (§6.3), sized for the 280px rail. */
@@ -117,6 +118,7 @@ export function TicketSidebar({
   epics = [],
   statuses,
   onAutoSave,
+  readOnly = false,
 }: TicketSidebarProps) {
   const [assigneeOpen, setAssigneeOpen] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
@@ -322,6 +324,7 @@ export function TicketSidebar({
                   <span className="text-2xs">
                     {person.firstName}
                   </span>
+                  {!readOnly && (
                   <button
                     className="text-muted-foreground hover:text-destructive transition-colors leading-none"
                     onClick={() => {
@@ -332,11 +335,13 @@ export function TicketSidebar({
                   >
                     <span className="text-xs font-bold">&times;</span>
                   </button>
+                  )}
                 </div>
               )
             )}
           </div>
         )}
+        {!readOnly && (
         <Popover
           open={assigneeOpen}
           onOpenChange={(o) => {
@@ -407,6 +412,7 @@ export function TicketSidebar({
             </Command>
           </PopoverContent>
         </Popover>
+        )}
         </PropertyRow>
 
         {(timeSpent > 0 || originalEstimate > 0) && (
@@ -459,6 +465,7 @@ export function TicketSidebar({
               label: { id: number; name: string; color: string | null };
             }>
           }
+          readOnly={readOnly}
         />
       </div>
 

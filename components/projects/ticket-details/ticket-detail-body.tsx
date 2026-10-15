@@ -218,8 +218,9 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
                 epics={epicOptions}
                 statuses={statuses}
                 onAutoSave={(fields) => send(fields)}
+                readOnly={!canEdit}
               />
-              <TicketTimeTracker ticketId={ticketId} projectId={projectId} timeSpent={ticket.timeSpent ?? null} />
+              <TicketTimeTracker ticketId={ticketId} projectId={projectId} timeSpent={ticket.timeSpent ?? null} readOnly={!canEdit} />
               {portalOn && (
                 <label className="flex min-h-10 items-center justify-between gap-2 text-sm">
                   Visible to client
@@ -232,6 +233,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
               ticketId={ticketId}
               members={members}
               canRemoveOtherWatchers={canRemoveOtherWatchers}
+              readOnly={!canEdit}
             />
           </aside>
 
@@ -255,8 +257,8 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
             </section>
 
             <TicketAttachments attachments={ticket.attachments ?? []} />
-            <TicketSubtasks ticketId={ticketId} projectId={projectId} subtasks={subtasks || []} />
-            <TicketRelations ticketId={ticketId} projectId={projectId} />
+            <TicketSubtasks ticketId={ticketId} projectId={projectId} subtasks={subtasks || []} readOnly={!canEdit} />
+            <TicketRelations ticketId={ticketId} projectId={projectId} readOnly={!canEdit} />
             <ActivityFeed
               ticketId={ticketId}
               projectId={projectId}

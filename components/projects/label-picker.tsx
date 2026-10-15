@@ -28,11 +28,12 @@ interface LabelPickerProps {
   ticketId: number;
   projectId?: number;
   currentLabels: Array<{ label: { id: number; name: string; color: string | null } }>;
+  readOnly?: boolean;
 }
 
 const PRESET_COLORS: readonly string[] = CHART_PRESET_HEX;
 
-export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerProps) {
+export function LabelPicker({ ticketId, projectId, currentLabels, readOnly = false }: LabelPickerProps) {
   const [open, setOpen] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
   const [selectedColor, setSelectedColor] = useState<string>(PRESET_COLORS[0]);
@@ -84,6 +85,7 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
               style={{ backgroundColor: label.color || toneVar.neutral }}
             />
             {label.name}
+            {!readOnly && (
             <button
               type="button"
               aria-label={`Remove ${label.name}`}
@@ -92,8 +94,10 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
             >
               <X className="size-2.5" aria-hidden="true" />
             </button>
+            )}
           </Badge>
         ))}
+        {!readOnly && (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon-xs" className="rounded-full" aria-label="Add label">
@@ -183,6 +187,7 @@ export function LabelPicker({ ticketId, projectId, currentLabels }: LabelPickerP
             </div>
           </PopoverContent>
         </Popover>
+        )}
       </div>
     </div>
   );

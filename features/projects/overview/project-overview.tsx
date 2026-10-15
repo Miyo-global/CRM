@@ -15,10 +15,10 @@ const HEALTH_TONE = { on_track: "success", at_risk: "warning", off_track: "dange
 function OverviewSkeleton() {
   return (
     <div className="space-y-6" aria-busy="true">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-5">
         {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-3">
         {[1, 2, 3].map((i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
       </div>
       <Skeleton className="h-64 rounded-xl" />
@@ -40,7 +40,7 @@ export function ProjectOverview({ projectId }: { projectId: number }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-5">
         <StatCard label="Open" value={counts.open} icon={CircleDot} index={0} />
         <StatCard label="In progress" value={counts.inProgress} icon={Clock} index={1} />
         <StatCard label="Overdue" value={counts.overdue} icon={AlertTriangle} tone={counts.overdue > 0 ? "danger" : undefined} index={2} />
@@ -52,10 +52,11 @@ export function ProjectOverview({ projectId }: { projectId: number }) {
           icon={HeartPulse}
           tone={HEALTH_TONE[health.status]}
           index={4}
+          className="col-span-2 md:col-span-1"
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-3">
         <AttentionList title="Overdue" items={attention.overdue} projectId={projectId} projectKey={projectKey} empty="Nothing is overdue." />
         <AttentionList
           title="Urgent and unassigned"
