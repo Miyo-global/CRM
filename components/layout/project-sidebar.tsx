@@ -20,6 +20,7 @@ import {
   User,
   Diamond,
   IndianRupee,
+  Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +55,7 @@ const VISIBLE_TABS = 7;
 function navItems(baseUrl: string): NavItem[] {
   return [
     { label: "Board", icon: KanbanSquare, href: baseUrl },
+    { label: "Overview", icon: Gauge, href: `${baseUrl}/overview` },
     { label: "Backlog", icon: ListTodo, href: `${baseUrl}/backlog` },
     { label: "Sprints", icon: Calendar, href: `${baseUrl}/sprints` },
     { label: "Cycles", icon: RefreshCcw, href: `${baseUrl}/cycles` },

@@ -71,6 +71,7 @@ export interface ProjectStatusRecord {
   name: string;
   order: number;
   color: string | null;
+  wipLimit: number | null;
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
 }
@@ -92,10 +93,13 @@ export interface ProjectMember {
 }
 
 export interface ProjectWithDetails extends Project {
+  viewerRole?: "OWNER" | "MANAGER" | "CONTRIBUTOR" | "VIEWER";
   statuses?: ProjectStatusRecord[];
   members?: ProjectMember[];
   tickets?: Ticket[];
 }
+
+export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export interface ProjectListItem {
   id: number;
@@ -103,6 +107,8 @@ export interface ProjectListItem {
   description: string | null;
   key: string;
   status: ProjectStatusValue | null;
+  priority: ProjectPriority | null;
+  archivedAt: string | Date | null;
   startDate: string | Date | null;
   endDate: string | Date | null;
   manager: {
@@ -247,6 +253,8 @@ export interface Ticket {
   cycleId: number | null;
   sequenceId: string | null;
   estimate: number | null;
+  version: number;
+  rank: string | null;
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   assignee?: TicketUser | null;
@@ -443,6 +451,8 @@ export interface CreateProjectInput {
   startDate?: Date | string;
   endDate?: Date | string;
   memberIds?: string[];
+  priority?: ProjectPriority;
+  templateId?: number;
   modules?: {
     sprints: boolean;
     epics: boolean;
@@ -456,6 +466,7 @@ export interface UpdateProjectInput {
   name?: string;
   description?: string;
   status?: ProjectStatusValue;
+  priority?: ProjectPriority | null;
   managerId?: string;
   clientId?: string;
   startDate?: Date | string | null;
@@ -496,6 +507,8 @@ export interface UpdateTicketInput {
   epicId?: number | null;
   points?: number | null;
   originalEstimate?: number | null;
+  dueDate?: string | null;
+  version?: number;
 }
 
 export interface UpdateTicketStatusInput {
@@ -503,9 +516,11 @@ export interface UpdateTicketStatusInput {
   status: string;
 }
 
-export interface MoveTicketInput {
-  projectId: number;
-  items: { id: number; status: string; order: number }[];
+export interface RankTicketInput {
+  ticketId: number;
+  status: string;
+  beforeTicketId?: number;
+  afterTicketId?: number;
 }
 
 export interface CreateSprintInput {
@@ -657,6 +672,9 @@ export interface ProjectFilters {
   limit?: number;
   search?: string;
   status?: "ALL" | ProjectStatusValue;
+  priority?: ProjectPriority;
+  sort?: "newest" | "name" | "key" | "startDate" | "endDate";
+  dir?: "asc" | "desc";
 }
 
 export interface TicketFilters {

@@ -1,9 +1,11 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { projectTemplates, projects, tickets, projectMembers, projectStatuses } from "@/lib/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { projects, projectMembers, projectStatuses } from "@/lib/db/schema";
+import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
+import { firstFreeProjectKey } from "@/lib/projects/project-key-availability";
 import { z } from "zod";
+import { parseIdParam } from "@/lib/projects/require-project-access";
 
 const applySchema = z.object({
   name: z.string().min(1).max(100),
@@ -19,22 +21,17 @@ type RouteContext = { params: Promise<{ templateId: string }> };
 export async function POST(req: NextRequest, ctx: RouteContext) {
   return withAuth(async (session) => {
     const { templateId: idStr } = await ctx.params;
-    const templateId = Number(idStr);
-    if (!Number.isFinite(templateId)) return err("Invalid template ID", 400);
+    const templateId = parseIdParam(idStr);
+    if (templateId === null) return err("Template not found", 404);
 
     const input = await parseBody(req, applySchema);
     
 
-    const template = await db.query.projectTemplates.findFirst({
-      where: and(eq(projectTemplates.id, templateId), eq(projectTemplates.orgId, session.orgId)),
-      with: { tickets: { orderBy: (t, { asc }) => [asc(t.order)] } },
-    });
-
+    const template = await findTemplate(session.orgId, templateId);
     if (!template) return err("Template not found", 404);
 
-    const namePart = input.name.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase();
-    const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
-    const key = (namePart.length >= 2 ? namePart : "PRJ") + "-" + randomPart;
+    const key = await firstFreeProjectKey(input.name);
+    if (!key) return err("Could not generate a free project key", 409);
 
     const [project] = await db
       .insert(projects)
@@ -68,28 +65,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       .values(DEFAULT_STATUSES.map((s) => ({ ...s, orgId: session.orgId, projectId: project.id })))
       .returning();
 
-    if (template.tickets.length > 0) {
-      const [{ value: maxTN }] = await db
-        .select({ value: count(tickets.id) })
-        .from(tickets)
-        .where(eq(tickets.projectId, project.id));
-
-      await db.insert(tickets).values(
-        template.tickets.map((t, i) => ({
-          orgId: session.orgId,
-          projectId: project.id,
-          title: t.title,
-          description: t.description ?? null,
-          type: t.type ?? "TASK",
-          status: "TODO",
-          priority: (t.priority ?? "MEDIUM") as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-          ticketNumber: Number(maxTN) + i + 1,
-          order: t.order ?? i,
-          originalEstimate: t.estimatedHours ? String(t.estimatedHours) : null,
-          reporterId: session.user.id,
-        })),
-      );
-    }
+    await copyTemplateTickets(template, { orgId: session.orgId, projectId: project.id, actorId: session.user.id, status: "To Do" });
 
     return ok(
       {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { TICKET_CONFLICT_CODE } from "@/lib/projects/ticket-conflict-code";
 
-export const TICKET_CONFLICT_CODE = "PROJECTS_TICKET_CONFLICT";
 
 export function ticketConflict(currentVersion: number): NextResponse<never> {
   return NextResponse.json(

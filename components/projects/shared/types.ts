@@ -13,6 +13,8 @@ export interface KanbanTicket {
   epicId?: number | null;
   sprintId?: number | null;
   order?: number | null;
+  rank?: string | null;
+  version?: number;
   dueDate?: string | null;
   startDate?: string | null;
   createdAt?: string | Date | null;

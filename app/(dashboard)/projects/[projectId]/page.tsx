@@ -1,7 +1,8 @@
 "use client";
 
 import { use, useState, useMemo, useCallback } from "react";
-import { useProject } from "@/lib/hooks/trpc-hooks";
+import { useColumnCounts, useProject } from "@/lib/hooks/trpc-hooks";
+import { SwimlaneBoard, type SwimlaneKey } from "@/features/projects/board/swimlane-board";
 import { KanbanBoard } from "@/components/projects/kanban-board";
 import { ListView } from "@/components/projects/list-view";
 import { TableView } from "@/components/projects/table-view";
@@ -16,6 +17,8 @@ import { KanbanBoardSkeleton } from "@/components/ui/kanban-skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
 import type { KanbanTicket } from "@/components/projects/shared/types";
 
@@ -26,7 +29,8 @@ interface PageProps {
 export default function ProjectBoardPage({ params }: PageProps) {
   const { projectId: projectIdStr } = use(params);
   const projectId = parseInt(projectIdStr);
-  const { data, isLoading } = useProject(projectId);
+  const { data, isLoading, isError, error, refetch } = useProject(projectId);
+  const { data: columnCounts } = useColumnCounts(projectId);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -40,6 +44,17 @@ export default function ProjectBoardPage({ params }: PageProps) {
   const filterPriority = searchParams.get("priority") ?? "";
   const filterType = searchParams.get("type") ?? "";
   const filterAssigneeId = searchParams.get("assigneeId") ?? "";
+  const swimlane = (searchParams.get("lanes") as SwimlaneKey | null) ?? "none";
+
+  const handleSwimlaneChange = useCallback(
+    (value: SwimlaneKey) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === "none") params.delete("lanes");
+      else params.set("lanes", value);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
 
   const handleViewChange = useCallback(
     (v: ViewType) => {
@@ -82,6 +97,8 @@ export default function ProjectBoardPage({ params }: PageProps) {
       timeSpent: t.timeSpent ?? undefined,
       ticketNumber: t.ticketNumber,
       order: t.order ?? undefined,
+      rank: t.rank ?? null,
+      version: t.version,
       epicId: t.epicId ?? undefined,
       assigneeId: t.assigneeId ?? undefined,
       sprintId: t.sprintId ?? undefined,
@@ -139,10 +156,15 @@ export default function ProjectBoardPage({ params }: PageProps) {
       }));
   }, [data]);
 
-  const statuses =
-    data && "statuses" in data
-      ? (data.statuses as { id: number; name: string; color: string | null; order: number }[])
-      : undefined;
+  const statuses = data?.statuses;
+  const wipLimits = useMemo(
+    () =>
+      Object.fromEntries(
+        (statuses ?? []).filter((s) => s.wipLimit != null).map((s) => [s.name, s.wipLimit as number]),
+      ),
+    [statuses]
+  );
+  const readOnly = data?.viewerRole === "VIEWER";
 
   const doneCount = allTickets.filter((t) => t.status === "DONE").length;
 
@@ -150,6 +172,14 @@ export default function ProjectBoardPage({ params }: PageProps) {
     return (
       <PageWrapper title="Loading..." noInternalScroll>
         <KanbanBoardSkeleton />
+      </PageWrapper>
+    );
+  }
+
+  if (isError && !data) {
+    return (
+      <PageWrapper title="Project">
+        <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
   }
@@ -162,10 +192,23 @@ export default function ProjectBoardPage({ params }: PageProps) {
       subtitle={data.description ?? undefined}
       noInternalScroll
       contentClassName="!p-0"
-      actions={<CreateTicketDialog projectId={projectId} />}
+      actions={readOnly ? undefined : <CreateTicketDialog projectId={projectId} />}
       filters={
         <>
           <ViewSwitcher activeView={view} onViewChange={handleViewChange} />
+          {view === "board" && (
+            <Select value={swimlane} onValueChange={(v) => handleSwimlaneChange(v as SwimlaneKey)}>
+              <SelectTrigger className="h-10 w-40" aria-label="Swimlanes">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No swimlanes</SelectItem>
+                <SelectItem value="assignee">Lanes: assignee</SelectItem>
+                <SelectItem value="priority">Lanes: priority</SelectItem>
+                <SelectItem value="type">Lanes: type</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <div aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-border sm:block" />
           <TicketFilterBar
             members={members}
@@ -194,14 +237,30 @@ export default function ProjectBoardPage({ params }: PageProps) {
     >
 
       {view === "board" && (
-        <div className="h-full w-full bg-surface-sunken sm:px-2 xl:px-4">
-          <KanbanBoard
-            tickets={filteredTickets}
-            projectId={projectId}
-            projectKey={data.key}
-            statuses={statuses}
-            onTicketSelect={handleTicketSelect}
-          />
+        <div className="flex h-full w-full flex-col bg-surface-sunken sm:px-2 xl:px-4">
+          {swimlane === "none" ? (
+            <KanbanBoard
+              tickets={filteredTickets}
+              projectId={projectId}
+              projectKey={data.key}
+              statuses={statuses}
+              onTicketSelect={handleTicketSelect}
+              wipLimits={wipLimits}
+              columnCounts={hideCompleted || q || filterStatus || filterPriority || filterType || filterAssigneeId ? undefined : columnCounts}
+              readOnly={readOnly}
+            />
+          ) : (
+            <SwimlaneBoard
+              lane={swimlane}
+              tickets={filteredTickets}
+              projectId={projectId}
+              projectKey={data.key}
+              statuses={statuses}
+              onTicketSelect={handleTicketSelect}
+              wipLimits={wipLimits}
+              readOnly={readOnly}
+            />
+          )}
         </div>
       )}
 

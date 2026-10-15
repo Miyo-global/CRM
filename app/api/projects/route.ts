@@ -18,6 +18,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { projectKeySchema } from "@/lib/projects/project-key";
 import { firstFreeProjectKey, isProjectKeyTaken } from "@/lib/projects/project-key-availability";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
+import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -29,6 +30,7 @@ const createProjectSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   memberIds: z.array(z.string().max(200)).max(200).optional(),
+  templateId: z.number().int().positive().optional(),
   modules: z
     .object({
       sprints: z.boolean(),
@@ -225,6 +227,9 @@ export async function POST(req: NextRequest) {
       return err("Everyone on the project must be a member of this organization", 400);
     }
 
+    const template = body.templateId ? await findTemplate(session.orgId, body.templateId) : null;
+    if (body.templateId && !template) return err("Template not found", 404);
+
     let projectKey = body.key;
     if (projectKey && (await isProjectKeyTaken(projectKey))) {
       return err(`The key ${projectKey} is already in use`, 409);
@@ -272,6 +277,10 @@ export async function POST(req: NextRequest) {
         color: s.color,
       }))
     );
+
+    if (template) {
+      await copyTemplateTickets(template, { orgId: session.orgId, projectId: project.id, actorId: session.user.id, status: "TODO" });
+    }
 
     if (body.memberIds && body.memberIds.length > 0) {
       await db.insert(projectMembers).values(

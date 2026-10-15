@@ -8,8 +8,9 @@ import {
   KanbanEmptyDrop,
 } from "@/components/shared/kanban";
 import { cn } from "@/lib/utils";
-import { useUpdateTicketOrder } from "@/lib/hooks/trpc-hooks";
-import { queryKeys } from "@/lib/query-keys";
+import { useRankTicket } from "@/lib/hooks/trpc-hooks";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { computeRank, effectiveRank } from "@/lib/projects/ticket-rank";
 import { toast } from "sonner";
 import {
   DragDropContext,
@@ -17,7 +18,6 @@ import {
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { useQueryClient } from "@tanstack/react-query";
 import { KanbanTicketCard } from "./kanban-ticket-card";
 import { QuickAddInput } from "./kanban-quick-add";
 import type { KanbanTicket, KanbanColumn } from "./shared/types";
@@ -58,6 +58,15 @@ interface KanbanBoardProps {
   epics?: Array<{ id: number; title: string }>;
   onTicketSelect?: (ticketId: number) => void;
   wipLimits?: Record<string, number>;
+  columnCounts?: Record<string, number>;
+  readOnly?: boolean;
+}
+
+function sortByRank(list: KanbanTicket[]) {
+  return [...list].sort(
+    (a, b) =>
+      effectiveRank(a.rank ?? null, a.order ?? null) - effectiveRank(b.rank ?? null, b.order ?? null) || a.id - b.id,
+  );
 }
 
 export function KanbanBoard({
@@ -67,11 +76,12 @@ export function KanbanBoard({
   statuses,
   onTicketSelect,
   wipLimits,
+  columnCounts,
+  readOnly = false,
 }: KanbanBoardProps) {
   const [optimisticTickets, setOptimisticTickets] = useState(tickets);
   const [isMounted, setIsMounted] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
-  const queryClient = useQueryClient();
 
   const columns: KanbanColumn[] =
     statuses && statuses.length > 0
@@ -90,30 +100,7 @@ export function KanbanBoard({
     setIsMounted(true);
   }, []);
 
-  const updateOrder = useUpdateTicketOrder({
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.projects.detail(projectId),
-      });
-      return { previous: optimisticTickets };
-    },
-    onError: (
-      _err: unknown,
-      _newOrder: unknown,
-      context: unknown
-    ) => {
-      const ctx = context as
-        | { previous: typeof optimisticTickets }
-        | undefined;
-      if (ctx?.previous) setOptimisticTickets(ctx.previous);
-      toast.error("Failed to update order");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(projectId),
-      });
-    },
-  });
+  const rankTicket = useRankTicket(projectId);
 
   const handleSelect = useCallback(
     (id: number) => {
@@ -131,73 +118,37 @@ export function KanbanBoard({
       dragStartRef.current = null;
       const { destination, source, draggableId } = result;
       if (!destination) return;
-      if (
-        destination.droppableId === source.droppableId &&
-        destination.index === source.index
-      )
-        return;
+      if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
       const ticketId = parseInt(draggableId);
-      const newStatus = destination.droppableId;
-      const newTickets = [...optimisticTickets];
-      const movedTicket = {
-        ...newTickets.find((t) => t.id === ticketId)!,
-        status: newStatus,
-      };
+      const moved = optimisticTickets.find((t) => t.id === ticketId);
+      if (!moved) return;
+      const status = destination.droppableId;
 
-      const sourceTickets = newTickets
-        .filter((t) => t.status === source.droppableId)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
+      const destList = sortByRank(optimisticTickets.filter((t) => t.status === status && t.id !== ticketId));
+      const before = destList[destination.index - 1];
+      const after = destList[destination.index];
+      const placed = computeRank(
+        before ? effectiveRank(before.rank ?? null, before.order ?? null) : null,
+        after ? effectiveRank(after.rank ?? null, after.order ?? null) : null,
+      );
+      const optimisticRank = String("rank" in placed ? placed.rank : effectiveRank(before?.rank ?? null, before?.order ?? null));
 
-      const destTickets =
-        source.droppableId === destination.droppableId
-          ? sourceTickets
-          : newTickets
-              .filter((t) => t.status === destination.droppableId)
-              .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-      const updates: { id: number; status: string; order: number }[] = [];
-
-      if (source.droppableId === destination.droppableId) {
-        const items = Array.from(sourceTickets);
-        const [reorderedItem] = items.splice(source.index, 1);
-        items.splice(destination.index, 0, reorderedItem);
-        items.forEach((ticket, index) => {
-          const tIndex = newTickets.findIndex((t) => t.id === ticket.id);
-          newTickets[tIndex] = { ...newTickets[tIndex], order: index };
-          updates.push({ id: ticket.id, status: ticket.status, order: index });
-        });
-      } else {
-        const sourceItems = Array.from(sourceTickets);
-        sourceItems.splice(source.index, 1);
-        const destItems = Array.from(destTickets);
-        destItems.splice(destination.index, 0, movedTicket);
-        destItems.forEach((ticket, index) => {
-          const tIndex = newTickets.findIndex((t) => t.id === ticket.id);
-          if (tIndex !== -1) {
-            newTickets[tIndex] = {
-              ...newTickets[tIndex],
-              status: newStatus,
-              order: index,
-            };
-            updates.push({ id: ticket.id, status: newStatus, order: index });
-          }
-        });
-        sourceItems.forEach((ticket, index) => {
-          const tIndex = newTickets.findIndex((t) => t.id === ticket.id);
-          newTickets[tIndex] = { ...newTickets[tIndex], order: index };
-          updates.push({
-            id: ticket.id,
-            status: ticket.status,
-            order: index,
-          });
-        });
-      }
-
-      setOptimisticTickets(newTickets);
-      updateOrder.mutate({ projectId, items: updates });
+      const previous = optimisticTickets;
+      setOptimisticTickets((current) =>
+        current.map((t) => (t.id === ticketId ? { ...t, status, rank: optimisticRank } : t)),
+      );
+      rankTicket.mutate(
+        { ticketId, status, beforeTicketId: before?.id, afterTicketId: after?.id, optimisticRank },
+        {
+          onError: (error) => {
+            setOptimisticTickets(previous);
+            toast.error(getErrorMessage(error));
+          },
+        },
+      );
     },
-    [optimisticTickets, updateOrder, projectId]
+    [optimisticTickets, rankTicket]
   );
 
   if (!isMounted) return null;
@@ -206,12 +157,11 @@ export function KanbanBoard({
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <KanbanCanvas className="h-full items-stretch rounded-lg">
         {columns.map((col) => {
-          const columnTickets = optimisticTickets
-            .filter((t) => t.status === col.id)
-            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          const columnTickets = sortByRank(optimisticTickets.filter((t) => t.status === col.id));
+          const total = columnCounts?.[col.id] ?? columnTickets.length;
 
           const wip = wipLimits?.[col.id];
-          const overWip = wip != null && columnTickets.length > wip;
+          const overWip = wip != null && total > wip;
 
           return (
             <Droppable key={col.id} droppableId={col.id}>
@@ -220,11 +170,14 @@ export function KanbanBoard({
                   title={col.name}
                   tone={columnTone(col.id)}
                   color={columnColor(col.id, col.color)}
-                  count={columnTickets.length}
+                  count={total}
                   summary={
                     wip != null ? (
-                      <span className={cn(overWip && "font-semibold text-danger-strong")}>
-                        {columnTickets.length}/{wip}
+                      <span
+                        className={cn(overWip && "font-semibold text-danger-strong")}
+                        aria-label={`${total} of ${wip} allowed in this column`}
+                      >
+                        {total}/{wip}
                       </span>
                     ) : undefined
                   }
@@ -236,9 +189,11 @@ export function KanbanBoard({
                     overWip && "ring-1 ring-danger-500 ring-inset"
                   )}
                   footer={
-                    <div className="px-2 pb-2">
-                      <QuickAddInput columnId={col.id} projectId={projectId} />
-                    </div>
+                    readOnly ? undefined : (
+                      <div className="px-2 pb-2">
+                        <QuickAddInput columnId={col.id} projectId={projectId} />
+                      </div>
+                    )
                   }
                 >
                   <AnimatePresence mode="popLayout">
@@ -257,6 +212,7 @@ export function KanbanBoard({
                         key={ticket.id}
                         draggableId={ticket.id.toString()}
                         index={index}
+                        isDragDisabled={readOnly}
                       >
                         {(draggableProvided, draggableSnapshot) => (
                           <div
