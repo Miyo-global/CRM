@@ -23,8 +23,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
-import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -35,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
-type TabFilter = "ALL" | "UNREAD" | NotificationType;
+type TabFilter = "ALL" | "UNREAD";
 
 const TYPE_CONFIG: Record<NotificationType, { icon: typeof Info; tone: Tone; label: string }> = {
   INFO: { icon: Info, tone: "info", label: "Info" },
@@ -176,20 +174,13 @@ export default function NotificationsPage() {
             </span>
           )}
         </TabsTrigger>
-        <TabsTrigger value="INFO">Info</TabsTrigger>
-        <TabsTrigger value="SUCCESS">Success</TabsTrigger>
-        <TabsTrigger value="WARNING">Warning</TabsTrigger>
-        <TabsTrigger value="ERROR">Error</TabsTrigger>
       </TabsList>
     </Tabs>
   );
 
-  const isTypeFilter = activeTab !== "ALL" && activeTab !== "UNREAD";
-
   return (
     <PageWrapper
       title="Notifications"
-      subtitle="Stay up to date with everything happening in your workspace"
       badge={unreadCount > 0 ? unreadCount : undefined}
       actions={
         <Button
@@ -221,22 +212,9 @@ export default function NotificationsPage() {
       ) : error ? (
         <QueryErrorState error={error} onRetry={() => refetch()} />
       ) : filtered.length === 0 ? (
-        isTypeFilter && (notifications?.length ?? 0) > 0 ? (
-          <EmptyState
-            title="No results for these filters"
-            description="No notifications match this type."
-            action={{ label: "Clear filters", onClick: () => setActiveTab("ALL") }}
-          />
-        ) : (
-          <EmptyState
-            title={activeTab === "UNREAD" ? "You're all caught up" : "No notifications yet"}
-            description={
-              activeTab === "UNREAD"
-                ? "All your notifications have been read. Check back later for new updates."
-                : "When something important happens, you'll see it here."
-            }
-          />
-        )
+        <EmptyState
+          title={activeTab === "UNREAD" ? "No unread notifications." : "No notifications."}
+        />
       ) : (
         <div className="space-y-4 pb-16">
           <div className="flex items-center gap-2 px-1">
@@ -283,7 +261,6 @@ export default function NotificationsPage() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
-                      <IconChip icon={config.icon} tone={config.tone} />
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -293,7 +270,7 @@ export default function NotificationsPage() {
                           )}>
                             {notification.title}
                           </h3>
-                          <StatusPill tone={config.tone}>{config.label}</StatusPill>
+                          <span className="text-xs text-muted-foreground">{config.label}</span>
                         </div>
                         <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{notification.message}</p>
                       </div>

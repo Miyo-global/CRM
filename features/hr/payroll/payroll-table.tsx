@@ -44,7 +44,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import type { Tone } from "@/lib/design/tones";
 import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
-import { formatIST } from "@/lib/date-utils";
 
 const PAYROLL_STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -60,11 +59,6 @@ function fmtInr(value: string | number | null | undefined): string {
 
 function num(value: string | number | null | undefined): number {
   return parseFloat(String(value ?? "0")) || 0;
-}
-
-/** Timestamps are stored in UTC and always shown in IST (A7, A38). */
-function fmtDateTime(value: Date | string | null | undefined): string {
-  return formatIST(value) || "—";
 }
 
 interface PayrollTableProps {
@@ -164,10 +158,7 @@ export function PayrollTable({
           <CardTitle>
             Payroll for {selectedMonthLabel}
           </CardTitle>
-          <CardDescription>
-            Manage payroll status and generate payslips. HR/Admins can generate payslips, but
-            only the CEO can approve them — including payrolls the CEO generated.
-          </CardDescription>
+          <CardDescription>Only the CEO can approve a payroll.</CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
             <Select value={year} onValueChange={onYearChange}>
               <SelectTrigger className="h-9" aria-label="Year">
@@ -214,16 +205,21 @@ export function PayrollTable({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="sticky left-0 z-sticky bg-card pl-4">Employee</TableHead>
-                      <TableHead className="text-right">Gross Salary</TableHead>
-                      <TableHead className="text-right">Deductions</TableHead>
-                      <TableHead className="text-right">Net Salary</TableHead>
+                      <TableHead className="text-right">Gross</TableHead>
+                      <TableHead className="text-right">LOP days</TableHead>
+                      <TableHead className="text-right">PT</TableHead>
+                      <TableHead className="text-right">Net</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pagedRows.map((payroll) => (
-                      <TableRow key={payroll.id} className="group">
+                      <TableRow
+                        key={payroll.id}
+                        className="group cursor-pointer"
+                        onClick={() => onPreview(payroll)}
+                      >
                         <TableCell className="sticky left-0 z-base bg-card pl-4 group-hover:bg-muted">
                           <div>
                             <p className="font-medium whitespace-nowrap">
@@ -232,28 +228,18 @@ export function PayrollTable({
                             <p className="text-xs text-muted-foreground">
                               {payroll.user?.designation}
                             </p>
-                            <p className="text-2xs text-muted-foreground">
-                              Created: {fmtDateTime(payroll.createdAt)}
-                            </p>
-                            {payroll.approvedAt && (
-                              <p className="text-2xs text-muted-foreground">
-                                Approved: {fmtDateTime(payroll.approvedAt)}
-                              </p>
-                            )}
-                            {payroll.paidAt && (
-                              <p className="text-2xs text-muted-foreground">
-                                Paid: {fmtDateTime(payroll.paidAt)}
-                              </p>
-                            )}
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right">
+                        <TableCell className="whitespace-nowrap text-right font-mono">
                           ₹{fmtInr(payroll.grossSalary)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right text-danger-strong">
-                          -₹{fmtInr(Math.min(num(payroll.deductions), num(payroll.grossSalary)))}
+                        <TableCell className="whitespace-nowrap text-right font-mono">
+                          {num(payroll.lopDays) > 0 ? num(payroll.lopDays) : "—"}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-semibold text-success-strong">
+                        <TableCell className="whitespace-nowrap text-right font-mono">
+                          {num(payroll.ptAmount) > 0 ? `₹${fmtInr(payroll.ptAmount)}` : "—"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-right font-mono font-semibold">
                           ₹{fmtInr(Math.max(0, num(payroll.netSalary)))}
                         </TableCell>
                         <TableCell>
@@ -261,7 +247,7 @@ export function PayrollTable({
                             {payroll.status}
                           </StatusPill>
                         </TableCell>
-                        <TableCell className="text-right pr-4">
+                        <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-2">
                             <Button
                               size="sm"
@@ -298,7 +284,7 @@ export function PayrollTable({
                                 </Button>
                               ) : (
                                 <span
-                                  className="inline-flex items-center gap-1 rounded-md bg-warning-soft px-2 py-1 text-2xs font-medium text-warning-strong"
+                                  className="text-2xs text-muted-foreground"
                                   title="Only the CEO can approve payrolls. This payroll stays in DRAFT until the CEO approves it."
                                 >
                                   Awaiting CEO approval
