@@ -14,7 +14,7 @@ export function BirthdaysCard() {
   const entries = data ?? [];
 
   return (
-    <WidgetCard title="Birthdays & Anniversaries" icon={Cake} tone="plum" count={entries.length || undefined}>
+    <WidgetCard title="Birthdays & anniversaries" icon={Cake} tone="plum" count={entries.length || undefined}>
       {isLoading ? (
         <div className="space-y-2">
           {[0, 1].map((i) => (

@@ -9,8 +9,8 @@ export default function DocumentTypesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Document Types Error"
-      fallbackMessage="Failed to load document types configuration. Please try again."
+      title="Couldn't load document types"
+      fallbackMessage="Something went wrong loading document types configuration. Try again."
     />
   );
 }

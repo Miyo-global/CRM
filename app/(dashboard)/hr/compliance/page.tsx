@@ -61,7 +61,6 @@ export default function CompliancePage() {
     return (
       <PageWrapper
         title="Compliance"
-        subtitle="Policy acknowledgments and document tracking"
       >
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -81,7 +80,6 @@ export default function CompliancePage() {
   return (
     <PageWrapper
       title="Compliance"
-      subtitle="Policy acknowledgments and document tracking"
       badge={pending.length > 0 ? `${pending.length} pending` : undefined}
     >
       {isError ? (

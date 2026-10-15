@@ -261,7 +261,7 @@ export default function BacklogPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Backlog" subtitle="All tickets">
+      <PageWrapper title="Backlog">
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
@@ -273,7 +273,7 @@ export default function BacklogPage({ params }: PageProps) {
 
   if (isError) {
     return (
-      <PageWrapper title="Backlog" subtitle="All tickets">
+      <PageWrapper title="Backlog">
         <QueryErrorState title="Couldn't load the backlog" error={error} onRetry={() => void refetch()} />
       </PageWrapper>
     );

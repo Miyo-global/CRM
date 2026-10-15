@@ -6,7 +6,6 @@ export function EmployeesLoadingSkeleton() {
   return (
     <PageWrapper
       title="Employees"
-      subtitle="Employee directory — search, filter, and manage team records"
       actions={
         <div className="flex items-center gap-2">
           <Skeleton className="h-8 w-24 rounded-md" />

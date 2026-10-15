@@ -479,7 +479,7 @@ export function RecruitmentSection({
   return (
     <SectionCard
       icon={IcoBriefcase}
-      title="Recruitment Analytics"
+      title="Recruitment analytics"
       tone="info"
     >
       {isLoading ? (
@@ -566,7 +566,7 @@ export function RetentionSection({
   return (
     <SectionCard
       icon={IcoUserMinus}
-      title="Attrition & Retention Analytics"
+      title="Attrition & retention analytics"
       tone="danger"
     >
       {isLoading ? (
@@ -688,7 +688,7 @@ export function PerformanceSection({
   return (
     <SectionCard
       icon={IcoClipboard}
-      title="Performance & Training Analytics"
+      title="Performance & training analytics"
       tone="success"
     >
       {isLoading ? (
@@ -757,7 +757,7 @@ export function WorkforceTrendsSection({
   return (
     <SectionCard
       icon={IcoTrendUp}
-      title="Workforce Overview"
+      title="Workforce overview"
       tone="info"
       badge={
         data ? (
@@ -843,7 +843,7 @@ export function AttendanceSection({
   return (
     <SectionCard
       icon={IcoCalendar}
-      title="Attendance Analytics"
+      title="Attendance analytics"
       tone="info"
     >
       {isLoading ? (
@@ -932,7 +932,7 @@ export function LeaveAnalyticsSection({
   return (
     <SectionCard
       icon={IcoClock}
-      title="Leave Analytics"
+      title="Leave analytics"
       tone="warning"
     >
       {isLoading ? (
@@ -1003,7 +1003,7 @@ export function CompensationSection({
   return (
     <SectionCard
       icon={IcoCoin}
-      title="Compensation & Payroll Analytics"
+      title="Compensation & payroll analytics"
       tone="plum"
     >
       {isLoading ? (
@@ -1083,7 +1083,7 @@ export function DiversitySection({
   return (
     <SectionCard
       icon={IcoDiversity}
-      title="Diversity & Demographics"
+      title="Diversity & demographics"
       tone="plum"
       badge={
         data ? (

@@ -9,7 +9,7 @@ export default function OrganizationError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Organization Error"
+      title="Couldn't load organization"
       fallbackMessage="Failed to load organization settings."
     />
   );

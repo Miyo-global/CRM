@@ -9,8 +9,8 @@ export default function HrloansError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Loans Error"
-      fallbackMessage="Failed to load Loans. Please try again."
+      title="Couldn't load loans"
+      fallbackMessage="Something went wrong loading loans. Try again."
     />
   );
 }

@@ -138,7 +138,7 @@ function InboxContent() {
   return (
     <>
       <PageWrapper
-        title="Support Inbox"
+        title="Support inbox"
         subtitle={
           statsLoading
             ? "Loading..."

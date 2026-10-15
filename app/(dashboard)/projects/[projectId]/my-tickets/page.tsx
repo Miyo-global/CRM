@@ -106,7 +106,7 @@ export default function MyTicketsPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <PageWrapper title="My Tickets" subtitle="Tickets assigned to you">
+      <PageWrapper title="My tickets">
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
@@ -120,7 +120,7 @@ export default function MyTicketsPage({ params }: PageProps) {
 
   return (
     <PageWrapper
-      title="My Tickets"
+      title="My tickets"
       subtitle={`${myTickets.length} ticket${myTickets.length !== 1 ? "s" : ""} assigned to you`}
       badge={String(myTickets.length)}
       filters={

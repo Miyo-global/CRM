@@ -273,7 +273,7 @@ export default function ExitManagementPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Exit Management" subtitle="Resignations and offboarding">
+      <PageWrapper title="Exit management">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-20 rounded-lg" />
@@ -285,8 +285,7 @@ export default function ExitManagementPage() {
 
   return (
     <PageWrapper
-      title="Exit Management"
-      subtitle="Resignations, exit interviews, and offboarding"
+      title="Exit management"
       badge={`${resignations?.length ?? 0} records`}
       actions={
         canSubmitResignation ? (
@@ -345,7 +344,7 @@ export default function ExitManagementPage() {
           }
           setSheetOpen(open && !isCEO);
         }}
-        title="Submit Resignation"
+        title="Submit resignation"
         onSubmit={handleSubmitResignation}
         onCancel={handleCancelResignation}
         submitLabel="Submit"
@@ -462,7 +461,7 @@ export default function ExitManagementPage() {
         onOpenChange={(open) => {
           if (!open) setHrApproveId(null);
         }}
-        title="Approve Resignation (HR)"
+        title="Approve resignation (HR)"
         description="Are you sure you want to approve this resignation? It will be forwarded to the CEO for final approval."
         confirmLabel="Approve"
         variant="default"
@@ -475,7 +474,7 @@ export default function ExitManagementPage() {
         onOpenChange={(open) => {
           if (!open) setCeoApproveId(null);
         }}
-        title="Approve Resignation (CEO)"
+        title="Approve resignation (CEO)"
         description="Are you sure you want to give final approval for this resignation?"
         confirmLabel="Approve"
         variant="default"
@@ -492,7 +491,7 @@ export default function ExitManagementPage() {
             setRejectRemarks("");
           }
         }}
-        title="Reject Resignation"
+        title="Reject resignation"
         onSubmit={handleRejectConfirm}
         submitLabel="Reject"
         isPending={hrReview.isPending || ceoReview.isPending}
@@ -518,7 +517,7 @@ export default function ExitManagementPage() {
         onOpenChange={(open) => {
           if (!open) setWithdrawId(null);
         }}
-        title="Withdraw Resignation"
+        title="Withdraw resignation"
         description="Are you sure you want to withdraw your resignation? This action cannot be undone."
         confirmLabel="Withdraw"
         variant="destructive"

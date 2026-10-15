@@ -374,8 +374,7 @@ export default function TerminationPage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Termination Management"
-        subtitle="Manage employee terminations"
+        title="Termination management"
       >
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -388,8 +387,7 @@ export default function TerminationPage() {
 
   return (
     <PageWrapper
-      title="Termination Management"
-      subtitle="Manage employee terminations"
+      title="Termination management"
       badge={`${(terminations ?? []).length} records`}
       actions={
         (isHR || isCEO) ? (
@@ -469,7 +467,7 @@ export default function TerminationPage() {
           setCreateOpen(open);
           if (!open) resetCreateForm();
         }}
-        title="New Termination"
+        title="New termination"
         description="Create a termination record. It will be saved as a draft."
         onSubmit={handleCreateSubmit}
         submitLabel="Save as Draft"
@@ -701,7 +699,7 @@ export default function TerminationPage() {
         onOpenChange={(open) => {
           if (!open) setSubmitId(null);
         }}
-        title="Submit for CEO Approval"
+        title="Submit for CEO approval"
         description="Are you sure you want to submit this termination record for CEO approval? The record will move to PENDING_CEO status."
         confirmLabel="Submit"
         variant="default"
@@ -870,7 +868,7 @@ export default function TerminationPage() {
         onOpenChange={(open) => {
           if (!open) setEmailRecord(null);
         }}
-        title="Send Termination Email"
+        title="Send termination email"
         description={`Send termination email to ${emailRecord?.employee?.name ?? "this employee"}? The employee will be officially notified. Account deactivation will happen when you mark the termination as Complete.`}
         confirmLabel="Send Email"
         variant="default"
@@ -883,7 +881,7 @@ export default function TerminationPage() {
         onOpenChange={(open) => {
           if (!open) setCompleteId(null);
         }}
-        title="Complete Termination"
+        title="Complete termination"
         description="This will deactivate the employee's account, initiate Full & Final settlement, and create asset return records. This action cannot be undone."
         confirmLabel="Complete Termination"
         variant="destructive"

@@ -92,7 +92,7 @@ function FnfContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Full & Final" subtitle="Employee settlement processing">
+      <PageWrapper title="Full & final">
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -100,8 +100,7 @@ function FnfContent() {
 
   return (
     <PageWrapper
-      title="Full & Final Settlement"
-      subtitle="Process employee exit settlements"
+      title="Full & final settlement"
       badge={`${items?.length ?? 0} settlements`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Settlement</Button>}
     >
@@ -160,7 +159,7 @@ function FnfContent() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="New FnF Settlement" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="New FnF settlement" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee User ID</label>
           <Input placeholder="User ID" value={userId} onChange={(e) => setUserId(e.target.value)} />
@@ -188,7 +187,7 @@ function FnfContent() {
       <ConfirmActionDialog
         open={completeId !== null}
         onOpenChange={(open) => { if (!open) setCompleteId(null); }}
-        title="Complete Settlement"
+        title="Complete settlement"
         description="Mark this FnF settlement as completed? This action cannot be undone."
         confirmLabel="Complete"
         variant="default"

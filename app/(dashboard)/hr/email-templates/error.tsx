@@ -9,8 +9,8 @@ export default function HremailtemplatesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Email Templates Error"
-      fallbackMessage="Failed to load Email Templates. Please try again."
+      title="Couldn't load email templates"
+      fallbackMessage="Something went wrong loading email templates. Try again."
     />
   );
 }

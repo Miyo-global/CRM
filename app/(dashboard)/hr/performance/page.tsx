@@ -114,7 +114,7 @@ function PerformanceContent() {
   }, [searchParams, router]);
 
   return (
-    <PageWrapper title="Performance" subtitle="Reviews, goals, and team development">
+    <PageWrapper title="Performance">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList variant="underline" className="max-w-full overflow-x-auto">
           <TabsTrigger value="reviews"><Star className="size-4" />Reviews</TabsTrigger>
@@ -285,7 +285,7 @@ function ReviewsTab() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create Review" onSubmit={handleCreate} submitLabel="Create" isPending={createReview.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create review" onSubmit={handleCreate} submitLabel="Create" isPending={createReview.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee</label>
           <SearchableSelect
@@ -471,7 +471,7 @@ function GoalsTab() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create Goal" onSubmit={handleCreate} submitLabel="Create" isPending={createGoal.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create goal" onSubmit={handleCreate} submitLabel="Create" isPending={createGoal.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Employee</label>
           <SearchableSelect
@@ -527,7 +527,7 @@ function GoalsTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Goal"
+        title="Delete goal"
         description="Are you sure you want to delete this goal? This cannot be undone."
         confirmLabel="Delete"
         variant="destructive"
@@ -804,7 +804,7 @@ function OneOnOnesTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Meeting"
+        title="Delete meeting"
         description="Delete this 1-on-1 meeting?"
         confirmLabel="Delete"
         variant="destructive"
@@ -1012,7 +1012,7 @@ function CyclesTab() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Review Cycle"
+        title="Delete review cycle"
         description="Are you sure you want to delete this review cycle? This action cannot be undone."
         confirmLabel="Delete"
         variant="destructive"

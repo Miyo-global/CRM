@@ -72,7 +72,7 @@ export default function TerminatedEmployeesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Terminated Employees" subtitle="Former team members">
+      <PageWrapper title="Terminated employees">
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-14 w-full" />
@@ -84,8 +84,7 @@ export default function TerminatedEmployeesPage() {
 
   return (
     <PageWrapper
-      title="Terminated Employees"
-      subtitle="Track and review employees whose access has been deactivated"
+      title="Terminated employees"
       badge={String(filtered.length)}
       actions={
         <div className="flex items-center gap-2">

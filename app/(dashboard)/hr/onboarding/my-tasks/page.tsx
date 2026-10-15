@@ -94,8 +94,7 @@ export default function MyOnboardingTasksPage() {
 
   return (
     <PageWrapper
-      title="My Onboarding"
-      subtitle="Complete these tasks to finish your onboarding journey"
+      title="My onboarding"
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/onboarding">All Onboarding</Link>

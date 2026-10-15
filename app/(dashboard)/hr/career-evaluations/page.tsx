@@ -120,7 +120,7 @@ export default function CareerEvaluationsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Career Evaluations" subtitle="Manager readiness assessments">
+      <PageWrapper title="Career evaluations">
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
@@ -130,8 +130,7 @@ export default function CareerEvaluationsPage() {
 
   return (
     <PageWrapper
-      title="Career Evaluations"
-      subtitle="Assess employee readiness for promotion"
+      title="Career evaluations"
       badge={`${rows.length} evaluations`}
       actions={
         isAdmin ? (
@@ -194,7 +193,7 @@ export default function CareerEvaluationsPage() {
       <HrSheet
         open={addOpen}
         onOpenChange={(o) => { setAddOpen(o); if (!o) setForm(EMPTY_FORM); }}
-        title="New Evaluation"
+        title="New evaluation"
         description="Submit a readiness assessment for an employee."
         onSubmit={handleCreate}
         submitLabel="Submit Evaluation"

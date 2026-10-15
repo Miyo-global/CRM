@@ -82,7 +82,7 @@ export default function LoansPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Salary Loans" subtitle="Loan requests and repayment tracking">
+      <PageWrapper title="Salary loans">
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -90,8 +90,7 @@ export default function LoansPage() {
 
   return (
     <PageWrapper
-      title="Salary Loans"
-      subtitle="Request salary advances and track repayments"
+      title="Salary loans"
       badge={`${loans?.length ?? 0} loans`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Request Loan</Button>}
     >
@@ -168,7 +167,7 @@ export default function LoansPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Request Salary Loan" onSubmit={handleCreate} submitLabel="Submit" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Request salary loan" onSubmit={handleCreate} submitLabel="Submit" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Loan Amount</label>
           <Input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
@@ -186,7 +185,7 @@ export default function LoansPage() {
       <ConfirmActionDialog
         open={rejectId !== null}
         onOpenChange={(open) => { if (!open) setRejectId(null); }}
-        title="Reject Loan"
+        title="Reject loan"
         description="Are you sure you want to reject this loan request?"
         confirmLabel="Reject"
         variant="destructive"

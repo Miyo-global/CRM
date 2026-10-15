@@ -195,7 +195,6 @@ function MembersSettingsContent() {
   return (
     <PageWrapper
       title="Members"
-      subtitle="Manage organization members, roles, and invitations"
       badge={membersData ? String(membersData.pagination.total) : undefined}
       actions={
         <Button onClick={handleToggleInviteForm} variant={showInviteForm ? "outline" : "default"}>

@@ -9,7 +9,7 @@ export default function AuditLogError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Audit Log Error"
+      title="Couldn't load audit log"
       fallbackMessage="Failed to load audit log."
     />
   );

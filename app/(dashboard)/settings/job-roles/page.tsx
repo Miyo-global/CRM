@@ -112,7 +112,7 @@ export default function JobRolesSettingsPage() {
 
   if (!canEdit) {
     return (
-      <PageWrapper title="Job Roles" subtitle="Manage the catalog of job titles for your organization">
+      <PageWrapper title="Job roles">
         <EmptyState
           title="Access restricted"
           description="Only Owners and Admins can manage job roles."
@@ -123,8 +123,7 @@ export default function JobRolesSettingsPage() {
 
   return (
     <PageWrapper
-      title="Job Roles"
-      subtitle="Maintain reusable job titles. Scope them to a department or make them available org-wide. These power the job title picker on employee forms."
+      title="Job roles"
       actions={
         <Button size="sm" onClick={handleAdd}>
           <Plus aria-hidden />

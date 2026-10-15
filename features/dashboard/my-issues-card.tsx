@@ -40,7 +40,7 @@ interface MyIssuesCardProps {
 export const MyIssuesCard = memo(function MyIssuesCard({ tickets, isLoading, error, onRetry }: MyIssuesCardProps) {
   return (
     <WidgetCard
-      title="My Issues"
+      title="My issues"
       icon={ListTodo}
       tone="info"
       actions={

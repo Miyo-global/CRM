@@ -105,8 +105,7 @@ function AnalyticsContent() {
 
   return (
     <PageWrapper
-      title="HR Analytics"
-      subtitle="Workforce insights across all dimensions"
+      title="HR analytics"
       actions={
         <>
           <Button variant="outline" size="sm"

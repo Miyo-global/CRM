@@ -85,8 +85,7 @@ export default function AIHubPage() {
 
   return (
     <PageWrapper
-      title="AI Hub"
-      subtitle="Intelligent tools powered by AI to supercharge your workflow"
+      title="AI hub"
       filters={
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
           <TabsList variant="underline">

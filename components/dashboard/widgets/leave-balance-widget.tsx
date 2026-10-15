@@ -40,7 +40,7 @@ export function LeaveBalanceWidget() {
 
   return (
     <WidgetCard
-      title="Leave Balance"
+      title="Leave balance"
       icon={Umbrella}
       tone="brand"
       actions={<ViewAllLink href="/hr/leaves" ariaLabel="View leave details" />}

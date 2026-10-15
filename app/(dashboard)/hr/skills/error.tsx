@@ -9,8 +9,8 @@ export default function HrskillsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Skills Error"
-      fallbackMessage="Failed to load Skills. Please try again."
+      title="Couldn't load skills"
+      fallbackMessage="Something went wrong loading skills. Try again."
     />
   );
 }

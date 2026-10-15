@@ -191,8 +191,7 @@ function DeleteConfirm({
 function TemplatesPageSkeleton() {
   return (
     <PageWrapper
-      title="Document Templates"
-      subtitle="Manage reusable HTML templates for offer letters, NDAs, and policies."
+      title="Document templates"
       actions={<Skeleton className="h-8 w-36 rounded-md" />}
     >
       <div className="space-y-4">
@@ -247,8 +246,7 @@ export default function DocumentTemplatesPage() {
 
   return (
     <PageWrapper
-      title="Document Templates"
-      subtitle="Manage reusable HTML templates for offer letters, NDAs, and policies."
+      title="Document templates"
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>

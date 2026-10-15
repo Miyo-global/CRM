@@ -39,7 +39,7 @@ export const TeamCard = memo(function TeamCard({ members, isLoading }: TeamCardP
 
   return (
     <WidgetCard
-      title="Team Availability"
+      title="Team availability"
       icon={Users}
       tone="success"
       count={members?.length || undefined}

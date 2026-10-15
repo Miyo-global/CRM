@@ -9,8 +9,8 @@ export default function EmployeesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Employees Error"
-      fallbackMessage="Failed to load employees data. Please try again."
+      title="Couldn't load employees"
+      fallbackMessage="Something went wrong loading employees data. Try again."
     />
   );
 }

@@ -66,7 +66,7 @@ export const PublicDocumentsCard = memo(function PublicDocumentsCard({
 
   return (
     <WidgetCard
-      title="Public Documents"
+      title="Public documents"
       className={className}
       icon={FileText}
       count={documents.length || undefined}

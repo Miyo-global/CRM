@@ -65,8 +65,7 @@ function PermissionsContent() {
 
   return (
     <PageWrapper
-      title="Permission Matrix"
-      subtitle="Read-only overview of built-in permissions per system role"
+      title="Permission matrix"
     >
       <div className="space-y-4">
         <div className="flex items-start gap-3 rounded-lg border border-info-soft bg-info-soft p-3 text-sm text-info-strong">

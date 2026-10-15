@@ -9,7 +9,7 @@ export default function MembersError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Members Error"
+      title="Couldn't load members"
       fallbackMessage="Failed to load members."
     />
   );

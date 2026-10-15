@@ -189,7 +189,7 @@ export function LeaveRequestSheet({
     <HrSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Request Leave"
+      title="Request leave"
       description="Requests are sent to HR automatically. You will be notified when they are reviewed."
       onSubmit={form.handleSubmit(onSubmit)}
       onCancel={handleCancel}

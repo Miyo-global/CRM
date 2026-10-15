@@ -438,7 +438,7 @@ export default function AssetReturnsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Asset Returns" subtitle="Track company asset returns">
+      <PageWrapper title="Asset returns">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-14" />
@@ -450,8 +450,7 @@ export default function AssetReturnsPage() {
 
   return (
     <PageWrapper
-      title="Asset Returns"
-      subtitle="Track and manage company asset returns from employees"
+      title="Asset returns"
       badge={`${items?.length ?? 0} items`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -692,7 +691,7 @@ export default function AssetReturnsPage() {
           setSheetOpen(open);
           if (!open) resetCreateForm();
         }}
-        title="Log Asset Return"
+        title="Log asset return"
         description="Select the employee to see assigned assets, capture handover photos, and log the return."
         onSubmit={handleCreate}
         submitLabel="Log return"
@@ -802,7 +801,7 @@ export default function AssetReturnsPage() {
         onOpenChange={(open) => {
           if (!open) setReturnId(null);
         }}
-        title="Confirm Return"
+        title="Confirm return"
         description="Mark this asset as returned in good condition?"
         confirmLabel="Confirm"
         variant="default"

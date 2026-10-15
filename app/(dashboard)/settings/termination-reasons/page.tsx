@@ -131,7 +131,6 @@ function TerminationReasonsContent() {
   return (
     <PageWrapper
       title="Termination reasons"
-      subtitle="Configure the reasons available when creating a termination."
       actions={
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" asChild>

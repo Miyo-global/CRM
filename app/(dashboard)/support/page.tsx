@@ -64,8 +64,7 @@ export default function SupportDashboardPage() {
   if (isError && !data) {
     return (
       <PageWrapper
-        title="Support Analytics"
-        subtitle="Real-time insights into customer support performance across all channels"
+        title="Support analytics"
       >
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       </PageWrapper>
@@ -88,8 +87,7 @@ export default function SupportDashboardPage() {
 
   return (
     <PageWrapper
-      title="Support Analytics"
-      subtitle="Real-time insights into customer support performance across all channels"
+      title="Support analytics"
     >
     <motion.div
       className="grid grid-cols-12 gap-4 xl:gap-6"
@@ -130,7 +128,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
-        <WidgetCard title="Ticket Status Breakdown" icon={Shield}>
+        <WidgetCard title="Ticket status breakdown" icon={Shield}>
           <div className="flex items-center justify-center py-4">
             {totalTickets > 0 ? (
               <MiniDonutChart
@@ -151,7 +149,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
-        <WidgetCard title="Ticket Volume Trend" icon={Ticket} tone="info">
+        <WidgetCard title="Ticket volume trend" icon={Ticket} tone="info">
           {hasVolume ? (
             <MiniAreaChart
               data={ticketVolumeTimeline}
@@ -172,7 +170,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
-        <WidgetCard title="SLA Compliance" icon={Gauge} tone="success">
+        <WidgetCard title="SLA compliance" icon={Gauge} tone="success">
           {slaCompliance && slaCompliance.totalTickets > 0 ? (
             <div className="space-y-4">
               <div className="flex items-center justify-center py-2">
@@ -205,7 +203,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
-        <WidgetCard title="Response & Resolution SLA by Priority" icon={MessageSquareReply} tone="plum">
+        <WidgetCard title="Response & resolution SLA by priority" icon={MessageSquareReply} tone="plum">
           {slaCompliance && slaCompliance.totalTickets > 0 ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-sunken p-3">
@@ -276,7 +274,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-4" variants={fadeUp}>
-        <WidgetCard title="Recent Activity" icon={Activity} tone="neutral">
+        <WidgetCard title="Recent activity" icon={Activity} tone="neutral">
           <div className="max-h-96 overflow-y-auto pr-1">
             {supportActivityFeed.length > 0 ? (
               <ActivityFeed items={supportActivityFeed} />
@@ -293,7 +291,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12 lg:col-span-8" variants={fadeUp}>
-        <WidgetCard title="Team Access" icon={Users} tone="teal" count={supportTeamMembers.length || undefined}>
+        <WidgetCard title="Team access" icon={Users} tone="teal" count={supportTeamMembers.length || undefined}>
           {supportTeamMembers.length === 0 ? (
             <EmptyState
               compact
@@ -350,7 +348,7 @@ export default function SupportDashboardPage() {
       </motion.div>
 
       <motion.div className="col-span-12" variants={fadeUp}>
-        <WidgetCard title="Tickets by Priority" icon={Shield} tone="warning">
+        <WidgetCard title="Tickets by priority" icon={Shield} tone="warning">
           {totalPriority === 0 ? (
             <EmptyState
               compact

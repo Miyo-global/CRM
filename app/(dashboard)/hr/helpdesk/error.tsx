@@ -9,7 +9,7 @@ export default function HelpdeskError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Helpdesk Error"
+      title="Couldn't load helpdesk"
       fallbackMessage="Failed to load the helpdesk."
     />
   );

@@ -68,7 +68,7 @@ export default function AlumniPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Alumni Network" subtitle="Stay connected with former employees">
+      <PageWrapper title="Alumni network">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
@@ -78,8 +78,7 @@ export default function AlumniPage() {
 
   return (
     <PageWrapper
-      title="Alumni Network"
-      subtitle="Stay connected with former team members"
+      title="Alumni network"
       badge={`${alumni?.length ?? 0} alumni`}
       actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Add Alumni</Button> : undefined}
     >
@@ -116,7 +115,7 @@ export default function AlumniPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Alumni" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add alumni" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Full Name</label>
           <Input placeholder="Employee name" value={name} onChange={(e) => setName(e.target.value)} />

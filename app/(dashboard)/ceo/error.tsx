@@ -9,8 +9,8 @@ export default function CeoError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="CEO Dashboard Error"
-      fallbackMessage="Failed to load the CEO dashboard. Please try again."
+      title="Couldn't load ceo dashboard"
+      fallbackMessage="Something went wrong loading the ceo dashboard. Try again."
     />
   );
 }

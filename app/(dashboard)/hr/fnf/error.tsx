@@ -9,8 +9,8 @@ export default function HrfnfError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Full & Final Error"
-      fallbackMessage="Failed to load Full & Final. Please try again."
+      title="Couldn't load full & final"
+      fallbackMessage="Something went wrong loading full & final. Try again."
     />
   );
 }

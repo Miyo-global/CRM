@@ -28,7 +28,7 @@ export function TeamAttendanceWidget() {
 
   return (
     <WidgetCard
-      title="Team Attendance"
+      title="Team attendance"
       icon={Users}
       tone="success"
       count={members.length || undefined}

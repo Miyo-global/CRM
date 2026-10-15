@@ -438,8 +438,7 @@ export default function ProjectTemplatesPage() {
 
   return (
     <PageWrapper
-      title="Project Templates"
-      subtitle="Pre-built project structures to bootstrap new projects quickly"
+      title="Project templates"
       badge={templates ? `${templates.length} template${templates.length !== 1 ? "s" : ""}` : undefined}
       actions={
         <Button onClick={() => setCreateOpen(true)}>

@@ -167,8 +167,7 @@ export default function NewDocumentPage() {
 
   return (
     <PageWrapper
-      title="Create Document"
-      subtitle="Choose a template and start writing"
+      title="Create document"
       actions={
         <Button variant="ghost" size="sm" asChild>
           <Link href="/hr/documents">

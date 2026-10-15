@@ -204,7 +204,7 @@ export default function HelpdeskPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Helpdesk" subtitle="Submit and track your support tickets">
+      <PageWrapper title="Helpdesk">
         <div className="space-y-4">
           <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-2">
@@ -220,7 +220,6 @@ export default function HelpdeskPage() {
   return (
     <PageWrapper
       title="Helpdesk"
-      subtitle="Submit and track your support tickets"
       badge={`${stats.total} tickets`}
       actions={
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

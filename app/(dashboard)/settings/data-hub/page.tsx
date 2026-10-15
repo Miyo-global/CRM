@@ -146,8 +146,7 @@ function DataHubContent() {
 
   return (
     <PageWrapper
-      title="Data Import / Export Hub"
-      subtitle="Centralized hub for importing data into and exporting data from the platform"
+      title="Data import / export hub"
     >
       <motion.div
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"

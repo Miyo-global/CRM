@@ -521,8 +521,7 @@ export default function DocumentReviewPage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Document Review"
-        subtitle="Review employee onboarding documents"
+        title="Document review"
       >
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -535,8 +534,7 @@ export default function DocumentReviewPage() {
 
   return (
     <PageWrapper
-      title="Document Review"
-      subtitle="Review employee onboarding documents"
+      title="Document review"
       badge={`${list.length} of ${allEmployees.length} employees`}
       filters={allEmployees.length > 0 ? (
           <div className="flex w-full flex-wrap items-center gap-2">
@@ -927,7 +925,7 @@ export default function DocumentReviewPage() {
       <ConfirmActionDialog
         open={approveDoc !== null}
         onOpenChange={(open) => { if (!open) setApproveDoc(null); }}
-        title="Approve Document"
+        title="Approve document"
         description={`Approve "${approveDoc?.documentTypeName}" submitted by ${toTitleCase(reviewUserName)}?`}
         confirmLabel="Approve"
         variant="default"

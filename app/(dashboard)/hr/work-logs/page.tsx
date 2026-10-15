@@ -412,7 +412,7 @@ export default function WorkLogsPage() {
 
   return (
     <PageWrapper
-      title="Work Logs"
+      title="Work logs"
       subtitle={subtitle}
       actions={
         <WorkLogFilterActions

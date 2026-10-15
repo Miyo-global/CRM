@@ -213,7 +213,6 @@ export default function DashboardPage() {
     return (
       <PageWrapper
         title="Dashboard"
-        subtitle="Loading your workspace..."
         actions={<Skeleton className="h-10 w-64 rounded-full" />}
       >
         <div className="grid grid-cols-12 gap-4 xl:gap-6" role="status" aria-live="polite" aria-label="Loading dashboard">

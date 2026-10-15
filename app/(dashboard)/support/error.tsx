@@ -9,8 +9,8 @@ export default function SupportError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Support Error"
-      fallbackMessage="Failed to load the support dashboard. Please try again."
+      title="Couldn't load support"
+      fallbackMessage="Something went wrong loading the support dashboard. Try again."
     />
   );
 }

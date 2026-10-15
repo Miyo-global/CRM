@@ -310,7 +310,7 @@ export default function HolidaysPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Holidays" subtitle="Company holiday calendar">
+      <PageWrapper title="Holidays">
         <div className="space-y-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-2">
@@ -328,7 +328,6 @@ export default function HolidaysPage() {
   return (
     <PageWrapper
       title="Holidays"
-      subtitle="Your company's official holiday calendar"
       badge={upcomingCount > 0 ? `${upcomingCount} upcoming` : `${sortedHolidays.length} total`}
       actions={
         <div className="flex items-center gap-2">
@@ -339,7 +338,7 @@ export default function HolidaysPage() {
           {isAdmin && (
             <Button size="sm" onClick={openAdd}>
               <Plus className="size-4" aria-hidden="true" />
-              Add Holiday
+              Add holiday
             </Button>
           )}
         </div>
@@ -386,7 +385,7 @@ export default function HolidaysPage() {
           <EmptyState
             title={`No holidays for ${viewYear}`}
             description={isAdmin ? "Add holidays using the button above." : "Your HR team hasn't added any holidays for this year yet."}
-            action={isAdmin ? { label: "Add Holiday", onClick: openAdd } : undefined}
+            action={isAdmin ? { label: "Add holiday", onClick: openAdd } : undefined}
           />
         ) : (
           <div className="space-y-5">
@@ -423,10 +422,10 @@ export default function HolidaysPage() {
         <HrSheet
           open={sheetMode !== null}
           onOpenChange={(o) => { if (!o) { setSheetMode(null); setEditTarget(null); resetForm(); } }}
-          title={sheetMode === "add" ? "Add Holiday" : "Edit Holiday"}
+          title={sheetMode === "add" ? "Add holiday" : "Edit Holiday"}
           description={sheetMode === "add" ? "Add a new holiday to the company calendar." : "Update this holiday's details."}
           onSubmit={handleSubmit}
-          submitLabel={sheetMode === "add" ? "Add Holiday" : "Save Changes"}
+          submitLabel={sheetMode === "add" ? "Add holiday" : "Save Changes"}
           isPending={addMutation.isPending || updateMutation.isPending}
         >
           <div className="space-y-4">
@@ -511,9 +510,9 @@ export default function HolidaysPage() {
       <ConfirmActionDialog
         open={createConfirmOpen}
         onOpenChange={(o) => { if (!o) setCreateConfirmOpen(false); }}
-        title="Add Holiday"
+        title="Add holiday"
         description={`Add "${name.trim()}" on ${formatHolidayDate(date)} (${TYPE_CONFIG[type].label}${isHalfDay ? ", Half Day" : ""})? Employees will see it on the calendar and receive a reminder the day before.`}
-        confirmLabel="Add Holiday"
+        confirmLabel="Add holiday"
         variant="default"
         onConfirm={executeCreate}
         isPending={addMutation.isPending}
@@ -522,7 +521,7 @@ export default function HolidaysPage() {
       <ConfirmActionDialog
         open={!!deleteTarget}
         onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
-        title="Delete Holiday"
+        title="Delete holiday"
         description={`Delete "${deleteTarget?.name}" on ${deleteTarget?.date ? formatHolidayDate(deleteTarget.date) : ""}? This removes it from the calendar and stops the day-before reminder.`}
         confirmLabel="Delete"
         variant="destructive"

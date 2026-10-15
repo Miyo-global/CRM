@@ -247,8 +247,7 @@ export default function DocumentsPage() {
 
   return (
     <PageWrapper
-      title="Document Library"
-      subtitle="Centralized repository for all company-wide HR documents, contracts, and policy files."
+      title="Document library"
       actions={pageActions}
       filters={
         <DocumentFilters

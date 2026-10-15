@@ -227,7 +227,6 @@ export default function MilestonesPage({ params }: { params: Promise<{ projectId
   return (
     <PageWrapper
       title="Milestones"
-      subtitle="Key checkpoints and target dates for this project"
       actions={
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="size-4" aria-hidden="true" /> New Milestone

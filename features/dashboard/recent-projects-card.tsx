@@ -36,7 +36,7 @@ interface RecentProjectsCardProps {
 export const RecentProjectsCard = memo(function RecentProjectsCard({ projects, isLoading, error, onCreateProject, onRetry }: RecentProjectsCardProps) {
   return (
     <WidgetCard
-      title="Recent Projects"
+      title="Recent projects"
       icon={Folder}
       actions={<ViewAllLink href="/projects" label="View All" ariaLabel="View all projects" />}
     >

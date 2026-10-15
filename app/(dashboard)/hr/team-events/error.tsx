@@ -9,8 +9,8 @@ export default function HrteameventsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Team Events Error"
-      fallbackMessage="Failed to load Team Events. Please try again."
+      title="Couldn't load team events"
+      fallbackMessage="Something went wrong loading team events. Try again."
     />
   );
 }

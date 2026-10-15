@@ -9,8 +9,8 @@ export default function HrreimbursementsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Reimbursements Error"
-      fallbackMessage="Failed to load Reimbursements. Please try again."
+      title="Couldn't load reimbursements"
+      fallbackMessage="Something went wrong loading reimbursements. Try again."
     />
   );
 }

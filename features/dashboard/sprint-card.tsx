@@ -33,7 +33,7 @@ export const SprintCard = memo(function SprintCard({ summary, isLoading }: Sprin
   const urgent = summary ? summary.daysRemaining <= SPRINT_DANGER_DAYS : false;
   return (
     <WidgetCard
-      title="Active Sprint"
+      title="Active sprint"
       icon={Zap}
       actions={summary?.projectId && <ViewAllLink href={`/projects/${summary.projectId}`} ariaLabel="View sprint project" />}
     >

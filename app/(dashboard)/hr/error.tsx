@@ -9,8 +9,8 @@ export default function HRError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="HR Module Error"
-      fallbackMessage="Failed to load the HR module. Please try again."
+      title="Couldn't load hr module"
+      fallbackMessage="Something went wrong loading the hr module. Try again."
     />
   );
 }

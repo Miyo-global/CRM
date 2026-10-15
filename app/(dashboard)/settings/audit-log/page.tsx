@@ -326,8 +326,7 @@ function AuditLogContent() {
 
   return (
     <PageWrapper
-      title="Audit Log"
-      subtitle="Track all system actions, logins, and changes across your organization."
+      title="Audit log"
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">

@@ -28,8 +28,7 @@ export default function ResourceAllocationPage() {
 
   return (
     <PageWrapper
-      title="Resource Allocation"
-      subtitle="Open ticket distribution across team members and active projects"
+      title="Resource allocation"
       badge={entries?.length ? String(entries.length) : undefined}
     >
       {isLoading ? (

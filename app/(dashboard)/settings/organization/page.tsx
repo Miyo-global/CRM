@@ -227,7 +227,7 @@ export default function OrganizationSettingsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+      <PageWrapper title="Organization">
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-48 mb-2" />
@@ -244,9 +244,9 @@ export default function OrganizationSettingsPage() {
 
   if (!org) {
     return (
-      <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+      <PageWrapper title="Organization">
         <EmptyState
-          title="No Organization Found"
+          title="No organization found"
           description="Please contact your administrator to set up an organization."
         />
       </PageWrapper>
@@ -254,7 +254,7 @@ export default function OrganizationSettingsPage() {
   }
 
   return (
-    <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
+    <PageWrapper title="Organization">
       <div className="space-y-6">
         <Card>
           <CardHeader className="pb-2">

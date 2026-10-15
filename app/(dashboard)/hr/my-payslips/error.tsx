@@ -9,7 +9,7 @@ export default function PayslipsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Payslips Error"
+      title="Couldn't load payslips"
       fallbackMessage="Failed to load payslips."
     />
   );

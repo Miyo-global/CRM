@@ -312,7 +312,7 @@ export default function CEOQRCodePage() {
 
   if (isOrgLoading) {
     return (
-      <PageWrapper title="QR Code Manager" subtitle="Generate trackable QR codes for your marketing campaigns.">
+      <PageWrapper title="QR code manager">
         <Skeleton className="mb-6 h-32 rounded-lg" />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 4 }).map((_, i) => <QRCardSkeleton key={i} />)}
@@ -323,10 +323,10 @@ export default function CEOQRCodePage() {
 
   if (!organizations?.length) {
     return (
-      <PageWrapper title="QR Code Manager" subtitle="Generate trackable QR codes for your marketing campaigns.">
+      <PageWrapper title="QR code manager">
         <EmptyState
           icon={Building2}
-          title="No Organization Found"
+          title="No organization found"
           description="You need an organization to create QR codes."
         />
       </PageWrapper>
@@ -337,8 +337,7 @@ export default function CEOQRCodePage() {
 
   return (
     <PageWrapper
-      title="QR Code Manager"
-      subtitle="Generate trackable QR codes for your marketing campaigns."
+      title="QR code manager"
       badge={typedCodes.length > 0 ? String(typedCodes.length) : undefined}
       actions={
         <Button variant="ghost" size="icon-sm" onClick={handleRefetch} disabled={isLoadingData} aria-label="Refresh">
@@ -422,7 +421,7 @@ export default function CEOQRCodePage() {
       <ConfirmDialog
         open={deleteId !== null}
         onOpenChange={handleDeleteDialogChange}
-        title="Delete QR Code"
+        title="Delete QR code"
         description="This action cannot be undone. The QR code and its tracking data will be permanently deleted."
         confirmLabel="Delete"
         destructive

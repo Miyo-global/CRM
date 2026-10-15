@@ -336,7 +336,7 @@ export default function SkillsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Skills Matrix" subtitle="Track team competencies">
+      <PageWrapper title="Skills matrix">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
@@ -346,8 +346,7 @@ export default function SkillsPage() {
 
   return (
     <PageWrapper
-      title="Skills Matrix"
-      subtitle="Organisation-wide skill mapping and competency tracking"
+      title="Skills matrix"
       badge={`${uniqueSkillCount} skill${uniqueSkillCount !== 1 ? "s" : ""} · ${totalEntryCount} entries`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -451,7 +450,7 @@ export default function SkillsPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Add Skill"
+        title="Add skill"
         onSubmit={handleAdd}
         submitLabel="Add Skill"
         isPending={addSkill.isPending}
@@ -517,7 +516,7 @@ export default function SkillsPage() {
       <ConfirmActionDialog
         open={!!deleteTarget}
         onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
-        title="Remove Skill"
+        title="Remove skill"
         description={`Remove "${deleteTarget?.skillName}" for ${deleteTarget?.user?.name ?? "this employee"}? This cannot be undone.`}
         confirmLabel="Remove"
         variant="destructive"

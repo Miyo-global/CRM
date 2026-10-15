@@ -568,8 +568,7 @@ function FieldSheet({
 export default function CustomFieldsPage() {
   return (
     <PageWrapper
-      title="Custom Fields"
-      subtitle="Define custom data fields for leads, deals, and contacts"
+      title="Custom fields"
     >
       <Tabs defaultValue="lead">
         <TabsList variant="underline" className="mb-6">

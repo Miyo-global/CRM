@@ -9,8 +9,8 @@ export default function HrassetsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Assets Error"
-      fallbackMessage="Failed to load Assets. Please try again."
+      title="Couldn't load assets"
+      fallbackMessage="Something went wrong loading assets. Try again."
     />
   );
 }

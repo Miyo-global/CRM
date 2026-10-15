@@ -209,7 +209,7 @@ export default function MyPayslipsPage() {
                 aria-label="Download payslip as PDF"
               >
                 <Download className="size-4" aria-hidden="true" />
-                Download Payslip
+                Download
               </Button>
             ) : (
               <p className="text-sm text-muted-foreground">

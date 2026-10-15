@@ -651,8 +651,7 @@ function EmailTemplatesContent() {
 
   return (
     <PageWrapper
-      title="Email Templates"
-      subtitle="Preview and test all transactional email templates used in the system"
+      title="Email templates"
       actions={
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Input

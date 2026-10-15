@@ -9,7 +9,7 @@ export default function ReportsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Reports Error"
+      title="Couldn't load reports"
       fallbackMessage="Failed to load reports."
     />
   );

@@ -352,7 +352,7 @@ export default function PayrollPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Payroll Management" subtitle="Generate and manage employee payrolls">
+      <PageWrapper title="Payroll management">
         <div className="space-y-6">
           <Skeleton className="h-16 w-full rounded-lg" />
           <Skeleton className="h-20 w-full rounded-lg" />
@@ -382,8 +382,7 @@ export default function PayrollPage() {
 
   return (
     <PageWrapper
-      title="Payroll Management"
-      subtitle="Generate and manage employee payrolls"
+      title="Payroll management"
       actions={
         <div className="flex gap-2 flex-wrap items-center">
           <div className="flex items-center gap-1.5">

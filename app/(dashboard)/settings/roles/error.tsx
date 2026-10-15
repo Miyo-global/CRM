@@ -9,7 +9,7 @@ export default function RolesError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Roles Error"
+      title="Couldn't load roles"
       fallbackMessage="Failed to load roles."
     />
   );

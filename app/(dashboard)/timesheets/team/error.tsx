@@ -9,7 +9,7 @@ export default function TeamTimesheetsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Team Timesheets Error"
+      title="Couldn't load team timesheets"
       fallbackMessage="Failed to load team timesheets."
     />
   );

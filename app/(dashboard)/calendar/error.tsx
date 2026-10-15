@@ -10,7 +10,7 @@ export default function CalendarError(props: {
     <RouteErrorBoundary
       {...props}
       title="Calendar error"
-      fallbackMessage="Failed to load the calendar. Please try again."
+      fallbackMessage="Something went wrong loading the calendar. Try again."
     />
   );
 }

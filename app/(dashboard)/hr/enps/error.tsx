@@ -9,8 +9,8 @@ export default function HrenpsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="eNPS Error"
-      fallbackMessage="Failed to load eNPS. Please try again."
+      title="Couldn't load enps"
+      fallbackMessage="Something went wrong loading enps. Try again."
     />
   );
 }

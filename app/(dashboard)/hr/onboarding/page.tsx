@@ -559,7 +559,7 @@ function HrWorkflowTab() {
   return (
     <div className="space-y-4">
       <p className="rounded-lg border bg-surface-sunken/40 px-4 py-3 text-sm text-muted-foreground">
-        New hires are created under the <strong>Add Employee</strong> tab. Their onboarding
+        New hires are created under the <strong>Add employee</strong> tab. Their onboarding
         checklist starts automatically after you submit that form. Use the action below only
         for an <strong>existing</strong> employee who still needs a checklist.
       </p>
@@ -743,7 +743,7 @@ export default function OnboardingPage() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList variant="underline">
             <TabsTrigger value="wizard">
-              Add Employee
+              Add employee
             </TabsTrigger>
             <TabsTrigger value="workflow">
               Onboarding progress

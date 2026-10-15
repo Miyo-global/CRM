@@ -9,7 +9,7 @@ export default function SprintsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Sprints Error"
+      title="Couldn't load sprints"
       fallbackMessage="Failed to load sprints."
     />
   );

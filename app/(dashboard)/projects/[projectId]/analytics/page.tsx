@@ -236,7 +236,7 @@ export default function AnalyticsPage({
         {healthItems.length > 0 && <StatsStrip items={healthItems} />}
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <AnalyticsChartCard title="State Distribution" data={stateData as ChartRows} filename="state-distribution">
+          <AnalyticsChartCard title="State distribution" data={stateData as ChartRows} filename="state-distribution">
             {stateData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={stateData}>
@@ -256,7 +256,7 @@ export default function AnalyticsPage({
             )}
           </AnalyticsChartCard>
 
-          <AnalyticsChartCard title="Priority Breakdown" data={priorityData as ChartRows} filename="priority-breakdown">
+          <AnalyticsChartCard title="Priority breakdown" data={priorityData as ChartRows} filename="priority-breakdown">
             {priorityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -283,7 +283,7 @@ export default function AnalyticsPage({
             )}
           </AnalyticsChartCard>
 
-          <AnalyticsChartCard title="Volume Over Time" data={volumeData as ChartRows} filename="volume-over-time">
+          <AnalyticsChartCard title="Volume over time" data={volumeData as ChartRows} filename="volume-over-time">
             {volumeData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={volumeData}>
@@ -314,7 +314,7 @@ export default function AnalyticsPage({
             )}
           </AnalyticsChartCard>
 
-          <AnalyticsChartCard title="Completion Rate by Assignee" data={assigneeData as ChartRows} filename="assignee-completion">
+          <AnalyticsChartCard title="Completion rate by assignee" data={assigneeData as ChartRows} filename="assignee-completion">
             {assigneeData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={assigneeData} layout="vertical">
@@ -337,7 +337,7 @@ export default function AnalyticsPage({
             )}
           </AnalyticsChartCard>
 
-          <AnalyticsChartCard title="Cycle Velocity" data={velocityData as ChartRows} filename="cycle-velocity">
+          <AnalyticsChartCard title="Cycle velocity" data={velocityData as ChartRows} filename="cycle-velocity">
             {velocityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={velocityData}>
@@ -353,7 +353,7 @@ export default function AnalyticsPage({
             )}
           </AnalyticsChartCard>
 
-          <AnalyticsChartCard title="Estimate vs Actual" data={estimateData as ChartRows} filename="estimate-vs-actual">
+          <AnalyticsChartCard title="Estimate vs actual" data={estimateData as ChartRows} filename="estimate-vs-actual">
             {estimateData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <ScatterChart>
@@ -388,7 +388,7 @@ export default function AnalyticsPage({
 
           <div className="lg:col-span-2">
             <AnalyticsChartCard
-              title="Sprint Burndown"
+              title="Sprint burndown"
               data={burndownChartData as ChartRows}
               filename="sprint-burndown"
               actions={

@@ -27,8 +27,7 @@ export default function MyAssetsPage() {
 
   return (
     <PageWrapper
-      title="My Assets"
-      subtitle="Company equipment currently assigned to you"
+      title="My assets"
       actions={
         <Button variant="ghost" size="sm" onClick={handleGoBack}>
           <ArrowLeft className="size-3.5" aria-hidden="true" />

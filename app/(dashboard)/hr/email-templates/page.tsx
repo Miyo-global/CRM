@@ -489,7 +489,7 @@ function EmailTemplatesContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Email Templates" subtitle="Manage HR email templates">
+      <PageWrapper title="Email templates">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-36 rounded-lg" />
@@ -501,8 +501,7 @@ function EmailTemplatesContent() {
 
   return (
     <PageWrapper
-      title="Email Templates"
-      subtitle="Manage reusable email templates for HR communications"
+      title="Email templates"
       badge={`${templates?.length ?? 0} templates`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
@@ -623,7 +622,7 @@ function EmailTemplatesContent() {
           setSheetOpen(o);
           if (!o) resetTemplateForm();
         }}
-        title="Create Email Template"
+        title="Create email template"
         onSubmit={handleCreate}
         submitLabel="Create"
         isPending={create.isPending}
@@ -651,7 +650,7 @@ function EmailTemplatesContent() {
             resetTemplateForm();
           }
         }}
-        title="Edit Email Template"
+        title="Edit email template"
         onSubmit={handleEditSubmit}
         submitLabel="Save"
         isPending={update.isPending}
@@ -870,7 +869,7 @@ function EmailTemplatesContent() {
         onOpenChange={(open) => {
           if (!open) setDeleteId(null);
         }}
-        title="Delete Template"
+        title="Delete template"
         description="Are you sure you want to delete this email template?"
         confirmLabel="Delete"
         variant="destructive"

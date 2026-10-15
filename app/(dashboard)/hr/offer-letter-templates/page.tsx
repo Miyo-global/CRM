@@ -534,7 +534,7 @@ function CustomVariablesManager() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Variable"
+        title="Delete variable"
         description="Delete this custom variable? Templates that reference it will keep the literal token text until edited."
         confirmLabel="Delete"
         variant="destructive"
@@ -686,7 +686,7 @@ function OfferLetterTemplatesContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Offer Letter Templates" subtitle="Manage offer letter templates">
+      <PageWrapper title="Offer letter templates">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
@@ -708,8 +708,7 @@ function OfferLetterTemplatesContent() {
 
   return (
     <PageWrapper
-      title="Offer Letter Templates"
-      subtitle="Create reusable templates with merge tokens for branded PDF offer letters"
+      title="Offer letter templates"
       badge={`${templates?.length ?? 0} templates`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -856,7 +855,7 @@ function OfferLetterTemplatesContent() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }}
-        title="Create Offer Letter Template"
+        title="Create offer letter template"
         onSubmit={handleCreate}
         submitLabel="Create"
         isPending={create.isPending}
@@ -870,7 +869,7 @@ function OfferLetterTemplatesContent() {
           setEditSheetOpen(o);
           if (!o) { setEditingId(null); resetForm(); }
         }}
-        title="Edit Offer Letter Template"
+        title="Edit offer letter template"
         onSubmit={handleEditSubmit}
         submitLabel="Save"
         isPending={update.isPending}
@@ -903,7 +902,7 @@ function OfferLetterTemplatesContent() {
         <HrSheet
           open={manageOpen}
           onOpenChange={setManageOpen}
-          title="Manage Custom Variables"
+          title="Manage custom variables"
           description="Define reusable tokens for offer letter templates. Keys matching system fields auto-fill; others insert a labelled placeholder at generation."
           showSubmit={false}
           cancelLabel="Close"
@@ -915,7 +914,7 @@ function OfferLetterTemplatesContent() {
       <ConfirmActionDialog
         open={deleteId !== null}
         onOpenChange={(open) => { if (!open) setDeleteId(null); }}
-        title="Delete Template"
+        title="Delete template"
         description="Are you sure you want to delete this offer letter template?"
         confirmLabel="Delete"
         variant="destructive"
@@ -926,7 +925,7 @@ function OfferLetterTemplatesContent() {
       <ConfirmActionDialog
         open={defaultConfirmId !== null}
         onOpenChange={(open) => { if (!open) setDefaultConfirmId(null); }}
-        title="Set as Default Template"
+        title="Set as default template"
         description={
           hasExistingDefault
             ? "This will replace the current default offer letter template. Are you sure?"
@@ -941,7 +940,7 @@ function OfferLetterTemplatesContent() {
       <ConfirmActionDialog
         open={unsetDefaultConfirmId !== null}
         onOpenChange={(open) => { if (!open) setUnsetDefaultConfirmId(null); }}
-        title="Remove Default Status"
+        title="Remove default status"
         description="This template will no longer be the default. Offer letter generation will have no default template until you set another one. Are you sure?"
         confirmLabel="Remove Default"
         variant="default"

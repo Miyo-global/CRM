@@ -9,8 +9,8 @@ export default function TerminationError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Termination Module Error"
-      fallbackMessage="Failed to load the termination management page. Please try again."
+      title="Couldn't load termination module"
+      fallbackMessage="Something went wrong loading the termination management page. Try again."
     />
   );
 }

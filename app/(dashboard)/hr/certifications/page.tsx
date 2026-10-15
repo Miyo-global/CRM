@@ -50,7 +50,7 @@ export default function CertificationsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Certifications" subtitle="Employee certifications and credentials">
+      <PageWrapper title="Certifications">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
@@ -61,7 +61,6 @@ export default function CertificationsPage() {
   return (
     <PageWrapper
       title="Certifications"
-      subtitle="Track professional certifications and renewals"
       badge={`${certs?.length ?? 0} certifications`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Add Certification</Button>}
     >
@@ -107,7 +106,7 @@ export default function CertificationsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Certification" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add certification" onSubmit={handleCreate} submitLabel="Add" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Certification Name</label>
           <Input placeholder="e.g., AWS Solutions Architect" value={name} onChange={(e) => setName(e.target.value)} />

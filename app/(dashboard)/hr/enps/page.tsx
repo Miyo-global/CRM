@@ -100,7 +100,7 @@ export default function EnpsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Employee NPS" subtitle="Measure employee loyalty">
+      <PageWrapper title="Employee NPS">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-lg" />)}
         </div>
@@ -111,7 +111,6 @@ export default function EnpsPage() {
   return (
     <PageWrapper
       title="Employee NPS"
-      subtitle="Measure and track employee Net Promoter Score"
       badge={`${surveys?.length ?? 0} surveys`}
       actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New eNPS</Button> : undefined}
     >
@@ -155,7 +154,7 @@ export default function EnpsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create eNPS Survey" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create eNPS survey" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Title</label>
           <Input placeholder="e.g., Q1 2026 eNPS" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -166,7 +165,7 @@ export default function EnpsPage() {
         </div>
       </HrSheet>
 
-      <HrSheet open={respondId !== null} onOpenChange={(open) => { if (!open) setRespondId(null); }} title="eNPS Response" onSubmit={handleSubmitResponse} submitLabel="Submit" isPending={submit.isPending}>
+      <HrSheet open={respondId !== null} onOpenChange={(open) => { if (!open) setRespondId(null); }} title="eNPS response" onSubmit={handleSubmitResponse} submitLabel="Submit" isPending={submit.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">On a scale of 0-10, how likely are you to recommend this company?</label>
           <Input type="number" min={0} max={10} value={npsScore} onChange={(e) => setNpsScore(e.target.value)} />

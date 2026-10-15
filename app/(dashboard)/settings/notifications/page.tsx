@@ -95,7 +95,7 @@ export default function NotificationPreferencesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Notification Preferences" subtitle="Choose how and when you receive notifications">
+      <PageWrapper title="Notification preferences">
         <div className="space-y-4">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-40" />)}
         </div>
@@ -111,8 +111,7 @@ export default function NotificationPreferencesPage() {
 
   return (
     <PageWrapper
-      title="Notification Preferences"
-      subtitle="Choose how and when you receive notifications"
+      title="Notification preferences"
       actions={
         <>
           {dirty && <span className="text-xs text-warning-strong">Unsaved changes</span>}

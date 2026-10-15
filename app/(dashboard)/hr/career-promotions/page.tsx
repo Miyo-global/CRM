@@ -146,7 +146,7 @@ export default function CareerPromotionsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Promotions" subtitle="Promotion recommendations and approvals">
+      <PageWrapper title="Promotions">
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)}
         </div>
@@ -162,7 +162,6 @@ export default function CareerPromotionsPage() {
   return (
     <PageWrapper
       title="Promotions"
-      subtitle="Recommend and approve employee promotions"
       badge={`${rows.filter((r) => r.status === "PENDING").length} pending`}
       actions={
         isAdmin ? (
@@ -260,7 +259,7 @@ export default function CareerPromotionsPage() {
       <HrSheet
         open={addOpen}
         onOpenChange={(o) => { setAddOpen(o); if (!o) setForm(EMPTY_FORM); }}
-        title="Recommend Promotion"
+        title="Recommend promotion"
         description="Submit a promotion recommendation for review."
         onSubmit={handleCreate}
         submitLabel="Submit Recommendation"

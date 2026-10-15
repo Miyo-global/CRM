@@ -212,7 +212,6 @@ export default function HRDashboardPage() {
   return (
     <PageWrapper
       title="Employees"
-      subtitle="Employee directory — search, filter, and manage team records"
       badge={String(totalCount)}
       stickyHeader
       actions={
@@ -227,7 +226,7 @@ export default function HRDashboardPage() {
           <Button size="sm" asChild>
             <Link href="/hr/onboarding?tab=wizard">
               <Plus className="size-4" aria-hidden="true" />
-              Add Employee
+              Add employee
             </Link>
           </Button>
         </div>
@@ -323,14 +322,14 @@ export default function HRDashboardPage() {
         <EmptyState
           title="No employees found"
           description="Get started by adding your first team member."
-          action={{ label: "Add Employee", href: "/hr/onboarding?tab=wizard" }}
+          action={{ label: "Add employee", href: "/hr/onboarding?tab=wizard" }}
         />
       )}
 
       <ConfirmActionDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Terminate Employee"
+        title="Terminate employee"
         description={
           employeeToDelete
             ? `Are you sure you want to terminate ${employeeToDelete.firstName ?? ""} ${employeeToDelete.lastName ?? ""}? This action cannot be undone.`

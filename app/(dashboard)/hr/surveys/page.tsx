@@ -126,7 +126,7 @@ export default function SurveysPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Pulse Surveys" subtitle="Employee engagement surveys">
+      <PageWrapper title="Pulse surveys">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
@@ -136,8 +136,7 @@ export default function SurveysPage() {
 
   return (
     <PageWrapper
-      title="Pulse Surveys"
-      subtitle="Create and manage employee engagement surveys"
+      title="Pulse surveys"
       badge={`${surveys?.length ?? 0} surveys`}
       actions={isAdmin ? <Button size="sm" onClick={handleOpenSheet}><Plus className="size-4" aria-hidden="true" />Create Survey</Button> : undefined}
     >
@@ -173,7 +172,7 @@ export default function SurveysPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create Survey" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create survey" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Survey Title</label>
           <Input placeholder="e.g., Q1 Engagement Survey" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -188,7 +187,7 @@ export default function SurveysPage() {
       <ConfirmActionDialog
         open={closeId !== null}
         onOpenChange={handleCloseDialogChange}
-        title="Close Survey"
+        title="Close survey"
         description="Close this survey? No more responses will be accepted."
         confirmLabel="Close"
         variant="default"

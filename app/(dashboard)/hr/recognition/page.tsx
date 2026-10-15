@@ -432,7 +432,7 @@ export default function RecognitionPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Recognition" subtitle="Celebrate your team">
+      <PageWrapper title="Recognition">
         <div className="space-y-4">
           <Skeleton className="h-20 rounded-lg" />
           <div className="max-w-2xl space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}</div>
@@ -455,7 +455,6 @@ export default function RecognitionPage() {
   return (
     <PageWrapper
       title="Recognition"
-      subtitle="Celebrate achievements and recognize great work"
       badge={`${stats.total} kudos`}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
@@ -768,7 +767,7 @@ export default function RecognitionPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Give Recognition"
+        title="Give recognition"
         onSubmit={handleSend}
         submitLabel={toUserIds.length > 1 ? `Send Kudos (${toUserIds.length})` : "Send Kudos"}
         isPending={createRecognition.isPending || isSendingBulk}

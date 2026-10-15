@@ -133,7 +133,7 @@ export function LeavesWfhContent() {
               className="gap-1.5"
             >
               <Plus className="size-4" aria-hidden="true" />
-              Request Leave
+              Request leave
             </Button>
           </>
         }

@@ -612,7 +612,6 @@ export default function HrAssetsPage() {
   return (
     <PageWrapper
       title="Assets"
-      subtitle="Manage company assets and assignments"
       actions={
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <AssetExportSheet
@@ -796,7 +795,7 @@ export default function HrAssetsPage() {
       </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add Asset" description="Register asset details in inventory. Assign to an employee afterward from Edit." onSubmit={handleCreate} submitLabel="Add Asset" isPending={createAsset.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Add asset" description="Register asset details in inventory. Assign to an employee afterward from Edit." onSubmit={handleCreate} submitLabel="Add Asset" isPending={createAsset.isPending}>
         {assetDetailFields}
       </HrSheet>
 
@@ -808,7 +807,7 @@ export default function HrAssetsPage() {
             resetForm();
           }
         }}
-        title="Edit Asset"
+        title="Edit asset"
         description="Update inventory details, then manage assignment and status below."
         onSubmit={handleUpdate}
         submitLabel="Save changes"

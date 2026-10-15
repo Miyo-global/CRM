@@ -267,7 +267,7 @@ export default function SkillsMatrixPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Skills Matrix">
+      <PageWrapper title="Skills matrix">
         <Skeleton className="h-96 rounded-lg" />
       </PageWrapper>
     );
@@ -277,8 +277,7 @@ export default function SkillsMatrixPage() {
 
   return (
     <PageWrapper
-      title="Skills Matrix"
-      subtitle="Cross-reference of employee skill proficiencies across the organisation"
+      title="Skills matrix"
       stickyHeader
       filters={
         hasData ? (

@@ -80,7 +80,7 @@ export default function ReimbursementsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Reimbursements" subtitle="Expense reimbursement requests">
+      <PageWrapper title="Reimbursements">
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -89,9 +89,8 @@ export default function ReimbursementsPage() {
   return (
     <PageWrapper
       title="Reimbursements"
-      subtitle="Submit and track expense reimbursements"
       badge={`${items?.length ?? 0} requests`}
-      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New Request</Button>}
+      actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New request</Button>}
     >
       {isError ? (
         <QueryErrorState title="Couldn't load reimbursements" error={error} onRetry={() => refetch()} />
@@ -99,7 +98,7 @@ export default function ReimbursementsPage() {
         <EmptyState
           title="No reimbursement requests yet"
           description="Submit an expense to start tracking reimbursement requests."
-          action={{ label: "New Request", onClick: () => setSheetOpen(true) }}
+          action={{ label: "New request", onClick: () => setSheetOpen(true) }}
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -159,7 +158,7 @@ export default function ReimbursementsPage() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        title="Submit Reimbursement"
+        title="Submit reimbursement"
         showSubmit={false}
         footer={
           <div className="flex justify-end gap-2 py-1">
@@ -178,7 +177,7 @@ export default function ReimbursementsPage() {
       <ConfirmActionDialog
         open={rejectId !== null}
         onOpenChange={(open) => { if (!open) setRejectId(null); }}
-        title="Reject Reimbursement"
+        title="Reject reimbursement"
         description="Are you sure you want to reject this reimbursement request?"
         confirmLabel="Reject"
         variant="destructive"

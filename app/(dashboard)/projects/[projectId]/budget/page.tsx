@@ -45,7 +45,7 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
 
   if (isError) {
     return (
-      <PageWrapper title="Budget" subtitle="Planned budget vs actual cost from billable timesheets">
+      <PageWrapper title="Budget">
         <QueryErrorState error={error} onRetry={refetch} />
       </PageWrapper>
     );
@@ -59,7 +59,6 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
   return (
     <PageWrapper
       title="Budget"
-      subtitle="Planned budget vs actual cost from billable timesheets"
       actions={
         editMode ? (
           <div className="flex flex-wrap items-center gap-2">

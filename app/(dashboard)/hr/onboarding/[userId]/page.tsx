@@ -149,7 +149,7 @@ export default function UserOnboardingPage({
 
   return (
     <PageWrapper
-      title="Onboarding Checklist"
+      title="Onboarding checklist"
       subtitle={
         isOwnChecklist
           ? "Complete each task to finish your onboarding."

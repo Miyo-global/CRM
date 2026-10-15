@@ -52,7 +52,7 @@ function RelativeTime({ value }: { value: string | Date }) {
 
 export const RecentActivityCard = memo(function RecentActivityCard({ items, isLoading, error }: RecentActivityCardProps) {
   return (
-    <WidgetCard title="Recent Activity" icon={Activity} tone="teal">
+    <WidgetCard title="Recent activity" icon={Activity} tone="teal">
       <div aria-live="polite">
         {isLoading ? (
           <div className="space-y-2">

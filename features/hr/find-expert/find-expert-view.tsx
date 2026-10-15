@@ -475,8 +475,7 @@ export function FindExpertView() {
 
   return (
     <PageWrapper
-      title="Find Expert"
-      subtitle="Search across the org to find colleagues with specific skills"
+      title="Find expert"
       actions={
         <Button
           variant="outline"

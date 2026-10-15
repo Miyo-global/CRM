@@ -231,7 +231,7 @@ function BonusContent() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Bonuses" subtitle="Employee bonus processing">
+      <PageWrapper title="Bonuses">
         <div className="space-y-4">
           <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-80 rounded-lg" />
@@ -242,8 +242,7 @@ function BonusContent() {
 
   return (
     <PageWrapper
-      title="Bonus Processing"
-      subtitle="Manage and disburse employee bonuses"
+      title="Bonus processing"
       badge={`${bonuses?.length ?? 0} bonuses`}
       stickyHeader
       actions={
@@ -294,7 +293,7 @@ function BonusContent() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }}
-        title="Add Bonus"
+        title="Add bonus"
         onSubmit={handleCreate}
         submitLabel="Create"
         isPending={create.isPending}
@@ -385,7 +384,7 @@ function BonusContent() {
       <ConfirmActionDialog
         open={payId !== null}
         onOpenChange={(open) => { if (!open) setPayId(null); }}
-        title="Mark Bonus as Paid"
+        title="Mark bonus as paid"
         description="Confirm that this bonus has been disbursed to the employee?"
         confirmLabel="Mark Paid"
         variant="default"

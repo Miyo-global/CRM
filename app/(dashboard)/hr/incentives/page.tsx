@@ -189,8 +189,7 @@ export default function IncentivesPage() {
 
   return (
     <PageWrapper
-      title="Incentive Management"
-      subtitle="Manage sales incentives, approvals, and rate configuration"
+      title="Incentive management"
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => { setHistoryPage(1); setShowHistory(true); }}>
@@ -386,7 +385,7 @@ export default function IncentivesPage() {
           setShowConfigSheet(open);
           if (!open) setNewRate("");
         }}
-        title="Configure Incentive Rate"
+        title="Configure incentive rate"
         description="Set the incentive rate applied to all new investments."
         onSubmit={handleSetRate}
         submitLabel="Set Rate"
@@ -438,7 +437,7 @@ export default function IncentivesPage() {
             setHistoryPage(1);
           }
         }}
-        title="Incentive Rate History"
+        title="Incentive rate history"
         description="Every change to the incentive rate, newest first."
         showSubmit={false}
         footer={

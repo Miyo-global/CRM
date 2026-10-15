@@ -75,7 +75,7 @@ export default function AssessmentsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Assessments" subtitle="Skills assessments and quizzes">
+      <PageWrapper title="Assessments">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
         </div>
@@ -85,8 +85,7 @@ export default function AssessmentsPage() {
 
   return (
     <PageWrapper
-      title="Skills Assessments"
-      subtitle="Create and take skill assessment quizzes"
+      title="Skills assessments"
       badge={`${items?.length ?? 0} assessments`}
       actions={isAdmin ? <Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />Create Assessment</Button> : undefined}
     >
@@ -128,7 +127,7 @@ export default function AssessmentsPage() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create Assessment" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
+      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Create assessment" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Title</label>
           <Input placeholder="e.g., JavaScript Proficiency" value={title} onChange={(e) => setTitle(e.target.value)} />

@@ -101,8 +101,7 @@ function RolesContent() {
 
   return (
     <PageWrapper
-      title="Roles & Permissions"
-      subtitle="Configure access controls for each role"
+      title="Roles & permissions"
       noInternalScroll
       actions={
         <div className="flex items-center gap-2">
@@ -170,7 +169,7 @@ function RolesContent() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={handleDeleteDialogClose}
-        title="Delete Role"
+        title="Delete role"
         description={`Are you sure you want to delete ${deleteTarget?.name ?? "this role"}? Users with this role will lose their assigned permissions.`}
         confirmLabel="Delete"
         destructive

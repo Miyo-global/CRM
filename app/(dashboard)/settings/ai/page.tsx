@@ -82,8 +82,7 @@ export default function AiSettingsPage() {
   return (
     <DashboardGate allowedRoles={["CEO", "HR"]}>
     <PageWrapper
-      title="AI Settings"
-      subtitle="Manage AI features and monitor token usage across your organization."
+      title="AI settings"
     >
       <div className="space-y-6">
         <SettingsSection

@@ -99,8 +99,7 @@ export default function ReportsPage() {
   return (
     <DashboardGate allowedRoles={["HR", "SALES"]}>
     <PageWrapper
-      title="Report Center"
-      subtitle="Generate and download Excel and PDF reports"
+      title="Report center"
     >
       <div className="grid grid-cols-12 gap-4 xl:gap-6">
         {REPORTS.map(report => (

@@ -29,7 +29,7 @@ export function MyTasksWidget() {
 
   return (
     <WidgetCard
-      title="My Tasks"
+      title="My tasks"
       icon={ListChecks}
       tone="info"
       count={tasks.length || undefined}

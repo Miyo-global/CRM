@@ -9,7 +9,7 @@ export default function EmployeeDetailsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Employee Details Error"
+      title="Couldn't load employee details"
       fallbackMessage="Failed to load employee details."
     />
   );

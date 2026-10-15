@@ -9,8 +9,8 @@ export default function ProjectsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Projects Error"
-      fallbackMessage="Failed to load projects. Please try again."
+      title="Couldn't load projects"
+      fallbackMessage="Something went wrong loading projects. Try again."
     />
   );
 }

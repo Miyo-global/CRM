@@ -31,8 +31,7 @@ export default function SettingsPage() {
 
   return (
     <PageWrapper
-      title="Account Settings"
-      subtitle="Manage your profile, preferences, and security."
+      title="Account settings"
       filters={
         <nav aria-label="Account settings sections" className="flex items-center gap-1">
           {SECTIONS.map(({ id, label }) => (

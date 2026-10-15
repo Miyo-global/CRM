@@ -751,7 +751,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
       <ConfirmDialog
         open={terminateOpen}
         onOpenChange={setTerminateOpen}
-        title="Terminate Employee"
+        title="Terminate employee"
         description={`Are you sure you want to terminate ${employeeName}? They will lose access immediately.`}
         confirmLabel="Terminate"
         destructive

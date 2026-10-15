@@ -9,8 +9,8 @@ export default function CustomFieldsError(props: {
   return (
     <RouteErrorBoundary
       {...props}
-      title="Custom Fields Error"
-      fallbackMessage="Failed to load Custom Fields settings. Please try again."
+      title="Couldn't load custom fields"
+      fallbackMessage="Something went wrong loading custom fields settings. Try again."
     />
   );
 }
