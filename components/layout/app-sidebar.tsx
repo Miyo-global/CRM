@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useGetOrganizations } from "@/lib/hooks/auth-hooks";
+import { MANAGEMENT_ROLES, hasRole } from "@/lib/constants/roles";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -43,17 +44,23 @@ interface AppSidebarProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onNavigate?: () => void;
+  /** Pending leave approvals resolved on the server, so the badge is right on
+   *  first paint instead of after a round trip (A44). */
+  initialPendingLeaves?: number;
 }
 
 export function AppSidebar({
   isCollapsed = false,
   onToggleCollapse,
   onNavigate,
+  initialPendingLeaves = 0,
 }: AppSidebarProps) {
   const { session, status, role, effectiveRole, hasEverLoaded, navGroups } = useRoleNavGroups();
   const { data: organizations } = useGetOrganizations();
   const pathname = usePathname();
-  const isAdmin = effectiveRole === "CEO" || effectiveRole === "HR";
+  // ADMIN approves leave too; the old CEO/HR-only check hid the badge from
+  // them and disagreed with the approver rule (A8, A28).
+  const isAdmin = hasRole(effectiveRole, MANAGEMENT_ROLES);
 
   const longestMatchingNavPath = useMemo(
     () => getLongestMatchingNavPath(pathname, navGroups),
@@ -98,7 +105,10 @@ export function AppSidebar({
     });
   }, []);
 
-  const [pendingLeaves, setPendingLeaves] = useState(0);
+  const [pendingLeaves, setPendingLeaves] = useState(initialPendingLeaves);
+
+  // Each navigation brings a freshly resolved server count.
+  useEffect(() => setPendingLeaves(initialPendingLeaves), [initialPendingLeaves]);
 
   useEffect(() => {
     if (!isAdmin || !session?.user) return;
@@ -114,13 +124,14 @@ export function AppSidebar({
         if (!cancelled) setPendingLeaves(0);
       }
     }
-    fetchCounts();
+    // The server already resolved this count for the current render, so only
+    // the poll runs from here (A44).
     const id = setInterval(fetchCounts, 30_000);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [session, isAdmin]);
+  }, [session, isAdmin, initialPendingLeaves]);
 
   const { data: notifData } = useUnreadNotificationCount();
   const unreadNotifCount = notifData?.count ?? 0;
