@@ -2,8 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const values = vi.fn();
 const logError = vi.fn();
+const findUsers = vi.fn();
+const findSprints = vi.fn();
 
-vi.mock("@/lib/db", () => ({ db: { insert: () => ({ values }) } }));
+vi.mock("@/lib/db", () => ({
+  db: {
+    insert: () => ({ values }),
+    query: {
+      users: { findMany: (...args: unknown[]) => findUsers(...args) },
+      sprints: { findMany: (...args: unknown[]) => findSprints(...args) },
+      cycles: { findMany: async () => [] },
+    },
+  },
+}));
 vi.mock("@/lib/logger", () => ({ logger: { error: (...args: unknown[]) => logError(...args) } }));
 
 import { diffTicketActivity, recordTicketActivity } from "./record-ticket-activity";
@@ -31,17 +42,6 @@ describe("diffTicketActivity", () => {
     expect(diffTicketActivity(before, after)).toEqual([]);
   });
 
-  it("uses labels for display values", () => {
-    const names: Record<string, string> = { u1: "Asha", u2: "Ravi" };
-    const entries = diffTicketActivity({ assigneeId: "u1" }, { assigneeId: "u2" }, (_field, v) => names[v]);
-    expect(entries).toEqual([{ action: "assignee_changed", field: "assigneeId", fromValue: "Asha", toValue: "Ravi" }]);
-  });
-
-  it("falls back to the raw value when no label exists", () => {
-    const entries = diffTicketActivity({ cycleId: null }, { cycleId: 9 }, () => undefined);
-    expect(entries[0]).toMatchObject({ action: "cycle_changed", fromValue: null, toValue: "9" });
-  });
-
   it("formats dates as YYYY-MM-DD", () => {
     const entries = diffTicketActivity({ dueDate: "2026-10-01" }, { dueDate: new Date("2026-10-20T00:00:00Z") });
     expect(entries[0]).toMatchObject({ fromValue: "2026-10-01", toValue: "2026-10-20" });
@@ -65,6 +65,27 @@ describe("recordTicketActivity", () => {
   beforeEach(() => {
     values.mockReset();
     logError.mockReset();
+    findUsers.mockReset();
+    findSprints.mockReset();
+  });
+
+  it("stores display names instead of ids", async () => {
+    values.mockResolvedValue(undefined);
+    findUsers.mockResolvedValue([
+      { id: "u1", name: "Asha", firstName: null, lastName: null, email: "a@x.io" },
+      { id: "u2", name: null, firstName: "Ravi", lastName: "K", email: "r@x.io" },
+    ]);
+    findSprints.mockResolvedValue([{ id: 5, name: "Sprint 5" }]);
+    await recordTicketActivity(ctx, [
+      { action: "assignee_changed", field: "assigneeId", fromValue: "u1", toValue: "u2" },
+      { action: "sprint_changed", field: "sprintId", fromValue: null, toValue: "5" },
+      { action: "cycle_changed", field: "cycleId", fromValue: null, toValue: "9" },
+    ]);
+    expect(values).toHaveBeenCalledWith([
+      expect.objectContaining({ fromValue: "Asha", toValue: "Ravi K" }),
+      expect.objectContaining({ fromValue: null, toValue: "Sprint 5" }),
+      expect.objectContaining({ fromValue: null, toValue: "9" }),
+    ]);
   });
 
   it("skips the insert when nothing changed", async () => {

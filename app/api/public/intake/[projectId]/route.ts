@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { intakeItems, projects } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimitRedis } from "@/lib/rate-limit-redis";
 
@@ -66,7 +66,7 @@ export async function POST(
   const [project] = await db
     .select({ orgId: projects.orgId })
     .from(projects)
-    .where(eq(projects.id, pid));
+    .where(and(eq(projects.id, pid), isNull(projects.deletedAt), isNull(projects.archivedAt)));
 
   if (!project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });

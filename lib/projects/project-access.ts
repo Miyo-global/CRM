@@ -1,11 +1,9 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/lib/db";
 import { projectMembers, projects } from "@/lib/db/schema";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { normalizeProjectRole, type ProjectRole } from "@/lib/projects/project-roles";
 
-export const projectRoleSchema = z.enum(["OWNER", "MANAGER", "CONTRIBUTOR", "VIEWER"]);
-export type ProjectRole = z.infer<typeof projectRoleSchema>;
 export type ProjectAction = "view" | "contribute" | "manage";
 
 const ACTION_ROLES: Record<ProjectAction, readonly ProjectRole[]> = {
@@ -13,15 +11,6 @@ const ACTION_ROLES: Record<ProjectAction, readonly ProjectRole[]> = {
   contribute: ["OWNER", "MANAGER", "CONTRIBUTOR"],
   manage: ["OWNER", "MANAGER"],
 };
-
-const LEGACY_ROLE_MAP: Record<string, ProjectRole> = { ADMIN: "MANAGER" };
-
-export function normalizeProjectRole(raw: string | null | undefined): ProjectRole {
-  const upper = (raw ?? "").trim().toUpperCase();
-  const parsed = projectRoleSchema.safeParse(upper);
-  if (parsed.success) return parsed.data;
-  return LEGACY_ROLE_MAP[upper] ?? "CONTRIBUTOR";
-}
 
 type AccessInput = {
   sessionOrgId: string;

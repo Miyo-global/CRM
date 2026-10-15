@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { cycles, tickets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const updateCycleSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -13,16 +14,18 @@ const updateCycleSchema = z.object({
   status: z.enum(["draft", "active", "completed"]).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string; cycleId: string }> };
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id, cycleId } = await params;
-    const projectId = Number(id);
-    const cId = Number(cycleId);
-    if (!projectId || !cId) return err("Invalid id", 400);
+    const guard = await requireProjectAccess(session, id, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const cId = parseIdParam(cycleId);
+    if (cId === null) return err("Not found", 404);
 
     const body = await parseBody(req, updateCycleSchema);
 
@@ -47,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const [updated] = await db
       .update(cycles)
       .set({ ...body, updatedAt: new Date() })
-      .where(and(eq(cycles.id, cId), eq(cycles.orgId, session.orgId!)))
+      .where(and(eq(cycles.id, cId), eq(cycles.projectId, projectId), eq(cycles.orgId, session.orgId!)))
       .returning();
 
     if (!updated) return err("Cycle not found", 404);
@@ -59,18 +62,26 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id, cycleId } = await params;
-    const projectId = Number(id);
-    const cId = Number(cycleId);
-    if (!projectId || !cId) return err("Invalid id", 400);
+    const guard = await requireProjectAccess(session, id, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const cId = parseIdParam(cycleId);
+    if (cId === null) return err("Not found", 404);
+
+    const cycle = await db.query.cycles.findFirst({
+      where: and(eq(cycles.id, cId), eq(cycles.projectId, projectId), eq(cycles.orgId, session.orgId!)),
+      columns: { id: true },
+    });
+    if (!cycle) return err("Cycle not found", 404);
 
     await db
       .update(tickets)
       .set({ cycleId: null })
-      .where(eq(tickets.cycleId, cId));
+      .where(and(eq(tickets.cycleId, cId), eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId!)));
 
     await db
       .delete(cycles)
-      .where(and(eq(cycles.id, cId), eq(cycles.orgId, session.orgId!)));
+      .where(and(eq(cycles.id, cId), eq(cycles.projectId, projectId), eq(cycles.orgId, session.orgId!)));
 
     return ok({ success: true });
   });

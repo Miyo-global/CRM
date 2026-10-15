@@ -8,22 +8,27 @@ import {
   users,
   tickets,
 } from "@/lib/db/schema";
-import { eq, and, desc, inArray, or, sql, count } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, or, sql, count, isNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { sendProjectAssignmentEmail } from "@/lib/email";
 import { createAuditLog } from "@/lib/audit-log";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
+import { projectKeySchema } from "@/lib/projects/project-key";
+import { firstFreeProjectKey, isProjectKeyTaken } from "@/lib/projects/project-key-availability";
+import { allOrgMembers } from "@/lib/projects/assignable-users";
 
 const createProjectSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  key: z.string().optional(),
-  managerId: z.string().optional(),
-  clientId: z.string().optional(),
+  name: z.string().trim().min(1).max(200),
+  description: z.string().max(5000).optional(),
+  key: projectKeySchema.optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  managerId: z.string().max(200).optional(),
+  clientId: z.string().max(200).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  memberIds: z.array(z.string()).optional(),
+  memberIds: z.array(z.string().max(200)).max(200).optional(),
   modules: z
     .object({
       sprints: z.boolean(),
@@ -34,17 +39,31 @@ const createProjectSchema = z.object({
     .optional(),
 });
 
+const SORT_COLUMNS: Record<string, AnyPgColumn> = {
+  name: projects.name,
+  key: projects.key,
+  startDate: projects.startDate,
+  endDate: projects.endDate,
+  newest: projects.id,
+};
+const PRIORITIES = new Set(["LOW", "MEDIUM", "HIGH", "URGENT"]);
+const PROJECT_STATUSES = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
+
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
     const { searchParams } = req.nextUrl;
     const search = searchParams.get("search") ?? undefined;
     const statusParam = searchParams.get("status") ?? "ALL";
-    const page = toNumber(searchParams.get("page")) ?? 1;
-    const limit = toNumber(searchParams.get("limit")) ?? 9;
+    const page = Math.max(1, Math.floor(toNumber(searchParams.get("page")) ?? 1));
+    const limit = Math.min(100, Math.max(1, Math.floor(toNumber(searchParams.get("limit")) ?? 9)));
     const offset = (page - 1) * limit;
+    const sortColumn = SORT_COLUMNS[searchParams.get("sort") ?? ""] ?? projects.id;
+    const sortDir = searchParams.get("dir") === "asc" ? asc : desc;
+    const priority = searchParams.get("priority");
 
     const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-    const conditions = [eq(projects.orgId, session.orgId!)];
+    const conditions = [eq(projects.orgId, session.orgId), isNull(projects.deletedAt)];
+    if (priority && PRIORITIES.has(priority)) conditions.push(eq(projects.priority, priority));
 
     if (!isOwnerOrAdmin) {
       const memberOf = await db
@@ -72,7 +91,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (statusParam !== "ALL") {
+    if (statusParam !== "ALL" && PROJECT_STATUSES.has(statusParam)) {
       conditions.push(
         eq(
           projects.status,
@@ -95,6 +114,8 @@ export async function GET(req: NextRequest) {
         description: projects.description,
         key: projects.key,
         status: projects.status,
+        priority: projects.priority,
+        archivedAt: projects.archivedAt,
         startDate: projects.startDate,
         endDate: projects.endDate,
         managerId: projects.managerId,
@@ -105,7 +126,7 @@ export async function GET(req: NextRequest) {
       .from(projects)
       .leftJoin(users, eq(projects.managerId, users.id))
       .where(whereClause)
-      .orderBy(desc(projects.id))
+      .orderBy(sql`${sortDir(sortColumn)} NULLS LAST`, desc(projects.id))
       .limit(limit)
       .offset(offset);
 
@@ -129,7 +150,7 @@ export async function GET(req: NextRequest) {
           done: sql<number>`count(*) filter (where ${tickets.status} = 'DONE')`.as("done"),
         })
         .from(tickets)
-        .where(inArray(tickets.projectId, projectIds))
+        .where(and(inArray(tickets.projectId, projectIds), isNull(tickets.deletedAt)))
         .groupBy(tickets.projectId),
       db
         .select({
@@ -171,6 +192,8 @@ export async function GET(req: NextRequest) {
         description: p.description,
         key: p.key,
         status: p.status,
+        priority: p.priority,
+        archivedAt: p.archivedAt,
         startDate: p.startDate,
         endDate: p.endDate,
         manager: p.managerId
@@ -195,20 +218,28 @@ export async function POST(req: NextRequest) {
   return withAdmin(async (session) => {
     const body = await parseBody(req, createProjectSchema);
 
-    let projectKey = body.key;
-    if (!projectKey) {
-      const namePart = body.name.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase();
-      const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
-      projectKey = (namePart.length >= 2 ? namePart : "PRJ") + "-" + randomPart;
+    const people = [...(body.memberIds ?? [])];
+    if (body.managerId) people.push(body.managerId);
+    if (body.clientId) people.push(body.clientId);
+    if (!(await allOrgMembers(session.orgId, people))) {
+      return err("Everyone on the project must be a member of this organization", 400);
     }
+
+    let projectKey = body.key;
+    if (projectKey && (await isProjectKeyTaken(projectKey))) {
+      return err(`The key ${projectKey} is already in use`, 409);
+    }
+    projectKey ??= (await firstFreeProjectKey(body.name)) ?? undefined;
+    if (!projectKey) return err("Could not generate a free project key. Enter one yourself.", 409);
 
     const [project] = await db
       .insert(projects)
       .values({
-        orgId: session.orgId!,
+        orgId: session.orgId,
         key: projectKey,
         name: body.name,
         description: body.description,
+        priority: body.priority,
         managerId: body.managerId,
         clientId: body.clientId,
         startDate: body.startDate ? new Date(body.startDate) : undefined,
@@ -234,7 +265,7 @@ export async function POST(req: NextRequest) {
 
     await db.insert(projectStatuses).values(
       defaultStatuses.map((s) => ({
-        orgId: session.orgId!,
+        orgId: session.orgId,
         projectId: project.id,
         name: s.name,
         order: s.order,

@@ -8,7 +8,7 @@ import {
   tickets,
   leaveRequests,
 } from "@/lib/db/schema";
-import { eq, and, gte, sql, count } from "drizzle-orm";
+import { eq, and, gte, sql, count, isNull } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { getWeeklyCeoRecapTemplate } from "@/lib/email-templates/weekly-ceo-recap";
 import type { WeeklyCeoRecapData } from "@/lib/email-templates/weekly-ceo-recap";
@@ -95,10 +95,10 @@ export async function generateAndSendWeeklyCeoRecap() {
           .where(and(eq(leads.orgId, org.id), gte(leadActivities.createdAt, weekStart))),
         db.select({ count: count() })
           .from(tickets)
-          .where(and(eq(tickets.orgId, org.id), sql`${tickets.status} NOT IN ('DONE', 'CANCELLED')`)),
+          .where(and(eq(tickets.orgId, org.id), isNull(tickets.deletedAt), sql`${tickets.status} NOT IN ('DONE', 'CANCELLED')`)),
         db.select({ count: count() })
           .from(tickets)
-          .where(and(eq(tickets.orgId, org.id), eq(tickets.status, "DONE"), gte(tickets.updatedAt, weekStart))),
+          .where(and(eq(tickets.orgId, org.id), isNull(tickets.deletedAt), eq(tickets.status, "DONE"), gte(tickets.updatedAt, weekStart))),
         db.select({ count: count() })
           .from(leaveRequests)
           .where(and(eq(leaveRequests.orgId, org.id), eq(leaveRequests.status, "PENDING"))),

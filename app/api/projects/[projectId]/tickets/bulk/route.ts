@@ -2,10 +2,11 @@
 
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { tickets, projectMembers } from "@/lib/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { tickets, sprints } from "@/lib/db/schema";
+import { eq, and, inArray, isNull } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const bulkUpdateSchema = z.object({
   ticketIds: z.array(z.number().int().positive()).min(1),
@@ -13,7 +14,7 @@ const bulkUpdateSchema = z.object({
   status: z.string().optional(),
   sprintId: z.number().int().positive().nullable().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-}).refine(
+}).strict().refine(
   (data) => data.assigneeId !== undefined || data.status !== undefined || data.sprintId !== undefined || data.priority !== undefined,
   { message: "At least one field to update is required" }
 );
@@ -24,18 +25,19 @@ export async function POST(
 ) {
   return withAuth(async (session) => {
     const { projectId: rawId } = await params;
-    const projectId = Number(rawId);
-    if (!projectId) return err("Invalid project ID.", 400);
-
-    const member = await db.query.projectMembers.findFirst({
-      where: and(
-        eq(projectMembers.projectId, projectId),
-        eq(projectMembers.userId, session.user.id)
-      ),
-    });
-    if (!member) return err("Not a project member.", 403);
+    const guard = await requireProjectAccess(session, rawId, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, bulkUpdateSchema);
+
+    if (body.sprintId != null) {
+      const sprint = await db.query.sprints.findFirst({
+        where: and(eq(sprints.id, body.sprintId), eq(sprints.projectId, projectId), eq(sprints.orgId, session.orgId!)),
+        columns: { id: true },
+      });
+      if (!sprint) return err("Sprint not found", 404);
+    }
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (body.assigneeId !== undefined) {
@@ -55,6 +57,7 @@ export async function POST(
         and(
           eq(tickets.orgId, session.orgId!),
           eq(tickets.projectId, projectId),
+          isNull(tickets.deletedAt),
           inArray(tickets.id, body.ticketIds)
         )
       )

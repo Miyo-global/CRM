@@ -1,11 +1,12 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createEpicSchema = z.object({
   title: z.string().min(1),
@@ -15,24 +16,27 @@ const createEpicSchema = z.object({
   startDate: z.string().optional(),
   dueDate: z.string().optional(),
   points: z.number().optional(),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const epics = await db.query.tickets.findMany({
       where: and(
         eq(tickets.orgId, session.orgId!),
         eq(tickets.projectId, projectId),
-        eq(tickets.type, "EPIC")
+        eq(tickets.type, "EPIC"),
+        isNull(tickets.deletedAt)
       ),
-      with: { assignee: true },
+      with: { assignee: { columns: { id: true, name: true, email: true, image: true } } },
       orderBy: [desc(tickets.createdAt)],
+      limit: 100,
     });
 
     return ok(epics);
@@ -42,8 +46,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createEpicSchema);
 

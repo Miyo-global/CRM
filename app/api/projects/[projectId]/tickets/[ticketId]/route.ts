@@ -1,326 +1,210 @@
-
-
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { tickets, ticketAssignees, ticketComments, ticketAttachments, ticketLabelMappings, ticketWatchers, timesheets, workItemRelations, users } from "@/lib/db/schema";
-import { eq, and, or, desc } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { createNotification } from "@/server/actions/create-notification";
-import { logger } from "@/lib/logger";
+import { tickets, ticketAssignees, ticketComments, workItemRelations } from "@/lib/db/schema";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { sendTicketAssignmentEmail, sendTicketReviewRequestEmail, sendTicketChangesRequestedEmail } from "@/lib/email";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
+import { diffTicketActivity, recordTicketActivity } from "@/lib/projects/record-ticket-activity";
+import { allOrgMembers } from "@/lib/projects/assignable-users";
+import { notifyTicketUpdate } from "@/lib/projects/ticket-update-notifications";
+import { ticketConflict, ticketResponseColumns, userColumns } from "@/lib/projects/ticket-columns";
 
 const updateTicketSchema = z.object({
-  title: z.string().min(1).optional(),
+  title: z.string().trim().min(1).max(500).optional(),
   description: z.string().nullable().optional(),
-  type: z.string().optional(),
-  status: z.string().optional(),
+  type: z.string().max(40).optional(),
+  status: z.string().min(1).max(80).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-  assigneeId: z.string().optional(),
-  assigneeIds: z.array(z.string()).optional(),
-  sprintId: z.number().nullable().optional(),
-  epicId: z.number().nullable().optional(),
-  points: z.number().nullable().optional(),
-  originalEstimate: z.number().nullable().optional(),
-});
+  assigneeId: z.string().max(200).optional(),
+  assigneeIds: z.array(z.string().max(200)).max(50).optional(),
+  sprintId: z.number().int().positive().nullable().optional(),
+  epicId: z.number().int().positive().nullable().optional(),
+  points: z.number().int().min(0).max(1000).nullable().optional(),
+  originalEstimate: z.number().min(0).nullable().optional(),
+  dueDate: z.string().date().nullable().optional(),
+  startDate: z.string().date().nullable().optional(),
+  version: z.number().int().positive().optional(),
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string; ticketId: string }> };
 
+function normalizeType(type: string) {
+  const upper = type.toUpperCase();
+  return upper === "FEATURE" ? "STORY" : upper;
+}
+
+function clearedAssignee(value: string) {
+  return value === "" || value === "unassigned" ? null : value;
+}
+
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await params;
-    const id = Number(ticketId);
-    const pid = Number(projectId);
-    if (!id || !pid) return err("Invalid ticket id", 400);
+    const { projectId: rawProjectId, ticketId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "view");
+    if (!guard.ok) return guard.response;
+    const id = parseIdParam(ticketId);
+    if (id === null) return err("Ticket not found", 404);
 
     const ticket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, id), eq(tickets.projectId, pid), eq(tickets.orgId, session.orgId!)),
+      where: and(eq(tickets.id, id), eq(tickets.projectId, guard.projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt)),
       with: {
-        project: true,
+        project: { columns: { id: true, name: true, key: true, managerId: true } },
         sprint: true,
-        assignee: true,
-        reporter: true,
-        assignees: { with: { user: true } },
-        comments: { with: { user: true }, orderBy: [desc(ticketComments.createdAt)] },
-        attachments: { with: { uploader: true } },
+        assignee: { columns: userColumns },
+        reporter: { columns: userColumns },
+        assignees: { with: { user: { columns: userColumns } } },
+        comments: {
+          where: isNull(ticketComments.deletedAt),
+          with: {
+            user: { columns: userColumns },
+            reactions: { columns: { emoji: true, userId: true } },
+          },
+          orderBy: [desc(ticketComments.createdAt)],
+          limit: 100,
+        },
+        attachments: { with: { uploader: { columns: userColumns } } },
         labels: { with: { label: true } },
       },
     });
 
     if (!ticket) return err("Ticket not found", 404);
-
-    if (!isAdminOrOwner(session.user.role)) {
-      const isAssignee =
-        ticket.assigneeId === session.user.id ||
-        ticket.assignees.some((a) => a.userId === session.user.id);
-      const isReporter = ticket.reporterId === session.user.id;
-      if (!isAssignee && !isReporter) {
-        return err("You don't have access to this ticket's details.", 403);
-      }
-    }
-
-    return ok(ticket);
+    return ok({ ...ticket, canEdit: guard.role !== "VIEWER" });
   });
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await params;
-    const id = Number(ticketId);
-    const pid = Number(projectId);
-    if (!id || !pid) return err("Invalid ticket id", 400);
-
-    const existingTicket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, id), eq(tickets.projectId, pid), eq(tickets.orgId, session.orgId!)),
-      columns: { id: true, assigneeId: true, reporterId: true },
-      with: { assignees: { columns: { userId: true } } },
-    });
-    if (!existingTicket) return err("Ticket not found", 404);
-
-    if (!isAdminOrOwner(session.user.role)) {
-      const isAssignee =
-        existingTicket.assigneeId === session.user.id ||
-        existingTicket.assignees.some((a) => a.userId === session.user.id);
-      const isReporter = existingTicket.reporterId === session.user.id;
-      if (!isAssignee && !isReporter) {
-        return err("You don't have permission to update this ticket.", 403);
-      }
-    }
+    const { projectId: rawProjectId, ticketId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "contribute");
+    if (!guard.ok) return guard.response;
+    const id = parseIdParam(ticketId);
+    if (id === null) return err("Ticket not found", 404);
+    const { projectId } = guard;
 
     const body = await parseBody(req, updateTicketSchema);
 
-    const normalizeType = (type: string) => {
-      const upper = type.toUpperCase();
-      return upper === "FEATURE" ? "STORY" : upper;
-    };
+    const scope = and(eq(tickets.id, id), eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
+    const before = await db.query.tickets.findFirst({ where: scope, columns: ticketResponseColumns });
+    if (!before) return err("Ticket not found", 404);
 
-    const updateFields: Record<string, unknown> = { updatedAt: new Date() };
-    if (body.title) updateFields.title = body.title;
-    if (body.description !== undefined) updateFields.description = body.description;
-    if (body.type) updateFields.type = normalizeType(body.type);
-    if (body.status) updateFields.status = body.status;
-    if (body.priority) updateFields.priority = body.priority;
-    if (body.assigneeId !== undefined) {
-      updateFields.assigneeId =
-        body.assigneeId === "" || body.assigneeId === "unassigned"
-          ? null
-          : body.assigneeId;
+    if (body.version !== undefined && body.version !== before.version) {
+      return ticketConflict(before.version);
     }
+
+    const nextAssignee = body.assigneeId !== undefined ? clearedAssignee(body.assigneeId) : undefined;
+    const assigneeSet = new Set(body.assigneeIds ?? []);
+    if (nextAssignee) assigneeSet.add(nextAssignee);
+    if (!(await allOrgMembers(session.orgId, assigneeSet))) {
+      return err("Assignee must be a member of this organization", 400);
+    }
+
+    const updateFields: Partial<typeof tickets.$inferInsert> = { updatedAt: new Date() };
+    if (body.title !== undefined) updateFields.title = body.title;
+    if (body.description !== undefined) updateFields.description = body.description;
+    if (body.type !== undefined) updateFields.type = normalizeType(body.type);
+    if (body.status !== undefined) updateFields.status = body.status;
+    if (body.priority !== undefined) updateFields.priority = body.priority;
+    if (nextAssignee !== undefined) updateFields.assigneeId = nextAssignee;
     if (body.sprintId !== undefined) updateFields.sprintId = body.sprintId;
     if (body.epicId !== undefined) updateFields.epicId = body.epicId;
     if (body.points !== undefined) updateFields.points = body.points;
-    if (body.originalEstimate !== undefined) {
-      updateFields.originalEstimate = body.originalEstimate?.toString();
+    if (body.originalEstimate !== undefined) updateFields.originalEstimate = body.originalEstimate?.toString() ?? null;
+    if (body.dueDate !== undefined) updateFields.dueDate = body.dueDate;
+    if (body.startDate !== undefined) updateFields.startDate = body.startDate;
+
+    const versionScope = body.version !== undefined ? and(scope, eq(tickets.version, body.version)) : scope;
+    const [after] = await db.update(tickets).set(updateFields).where(versionScope).returning(ticketReturning());
+    if (!after) {
+      const current = await db.query.tickets.findFirst({ where: scope, columns: { version: true } });
+      if (!current) return err("Ticket not found", 404);
+      return ticketConflict(current.version);
     }
 
-    await db
-      .update(tickets)
-      .set(updateFields)
-      .where(and(eq(tickets.id, id), eq(tickets.projectId, pid), eq(tickets.orgId, session.orgId!)));
-
-    if (body.assigneeIds !== undefined) {
+    if (body.assigneeIds !== undefined || nextAssignee !== undefined) {
       await db.delete(ticketAssignees).where(eq(ticketAssignees.ticketId, id));
-      const allIds = new Set(body.assigneeIds);
-      if (
-        body.assigneeId &&
-        body.assigneeId !== "" &&
-        body.assigneeId !== "unassigned"
-      ) {
-        allIds.add(body.assigneeId);
-      }
-      if (allIds.size > 0) {
+      if (assigneeSet.size > 0) {
         await db.insert(ticketAssignees).values(
-          Array.from(allIds).map((userId) => ({
-            ticketId: id,
-            userId,
-            assignedBy: session.user.id,
-          }))
+          [...assigneeSet].map((userId) => ({ ticketId: id, userId, assignedBy: session.user.id })),
         );
       }
-    } else if (body.assigneeId !== undefined) {
-      await db.delete(ticketAssignees).where(eq(ticketAssignees.ticketId, id));
-      const newId =
-        body.assigneeId === "" || body.assigneeId === "unassigned"
-          ? null
-          : body.assigneeId;
-      if (newId) {
-        await db.insert(ticketAssignees).values({
-          ticketId: id,
-          userId: newId,
-          assignedBy: session.user.id,
-        });
-      }
     }
 
-    const newAssigneeNotifyIds = new Set<string>();
-    if (body.assigneeIds !== undefined) {
-      body.assigneeIds.forEach((uid) => newAssigneeNotifyIds.add(uid));
-    } else if (
-      body.assigneeId &&
-      body.assigneeId !== "" &&
-      body.assigneeId !== "unassigned"
-    ) {
-      newAssigneeNotifyIds.add(body.assigneeId);
-    }
+    await recordTicketActivity(
+      { orgId: session.orgId, projectId, ticketId: id, actorId: session.user.id },
+      diffTicketActivity(before, pickChanged(after, body)),
+    );
 
-    if (newAssigneeNotifyIds.size > 0) {
-      const ticketData = await db.query.tickets.findFirst({
-        where: eq(tickets.id, id),
-        columns: { title: true, projectId: true, type: true, priority: true, ticketNumber: true },
-        with: { project: { columns: { name: true, key: true } } },
-      });
-      for (const userId of newAssigneeNotifyIds) {
-        if (userId === session.user.id) continue;
-        try {
-          await createNotification({
-            orgId: session.orgId!,
-            userId,
-            type: "INFO",
-            title: "Ticket Assigned to You",
-            message: `You have been assigned to ticket "${ticketData?.title ?? `#${id}`}".`,
-            link: ticketData?.projectId ? `/projects/${ticketData.projectId}` : undefined,
-          });
-        } catch (notifErr) {
-          logger.error("Failed to create ticket assignment notification", { error: notifErr });
-        }
+    void notifyTicketUpdate({
+      orgId: session.orgId,
+      ticketId: id,
+      actorId: session.user.id,
+      actorName: session.user.name,
+      assigneeId: body.assigneeId,
+      assigneeIds: body.assigneeIds,
+      status: body.status,
+    }).catch(() => {});
 
-        void (async () => {
-          const assignee = await db.query.users.findFirst({
-            where: eq(users.id, userId),
-            columns: { email: true, name: true },
-          });
-          if (assignee?.email && ticketData && ticketData.projectId) {
-            const issueKey = ticketData.project?.key && ticketData.ticketNumber
-              ? `${ticketData.project.key}-${ticketData.ticketNumber}`
-              : undefined;
-            await sendTicketAssignmentEmail(
-              assignee.email,
-              assignee.name ?? "Team Member",
-              ticketData.title ?? `#${id}`,
-              ticketData.type ?? "TASK",
-              ticketData.priority ?? "MEDIUM",
-              ticketData.project?.name ?? "Project",
-              ticketData.projectId,
-              id,
-              session.user.name ?? "Team Member",
-              issueKey,
-            );
-          }
-        })().catch(() => {});
-      }
-    }
-
-    if (body.status === "IN_REVIEW" || body.status === "CHANGES_REQUESTED") {
-      void (async () => {
-        const ticketData = await db.query.tickets.findFirst({
-          where: eq(tickets.id, id),
-          columns: { title: true, projectId: true, type: true, assigneeId: true, reporterId: true },
-          with: { project: { columns: { name: true } } },
-        });
-        if (!ticketData || !ticketData.projectId) return;
-
-        if (body.status === "IN_REVIEW" && ticketData.reporterId) {
-          const reviewer = await db.query.users.findFirst({
-            where: eq(users.id, ticketData.reporterId),
-            columns: { email: true, name: true },
-          });
-          if (reviewer?.email) {
-            await sendTicketReviewRequestEmail(
-              reviewer.email,
-              reviewer.name ?? "Reviewer",
-              ticketData.title ?? `#${id}`,
-              ticketData.type ?? "TASK",
-              ticketData.project?.name ?? "Project",
-              ticketData.projectId!,
-              id,
-              session.user.name ?? "Team Member"
-            );
-          }
-        }
-
-        if (body.status === "CHANGES_REQUESTED" && ticketData.assigneeId) {
-          const assignee = await db.query.users.findFirst({
-            where: eq(users.id, ticketData.assigneeId),
-            columns: { email: true, name: true },
-          });
-          if (assignee?.email) {
-            await sendTicketChangesRequestedEmail(
-              assignee.email,
-              assignee.name ?? "Team Member",
-              ticketData.title ?? `#${id}`,
-              ticketData.project?.name ?? "Project",
-              ticketData.projectId!,
-              id,
-              session.user.name ?? "Reviewer"
-            );
-          }
-        }
-      })().catch(() => {});
-    }
-
-    return ok({ success: true });
+    return ok({ success: true, ticket: after });
   });
+}
+
+function ticketReturning() {
+  return {
+    id: tickets.id,
+    version: tickets.version,
+    title: tickets.title,
+    status: tickets.status,
+    priority: tickets.priority,
+    type: tickets.type,
+    assigneeId: tickets.assigneeId,
+    sprintId: tickets.sprintId,
+    epicId: tickets.epicId,
+    cycleId: tickets.cycleId,
+    points: tickets.points,
+    dueDate: tickets.dueDate,
+    startDate: tickets.startDate,
+    parentTicketId: tickets.parentTicketId,
+    updatedAt: tickets.updatedAt,
+  };
+}
+
+function pickChanged(after: Record<string, unknown>, body: Record<string, unknown>) {
+  const changed: Record<string, unknown> = {};
+  for (const key of Object.keys(body)) if (key in after) changed[key] = after[key];
+  if ("assigneeIds" in body && !("assigneeId" in body)) delete changed.assigneeId;
+  return changed;
 }
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await params;
-    const id = Number(ticketId);
-    const pid = Number(projectId);
-    if (!id || !pid) return err("Invalid ticket id", 400);
+    const { projectId: rawProjectId, ticketId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "contribute");
+    if (!guard.ok) return guard.response;
+    const id = parseIdParam(ticketId);
+    if (id === null) return err("Ticket not found", 404);
     const force = req.nextUrl.searchParams.get("force") === "true";
 
-    const ticket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, id), eq(tickets.projectId, pid), eq(tickets.orgId, session.orgId!)),
-      columns: { id: true },
-    });
+    const scope = and(eq(tickets.id, id), eq(tickets.projectId, guard.projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
+    const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true } });
     if (!ticket) return err("Ticket not found", 404);
 
     if (!force) {
       const blockedBy = await db.query.workItemRelations.findMany({
-        where: and(
-          eq(workItemRelations.relatedWorkItemId, id),
-          eq(workItemRelations.relationType, "blocks")
-        ),
+        where: and(eq(workItemRelations.relatedWorkItemId, id), eq(workItemRelations.relationType, "blocks")),
         columns: { workItemId: true },
+        limit: 100,
       });
       if (blockedBy.length > 0) {
-        return err(
-          `This ticket is blocked by ${blockedBy.length} other ticket(s). Add ?force=true to delete anyway.`,
-          409
-        );
+        return err(`This ticket is blocked by ${blockedBy.length} other ticket(s). Add ?force=true to archive anyway.`, 409);
       }
     }
 
-    const approvedTimesheets = await db.query.timesheets.findMany({
-      where: and(eq(timesheets.ticketId, id), eq(timesheets.status, "APPROVED")),
-      columns: { id: true },
-    });
-    if (approvedTimesheets.length > 0) {
-      return err(
-        `This ticket has ${approvedTimesheets.length} approved timesheet(s) and cannot be deleted.`,
-        409
-      );
-    }
-
-    await db.transaction(async (tx) => {
-
-      await tx.update(tickets).set({ parentTicketId: null }).where(eq(tickets.parentTicketId, id));
-      await tx.update(tickets).set({ epicId: null }).where(eq(tickets.epicId, id));
-
-      await tx.delete(ticketAssignees).where(eq(ticketAssignees.ticketId, id));
-      await tx.delete(ticketComments).where(eq(ticketComments.ticketId, id));
-      await tx.delete(ticketAttachments).where(eq(ticketAttachments.ticketId, id));
-      await tx.delete(ticketLabelMappings).where(eq(ticketLabelMappings.ticketId, id));
-      await tx.delete(ticketWatchers).where(eq(ticketWatchers.ticketId, id));
-      await tx.delete(timesheets).where(eq(timesheets.ticketId, id));
-      await tx.delete(workItemRelations).where(
-        or(eq(workItemRelations.workItemId, id), eq(workItemRelations.relatedWorkItemId, id))
-      );
-
-      await tx.delete(tickets).where(eq(tickets.id, id));
-    });
+    await db.update(tickets).set({ deletedAt: new Date(), updatedAt: new Date() }).where(scope);
+    await recordTicketActivity(
+      { orgId: session.orgId, projectId: guard.projectId, ticketId: id, actorId: session.user.id },
+      [{ action: "archived", field: null, fromValue: null, toValue: null }],
+    );
 
     return ok({ success: true });
   });

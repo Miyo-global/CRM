@@ -4,8 +4,9 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { cycles, tickets } from "@/lib/db/schema";
-import { eq, and, or, lte, gte, count, sql } from "drizzle-orm";
+import { eq, and, or, lte, gte, count, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createCycleSchema = z
   .object({
@@ -14,6 +15,7 @@ const createCycleSchema = z
     startDate: z.string(),
     endDate: z.string(),
   })
+  .strict()
   .refine((d) => new Date(d.endDate) > new Date(d.startDate), {
     message: "End date must be after start date",
     path: ["endDate"],
@@ -24,8 +26,9 @@ type RouteParams = { params: Promise<{ projectId: string }> };
 export async function GET(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const status = req.nextUrl.searchParams.get("status") ?? undefined;
     const conditions = [
@@ -42,7 +45,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       .select()
       .from(cycles)
       .where(and(...conditions))
-      .orderBy(cycles.startDate);
+      .orderBy(cycles.startDate)
+      .limit(100);
 
     if (cycleList.length === 0) return ok([]);
 
@@ -55,7 +59,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       })
       .from(tickets)
       .where(
-        sql`${tickets.cycleId} IN (${sql.join(cycleIds.map((cid) => sql`${cid}`), sql`, `)})`
+        and(
+          eq(tickets.projectId, projectId),
+          isNull(tickets.deletedAt),
+          sql`${tickets.cycleId} IN (${sql.join(cycleIds.map((cid) => sql`${cid}`), sql`, `)})`
+        )
       )
       .groupBy(tickets.cycleId);
 
@@ -80,8 +88,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createCycleSchema);
 

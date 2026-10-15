@@ -1,11 +1,12 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projectViews } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createViewSchema = z.object({
   name: z.string().min(1).max(100),
@@ -16,15 +17,16 @@ const createViewSchema = z.object({
     .enum(["board", "list", "table", "calendar", "gantt"])
     .default("board"),
   isPinned: z.boolean().default(false),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const result = await db
       .select()
@@ -35,7 +37,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
           eq(projectViews.orgId, session.orgId!)
         )
       )
-      .orderBy(desc(projectViews.isPinned), projectViews.name);
+      .orderBy(desc(projectViews.isPinned), projectViews.name)
+      .limit(100);
 
     return ok(result);
   });
@@ -44,8 +47,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createViewSchema);
 

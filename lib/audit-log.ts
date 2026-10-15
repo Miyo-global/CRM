@@ -31,6 +31,7 @@ export type AuditAction =
   | "project.created"
   | "project.updated"
   | "project.deleted"
+  | "project.restored"
   | "project.created_from_deal"
   | "expense.created"
   | "expense.updated"

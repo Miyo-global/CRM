@@ -4,34 +4,29 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { ticketWatchers, tickets, organizationMembers } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { isAdminOrOwner } from "@/lib/auth/role-guards";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
+import type { ProjectRole } from "@/lib/projects/project-roles";
 
 type RouteParams = {
   params: Promise<{ projectId: string; ticketId: string }>;
 };
-
-async function resolveIds(params: RouteParams["params"]) {
-  const { projectId: rawPid, ticketId: tid } = await params;
-  return { projectId: Number(rawPid), ticketId: Number(tid) };
-}
 
 async function loadTicketForProject(
   projectId: number,
   ticketId: number,
   orgId: string
 ) {
-  if (!projectId || !ticketId) return null;
   return db.query.tickets.findFirst({
     where: and(
       eq(tickets.id, ticketId),
       eq(tickets.orgId, orgId),
       eq(tickets.projectId, projectId),
+      isNull(tickets.deletedAt),
     ),
     columns: { id: true, reporterId: true, assigneeId: true },
     with: {
-      project: { columns: { managerId: true } },
       assignees: { columns: { userId: true } },
     },
   });
@@ -39,11 +34,10 @@ async function loadTicketForProject(
 
 function canRemoveWatcherForOthers(
   sessionUserId: string,
-  role: string | undefined,
+  role: ProjectRole,
   ticket: NonNullable<Awaited<ReturnType<typeof loadTicketForProject>>>
 ): boolean {
-  if (isAdminOrOwner(role)) return true;
-  if (ticket.project?.managerId === sessionUserId) return true;
+  if (role === "OWNER" || role === "MANAGER") return true;
   if (ticket.reporterId === sessionUserId) return true;
   if (ticket.assigneeId === sessionUserId) return true;
   return ticket.assignees.some((a) => a.userId === sessionUserId);
@@ -51,8 +45,12 @@ function canRemoveWatcherForOthers(
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await resolveIds(params);
-    if (!ticketId || !projectId) return err("Invalid ticket id", 400);
+    const { projectId: rawPid, ticketId: tid } = await params;
+    const guard = await requireProjectAccess(session, rawPid, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const ticketId = parseIdParam(tid);
+    if (ticketId === null) return err("Not found", 404);
 
     const ticket = await loadTicketForProject(
       projectId,
@@ -63,7 +61,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
     const watchers = await db.query.ticketWatchers.findMany({
       where: eq(ticketWatchers.ticketId, ticketId),
-      with: { user: true },
+      with: { user: { columns: { id: true, name: true, email: true, image: true } } },
+      limit: 100,
     });
 
     return ok(watchers);
@@ -72,12 +71,16 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 const addWatcherSchema = z.object({
   userId: z.string().optional(),
-});
+}).strict();
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await resolveIds(params);
-    if (!ticketId || !projectId) return err("Invalid ticket id", 400);
+    const { projectId: rawPid, ticketId: tid } = await params;
+    const guard = await requireProjectAccess(session, rawPid, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const ticketId = parseIdParam(tid);
+    if (ticketId === null) return err("Not found", 404);
 
     const ticket = await loadTicketForProject(
       projectId,
@@ -111,8 +114,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId, ticketId } = await resolveIds(params);
-    if (!ticketId || !projectId) return err("Invalid ticket id", 400);
+    const { projectId: rawPid, ticketId: tid } = await params;
+    const guard = await requireProjectAccess(session, rawPid, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId, role } = guard;
+    const ticketId = parseIdParam(tid);
+    if (ticketId === null) return err("Not found", 404);
 
     const rawTarget = req.nextUrl.searchParams.get("userId");
     const targetUserId = rawTarget?.trim() || session.user.id;
@@ -126,7 +133,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     if (
       targetUserId !== session.user.id &&
-      !canRemoveWatcherForOthers(session.user.id, session.user.role, ticket)
+      !canRemoveWatcherForOthers(session.user.id, role, ticket)
     ) {
       return err("Forbidden", 403);
     }

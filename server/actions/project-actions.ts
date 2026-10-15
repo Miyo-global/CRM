@@ -7,7 +7,7 @@ import {
     projectMembers,
     projectStatuses,
 } from "@/lib/db/schema";
-import { eq, and, desc, or, inArray } from "drizzle-orm";
+import { eq, and, desc, or, inArray, isNull } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -23,7 +23,7 @@ export async function getProjects() {
     const isOwnerOrAdmin = member.role === "CEO" || member.role === "ADMIN";
     if (isOwnerOrAdmin) {
         return await db.query.projects.findMany({
-            where: eq(projects.orgId, member.orgId),
+            where: and(eq(projects.orgId, member.orgId), isNull(projects.deletedAt)),
             with: {
                 manager: true
             },
@@ -40,6 +40,7 @@ export async function getProjects() {
     return await db.query.projects.findMany({
         where: and(
             eq(projects.orgId, member.orgId),
+            isNull(projects.deletedAt),
             or(
                 eq(projects.managerId, session.user.id),
                 projectIds.length > 0 ? inArray(projects.id, projectIds) : undefined
@@ -135,7 +136,8 @@ export async function getProjectById(projectId: number) {
     const project = await db.query.projects.findFirst({
         where: and(
             eq(projects.id, projectId),
-            eq(projects.orgId, member.orgId)
+            eq(projects.orgId, member.orgId),
+            isNull(projects.deletedAt)
         ),
         with: {
             manager: true

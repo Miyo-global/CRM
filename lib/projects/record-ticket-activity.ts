@@ -1,5 +1,6 @@
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { ticketActivity } from "@/lib/db/schema";
+import { cycles, sprints, ticketActivity, users } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
 
 export type TicketActivityAction =
@@ -38,7 +39,6 @@ const TRACKED_FIELDS = {
 
 type TrackedField = keyof typeof TRACKED_FIELDS | "parentTicketId";
 type TicketSnapshot = Partial<Record<TrackedField, unknown>>;
-type Labeler = (field: TrackedField, value: string) => string | undefined;
 
 const MAX_VALUE_LENGTH = 200;
 
@@ -48,10 +48,9 @@ function normalize(value: unknown): string | null {
   return text === "" ? null : text;
 }
 
-function display(field: TrackedField, value: string | null, label?: Labeler): string | null {
+function clip(value: string | null): string | null {
   if (value === null) return null;
-  const shown = label?.(field, value) ?? value;
-  return shown.length > MAX_VALUE_LENGTH ? `${shown.slice(0, MAX_VALUE_LENGTH - 1)}…` : shown;
+  return value.length > MAX_VALUE_LENGTH ? `${value.slice(0, MAX_VALUE_LENGTH - 1)}…` : value;
 }
 
 export type TicketActivityEntry = {
@@ -61,11 +60,7 @@ export type TicketActivityEntry = {
   toValue: string | null;
 };
 
-export function diffTicketActivity(
-  before: TicketSnapshot,
-  after: TicketSnapshot,
-  label?: Labeler,
-): TicketActivityEntry[] {
+export function diffTicketActivity(before: TicketSnapshot, after: TicketSnapshot): TicketActivityEntry[] {
   const entries: TicketActivityEntry[] = [];
 
   for (const [field, action] of Object.entries(TRACKED_FIELDS) as [keyof typeof TRACKED_FIELDS, TicketActivityAction][]) {
@@ -73,7 +68,7 @@ export function diffTicketActivity(
     const from = normalize(before[field]);
     const to = normalize(after[field]);
     if (from === to) continue;
-    entries.push({ action, field, fromValue: display(field, from, label), toValue: display(field, to, label) });
+    entries.push({ action, field, fromValue: clip(from), toValue: clip(to) });
   }
 
   if ("parentTicketId" in after) {
@@ -83,8 +78,8 @@ export function diffTicketActivity(
       entries.push({
         action: to === null ? "parent_removed" : "parent_set",
         field: "parentTicketId",
-        fromValue: display("parentTicketId", from, label),
-        toValue: display("parentTicketId", to, label),
+        fromValue: from,
+        toValue: to,
       });
     }
   }
@@ -94,10 +89,67 @@ export function diffTicketActivity(
 
 type ActivityContext = { orgId: string; projectId: number; ticketId: number; actorId: string | null };
 
+function idsFor(entries: TicketActivityEntry[], field: string): string[] {
+  const ids = new Set<string>();
+  for (const entry of entries) {
+    if (entry.field !== field) continue;
+    if (entry.fromValue) ids.add(entry.fromValue);
+    if (entry.toValue) ids.add(entry.toValue);
+  }
+  return [...ids];
+}
+
+function numericIds(ids: string[]): number[] {
+  return ids.map(Number).filter((n) => Number.isSafeInteger(n) && n > 0);
+}
+
+async function loadDisplayNames(orgId: string, entries: TicketActivityEntry[]): Promise<Map<string, string>> {
+  const names = new Map<string, string>();
+  const userIds = idsFor(entries, "assigneeId");
+  const sprintIds = numericIds(idsFor(entries, "sprintId"));
+  const cycleIds = numericIds(idsFor(entries, "cycleId"));
+
+  if (userIds.length > 0) {
+    const rows = await db.query.users.findMany({
+      where: inArray(users.id, userIds),
+      columns: { id: true, name: true, firstName: true, lastName: true, email: true },
+    });
+    for (const u of rows) {
+      const full = [u.firstName, u.lastName].filter(Boolean).join(" ").trim();
+      names.set(`assigneeId:${u.id}`, u.name?.trim() || full || u.email);
+    }
+  }
+  if (sprintIds.length > 0) {
+    const rows = await db.query.sprints.findMany({
+      where: and(inArray(sprints.id, sprintIds), eq(sprints.orgId, orgId)),
+      columns: { id: true, name: true },
+    });
+    for (const r of rows) names.set(`sprintId:${r.id}`, r.name);
+  }
+  if (cycleIds.length > 0) {
+    const rows = await db.query.cycles.findMany({
+      where: and(inArray(cycles.id, cycleIds), eq(cycles.orgId, orgId)),
+      columns: { id: true, name: true },
+    });
+    for (const r of rows) names.set(`cycleId:${r.id}`, r.name);
+  }
+  return names;
+}
+
 export async function recordTicketActivity(ctx: ActivityContext, entries: TicketActivityEntry[]): Promise<void> {
   if (entries.length === 0) return;
   try {
-    await db.insert(ticketActivity).values(entries.map((entry) => ({ ...ctx, ...entry })));
+    const names = await loadDisplayNames(ctx.orgId, entries);
+    const named = (field: string | null, value: string | null) =>
+      value === null ? null : clip(names.get(`${field}:${value}`) ?? value);
+    await db.insert(ticketActivity).values(
+      entries.map((entry) => ({
+        ...ctx,
+        ...entry,
+        fromValue: named(entry.field, entry.fromValue),
+        toValue: named(entry.field, entry.toValue),
+      })),
+    );
   } catch (error) {
     logger.error("Failed to record ticket activity", { error, ticketId: ctx.ticketId });
   }

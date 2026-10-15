@@ -1,7 +1,7 @@
 import { inngest } from "../client";
 import { db } from "@/lib/db";
 import { projects, tickets, organizations, organizationMembers, projectMilestones } from "@/lib/db/schema";
-import { eq, and, count, sql, gte } from "drizzle-orm";
+import { eq, and, count, sql, gte, isNull } from "drizzle-orm";
 import { subDays } from "date-fns";
 import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
@@ -23,7 +23,7 @@ export const weeklyProjectReport = inngest.createFunction(
     for (const org of orgs) {
       await step.run(`project-report-${org.id}`, async () => {
         const activeProjects = await db.query.projects.findMany({
-          where: and(eq(projects.orgId, org.id), eq(projects.status, "ACTIVE")),
+          where: and(eq(projects.orgId, org.id), eq(projects.status, "ACTIVE"), isNull(projects.deletedAt)),
           columns: { id: true, name: true, key: true, managerId: true },
         });
 
@@ -41,6 +41,7 @@ export const weeklyProjectReport = inngest.createFunction(
               and(
                 eq(tickets.orgId, org.id),
                 eq(tickets.projectId, project.id),
+                isNull(tickets.deletedAt),
                 sql`${tickets.status} NOT IN ('DONE', 'CANCELLED', 'CLOSED')`,
               ),
             );
@@ -52,6 +53,7 @@ export const weeklyProjectReport = inngest.createFunction(
               and(
                 eq(tickets.orgId, org.id),
                 eq(tickets.projectId, project.id),
+                isNull(tickets.deletedAt),
                 sql`${tickets.status} IN ('DONE', 'CLOSED')`,
                 gte(tickets.updatedAt, lastWeek),
               ),
@@ -64,6 +66,7 @@ export const weeklyProjectReport = inngest.createFunction(
               and(
                 eq(tickets.orgId, org.id),
                 eq(tickets.projectId, project.id),
+                isNull(tickets.deletedAt),
                 sql`${tickets.status} NOT IN ('DONE', 'CANCELLED', 'CLOSED')`,
                 sql`${tickets.dueDate} IS NOT NULL AND ${tickets.dueDate} < CURRENT_DATE`,
               ),

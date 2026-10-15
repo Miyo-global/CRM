@@ -7,17 +7,21 @@ import { sprints, timesheets } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { differenceInCalendarDays, addDays } from "date-fns";
 import { formatDateOnly } from "@/lib/date-utils";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
 
 type RouteParams = { params: Promise<{ projectId: string; sprintId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { sprintId } = await params;
-    const id = Number(sprintId);
-    if (!id) return err("Invalid sprint id", 400);
+    const { projectId: rawProjectId, sprintId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const id = parseIdParam(sprintId);
+    if (id === null) return err("Not found", 404);
 
     const sprint = await db.query.sprints.findFirst({
-      where: and(eq(sprints.id, id), eq(sprints.orgId, session.orgId!)),
+      where: and(eq(sprints.id, id), eq(sprints.projectId, projectId), eq(sprints.orgId, session.orgId!)),
       with: { tickets: true },
     });
 
@@ -42,7 +46,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     const allTimeEntries = await db.query.timesheets.findMany({
       where: and(
         eq(timesheets.orgId, session.orgId!),
-        sql`${timesheets.ticketId} IN (SELECT id FROM tickets WHERE sprint_id = ${id})`
+        sql`${timesheets.ticketId} IN (SELECT id FROM tickets WHERE sprint_id = ${id} AND project_id = ${projectId})`
       ),
       with: { ticket: true },
     });

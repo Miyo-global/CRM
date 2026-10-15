@@ -12,7 +12,8 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { decideProjectAccess, normalizeProjectRole, resolveProjectAccess, type ProjectAction } from "./project-access";
+import { decideProjectAccess, resolveProjectAccess, type ProjectAction } from "./project-access";
+import { normalizeProjectRole } from "./project-roles";
 
 const project = { orgId: "org-a", managerId: "manager", deletedAt: null };
 const base = { sessionOrgId: "org-a", userId: "user", orgRole: "ENGINEERING", project, memberRole: null, isMember: false };
