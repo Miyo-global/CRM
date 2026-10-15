@@ -53,11 +53,11 @@ describe("sidebar active item", () => {
 
   it("resolves the module that owns a page", () => {
     const groups = getNavGroupsForRole("HR");
-    const module = getActiveModule("/hr/reimbursements", groups);
-    expect(module).not.toBeNull();
+    const activeModule = getActiveModule("/hr/reimbursements", groups);
+    expect(activeModule).not.toBeNull();
     const owning = groups.find((g) =>
       g.routes.some((r) => navHrefPath(r.href) === "/hr/reimbursements"),
     );
-    expect(module).toBe(moduleOfGroup(owning!.label));
+    expect(activeModule).toBe(moduleOfGroup(owning!.label));
   });
 });

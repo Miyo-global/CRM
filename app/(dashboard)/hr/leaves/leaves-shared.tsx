@@ -27,7 +27,6 @@ import {
   CalendarDays,
   Heart,
   Palmtree,
-  Info,
   MoreVertical,
   Eye,
   Check,
@@ -119,13 +118,17 @@ export interface WfhRequest {
   } | null;
 }
 
-export const balanceCardConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
-  "Casual Leave": { label: "CASUAL", color: "bg-primary", icon: CalendarDays },
-  "Sick Leave": { label: "SICK", color: "bg-danger-500", icon: Heart },
-  "Unpaid Leave": { label: "UNPAID", color: "bg-ink-400", icon: Palmtree },
+/** Icon per leave type, for scanning a list of requests. No colour: A43's
+ *  "sick leave is a different colour here" came from per-type palettes. */
+const LEAVE_TYPE_ICONS: Record<string, LucideIcon> = {
+  "Casual Leave": CalendarDays,
+  "Sick Leave": Heart,
+  "Unpaid Leave": Palmtree,
 };
 
-export const DEFAULT_CARD_CONFIG = { label: "LEAVE", color: "bg-ink-400", icon: CalendarDays };
+function leaveTypeIcon(typeName: string): LucideIcon {
+  return LEAVE_TYPE_ICONS[typeName] ?? CalendarDays;
+}
 
 export function formatLeaveBalanceDisplay(balance: string | number): string {
   const n = typeof balance === "string" ? parseFloat(balance) || 0 : balance;
@@ -168,69 +171,6 @@ export const priorityConfig: Record<string, { label: string; dotColor: string; t
   MEDIUM: { label: "Medium", dotColor: "bg-warning-500", textColor: "text-warning-strong" },
   LOW: { label: "Low", dotColor: "bg-success-500", textColor: "text-success-strong" },
 };
-
-export const BalanceCard = React.memo(function BalanceCard({
-  typeName,
-  balance,
-  daysPerYear,
-}: {
-  typeName: string | null;
-  balance: string;
-  daysPerYear: number | null;
-}) {
-  const name = typeName ?? "Leave";
-  const config = balanceCardConfig[name] ?? DEFAULT_CARD_CONFIG;
-  const balanceNum = parseFloat(balance) || 0;
-  const balanceLabel = formatLeaveBalanceDisplay(balance);
-  const total = daysPerYear ?? 0;
-  const pct = total > 0 ? Math.min((balanceNum / total) * 100, 100) : 0;
-  const isUnpaid = name.toLowerCase().includes("unpaid");
-
-  return (
-    <Card role="listitem">
-      <CardContent className="p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <IconChip icon={config.icon} tone="neutral" size="sm" />
-            {config.label}
-          </span>
-          <button
-            type="button"
-            className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:focus-ring"
-            aria-label={`Info about ${name}`}
-          >
-            <Info className="size-4" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="mb-1 tabular-nums">
-          <span className="font-display text-3xl font-extrabold text-foreground">{balanceLabel}</span>
-          {total > 0 && (
-            <span className="ml-1 text-lg text-muted-foreground">/ {total}</span>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          {isUnpaid ? "Days Taken" : "Days Available"}
-        </p>
-
-        <div
-          className="h-1.5 bg-muted rounded-full overflow-hidden"
-          role="progressbar"
-          aria-valuenow={balanceNum}
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-label={`${name} balance`}
-          aria-valuetext={`${balanceLabel} of ${total} days available`}
-        >
-          <div
-            className={`h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ${config.color}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
 
 export const WfhRequestItem = React.memo(function WfhRequestItem({
   request,
@@ -378,8 +318,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
 }) {
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
-  const config = balanceCardConfig[typeName] ?? DEFAULT_CARD_CONFIG;
-  const Icon = config.icon;
+  const Icon = leaveTypeIcon(typeName);
   const start = new Date(request.startDate);
   const end = new Date(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
@@ -538,8 +477,7 @@ export function LeaveRequestDetailsSheet({
 
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
-  const config = balanceCardConfig[typeName] ?? DEFAULT_CARD_CONFIG;
-  const Icon = config.icon;
+  const Icon = leaveTypeIcon(typeName);
   const start = new Date(request.startDate);
   const end = new Date(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;

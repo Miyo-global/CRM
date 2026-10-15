@@ -17,11 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { StatsStrip } from "@/components/shared/stats-strip";
 import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Users, Home, CalendarCheck, Clock3, BadgeCheck } from "lucide-react";
+import {Plus, Users, Home} from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
@@ -96,13 +95,10 @@ export function LeavesWfhContent() {
     return byType;
   }, [myLeaveRequests]);
 
-  const totalAvailable = balances.reduce((sum, b) => sum + Number(b.balance ?? 0), 0);
-  const pendingCount = myLeaveRequests.filter((r) => r.status === "PENDING").length;
-  const approvedCount = myLeaveRequests.filter((r) => r.status === "APPROVED").length;
 
   if (contextLoading || myLoading) {
     return (
-      <PageWrapper title="Leaves & Time Off" subtitle="Manage your leave requests, work from home, and approvals.">
+      <PageWrapper title="Leaves">
         <div className="space-y-4">
           <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-64" />
@@ -114,8 +110,11 @@ export function LeavesWfhContent() {
   return (
     <>
       <PageWrapper
-        title="Leaves & Time Off"
-        subtitle="Manage your leave requests, work from home, and approvals."
+        title="Leaves"
+        breadcrumbs={[
+          { label: "My HR", href: "/hr" },
+          { label: "Leaves" },
+        ]}
         stickyHeader
         actions={
           <>
@@ -140,14 +139,6 @@ export function LeavesWfhContent() {
         }
       >
         <div className="space-y-5">
-
-          <StatsStrip
-            items={[
-              { label: "Available Days", value: totalAvailable, icon: CalendarCheck, tone: "success" },
-              { label: "Pending Requests", value: pendingCount, icon: Clock3, tone: pendingCount > 0 ? "warning" : undefined },
-              { label: "Approved (YTD)", value: approvedCount, icon: BadgeCheck },
-            ]}
-          />
 
           {approvedLeavesThisWeek.length > 0 && (
             <Card className="gap-0">
