@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
-import { LeaveRing } from "@/components/dashboard/widgets/leave-balance-widget";
+import { LeaveBalanceRow } from "@/components/dashboard/widgets/leave-balance-widget";
 import { resolveImageUrl } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
 import { format } from "date-fns";
@@ -133,7 +133,7 @@ export function LeaveBalanceWidget() {
         <ul className="grid grid-cols-3 gap-x-3 gap-y-4">
           {data.slice(0, MAX_ROWS).map((b: LeaveBalance) => (
             <li key={b.id} className="min-w-0">
-              <LeaveRing value={Number(b.balance) || 0} total={b.daysPerYear ?? 0} label={b.leaveTypeName ?? ""} />
+              <LeaveBalanceRow value={Number(b.balance) || 0} total={b.daysPerYear ?? 0} label={b.leaveTypeName ?? ""} />
             </li>
           ))}
         </ul>

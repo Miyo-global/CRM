@@ -17,6 +17,8 @@ interface DatePickerProps {
   className?: string;
   fromDate?: Date;
   toDate?: Date;
+  /** Month the calendar opens on when nothing is selected yet. */
+  defaultMonth?: Date;
   fromYear?: number;
   toYear?: number;
   id?: string;
@@ -45,6 +47,7 @@ export function DatePicker({
   className,
   fromDate,
   toDate,
+  defaultMonth: defaultMonthProp,
   fromYear = 1950,
   toYear = new Date().getFullYear() + 5,
   id,
@@ -94,11 +97,12 @@ export function DatePicker({
    */
   const defaultMonth = useMemo(() => {
     if (selected) return selected;
+    if (defaultMonthProp) return startOfDay(defaultMonthProp);
     const today = startOfDay(new Date());
     if (fromDate && today < startOfDay(fromDate)) return startOfDay(fromDate);
     if (toDate && today > startOfDay(toDate)) return startOfDay(toDate);
     return today;
-  }, [selected, fromDate, toDate]);
+  }, [selected, fromDate, toDate, defaultMonthProp]);
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>

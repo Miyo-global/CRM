@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import {
@@ -25,6 +25,7 @@ import { Plus, Users, Home, CalendarCheck, Clock3, BadgeCheck } from "lucide-rea
 import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
+import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 
 import { LeaveRequestSheet } from "@/features/hr/leaves/leave-request-sheet";
 import { WfhRequestSheet } from "@/features/hr/leaves/wfh-request-sheet";
@@ -75,6 +76,25 @@ export function LeavesWfhContent() {
       ).length
     : 0;
   const totalPendingApprovals = actionableLeaveCount + actionableWfhCount;
+
+  // Days already awaiting approval, so the balance hint and validation count
+  // them against the balance (A29).
+  const pendingDaysByType = useMemo(() => {
+    const byType: Record<string, number> = {};
+    for (const request of myLeaveRequests) {
+      if (request.status !== "PENDING") continue;
+      const typeName = request.leaveType?.name;
+      if (!typeName) continue;
+      byType[typeName] =
+        (byType[typeName] ?? 0) +
+        calculateLeaveWorkingDays({
+          startDate: String(request.startDate),
+          endDate: String(request.endDate),
+          isHalfDay: request.isHalfDay ?? false,
+        });
+    }
+    return byType;
+  }, [myLeaveRequests]);
 
   const totalAvailable = balances.reduce((sum, b) => sum + Number(b.balance ?? 0), 0);
   const pendingCount = myLeaveRequests.filter((r) => r.status === "PENDING").length;
@@ -245,6 +265,7 @@ export function LeavesWfhContent() {
         leaveTypes={leaveTypes}
         joiningDate={joiningDate}
         balances={balances}
+        pendingDaysByType={pendingDaysByType}
       />
       <WfhRequestSheet
         open={wfhSheetOpen}

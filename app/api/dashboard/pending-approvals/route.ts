@@ -1,7 +1,8 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
-import { leaveRequests, resignations } from "@/lib/db/schema";
+import { resignations } from "@/lib/db/schema";
+import { countPendingLeaveApprovals } from "@/lib/hr/leave-approvals-server";
 import { eq, and, sql, inArray } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
@@ -11,15 +12,10 @@ export async function GET(_req: NextRequest) {
       return err("Forbidden", 403);
     }
 
-    const [leaveCount] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(leaveRequests)
-      .where(
-        and(
-          eq(leaveRequests.orgId, session.orgId),
-          eq(leaveRequests.status, "PENDING")
-        )
-      );
+    const pendingLeaves = await countPendingLeaveApprovals(session.orgId, {
+      id: session.user.id,
+      role: session.user.role,
+    });
 
     const isHrReviewer =
       session.user.role === "HR" || session.user.role === "ADMIN";
@@ -37,7 +33,6 @@ export async function GET(_req: NextRequest) {
         )
       );
 
-    const pendingLeaves = leaveCount?.count ?? 0;
     const pendingResignations = resignationCount?.count ?? 0;
 
     return ok({

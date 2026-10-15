@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { leaveRequests, leaveTypes, users } from "@/lib/db/schema";
 import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
+import { hasLeaveApproverRole } from "@/lib/auth/leave-approval-roles";
 import { addDays } from "date-fns";
 import type { NextRequest } from "next/server";
 
@@ -42,6 +43,15 @@ export async function GET(_req: NextRequest) {
       .orderBy(asc(leaveRequests.startDate), asc(leaveRequests.id))
       .limit(UPCOMING_LEAVE_MAX_ROWS);
 
-    return ok(rows);
+    // Privacy: a colleague sees who is away, the type and the dates. The reason
+    // is for the requester, HR, Admin and the CEO only — enforced here, not in
+    // the UI (A30).
+    const canSeeReasons = hasLeaveApproverRole(session.user.role);
+    const visible = rows.map((row) => ({
+      ...row,
+      reason: canSeeReasons || row.userId === session.user.id ? row.reason : null,
+    }));
+
+    return ok(visible);
   });
 }

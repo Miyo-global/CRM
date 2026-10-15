@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { leaveRequests, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, desc, inArray, SQL } from "drizzle-orm";
 import { hasLeaveApproverRole } from "@/lib/auth/leave-approval-roles";
+import { canActOnLeave } from "@/lib/hr/leave-approvers";
 import { EXPENSE_ADMIN_ROLES } from "@/lib/constants/roles";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ const WITH_RELATIONS = {
       image: true as const,
       designation: true as const,
       role: true as const,
+      reportingTo: true as const,
     },
   },
   leaveType: { columns: { id: true as const, name: true as const } },
@@ -98,7 +100,7 @@ export async function GET(req: NextRequest) {
 
     const pendingConditions: SQL[] = [...baseConditions, eq(leaveRequests.status, "PENDING")];
 
-    const [pending, all] = await Promise.all([
+    const [pendingRaw, all] = await Promise.all([
       queryLeaves(pendingConditions, orgId, userId, isAdmin),
       db.query.leaveRequests.findMany({
         where: and(...baseConditions),
@@ -106,6 +108,12 @@ export async function GET(req: NextRequest) {
         orderBy: [desc(leaveRequests.createdAt)],
       }),
     ]);
+
+    // Only what this viewer may act on, by the same rule as the badge and the
+    // dashboard count (A27, A28).
+    const pending = pendingRaw.filter((request) =>
+      canActOnLeave({ id: userId, role: effectiveRole }, request),
+    );
 
     return ok({ pending, all });
   });

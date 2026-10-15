@@ -69,6 +69,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
+            { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
             { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips", isSubItem: true },
             { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses", isSubItem: true },
@@ -210,6 +211,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
+            { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
             { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips", isSubItem: true },
             { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses", isSubItem: true },

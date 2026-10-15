@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -349,6 +350,7 @@ export function LeaveApprovalsContent({
   const [leaveRejectingId, setLeaveRejectingId] = useState<number | null>(null);
   const [leaveRejectionReason, setLeaveRejectionReason] = useState("");
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const [approvingId, setApprovingId] = useState<number | null>(null);
 
   const { data: pendingWfhRequests } = useHrPendingWfhRequests();
   const processWfhRequestMutation = useProcessWfhRequest();
@@ -385,15 +387,22 @@ export function LeaveApprovalsContent({
     [statusTab, incomingLeaveRequests, allIncomingLeaveRequests],
   );
 
+  // Approving pays out leave, so confirm first (A33).
   const handleApprove = useCallback((requestId: number) => {
+    setApprovingId(requestId);
+  }, []);
+
+  const handleApproveConfirm = useCallback(() => {
+    if (approvingId === null) return;
     approveMutation.mutate(
-      { leaveId: requestId },
+      { leaveId: approvingId },
       {
-        onSuccess: () => toast.success("Request approved successfully"),
+        onSuccess: () => toast.success("Request approved"),
         onError: (err) => toast.error(getErrorMessage(err)),
       },
     );
-  }, [approveMutation]);
+    setApprovingId(null);
+  }, [approveMutation, approvingId]);
 
   const handleRejectRequest = useCallback((requestId: number) => {
     setLeaveRejectingId(requestId);
@@ -636,6 +645,17 @@ export function LeaveApprovalsContent({
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <ConfirmDialog
+        open={approvingId !== null}
+        onOpenChange={(open: boolean) => {
+          if (!open) setApprovingId(null);
+        }}
+        title="Approve this leave?"
+        description="The employee is told straight away and the days come off their balance."
+        confirmLabel="Approve"
+        onConfirm={handleApproveConfirm}
+      />
 
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {processWfhRequestMutation.isPending && "Processing WFH request..."}
