@@ -55,6 +55,7 @@ import { toast } from "sonner";
 import { Plus, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { TicketPriority, TicketStatus, HelpdeskTicket } from "@/types/hr";
+import { formatIST } from "@/lib/date-utils";
 
 const STATUS_OPTIONS: { value: TicketStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Status" },
@@ -395,7 +396,7 @@ export default function HelpdeskPage() {
                           </TableCell>
                           <TableCell
                             className="whitespace-nowrap text-muted-foreground tabular-nums"
-                            title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+                            title={ticket.createdAt ? formatIST(ticket.createdAt) : undefined}
                           >
                             {ticket.createdAt
                               ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })

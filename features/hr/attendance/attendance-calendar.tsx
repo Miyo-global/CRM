@@ -21,7 +21,14 @@ const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: { userId: string }) {
+export const AttendanceCalendar = memo(function AttendanceCalendar({
+  userId,
+  joiningDate,
+}: {
+  userId: string;
+  /** Days before this are not employed days, so they are blank (A37). */
+  joiningDate?: string | null;
+}) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -59,8 +66,14 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
       }
     }
 
+    const joined = joiningDate?.slice(0, 10);
+
     return days.map((date) => {
       const dateStr = format(date, "yyyy-MM-dd");
+
+      // Not employed yet: neither present nor absent (A37).
+      if (joined && dateStr < joined) return { date, status: "notEmployed" };
+
       const holidayName = holidayMap.get(dateStr);
 
       if (holidayName) return { date, status: "holiday", holidayName };
@@ -79,7 +92,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
 
       return { date, status: "absent" };
     });
-  }, [currentMonth, monthlyLogs, wfhRequests, holidaysList]);
+  }, [currentMonth, monthlyLogs, wfhRequests, holidaysList, joiningDate]);
 
   const startDayOfWeek = getDay(startOfMonth(currentMonth));
   const paddingDays = Array.from({ length: startDayOfWeek }, (_, i) => i);
@@ -160,7 +173,10 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
                   const config = statusConfig[day.status];
                   const dayNum = day.date.getDate();
                   const isTodayDate = isToday(day.date);
-                  const isFutureOrNone = day.status === "future" || day.status === "none";
+                  const isFutureOrNone =
+                    day.status === "future" ||
+                    day.status === "none" ||
+                    day.status === "notEmployed";
                   const title = day.holidayName
                     ? `${format(day.date, "MMM dd")} – ${day.holidayName}`
                     : `${format(day.date, "MMM dd")}${config.label ? ` – ${config.label}` : ""}`;
@@ -175,7 +191,13 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({ userId }: {
                       title={title}
                       aria-current={isTodayDate ? "date" : undefined}
                     >
-                      {dayNum}
+                      {day.status === "notEmployed" ? "" : dayNum}
+                      {day.status === "absent" && (
+                        <span
+                          className={`absolute bottom-1 size-1.5 rounded-full ${statusConfig.absent.dot}`}
+                          aria-hidden="true"
+                        />
+                      )}
                       {!isFutureOrNone && config.label ? <span className="sr-only">{`, ${config.label}`}</span> : null}
                     </div>
                   );

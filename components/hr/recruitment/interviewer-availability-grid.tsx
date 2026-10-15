@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { InterviewerAvailability } from "@/lib/api/hooks/hr/recruitment";
 import { cn } from "@/lib/utils";
+import { formatISTTime } from "@/lib/date-utils";
 
 const WORK_START = 9;
 const WORK_END = 19;
@@ -89,7 +90,7 @@ export function InterviewerAvailabilityGrid({
                   key={idx}
                   className="absolute top-0 h-full rounded-sm bg-neutral-soft ring-1 ring-border-strong ring-inset"
                   style={{ left: `${Math.max(0, leftPct)}%`, width: `${Math.min(widthPct, 100 - leftPct)}%` }}
-                  title={`${block.title} (${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`}
+                  title={`${block.title} (${formatISTTime(start)} – ${formatISTTime(end)})`}
                 />
               );
             })}

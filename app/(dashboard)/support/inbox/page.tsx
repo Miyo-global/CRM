@@ -59,6 +59,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
+import { formatIST } from "@/lib/date-utils";
 
 const PRIORITY_TONES: Record<string, Tone> = {
   LOW: "neutral",
@@ -289,7 +290,7 @@ function TicketListItem({ ticket, isSelected, onSelect }: TicketListItemProps) {
         <span className="text-xs text-muted-foreground">{ticket.status.replace("_", " ")}</span>
         <span
           className="ml-auto text-xs text-muted-foreground tabular-nums"
-          title={ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : undefined}
+          title={ticket.createdAt ? formatIST(ticket.createdAt) : undefined}
         >
           {ticket.createdAt ? formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true }) : ""}
         </span>
@@ -366,7 +367,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
 
   const isBreached = ticket.slaDeadline && new Date(ticket.slaDeadline) < new Date() && !["RESOLVED", "CLOSED"].includes(ticket.status);
   const messages = [...(ticket.messages ?? [])].reverse();
-  const fmtDate = (d: Date | string | null) => (d ? new Date(d).toLocaleString() : null);
+  const fmtDate = (d: Date | string | null) => (d ? formatIST(d) : null);
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">

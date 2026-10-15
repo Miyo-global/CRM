@@ -53,7 +53,6 @@ import { LeaveBalanceWidget as LeaveBalanceWidgetNew } from "@/components/dashbo
 import { TeamAttendanceWidget as TeamAttendanceWidgetNew } from "@/components/dashboard/widgets/team-attendance-widget";
 import { UpcomingLeavesWidget } from "@/components/dashboard/widgets/upcoming-leaves-widget";
 import { PendingApprovalsWidget as PendingApprovalsWidgetNew } from "@/components/dashboard/widgets/pending-approvals-widget";
-import { QuickActionsWidget } from "@/components/dashboard/widgets/quick-actions-widget";
 import { AnnouncementsWidget } from "@/components/dashboard/widgets/announcements-widget";
 import { WidgetSkeleton } from "@/components/dashboard/widgets/widget-skeleton";
 import { CeoAdminSection } from "@/features/dashboard/ceo-admin-section";
@@ -328,9 +327,6 @@ export default function DashboardPage() {
             <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <LeaveBalanceWidgetNew />
-              </Suspense>
-              <Suspense fallback={<WidgetSkeleton rows={2} />}>
-                <QuickActionsWidget />
               </Suspense>
             </div>
             <div className={SPAN.half}>
