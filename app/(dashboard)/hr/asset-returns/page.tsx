@@ -42,7 +42,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, CheckCircle2, Download, Laptop, Eye, Pencil, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDevicesIllustration } from "@/components/illustrations";
 import { AssetReturnDetailSheet, assetReturnStatusTone } from "@/features/hr/assets/asset-return-detail-sheet";
 import { EmployeeAssignedAssetsPanel } from "@/features/hr/assets/employee-assigned-assets-panel";
 import { HandoverPhotoCapture } from "@/components/hr/handover-photo-capture";
@@ -591,7 +590,6 @@ export default function AssetReturnsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyDevicesIllustration className="size-32" />}
           title="No asset returns tracked."
           action={isAdmin ? { label: "Log Return", onClick: () => setSheetOpen(true) } : undefined}
         />

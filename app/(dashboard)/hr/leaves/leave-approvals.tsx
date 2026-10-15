@@ -25,7 +25,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyApprovalIllustration, EmptyCalendarIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Home, CheckCircle2, XCircle, CalendarDays, Search } from "lucide-react";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
@@ -142,7 +141,6 @@ function LeaveApprovalsTable({
   if (requests.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyApprovalIllustration />}
         title="No leave requests"
         description="There are no leave requests to display."
         compact
@@ -210,7 +208,6 @@ function LeaveApprovalsTable({
       {paginatedRequests.length === 0 ? (
         <EmptyState
           compact
-          illustration={<EmptySearchIllustration />}
           title={hasActiveFilters ? "No results for these filters" : "No leave requests"}
           description={hasActiveFilters ? "No leave requests match your filters." : "No leave requests to display."}
           action={hasActiveFilters ? { label: "Clear filters", onClick: handleClearFilters } : undefined}
@@ -284,7 +281,6 @@ function PendingWfhApprovalsPanel({
   if (requests.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyCalendarIllustration />}
         title="No pending WFH requests"
         description="All WFH requests have been processed."
         compact

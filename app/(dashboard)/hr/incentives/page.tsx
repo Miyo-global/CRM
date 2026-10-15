@@ -25,7 +25,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptySearchIllustration, EmptyTargetIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -269,7 +268,6 @@ export default function IncentivesPage() {
                       <EmptyState
                         compact
                         className="border-0 bg-transparent"
-                        illustration={statusFilter !== "all" ? <EmptySearchIllustration /> : <EmptyTargetIllustration />}
                         title="No incentives found"
                         action={statusFilter !== "all" ? { label: "Clear filters", onClick: () => handleStatusFilterChange("all") } : undefined}
                       />

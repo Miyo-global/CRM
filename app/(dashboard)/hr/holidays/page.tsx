@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -385,7 +384,6 @@ export default function HolidaysPage() {
           <QueryErrorState title="Couldn't load holidays" error={error} onRetry={() => refetch()} />
         ) : sortedHolidays.length === 0 ? (
           <EmptyState
-            illustration={<EmptyCalendarIllustration />}
             title={`No holidays for ${viewYear}`}
             description={isAdmin ? "Add holidays using the button above." : "Your HR team hasn't added any holidays for this year yet."}
             action={isAdmin ? { label: "Add Holiday", onClick: openAdd } : undefined}

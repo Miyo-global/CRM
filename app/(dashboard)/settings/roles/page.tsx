@@ -5,7 +5,6 @@ import {
   useRoles,
   useDeleteRole,
 } from "@/lib/api/hooks/roles";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import {
   Plus,
   Trash2,
@@ -159,7 +158,6 @@ function RolesContent() {
         ) : (
           <EmptyState
             className="min-h-64 lg:min-h-0 lg:h-full"
-            illustration={<EmptyApprovalIllustration className="size-40" />}
             title="Select a role"
             description="Choose a role from the list to view and edit permissions"
           />

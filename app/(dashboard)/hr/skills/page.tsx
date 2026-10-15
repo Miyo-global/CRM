@@ -29,7 +29,6 @@ import {
   Pencil, Trash2, Filter,
 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -396,13 +395,11 @@ export default function SkillsPage() {
         ) : filteredGroups.length === 0 ? (
           skillGroups.length === 0 ? (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No skills recorded yet. Add your first skill."
               action={{ label: "Add Skill", onClick: () => setSheetOpen(true) }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="No skills match your filters."
               action={{ label: "Clear filters", onClick: () => { setSearch(""); setCategoryFilter("all"); } }}

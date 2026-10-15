@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyPersonIllustration } from "@/components/illustrations";
 import { format } from "date-fns";
 import type { EmployeeCareerProfile, CareerLadder, CareerLevel } from "@/types/hr";
 import { useHrEmployees } from "@/lib/api/hooks/hr";
@@ -237,7 +236,6 @@ export default function CareerProfilesPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="size-32" />}
           title="No career profiles yet."
           {...(isAdmin ? { action: { label: "Assign Profile", onClick: openAdd } } : {})}
         />

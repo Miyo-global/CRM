@@ -14,7 +14,6 @@ interface ActionProps {
 
 interface EmptyStateProps {
   icon?: LucideIcon;
-  illustration?: React.ReactNode;
   title: string;
   description?: string;
   action?: ActionProps;
@@ -55,7 +54,6 @@ function ActionButton({
 
 export function EmptyState({
   icon: Icon,
-  illustration,
   title,
   description,
   action,
@@ -72,17 +70,13 @@ export function EmptyState({
         className
       )}
     >
-      {illustration ? (
-        <div className={compact ? "mb-3" : "mb-5"}>{illustration}</div>
-      ) : Icon ? (
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground",
-            compact ? "mb-3 size-10" : "mb-5 size-14"
-          )}
-        >
-          <Icon aria-hidden="true" className={compact ? "size-5" : "size-6"} />
-        </div>
+      {/* Text-first: illustrations are gone and the icon is a plain glyph, not
+          a coloured chip (B4). */}
+      {Icon ? (
+        <Icon
+          aria-hidden="true"
+          className={cn("text-muted-foreground", compact ? "mb-2 size-5" : "mb-3 size-6")}
+        />
       ) : null}
 
       <h3

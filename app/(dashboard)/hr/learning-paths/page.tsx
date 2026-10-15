@@ -16,7 +16,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { Plus, GraduationCap, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -99,7 +98,6 @@ export default function LearningPathsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !paths?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No learning paths available."
           {...(isAdmin ? { action: { label: "Create Path", onClick: () => setSheetOpen(true) } } : {})}
         />

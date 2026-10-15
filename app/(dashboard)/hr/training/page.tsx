@@ -25,7 +25,6 @@ import {
   Trash2, Play, Archive, UserPlus,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -136,7 +135,6 @@ export default function TrainingPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !programs?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No training programs yet"
           description="Programs, courses, and certifications will appear here."
           {...(isAdmin ? { action: { label: "New Program", onClick: () => setSheetOpen(true) } } : {})}

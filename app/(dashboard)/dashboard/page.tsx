@@ -35,7 +35,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
@@ -257,7 +256,6 @@ export default function DashboardPage() {
     return (
       <PageWrapper title="Dashboard">
         <EmptyState
-          illustration={<EmptyActivityIllustration className="h-40 w-40" />}
           title="No data available"
           description="Dashboard statistics are not available. Please try refreshing."
           action={{

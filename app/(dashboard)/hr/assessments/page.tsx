@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, ClipboardCheck, Clock, Users, PlayCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -95,7 +94,6 @@ export default function AssessmentsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No assessments available"
           description="Published skill assessments and quizzes will appear here."
           {...(isAdmin ? { action: { label: "Create Assessment", onClick: () => setSheetOpen(true) } } : {})}

@@ -18,7 +18,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmptyTimeIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { resolveImageUrl } from "@/lib/utils";
 import type { TimeEntryWithUser } from "@/types/projects";
@@ -206,7 +205,6 @@ export const TeamTable = memo(function TeamTable({
                       <TableCell colSpan={6} className="py-8">
                         <EmptyState
                           compact
-                          illustration={<EmptyTimeIllustration className="size-28" />}
                           title="No time entries"
                           description="No time was logged by the team for the selected period."
                           className="border-0 bg-transparent"

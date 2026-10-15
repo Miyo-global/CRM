@@ -9,7 +9,6 @@ import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
 import { format, formatDistanceToNow } from "date-fns";
@@ -135,7 +134,6 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
         ) : (
           <EmptyState
             compact
-            illustration={<EmptyActivityIllustration className="h-20 w-20" />}
             title="No recent activity"
             description="Ticket updates and branch changes will appear here."
           />

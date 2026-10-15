@@ -19,7 +19,6 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { toneSoft, type Tone } from "@/lib/design/tones";
@@ -484,7 +483,6 @@ export function DocumentTable({
                 <TableCell colSpan={6} className="p-4 whitespace-normal">
                   {onClearFilters ? (
                     <EmptyState
-                      illustration={<EmptySearchIllustration />}
                       title="No results for these filters"
                       description="Try a different search, folder, or document type."
                       action={{ label: "Clear filters", onClick: onClearFilters }}
@@ -492,7 +490,6 @@ export function DocumentTable({
                     />
                   ) : (
                     <EmptyState
-                      illustration={<EmptyDocumentsIllustration />}
                       title="No documents found"
                       description="Upload your first document to get started"
                       action={{ label: "Upload Document", onClick: onOpenUpload }}

@@ -18,7 +18,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { DetailHeader, DetailLayout } from "@/components/shared/detail-header";
 import { PropertyList } from "@/components/shared/property-list";
-import { NotFoundIllustration, EmptySprintIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
@@ -282,7 +281,6 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
     return (
       <PageWrapper title="Not Found" subtitle="">
         <EmptyState
-          illustration={<NotFoundIllustration className="size-32" />}
           title="Career ladder not found."
           action={{ label: "Back", href: "/hr/career-ladders" }}
         />
@@ -367,7 +365,6 @@ export default function CareerLadderDetailPage({ params }: { params: Promise<{ i
         main={
           levels.length === 0 ? (
             <EmptyState
-              illustration={<EmptySprintIllustration className="size-32" />}
               title="No levels defined yet."
               {...(isAdmin ? { action: { label: "Add First Level", onClick: openAdd } } : {})}
             />

@@ -9,7 +9,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyWfhIllustration } from "@/components/illustrations";
 import { Filter, TrendingUp, AlertCircle } from "lucide-react";
 
 import type { WfhRequest } from "./leaves-shared";
@@ -79,7 +78,6 @@ export function WfhTabContent() {
             </div>
           ) : filteredWfhRequests.length === 0 ? (
             <EmptyState
-              illustration={<EmptyWfhIllustration />}
               title={wfhStatusFilter === "ALL" ? "No WFH requests yet" : `No ${wfhStatusFilter.toLowerCase()} requests`}
               description="Use the Request WFH button above to submit a new request."
               className="border-0 bg-transparent"

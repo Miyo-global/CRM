@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Sheet,
@@ -318,7 +317,6 @@ export default function ViewsPage({
           <QueryErrorState error={error} onRetry={() => refetch()} />
         ) : !views?.length ? (
           <EmptyState
-            illustration={<EmptySearchIllustration />}
             title="No saved views"
             description="Create custom views with saved filters and layouts."
             action={{ label: "Create First View", onClick: handleOpenCreate }}

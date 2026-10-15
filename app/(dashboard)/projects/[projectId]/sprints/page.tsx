@@ -11,7 +11,6 @@ import { Play, Calendar, CheckCircle2 } from "lucide-react";
 import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptySprintIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -230,7 +229,6 @@ export default function SprintsPage({ params }: PageProps) {
 
         {sprints?.length === 0 && (
           <EmptyState
-            illustration={<EmptySprintIllustration className="h-32 w-32 opacity-95" />}
             title="No sprints yet"
             description="Create your first sprint to start organizing your work."
           />

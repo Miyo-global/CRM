@@ -21,7 +21,6 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, IndianRupee, CheckCircle2 } from "lucide-react";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatINRWhole } from "@/lib/format-utils";
 
@@ -110,7 +109,6 @@ function FnfContent() {
         <QueryErrorState title="Couldn't load settlements" error={error} onRetry={() => refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration />}
           title="No FnF settlements"
           description="Exit settlements you process will appear here."
           action={{ label: "New Settlement", onClick: () => setSheetOpen(true) }}

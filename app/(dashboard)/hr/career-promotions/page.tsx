@@ -21,7 +21,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyTargetIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { format } from "date-fns";
 import type { CareerPromotionRecommendation, CareerLadder, CareerPromotionStatus } from "@/types/hr";
@@ -178,7 +177,6 @@ export default function CareerPromotionsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTargetIllustration className="size-32" />}
           title="No promotion recommendations yet."
           {...(isAdmin ? { action: { label: "Recommend Promotion", onClick: () => { setForm(EMPTY_FORM); setAddOpen(true); } } } : {})}
         />

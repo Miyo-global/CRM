@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { EmptyLeaderboardIllustration } from "@/components/illustrations";
 import type {
   RecruitmentAnalyticsData,
   RetentionAnalyticsData,
@@ -162,7 +161,7 @@ function SectionSkeleton() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <UiEmptyState compact illustration={<EmptyLeaderboardIllustration className="size-24" />} title={message} />
+    <UiEmptyState compact title={message} />
   );
 }
 

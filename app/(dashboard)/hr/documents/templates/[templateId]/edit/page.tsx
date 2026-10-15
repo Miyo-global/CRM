@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { NotFoundIllustration } from "@/components/illustrations";
 import { useDocumentTemplate } from "@/lib/api/hooks/hr/document-templates";
 import { TemplateEditor } from "@/features/hr/documents/template-editor";
 
@@ -78,7 +77,6 @@ export default function EditTemplatePage({ params }: EditTemplatePageProps) {
     return (
       <PageWrapper title="Template Not Found">
         <EmptyState
-          illustration={<NotFoundIllustration />}
           title="Template Not Found"
           description="This template does not exist or has been removed."
         />

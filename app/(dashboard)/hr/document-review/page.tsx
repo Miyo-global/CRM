@@ -23,7 +23,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
@@ -610,7 +609,6 @@ export default function DocumentReviewPage() {
         <QueryErrorState title="Couldn't load document review" error={error} onRetry={() => void refetch()} />
       ) : allEmployees.length === 0 ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration />}
           title="No documents to review"
           description="Once employees submit onboarding documents, they will appear here."
         />
@@ -619,7 +617,6 @@ export default function DocumentReviewPage() {
         <div className="space-y-3">
           {list.length === 0 ? (
             <EmptyState
-              illustration={<EmptySearchIllustration />}
               title="No results for these filters"
               description="No employees match your filters."
               action={{ label: "Clear filters", onClick: () => { setSearch(""); setRoleFilter("ALL"); setStatusFilter("ALL"); setDepartmentFilter("ALL"); } }}
@@ -810,7 +807,6 @@ export default function DocumentReviewPage() {
                 </div>
               ) : checklist.length === 0 ? (
                 <EmptyState
-                  illustration={<EmptyDocumentsIllustration className="size-24" />}
                   title="No document types configured"
                   description="Configure document types and role requirements in Document Types before reviewing submissions."
                   compact

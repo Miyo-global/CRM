@@ -18,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminExpenseItem, MemberExpenseItem } from "./expense-item";
 import type { ExpenseWithRelations } from "@/server/actions/expense-query";
@@ -217,7 +216,6 @@ export function AdminExpenseList({
         {expenses.length === 0 ? (
           <EmptyState
             className="rounded-none border-0"
-            illustration={statusFilter !== "ALL" ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />}
             title="No expenses found"
             description={statusFilter !== "ALL" ? "Try adjusting your filters" : "No expense claims to review"}
             action={statusFilter !== "ALL" ? { label: "Show All Claims", onClick: onShowAll } : undefined}
@@ -293,9 +291,6 @@ export function MemberExpenseList({
         {expenses.length === 0 ? (
           <EmptyState
             className="rounded-none border-0"
-            illustration={
-              statusFilter !== "ALL" || activeFilterCount > 0 ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />
-            }
             title="No expenses found"
             description={
               statusFilter !== "ALL" || activeFilterCount > 0

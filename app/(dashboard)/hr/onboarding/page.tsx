@@ -25,7 +25,6 @@ import {
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyPersonIllustration, EmptyUploadIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -343,7 +342,6 @@ function EmployeeDocumentsTab() {
   if (checklist.length === 0) {
     return (
       <EmptyState
-        illustration={<EmptyUploadIllustration className="size-24" />}
         title="No documents required"
         description="Your HR team hasn't configured any required documents yet."
         compact
@@ -579,7 +577,6 @@ function HrWorkflowTab() {
 
       {rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="size-24" />}
           title="No onboardings in progress"
           description="Add a new employee first, or initiate a checklist for someone who already exists in the directory."
           compact

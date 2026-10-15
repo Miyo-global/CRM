@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useSkillsMatrix } from "@/lib/api/hooks/hr";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { Search, LayoutGrid, Star, Users, Award, Layers, Rows3 } from "lucide-react";
 import { ExportButton } from "@/components/ui/export-button";
 import Link from "next/link";
@@ -365,7 +364,6 @@ export default function SkillsMatrixPage() {
         <QueryErrorState title="Couldn't load the skills matrix" error={error} onRetry={() => refetch()} />
       ) : !hasData ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration />}
           title="No skills data yet"
           description="No skills data yet. Add skills to employee profiles to build the matrix."
         />
@@ -624,7 +622,6 @@ export default function SkillsMatrixPage() {
                   {expertRanking.length === 0 ? (
                     <EmptyState
                       compact
-                      illustration={<EmptySearchIllustration />}
                       title="No employees found for this skill."
                     />
                   ) : (

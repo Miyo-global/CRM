@@ -67,7 +67,6 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import type { Asset, AssetStatus } from "@/types/hr";
-import { EmptyDevicesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import {
   buildAssetsCsvString,
   assetRowsToXlsxSheets,
@@ -678,14 +677,12 @@ export default function HrAssetsPage() {
         {!isLoading && filteredItems.length === 0 ? (
           hasActiveFilters ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="No assets match your filters."
               action={{ label: "Clear filters", onClick: () => { setStatusFilter(undefined); setSearchQuery(""); } }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyDevicesIllustration className="size-32" />}
               title="No assets found."
               action={{ label: "Add Asset", onClick: () => setSheetOpen(true) }}
             />

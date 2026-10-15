@@ -19,7 +19,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import { format } from "date-fns";
 import type { CareerEvaluation, CareerLadder, CareerReadinessStatus } from "@/types/hr";
@@ -147,7 +146,6 @@ export default function CareerEvaluationsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          illustration={<EmptyApprovalIllustration className="size-32" />}
           title="No evaluations yet."
           {...(isAdmin ? { action: { label: "New Evaluation", onClick: () => { setForm(EMPTY_FORM); setAddOpen(true); } } } : {})}
         />

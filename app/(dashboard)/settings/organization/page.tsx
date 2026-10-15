@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, Clock, Globe, IndianRupee, CalendarRange, Image, Users, X, Plus, Upload, Palette, Network } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useOrgSettings, useUpdateOrgSettings, useUpdateOrgSecuritySettings } from "@/lib/api/hooks/organization";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -247,7 +246,6 @@ export default function OrganizationSettingsPage() {
     return (
       <PageWrapper title="Organization" subtitle="Manage your organization details and settings">
         <EmptyState
-          illustration={<EmptyProjectsIllustration className="size-32" />}
           title="No Organization Found"
           description="Please contact your administrator to set up an organization."
         />

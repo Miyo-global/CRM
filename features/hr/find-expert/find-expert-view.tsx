@@ -23,7 +23,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyPersonIllustration } from "@/components/illustrations";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
@@ -723,7 +722,6 @@ export function FindExpertView() {
         <div className="min-w-0">
           {!activeQuery ? (
             <EmptyState
-              illustration={<EmptyPersonIllustration className="h-40 w-40" />}
               title="Search for a skill"
               description="Enter a skill name above to find colleagues who can help."
             />
@@ -735,7 +733,6 @@ export function FindExpertView() {
             </div>
           ) : filteredExperts.length === 0 ? (
             <EmptyState
-              illustration={<EmptyPersonIllustration className="h-40 w-40" />}
               title={`No experts found for "${activeQuery}"`}
               description="Try a different skill or adjust your filters."
             />

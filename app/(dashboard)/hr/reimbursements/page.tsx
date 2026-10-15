@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { formatINRWhole } from "@/lib/format-utils";
@@ -98,7 +97,6 @@ export default function ReimbursementsPage() {
         <QueryErrorState title="Couldn't load reimbursements" error={error} onRetry={() => refetch()} />
       ) : !items?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration />}
           title="No reimbursement requests yet"
           description="Submit an expense to start tracking reimbursement requests."
           action={{ label: "New Request", onClick: () => setSheetOpen(true) }}

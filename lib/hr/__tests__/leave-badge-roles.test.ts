@@ -11,7 +11,7 @@ describe("sidebar leave badge audience", () => {
   const pendingFromEmployee = {
     status: "PENDING",
     approverId: null,
-    user: { id: "emp-1", role: ROLES.EMPLOYEE, reportingTo: null },
+    user: { id: "emp-1", role: ROLES.ENGINEERING, reportingTo: null },
   };
 
   for (const role of [ROLES.CEO, ROLES.ADMIN, ROLES.HR]) {
@@ -21,10 +21,10 @@ describe("sidebar leave badge audience", () => {
     });
   }
 
-  it("a plain employee neither sees the badge nor can act", () => {
-    expect(hasRole(ROLES.EMPLOYEE, MANAGEMENT_ROLES)).toBe(false);
+  it("a non-management role neither sees the badge nor can act", () => {
+    expect(hasRole(ROLES.ENGINEERING, MANAGEMENT_ROLES)).toBe(false);
     expect(
-      canActOnLeave({ id: "emp-2", role: ROLES.EMPLOYEE }, pendingFromEmployee),
+      canActOnLeave({ id: "emp-2", role: ROLES.ENGINEERING }, pendingFromEmployee),
     ).toBe(false);
   });
 });

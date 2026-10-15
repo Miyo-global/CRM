@@ -17,6 +17,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import type { PageSizeOption } from "@/lib/pagination-constants";
@@ -30,7 +37,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { Check, CreditCard, Download, Eye, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -163,46 +169,40 @@ export function PayrollTable({
             only the CEO can approve them — including payrolls the CEO generated.
           </CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={year}
-              aria-label="Year"
-              onChange={(e) => onYearChange(e.target.value)}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={month}
-              aria-label="Month"
-              onChange={(e) => onMonthChange(e.target.value)}
-            >
-              {Array.from({ length: 12 }, (_, i) => ({
-                value: String(i + 1).padStart(2, "0"),
-                label: format(new Date(2000, i, 1), "MMMM"),
-              })).map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:focus-ring"
-              value={employeeFilter}
-              aria-label="Employee"
-              onChange={(e) => onEmployeeFilterChange(e.target.value)}
-            >
-              <option value="all">All employees</option>
-              {employeeOptions.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <Select value={year} onValueChange={onYearChange}>
+              <SelectTrigger className="h-9" aria-label="Year">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((y) => (
+                  <SelectItem key={y} value={y}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={month} onValueChange={onMonthChange}>
+              <SelectTrigger className="h-9" aria-label="Month">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => ({
+                  value: String(i + 1).padStart(2, "0"),
+                  label: format(new Date(2000, i, 1), "MMMM"),
+                })).map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={employeeFilter} onValueChange={onEmployeeFilterChange}>
+              <SelectTrigger className="h-9" aria-label="Employee">
+                <SelectValue placeholder="All employees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All employees</SelectItem>
+                {employeeOptions.map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent aria-live="polite" className="px-0 pb-0 pt-0">
@@ -360,7 +360,6 @@ export function PayrollTable({
           ) : (
             <EmptyState
               className="rounded-none border-0"
-              illustration={<EmptyExpensesIllustration />}
               title="No payroll records for this month"
               description="Click “Generate All” to create payroll for all employees"
             />

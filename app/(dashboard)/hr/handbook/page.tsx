@@ -34,7 +34,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { handbookVersionSchema } from "@/lib/validations/handbook";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -434,7 +433,6 @@ function HandbookAdminContent() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !versions?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No handbook versions yet"
           description="Create your first handbook version to publish it to employees."
           action={{ label: "New Version", onClick: () => { form.reset(); setSheetOpen(true); } }}
@@ -593,7 +591,6 @@ function HandbookEmployeeView() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !published.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="size-32" />}
           title="No handbook published yet"
           description="The HR team hasn't published a handbook yet. Check back later."
         />

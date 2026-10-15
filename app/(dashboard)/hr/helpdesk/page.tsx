@@ -11,7 +11,6 @@ import type { HelpdeskTicketFormValues } from "@/lib/validations/common-forms";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { useSearchParams, useRouter } from "next/navigation";
-import { EmptyTicketIllustration } from "@/components/illustrations";
 import { useSession } from "next-auth/react";
 import { useHrHelpdeskTickets, useCreateHelpdeskTicket } from "@/lib/api/hooks/hr";
 import { AISuggestReplyButton } from "@/features/hr/helpdesk/ai-suggest-reply-button";
@@ -23,7 +22,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { ListToolbar } from "@/components/shared/list-toolbar";
-import { EmptySearchIllustration } from "@/components/illustrations";
 import type { Tone } from "@/lib/design/tones";
 import {
   Select,
@@ -302,14 +300,12 @@ export default function HelpdeskPage() {
         ) : filteredTickets.length === 0 ? (
           searchQuery || statusFilter ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="h-32 w-32" />}
               title="No results for these filters"
               description={searchQuery ? "No tickets match your search." : undefined}
               action={{ label: "Clear filters", onClick: clearFilters }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyTicketIllustration className="h-36 w-36" />}
               title="No tickets yet. Create your first one!"
               action={{ label: "New Ticket", onClick: () => setSheetOpen(true) }}
             />

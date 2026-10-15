@@ -7,7 +7,6 @@ import { ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle } from "lucide-reac
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -180,7 +179,6 @@ export default function UserOnboardingPage({
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : taskList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="size-24" />}
           title="No tasks yet"
           description="Onboarding hasn't been initiated for this employee yet."
           compact

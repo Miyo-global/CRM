@@ -15,7 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
-import { EmptyExpensesIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
@@ -82,7 +81,6 @@ export function BonusTable({
                       <EmptyState
                         compact
                         className="border-0 bg-transparent"
-                        illustration={hasActiveFilters ? <EmptySearchIllustration /> : <EmptyExpensesIllustration />}
                         title={hasActiveFilters ? "No results for these filters" : "No bonuses yet"}
                         description={hasActiveFilters ? "No bonuses match your filters." : "No bonuses on record."}
                         action={hasActiveFilters && onClearFilters ? { label: "Clear filters", onClick: onClearFilters } : undefined}

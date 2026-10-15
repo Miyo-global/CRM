@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import { Plus, Briefcase, Calendar, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface Alumni {
@@ -88,7 +87,6 @@ export default function AlumniPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !alumni?.length ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="size-32" />}
           title="No alumni records yet"
           description="Add former team members to stay connected with your alumni network."
           action={isAdmin ? { label: "Add Alumni", onClick: () => setSheetOpen(true) } : undefined}

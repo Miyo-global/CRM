@@ -24,7 +24,6 @@ import {
   Plus, ClipboardList, Calendar, Play, Archive, BarChart3,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import type { Tone } from "@/lib/design/tones";
 
@@ -146,7 +145,6 @@ export default function SurveysPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !surveys?.length ? (
         <EmptyState
-          illustration={<EmptyActivityIllustration className="size-32" />}
           title="No surveys created yet."
           {...(isAdmin ? { action: { label: "Create Survey", onClick: handleOpenSheet } } : {})}
         />

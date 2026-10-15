@@ -54,7 +54,6 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn, resolveImageUrl } from "@/lib/utils";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { EmptyTicketIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
@@ -204,7 +203,6 @@ function InboxContent() {
               ) : (
                 <EmptyState
                   compact
-                  illustration={<EmptyTicketIllustration className="size-24" />}
                   title="No tickets found"
                   description="New tickets will appear here."
                   action={{ label: "New Ticket", onClick: handleOpenCreate }}
@@ -232,7 +230,6 @@ function InboxContent() {
           ) : (
             <div className="flex flex-1 items-center justify-center p-6">
               <EmptyState
-                illustration={<EmptyTicketIllustration className="size-40" />}
                 title="Select a ticket"
                 description="Choose a ticket from the list to view its details"
                 className="border-0 bg-transparent"

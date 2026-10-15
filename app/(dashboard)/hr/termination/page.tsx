@@ -34,7 +34,6 @@ import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { FilterChip } from "@/components/ui/filter-chip";
-import { EmptyPersonIllustration, EmptySearchIllustration } from "@/components/illustrations";
 
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox";
@@ -428,13 +427,11 @@ export default function TerminationPage() {
       ) : list.length === 0 ? (
         statusFilter === "ALL" ? (
           <EmptyState
-            illustration={<EmptyPersonIllustration className="size-32" />}
             title="No termination records found."
             {...((isHR || isCEO) ? { action: { label: "New Termination", onClick: () => setCreateOpen(true) } } : {})}
           />
         ) : (
           <EmptyState
-            illustration={<EmptySearchIllustration className="size-32" />}
             title="No results for these filters"
             description={`No ${TERMINATION_STATUS_LABELS[statusFilter as keyof typeof TERMINATION_STATUS_LABELS] ?? statusFilter} records.`}
             action={{ label: "Clear filters", onClick: () => setStatusFilter("ALL") }}

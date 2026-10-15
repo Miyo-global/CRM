@@ -9,7 +9,6 @@ import Link from "next/link";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTasksIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -120,7 +119,6 @@ export default function MyOnboardingTasksPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : totalTasks === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="size-32" />}
           title="No onboarding tasks yet"
           description="Your HR team hasn't set up any tasks for you. Check back soon."
         />

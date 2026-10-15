@@ -3,9 +3,15 @@
 import { use, useMemo, useState } from "react";
 import { useProjectAnalytics, useSprints, useSprintBurndown } from "@/lib/api/hooks/projects";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip, type StatsStripItem } from "@/components/shared/stats-strip";
 import { AnalyticsChartCard } from "@/components/charts/analytics-chart-card";
@@ -199,7 +205,6 @@ export default function AnalyticsPage({
     return (
       <PageWrapper title="Analytics">
         <EmptyState
-          illustration={<EmptyActivityIllustration className="h-32 w-32 opacity-95" />}
           title="No data yet"
           description="Analytics will appear once your project has work items."
         />
@@ -388,18 +393,21 @@ export default function AnalyticsPage({
               filename="sprint-burndown"
               actions={
                 sprints && sprints.length > 0 ? (
-                  <select
-                    className="h-8 max-w-48 truncate rounded-md border border-input bg-background px-2 text-xs text-foreground focus-visible:focus-ring"
-                    value={sprintId}
-                    onChange={(e) => setSelectedSprintId(Number(e.target.value))}
-                    aria-label="Select sprint for burndown chart"
+                  <Select
+                    value={String(sprintId)}
+                    onValueChange={(v) => setSelectedSprintId(Number(v))}
                   >
-                    {sprints.map((s: Sprint) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} {s.status === "ACTIVE" ? "(Active)" : ""}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-8 max-w-48" aria-label="Select sprint for burndown chart">
+                      <SelectValue placeholder="Sprint" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sprints.map((s: Sprint) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {s.name}{s.status === "ACTIVE" ? " (Active)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : undefined
               }
             >

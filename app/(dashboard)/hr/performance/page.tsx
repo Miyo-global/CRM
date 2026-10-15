@@ -75,7 +75,6 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
-import { EmptyLeaderboardIllustration, EmptyTargetIllustration, EmptyCalendarIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 
 const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
 const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
@@ -243,7 +242,6 @@ function ReviewsTab() {
 
       {reviewsList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyLeaderboardIllustration className="h-40 w-40" />}
           title="No reviews yet. Create your first one."
           action={{ label: "New Review", onClick: () => setSheetOpen(true) }}
         />
@@ -437,7 +435,6 @@ function GoalsTab() {
 
       {goalsList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTargetIllustration className="h-36 w-36" />}
           title="No goals set yet."
           action={{ label: "New Goal", onClick: () => setSheetOpen(true) }}
         />
@@ -677,7 +674,6 @@ function OneOnOnesTab() {
 
       {!meetings?.length ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration className="h-36 w-36" />}
           title="No 1-on-1 meetings scheduled."
           action={{ label: "Schedule 1-on-1", onClick: () => setSheetOpen(true) }}
         />
@@ -923,7 +919,6 @@ function CyclesTab() {
 
       {!cycles?.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="h-36 w-36" />}
           title="No review cycles yet. Create a quarterly or annual cycle."
           action={{ label: "New Cycle", onClick: openCreate }}
         />

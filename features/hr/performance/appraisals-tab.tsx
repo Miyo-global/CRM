@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyApprovalIllustration } from "@/components/illustrations";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -395,7 +394,6 @@ export function AppraisalsTab() {
 
       {appraisalsList.length === 0 ? (
         <EmptyState
-          illustration={<EmptyApprovalIllustration className="h-36 w-36" />}
           title="No appraisals yet."
           action={admin ? { label: "New appraisal", onClick: () => setCreateOpen(true) } : undefined}
         />

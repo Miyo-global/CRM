@@ -7,7 +7,6 @@ import { ViewAllLink } from "@/components/dashboard/widgets/view-all-link";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptySprintIllustration } from "@/components/illustrations";
 import { sprintStatusColors } from "@/lib/theme-constants";
 
 const SPRINT_DANGER_DAYS = 2;
@@ -103,7 +102,6 @@ export const SprintCard = memo(function SprintCard({ summary, isLoading }: Sprin
         ) : (
           <EmptyState
             compact
-            illustration={<EmptySprintIllustration className="h-20 w-20" />}
             title="No active sprint"
             description="Start a sprint in your project to see progress here."
           />

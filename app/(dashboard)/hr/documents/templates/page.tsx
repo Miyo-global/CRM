@@ -27,7 +27,6 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -281,7 +280,6 @@ export default function DocumentTemplatesPage() {
           <QueryErrorState title="Couldn't load templates" error={error} onRetry={() => void refetch()} />
         ) : list.length === 0 ? (
           <EmptyState
-            illustration={<EmptyDocumentsIllustration />}
             title="No templates yet"
             description="Create your first document template to automate offer letters, NDAs, and more."
             action={{ label: "Create your first template", href: "/hr/documents/templates/new" }}

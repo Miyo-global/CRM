@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useMemo, useCallback, useState, memo } from "react";
-import { EmptySearchIllustration, EmptyTasksIllustration } from "@/components/illustrations";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useProject, useSprints } from "@/lib/hooks/trpc-hooks";
@@ -292,13 +291,11 @@ export default function BacklogPage({ params }: PageProps) {
     >
       {tickets.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTasksIllustration className="h-32 w-32 opacity-95" />}
           title="No tickets yet"
           description="Create your first ticket to start building the backlog."
         />
       ) : filteredTickets.length === 0 ? (
         <EmptyState
-          illustration={<EmptySearchIllustration className="h-32 w-32 opacity-95" />}
           title="No results for these filters"
           description="Try a different search or clear the filters."
           action={hasFilters ? { label: "Clear filters", onClick: clearFilters } : undefined}

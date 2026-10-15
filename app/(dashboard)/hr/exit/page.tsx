@@ -35,7 +35,6 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { EmptyPersonIllustration } from "@/components/illustrations";
 import { useSession } from "next-auth/react";
 import { isCEO as checkIsCEO } from "@/lib/constants/roles";
 import { downloadResignationLetterTemplate } from "@/lib/hr/resignation-letter-template";
@@ -308,7 +307,6 @@ export default function ExitManagementPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !resignations?.length ? (
         <EmptyState
-          illustration={<EmptyPersonIllustration className="size-32" />}
           title="No resignations on record"
           description="Resignation requests and offboarding details will appear here."
           action={

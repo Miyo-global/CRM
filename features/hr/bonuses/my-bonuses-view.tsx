@@ -17,7 +17,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { formatINR } from "@/lib/format-utils";
 import { BONUS_TYPE_LABELS, type BonusType } from "@/lib/validations/bonus";
 import type { BonusRow } from "@/lib/hr/bonus-filters";
@@ -68,7 +67,6 @@ export function MyBonusesView() {
   if (!bonuses?.length) {
     return (
       <EmptyState
-        illustration={<EmptyExpensesIllustration />}
         title="No bonuses yet"
         description="When HR records a bonus for you, it will appear here with its status and payment details."
       />

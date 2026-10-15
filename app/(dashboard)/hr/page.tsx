@@ -9,7 +9,6 @@ import { LayoutGrid, List, Plus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { ExportButton } from "@/components/ui/export-button";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
@@ -316,14 +315,12 @@ export default function HRDashboardPage() {
         )
       ) : hasActiveFilters ? (
         <EmptyState
-          illustration={<EmptySearchIllustration />}
           title="No results found"
           description="No employees match your current filters. Try adjusting your search."
           action={{ label: "Clear filters", onClick: handleClearFilters }}
         />
       ) : (
         <EmptyState
-          illustration={<EmptyTeamIllustration />}
           title="No employees found"
           description="Get started by adding your first team member."
           action={{ label: "Add Employee", href: "/hr/onboarding?tab=wizard" }}

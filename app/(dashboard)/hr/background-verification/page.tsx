@@ -31,7 +31,6 @@ import { format } from "date-fns";
 import { Plus, ShieldCheck, CheckCircle2, XCircle, BarChart2 } from "lucide-react";
 import type { Employee } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 const BGV_TYPES = ["Identity", "Education", "Employment", "Criminal", "Address", "Credit"];
 
@@ -100,7 +99,6 @@ function BGVContent() {
             <QueryErrorState error={error} onRetry={() => void refetch()} />
           ) : !items?.length ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-32 w-32" />}
               title="No background verifications initiated"
               description="Initiate a background check to start tracking employee verifications."
               action={{ label: "Initiate BGV", onClick: () => setSheetOpen(true) }}

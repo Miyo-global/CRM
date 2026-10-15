@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
-import { EmptyProjectsIllustration } from "@/components/illustrations";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import type { Tone } from "@/lib/design/tones";
@@ -73,7 +72,6 @@ export const RecentProjectsCard = memo(function RecentProjectsCard({ projects, i
         ) : (
           <EmptyState
             compact
-            illustration={<EmptyProjectsIllustration className="h-20 w-20" />}
             title="No recent projects"
             description="Create your first project to start tracking work."
             action={{

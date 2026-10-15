@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, CheckCircle2, XCircle, Banknote } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyExpensesIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 
 function statusTone(s: string | null): Tone {
@@ -100,7 +99,6 @@ export default function LoansPage() {
         <QueryErrorState title="Couldn't load salary loans" error={error} onRetry={() => refetch()} />
       ) : !loans?.length ? (
         <EmptyState
-          illustration={<EmptyExpensesIllustration />}
           title="No salary loans"
           description="Approved and pending salary loans will appear here."
           action={{ label: "Request Loan", onClick: () => setSheetOpen(true) }}

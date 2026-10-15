@@ -27,7 +27,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 function ackTone(status: string | null): Tone {
   if (status === "ACKNOWLEDGED") return "success";
@@ -148,7 +147,6 @@ export default function CompliancePage() {
           </h2>
           {all.length === 0 ? (
             <EmptyState
-              illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
               title="No policy acknowledgments yet."
             />
           ) : (

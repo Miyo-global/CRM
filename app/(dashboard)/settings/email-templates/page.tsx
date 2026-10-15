@@ -20,7 +20,6 @@ import { apiClient } from "@/lib/api-client";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyMailIllustration } from "@/components/illustrations";
 
 import {
   getVerificationEmailTemplate,
@@ -732,7 +731,6 @@ function EmailTemplatesContent() {
           </Card>
         ) : (
           <EmptyState
-            illustration={<EmptyMailIllustration className="size-32" />}
             title="Select a template to preview it here"
           />
         )}

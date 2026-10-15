@@ -8,7 +8,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -173,7 +172,6 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
           <QueryErrorState error={error} onRetry={refetch} />
         ) : !cycles?.length ? (
           <EmptyState
-            illustration={<EmptyCalendarIllustration className="h-32 w-32 opacity-95" />}
             title="No cycles yet"
             description="Create your first cycle to start planning work in time-boxed iterations."
             action={{ label: "Create First Cycle", onClick: handleOpenCreate }}

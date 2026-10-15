@@ -17,7 +17,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { HrSheet } from "@/features/hr/hr-sheet";
-import { EmptySearchIllustration, EmptyTeamIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -301,14 +300,12 @@ export default function CareerLaddersPage() {
         ) : !filteredLadders.length ? (
           hasActiveFilters ? (
             <EmptyState
-              illustration={<EmptySearchIllustration className="size-32" />}
               title="No results for these filters"
               description="Try clearing your filters to see all ladders"
               action={{ label: "Clear filters", onClick: () => { setStatusFilter(""); setTrackFilter(""); setDeptFilter(""); setSearch(""); } }}
             />
           ) : (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No career ladders defined yet"
               description={isAdmin
                 ? "Create your first career ladder to define growth paths"

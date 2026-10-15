@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, PartyPopper, Calendar, MapPin, Users, UserPlus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyCalendarIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
@@ -101,7 +100,6 @@ export default function TeamEventsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !events?.length ? (
         <EmptyState
-          illustration={<EmptyCalendarIllustration className="size-32" />}
           title="No upcoming events"
           description="Company events, outings, and celebrations will show up here."
           {...(isAdmin ? { action: { label: "Create Event", onClick: () => setSheetOpen(true) } } : {})}

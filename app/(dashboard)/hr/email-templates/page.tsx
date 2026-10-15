@@ -51,7 +51,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { IconChip } from "@/components/ui/icon-chip";
-import { EmptyMailIllustration } from "@/components/illustrations";
 import { HR_EMAIL_EMPLOYEE_AUTO_MERGE_KEY_SET } from "@/lib/hr/hr-email-auto-merge-keys";
 import {
   validateTemplateForm,
@@ -532,7 +531,6 @@ function EmailTemplatesContent() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !templates?.length ? (
         <EmptyState
-          illustration={<EmptyMailIllustration className="size-32" />}
           title="No email templates yet"
           description="Create a reusable template to streamline your HR communications."
           action={{ label: "New Template", onClick: () => setSheetOpen(true) }}

@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
@@ -58,7 +57,6 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
         <QueryErrorState title="Couldn't load this team" error={error} onRetry={() => refetch()} />
       ) : !team || team.members.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration />}
           title="No team members"
           description="No active employees assigned to this department."
         />

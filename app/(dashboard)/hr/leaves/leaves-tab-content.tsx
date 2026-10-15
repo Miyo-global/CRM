@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyLeaveIllustration, EmptySearchIllustration } from "@/components/illustrations";
 import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import {
@@ -540,13 +539,11 @@ export function LeavesTabContent({ balances, myLeaveRequests, approvedLeavesThis
         <CardContent className="pt-0" aria-live="polite">
           {myLeaveRequests.length === 0 ? (
             <EmptyState
-              illustration={<EmptyLeaveIllustration />}
               title="No leave requests"
               description="You haven't submitted any leave requests yet."
             />
           ) : filteredRequests.length === 0 ? (
             <EmptyState
-              illustration={<EmptySearchIllustration />}
               title="No matching requests"
               description="Try adjusting your filters to see more results."
               action={{ label: "Clear filters", onClick: handleClearFilters }}

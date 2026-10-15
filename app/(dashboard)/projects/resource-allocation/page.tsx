@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,7 +42,6 @@ export default function ResourceAllocationPage() {
         <QueryErrorState error={error} onRetry={() => refetch()} />
       ) : !entries || entries.length === 0 ? (
         <EmptyState
-          illustration={<EmptyTeamIllustration />}
           title="No open tickets assigned yet"
           description="Open tickets will appear here once they are assigned to team members."
         />

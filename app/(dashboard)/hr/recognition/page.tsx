@@ -34,7 +34,6 @@ import { recognitionExportFilename } from "@/lib/hr/recognition-export-filters";
 import { buildRecognitionCsvText } from "@/lib/hr/recognition-export-rows";
 import { Input } from "@/components/ui/input";
 import type { Employee } from "@/types/hr";
-import { EmptyTeamIllustration, EmptySearchIllustration, EmptyActivityIllustration } from "@/components/illustrations";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
 import { useSession } from "next-auth/react";
@@ -477,7 +476,6 @@ export default function RecognitionPage() {
         <TabsContent value="wall">
           {stats.total === 0 ? (
             <EmptyState
-              illustration={<EmptyTeamIllustration className="size-32" />}
               title="No recognition yet. Be the first to celebrate a teammate!"
               action={{ label: "Give Kudos", onClick: () => setSheetOpen(true) }}
             />
@@ -724,14 +722,12 @@ export default function RecognitionPage() {
             {historyRows.length === 0 ? (
               hasActiveFilters ? (
                 <EmptyState
-                  illustration={<EmptySearchIllustration className="size-32" />}
                   title="No results for these filters"
                   description="No records match the current filters."
                   action={{ label: "Clear filters", onClick: clearFilters }}
                 />
               ) : (
                 <EmptyState
-                  illustration={<EmptyActivityIllustration className="size-32" />}
                   title="No recognition records found."
                 />
               )

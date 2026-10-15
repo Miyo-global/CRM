@@ -31,7 +31,6 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EmptyInboxIllustration } from "@/components/illustrations";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -224,14 +223,12 @@ export default function NotificationsPage() {
       ) : filtered.length === 0 ? (
         isTypeFilter && (notifications?.length ?? 0) > 0 ? (
           <EmptyState
-            illustration={<EmptyInboxIllustration />}
             title="No results for these filters"
             description="No notifications match this type."
             action={{ label: "Clear filters", onClick: () => setActiveTab("ALL") }}
           />
         ) : (
           <EmptyState
-            illustration={<EmptyInboxIllustration />}
             title={activeTab === "UNREAD" ? "You're all caught up" : "No notifications yet"}
             description={
               activeTab === "UNREAD"

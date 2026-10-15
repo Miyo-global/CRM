@@ -43,7 +43,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { EmptyLeaderboardIllustration } from "@/components/illustrations";
 import { HrDashboardOverview } from "@/features/hr/hr-dashboard-overview";
 
 function defaultFilters(): FilterValues {
@@ -173,7 +172,7 @@ function AnalyticsContent() {
                       {data.departments.length > 0 ? (
                         <OverviewHBar data={data.departments.map((d) => ({ label: d.name, value: d.count }))} />
                       ) : (
-                        <EmptyState compact illustration={<EmptyLeaderboardIllustration className="size-20" />} title="No department data" />
+                        <EmptyState compact title="No department data" />
                       )}
                     </CardContent>
                   </Card>

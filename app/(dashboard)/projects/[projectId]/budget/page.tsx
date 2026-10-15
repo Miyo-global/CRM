@@ -12,7 +12,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatsStrip } from "@/components/shared/stats-strip";
-import { EmptyTimeIllustration } from "@/components/illustrations";
 import { IndianRupee, Clock, TrendingUp, Pencil } from "lucide-react";
 import { useProjectBudget, useUpdateProjectBudget } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
@@ -173,7 +172,6 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
       {(budget?.memberBreakdown?.length ?? 0) === 0 && !isLoading && (
         <EmptyState
           compact
-          illustration={<EmptyTimeIllustration className="h-24 w-24 opacity-95" />}
           title="No billable time entries logged yet."
         />
       )}

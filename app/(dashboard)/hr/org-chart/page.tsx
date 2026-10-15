@@ -14,7 +14,6 @@ import { cn, resolveImageUrl } from "@/lib/utils";
 import { Users, Network, Building2 } from "lucide-react";
 import type { Employee } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EmptyTeamIllustration } from "@/components/illustrations";
 import { getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
 
 interface TreeNode {
@@ -367,7 +366,6 @@ export default function OrgChartPage() {
                   ))}
                   {tree.length === 0 && (
                     <EmptyState
-                      illustration={<EmptyTeamIllustration />}
                       title="No reporting structure found"
                       description="Assign reporting managers to employees to build the org hierarchy."
                     />

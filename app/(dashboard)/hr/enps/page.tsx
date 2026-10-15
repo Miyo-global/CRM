@@ -18,7 +18,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, ThumbsUp, BarChart3, Users, Calendar } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { EmptyActivityIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
@@ -120,7 +119,6 @@ export default function EnpsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !surveys?.length ? (
         <EmptyState
-          illustration={<EmptyActivityIllustration className="size-32" />}
           title="No eNPS surveys yet"
           description="Create a survey to start measuring employee Net Promoter Score."
           {...(isAdmin ? { action: { label: "New eNPS", onClick: () => setSheetOpen(true) } } : {})}

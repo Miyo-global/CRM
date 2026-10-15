@@ -46,7 +46,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyTimeIllustration } from "@/components/illustrations";
 import { LogTimeDialog } from "@/components/timesheets/log-time-dialog";
 import { EditTimeEntryDialog } from "@/components/timesheets/edit-time-entry-dialog";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
@@ -368,14 +367,12 @@ export default function TimesheetsPage() {
                               {selectedProject !== "all" || dateRange !== "this-quarter" ? (
                                 <EmptyState
                                   compact
-                                  illustration={<EmptyTimeIllustration />}
                                   title="No results for these filters"
                                   description="No work logs found matching your filters."
                                 />
                               ) : (
                                 <EmptyState
                                   compact
-                                  illustration={<EmptyTimeIllustration />}
                                   title="No work logs yet"
                                   description="No work logs found. Add your first log!"
                                 />

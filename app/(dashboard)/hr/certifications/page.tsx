@@ -16,7 +16,6 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { Plus, Award, Calendar, ExternalLink, AlertTriangle } from "lucide-react";
-import { EmptyDocumentsIllustration } from "@/components/illustrations";
 
 export default function CertificationsPage() {
   const { data: certs, isLoading, isError, error, refetch } = useCertifications();
@@ -70,7 +69,6 @@ export default function CertificationsPage() {
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       ) : !certs?.length ? (
         <EmptyState
-          illustration={<EmptyDocumentsIllustration className="h-40 w-40" />}
           title="No certifications recorded yet."
           action={{ label: "Add Certification", onClick: () => setSheetOpen(true) }}
         />
