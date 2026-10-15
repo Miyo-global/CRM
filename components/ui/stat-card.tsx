@@ -5,13 +5,17 @@ import { cn } from "../../lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import { toneSoft, type Tone } from "@/lib/design/tones";
+import type { Tone } from "@/lib/design/tones";
 
 interface StatCardProps {
   label: string;
   value: string | number;
   valueTooltip?: React.ReactNode;
-  icon: LucideIcon;
+  /**
+   * Kept for call sites, but a stat tile renders text only: no icon chip and
+   * no coloured number (B7).
+   */
+  icon?: LucideIcon;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -21,21 +25,12 @@ interface StatCardProps {
   className?: string;
   index?: number;
 
-  /** Legacy color name; mapped onto the tone system. Prefer `tone`. */
+  /** Legacy colour props, accepted and ignored: tiles are ink on white (B7). */
   color?: "gold" | "blue" | "green" | "red" | "purple";
-  /** Icon chip tone; overrides `color`. */
   tone?: Tone;
   /** Optional mini trend line (32px tall) under the value. */
   sparkline?: number[];
 }
-
-const colorTone: Record<NonNullable<StatCardProps["color"]>, Tone> = {
-  gold: "brand",
-  blue: "info",
-  green: "success",
-  red: "danger",
-  purple: "plum",
-};
 
 function Sparkline({ data }: { data: number[] }) {
   if (data.length < 2) return null;
@@ -56,16 +51,12 @@ export function StatCard({
   label,
   value,
   valueTooltip,
-  icon: Icon,
   trend,
   href,
   className,
   index = 0,
-  color = "gold",
-  tone,
   sparkline,
 }: StatCardProps) {
-  const chipTone = tone ?? colorTone[color];
 
   const valueNode = (
     <p title={String(value)} className={cn(
@@ -104,12 +95,7 @@ export function StatCard({
 
           {trend && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <span
-                className={cn(
-                  "inline-flex h-5 items-center gap-1 rounded-full px-2 text-2xs font-semibold tabular-nums",
-                  toneSoft[trend.isPositive ? "success" : "danger"]
-                )}
-              >
+              <span className="inline-flex items-center gap-1 text-2xs font-medium tabular-nums text-muted-foreground">
                 {trend.isPositive ? (
                   <TrendingUp className="size-3" aria-hidden="true" />
                 ) : (
@@ -124,12 +110,6 @@ export function StatCard({
           )}
         </div>
 
-        <div className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-full",
-          toneSoft[chipTone]
-        )}>
-          <Icon className="size-4" aria-hidden="true" />
-        </div>
       </div>
       {sparkline && <Sparkline data={sparkline} />}
     </div>

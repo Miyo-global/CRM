@@ -6,12 +6,6 @@ import { useHrEmployeePayslips } from "@/lib/api/hooks/hr";
 import type { EmployeePayslip } from "@/types/hr";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -20,12 +14,19 @@ import {
 } from "@/components/ui/select";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { EmptyState } from "@/components/ui/empty-state";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { IconChip } from "@/components/ui/icon-chip";
-import { StatusPill } from "@/components/ui/status-pill";
 import { format, parseISO } from "date-fns";
-import { Download, FileText, Loader2, ArrowLeft } from "lucide-react";
+import { Download, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MyPayslipsPage() {
@@ -247,67 +248,53 @@ export default function MyPayslipsPage() {
       )}
 
       {!isError && payslips && payslips.length > 0 && !selectedMonth && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Payslips</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {payslips.slice(0, 6).map((payslip) => (
-                <div
-                  key={payslip.id}
-                  className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 outline-none transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md focus-visible:focus-ring"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View payslip for ${format(parseISO(payslip.month + "-01"), "MMMM yyyy")}`}
-                  onClick={() => setSelectedMonth(payslip.month)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setSelectedMonth(payslip.month);
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <IconChip icon={FileText} />
-                    <div className="min-w-0">
-                      <p className="font-medium">
-                        {format(parseISO(payslip.month + "-01"), "MMMM yyyy")}
-                      </p>
-                      <StatusPill tone={payslip.status === "PAID" ? "success" : payslip.status === "APPROVED" ? "info" : "neutral"} dot className="mt-1">
-                        {payslip.status}
-                      </StatusPill>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right hidden sm:block">
-                      <p className="font-semibold tabular-nums text-success-strong">
-                        ₹{parseFloat(payslip.netSalary || "0").toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Net Salary</p>
-                    </div>
-                    {payslip.status === "PAID" && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1"
-                        aria-label={`Download PDF for ${format(parseISO(payslip.month + "-01"), "MMMM yyyy")}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleDownload(payslip);
-                        }}
-                      >
-                        <Download className="size-4" aria-hidden="true" />
-                        PDF
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table className="tabular-nums">
+            <caption className="sr-only">Payslips by month</caption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Month</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Net</TableHead>
+                <TableHead className="text-right">Payslip</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {payslips.map((payslip) => {
+                const monthLabel = format(parseISO(payslip.month + "-01"), "MMMM yyyy");
+                return (
+                  <TableRow
+                    key={payslip.id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedMonth(payslip.month)}
+                  >
+                    <TableCell className="font-medium whitespace-nowrap">{monthLabel}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{payslip.status}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      ₹{parseFloat(payslip.netSalary || "0").toLocaleString(DEFAULT_LOCALE)}
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      {payslip.status === "PAID" ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Download payslip for ${monthLabel}`}
+                          onClick={() => void handleDownload(payslip)}
+                        >
+                          <Download className="size-4" aria-hidden="true" />
+                          Download
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not final</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </PageWrapper>
   );

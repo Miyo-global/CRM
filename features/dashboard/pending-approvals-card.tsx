@@ -1,10 +1,8 @@
 "use client";
 
 import { usePendingApprovals, type PendingApprovalsCount } from "@/lib/api/hooks/dashboard";
-import { Bell, CalendarCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconChip } from "@/components/ui/icon-chip";
-import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import Link from "next/link";
 
@@ -20,10 +18,7 @@ export function PendingApprovalsCard() {
           <Skeleton className="h-11 w-full rounded-md" />
         </div>
       ) : !counts || counts.total === 0 ? (
-        <div className="flex items-center gap-3 rounded-md bg-success-soft px-3 py-2.5 text-sm text-success-strong">
-          <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-          All caught up!
-        </div>
+        <p className="px-1 py-2 text-sm text-muted-foreground">Nothing to approve.</p>
       ) : (
         <div className="-mx-2">
           <Link
@@ -33,11 +28,10 @@ export function PendingApprovalsCard() {
           >
             <WidgetListRow
               className="hover:bg-accent"
-              leading={<IconChip icon={CalendarCheck} tone="info" size="sm" />}
               title="Leave Requests"
               trailing={
                 counts.pendingLeaves > 0 && (
-                  <StatusPill tone="danger" className="tabular-nums">{counts.pendingLeaves}</StatusPill>
+                  <span className="font-mono text-sm tabular-nums text-foreground">{counts.pendingLeaves}</span>
                 )
               }
             />
@@ -49,11 +43,10 @@ export function PendingApprovalsCard() {
           >
             <WidgetListRow
               className="hover:bg-accent"
-              leading={<IconChip icon={AlertTriangle} tone="danger" size="sm" />}
               title="Resignations"
               trailing={
                 counts.pendingResignations > 0 && (
-                  <StatusPill tone="danger" className="tabular-nums">{counts.pendingResignations}</StatusPill>
+                  <span className="font-mono text-sm tabular-nums text-foreground">{counts.pendingResignations}</span>
                 )
               }
             />

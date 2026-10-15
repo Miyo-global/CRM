@@ -374,7 +374,7 @@ export default function ExpensesPage() {
 
   return (
     <PageWrapper
-      title="My Expenses"
+      title="Expenses"
 
       actions={
         <Button

@@ -153,12 +153,12 @@ function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" })
       </Avatar>
       <div className="min-w-0 flex-1">
         <p
-          className={cn("font-medium truncate", isSm ? "text-xs" : "text-sm")}
+          className={cn("font-medium break-words", isSm ? "text-xs" : "text-sm")}
           title={emp.email ? `${displayName(emp)} · ${emp.email}` : displayName(emp)}
         >
           {displayName(emp)}
         </p>
-        <p className="text-2xs text-muted-foreground truncate">
+        <p className="text-2xs text-muted-foreground break-words">
           {emp.designation ?? roleDisplay(emp.role)}
           {emp.employeeId ? ` · ${emp.employeeId}` : ""}
         </p>
@@ -307,7 +307,7 @@ export default function OrgChartPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Organization" subtitle="Team structure and departments">
+      <PageWrapper title="Organization">
         <Skeleton className="h-[60vh] w-full rounded-lg" />
       </PageWrapper>
     );
@@ -353,7 +353,7 @@ export default function OrgChartPage() {
                 </div>
               )}
               <ScrollArea
-                className="w-full bg-surface-sunken bg-[radial-gradient(var(--border-strong)_1px,transparent_1px)] bg-size-[16px_16px]"
+                className="w-full bg-background"
                 type="auto"
               >
                 <div className="min-w-[720px] space-y-2 p-4">
@@ -409,9 +409,9 @@ export default function OrgChartPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium truncate">{displayName(emp)}</p>
+                              <p className="text-xs font-medium break-words">{displayName(emp)}</p>
                               {emp.designation && (
-                                <p className="text-2xs text-muted-foreground truncate">
+                                <p className="text-2xs text-muted-foreground break-words">
                                   {emp.designation}
                                 </p>
                               )}
