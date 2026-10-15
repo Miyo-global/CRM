@@ -3,6 +3,11 @@
 import { useState, useCallback } from "react";
 import { EditEmployeeForm, type EmployeeData } from "./edit-employee-form";
 import { EmployeeAttendanceHistory } from "@/components/hr/employee-attendance-history";
+import {
+  EmployeeDocumentsTab,
+  EmployeeLeaveTab,
+  EmployeePayslipsTab,
+} from "./employee-profile-tabs";
 import { SelfEditProfileForm } from "@/components/hr/self-edit-profile-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -528,6 +533,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             <TabsTrigger value="attendance" className="gap-1.5">
               <Clock className="size-4" aria-hidden="true" />Attendance
             </TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="leave">Leave</TabsTrigger>
+            <TabsTrigger value="payslips">Payslips</TabsTrigger>
             {isSelf && (
               <TabsTrigger value="my-profile" className="gap-1.5">
                 <UserCircle className="size-4" aria-hidden="true" />My Profile
@@ -710,6 +718,24 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
           <TabsContent value="attendance" className="flex-1 min-h-0 overflow-y-auto">
             <div className="pb-6">
               <EmployeeAttendanceHistory userId={employee.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="documents" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeeDocumentsTab userId={employee.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="leave" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeeLeaveTab userId={employee.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payslips" className="flex-1 min-h-0 overflow-y-auto">
+            <div className="pb-6">
+              <EmployeePayslipsTab userId={employee.id} />
             </div>
           </TabsContent>
 
