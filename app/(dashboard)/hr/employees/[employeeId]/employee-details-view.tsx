@@ -48,9 +48,7 @@ import {
   ArrowLeft,
   UserX,
   Mail,
-  Phone,
   Download,
-  Calendar,
   Briefcase,
   Clock,
   FileCheck,
@@ -83,17 +81,6 @@ import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 function getInitials(first?: string | null, last?: string | null) {
   return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
-}
-
-function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | null | undefined }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span className="sr-only">{label}:</span>
-      <span className="truncate text-foreground" title={value}>{value}</span>
-    </div>
-  );
 }
 
 function StatBlock({ label, value, color }: { label: string; value: string | number; color?: string }) {
@@ -474,10 +461,11 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               </div>
 
               <div className="min-w-0 flex-1 space-y-2 sm:pt-3">
+                {/* Plain header: name, title, department and one status pill.
+                    Role, employee ID, email, phone and joining date all repeat
+                    in the cards below (B6, A43). */}
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-xl font-bold">{employeeName}</h2>
-                  {employee.role && <Badge variant="secondary">{employee.role}</Badge>}
-                  {typeof employee.employeeId === "string" && employee.employeeId && <Badge variant="outline" className="font-mono">ID: {employee.employeeId}</Badge>}
                   {employee.isActive === false || e.terminatedAt ? (
                     <StatusPill tone="danger" dot>Terminated</StatusPill>
                   ) : (
@@ -485,13 +473,11 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <InfoItem icon={Mail} label="Email" value={employee.email} />
-                  <InfoItem icon={Phone} label="Phone" value={employee.phone} />
-                  {/* Department lives in the Employment card below; showing it
-                      here too made the same badge appear twice (A43). */}
-                  <InfoItem icon={Calendar} label="Joined" value={employee.joiningDate ? format(new Date(String(employee.joiningDate)), "MMM yyyy") : null} />
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {[asStr(employee.designation), asStr(e.departmentName) || asStr(employee.department?.name)]
+                    .filter(Boolean)
+                    .join(" · ") || "—"}
+                </p>
 
                 <AvailabilityDot userId={employee.id} />
 

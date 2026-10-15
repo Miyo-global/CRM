@@ -391,12 +391,14 @@ export function LeaveRequestSheet({
           />
 
           {balancePreview && requestedDays > 0 && (
-            <div className={`flex items-start gap-2 rounded-lg p-3 text-xs ${
+            <div className={`flex items-start gap-2 text-xs ${
               balancePreview.after < 0
-                ? "bg-danger-soft text-danger-strong"
-                : "bg-surface-sunken text-foreground"
+                ? "rounded-md bg-danger-soft p-3 text-danger-strong"
+                : "text-muted-foreground"
             }`}>
-              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {balancePreview.after < 0 && (
+                <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              )}
               <span>
                 This will consume{" "}
                 <strong>{requestedDays} day{requestedDays !== 1 ? "s" : ""}</strong>{" "}
