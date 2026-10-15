@@ -42,6 +42,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProjectMembersSection } from "@/features/projects/members/project-members-section";
 import { WipLimitsSection } from "@/features/projects/settings/wip-limits-section";
+import { ClientAccessSection } from "@/features/projects/client-portal/client-access-section";
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -260,6 +261,8 @@ export default function ProjectSettingsPage({ params }: PageProps) {
         <ProjectMembersSection project={project} />
 
         <WipLimitsSection projectId={projectId} statuses={project.statuses ?? []} canManage={canEdit} />
+
+        <ClientAccessSection projectId={projectId} canManage={canEdit} />
 
         {isOwner && (
           <Card className="border-danger-soft">

@@ -8,6 +8,7 @@ import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-proje
 import { createTicket } from "@/lib/projects/create-ticket";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { logger } from "@/lib/logger";
+import { intakeDescriptionText } from "@/lib/projects/intake-text";
 
 const updateIntakeSchema = z.object({
   status: z.enum(["accepted", "declined", "duplicate"]),
@@ -19,11 +20,6 @@ const updateIntakeSchema = z.object({
 }).strict();
 
 type RouteParams = { params: Promise<{ projectId: string; requestId: string }> };
-
-function descriptionText(value: unknown): string | undefined {
-  if (value == null) return undefined;
-  return typeof value === "string" ? value : JSON.stringify(value);
-}
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
@@ -92,7 +88,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         { orgId: session.orgId, projectId, actorId: session.user.id },
         {
           title: item.title.slice(0, 500),
-          description: descriptionText(item.description),
+          description: intakeDescriptionText(item.description),
           type: "TASK",
           priority: body.priority,
           assigneeId: body.assigneeId,

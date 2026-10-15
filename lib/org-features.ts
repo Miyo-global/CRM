@@ -8,6 +8,7 @@ export interface OrgFeatureFlags {
   aiEmailDraft: boolean;
   aiSmartNotifications: boolean;
   aiWeeklyRecap: boolean;
+  clientPortal: boolean;
 }
 
 const DEFAULT_FLAGS: OrgFeatureFlags = {
@@ -16,6 +17,7 @@ const DEFAULT_FLAGS: OrgFeatureFlags = {
   aiEmailDraft: true,
   aiSmartNotifications: true,
   aiWeeklyRecap: true,
+  clientPortal: false,
 };
 
 export function parseOrgFeatureFlags(settings: Record<string, unknown> | null | undefined): OrgFeatureFlags {
@@ -26,6 +28,7 @@ export function parseOrgFeatureFlags(settings: Record<string, unknown> | null | 
     aiEmailDraft: features.aiEmailDraft ?? DEFAULT_FLAGS.aiEmailDraft,
     aiSmartNotifications: features.aiSmartNotifications ?? DEFAULT_FLAGS.aiSmartNotifications,
     aiWeeklyRecap: features.aiWeeklyRecap ?? DEFAULT_FLAGS.aiWeeklyRecap,
+    clientPortal: features.clientPortal ?? DEFAULT_FLAGS.clientPortal,
   };
 }
 

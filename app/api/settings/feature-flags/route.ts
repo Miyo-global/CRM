@@ -11,6 +11,7 @@ const updateSchema = z.object({
     "aiEmailDraft",
     "aiSmartNotifications",
     "aiWeeklyRecap",
+    "clientPortal",
   ] as const satisfies readonly (keyof OrgFeatureFlags)[]),
   enabled: z.boolean(),
 });

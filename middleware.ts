@@ -42,6 +42,7 @@ const PROTECTED_ROUTES = [
   "/notifications",
   "/ai",
   "/calendar",
+  "/portal",
 ];
 
 const AUTH_ROUTES = [

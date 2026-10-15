@@ -32,8 +32,10 @@ export const projects = pgTable("projects", {
   priority: text("priority"),
   archivedAt: timestamp("archived_at"),
   deletedAt: timestamp("deleted_at"),
+  intakeToken: text("intake_token"),
 }, (table) => [
   uniqueIndex("uniq_projects_org_key_live").on(table.orgId, table.key).where(sql`${table.deletedAt} is null`),
+  uniqueIndex("uniq_projects_intake_token").on(table.intakeToken).where(sql`${table.intakeToken} is not null`),
 ]);
 
 export const sprints = pgTable("sprints", {
@@ -377,6 +379,7 @@ export const projectMilestones = pgTable("project_milestones", {
   description: text("description"),
   targetDate: date("target_date").notNull(),
   status: text("status").notNull().default("PENDING"),
+  clientVisible: boolean("client_visible").notNull().default(false),
   createdBy: text("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -384,6 +387,30 @@ export const projectMilestones = pgTable("project_milestones", {
   index("idx_project_milestones_project").on(table.projectId),
   index("idx_project_milestones_org").on(table.orgId),
 ]);
+
+export const projectClientGrants = pgTable("project_client_grants", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  canViewMilestones: boolean("can_view_milestones").notNull().default(true),
+  canViewTasks: boolean("can_view_tasks").notNull().default(false),
+  canViewComments: boolean("can_view_comments").notNull().default(false),
+  canSubmitRequests: boolean("can_submit_requests").notNull().default(false),
+  status: text("status").notNull().default("ACTIVE"),
+  expiresAt: timestamp("expires_at"),
+  grantedBy: text("granted_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("uniq_project_client_grants_active").on(table.projectId, table.userId).where(sql`${table.status} = 'ACTIVE'`),
+  index("idx_project_client_grants_org_user").on(table.orgId, table.userId),
+]);
+
+export const projectClientGrantsRelations = relations(projectClientGrants, ({ one }) => ({
+  project: one(projects, { fields: [projectClientGrants.projectId], references: [projects.id] }),
+  user: one(users, { fields: [projectClientGrants.userId], references: [users.id] }),
+}));
 
 export const projectMilestonesRelations = relations(projectMilestones, ({ one }) => ({
   project: one(projects, { fields: [projectMilestones.projectId], references: [projects.id] }),

@@ -1,5 +1,8 @@
 "use client";
 
+import { Switch } from "@/components/ui/switch";
+import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
+
 import { use, useState } from "react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -69,6 +72,8 @@ function MilestoneDialog({
   const [description, setDescription] = useState(milestone?.description ?? "");
   const [targetDate, setTargetDate] = useState(milestone?.targetDate ?? "");
   const [status, setStatus] = useState<ProjectMilestone["status"]>(milestone?.status ?? "PENDING");
+  const [clientVisible, setClientVisible] = useState(!!milestone?.clientVisible);
+  const portalOn = !!useOrgFeatureFlags().data?.clientPortal;
 
   const create = useCreateMilestone(projectId);
   const update = useUpdateMilestone(projectId);
@@ -83,7 +88,7 @@ function MilestoneDialog({
     }
     if (isEdit) {
       update.mutate(
-        { id: milestone.id, name: name.trim(), description: description.trim() || undefined, targetDate, status },
+        { id: milestone.id, name: name.trim(), description: description.trim() || undefined, targetDate, status, ...(portalOn && { clientVisible }) },
         { onSuccess: () => { toast.success("Milestone updated"); onClose(); }, onError: () => toast.error("Failed to update") },
       );
     } else {
@@ -126,6 +131,12 @@ function MilestoneDialog({
               </Select>
             </div>
           </div>
+          {portalOn && isEdit && (
+            <label className="flex min-h-10 items-center justify-between gap-2 text-sm">
+              Visible to client
+              <Switch checked={clientVisible} onCheckedChange={setClientVisible} />
+            </label>
+          )}
         </div>
         <SheetFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>

@@ -11,6 +11,7 @@ export interface ProjectMilestone {
   description: string | null;
   targetDate: string;
   status: "PENDING" | "ACHIEVED" | "MISSED";
+  clientVisible?: boolean;
   createdBy: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -28,6 +29,7 @@ export interface UpdateMilestoneInput {
   description?: string;
   targetDate?: string;
   status?: "PENDING" | "ACHIEVED" | "MISSED";
+  clientVisible?: boolean;
 }
 
 export interface ProjectBudget {

@@ -52,7 +52,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
 
     if (!project) return err("Project not found", 404);
-    return ok({ ...project, viewerRole: guard.role });
+    const canManage = guard.role === "OWNER" || guard.role === "MANAGER";
+    return ok({ ...project, intakeToken: canManage ? project.intakeToken : null, viewerRole: guard.role });
   });
 }
 

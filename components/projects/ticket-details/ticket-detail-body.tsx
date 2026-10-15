@@ -16,6 +16,8 @@ import {
 } from "@/lib/hooks/trpc-hooks";
 import { useEpics } from "@/lib/api/hooks/projects";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
 import { Textarea } from "@/components/ui/textarea";
 import { IconChip } from "@/components/ui/icon-chip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,6 +76,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
   const { data: epicsList = [] } = useEpics(projectId);
   const members = useTicketMembers(projectData);
   const canEdit = projectData?.viewerRole !== "VIEWER";
+  const portalOn = !!useOrgFeatureFlags().data?.clientPortal;
 
   const epicOptions = useMemo(
     () => epicsList.map((e) => ({ id: e.id, title: e.title?.trim() ? e.title : `Epic #${e.ticketNumber ?? e.id}` })),
@@ -217,6 +220,12 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
                 onAutoSave={(fields) => send(fields)}
               />
               <TicketTimeTracker ticketId={ticketId} projectId={projectId} timeSpent={ticket.timeSpent ?? null} />
+              {portalOn && (
+                <label className="flex min-h-10 items-center justify-between gap-2 text-sm">
+                  Visible to client
+                  <Switch checked={!!ticket.clientVisible} onCheckedChange={(on) => send({ clientVisible: on })} />
+                </label>
+              )}
             </fieldset>
             <WatcherList
               projectId={projectId}

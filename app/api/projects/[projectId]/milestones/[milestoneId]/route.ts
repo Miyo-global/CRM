@@ -11,6 +11,7 @@ const updateSchema = z.object({
   description: z.string().optional(),
   targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   status: z.enum(["PENDING", "ACHIEVED", "MISSED"]).optional(),
+  clientVisible: z.boolean().optional(),
 }).strict();
 
 type RouteContext = { params: Promise<{ projectId: string; milestoneId: string }> };

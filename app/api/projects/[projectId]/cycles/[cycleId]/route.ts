@@ -7,16 +7,31 @@ import { cycles, tickets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
-
-const updateCycleSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  description: z.string().optional(),
-  status: z.enum(["draft", "active", "completed"]).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-}).strict();
+import { completeCycle } from "@/lib/projects/complete-cycle";
 
 type RouteParams = { params: Promise<{ projectId: string; cycleId: string }> };
+import { loadCycleDetail } from "@/lib/projects/cycle-detail";
+
+export async function GET(_req: NextRequest, { params }: RouteParams) {
+  return withAuth(async (session) => {
+    const { projectId: id, cycleId } = await params;
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const cId = parseIdParam(cycleId);
+    if (cId === null) return err("Cycle not found", 404);
+    const detail = await loadCycleDetail(session.orgId, guard.projectId, cId);
+    return detail ? ok(detail) : err("Cycle not found", 404);
+  });
+}
+
+const updateCycleSchema = z.object({
+  name: z.string().trim().min(1).max(100).optional(),
+  description: z.string().max(5000).optional(),
+  status: z.enum(["draft", "active", "completed"]).optional(),
+  startDate: z.string().date().optional(),
+  endDate: z.string().date().optional(),
+  carryForwardCycleId: z.number().int().positive().nullable().optional(),
+}).strict();
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
@@ -27,7 +42,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const cId = parseIdParam(cycleId);
     if (cId === null) return err("Not found", 404);
 
-    const body = await parseBody(req, updateCycleSchema);
+    const { carryForwardCycleId, ...body } = await parseBody(req, updateCycleSchema);
+
+    if (body.status === "completed") {
+      const outcome = await completeCycle({
+        orgId: session.orgId,
+        projectId,
+        cycleId: cId,
+        carryForwardCycleId: carryForwardCycleId ?? null,
+        actorId: session.user.id,
+      });
+      if (outcome.kind === "not_found") return err("Cycle not found", 404);
+      if (outcome.kind === "invalid_target") return err(outcome.message, 400);
+      return ok<Record<string, unknown>>({ id: cId, status: "completed", carried: outcome.carried });
+    }
 
     if (body.status === "active") {
       const [existing] = await db
@@ -55,7 +83,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     if (!updated) return err("Cycle not found", 404);
 
-    return ok(updated);
+    return ok<Record<string, unknown>>(updated);
   });
 }
 

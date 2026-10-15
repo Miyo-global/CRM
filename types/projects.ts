@@ -94,6 +94,7 @@ export interface ProjectMember {
 
 export interface ProjectWithDetails extends Project {
   viewerRole?: ProjectRoleValue;
+  intakeToken?: string | null;
   statuses?: ProjectStatusRecord[];
   members?: ProjectMember[];
   tickets?: Ticket[];
@@ -257,6 +258,7 @@ export interface Ticket {
   estimate: number | null;
   version: number;
   rank: string | null;
+  clientVisible?: boolean;
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   assignee?: TicketUser | null;
@@ -510,6 +512,7 @@ export interface UpdateTicketInput {
   points?: number | null;
   originalEstimate?: number | null;
   dueDate?: string | null;
+  clientVisible?: boolean;
   version?: number;
 }
 
@@ -652,6 +655,9 @@ export interface UpdateIntakeRequestInput {
   status?: IntakeStatus;
   declineReason?: string;
   linkedWorkItemId?: number;
+  priority?: TicketPriority;
+  assigneeId?: string;
+  ticketStatus?: string;
 }
 
 export interface CreateCustomStateInput {

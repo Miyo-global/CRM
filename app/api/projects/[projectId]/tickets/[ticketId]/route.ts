@@ -24,6 +24,7 @@ const updateTicketSchema = z.object({
   originalEstimate: z.number().min(0).nullable().optional(),
   dueDate: z.string().date().nullable().optional(),
   startDate: z.string().date().nullable().optional(),
+  clientVisible: z.boolean().optional(),
   version: z.number().int().positive().optional(),
 }).strict();
 
@@ -112,6 +113,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (body.originalEstimate !== undefined) updateFields.originalEstimate = body.originalEstimate?.toString() ?? null;
     if (body.dueDate !== undefined) updateFields.dueDate = body.dueDate;
     if (body.startDate !== undefined) updateFields.startDate = body.startDate;
+    if (body.clientVisible !== undefined) updateFields.clientVisible = body.clientVisible;
 
     const versionScope = body.version !== undefined ? and(scope, eq(tickets.version, body.version)) : scope;
     const [after] = await db.update(tickets).set(updateFields).where(versionScope).returning(ticketReturning());
@@ -165,6 +167,7 @@ function ticketReturning() {
     dueDate: tickets.dueDate,
     startDate: tickets.startDate,
     parentTicketId: tickets.parentTicketId,
+    clientVisible: tickets.clientVisible,
     updatedAt: tickets.updatedAt,
   };
 }
