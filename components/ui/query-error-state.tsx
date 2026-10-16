@@ -14,7 +14,7 @@ interface QueryErrorStateProps {
 
 /** Never render a raw server message: getErrorMessage hides SQL, ids and stack frames (MIYO-0026). */
 function errorMessage(error: unknown): string | null {
-  return error ? getErrorMessage(error) : null;
+  return error instanceof Error ? getErrorMessage(error) : null;
 }
 
 export function QueryErrorState({
