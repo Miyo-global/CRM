@@ -1,6 +1,6 @@
-import { withAuth, ok, userErrorOr500 } from "@/lib/api/helpers";
+import { withAuth, ok, err, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { attendance, holidays } from "@/lib/db/schema";
+import { attendance, holidays, users } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { parseAttendancePunchBody, resolvePunchDate } from "@/lib/validations/attendance";
 import { notifyHrEmployeeCheckIn } from "@/lib/hr/attendance-hr-notifications";
@@ -20,6 +20,18 @@ export async function POST(req: NextRequest) {
     const isSunday = todayDate.getDay() === 0;
 
     try {
+      // No attendance before the employee starts (QA-0035).
+      const employee = await db.query.users.findFirst({
+        where: eq(users.id, session.user.id),
+        columns: { joiningDate: true },
+      });
+      if (employee?.joiningDate && today < String(employee.joiningDate).slice(0, 10)) {
+        return err(
+          `You cannot check in before your joining date (${String(employee.joiningDate).slice(0, 10)}).`,
+          400,
+        );
+      }
+
       const holiday = await db.query.holidays.findFirst({
         where: and(eq(holidays.orgId, session.orgId), eq(holidays.date, today)),
         columns: { id: true, name: true },
