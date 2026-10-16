@@ -80,9 +80,16 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
 
   const minSelectableDate = useMemo(() => parseLocalDate(effectiveMinStr), [effectiveMinStr]);
 
+  // The next working day, not simply tomorrow: the default landed on a
+  // Sunday every Saturday (QA-D007). Saturday is a working day here.
   const defaultStart = useMemo(() => {
-    if (effectiveMinStr > todayStr) return effectiveMinStr;
-    return format(addDays(parseLocalDate(todayStr), 1), "yyyy-MM-dd");
+    const firstAllowed =
+      effectiveMinStr > todayStr
+        ? parseLocalDate(effectiveMinStr)
+        : addDays(parseLocalDate(todayStr), 1);
+    let candidate = firstAllowed;
+    while (candidate.getDay() === 0) candidate = addDays(candidate, 1);
+    return format(candidate, "yyyy-MM-dd");
   }, [effectiveMinStr, todayStr]);
 
   const form = useForm<WfhFormValues>({

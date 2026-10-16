@@ -7,6 +7,9 @@ import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+
+/** Matches the cap enforced by POST /api/dashboard/announcements. */
+const ANNOUNCEMENT_MAX_CHARS = 2000;
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -80,13 +83,19 @@ export function AnnouncementsWidget() {
     >
       {showForm && isAdmin && (
         <div className="space-y-2 rounded-md border border-border bg-surface-sunken/40 p-3">
+          {/* The server caps this at 2,000 characters; the box used to
+              accept any length and fail on submit (QA-D007). */}
           <Textarea
             placeholder="Write an announcement..."
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value.slice(0, ANNOUNCEMENT_MAX_CHARS))}
+            maxLength={ANNOUNCEMENT_MAX_CHARS}
             className="min-h-18 resize-none bg-card text-sm"
             aria-label="Announcement content"
           />
+          <p className="text-right text-2xs tabular-nums text-muted-foreground">
+            {content.length}/{ANNOUNCEMENT_MAX_CHARS}
+          </p>
           <div className="flex items-center justify-between gap-2">
             <label className="flex cursor-pointer select-none items-center gap-1.5">
               <Checkbox

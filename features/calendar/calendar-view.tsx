@@ -120,7 +120,9 @@ export function CalendarView() {
     return () => ro.disconnect();
   }, []);
 
-  const calHeight = Math.max(containerHeight + 200, 900);
+  // Match the viewport instead of forcing 900px plus padding, which made the
+  // month rows far taller than their content (QA-D007).
+  const calHeight = Math.max(containerHeight, 560);
   const [createSlot, setCreateSlot] = useState<{
     start: Date;
     end: Date;
