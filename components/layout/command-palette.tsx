@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Command as CommandPrimitive } from "cmdk";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
-  Contact2, Handshake, UserCheck, Briefcase, Ticket,
+  UserCheck, Briefcase, Ticket,
   Search, Loader2, ArrowRight, History, Rows3, LogOut,
 } from "lucide-react";
 import {
@@ -38,20 +38,18 @@ interface RecentRoute {
   label: string;
 }
 
+// The searchable kinds in an HR product. Leads, deals, contacts and clients
+// were left over from the CRM the app grew out of (QA-D004).
 const ENTITY_ICONS = {
-  lead: Contact2,
-  deal: Handshake,
-  contact: UserCheck,
-  client: Briefcase,
   ticket: Ticket,
+  project: Briefcase,
+  employee: UserCheck,
 } as const;
 
 const ENTITY_LABELS = {
-  lead: "Leads",
-  deal: "Deals",
-  contact: "Contacts",
-  client: "Clients",
   ticket: "Tickets",
+  project: "Projects",
+  employee: "People",
 } as const;
 
 const SEARCH_DEBOUNCE_MS = 400;

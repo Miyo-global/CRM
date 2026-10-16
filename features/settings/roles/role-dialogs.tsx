@@ -25,15 +25,6 @@ import {
 
 const ROLE_TEMPLATES: Array<{ label: string; name: string; slug: string; permissions: string[] }> = [
   {
-    label: "Sales Rep",
-    name: "Sales Rep",
-    slug: "SALES_REP",
-    permissions: [
-      "crm:leads:view", "crm:leads:create", "crm:leads:update",
-      "crm:targets:view", "dashboard:sales:view", "self:view",
-    ],
-  },
-  {
     label: "HR Admin",
     name: "HR Admin",
     slug: "HR_ADMIN",
