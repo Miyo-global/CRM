@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync } from "fs";
 import { join } from "path";
-import { ADMIN_SETTINGS_PAGES, canAccessRoute } from "./route-access";
+import { ADMIN_SETTINGS_PAGES, HR_SETTINGS_PAGES, ORG_ADMIN_SETTINGS_PAGES, canAccessRoute } from "./route-access";
 import { SYSTEM_ROLES } from "@/lib/rbac/permissions";
 import { ROLE_LABELS } from "@/lib/rbac/roles";
 import { ALL_ROLES } from "@/lib/constants/roles";
@@ -70,10 +70,20 @@ describe("settings and onboarding access (MIYO-0024, MIYO-0025)", () => {
     expect(canAccessRoute("/hr/onboarding", "ENGINEERING")).toBe(false);
   });
 
-  it("admin settings pages stay HR-only", () => {
+  it("admin settings pages are closed to ordinary employees", () => {
     for (const page of ADMIN_SETTINGS_PAGES) {
       expect(canAccessRoute(`/settings/${page}`, "ENGINEERING")).toBe(false);
+    }
+  });
+
+  it("HR manages its own settings pages but not the org-admin ones (QA-0034)", () => {
+    for (const page of HR_SETTINGS_PAGES) {
       expect(canAccessRoute(`/settings/${page}`, "HR")).toBe(true);
+    }
+    for (const page of ORG_ADMIN_SETTINGS_PAGES) {
+      expect(canAccessRoute(`/settings/${page}`, "HR")).toBe(false);
+      expect(canAccessRoute(`/settings/${page}`, "ADMIN")).toBe(true);
+      expect(canAccessRoute(`/settings/${page}`, "CEO")).toBe(true);
     }
   });
 

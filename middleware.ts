@@ -278,9 +278,12 @@ export default async function middleware(req: NextRequest) {
   if (isAuthenticated && token?.role && startsWithAny(pathname, PROTECTED_ROUTES)) {
     const userRole = token.role as string;
     if (!canAccessRoute(pathname, userRole)) {
+      // One denied view for every route denial, instead of a silent bounce to
+      // the dashboard from some pages and Access Restricted on others
+      // (QA-0034).
       const url = req.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.search = "";
+      url.pathname = "/access-restricted";
+      url.search = `?from=${encodeURIComponent(pathname)}`;
       return NextResponse.redirect(url);
     }
   }

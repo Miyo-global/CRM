@@ -6,11 +6,11 @@ const EVERYONE: string[] = [...SYSTEM_ROLES];
 /** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
 const HR_TEAM: string[] = ["CEO", "HR"];
 
-/** Org-admin pages under /settings (MIYO-0024). */
-export const ADMIN_SETTINGS_PAGES = [
+/**
+ * Pages under /settings the people team manages (shown in the HR menu).
+ */
+export const HR_SETTINGS_PAGES = [
   "members",
-  "roles",
-  "permissions",
   "organization",
   "custom-fields",
   "data-hub",
@@ -18,10 +18,27 @@ export const ADMIN_SETTINGS_PAGES = [
   "job-roles",
   "payroll-schedule",
   "termination-reasons",
+] as const;
+
+/**
+ * Pages under /settings only the CEO and Admin may open.
+ *
+ * HR could reach Roles & Permissions, the Permission Matrix, the Audit Log and
+ * Webhooks by typing the URL although its own menu hides them (QA-0034).
+ */
+export const ORG_ADMIN_SETTINGS_PAGES = [
+  "roles",
+  "permissions",
   "webhooks",
   "audit-log",
   "ai",
   "branches",
+] as const;
+
+/** Every admin-only page under /settings, checked against the app router in the tests. */
+export const ADMIN_SETTINGS_PAGES = [
+  ...HR_SETTINGS_PAGES,
+  ...ORG_ADMIN_SETTINGS_PAGES,
 ] as const;
 
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
@@ -58,7 +75,10 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   // below is checked against app/(dashboard)/settings/* in the tests.
   "/settings": EVERYONE,
   "/settings/notifications": EVERYONE,
-  ...Object.fromEntries(ADMIN_SETTINGS_PAGES.map((p) => [`/settings/${p}`, HR_TEAM])),
+  ...Object.fromEntries(HR_SETTINGS_PAGES.map((p) => [`/settings/${p}`, HR_TEAM])),
+  // CEO and ADMIN pass every route via hasFullAccess, so an empty list here
+  // means "org admins only".
+  ...Object.fromEntries(ORG_ADMIN_SETTINGS_PAGES.map((p) => [`/settings/${p}`, [] as string[]])),
   "/notifications": EVERYONE,
   "/ceo": HR_TEAM,
 
@@ -67,6 +87,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/dashboard/branches": HR_TEAM,
 
   "/calendar": EVERYONE,
+  // The denied view itself is open to everyone (QA-0034).
+  "/access-restricted": EVERYONE,
 };
 
 export function canAccessRoute(pathname: string, role: string): boolean {
