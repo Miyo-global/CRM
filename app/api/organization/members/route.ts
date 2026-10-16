@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
+import { withAuth, ok, err, toNumber, serverError } from "@/lib/api/helpers";
 import { getOrgMembers } from "@/server/queries/organization";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createOrgInvitation } from "@/lib/org/create-invitation";
@@ -26,10 +26,7 @@ export async function GET(req: NextRequest) {
       const data = await getOrgMembers(session.orgId, page, limit, search, roles);
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load members",
-        500
-      );
+      return serverError(error, { route: "organization/members", orgId: session.orgId }, "Failed to load members.");
     }
   });
 }
@@ -55,10 +52,7 @@ export async function POST(req: NextRequest) {
 
       return ok({ success: true, invitationId }, 201);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to invite user",
-        500
-      );
+      return serverError(error, { route: "organization/members", orgId: session.orgId }, "Failed to invite user.");
     }
   });
 }
