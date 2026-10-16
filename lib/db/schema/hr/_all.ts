@@ -165,7 +165,8 @@ export const salaryStructures = pgTable("salary_structures", {
   allowances: decimal("allowances").default("0"),
   specialAllowance: decimal("special_allowance").default("0"),
   deductions: decimal("deductions").default("0"),
-  professionalTax: decimal("professional_tax").default("200"),
+  /** Null = by band (lib/payroll/rules professionalTax); "0" = not levied. */
+  professionalTax: decimal("professional_tax"),
   pfApplicable: boolean("pf_applicable").default(false).notNull(),
   pfEmployeeRate: decimal("pf_employee_rate", { precision: 5, scale: 2 }).default("12"),
   pfEmployerRate: decimal("pf_employer_rate", { precision: 5, scale: 2 }).default("12"),

@@ -116,7 +116,8 @@ export async function POST(req: NextRequest) {
           specialAllowance: (body.specialAllowance ?? 0).toString(),
           allowances: (body.allowances ?? 0).toString(),
           deductions: (body.deductions ?? 0).toString(),
-          professionalTax: ptForStructure(body).toString(),
+          // null = PT by band at payroll time (MIYO-0019); 0 = no PT.
+          professionalTax: body.professionalTax != null ? String(body.professionalTax) : null,
           effectiveFrom: effectiveFromSnapped,
           effectiveTo: body.effectiveTo ? formatDateOnly(new Date(body.effectiveTo)) : undefined,
           isActive: true,

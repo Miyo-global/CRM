@@ -191,7 +191,7 @@ ATS items start at MIYO-0626.
   - **Problem:** A second PT source still defaults to 200 and is used by legacy scripts.
   - **Fix:** Delete PROFESSIONAL_TAX_INR; make the legacy scripts import professionalTax() from lib/payroll/rules. Do not touch scripts/generate-miyo-payslips.ts.
   - **Acceptance check:** `grep -rn "200" lib/hr/payroll-calculations.ts` has no PT constant; rules.test.ts passes.
-- [ ] MIYO-0019 [Critical][Payroll] salary_structures.professional_tax defaults to "200" in the schema
+- [x] MIYO-0019 [Critical][Payroll] salary_structures.professional_tax defaults to "200" in the schema
   - **Where:** lib/db/schema/hr/_all.ts:168, lib/payroll/load-inputs.ts:176-206
   - **Problem:** New structures created without an explicit PT store 200. load-inputs only honours a structure PT of 0, but the stored 200 is shown in the UI/structure screens.
   - **Fix:** Drop the default (nullable, null = use bands) via additive migration `ALTER COLUMN professional_tax DROP DEFAULT`; display 'By band' when null.
