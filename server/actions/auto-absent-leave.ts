@@ -16,6 +16,7 @@ import { sendEmail } from "@/lib/email";
 import { buildNotificationEmail } from "@/lib/notifications/email";
 import { logger } from "@/lib/logger";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { ATTENDANCE_EXEMPT_ROLES } from "@/lib/constants/roles";
 
 const ABSENT_CUTOFF_LABEL = "11:59 AM IST";
 
@@ -125,10 +126,10 @@ export async function markAbsentEmployeesAsLeave() {
     const onWfh = new Set(wfhRows.map((r) => r.userId));
 
     const absentees = members.filter((m) => {
-      // The CEO is not subject to auto-absent/treated-as-leave: no attendance row,
-      // no personal "you were marked absent" notice. The CEO still receives the
-      // summary about other absentees via notifyByRoles below.
-      if (m.role === ROLES.CEO) return false;
+      // Roles whose attendance is not enforced are never marked absent and
+      // never appear in the HR digest — an Admin was being listed as absent
+      // without leave every day (QA-0042). They still receive the digest.
+      if (ATTENDANCE_EXEMPT_ROLES.includes(m.role)) return false;
       if (checkedIn.has(m.userId) || onLeave.has(m.userId) || onWfh.has(m.userId)) return false;
       if (m.joiningDate && m.joiningDate > today) return false;
       return true;
@@ -160,13 +161,13 @@ export async function markAbsentEmployeesAsLeave() {
           userId: m.userId,
           type: "WARNING",
           title: "Marked absent — treated as leave",
-          message: `You did not check in by ${ABSENT_CUTOFF_LABEL} on ${today} and no leave request was found in the database. The day is being treated as leave. Please contact HR if this is incorrect.`,
+          message: `You were not checked in by ${ABSENT_CUTOFF_LABEL} on ${today} and have no approved leave for the day, so it is being counted as leave. Tell HR if that is wrong.`,
           link: "/hr/attendance",
         });
         if (m.email) {
           const { subject, html } = buildNotificationEmail({
             title: "Marked absent — treated as leave",
-            message: `${name}, you are not present and no leave request was found in the database for ${today}. The day is being treated as leave. Please check with HR if this is incorrect.`,
+            message: `${name}, you were not checked in by ${ABSENT_CUTOFF_LABEL} on ${today} and have no approved leave for the day, so it is being counted as leave. Tell HR if that is wrong.`,
             link: "/hr/attendance",
           });
           await sendEmail({ to: m.email, subject, html });
@@ -180,7 +181,7 @@ export async function markAbsentEmployeesAsLeave() {
       await notifyByRoles(orgId, [ROLES.CEO, ROLES.HR], {
         type: "WARNING",
         title: `Absent without leave — ${today}`,
-        message: `${absentees.length} employee(s) did not check in by ${ABSENT_CUTOFF_LABEL} and have no leave request in the database for ${today}. They are being treated as leave — please check:\n${names.join(", ")}`,
+        message: `${absentees.length} ${absentees.length === 1 ? "person" : "people"} were not checked in by ${ABSENT_CUTOFF_LABEL} on ${today} and have no approved leave, so the day counts as leave for them:\n${names.join(", ")}`,
         link: "/hr/attendance",
         email: true,
       });
