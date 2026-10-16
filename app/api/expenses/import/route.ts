@@ -20,8 +20,16 @@ const ALLOWED_CATEGORIES = new Set([
   "Salary", "Miscellaneous", "Other",
 ]);
 
+/**
+ * Strips spreadsheet-formula prefixes from an imported cell.
+ *
+ * A leading "-" is kept: stripping it turned -50 into 50, so a negative
+ * amount the preview flagged as invalid was imported as a positive expense
+ * (QA-0014). A lone minus cannot start a formula, and a cell like "-1+2" still
+ * fails the numeric check, while text cells are escaped again on export.
+ */
 function sanitizeCell(value: string): string {
-  return value.replace(/^[=+\-@\t\r]+/, "").trim();
+  return value.replace(/^[=+@\t\r]+/, "").trim();
 }
 
 function normalizeHeader(header: string): string {
