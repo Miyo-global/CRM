@@ -9,21 +9,28 @@ import { z } from "zod";
 import { sendPasswordChangeConfirmationEmail } from "@/lib/email";
 import { revokeAllUserSessions } from "@/lib/auth";
 import { hashToken } from "@/lib/secret-crypto";
+import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 
 const schema = z.object({
   token: z.string(),
-  password: z
-    .string()
-    .min(8)
-    .max(128)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/),
+  // One policy, shared with the client, instead of an inline 8-character rule
+  // over a narrow character set (QA-0067).
+  password: PASSWORD_ZOD_SCHEMA,
 });
 
 export async function POST(req: NextRequest) {
   let input: z.infer<typeof schema>;
   try {
     input = schema.parse(await req.json());
-  } catch {
+  } catch (error) {
+    // A weak password used to return the same opaque message as a bad token
+    // (QA-0067).
+    if (error instanceof z.ZodError) {
+      const passwordIssue = error.issues.find((issue) => issue.path[0] === "password");
+      if (passwordIssue) {
+        return err(passwordIssue.message, 400);
+      }
+    }
     return err("Invalid request body", 400);
   }
 

@@ -63,7 +63,9 @@ describe("employee salary exposure", () => {
     signIn("ENGINEERING");
     const { GET } = await import("@/app/api/hr/employees/route");
     const rows = (await (await GET(req("/api/hr/employees"))).json()) as { id: string; monthlySalary: string | null }[];
-    expect(rows.find((r) => r.id === "ceo")?.monthlySalary).toBeNull();
+    // A colleague's row is a directory card now, so the salary is absent
+    // rather than null (QA-0062).
+    expect(rows.find((r) => r.id === "ceo")?.monthlySalary ?? null).toBeNull();
     expect(rows.find((r) => r.id === "self")?.monthlySalary).toBe("50000");
   });
 
@@ -71,14 +73,16 @@ describe("employee salary exposure", () => {
     signIn("ENGINEERING");
     const { GET } = await import("@/app/api/hr/employees/route");
     const body = (await (await GET(req("/api/hr/employees?page=1"))).json()) as { data: { id: string; monthlySalary: string | null }[] };
-    expect(body.data.find((r) => r.id === "ceo")?.monthlySalary).toBeNull();
+    expect(body.data.find((r) => r.id === "ceo")?.monthlySalary ?? null).toBeNull();
   });
 
   it("hides a coworker salary on the detail endpoint", async () => {
     signIn("ENGINEERING");
     const { GET } = await import("@/app/api/hr/employees/[employeeId]/route");
     const res = await GET(req("/api/hr/employees/ceo"), { params: Promise.resolve({ employeeId: "ceo" }) });
-    expect(((await res.json()) as { monthlySalary: string | null }).monthlySalary).toBeNull();
+    expect(
+      ((await res.json()) as { monthlySalary?: string | null }).monthlySalary ?? null,
+    ).toBeNull();
   });
 
   it("returns 404 for an unknown employee", async () => {
@@ -113,5 +117,24 @@ describe("public sign-up", () => {
     } finally {
       delete process.env.NEXT_PUBLIC_SIGNUP_ENABLED;
     }
+  });
+});
+
+describe("directory projection (QA-0062, QA-0063)", () => {
+  it("drops contact and reporting fields from a colleague's row", async () => {
+    signIn("ENGINEERING");
+    const { GET } = await import("@/app/api/hr/employees/route");
+    const rows = (await (await GET(req("/api/hr/employees"))).json()) as Record<string, unknown>[];
+    const other = rows.find((r) => r.id === "ceo")!;
+    expect("email" in other).toBe(false);
+    expect("employeeId" in other).toBe(false);
+    expect(other.id).toBe("ceo");
+  });
+
+  it("keeps your own row complete", async () => {
+    signIn("ENGINEERING");
+    const { GET } = await import("@/app/api/hr/employees/route");
+    const rows = (await (await GET(req("/api/hr/employees"))).json()) as Record<string, unknown>[];
+    expect(rows.find((r) => r.id === "self")?.monthlySalary).toBe("50000");
   });
 });

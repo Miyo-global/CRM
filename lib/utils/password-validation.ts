@@ -7,7 +7,9 @@ export const PASSWORD_RULES = {
   requireLowercase: true,
   requireNumber: true,
   requireSpecial: true,
-  specialChars: "@$!%*?&",
+  // Any punctuation or space counts. The old set rejected # _ - and a space,
+  // common choices in a passphrase (QA-0067).
+  specialChars: "!@#$%^&*()_+-=[]{};:'\",.<>/?\\|`~ and spaces",
 } as const;
 
 export function validatePasswordStrength(password: string): {
@@ -29,8 +31,8 @@ export function validatePasswordStrength(password: string): {
   if (!/\d/.test(password)) {
     missing.push("At least one number");
   }
-  if (!/[@$!%*?&]/.test(password)) {
-    missing.push("At least one special character (@$!%*?&)");
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    missing.push("At least one special character or space");
   }
 
   const checks = 5;

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { getPasswordStrength } from "@/lib/password-utils";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_RULES, PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
 import { PasswordInput } from "@/components/auth/password-input";
 import Link from "next/link";
@@ -194,7 +194,7 @@ function SetupPasswordContent() {
       </div>
 
       <p className="mt-4 text-xs text-subtle-foreground">
-        8+ characters with uppercase, lowercase, number, and special character required.
+        At least {PASSWORD_RULES.minLength} characters with an uppercase letter, a lowercase letter, a number and a special character or space.
       </p>
     </div>
   );
