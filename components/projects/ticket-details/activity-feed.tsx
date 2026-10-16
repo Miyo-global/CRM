@@ -39,7 +39,18 @@ export function ActivityFeed({ ticketId, projectId, comments, people, canComment
   });
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter((f) => COMMENT_ACCEPT.includes(f.type));
+    const all = Array.from(files);
+    const validFiles = all.filter((f) => COMMENT_ACCEPT.includes(f.type));
+    // A file of an unsupported type used to be dropped without a word, so the
+    // comment posted with no attachment (QA-0056).
+    const skipped = all.filter((f) => !validFiles.includes(f));
+    if (skipped.length > 0) {
+      toast.error(
+        skipped.length === 1
+          ? `${skipped[0].name} cannot be attached: unsupported file type.`
+          : `${skipped.length} files cannot be attached: unsupported file types.`,
+      );
+    }
     if (!validFiles.length) return;
     if (pendingImages.length + validFiles.length > 10) {
       toast.error("Maximum 10 attachments per comment");

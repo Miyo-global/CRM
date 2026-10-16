@@ -45,6 +45,7 @@ interface TicketSidebarProps {
     priority?: string | null;
     type?: string | null;
     points?: number | null;
+    dueDate?: string | null;
     sprintId?: number | null;
     epicId?: number | null;
     timeSpent?: string | null;
@@ -254,6 +255,18 @@ export function TicketSidebar({
             }}
             className={`${fieldClass} tabular-nums`}
             placeholder="0"
+          />
+        </PropertyRow>
+
+        {/* Tickets had no due date in the UI even though the API stores one
+            (QA-0056). */}
+        <PropertyRow label="Due date" icon={<Calendar className="h-3 w-3 shrink-0" />}>
+          <Input
+            type="date"
+            value={ticket.dueDate ? String(ticket.dueDate).slice(0, 10) : ""}
+            onChange={(e) => onAutoSave({ dueDate: e.target.value || null })}
+            className={fieldClass}
+            aria-label="Due date"
           />
         </PropertyRow>
 

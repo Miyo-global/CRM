@@ -29,6 +29,10 @@ export const DOCUMENT_UPLOAD_MIME_TYPES = [
   "image/jpeg",
   "image/gif",
   "image/webp",
+  // Plain text and CSV: a .txt attachment on a ticket comment was silently
+  // dropped because no list admitted it (QA-0056).
+  "text/plain",
+  "text/csv",
 ] as const;
 
 export const DOCUMENT_UPLOAD_EXTENSIONS = [
@@ -42,6 +46,8 @@ export const DOCUMENT_UPLOAD_EXTENSIONS = [
   ".jpeg",
   ".gif",
   ".webp",
+  ".txt",
+  ".csv",
 ] as const;
 
 export const DOCUMENT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;

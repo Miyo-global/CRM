@@ -1,7 +1,7 @@
 import { FileText, FileSpreadsheet, File } from "lucide-react";
 import type { CommentImage } from "@/types/projects";
 
-export const COMMENT_ACCEPT = "image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+export const COMMENT_ACCEPT = "image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,text/csv";
 
 export function resolveAttachmentUrl(att: CommentImage): string {
   const key = att.key || (att.url.startsWith("http") ? (() => { try { return new URL(att.url).pathname.replace(/^\//, ""); } catch { return att.url; } })() : att.url);
