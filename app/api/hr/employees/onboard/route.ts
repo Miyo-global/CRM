@@ -3,7 +3,6 @@ import { ONBOARDING_MUTATE_ROLES } from "@/lib/constants/roles";
 import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
 import { db } from "@/lib/db";
 import { users, organizationMembers, salaryStructures, passwordResetTokens } from "@/lib/db/schema";
-import { formatDateOnly } from "@/lib/date-utils";
 import { hash } from "bcryptjs";
 import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
@@ -13,6 +12,7 @@ import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendWelcomeEmail } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
+import { formatCalendarDate, formatDateOnly, formatIST } from "@/lib/date-utils";
 import { hashToken } from "@/lib/secret-crypto";
 import { generateNextEmployeeId, normalizeEmployeeIdInput } from "@/lib/hr/generate-employee-id";
 import { onboardEmployeeInputSchema, isRoleAllowedForDepartment, DEPARTMENT_ROLE_MISMATCH_MESSAGE, checkMinMonthlySalary } from "@/lib/validations/hr";
@@ -257,15 +257,30 @@ export async function POST(req: NextRequest) {
     if (newUser.email) {
       try {
         const setupToken = nanoid(48);
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await db.insert(passwordResetTokens).values({
           id: randomUUID(),
           email: newUser.email,
           token: hashToken(setupToken),
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          expiresAt,
         });
 
+        // The set-up mail states the real expiry, the first day and the
+        // manager (QA-0041).
+        const manager = reportingTo
+          ? await db.query.users.findFirst({
+              where: eq(users.id, reportingTo),
+              columns: { name: true },
+            })
+          : null;
+
         const setupUrl = `${appUrl}/setup-password?token=${setupToken}`;
-        await sendWelcomeEmail(newUser.email, `${body.firstName} ${body.lastName}`, setupUrl);
+        await sendWelcomeEmail(newUser.email, `${body.firstName} ${body.lastName}`, setupUrl, {
+          designation: body.designation,
+          joiningDate: formatCalendarDate(formatDateOnly(body.joiningDate)),
+          managerName: manager?.name ?? null,
+          linkExpiresAt: `${formatIST(expiresAt)} IST`,
+        });
       } catch (emailErr) {
         logger.error("Failed to send setup email", { email: newUser.email, error: emailErr instanceof Error ? emailErr.message : "Unknown" });
       }

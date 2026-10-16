@@ -75,94 +75,115 @@ export function getPasswordResetEmailTemplate(resetUrl: string): string {
   });
 }
 
-export function getWelcomeEmailTemplate(name: string, email: string, setupUrl: string): string {
+export interface WelcomeEmailDetails {
+  /** Date the employee starts, as a display string. */
+  joiningDate?: string | null;
+  /** Reporting manager's name. */
+  managerName?: string | null;
+  designation?: string | null;
+  /** When the set-up link stops working, as IST text. */
+  linkExpiresAt?: string | null;
+}
+
+/**
+ * Account set-up email.
+ *
+ * The old copy was generic ("excited to have you on board"), showed an empty
+ * credential box, said "expires in 7 days" with no date, and left out the
+ * joining date and manager the new hire actually needs (QA-0041).
+ */
+export function getWelcomeEmailTemplate(
+  name: string,
+  email: string,
+  setupUrl: string,
+  details: WelcomeEmailDetails = {},
+): string {
   const sName = escapeHtml(name);
   const sEmail = escapeHtml(email);
+  const rows: string[] = [
+    `<div class="credential-item"><span class="credential-label">Sign in with:</span> <span class="credential-value">${sEmail}</span></div>`,
+  ];
+  if (details.designation) {
+    rows.push(
+      `<div class="credential-item"><span class="credential-label">Role:</span> <span class="credential-value">${escapeHtml(details.designation)}</span></div>`,
+    );
+  }
+  if (details.joiningDate) {
+    rows.push(
+      `<div class="credential-item"><span class="credential-label">First day:</span> <span class="credential-value">${escapeHtml(details.joiningDate)}</span></div>`,
+    );
+  }
+  if (details.managerName) {
+    rows.push(
+      `<div class="credential-item"><span class="credential-label">Reporting to:</span> <span class="credential-value">${escapeHtml(details.managerName)}</span></div>`,
+    );
+  }
+
   const content = `
-    <h2 class="email-title">Welcome to Miyo Global, ${sName}!</h2>
+    <h2 class="email-title">Set up your Miyo Global account</h2>
     <p class="email-text">
-      Your account has been successfully created. We're excited to have you on board!
+      ${sName}, your account is ready. Set a password to sign in.
     </p>
 
     <p class="email-text">
-      Click the button below to set up your password and activate your account:
+      <a href="${setupUrl}" class="email-button">Set your password</a>
     </p>
-
-    <div style="text-align: center; margin: 24px 0;">
-      <a href="${setupUrl}" class="email-button">
-        Set Up Your Password
-      </a>
-    </div>
 
     <div class="credential-box">
-      <div class="credential-item">
-        <span class="credential-label">Your Email:</span>
-        <span class="credential-value">${sEmail}</span>
-      </div>
+      ${rows.join("\n      ")}
     </div>
 
-    <div class="security-notice">
-      <p class="security-text">
-        This link expires in 7 days. If you didn't expect this email, please ignore it or contact your HR administrator.
-      </p>
-    </div>
-
-    <div class="divider"></div>
-
-    <p class="email-text">
-      <strong>After setting up your password:</strong>
+    <p class="email-text" style="font-size:14px">
+      ${
+        details.linkExpiresAt
+          ? `This link works until ${escapeHtml(details.linkExpiresAt)}.`
+          : "This link is single-use and expires."
+      }
+      If you were not expecting it, tell HR.
     </p>
-    <ul style="color: ${BRAND.inkMuted}; font-size: 15px; line-height: 1.8; margin: 16px 0;">
-      <li>Complete your profile with a photo and personal details</li>
-      <li>Explore the dashboard to see your team and projects</li>
-      <li>Set up your attendance tracking</li>
-      <li>Check out your leave balances</li>
-    </ul>
   `;
 
   return getEmailTemplate({
-    title: 'Welcome to Miyo Global — Set Up Your Account',
-    preheader: 'Your account is ready — set up your password to get started!',
+    title: "Set up your Miyo Global account",
+    preheader: `${sName}, set a password to sign in`,
     content,
   });
 }
 
-export function getPasswordChangeConfirmationEmailTemplate(userName: string): string {
+/**
+ * Password-change confirmation.
+ *
+ * It greeted "Hi Qa Alpha ," with a stray space, carried a four-point security
+ * essay, named no time, and offered no way to act (QA-0041).
+ */
+export function getPasswordChangeConfirmationEmailTemplate(
+  userName: string,
+  changedAt?: string | null,
+): string {
   const sUserName = escapeHtml(userName);
   const content = `
-    <h2 class="email-title">Password Changed Successfully</h2>
+    <h2 class="email-title">Your password was changed</h2>
     <p class="email-text">
-      Hi <strong>${sUserName}</strong>,
+      ${sUserName}, the password on your Miyo Global CRM account was changed${
+        changedAt ? ` on ${escapeHtml(changedAt)}` : ""
+      }.
     </p>
 
     <p class="email-text">
-      Your password has been successfully changed. If you made this change, you can safely ignore this email.
+      <a href="${baseUrl}/settings" class="email-button">Review your security settings</a>
     </p>
 
     <div class="security-notice">
       <p class="security-text">
-        <strong>Security Alert:</strong> If you did NOT make this change, please contact our support team immediately
-        at <a href="mailto:${SUPPORT_EMAIL}" style="color: ${BRAND.warning}; text-decoration: underline;">${SUPPORT_EMAIL}</a>
-        or reset your password right away.
+        If this was not you, reset your password now and write to
+        <a href="mailto:${SUPPORT_EMAIL}" style="color: ${BRAND.warning}; text-decoration: underline;">${SUPPORT_EMAIL}</a>.
       </p>
     </div>
-
-    <div class="divider"></div>
-
-    <p class="email-text" style="font-size: 14px;">
-      <strong>Security Tips:</strong>
-    </p>
-    <ul style="color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.8; margin: 16px 0;">
-      <li>Use a strong, unique password for your account</li>
-      <li>Never share your password with anyone</li>
-      <li>Enable two-factor authentication if available</li>
-      <li>Update your password regularly</li>
-    </ul>
   `;
 
   return getEmailTemplate({
-    title: 'Password Changed Successfully',
-    preheader: 'Your password has been updated',
+    title: "Your password was changed",
+    preheader: "The password on your account was changed",
     content,
   });
 }

@@ -5,6 +5,7 @@ export {
   getVerificationEmailTemplate,
   getPasswordResetEmailTemplate,
   getWelcomeEmailTemplate,
+  type WelcomeEmailDetails,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,

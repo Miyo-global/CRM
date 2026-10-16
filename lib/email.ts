@@ -6,6 +6,7 @@ import {
   getPasswordResetEmailTemplate,
   getInvitationEmailTemplate,
   getWelcomeEmailTemplate,
+  type WelcomeEmailDetails,
   getProjectAssignmentEmailTemplate,
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
@@ -96,12 +97,13 @@ export async function sendInvitationEmail(
 export async function sendWelcomeEmail(
   email: string,
   name: string,
-  setupUrl: string
+  setupUrl: string,
+  details: WelcomeEmailDetails = {},
 ) {
   await sendEmail({
     to: email,
-    subject: "Welcome to Miyo Global — Set Up Your Account",
-    html: getWelcomeEmailTemplate(name, email, setupUrl),
+    subject: "Set up your Miyo Global account",
+    html: getWelcomeEmailTemplate(name, email, setupUrl, details),
   });
 }
 

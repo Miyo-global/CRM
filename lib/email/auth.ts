@@ -1,10 +1,12 @@
 import { sendEmail } from "./sender";
 import { baseUrl } from "./sender";
+import { formatIST } from "@/lib/date-utils";
 import {
   getVerificationEmailTemplate,
   getPasswordResetEmailTemplate,
   getInvitationEmailTemplate,
   getWelcomeEmailTemplate,
+  type WelcomeEmailDetails,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,
@@ -47,23 +49,25 @@ export async function sendInvitationEmail(
 export async function sendWelcomeEmail(
   email: string,
   name: string,
-  setupUrl: string
+  setupUrl: string,
+  details: WelcomeEmailDetails = {},
 ) {
   await sendEmail({
     to: email,
-    subject: "Welcome to Miyo Global — Set Up Your Account",
-    html: getWelcomeEmailTemplate(name, email, setupUrl),
+    subject: "Set up your Miyo Global account",
+    html: getWelcomeEmailTemplate(name, email, setupUrl, details),
   });
 }
 
 export async function sendPasswordChangeConfirmationEmail(
   email: string,
-  userName: string
+  userName: string,
+  changedAt: string = `${formatIST(new Date())} IST`,
 ) {
   await sendEmail({
     to: email,
-    subject: "Password Changed Successfully",
-    html: getPasswordChangeConfirmationEmailTemplate(userName),
+    subject: "Your password was changed",
+    html: getPasswordChangeConfirmationEmailTemplate(userName, changedAt),
   });
 }
 
