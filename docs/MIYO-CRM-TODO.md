@@ -204,7 +204,7 @@ ATS items start at MIYO-0626.
 
 ### Critical · Security
 
-- [ ] MIYO-0021 [Critical][Security] Fix the outbound webhook signature header name (contains a space)
+- [x] MIYO-0021 [Critical][Security] Fix the outbound webhook signature header name (contains a space)
   - **Where:** lib/inngest/functions/webhook-dispatcher.ts:65 (`"X-Miyo Global-Signature"`)
   - **Problem:** A header name with a space is invalid; fetch throws, so every webhook delivery fails (design doc N1).
   - **Fix:** Rename to `X-Miyo-Signature`; update settings/webhooks docs; add a unit test that builds the request headers.

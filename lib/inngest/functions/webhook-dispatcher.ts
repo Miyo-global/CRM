@@ -5,6 +5,17 @@ import { eq, and } from "drizzle-orm";
 import { createHmac } from "crypto";
 import { isSafePublicHttpsUrl } from "@/lib/security/ssrf";
 
+/** Header carrying `sha256=<hex HMAC of the raw body>`, keyed by the endpoint secret. */
+export const WEBHOOK_SIGNATURE_HEADER = "X-Miyo-Signature";
+
+export function webhookHeaders(eventName: string, signature: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    [WEBHOOK_SIGNATURE_HEADER]: `sha256=${signature}`,
+    "X-Webhook-Event": eventName,
+  };
+}
+
 export const webhookDispatcher = inngest.createFunction(
   { id: "webhook-dispatcher", name: "Dispatch Webhook Events", triggers: { event: "webhook/dispatch" } },
   async ({ event, step }) => {
@@ -60,11 +71,7 @@ export const webhookDispatcher = inngest.createFunction(
           try {
             const res = await fetch(ep.url, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Miyo Global-Signature": `sha256=${signature}`,
-                "X-Webhook-Event": eventName,
-              },
+              headers: webhookHeaders(eventName, signature),
               body,
               signal: AbortSignal.timeout(10_000),
             });

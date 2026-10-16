@@ -175,6 +175,10 @@ function WebhooksContent() {
       }
     >
       <motion.div className="space-y-4" variants={staggerContainer} initial="hidden" animate="visible">
+        <p className="text-sm text-muted-foreground">
+          Each delivery is a JSON POST signed with the endpoint secret: header{" "}
+          <code className="font-mono text-xs">X-Miyo-Signature: sha256=&lt;HMAC-SHA256 of the raw body&gt;</code>.
+        </p>
         {(!webhooks || webhooks.length === 0) ? (
           <motion.div variants={fadeUp}>
             <EmptyState
