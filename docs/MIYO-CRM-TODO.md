@@ -140,7 +140,7 @@ ATS items start at MIYO-0626.
   - **Problem:** Prod pages take 30–90 s and direct loads time out (QA rounds 1–3 and 16 Oct). No timing data exists.
   - **Fix:** Enable Sentry performance tracing (tracesSampleRate 0.2) and add a Server-Timing header in withAuth (auth, session-check, membership, handler).
   - **Acceptance check:** One prod load of /dashboard produces a Sentry transaction showing each DB span.
-- [ ] MIYO-0010 [Critical][Prod/Performance] Check that the Vercel function region matches the Postgres region **[confirm on prod]**
+- [ ] MIYO-0010 [Critical][Prod/Performance] Check that the Vercel function region matches the Postgres region **[confirm on prod]** — _agent part done: regions=cle1 (Neon is aws-us-east-2); awaiting Tarun Server-Timing check_
   - **Where:** vercel.json (no `regions` set), DATABASE_URL host
   - **Problem:** Without `regions`, functions run in iad1 by default; if the DB is in Mumbai/Singapore every query crosses continents, and withAuth alone makes 2–3 round trips per request.
   - **Fix:** Confirm the DB region with Tarun, then set `"regions": ["bom1"]` (or the DB's region) in vercel.json.
