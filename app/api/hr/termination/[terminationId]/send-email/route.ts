@@ -101,7 +101,8 @@ export async function POST(
       const errorMessage = error instanceof Error ? error.message : "Unknown email error";
 
       await db.update(terminations).set({
-        emailStatus: `failed: ${errorMessage}`,
+        // Provider error text stays in the audit log, not in a field the UI shows.
+        emailStatus: "failed",
         updatedAt: new Date(),
       }).where(eq(terminations.id, terminationId));
 
