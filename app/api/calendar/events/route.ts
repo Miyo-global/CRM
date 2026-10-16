@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, parseQuery } from "@/lib/api/helpers";
+import { withAuth, ok, err, parseQuery, serverError } from "@/lib/api/helpers";
 import {
   getCalendarEvents,
   createCalendarEvent,
@@ -81,10 +81,7 @@ export async function GET(req: NextRequest) {
       );
       return ok(events);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load calendar events",
-        500
-      );
+      return serverError(error, { route: "calendar/events", orgId: session.orgId }, "Failed to load calendar events.");
     }
   });
 }
