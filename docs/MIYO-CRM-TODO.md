@@ -181,7 +181,7 @@ ATS items start at MIYO-0626.
   - **Problem:** rules.ts says OVERTIME_DAY_MULTIPLIER = 1 (Tarun's sheet: 2 OT days on ₹33,200 = ₹2,141.94), but the live loader and schema default use 2.00, so OT is paid double.
   - **Fix:** Change the loader fallback to OVERTIME_DAY_MULTIPLIER, change schema defaults to "1.00" with an additive migration (`ALTER ... SET DEFAULT`), and add a data migration note for existing structures (Tarun decides whether to rewrite them).
   - **Acceptance check:** Test on loadPayrollInputs with an approved EXTRA_PAY Sunday: overtimeAmount === perDay × 1.
-- [ ] MIYO-0017 [Critical][Payroll] Recompute or regenerate existing DRAFT payrolls after the rules fix **[confirm on prod]**
+- [ ] MIYO-0017 [Critical][Payroll] Recompute or regenerate existing DRAFT payrolls after the rules fix **[confirm on prod]** — _agent part done: recompute route + UI shipped; awaiting Tarun prod check_
   - **Where:** app/api/hr/payrolls/generate/route.ts (duplicate check blocks regeneration), new route POST /api/hr/payrolls/recompute
   - **Problem:** Prod 16 Oct: Qa Alpha's Oct 2026 draft (generated 15 Oct) still shows PT ₹200, LOP 10 days (−₹3,226), net ₹6,574. Drafts are frozen at generation time, so fixed rules never reach them; the generate route refuses to regenerate (design doc N17).
   - **Fix:** Add 'Recalculate draft' (single and bulk, HR/CEO/Admin) that re-runs computePayroll for DRAFT rows only and writes an audit log with before/after net. Never touch APPROVED/PAID.

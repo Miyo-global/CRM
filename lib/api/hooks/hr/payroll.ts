@@ -118,6 +118,16 @@ export function useResendPayslipEmail() {
   });
 }
 
+/** Re-run payroll rules for DRAFT rows of a month (all, or the given ids). */
+export function useRecomputePayrolls() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { month: string; payrollIds?: number[] }) =>
+      apiClient.post<{ recalculated: number; skipped: number }>("/hr/payrolls/recompute", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.payrolls() }),
+  });
+}
+
 export function useDeletePayroll() {
   return useMutation({
     mutationFn: ({ payrollId }: DeletePayrollInput) =>

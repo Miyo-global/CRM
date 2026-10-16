@@ -22,6 +22,7 @@ export type AuditAction =
   | "hr.leave_rejected"
   | "hr.leave_cancelled"
   | "hr.payroll_generated"
+  | "hr.payroll_recalculated"
   | "hr.payroll_auto_generated"
   | "hr.payroll_approved"
   | "hr.payroll_paid"

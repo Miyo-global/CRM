@@ -9,6 +9,7 @@ import {
   useApprovePayroll,
   useMarkPayrollPaid,
   useDeletePayroll,
+  useRecomputePayrolls,
   useHrSalaryStructures,
   useResendPayslipEmail,
 } from "@/lib/api/hooks/hr";
@@ -38,7 +39,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Users, IndianRupee, CreditCard, Plus } from "lucide-react";
+import { Users, IndianRupee, CreditCard, Plus, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import type { Employee, PayrollWithUser } from "@/types/hr";
@@ -148,6 +149,7 @@ export default function PayrollPage() {
   const markPaidMutation = useMarkPayrollPaid();
   const resendPayslipEmailMutation = useResendPayslipEmail();
   const deletePayrollMutation = useDeletePayroll();
+  const recomputeMutation = useRecomputePayrolls();
 
   const selectedEmployeeData = useMemo(() => {
     if (!selectedEmployee || !employees.length) return null;
@@ -336,6 +338,24 @@ export default function PayrollPage() {
     [deletePayrollMutation, selectedMonth, qc]
   );
 
+  const handleRecalculate = useCallback(
+    (payrollIds?: number[]) => {
+      recomputeMutation.mutate(
+        { month: selectedMonth, payrollIds },
+        {
+          onSuccess: ({ recalculated, skipped }) =>
+            toast.success(
+              `Recalculated ${recalculated} draft${recalculated === 1 ? "" : "s"}` +
+                (skipped ? `, ${skipped} skipped (no salary for this month)` : ""),
+            ),
+          onError: (error) => toast.error(getErrorMessage(error)),
+        },
+      );
+    },
+    [recomputeMutation, selectedMonth],
+  );
+  const hasDrafts = (allPayrolls ?? []).some((p) => p.status === "DRAFT");
+
   const filteredPayrolls = useMemo(() => {
     const rows = allPayrolls ?? [];
     if (employeeFilter === "all") return rows;
@@ -401,6 +421,18 @@ export default function PayrollPage() {
               title="Pick any month — payroll is calculated per calendar month"
             />
           </div>
+
+          {hasDrafts && (
+            <Button
+              variant="outline"
+              onClick={() => handleRecalculate()}
+              disabled={recomputeMutation.isPending}
+              title="Re-run the current payroll rules for every draft this month. Approved and paid payrolls are not changed."
+            >
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Recalculate drafts
+            </Button>
+          )}
 
           <Button variant="outline" onClick={() => setGenerateSheetOpen(true)}>
             <Plus className="size-4" aria-hidden="true" />
@@ -506,6 +538,8 @@ export default function PayrollPage() {
             onApprove={handleApprovePayroll}
             onMarkPaid={handleMarkPaid}
             onDelete={handleDeletePayroll}
+            onRecalculate={(id) => handleRecalculate([id])}
+            isRecalculatePending={recomputeMutation.isPending}
             isApprovePending={approvePayrollMutation.isPending}
             isMarkPaidPending={markPaidMutation.isPending}
             isDeletePending={deletePayrollMutation.isPending}

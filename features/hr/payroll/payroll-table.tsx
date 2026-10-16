@@ -37,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Check, CreditCard, Download, Eye, Mail, Trash2 } from "lucide-react";
+import { Check, CreditCard, Download, Eye, Mail, RefreshCw, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -75,6 +75,8 @@ interface PayrollTableProps {
   onApprove: (payrollId: number) => void;
   onMarkPaid: (payrollId: number) => void;
   onDelete: (payrollId: number) => void;
+  onRecalculate?: (payrollId: number) => void;
+  isRecalculatePending?: boolean;
   isApprovePending: boolean;
   isMarkPaidPending: boolean;
   isDeletePending: boolean;
@@ -97,6 +99,8 @@ export function PayrollTable({
   onApprove,
   onMarkPaid,
   onDelete,
+  onRecalculate,
+  isRecalculatePending,
   isApprovePending,
   isMarkPaidPending,
   isDeletePending,
@@ -258,6 +262,19 @@ export function PayrollTable({
                               <Eye className="size-3.5 shrink-0" aria-hidden />
                               Preview
                             </Button>
+                            {payroll.status === "DRAFT" && onRecalculate && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => onRecalculate(payroll.id)}
+                                disabled={isRecalculatePending}
+                                title="Re-run the current payroll rules for this draft"
+                              >
+                                <RefreshCw className="size-3.5 shrink-0" aria-hidden />
+                                Recalculate
+                              </Button>
+                            )}
                             {payroll.status === "DRAFT" && (
                               <Button
                                 size="sm"
