@@ -7,6 +7,12 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
+import {
+  canCompletePeriod,
+  PERIOD_STATUS_LABEL,
+  periodStatus,
+  type PeriodStatus,
+} from "@/lib/projects/period-status";
 import { Button } from "@/components/ui/button";
 import type { Tone } from "@/lib/design/tones";
 import {
@@ -40,10 +46,14 @@ interface SprintCardProps {
   isUpdating?: boolean;
 }
 
-const STATUS_INFO: Record<string, { label: string; tone: Tone }> = {
-  ACTIVE: { label: "Active", tone: "info" },
-  PLANNED: { label: "Planned", tone: "neutral" },
-  COMPLETED: { label: "Completed", tone: "success" },
+// Tone per derived status. The label comes from the shared helper, so a
+// sprint that ends in the future can no longer read "Completed" (QA-0074).
+const STATUS_TONE: Record<PeriodStatus, Tone> = {
+  upcoming: "neutral",
+  active: "info",
+  ended: "warning",
+  completed: "success",
+  cancelled: "neutral",
 };
 
 function SprintFact({ icon: Icon, label, children, className }: {
@@ -74,7 +84,15 @@ export function SprintCard({ sprint, projectId, onStart, onComplete, onPlan, isU
   const daysRemaining = differenceInDays(startOfDay(endDate), startOfDay(new Date()));
   const totalDays = differenceInDays(startOfDay(endDate), startOfDay(startDate));
 
-  const statusInfo = STATUS_INFO[sprint.status || "PLANNED"] ?? { label: sprint.status || "PLANNED", tone: "neutral" as const };
+  const derivedStatus = periodStatus({
+    storedStatus: sprint.status,
+    startDate: sprint.startDate,
+    endDate: sprint.endDate,
+  });
+  const statusInfo = {
+    label: PERIOD_STATUS_LABEL[derivedStatus],
+    tone: STATUS_TONE[derivedStatus],
+  };
 
   const handleStart = useCallback(() => onStart?.(sprint.id), [sprint.id, onStart]);
   const handleComplete = useCallback(() => onComplete?.(sprint.id), [sprint.id, onComplete]);
@@ -127,13 +145,13 @@ export function SprintCard({ sprint, projectId, onStart, onComplete, onPlan, isU
                   Plan Sprint
                 </DropdownMenuItem>
               )}
-              {sprint.status === "PLANNED" && onStart && (
+              {derivedStatus === "upcoming" && onStart && (
                 <DropdownMenuItem onClick={handleStart} disabled={isUpdating}>
                   <Play className="mr-2 size-4" aria-hidden="true" />
                   Start Sprint
                 </DropdownMenuItem>
               )}
-              {sprint.status === "ACTIVE" && onComplete && (
+              {canCompletePeriod(derivedStatus) && onComplete && (
                 <DropdownMenuItem onClick={handleComplete} disabled={isUpdating}>
                   <Square className="mr-2 size-4" aria-hidden="true" />
                   Complete Sprint
@@ -153,7 +171,7 @@ export function SprintCard({ sprint, projectId, onStart, onComplete, onPlan, isU
           <SprintFact icon={Timer} label="Duration">{totalDays} days</SprintFact>
           <SprintFact
             icon={Gauge}
-            label={sprint.status === "COMPLETED" ? "Completed" : "Remaining"}
+            label={derivedStatus === "completed" ? "Completed" : "Remaining"}
             className={cn(sprint.status !== "COMPLETED" && daysRemaining < 0 && "text-danger-strong")}
           >
             {sprint.status === "COMPLETED"
