@@ -371,6 +371,9 @@ export default function RecognitionPage() {
       );
       return;
     }
+    // Close the sheet before confirming: a dialog opened on top of the open
+    // sheet was unreachable, so Send Kudos looked like a no-op (QA-0013).
+    setSheetOpen(false);
     setConfirmSendOpen(true);
   }, [toUserIds, message, category, currentUserId, recognitionList, employeeOptions]);
 
@@ -416,7 +419,6 @@ export default function RecognitionPage() {
           : undefined,
       );
       setConfirmSendOpen(false);
-      setSheetOpen(false);
       setToUserIds([]);
       setMessage("");
       setCategory("KUDOS");
@@ -427,6 +429,11 @@ export default function RecognitionPage() {
         failures.length === recipients.length ? "Could not send recognition" : "Some recognitions failed",
         { description: failures.slice(0, 3).join(" · ") },
       );
+      // Nothing was sent: put the user back in the form with their input.
+      if (sent === 0) {
+        setConfirmSendOpen(false);
+        setSheetOpen(true);
+      }
     }
   }, [toUserIds, message, category, createRecognition, employeeOptions]);
 
