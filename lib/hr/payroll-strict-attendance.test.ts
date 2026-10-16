@@ -88,22 +88,6 @@ describe("computeStrictAttendance", () => {
     expect(r.lopDays).toBe(2);
   });
 
-  it("leave approval status does not affect paid casual — first absence wins", () => {
-    const r = computeStrictAttendance({
-      month: "2026-06",
-      workHoursByDate: new Map([["2026-06-01", 8]]),
-      holidayDates: new Set(),
-      leaveByDate: new Map([
-        ["2026-06-02", "FULL"],
-        ["2026-06-03", "FULL"],
-      ]),
-      evaluateThroughDate: "2026-06-03",
-    });
-    expect(r.fullPresentDays).toBe(1);
-    expect(r.paidLeaveDays).toBe(1);
-    expect(r.lopDays).toBe(1);
-  });
-
   it("Sunday is a paid weekly off and never LOP", () => {
     const r = computeStrictAttendance({
       month: "2026-06",
@@ -117,5 +101,33 @@ describe("computeStrictAttendance", () => {
     expect(r.workingDays).toBe(6);
     expect(r.paidLeaveDays).toBe(1);
     expect(r.lopDays).toBe(5);
+  });
+
+  it("approved paid leave is never LOP and keeps the free budget (MIYO-0015)", () => {
+    const leave = new Map([["2026-06-01", "FULL"], ["2026-06-02", "FULL"], ["2026-06-03", "FULL"]] as const);
+    const r = computeStrictAttendance({
+      month: "2026-06",
+      workHoursByDate: new Map(),
+      holidayDates: new Set(),
+      leaveByDate: leave,
+      freeLeaveDays: 0,
+      evaluateThroughDate: "2026-06-03",
+    });
+    expect(r.paidLeaveDays).toBe(3);
+    expect(r.lopDays).toBe(0);
+  });
+
+  it("unpaid leave is LOP even with free budget left; half-day leave is half paid", () => {
+    const leave = new Map([["2026-06-01", "UNPAID"], ["2026-06-02", "HALF"]] as const);
+    const r = computeStrictAttendance({
+      month: "2026-06",
+      workHoursByDate: new Map(),
+      holidayDates: new Set(),
+      leaveByDate: leave,
+      freeLeaveDays: 0,
+      evaluateThroughDate: "2026-06-02",
+    });
+    expect(r.lopDays).toBe(1.5);
+    expect(r.paidLeaveDays).toBe(0.5);
   });
 });

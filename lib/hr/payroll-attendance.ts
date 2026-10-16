@@ -2,11 +2,10 @@ import "server-only";
 
 import { db } from "@/lib/db";
 import { attendance, holidays, leaveRequests, leaveTypes, resignations, users } from "@/lib/db/schema";
-import { and, eq, gte, lte, inArray, isNotNull, ne } from "drizzle-orm";
+import { and, eq, gte, lte, inArray, isNotNull } from "drizzle-orm";
 import {
   calendarDaysInMonth,
   computeStrictAttendance,
-  PAYROLL_EXCLUDED_LEAVE_STATUS,
   type LeaveCoverage,
   type StrictAttendanceResult,
 } from "./payroll-calculations";
@@ -94,13 +93,17 @@ export async function getStrictPayrollAttendanceBatch(
         startDate: leaveRequests.startDate,
         endDate: leaveRequests.endDate,
         isHalfDay: leaveRequests.isHalfDay,
+        typeName: leaveTypes.name,
+        typeDaysPerYear: leaveTypes.daysPerYear,
       })
       .from(leaveRequests)
+      .leftJoin(leaveTypes, eq(leaveTypes.id, leaveRequests.leaveTypeId))
       .where(
         and(
           eq(leaveRequests.orgId, orgId),
           inArray(leaveRequests.userId, userIds),
-          ne(leaveRequests.status, PAYROLL_EXCLUDED_LEAVE_STATUS),
+          // Only approved leave changes pay; pending/rejected days are plain absences.
+          eq(leaveRequests.status, "APPROVED"),
           lte(leaveRequests.startDate, end),
           gte(leaveRequests.endDate, start),
         ),
@@ -197,9 +200,11 @@ export async function getStrictPayrollAttendanceBatch(
     const from = row.startDate > start ? row.startDate : start;
     const to = row.endDate < end ? row.endDate : end;
     for (const dateStr of eachDateInclusive(from, to)) {
-      const coverage: LeaveCoverage = row.isHalfDay ? "HALF" : "FULL";
+      const unpaid = row.typeName === LEAVE_POLICY.UNPAID.name || row.typeDaysPerYear === 0;
+      const coverage: LeaveCoverage = unpaid ? "UNPAID" : row.isHalfDay ? "HALF" : "FULL";
       const existing = m.get(dateStr);
-      if (existing !== "FULL") m.set(dateStr, coverage);
+      // A paid leave beats an unpaid one on the same day; FULL beats HALF.
+      if (existing !== "FULL" && !(existing === "HALF" && coverage === "UNPAID")) m.set(dateStr, coverage);
     }
   }
 

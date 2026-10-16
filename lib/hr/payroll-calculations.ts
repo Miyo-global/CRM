@@ -337,7 +337,8 @@ export const MONTHLY_FREE_LEAVE_DAYS = 1;
 /** Daily hours above which check-out asks the employee for an overtime worklog. */
 export const OVERTIME_PROMPT_MIN_HOURS = 9;
 
-export type LeaveCoverage = "FULL" | "HALF";
+/** FULL/HALF: approved paid leave. UNPAID: approved leave of an unpaid type (always LOP). */
+export type LeaveCoverage = "FULL" | "HALF" | "UNPAID";
 
 export interface StrictAttendanceInput {
   month: string;
@@ -405,18 +406,32 @@ export function computeStrictAttendance(input: StrictAttendanceInput): StrictAtt
 
     workingDays++;
     const loggedIn = workHoursByDate.has(dateStr);
+    const leave = input.leaveByDate.get(dateStr);
+
+    // Approved paid leave is never loss of pay and does not use the free budget.
+    if (leave === "FULL") {
+      paidLeaveDays += 1;
+      continue;
+    }
+    // Half-day leave: half paid, the other half judged like any other day.
+    const share = leave === "HALF" ? 0.5 : 1;
+    if (leave === "HALF") paidLeaveDays += 0.5;
 
     if (loggedIn) {
-      fullPresentDays++;
+      fullPresentDays += share;
+      continue;
+    }
+    if (leave === "UNPAID") {
+      lopDays += 1;
       continue;
     }
 
     // First absent day(s) each month auto-count as paid casual leave (approval not required).
-    if (leaveBudget >= 1) {
-      paidLeaveDays += 1;
-      leaveBudget -= 1;
+    if (leaveBudget >= share) {
+      paidLeaveDays += share;
+      leaveBudget -= share;
     } else {
-      lopDays += 1;
+      lopDays += share;
     }
   }
 

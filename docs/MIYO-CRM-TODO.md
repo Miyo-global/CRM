@@ -171,7 +171,7 @@ ATS items start at MIYO-0626.
   - **Problem:** perDayRate divides by days in the month (28–31). Tarun's rule and his August sheet use ÷31 always. In February each LOP day is ~10.7 % too expensive.
   - **Fix:** Add `PER_DAY_DIVISOR = 31` to rules.ts and use it in perDayRate (keep daysInMonth for proration only). Update lib/payroll/__tests__/rules.test.ts.
   - **Acceptance check:** Test: perDayRate(31000,'2026-02') === 1000 and perDayRate(31000,'2026-10') === 1000.
-- [ ] MIYO-0015 [Critical][Payroll] Approved paid leave must never produce LOP
+- [x] MIYO-0015 [Critical][Payroll] Approved paid leave must never produce LOP
   - **Where:** lib/hr/payroll-calculations.ts computeStrictAttendance() (leaveByDate is accepted but never read), lib/hr/payroll-attendance.ts
   - **Problem:** A weekday with no check-in counts as LOP after the free-leave budget even if the employee has APPROVED sick/casual leave for that date (design doc N7).
   - **Fix:** Inside the loop, before the leave-budget branch: if leaveByDate.get(date) is FULL → paidLeaveDays++ and continue; HALF → 0.5 paid, 0.5 evaluated. Unpaid leave types count as LOP.
