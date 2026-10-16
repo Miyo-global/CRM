@@ -51,6 +51,27 @@ export async function POST(req: NextRequest) {
         const existing = result[0];
 
         if (existing) {
+          // An auto-absent row (status ABSENT, no check-in) used to look like
+          // an open shift, so a late arrival could neither check in nor out
+          // for the rest of the day (QA-0005). A real punch supersedes it.
+          if (!existing.checkIn) {
+            await tx
+              .update(attendance)
+              .set({
+                checkIn: checkInAt,
+                checkOut: null,
+                status: isLateFirstPunch ? "LATE" : "PRESENT",
+                locationData: body.location ?? null,
+                isHolidayWork: !!holiday,
+                isSundayWork: isSunday && !holiday,
+                holidayId: holiday?.id ?? null,
+              })
+              .where(eq(attendance.id, existing.id));
+            attendanceId = existing.id;
+            isFreshInsert = true;
+            return;
+          }
+
           if (!existing.checkOut) {
             throw new Error("Already checked in");
           }
