@@ -153,7 +153,7 @@ ATS items start at MIYO-0626.
 
 ### Critical · Build port
 
-- [ ] MIYO-0012 [Critical][Build port] Decide and document where 'Build' lives: it was ported INTO Projects, there is no /build route
+- [ ] MIYO-0012 [Critical][Build port] Decide and document where 'Build' lives: it was ported INTO Projects, there is no /build route — _/build redirect done; nav label waits on D1_
   - **Where:** app/(dashboard)/projects/**, components/layout/sidebar/sidebar-nav-items.ts:146-151
   - **Problem:** Prod check 16 Oct: no Build module in the top nav (Core / HR / Projects & Time / System); /build is 404; /projects/build is treated as a project id. In code, PR #4 ported Build into /projects (overview, board, tickets/[ticketKey], cycles, intake, settings/members, portal). Nothing is named Build. On prod the Projects area is also broken by the missing migration, so none of the port is usable yet.
   - **Fix:** Ask Tarun whether the module should be called 'Build'. If yes: rename the nav group to 'Build', add `/build` → `/projects` redirect in next.config.ts, keep URLs stable. If no: add a redirect from /build to /projects anyway so old Streamline links work.

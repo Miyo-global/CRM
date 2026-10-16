@@ -31,6 +31,13 @@ function shouldSendStrictTransportSecurity(): boolean {
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
+  // MIYO-0012: Streamline "Build" was ported into /projects; keep old links working.
+  async redirects() {
+    return [
+      { source: "/build", destination: "/projects", permanent: false },
+      { source: "/build/:path*", destination: "/projects/:path*", permanent: false },
+    ];
+  },
   experimental: {
     serverActions: {
       allowedOrigins: [
