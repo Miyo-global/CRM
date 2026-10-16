@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, withAdmin, ok, parseBody } from "@/lib/api/helpers";
+import { withAdmin, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { webhookEndpoints } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -23,8 +23,9 @@ const createSchema = z.object({
   events: z.array(webhookEventSchema).default([]),
 });
 
+/** Admin-only: the endpoint list was readable by any employee (QA-0064). */
 export async function GET(_req: NextRequest) {
-  return withAuth(async (session) => {
+  return withAdmin(async (session) => {
     const endpoints = await db.query.webhookEndpoints.findMany({
       where: eq(webhookEndpoints.orgId, session.orgId),
       orderBy: [desc(webhookEndpoints.createdAt)],

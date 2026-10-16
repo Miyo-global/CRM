@@ -21,6 +21,15 @@ const createSchema = z.object({
 export async function GET() {
   return withAuth(async (session) => {
     try {
+      // The whole role-to-permission map was enumerable by any employee
+      // (QA-0064). Non-admins get only their own effective permissions.
+      if (!isAdminOrOwner(session.user.role)) {
+        const own = (await getRoles(session.orgId)).find(
+          (role) => role.slug === session.user.role,
+        );
+        return ok(own ? [own] : []);
+      }
+
       const data = await getRoles(session.orgId);
       return ok(data);
     } catch (error) {
