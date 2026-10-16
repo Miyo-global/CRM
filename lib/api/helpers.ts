@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { organizationMembers, userSessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/get-error-message";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import type { Session } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
@@ -61,6 +62,28 @@ export function serverError(
   const errorId = crypto.randomUUID().slice(0, 8);
   logger.error(`${ctx.route} failed`, { errorId, ...ctx, error: error instanceof Error ? { message: error.message, stack: error.stack } : error });
   return NextResponse.json({ error: message, errorId }, { status: 500 }) as NextResponse<never>;
+}
+
+/**
+ * For routes that turn thrown business errors into 400s ("Already checked
+ * in"). A plain `throw new Error("...")` keeps its message as a 400; anything
+ * else (Drizzle/Postgres errors, TypeErrors) or a message that looks like a
+ * raw DB error becomes a logged 500 via serverError.
+ */
+export function userErrorOr500(
+  error: unknown,
+  ctx: { route: string; orgId?: string },
+  message?: string,
+): NextResponse<never> {
+  if (
+    error instanceof Error &&
+    error.constructor === Error &&
+    error.message &&
+    getErrorMessage(error) === error.message
+  ) {
+    return err(error.message, 400);
+  }
+  return serverError(error, ctx, message);
 }
 
 export async function withAuth<T>(

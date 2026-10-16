@@ -21,7 +21,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-const { withAuth, withRoles, serverError } = await import("./helpers");
+const { withAuth, withRoles, serverError, userErrorOr500 } = await import("./helpers");
 const handler = async () => NextResponse.json({ ok: true });
 
 function signIn(extra: Record<string, unknown> = {}) {
@@ -129,5 +129,23 @@ describe("withAuth revocation cache (MIYO-0011)", () => {
     await withAuth(handler);
     memory.set("revoked:session:s1", true);
     expect((await withAuth(handler)).status).toBe(401);
+  });
+});
+
+describe("userErrorOr500", () => {
+  it("keeps plain business messages as 400 and hides DB errors", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const biz = userErrorOr500(new Error("Already checked in"), { route: "t" });
+    expect(biz.status).toBe(400);
+    expect((await biz.json()).error).toBe("Already checked in");
+
+    class DrizzleQueryError extends Error {}
+    const db = userErrorOr500(new DrizzleQueryError("Failed query: select 1"), { route: "t" }, "Check-in failed.");
+    expect(db.status).toBe(500);
+    expect((await db.json()).error).toBe("Check-in failed.");
+
+    const wrapped = userErrorOr500(new Error('column "x" does not exist'), { route: "t" });
+    expect(wrapped.status).toBe(500);
+    spy.mockRestore();
   });
 });
