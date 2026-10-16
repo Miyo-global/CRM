@@ -305,7 +305,7 @@ export default function HelpdeskPage() {
             />
           ) : (
             <EmptyState
-              title="No tickets yet. Create your first one!"
+              title="No tickets yet"
               action={{ label: "New Ticket", onClick: () => setSheetOpen(true) }}
             />
           )

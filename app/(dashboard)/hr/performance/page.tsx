@@ -242,7 +242,7 @@ function ReviewsTab() {
 
       {reviewsList.length === 0 ? (
         <EmptyState
-          title="No reviews yet. Create your first one."
+          title="No performance reviews yet"
           action={{ label: "New Review", onClick: () => setSheetOpen(true) }}
         />
       ) : (

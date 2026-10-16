@@ -15,10 +15,35 @@ interface StatsStripItem {
 interface StatsStripProps {
   items: StatsStripItem[];
   className?: string;
+  /** Shown in place of the strip when every figure is zero. */
+  emptyLabel?: string;
 }
 
-/** Compact metrics row in one Card (§6.3); scrolls horizontally on narrow screens. */
-function StatsStrip({ items, className }: StatsStripProps) {
+/** True for 0, "0", "₹0", "0%", "0/0" and the like. */
+function isZeroValue(value: React.ReactNode): boolean {
+  if (value == null) return true;
+  if (typeof value === "number") return value === 0;
+  if (typeof value !== "string") return false;
+  const digits = value.replace(/[^0-9]/g, "");
+  return digits.length > 0 && Number(digits) === 0;
+}
+
+/**
+ * Compact metrics row in one Card (§6.3); scrolls horizontally on narrow
+ * screens.
+ *
+ * A strip whose every figure is zero said nothing and filled the page with
+ * ₹0 and +0% cards, so it collapses to a single line instead (QA-D003).
+ */
+function StatsStrip({ items, className, emptyLabel = "Nothing to report yet." }: StatsStripProps) {
+  if (items.length > 0 && items.every((item) => isZeroValue(item.value))) {
+    return (
+      <Card className={cn("px-4 py-3", className)}>
+        <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className={cn("flex-row divide-x divide-border overflow-x-auto", className)}>
       {items.map(({ label, value, hint, tone, icon: Icon }) => (
