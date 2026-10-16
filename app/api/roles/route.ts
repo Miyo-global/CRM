@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getRoles } from "@/server/queries/roles";
 import { db } from "@/lib/db";
 import { roles } from "@/lib/db/schema";
@@ -24,10 +24,7 @@ export async function GET() {
       const data = await getRoles(session.orgId);
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load roles",
-        500
-      );
+      return serverError(error, { route: "roles", orgId: session.orgId }, "Failed to load roles.");
     }
   });
 }
@@ -72,10 +69,7 @@ export async function POST(req: NextRequest) {
 
       return ok(created, 201);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to create role",
-        500
-      );
+      return serverError(error, { route: "roles", orgId: session.orgId }, "Failed to create role.");
     }
   });
 }
