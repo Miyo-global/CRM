@@ -290,9 +290,16 @@ export default function WorkLogsPage() {
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet("Work Logs");
 
-      const employeeName = effectiveUserId && employees.length
-        ? `${employees.find((e) => e.id === effectiveUserId)?.firstName ?? ""} ${employees.find((e) => e.id === effectiveUserId)?.lastName ?? ""}`.trim()
-        : "My";
+      // The filename follows the active filter: viewing everyone produced
+      // "work-logs-My-..." because there was no selected employee (QA-D002).
+      const selected = effectiveUserId
+        ? employees.find((e) => e.id === effectiveUserId)
+        : undefined;
+      const employeeName = selected
+        ? `${selected.firstName ?? ""} ${selected.lastName ?? ""}`.trim() || "employee"
+        : effectiveUserId === session?.user?.id
+          ? "mine"
+          : "all-employees";
 
       sheet.columns = [
         { header: "Date", key: "date", width: 15 },
@@ -368,7 +375,7 @@ export default function WorkLogsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `work-logs-${employeeName}-Q${quarter}-${year}.xlsx`;
+      a.download = `work-logs-${employeeName.replace(/\s+/g, "-")}-Q${quarter}-${year}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Work logs exported successfully");
