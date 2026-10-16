@@ -1,6 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { leaveRequests, leaveTypes, users } from "@/lib/db/schema";
+import { leaveBalances, leaveRequests, leaveTypes, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import { createNotification } from "@/server/actions/create-notification";
@@ -60,6 +60,19 @@ export async function PUT(
       })
       .where(eq(leaveRequests.id, leaveId));
 
+    // The rejection mail states the balance that is still available (QA-0011).
+    const balanceRow = existing.leaveTypeId
+      ? await db.query.leaveBalances.findFirst({
+          where: and(
+            eq(leaveBalances.userId, existing.userId),
+            eq(leaveBalances.leaveTypeId, existing.leaveTypeId),
+            eq(leaveBalances.year, new Date(`${existing.startDate}T00:00:00Z`).getUTCFullYear()),
+          ),
+          columns: { balance: true },
+        })
+      : null;
+    const balanceAfter = balanceRow ? Number(balanceRow.balance) : null;
+
     const [employee, leaveType] = await Promise.all([
       db.query.users.findFirst({
         where: eq(users.id, existing.userId),
@@ -99,7 +112,8 @@ export async function PUT(
             existing.endDate,
             "REJECTED",
             session.user.name ?? "HR",
-            reason ?? ""
+            reason ?? "",
+            balanceAfter,
           ).catch(() => undefined)
         : Promise.resolve(),
     ]);

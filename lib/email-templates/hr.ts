@@ -116,6 +116,16 @@ export function getWfhRequestEmailTemplate(
   });
 }
 
+/** Calm subject line for an approval decision (QA-0011). */
+export function leaveStatusSubject(
+  status: "APPROVED" | "REJECTED",
+  startDate: string,
+  endDate: string,
+): string {
+  const range = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
+  return status === "APPROVED" ? `Leave approved: ${range}` : `Leave not approved: ${range}`;
+}
+
 export function getLeaveStatusUpdateEmailTemplate(
   employeeName: string,
   leaveType: string,
@@ -123,7 +133,8 @@ export function getLeaveStatusUpdateEmailTemplate(
   endDate: string,
   status: "APPROVED" | "REJECTED",
   approverName: string,
-  rejectionReason?: string
+  rejectionReason?: string,
+  balanceAfter?: number | null,
 ): string {
   const isApproved = status === "APPROVED";
   const statusColor = isApproved ? BRAND.success : BRAND.danger;
@@ -132,15 +143,15 @@ export function getLeaveStatusUpdateEmailTemplate(
   const sRejection = rejectionReason ? escapeHtml(rejectionReason) : undefined;
 
   const content = `
-    <h2 class="email-title">${isApproved ? "Leave Request Approved" : "Leave Request Rejected"}</h2>
+    <h2 class="email-title">${isApproved ? "Leave approved" : "Leave not approved"}</h2>
     <p class="email-text">
-      Your leave request for <strong>${sLeaveType}</strong> from <strong>${startDate} to ${endDate}</strong> has been <strong>${status.toLowerCase()}</strong> by ${sApprover}.
+      Your ${sLeaveType} request from <strong>${startDate} to ${endDate}</strong> was ${isApproved ? "approved" : "not approved"} by ${sApprover}.
     </p>
 
     <div class="credential-box">
       <div class="credential-item">
         <span class="credential-label">Status:</span>
-        <span style="color: ${statusColor}; font-weight: 700; margin-left: 8px;">${status}</span>
+        <span style="color: ${statusColor}; font-weight: 600; margin-left: 8px;">${isApproved ? "Approved" : "Not approved"}</span>
       </div>
       <div class="credential-item">
         <span class="credential-label">Leave Type:</span>
@@ -159,16 +170,27 @@ export function getLeaveStatusUpdateEmailTemplate(
     </div>
     ` : ''}
 
+    ${balanceAfter != null ? `
+      <div class="credential-box">
+        <div class="credential-item">
+          <span class="credential-label">${sLeaveType} balance remaining:</span>
+          <span class="credential-value">${balanceAfter} day${balanceAfter === 1 ? "" : "s"}</span>
+        </div>
+      </div>
+    ` : ''}
+
     <div class="divider"></div>
 
     <p class="email-text">
-      Check your leave balances and request history in the HR portal.
+      <a class="email-button" href="${baseUrl}/hr/leaves">Open leave in the portal</a>
     </p>
   `;
 
   return getEmailTemplate({
-    title: `Leave Request ${status}: ${sLeaveType}`,
-    preheader: `Your leave request has been ${status.toLowerCase()}`,
+    title: leaveStatusSubject(status, startDate, endDate),
+    preheader: isApproved
+      ? `Your ${sLeaveType} from ${startDate} to ${endDate} is approved`
+      : `Your ${sLeaveType} from ${startDate} to ${endDate} was not approved`,
     content,
   });
 }

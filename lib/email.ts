@@ -50,6 +50,7 @@ import {
   getPayrollApprovedEmailTemplate,
   getRecognitionRecipientEmailTemplate,
   getRecognitionShoutoutEmailTemplate,
+  leaveStatusSubject,
 } from "./email-templates";
 import type { MonthlyExpenseReportRow } from "./email-templates";
 import { generateMonthlyExpenseReportXlsx } from "./monthly-expense-report-xlsx";
@@ -268,11 +269,12 @@ export async function sendLeaveStatusUpdateEmail(
   endDate: string,
   status: "APPROVED" | "REJECTED",
   approverName: string,
-  rejectionReason?: string
+  rejectionReason?: string,
+  balanceAfter?: number | null,
 ) {
   await sendEmail({
     to: email,
-    subject: `Leave Request ${status}: ${leaveType}`,
+    subject: leaveStatusSubject(status, startDate, endDate),
     html: getLeaveStatusUpdateEmailTemplate(
       employeeName,
       leaveType,
@@ -280,7 +282,8 @@ export async function sendLeaveStatusUpdateEmail(
       endDate,
       status,
       approverName,
-      rejectionReason
+      rejectionReason,
+      balanceAfter,
     ),
   });
 }

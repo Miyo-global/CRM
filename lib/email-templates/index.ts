@@ -31,6 +31,7 @@ export {
   getLeaveRequestEmailTemplate,
   getWfhRequestEmailTemplate,
   getLeaveStatusUpdateEmailTemplate,
+  leaveStatusSubject,
   getLeaveCancellationEmailTemplate,
   getLeaveHrMissedEscalationEmailTemplate,
   getLeaveCeoDelegateEscalationEmailTemplate,

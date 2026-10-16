@@ -52,6 +52,7 @@ export async function PUT(
     }
 
     let lopDaysApplied = 0;
+    let balanceAfter: number | null = null;
     await db.transaction(async (tx) => {
       await tx
         .update(leaveRequests)
@@ -96,6 +97,7 @@ export async function PUT(
             const paidDays = diffDays - lopDays;
             const newBal = Math.max(0, available - paidDays);
             lopDaysApplied = lopDays;
+            balanceAfter = newBal;
 
             await tx.update(leaveRequests)
               .set({ lopDays: lopDays.toString() })
@@ -144,7 +146,9 @@ export async function PUT(
             existing.startDate,
             existing.endDate,
             "APPROVED",
-            session.user.name ?? "HR"
+            session.user.name ?? "HR",
+            undefined,
+            balanceAfter,
           ).catch(() => undefined)
         : Promise.resolve(),
     ]);
