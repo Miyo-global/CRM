@@ -32,7 +32,8 @@ import { toast } from "sonner";
 
 const createPageSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  icon: z.string().optional(),
+  // Clearing the emoji field leaves "": send no icon instead (QA-0024).
+  icon: z.string().trim().max(8, "Use a single emoji").optional(),
 });
 type CreatePageForm = z.infer<typeof createPageSchema>;
 
@@ -207,7 +208,8 @@ export default function PagesPage({
 
   const onSubmit = (data: CreatePageForm) => {
     createMutation.mutate(
-      { ...data, projectId },
+      // An emptied emoji field is no icon, not an empty string (QA-0024).
+      { ...data, icon: data.icon?.trim() || undefined, projectId },
       {
         onSuccess: () => {
           setCreateOpen(false);

@@ -11,7 +11,9 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 const createPageSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.unknown().optional(),
-  icon: z.string().optional(),
+  // An emoji field the user typed in and then cleared arrives as "": store it
+  // as no icon rather than an empty string (QA-0024).
+  icon: z.string().trim().max(8).optional().transform((v) => (v ? v : undefined)),
   parentPageId: z.number().optional(),
 }).strict();
 
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         orgId: session.orgId!,
         title: body.title,
         content: body.content ?? null,
-        icon: body.icon,
+        icon: body.icon ?? null,
         parentPageId: body.parentPageId,
         createdBy: session.user.id,
       })
