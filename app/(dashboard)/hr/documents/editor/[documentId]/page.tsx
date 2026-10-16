@@ -29,11 +29,20 @@ export default function DocumentEditorPage() {
   const [contentJson, setContentJson] = useState<unknown>(null);
   const [isDirty, setIsDirty] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * The content as last loaded or saved.
+   *
+   * The editor emits onChange while it hydrates, which marked the document
+   * dirty the moment it opened (QA-0049). A change that matches this baseline
+   * is hydration, not an edit.
+   */
+  const baselineRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (doc) {
       setTitle(doc.title);
       setContentJson(doc.contentJson);
+      baselineRef.current = JSON.stringify(doc.contentJson ?? null);
     }
   }, [doc]);
 
@@ -48,6 +57,7 @@ export default function DocumentEditorPage() {
       { id: documentId, title: trimmedTitle, contentJson },
       {
         onSuccess: () => {
+          baselineRef.current = JSON.stringify(contentJson ?? null);
           setIsDirty(false);
           toast.success("Document saved");
         },
@@ -69,7 +79,7 @@ export default function DocumentEditorPage() {
 
   const handleContentChange = useCallback((json: unknown) => {
     setContentJson(json);
-    setIsDirty(true);
+    if (JSON.stringify(json ?? null) !== baselineRef.current) setIsDirty(true);
   }, []);
 
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
