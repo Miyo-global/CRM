@@ -1,7 +1,7 @@
 "use client";
 
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowRight, CircleAlert, Eye, EyeOff, Lock } from "lucide-react";
+import { ArrowRight, CircleAlert, Eye, EyeOff } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 
 export const dynamic = "force-dynamic";
@@ -24,32 +24,14 @@ const signinSchema = z.object({
 
 type FormValues = z.infer<typeof signinSchema>;
 
-function formatLockoutTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (mins > 0) return `${mins} minute${mins !== 1 ? "s" : ""} and ${secs} second${secs !== 1 ? "s" : ""}`;
-  return `${secs} second${secs !== 1 ? "s" : ""}`;
-}
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [lockedSeconds, setLockedSeconds] = useState<number | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(signinSchema),
     defaultValues: { email: "", password: "" },
   });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const errorParam = params.get("error");
-      if (errorParam?.startsWith("ACCOUNT_LOCKED:")) {
-        const secs = parseInt(errorParam.split(":")[1] ?? "0", 10);
-        setLockedSeconds(isNaN(secs) ? null : secs);
-      }
-    }
-  }, []);
 
   const getCallbackUrl = () => {
     if (typeof window !== "undefined") {
@@ -73,11 +55,6 @@ export default function SignInPage() {
           redirect: false,
         });
         if (result?.error) {
-          if (result.error.startsWith("ACCOUNT_LOCKED:")) {
-            const secs = parseInt(result.error.split(":")[1] ?? "0", 10);
-            setLockedSeconds(isNaN(secs) ? null : secs);
-            throw new Error(`Account locked. Try again in ${formatLockoutTime(isNaN(secs) ? 900 : secs)}.`);
-          }
           throw new Error("Invalid email or password.");
         }
         return result;
@@ -122,27 +99,17 @@ export default function SignInPage() {
         </h1>
       </div>
 
-      {lockedSeconds !== null ? (
+      {/* One generic failure message: a separate "account locked" banner told
+          an attacker the address exists (QA-0037). A lock is announced to the
+          account owner by email instead. */}
+      {signInMutation.isError && (
         <div
           role="alert"
           className="mb-6 flex items-start gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-danger-strong"
         >
-          <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <p className="text-sm">
-            Your account has been temporarily locked due to too many failed login attempts.
-            Please try again in <span className="font-semibold">{formatLockoutTime(lockedSeconds)}</span>.
-          </p>
+          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p className="text-sm">{getErrorMessage(signInMutation.error)}</p>
         </div>
-      ) : (
-        signInMutation.isError && (
-          <div
-            role="alert"
-            className="mb-6 flex items-start gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-danger-strong"
-          >
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <p className="text-sm">{getErrorMessage(signInMutation.error)}</p>
-          </div>
-        )
       )}
 
       <form

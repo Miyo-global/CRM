@@ -134,9 +134,11 @@ const credentialsProvider = Credentials({
       }
 
       if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-        const remainingSeconds = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 1000);
+        // Generic failure: a distinguishable ACCOUNT_LOCKED error let anyone
+        // confirm an address exists, and 5 bad guesses then locked it
+        // (QA-0037). The owner is emailed when a lock starts.
         logger.warn("Auth: login attempt on locked account", { userId: user.id, email: normalizedEmail, lockedUntil: user.lockedUntil });
-        throw new Error(`ACCOUNT_LOCKED:${remainingSeconds}`);
+        return null;
       }
 
       const isValid = await bcrypt.compare(
@@ -148,8 +150,12 @@ const credentialsProvider = Credentials({
         const attempts = (user.loginAttempts ?? 0) + 1;
         const lockUpdate: Record<string, unknown> = { loginAttempts: attempts };
         if (attempts >= 5) {
-          lockUpdate.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
-          logger.warn("Auth: account locked after 5 failed attempts", { userId: user.id, email: normalizedEmail });
+          // Escalating cooldown rather than a flat 15 minutes: a few wrong
+          // guesses cost the real owner a minute, while sustained guessing
+          // still backs off hard (QA-0037).
+          const cooldownMinutes = attempts >= 10 ? 15 : attempts >= 7 ? 5 : 1;
+          lockUpdate.lockedUntil = new Date(Date.now() + cooldownMinutes * 60 * 1000);
+          logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, cooldownMinutes });
           sendAccountLockedEmail(user.email, user.name ?? user.email).catch((e) => logger.error("Auth: account-locked email failed", { userId: user.id, error: e }));
         } else {
           logger.warn("Auth: failed login attempt", { userId: user.id, email: normalizedEmail, attempt: attempts });
@@ -159,8 +165,10 @@ const credentialsProvider = Credentials({
       }
 
       if (!user.emailVerified) {
+        // Also generic: an unverified account must not be distinguishable from
+        // a wrong password (QA-0037). The set-up email is the way in.
         logger.warn("Auth: login with valid credentials on unverified email", { userId: user.id, email: normalizedEmail });
-        throw new Error("EMAIL_NOT_VERIFIED");
+        return null;
       }
 
       logger.info("Auth: successful login", { userId: user.id, email: normalizedEmail });
