@@ -3,23 +3,21 @@ import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, lte, gte, desc, notInArray } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
-import { ALLOWED_LEAVE_TYPE_NAMES, LEAVE_POLICY, isUnpaidLeaveType } from "@/lib/leave-policy";
+import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
 import {
   ensureLeaveTypes,
   ensureUserBalances,
-  getCasualMonthlyCapError,
 } from "@/server/actions/leave-actions/leave-balance";
 import { createNotification } from "@/server/actions/create-notification";
 import { z } from "zod";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import type { NextRequest } from "next/server";
 import { sendLeaveRequestEmail } from "@/lib/email";
-import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
 import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
 import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
-import { holidayDatesInRange } from "@/lib/hr/leave-working-days-server";
+import { checkLeaveRequest } from "@/lib/hr/leave-request-check";
 
 const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
@@ -120,79 +118,17 @@ export async function POST(req: NextRequest) {
         return err("Start date must be before or equal to end date.", 400);
       }
 
-      // Declared holidays do not count as leave (QA-0019).
-      const orgHolidays = await holidayDatesInRange(
-        session.orgId,
-        normalizedStart,
-        normalizedEnd,
-      );
-
-      const requestedDays = calculateLeaveWorkingDays({
-        startDate: body.startDate,
-        endDate: body.endDate,
+      // One decision, shared with GET /api/hr/leaves/preview so the form
+      // cannot promise what this route refuses (QA-0050).
+      const check = await checkLeaveRequest({
+        orgId: session.orgId,
+        userId: session.user.id,
+        leaveTypeId: body.leaveTypeId,
+        startDate: normalizedStart,
+        endDate: normalizedEnd,
         isHalfDay: body.isHalfDay ?? false,
-        holidays: orgHolidays,
       });
-
-      if (!body.isHalfDay && requestedDays <= 0) {
-        return err(
-          "Leave cannot be requested for dates that are only Sundays or holidays. Select working days.",
-          400,
-        );
-      }
-
-      if (body.isHalfDay) {
-        const halfDayWorkingDays = calculateLeaveWorkingDays({
-          startDate: body.startDate,
-          endDate: body.startDate,
-          isHalfDay: false,
-          holidays: orgHolidays,
-        });
-        if (halfDayWorkingDays <= 0) {
-          return err(
-            "Half-day leave cannot be requested on a non-working day. Select a working day.",
-            400,
-          );
-        }
-      }
-
-      const [balance, leaveType] = await Promise.all([
-        db.query.leaveBalances.findFirst({
-          where: and(
-            eq(leaveBalances.userId, session.user.id),
-            eq(leaveBalances.orgId, session.orgId),
-            eq(leaveBalances.leaveTypeId, body.leaveTypeId),
-            eq(leaveBalances.year, new Date().getFullYear())
-          ),
-        }),
-        db.query.leaveTypes.findFirst({
-          where: eq(leaveTypes.id, body.leaveTypeId),
-          columns: { name: true },
-        }),
-      ]);
-
-      const isUnpaid = isUnpaidLeaveType(leaveType?.name ?? "");
-      if (!isUnpaid) {
-        const available = balance ? Number(balance.balance) : 0;
-        if (available < requestedDays) {
-          return err(
-            `Insufficient leave balance. Available: ${available}, Required: ${requestedDays}`,
-            400
-          );
-        }
-      }
-
-      if (leaveType?.name === LEAVE_POLICY.CASUAL.name) {
-        const capError = await getCasualMonthlyCapError({
-          orgId: session.orgId,
-          userId: session.user.id,
-          casualTypeId: body.leaveTypeId,
-          startDate: normalizedStart,
-          endDate: normalizedEnd,
-          isHalfDay: body.isHalfDay ?? false,
-        });
-        if (capError) return err(capError, 400);
-      }
+      if (check.error) return err(check.error, 400);
 
       // Route the request up the approver chain before inserting, so the
       // approvals list and badge have an owner for it (A27).
@@ -261,7 +197,7 @@ export async function POST(req: NextRequest) {
 
       const startStr = formatDateOnly(new Date(body.startDate));
       const endStr = formatDateOnly(new Date(body.endDate));
-      const leaveLabel = leaveType?.name ?? "Leave";
+      const leaveLabel = check.leaveTypeName ?? "Leave";
       const reasonText = body.reason ?? "No reason provided";
       const employeeName = session.user.name ?? "Employee";
 

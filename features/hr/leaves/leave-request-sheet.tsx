@@ -27,6 +27,7 @@ import {
   createLeaveRequestSchema,
 } from "@/lib/validations/leave-request";
 import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
+import { useLeavePreview } from "@/lib/api/hooks/hr/leave-preview";
 import {
   LEAVE_ATTACHMENT_ACCEPT,
   LEAVE_ATTACHMENT_ALLOWED_EXTENSIONS,
@@ -100,6 +101,14 @@ export function LeaveRequestSheet({
   const watchedHalfDay = form.watch("halfDay");
 
   const holidayDates = useHolidayDates();
+  // The server's verdict for this draft, so the preview cannot promise what
+  // the apply route refuses (QA-0050).
+  const { data: serverPreview, isFetching: previewLoading } = useLeavePreview({
+    leaveTypeId: watchedLeaveTypeId,
+    startDate: watchedStartDate,
+    endDate: watchedEndDate,
+    isHalfDay: watchedHalfDay,
+  });
   const { requestedDays, balancePreview } = useMemo(() => {
     if (!watchedLeaveTypeId || !watchedStartDate || !watchedEndDate) {
       return { requestedDays: 0, balancePreview: null };
@@ -197,7 +206,13 @@ export function LeaveRequestSheet({
       onSubmit={form.handleSubmit(onSubmit)}
       onCancel={handleCancel}
       submitLabel="Submit Request"
-      submitDisabled={!form.formState.isValid || requestLeaveMutation.isPending || !!leaveDayLimitError}
+      submitDisabled={
+        !form.formState.isValid ||
+        requestLeaveMutation.isPending ||
+        !!leaveDayLimitError ||
+        previewLoading ||
+        !!serverPreview?.error
+      }
       isPending={requestLeaveMutation.isPending}
     >
       <Form {...form}>
@@ -393,7 +408,14 @@ export function LeaveRequestSheet({
             )}
           />
 
-          {balancePreview && requestedDays > 0 && (
+          {serverPreview?.error && (
+            <div role="alert" className="flex items-start gap-2 rounded-lg bg-danger-soft p-3">
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-danger-strong" aria-hidden="true" />
+              <p className="text-xs text-danger-strong">{serverPreview.error}</p>
+            </div>
+          )}
+
+          {!serverPreview?.error && balancePreview && requestedDays > 0 && (
             <div className={`flex items-start gap-2 text-xs ${
               balancePreview.after < 0
                 ? "rounded-md bg-danger-soft p-3 text-danger-strong"
@@ -410,7 +432,9 @@ export function LeaveRequestSheet({
                   {balancePreview.available} available {balancePreview.typeName} days
                   {balancePreview.pending > 0 ? ` (${balancePreview.pending} pending)` : ""}.
                 </strong>
-                {balancePreview.after >= 0 ? (
+                {serverPreview && serverPreview.balanceAfter !== null ? (
+                  <> You will have <strong>{serverPreview.balanceAfter} day{serverPreview.balanceAfter !== 1 ? "s" : ""}</strong> left.</>
+                ) : balancePreview.after >= 0 ? (
                   <> You will have <strong>{balancePreview.after} day{balancePreview.after !== 1 ? "s" : ""}</strong> left.</>
                 ) : (
                   <> This exceeds your balance by <strong>{Math.abs(balancePreview.after)} day{Math.abs(balancePreview.after) !== 1 ? "s" : ""}.</strong></>
