@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { ticketKey } from "@/lib/projects/ticket-key";
 
 interface TicketRowProps {
   ticket: {
@@ -54,6 +55,8 @@ interface TicketRowProps {
   isSelected: boolean;
   onSelect: (id: number) => void;
   onToggleSelect: (id: number) => void;
+  /** Project key, so ids read QUP-2 rather than #2 (QA-D011). */
+  projectKey?: string | null;
 }
 
 const TicketRow = memo(function TicketRow({
@@ -61,7 +64,9 @@ const TicketRow = memo(function TicketRow({
   isSelected,
   onSelect,
   onToggleSelect,
+  projectKey,
 }: TicketRowProps) {
+  const publicId = ticketKey(projectKey, ticket.ticketNumber);
   const handleRowClick = useCallback(() => onSelect(ticket.id), [onSelect, ticket.id]);
   const handleCheckboxCellClick = useCallback(
     (e: React.MouseEvent) => { e.stopPropagation(); onToggleSelect(ticket.id); },
@@ -91,13 +96,13 @@ const TicketRow = memo(function TicketRow({
         <Checkbox
           checked={isSelected}
           onCheckedChange={handleCheckedChange}
-          aria-label={`Select ticket ${ticket.ticketNumber}`}
+          aria-label={`Select ticket ${publicId}`}
         />
       </TableCell>
       <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
         <span className="flex items-center gap-1.5 whitespace-nowrap">
           <TicketTypeIcon type={ticket.type} />
-          #{ticket.ticketNumber}
+          {publicId}
         </span>
       </TableCell>
       <TableCell className="min-w-48 max-w-md">
@@ -328,6 +333,7 @@ export default function BacklogPage({ params }: PageProps) {
                 isSelected={selectedIds.has(ticket.id)}
                 onSelect={handleTicketSelect}
                 onToggleSelect={toggleSelect}
+                projectKey={data?.key}
               />
             ))}
           </TableBody>

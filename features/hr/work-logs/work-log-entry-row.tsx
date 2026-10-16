@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Link2, ExternalLink, Ticket, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { ticketKey } from "@/lib/projects/ticket-key";
 
 interface WorkLogEntryRowProps {
   date: Date;
@@ -192,7 +193,7 @@ export function WorkLogEntryRow({
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 border-info-strong/25 text-info-strong bg-info-soft">
               <Ticket className="h-3 w-3" />
-              #{ticket.ticketNumber}
+              {ticketKey(ticket.project?.key, ticket.ticketNumber)}
             </Badge>
             <span className="text-sm font-medium text-foreground truncate">{ticket.title}</span>
             {ticket.project && (

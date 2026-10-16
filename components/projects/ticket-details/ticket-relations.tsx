@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { Link2, X, Plus, ArrowRight, ArrowLeft, Copy, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ticketStatusLabel } from "@/components/projects/shared/status-badge";
+import { ticketKey } from "@/lib/projects/ticket-key";
 
 interface TicketRelationsProps {
   ticketId: number;
@@ -132,7 +133,7 @@ export function TicketRelations({ ticketId, projectId, readOnly = false }: Ticke
                         onSelect={() => setSelectedTicketId(t.id)}
                         className={cn("text-xs", selectedTicketId === t.id && "bg-primary/10")}
                       >
-                        <span className="font-mono text-muted-foreground mr-2">#{t.ticketNumber}</span>
+                        <span className="font-mono text-muted-foreground mr-2">{ticketKey(projectData?.key, t.ticketNumber)}</span>
                         <span className="truncate">{t.title}</span>
                       </CommandItem>
                     ))}
@@ -172,7 +173,7 @@ export function TicketRelations({ ticketId, projectId, readOnly = false }: Ticke
                     <div key={r.id} className="flex items-center justify-between gap-2 py-0.5 pl-4 group">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="font-mono text-2xs text-muted-foreground shrink-0">
-                          #{t.ticketNumber}
+                          {ticketKey(projectData?.key, t.ticketNumber)}
                         </span>
                         <span className="text-xs truncate">{t.title}</span>
                         {/* The raw enum (IN_PROGRESS) used to show here

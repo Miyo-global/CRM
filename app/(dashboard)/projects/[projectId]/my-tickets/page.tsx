@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { ticketKey } from "@/lib/projects/ticket-key";
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -179,7 +180,7 @@ export default function MyTicketsPage({ params }: PageProps) {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <TicketTypeIcon type={ticket.type} />
-                        #{ticket.ticketNumber}
+                        {ticketKey(data?.key, ticket.ticketNumber)}
                       </span>
                     </TableCell>
                     <TableCell className="max-w-md">
