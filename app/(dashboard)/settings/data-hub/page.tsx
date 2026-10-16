@@ -33,8 +33,8 @@ const ENTITIES: ImportEntity[] = [
     id: "employees",
     label: "Employees",
     icon: Users,
-    description: "Export employee directory with roles, departments, and contact info.",
-    exportEndpoint: "/hr/employees/export",
+    description: "Export the employee directory with designation, department, role and status (Excel).",
+    exportEndpoint: "/reports/headcount?format=xlsx",
     color: "text-plum-strong",
     supported: { import: false, export: true },
   },
@@ -42,8 +42,8 @@ const ENTITIES: ImportEntity[] = [
     id: "payroll",
     label: "Payroll",
     icon: CreditCard,
-    description: "Export payroll records with breakdown, deductions, and net pay.",
-    exportEndpoint: "/hr/payroll/export",
+    description: "Export this month\u2019s payroll with gross, LOP days, professional tax and net pay (Excel).",
+    exportEndpoint: "/reports/payroll-summary?format=xlsx",
     color: "text-brand-text",
     supported: { import: false, export: true },
   },
@@ -51,7 +51,7 @@ const ENTITIES: ImportEntity[] = [
     id: "expenses",
     label: "Expenses",
     icon: FileSpreadsheet,
-    description: "Export expense claims with status, category, and amounts.",
+    description: "Export expense claims with status, category, and amounts (CSV).",
     exportEndpoint: "/hr/expenses/export",
     color: "text-teal-strong",
     supported: { import: false, export: true },
@@ -60,7 +60,7 @@ const ENTITIES: ImportEntity[] = [
     id: "assets",
     label: "Assets",
     icon: Package,
-    description: "Export asset inventory with assigned employees and status.",
+    description: "Export asset inventory with assigned employees and status (CSV).",
     exportEndpoint: "/hr/assets/export",
     color: "text-subtle-foreground",
     supported: { import: false, export: true },
@@ -128,17 +128,24 @@ function DataHubContent() {
     setExportingIds(prev => new Set([...prev, entity.id]));
     try {
       const response = await fetch(`/api${entity.exportEndpoint}`, { method: "GET" });
-      if (!response.ok) throw new Error("Export failed");
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? "Export failed");
+      }
       const blob = await response.blob();
+      // The filename comes from the response, so a CSV export is not saved as
+      // .xlsx and an employee export is not silently dropped (QA-0031).
+      const disposition = response.headers.get("Content-Disposition") ?? "";
+      const named = /filename="?([^";]+)"?/.exec(disposition)?.[1];
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${entity.id}-export-${new Date().toISOString().split("T")[0]}.xlsx`;
+      a.download = named ?? `${entity.id}-export-${new Date().toISOString().split("T")[0]}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`${entity.label} export downloaded`);
-    } catch {
-      toast.error(`Failed to export ${entity.label}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to export ${entity.label}`);
     } finally {
       setExportingIds(prev => { const n = new Set(prev); n.delete(entity.id); return n; });
     }
