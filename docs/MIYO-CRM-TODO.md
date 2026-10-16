@@ -387,7 +387,7 @@ ATS items start at MIYO-0626.
   - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
   - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
   - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
-- [ ] MIYO-0056 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/storage/image
+- [x] MIYO-0056 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/storage/image — _no response leak: error.message is only logged_
   - **Where:** app/api/storage/image/route.ts
   - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
   - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
