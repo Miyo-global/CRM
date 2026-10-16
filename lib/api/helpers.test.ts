@@ -97,3 +97,15 @@ describe("serverError", () => {
     spy.mockRestore();
   });
 });
+
+describe("withAuth Server-Timing", () => {
+  it("adds auth, session-check, membership and handler timings", async () => {
+    signIn();
+    sessionRow.mockResolvedValue({ isRevoked: false, userId: "u1" });
+    const res = await withAuth(handler);
+    const header = res.headers.get("Server-Timing") ?? "";
+    for (const name of ["auth", "session-check", "membership", "handler"]) {
+      expect(header).toMatch(new RegExp(`${name};dur=\\d`));
+    }
+  });
+});

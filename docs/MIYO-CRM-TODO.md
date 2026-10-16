@@ -135,7 +135,7 @@ ATS items start at MIYO-0626.
 
 ### Critical · Prod/Performance
 
-- [ ] MIYO-0009 [Critical][Prod/Performance] Measure: add Server-Timing and request logs to find where the 30–90 s loads go **[confirm on prod]**
+- [ ] MIYO-0009 [Critical][Prod/Performance] Measure: add Server-Timing and request logs to find where the 30–90 s loads go **[confirm on prod]** — _agent part done: tracing + Server-Timing shipped; awaiting Tarun prod check_
   - **Where:** middleware.ts, lib/api/helpers.ts withAuth, instrumentation.ts (Sentry is installed)
   - **Problem:** Prod pages take 30–90 s and direct loads time out (QA rounds 1–3 and 16 Oct). No timing data exists.
   - **Fix:** Enable Sentry performance tracing (tracesSampleRate 0.2) and add a Server-Timing header in withAuth (auth, session-check, membership, handler).

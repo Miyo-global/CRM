@@ -64,7 +64,17 @@ export function serverError(
 export async function withAuth<T>(
   handler: (session: AuthSession) => Promise<NextResponse<T>>
 ): Promise<NextResponse<T>> {
+  // Server-Timing marks (MIYO-0009): auth, session-check, membership, handler.
+  let mark = performance.now();
+  const timing: string[] = [];
+  const lap = (name: string) => {
+    const now = performance.now();
+    timing.push(`${name};dur=${(now - mark).toFixed(1)}`);
+    mark = now;
+  };
+
   const session = (await auth()) as Session | null;
+  lap("auth");
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" } as T, { status: 401 });
   }
@@ -131,6 +141,8 @@ export async function withAuth<T>(
     }
   }
 
+  lap("session-check");
+
   if (!orgId) {
     try {
       const member = await db.query.organizationMembers.findFirst({
@@ -148,9 +160,14 @@ export async function withAuth<T>(
     return NextResponse.json({ error: "Organization not found" } as T, { status: 403 });
   }
 
+  lap("membership");
+
   const authSession: AuthSession = Object.assign(session, { orgId, branchId }) as AuthSession;
   try {
-    return await handler(authSession);
+    const res = await handler(authSession);
+    lap("handler");
+    res.headers?.set("Server-Timing", timing.join(", "));
+    return res;
   } catch (e) {
     if (e instanceof z.ZodError) {
       const detail = e.issues.map((issue: { path: PropertyKey[]; message: string }) => `${String(issue.path.join?.(".") ?? "body")}: ${issue.message}`).join("; ");
