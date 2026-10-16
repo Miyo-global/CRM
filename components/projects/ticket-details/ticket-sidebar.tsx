@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -122,6 +123,15 @@ export function TicketSidebar({
   readOnly = false,
 }: TicketSidebarProps) {
   const [assigneeOpen, setAssigneeOpen] = useState(false);
+  // Points are edited locally and validated on blur (QA-0058).
+  const [pointsDraft, setPointsDraft] = useState(
+    ticket.points != null ? String(ticket.points) : "",
+  );
+
+  useEffect(() => {
+    setPointsDraft(ticket.points != null ? String(ticket.points) : "");
+  }, [ticket.points]);
+
   const [assigneeSearch, setAssigneeSearch] = useState("");
 
   const timeSpent = ticket.timeSpent ? parseFloat(ticket.timeSpent) : 0;
@@ -248,13 +258,30 @@ export function TicketSidebar({
           <Input
             type="number"
             min={0}
-            value={ticket.points ?? ""}
-            onChange={(e) => {
-              const val = e.target.value === "" ? undefined : parseInt(e.target.value);
-              onAutoSave({ points: val });
+            max={100}
+            step={1}
+            value={pointsDraft}
+            onChange={(e) => setPointsDraft(e.target.value)}
+            onBlur={() => {
+              // A negative value used to be sent, rejected with the raw Zod
+              // text, and the field cleared (QA-0058). Validate here, keep
+              // what was typed, and say it plainly.
+              const raw = pointsDraft.trim();
+              if (raw === "") {
+                if (ticket.points != null) onAutoSave({ points: undefined });
+                return;
+              }
+              const val = Number(raw);
+              if (!Number.isInteger(val) || val < 0 || val > 100) {
+                toast.error("Points must be a whole number between 0 and 100.");
+                setPointsDraft(ticket.points != null ? String(ticket.points) : "");
+                return;
+              }
+              if (val !== ticket.points) onAutoSave({ points: val });
             }}
             className={`${fieldClass} tabular-nums`}
             placeholder="0"
+            aria-label="Story points"
           />
         </PropertyRow>
 
