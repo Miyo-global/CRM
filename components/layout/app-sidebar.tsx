@@ -208,11 +208,17 @@ export function AppSidebar({
               !isCollapsed && "flex-1",
             )}
           >
-            <Image src="/logo.svg" alt="Miyo Global" width={28} height={28} className="size-7 shrink-0" />
+            {/* The adjacent text names the brand, so the image needs no
+                accessible name of its own (QA-D010). */}
+            <Image src="/logo.svg" alt={isCollapsed ? "Miyo Global" : ""} width={28} height={28} className="size-7 shrink-0" />
             {!isCollapsed && (
               <span className="min-w-0 leading-tight">
                 <span className="block truncate font-display text-sm font-bold text-sidebar-accent-foreground">Miyo Global</span>
-                <span className="block truncate text-2xs text-sidebar-muted">{orgName ?? "CRM"}</span>
+                {/* An org also called Miyo Global read as "Miyo Global /
+                    Miyo Global" (QA-D010). */}
+                {orgName && orgName !== "Miyo Global" && (
+                  <span className="block truncate text-2xs text-sidebar-muted">{orgName}</span>
+                )}
               </span>
             )}
           </Link>
