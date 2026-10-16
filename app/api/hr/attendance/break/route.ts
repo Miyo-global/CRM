@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { attendance } from "@/lib/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
@@ -63,8 +63,7 @@ export async function POST() {
         return ok({ success: true });
       });
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Toggle break failed";
-      return err(message, 400);
+      return userErrorOr500(e, { route: "hr/attendance/break", orgId: session.orgId }, "Toggle break failed.");
     }
   });
 }
