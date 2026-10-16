@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, err, parseBody, serverError } from "@/lib/api/helpers";
 import { getRole } from "@/server/queries/roles";
 import { createAuditLog } from "@/lib/audit-log";
 import { db } from "@/lib/db";
@@ -27,10 +27,7 @@ export async function GET(
       if (!role) return err("Role not found", 404);
       return ok(role);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load role",
-        500
-      );
+      return serverError(error, { route: "roles/[roleId]", orgId: session.orgId }, "Failed to load role.");
     }
   });
 }
@@ -76,10 +73,7 @@ export async function PATCH(
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to update role",
-        500
-      );
+      return serverError(error, { route: "roles/[roleId]", orgId: session.orgId }, "Failed to update role.");
     }
   });
 }
@@ -135,10 +129,7 @@ export async function DELETE(
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to delete role",
-        500
-      );
+      return serverError(error, { route: "roles/[roleId]", orgId: session.orgId }, "Failed to delete role.");
     }
   });
 }
