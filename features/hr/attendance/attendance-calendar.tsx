@@ -15,6 +15,7 @@ import { useHrMonthlyAttendance, useHrWfhRequests, useHrHolidaysForCalendar } fr
 import { CalendarDays } from "lucide-react";
 import { IconChip } from "@/components/ui/icon-chip";
 import { WEEKDAY_LABELS, CalendarDay, statusConfig } from "./attendance-utils";
+import { useHrMyLeaves } from "@/lib/api/hooks/hr/leaves-expenses";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -36,6 +37,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
   const { data: monthlyLogs, isLoading } = useHrMonthlyAttendance({ userId, year, month });
   const { data: wfhRequests } = useHrWfhRequests();
   const { data: holidaysList } = useHrHolidaysForCalendar({ year, month });
+  // Approved leave was never marked, so a day off read as absent (QA-0066).
+  const { data: myLeaves } = useHrMyLeaves();
 
   const calendarDays = useMemo((): CalendarDay[] => {
     const start = startOfMonth(currentMonth);
@@ -59,6 +62,20 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
       }
     }
 
+    const approvedLeaveDates = new Set<string>();
+    for (const raw of (myLeaves?.requests ?? []) as Array<{
+      status?: string | null;
+      startDate?: string | null;
+      endDate?: string | null;
+    }>) {
+      if (raw.status !== "APPROVED" || !raw.startDate || !raw.endDate) continue;
+      const from = new Date(`${String(raw.startDate).slice(0, 10)}T00:00:00`);
+      const to = new Date(`${String(raw.endDate).slice(0, 10)}T00:00:00`);
+      for (const day of eachDayOfInterval({ start: from, end: to })) {
+        approvedLeaveDates.add(format(day, "yyyy-MM-dd"));
+      }
+    }
+
     const holidayMap = new Map<string, string>();
     if (holidaysList) {
       for (const h of holidaysList) {
@@ -78,6 +95,9 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
 
       if (holidayName) return { date, status: "holiday", holidayName };
 
+      // Approved leave is marked whether it is past or still to come.
+      if (approvedLeaveDates.has(dateStr)) return { date, status: "leave" };
+
       if (date > today) return { date, status: "future" };
       if (isWeekend(date)) return { date, status: "weekend" };
 
@@ -92,7 +112,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
 
       return { date, status: "absent" };
     });
-  }, [currentMonth, monthlyLogs, wfhRequests, holidaysList, joiningDate]);
+  }, [currentMonth, monthlyLogs, wfhRequests, holidaysList, joiningDate, myLeaves]);
 
   const startDayOfWeek = getDay(startOfMonth(currentMonth));
   const paddingDays = Array.from({ length: startDayOfWeek }, (_, i) => i);

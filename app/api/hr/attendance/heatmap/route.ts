@@ -29,6 +29,10 @@ export async function GET(req: NextRequest) {
         date: attendance.date,
         totalHours: sql<string>`COALESCE(SUM(${attendance.workHours}::numeric), 0)`,
         sessions: sql<number>`count(*)`,
+        // A day only counts as attended if someone actually checked in: the
+        // auto-absent rows made an all-absent week read as a 5-day streak
+        // (QA-0066).
+        checkIns: sql<number>`count(${attendance.checkIn})`,
       })
       .from(attendance)
       .where(and(
@@ -44,13 +48,15 @@ export async function GET(req: NextRequest) {
       date: d.date,
       hours: Number(Number(d.totalHours).toFixed(1)),
       sessions: Number(d.sessions),
+      attended: Number(d.checkIns) > 0,
       intensity: Math.min(4, Math.floor(Number(d.totalHours) / 2)),
     }));
 
-    const totalDays = heatmap.length;
-    const totalHours = heatmap.reduce((s, d) => s + d.hours, 0);
+    const attendedDays = heatmap.filter((d) => d.attended);
+    const totalDays = attendedDays.length;
+    const totalHours = attendedDays.reduce((s, d) => s + d.hours, 0);
     const avgHours = totalDays > 0 ? (totalHours / totalDays).toFixed(1) : "0.0";
-    const longestStreak = calculateStreak(heatmap.map((d) => d.date));
+    const longestStreak = calculateStreak(attendedDays.map((d) => d.date));
 
     return ok({
       year,

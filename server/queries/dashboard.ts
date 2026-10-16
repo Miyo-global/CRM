@@ -26,7 +26,7 @@ import {
   targets,
   auditLogs,
 } from "@/lib/db/schema";
-import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, gt, sum, ne } from "drizzle-orm";
+import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull, gt, sum, ne } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
@@ -65,11 +65,18 @@ export async function getDashboardStats(orgId: string, _userId: string) {
         .select({ count: count() })
         .from(projects)
         .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt))),
+      // People who actually checked in today. Counting every attendance row
+      // included the auto-absent ones, so the dashboard said 7 present while
+      // the team monitor said 0 (QA-0066).
       db
         .select({ count: count() })
         .from(attendance)
         .where(
-          and(eq(attendance.orgId, orgId), eq(attendance.date, today))
+          and(
+            eq(attendance.orgId, orgId),
+            eq(attendance.date, today),
+            isNotNull(attendance.checkIn),
+          ),
         ),
     ]);
 
