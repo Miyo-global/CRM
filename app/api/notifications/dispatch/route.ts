@@ -1,4 +1,5 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { logger } from "@/lib/logger";
 import { sendEmail } from "@/lib/email";
 import { sendWhatsApp, sendSms, sendWhatsAppWithSmsFallback } from "@/lib/twilio";
 import { z } from "zod";
@@ -54,11 +55,8 @@ export async function POST(req: NextRequest) {
           await sendEmail({ to: body.email, subject: body.subject, html: body.body });
           results.push({ channel: "email", sent: true });
         } catch (e) {
-          results.push({
-            channel: "email",
-            sent: false,
-            reason: e instanceof Error ? e.message : "unknown_error",
-          });
+          logger.error("notifications/dispatch: email send failed", { error: e });
+          results.push({ channel: "email", sent: false, reason: "send_failed" });
         }
         continue;
       }
