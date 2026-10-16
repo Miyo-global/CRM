@@ -1,4 +1,4 @@
-import { withAdmin, ok, parseBody } from "@/lib/api/helpers";
+import { withAdmin, ok, parseBody, parseQuery } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { payrolls } from "@/lib/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
@@ -84,5 +84,72 @@ export async function POST(req: NextRequest) {
     }
 
     return ok({ recalculated, skipped });
+  });
+}
+
+const staleQuerySchema = z.object({ month: z.string().regex(/^\d{4}-\d{2}$/) });
+
+/**
+ * How many DRAFT rows of the month no longer match a fresh calculation
+ * (QA-0022). Drafts are frozen at generation time, so a rule change leaves
+ * stale values behind silently; the payroll page uses this to offer a
+ * recompute instead of waiting for someone to notice.
+ */
+export async function GET(req: NextRequest) {
+  return withAdmin(async (session) => {
+    const { month } = parseQuery(req, staleQuerySchema);
+
+    const drafts = await db.query.payrolls.findMany({
+      where: and(
+        eq(payrolls.orgId, session.orgId),
+        eq(payrolls.month, month),
+        eq(payrolls.status, "DRAFT"),
+      ),
+      columns: {
+        id: true,
+        userId: true,
+        netSalary: true,
+        ptAmount: true,
+        lopDays: true,
+        allowances: true,
+        otherDeductions: true,
+      },
+    });
+    if (drafts.length === 0) return ok({ month, draftCount: 0, staleIds: [] });
+
+    const overrides = Object.fromEntries(
+      drafts.map((d) => [
+        d.userId,
+        { bonus: parseFloat(d.allowances ?? "0") || 0, otherDeductions: parseFloat(d.otherDeductions ?? "0") || 0 },
+      ]),
+    );
+    const inputs = await loadPayrollInputs({
+      orgId: session.orgId,
+      userIds: drafts.map((d) => d.userId),
+      month,
+      overrides,
+    });
+
+    const sameMoney = (a: string | null, b: number | string | null) =>
+      Math.abs((parseFloat(String(a ?? "0")) || 0) - (parseFloat(String(b ?? "0")) || 0)) < 0.01;
+
+    const staleIds: number[] = [];
+    for (const draft of drafts) {
+      const input = inputs.get(draft.userId);
+      if (!input || input.monthlySalary <= 0) continue;
+      const fresh = computePayroll(input);
+      const values = payrollRowValues(fresh, {
+        orgId: session.orgId,
+        userId: draft.userId,
+        generatedBy: session.user.id,
+      }) as Record<string, unknown>;
+      const stale =
+        !sameMoney(draft.netSalary, values.netSalary as string) ||
+        !sameMoney(draft.ptAmount, values.ptAmount as string) ||
+        !sameMoney(draft.lopDays, values.lopDays as string);
+      if (stale) staleIds.push(draft.id);
+    }
+
+    return ok({ month, draftCount: drafts.length, staleIds });
   });
 }

@@ -128,6 +128,19 @@ export function useRecomputePayrolls() {
   });
 }
 
+/** DRAFT rows of a month whose values no longer match the current rules. */
+export function useStaleDraftPayrolls(month: string) {
+  return useQuery({
+    queryKey: [...queryKeys.hr.payrolls({ month }), "stale"] as const,
+    queryFn: () =>
+      apiClient.get<{ month: string; draftCount: number; staleIds: number[] }>(
+        "/hr/payrolls/recompute",
+        { month },
+      ),
+    staleTime: 30_000,
+  });
+}
+
 export function useDeletePayroll() {
   return useMutation({
     mutationFn: ({ payrollId }: DeletePayrollInput) =>

@@ -10,6 +10,7 @@ import {
   useMarkPayrollPaid,
   useDeletePayroll,
   useRecomputePayrolls,
+  useStaleDraftPayrolls,
   useHrSalaryStructures,
   useResendPayslipEmail,
 } from "@/lib/api/hooks/hr";
@@ -150,6 +151,7 @@ export default function PayrollPage() {
   const resendPayslipEmailMutation = useResendPayslipEmail();
   const deletePayrollMutation = useDeletePayroll();
   const recomputeMutation = useRecomputePayrolls();
+  const { data: staleDrafts } = useStaleDraftPayrolls(selectedMonth);
 
   const selectedEmployeeData = useMemo(() => {
     if (!selectedEmployee || !employees.length) return null;
@@ -374,6 +376,24 @@ export default function PayrollPage() {
     return (
       <PageWrapper title="Payroll management">
         <div className="space-y-6">
+        {(staleDrafts?.staleIds.length ?? 0) > 0 && (
+          <div className="flex flex-col gap-3 rounded-lg border border-warning bg-warning-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-warning-strong">
+              {staleDrafts!.staleIds.length} draft payslip
+              {staleDrafts!.staleIds.length === 1 ? "" : "s"} for this month were calculated under
+              older rules and no longer match a fresh calculation.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => handleRecalculate(staleDrafts!.staleIds)}
+              disabled={recomputeMutation.isPending}
+            >
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Recalculate {staleDrafts!.staleIds.length} draft
+              {staleDrafts!.staleIds.length === 1 ? "" : "s"}
+            </Button>
+          </div>
+        )}
           <Skeleton className="h-16 w-full rounded-lg" />
           <Skeleton className="h-20 w-full rounded-lg" />
           <Card className="gap-0 py-0">
