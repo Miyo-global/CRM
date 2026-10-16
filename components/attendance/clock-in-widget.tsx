@@ -125,8 +125,8 @@ export function ClockInWidget() {
             IST
           </span>
         )}
+        {/* 2xs muted on the card background failed AA (QA-D010). */}
         {dailyStats && parseFloat(dailyStats.workHours) > 0 && (
-          {/* 2xs muted on the card background failed AA (QA-D010). */}
           <span className="truncate text-xs tabular-nums text-foreground/75">
             {parseFloat(dailyStats.workHours).toFixed(1)}h worked
             {parseFloat(dailyStats.breakHours) > 0 && ` · ${parseFloat(dailyStats.breakHours).toFixed(1)}h break`}
