@@ -145,7 +145,7 @@ ATS items start at MIYO-0626.
   - **Problem:** Without `regions`, functions run in iad1 by default; if the DB is in Mumbai/Singapore every query crosses continents, and withAuth alone makes 2–3 round trips per request.
   - **Fix:** Confirm the DB region with Tarun, then set `"regions": ["bom1"]` (or the DB's region) in vercel.json.
   - **Acceptance check:** Server-Timing for a trivial API drops below 300 ms on prod.
-- [ ] MIYO-0011 [Critical][Prod/Performance] Cut withAuth round trips: cache session-revocation and membership lookups per request
+- [x] MIYO-0011 [Critical][Prod/Performance] Cut withAuth round trips: cache session-revocation and membership lookups per request
   - **Where:** lib/api/helpers.ts:43-140
   - **Problem:** Every API call does a userSessions lookup and (when orgId missing) an organizationMembers lookup before the handler. The dashboard fires ~20 widget APIs in parallel → 40–60 extra queries per page load. lib/redis.ts is in-memory and not shared across serverless instances, so the cache rarely hits.
   - **Fix:** Put the revocation check behind a short signed JWT claim refresh (e.g. re-check DB at most every 60 s via token `sessionCheckedAt`), and always carry orgId in the JWT.

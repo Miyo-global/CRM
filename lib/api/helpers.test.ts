@@ -7,7 +7,10 @@ const memory = new Map<string, unknown>();
 
 vi.mock("@/lib/auth", () => ({ auth: () => authMock() }));
 vi.mock("@/lib/redis", () => ({
-  redis: { get: async (k: string) => memory.get(k) ?? null },
+  redis: {
+    get: async (k: string) => memory.get(k) ?? null,
+    set: async (k: string, v: unknown) => { memory.set(k, v); return "OK"; },
+  },
 }));
 vi.mock("@/lib/db", () => ({
   db: {
@@ -107,5 +110,24 @@ describe("withAuth Server-Timing", () => {
     for (const name of ["auth", "session-check", "membership", "handler"]) {
       expect(header).toMatch(new RegExp(`${name};dur=\\d`));
     }
+  });
+});
+
+describe("withAuth revocation cache (MIYO-0011)", () => {
+  it("checks userSessions once per session within the TTL", async () => {
+    signIn();
+    sessionRow.mockReset();
+    sessionRow.mockResolvedValue({ isRevoked: false, userId: "u1" });
+    expect((await withAuth(handler)).status).toBe(200);
+    expect((await withAuth(handler)).status).toBe(200);
+    expect(sessionRow).toHaveBeenCalledTimes(1);
+  });
+
+  it("a same-instance revocation still applies immediately", async () => {
+    signIn();
+    sessionRow.mockResolvedValue({ isRevoked: false, userId: "u1" });
+    await withAuth(handler);
+    memory.set("revoked:session:s1", true);
+    expect((await withAuth(handler)).status).toBe(401);
   });
 });
