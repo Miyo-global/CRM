@@ -3,6 +3,7 @@ import {
   CURRENCY_SYMBOL,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
+  DEFAULT_TIMEZONE,
   USES_INDIAN_NUMBERING,
 } from "@/lib/constants/locale";
 
@@ -224,8 +225,21 @@ export function formatHoursMinutes(hours: string | number | null | undefined): s
 const GREETING_AFTERNOON_HOUR = 12;
 const GREETING_EVENING_HOUR = 17;
 
+/** Hour of day in the org timezone, whatever the browser is set to. */
+function orgHour(): number {
+  return Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: DEFAULT_TIMEZONE,
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date()),
+  );
+}
+
 export function getGreeting(): string {
-  const hour = new Date().getHours();
+  // The browser's hour greeted a 15:26 IST user with "Good morning" on a UTC
+  // machine (QA-0033).
+  const hour = orgHour();
   if (hour < GREETING_AFTERNOON_HOUR) return "Good morning";
   if (hour < GREETING_EVENING_HOUR) return "Good afternoon";
   return "Good evening";

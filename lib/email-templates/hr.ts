@@ -2,6 +2,7 @@ import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
 import { REJECTION_COOLDOWN_DAYS } from "@/lib/constants/recruitment";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 import { BRAND } from "@/lib/design/brand-hex";
+import { formatIST } from "@/lib/date-utils";
 
 export function getLeaveRequestEmailTemplate(
   approverName: string,
@@ -846,10 +847,12 @@ export function getHolidayWorkRequestEmailToHr(params: {
   const sDay = escapeHtml(params.dayLabel);
   const sReason = escapeHtml(params.reason);
   const sComp = params.compensationPreference === "COMP_OFF" ? "Compensatory off" : "Extra pay";
+  // ISO/UTC in a mail body is unreadable: show IST like the rest of the app
+  // (QA-0033).
   const submittedAtStr =
     typeof params.submittedAt === "string"
       ? params.submittedAt
-      : params.submittedAt.toISOString();
+      : `${formatIST(params.submittedAt)} IST`;
   const sSubmitted = escapeHtml(submittedAtStr);
   const sOrg = escapeHtml(params.orgName);
   const reviewUrl = `${baseUrl}/hr/attendance#holiday-work`;

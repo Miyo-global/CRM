@@ -7,7 +7,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { EmptyState } from "@/components/ui/empty-state";
-import { format } from "date-fns";
 import { Shield, ChevronLeft, ChevronRight, Activity, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +33,7 @@ import {
 } from "@/lib/api/hooks/audit-log";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
+import { formatIST } from "@/lib/date-utils";
 import {
   PAGE_SIZE_OPTIONS,
   parsePaginationFromSearchParams,
@@ -80,8 +80,8 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter") handleClick(); }}
     >
-      <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap" title={format(new Date(log.createdAt), "PPpp")}>
-        {format(new Date(log.createdAt), "dd MMM, HH:mm:ss")}
+      <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap" title={`${formatIST(log.createdAt, { second: "2-digit" })} IST`}>
+        {formatIST(log.createdAt, { year: undefined, second: "2-digit" })}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2 min-w-36">
@@ -163,7 +163,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
             </DetailField>
           )}
           <DetailField label="Timestamp">
-            <p className="text-sm tabular-nums">{format(new Date(log.createdAt), "PPpp")}</p>
+            <p className="text-sm tabular-nums">{formatIST(log.createdAt, { second: "2-digit" })} IST</p>
           </DetailField>
           {log.ipAddress && (
             <DetailField label="IP Address">

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "../ui/button";
-import { format } from "date-fns";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   useHrAttendanceStatus,
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import { Clock, Timer } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toneDot } from "../../lib/design/tones";
+import { formatIST } from "@/lib/date-utils";
 
 export function ClockInWidget() {
   const [now, setNow] = useState(new Date());
@@ -114,7 +114,15 @@ export function ClockInWidget() {
           </span>
         ) : (
           <span className="truncate text-xs font-medium tabular-nums text-foreground">
-            {format(now, "hh:mm a - EEE dd, MMM yyyy")}
+            {formatIST(now, {
+              weekday: "short",
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
+            IST
           </span>
         )}
         {dailyStats && parseFloat(dailyStats.workHours) > 0 && (
