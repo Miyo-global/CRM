@@ -32,19 +32,66 @@ async function get<T>(url: string, params?: Record<string, unknown>, config?: Ax
   return res.data;
 }
 
+/**
+ * In-flight write requests, keyed by method + url + payload.
+ *
+ * A second click on a submit button fired a second identical request while the
+ * first was still open, creating duplicate records across nearly every create
+ * form (QA-0032). An identical write that is already in flight now shares that
+ * request instead of starting another; a deliberate repeat after the first one
+ * finishes still goes through.
+ */
+const inFlightWrites = new Map<string, Promise<unknown>>();
+
+function writeKey(method: string, url: string, data?: unknown): string {
+  let payload = "";
+  try {
+    payload = data === undefined ? "" : JSON.stringify(data);
+  } catch {
+    // Non-serialisable body (FormData, Blob): do not dedupe it.
+    return "";
+  }
+  return `${method} ${url} ${payload}`;
+}
+
+async function dedupedWrite<T>(
+  method: string,
+  url: string,
+  data: unknown,
+  send: () => Promise<T>,
+): Promise<T> {
+  const key = writeKey(method, url, data);
+  if (!key) return send();
+
+  const existing = inFlightWrites.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const request = send().finally(() => {
+    inFlightWrites.delete(key);
+  });
+  inFlightWrites.set(key, request);
+  return request;
+}
+
 async function post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-  const res = await _axios.post<T>(url, data, config);
-  return res.data;
+  return dedupedWrite("POST", url, data, async () => {
+    const res = await _axios.post<T>(url, data, config);
+    return res.data;
+  });
 }
 
 async function put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-  const res = await _axios.put<T>(url, data, config);
-  return res.data;
+  return dedupedWrite("PUT", url, data, async () => {
+    const res = await _axios.put<T>(url, data, config);
+    return res.data;
+  });
 }
 
 async function patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-  const res = await _axios.patch<T>(url, data, config);
-  return res.data;
+  return dedupedWrite("PATCH", url, data, async () => {
+    const res = await _axios.patch<T>(url, data, config);
+    return res.data;
+  });
 }
 
 async function del<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
