@@ -3,7 +3,7 @@ import { withAuth, ok, err, parseBody, serverError } from "@/lib/api/helpers";
 import { getRole } from "@/server/queries/roles";
 import { createAuditLog } from "@/lib/audit-log";
 import { db } from "@/lib/db";
-import { roles } from "@/lib/db/schema";
+import { rolePermissions, roles } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
@@ -102,6 +102,8 @@ export async function DELETE(
       const { count } = await import("drizzle-orm");
 
       const result = await db.transaction(async (tx) => {
+        // No .for("update") here: Postgres rejects FOR UPDATE on an aggregate
+        // query, so every delete failed with a server error (QA-0030).
         const [{ value: userCount }] = await tx
           .select({ value: count() })
           .from(organizationMembers)
@@ -111,12 +113,17 @@ export async function DELETE(
               eq(organizationMembers.orgId, session.orgId),
               eq(usersTable.role, existing.slug)
             )
-          )
-          .for("update");
+          );
 
         if (Number(userCount) > 0) {
           return { error: `Cannot delete role — ${userCount} user${Number(userCount) !== 1 ? "s are" : " is"} assigned to it. Reassign them first.` };
         }
+
+        // Role permissions are keyed by slug, not by a foreign key, so they
+        // would otherwise outlive the role.
+        await tx
+          .delete(rolePermissions)
+          .where(and(eq(rolePermissions.role, existing.slug), eq(rolePermissions.orgId, session.orgId)));
 
         await tx
           .delete(roles)
@@ -126,6 +133,15 @@ export async function DELETE(
       });
 
       if (result.error) return err(result.error, 409);
+
+      void createAuditLog({
+        action: "role.deleted",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(roleId),
+        targetType: "role",
+        metadata: { name: existing.name, slug: existing.slug },
+      }).catch(() => {});
 
       return ok({ success: true });
     } catch (error) {
