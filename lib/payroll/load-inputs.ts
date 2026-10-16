@@ -153,7 +153,7 @@ export async function loadPayrollInputs(
       employeeMonthlySalary: parseFloat(user?.monthlySalary ?? "0") || 0,
     });
 
-    const perDay = perDayRate(monthlySalary, opts.month);
+    const perDay = perDayRate(monthlySalary);
     const sundayMult = parseFloat(structure?.sundayOtMultiplier ?? "2.00");
     const holidayMult = parseFloat(structure?.holidayOtMultiplier ?? "2.00");
     let overtimeDays = 0;

@@ -91,7 +91,7 @@ export function computePayroll(input: PayrollComputeInput): PayrollComputeResult
   const monthlySalary = Math.max(0, input.monthlySalary || 0);
   const earned = earnedSalary(monthlySalary, window);
   const earnings = splitEarnings(earned);
-  const perDay = perDayRate(monthlySalary, input.month);
+  const perDay = perDayRate(monthlySalary);
 
   const lopDays = window.empty ? 0 : Math.max(0, input.lopDays || 0);
   const bonus = Math.max(0, input.bonus || 0);

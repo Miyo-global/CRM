@@ -58,22 +58,19 @@ describe("calendarDaysInMonth", () => {
 });
 
 describe("perDaySalaryForLop", () => {
-  it("uses monthly salary divided by calendar days when monthly > 0", () => {
-    expect(perDaySalaryForLop("2026-04", 30000, 25000)).toBe(1000);
+  it("uses monthly salary / 31 in any month", () => {
+    expect(perDaySalaryForLop("2026-04", 31000, 25000)).toBe(1000);
+    expect(perDaySalaryForLop("2026-02", 31000, 25000)).toBe(1000);
   });
 
   it("falls back to gross when monthly is 0", () => {
-    expect(perDaySalaryForLop("2026-04", 0, 30000)).toBe(1000);
-  });
-
-  it("returns 0 when calendar days are 0", () => {
-    expect(perDaySalaryForLop("invalid-string-bad", 30000, 25000)).toBeCloseTo(1000, 0);
+    expect(perDaySalaryForLop("2026-04", 0, 31000)).toBe(1000);
   });
 });
 
 describe("rawLopDeduction", () => {
   it("multiplies LOP days by per-day salary", () => {
-    expect(rawLopDeduction("2026-04", 30000, 30000, 3)).toBe(3000);
+    expect(rawLopDeduction("2026-04", 31000, 31000, 3)).toBe(3000);
   });
 
   it("returns 0 for zero LOP days", () => {
@@ -131,8 +128,8 @@ describe("computeTotalDeductionsAndNet", () => {
   it("applies LOP deduction proportional to days", () => {
     const result = computeTotalDeductionsAndNet({
       month: "2026-04",
-      monthlySalary: 30000,
-      grossSalary: 30000,
+      monthlySalary: 31000,
+      grossSalary: 31000,
       salaryStructureDeductions: 0,
       lopDays: 3,
 
@@ -337,8 +334,7 @@ describe("preview vs generate-route consistency (after fix)", () => {
       overtimeHours: 0,
     });
 
-    const calDays = 30;
-    const generateDailyRate = ctcMonthly / calDays;
+    const generateDailyRate = ctcMonthly / 31;
     const generateLopAmount = roundInr(generateDailyRate * 3);
 
     expect(preview.lopDeduction).toBe(generateLopAmount);
@@ -507,7 +503,7 @@ describe("computePayrollStatutory (LOP-adjusted, OT-excluded)", () => {
 
       params,
     });
-    const expectedPfWage = 9000 - (9000 / 30) * 6;
+    const expectedPfWage = 9000 - (9000 / 31) * 6;
     expect(withLop.pfEmployee).toBe(roundInr(expectedPfWage * 0.12));
     expect(withLop.pfEmployee).toBeLessThan(full.pfEmployee);
   });

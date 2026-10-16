@@ -1,3 +1,5 @@
+import { PER_DAY_DIVISOR } from "@/lib/payroll/rules";
+
 
 function envNumber(name: string, fallback: number): number {
   const raw = process.env[name]?.trim();
@@ -142,9 +144,8 @@ export function computePayrollStatutory(opts: {
   lopDays: number;
   params: StatutoryParams;
 }): StatutoryComputed {
-  const calDays = calendarDaysInMonth(opts.month);
   const lopUnits = opts.lopDays || 0;
-  const perDayBasic = calDays > 0 ? opts.basicSalary / calDays : 0;
+  const perDayBasic = opts.basicSalary / PER_DAY_DIVISOR;
   const pfWage = Math.max(0, opts.basicSalary - perDayBasic * lopUnits);
   const lopDed = roundInr(rawLopDeduction(opts.month, opts.ctcMonthly, opts.ctcMonthly, opts.lopDays));
   const esiEligibilityWage = Math.max(0, opts.grossSalary - (opts.overtimeAmount || 0));
@@ -158,11 +159,10 @@ export function calendarDaysInMonth(monthYyyyMm: string): number {
   return new Date(y, m, 0).getDate();
 }
 
-export function perDaySalaryForLop(monthYyyyMm: string, monthlySalary: number, grossSalary: number): number {
-  const days = calendarDaysInMonth(monthYyyyMm);
-  if (days <= 0) return 0;
+/** Salary / 31 in every month (see PER_DAY_DIVISOR); the month is ignored. */
+export function perDaySalaryForLop(_monthYyyyMm: string, monthlySalary: number, grossSalary: number): number {
   const base = monthlySalary > 0 ? monthlySalary : grossSalary;
-  return base / days;
+  return base / PER_DAY_DIVISOR;
 }
 
 export function rawLopDeduction(monthYyyyMm: string, monthlySalary: number, grossSalary: number, lopDays: number): number {

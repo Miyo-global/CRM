@@ -166,7 +166,7 @@ ATS items start at MIYO-0626.
 
 ### Critical · Payroll
 
-- [ ] MIYO-0014 [Critical][Payroll] Per-day rate must be salary ÷ 31, not ÷ calendar days
+- [x] MIYO-0014 [Critical][Payroll] Per-day rate must be salary ÷ 31, not ÷ calendar days
   - **Where:** lib/payroll/rules.ts perDayRate() and daysInMonth(); lib/payroll/load-inputs.ts:156; lib/payroll/compute.ts:94
   - **Problem:** perDayRate divides by days in the month (28–31). Tarun's rule and his August sheet use ÷31 always. In February each LOP day is ~10.7 % too expensive.
   - **Fix:** Add `PER_DAY_DIVISOR = 31` to rules.ts and use it in perDayRate (keep daysInMonth for proration only). Update lib/payroll/__tests__/rules.test.ts.

@@ -107,8 +107,14 @@ describe("LOP and proration (A2 table, October 2026)", () => {
     expect(r.netSalary).toBe(18459.68);
   });
 
+  it("per-day is salary / 31 in every month, February included", () => {
+    expect(perDayRate(31000)).toBe(1000);
+    const feb = computePayroll({ month: "2026-02", monthlySalary: 31000, joiningDate: "2026-02-01", lopDays: 1 });
+    expect(feb.perDay).toBe(1000);
+  });
+
   it("overtime 2 days on 33,200 adds 2,141.94", () => {
-    const perDay = perDayRate(33200, OCT);
+    const perDay = perDayRate(33200);
     expect(overtimeAmountForDays(perDay, 2)).toBe(2141.94);
     const r = computePayroll({
       month: OCT,

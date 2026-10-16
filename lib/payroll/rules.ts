@@ -64,10 +64,12 @@ export function daysInMonth(monthYyyyMm: string): number {
   return new Date(y, m, 0).getDate();
 }
 
-/** Per-day rate used for LOP and overtime: salary / calendar days in month. */
-export function perDayRate(monthlySalary: number, monthYyyyMm: string): number {
-  const days = daysInMonth(monthYyyyMm);
-  return days > 0 ? monthlySalary / days : 0;
+/** Per-day divisor for LOP and overtime, whatever the month length (Tarun's rule). */
+export const PER_DAY_DIVISOR = 31;
+
+/** Per-day rate used for LOP and overtime: salary / 31 in every month. */
+export function perDayRate(monthlySalary: number): number {
+  return monthlySalary / PER_DAY_DIVISOR;
 }
 
 /** Round to 2 decimal places. Applied once, at the end of a calculation. */
