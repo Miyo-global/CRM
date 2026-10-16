@@ -85,7 +85,8 @@ export type AuditAction =
   | "branch.created"
   | "branch.updated"
   | "branch.deleted"
-  | "hr.bonus_paid";
+  | "hr.bonus_paid"
+  | "hr.assets_exported";
 
 interface AuditLogEntry {
   action: AuditAction;

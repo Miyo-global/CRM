@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { ZodError } from "zod";
-import { withAuth, err, ok, parseBody } from "@/lib/api/helpers";
+import { withRoles, err, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -12,6 +12,8 @@ import { isEmailConfigured, emailNotConfiguredMessage } from "@/lib/email/config
 import { assetsExportEmailSchema, assetsStatusLabel } from "@/lib/hr/assets-export-filters";
 import { logger } from "@/lib/logger";
 import { BRAND } from "@/lib/design/brand-hex";
+import { ADMIN_ROLES } from "@/lib/constants/roles";
+import { createAuditLog } from "@/lib/audit-log";
 
 function escapeHtml(s: string): string {
   return s
@@ -21,8 +23,28 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Recipient domains an export may be sent to: the org allowlist when set,
+ * otherwise only the requesting admin's own email domain.
+ */
+function allowedDomainsFor(
+  org: { allowedEmailDomains?: string[] | null } | undefined,
+  senderEmail: string | null | undefined,
+): string[] {
+  const configured = (org?.allowedEmailDomains ?? [])
+    .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
+    .filter(Boolean);
+  if (configured.length) return configured;
+  const senderDomain = senderEmail?.split("@")[1]?.toLowerCase();
+  return senderDomain ? [senderDomain] : [];
+}
+
+function offDomainRecipients(recipients: string[], domains: string[]): string[] {
+  return recipients.filter((e) => !domains.includes(e.split("@")[1]?.toLowerCase() ?? ""));
+}
+
 export async function POST(req: NextRequest) {
-  return withAuth(async (session) => {
+  return withRoles(ADMIN_ROLES)(async (session) => {
     if (!isEmailConfigured()) {
       return err(emailNotConfiguredMessage(), 400);
     }
@@ -36,11 +58,25 @@ export async function POST(req: NextRequest) {
     }
 
     const { to, cc, bcc, format, status, subject: customSubject, message } = body;
-    const rows = await getAssetExportRows(session.orgId, status);
     const org = await db.query.organizations.findFirst({
       where: eq(organizations.id, session.orgId),
-      columns: { name: true },
+      columns: { name: true, allowedEmailDomains: true },
     });
+
+    const domains = allowedDomainsFor(org, session.user.email);
+    const blocked = domains.length
+      ? offDomainRecipients([...to, ...(cc ?? []), ...(bcc ?? [])], domains)
+      : [...to, ...(cc ?? []), ...(bcc ?? [])];
+    if (blocked.length) {
+      return err(
+        domains.length
+          ? `These recipients are outside the allowed domains (${domains.join(", ")}): ${blocked.join(", ")}`
+          : "No allowed recipient domain is configured for this organisation.",
+        403,
+      );
+    }
+
+    const rows = await getAssetExportRows(session.orgId, status);
     const orgName = org?.name ?? "Organization";
     const scopeLabel = assetsStatusLabel(status);
     const dateStr = new Date().toISOString().slice(0, 10);
@@ -83,6 +119,20 @@ export async function POST(req: NextRequest) {
         attachments: [attachment],
         ...(cc?.length ? { cc } : {}),
         ...(bcc?.length ? { bcc } : {}),
+      });
+      await createAuditLog({
+        action: "hr.assets_exported",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetType: "asset_export",
+        metadata: {
+          to,
+          cc: cc ?? [],
+          bcc: bcc ?? [],
+          format,
+          status: status ?? "ALL",
+          rowCount: rows.length,
+        },
       });
       return ok({
         sent: true,
