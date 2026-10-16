@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { attendance, holidays } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -131,8 +131,7 @@ export async function POST(req: NextRequest) {
 
       return ok({ success: true, isHolidayWork: !!holiday, isSundayWork: isSunday && !holiday });
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Check-in failed";
-      return err(message, 400);
+      return userErrorOr500(e, { route: "hr/attendance/check-in", orgId: session.orgId }, "Check-in failed.");
     }
   });
 }
