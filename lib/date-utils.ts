@@ -120,6 +120,26 @@ export function formatDisplayDate(
   });
 }
 
+/**
+ * Formats a bare calendar date ("YYYY-MM-DD") for display without ever
+ * shifting it a day.
+ *
+ * `new Date("2026-10-16")` is UTC midnight, so rendering it with the browser's
+ * locale showed 15 October in any timezone behind UTC (QA-0025). A calendar
+ * date has no timezone, so format the parts directly.
+ */
+export function formatCalendarDate(
+  value: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions,
+  locale: string = DEFAULT_LOCALE,
+): string {
+  if (!value) return "";
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
+  if (!match) return formatDisplayDate(value, options, locale);
+  const local = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return local.toLocaleDateString(locale, options ?? { day: "numeric", month: "short", year: "numeric" });
+}
+
 export function formatDisplayDateTime(
   date: Date | string | null | undefined,
   locale: string = DEFAULT_LOCALE,

@@ -22,17 +22,18 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
+import { formatCalendarDate } from "@/lib/date-utils";
 
 const createCycleSchema = z.object({
   name: z.string().min(1, "Name is required").regex(/^[A-Za-z]/, "Name must start with a letter").max(100),
   description: z.string().optional(),
-  startDate: z.string().min(1, "Start date required").refine(
-    (v) => { const y = new Date(v).getFullYear(); return y >= 2000 && y <= 2099; },
-    "Year must be between 2000 and 2099"
+  startDate: z.string().min(1, "Pick a start date").refine(
+    (v) => { const y = Number(v.slice(0, 4)); return y >= 2000 && y <= 2099; },
+    "Pick a date between 2000 and 2099"
   ),
-  endDate: z.string().min(1, "End date required").refine(
-    (v) => { const y = new Date(v).getFullYear(); return y >= 2000 && y <= 2099; },
-    "Year must be between 2000 and 2099"
+  endDate: z.string().min(1, "Pick an end date").refine(
+    (v) => { const y = Number(v.slice(0, 4)); return y >= 2000 && y <= 2099; },
+    "Pick a date between 2000 and 2099"
   ),
 });
 type CreateCycleForm = z.infer<typeof createCycleSchema>;
@@ -146,17 +147,31 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="startDate">Start Date</Label>
-                  <DatePicker id="startDate" value={form.watch("startDate") || ""} onChange={(v) => form.setValue("startDate", v)} placeholder="Start date" />
+                  {/* Error above the control: the calendar popover covered it
+                      below, and picking a date now clears it (QA-0025). */}
                   {form.formState.errors.startDate && (
-                    <p className="text-xs text-destructive mt-1">{form.formState.errors.startDate.message}</p>
+                    <p className="text-xs text-destructive">{form.formState.errors.startDate.message}</p>
                   )}
+                  <DatePicker
+                    id="startDate"
+                    value={form.watch("startDate") || ""}
+                    onChange={(v) => form.setValue("startDate", v, { shouldValidate: true })}
+                    placeholder="Start date"
+                    invalid={!!form.formState.errors.startDate}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="endDate">End Date</Label>
-                  <DatePicker id="endDate" value={form.watch("endDate") || ""} onChange={(v) => form.setValue("endDate", v)} placeholder="End date" />
                   {form.formState.errors.endDate && (
-                    <p className="text-xs text-destructive mt-1">{form.formState.errors.endDate.message}</p>
+                    <p className="text-xs text-destructive">{form.formState.errors.endDate.message}</p>
                   )}
+                  <DatePicker
+                    id="endDate"
+                    value={form.watch("endDate") || ""}
+                    onChange={(v) => form.setValue("endDate", v, { shouldValidate: true })}
+                    placeholder="End date"
+                    invalid={!!form.formState.errors.endDate}
+                  />
                 </div>
               </div>
               <Button type="submit" loading={createMutation.isPending} className="w-full">
@@ -203,7 +218,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                           <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground tabular-nums">
                             <span className="flex items-center gap-1">
                               <Calendar className="size-3.5" aria-hidden="true" />
-                              {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
+                              {formatCalendarDate(cycle.startDate)} — {formatCalendarDate(cycle.endDate)}
                             </span>
                             <span className="flex items-center gap-1">
                               <CheckCircle2 className="size-3.5" aria-hidden="true" />
@@ -232,7 +247,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                             <p className="truncate font-medium">{cycle.name}</p>
                             <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
                               <Clock className="size-3" aria-hidden="true" />
-                              {new Date(cycle.startDate).toLocaleDateString()} — {new Date(cycle.endDate).toLocaleDateString()}
+                              {formatCalendarDate(cycle.startDate)} — {formatCalendarDate(cycle.endDate)}
                             </p>
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
