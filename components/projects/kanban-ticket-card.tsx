@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, memo } from "react";
+import { User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn, resolveImageUrl } from "@/lib/utils";
@@ -85,16 +86,20 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
 
       <div className="flex items-center gap-1.5">
         {primaryAssignee ? (
-          <Avatar className="size-5 shrink-0">
+          <Avatar className="size-5 shrink-0" title={assigneeLabel(primaryAssignee)}>
             <AvatarImage src={resolveImageUrl(primaryAssignee.image)} />
             <AvatarFallback className="bg-brand-soft text-3xs font-medium text-brand-soft-foreground">
-              {primaryAssignee.firstName?.[0]}
-              {primaryAssignee.lastName?.[0]}
+              {assigneeInitials(primaryAssignee)}
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-muted">
-            <span className="text-3xs text-muted-foreground">?</span>
+          /* A bare "?" read as a broken avatar; say what it means (QA-0076). */
+          <div
+            className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-muted"
+            title="Unassigned"
+            aria-label="Unassigned"
+          >
+            <User className="size-2.5 text-muted-foreground" aria-hidden="true" />
           </div>
         )}
         <PriorityBadge priority={ticket.priority} />
@@ -128,3 +133,23 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
 });
 
 export type { KanbanTicket, KanbanColumn } from "./shared/types";
+
+interface AssigneeLike {
+  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+}
+
+function assigneeLabel(user: AssigneeLike): string {
+  const parts = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+  return parts || user.name?.trim() || user.email?.trim() || "Unnamed member";
+}
+
+function assigneeInitials(user: AssigneeLike): string {
+  return assigneeLabel(user)
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}

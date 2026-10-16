@@ -46,17 +46,14 @@ export default function MyTicketsPage({ params }: PageProps) {
   const filterPriority = searchParams.get("priority") ?? "";
   const filterType = searchParams.get("type") ?? "";
 
+  // Tickets assigned to me, as the page title says. Including ones I merely
+  // reported pulled in work assigned to other people, which then rendered
+  // with an unknown assignee (QA-0076).
   const myTickets = useMemo(() => {
     if (!data?.tickets || !userId) return [];
-    return data.tickets.filter((t) => {
-
-      if (t.assigneeId === userId) return true;
-
-      if (t.assignees?.some((a) => a.userId === userId)) return true;
-
-      if (t.reporterId === userId) return true;
-      return false;
-    });
+    return data.tickets.filter(
+      (t) => t.assigneeId === userId || (t.assignees?.some((a) => a.userId === userId) ?? false),
+    );
   }, [data?.tickets, userId]);
 
   const filteredTickets = useMemo(() => {
