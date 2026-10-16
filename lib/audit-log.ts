@@ -64,6 +64,7 @@ export type AuditAction =
   | "DOWNLOAD"
   | "VIEW"
   | "role.changed"
+  | "leave_policy.updated"
   | "role.created"
   | "role.updated"
   | "submit_lead"
