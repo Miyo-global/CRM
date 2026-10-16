@@ -1,6 +1,11 @@
 /**
  * Applies drizzle SQL migrations that are not yet recorded in
  * drizzle.__drizzle_migrations (idempotent SQL with IF NOT EXISTS is safe).
+ *
+ * `--deploy` (pnpm db:migrate:deploy, run by the Vercel build) reads only
+ * DATABASE_URL_MIGRATE, never DATABASE_URL, and skips preview builds. Until
+ * DATABASE_URL_MIGRATE is set in Vercel (Production) it is a logged no-op.
+ * A pg advisory lock stops two concurrent deploys migrating at once.
  */
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
@@ -11,7 +16,18 @@ import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DEPLOY = process.argv.includes("--deploy");
+const DATABASE_URL = DEPLOY ? process.env.DATABASE_URL_MIGRATE : process.env.DATABASE_URL;
+const MIGRATION_LOCK_ID = 727_001; // arbitrary, shared by every deploy
+
+if (DEPLOY && process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
+  console.log(`skip migrations: VERCEL_ENV=${process.env.VERCEL_ENV}`);
+  process.exit(0);
+}
+if (DEPLOY && !DATABASE_URL) {
+  console.log("skip migrations: DATABASE_URL_MIGRATE is not set");
+  process.exit(0);
+}
 if (!DATABASE_URL) throw new Error("DATABASE_URL is required in .env");
 
 const PENDING_TAGS = [
@@ -60,8 +76,9 @@ function hashFile(tag: string): string {
 
 async function main() {
   const ssl = DATABASE_URL!.includes("localhost") ? false : "require";
-  const sql = postgres(DATABASE_URL!, { max: 1, ssl });
+  const sql = postgres(DATABASE_URL!, { max: 1, ssl, onnotice: () => {} });
 
+  await sql`SELECT pg_advisory_lock(${MIGRATION_LOCK_ID})`;
   await sql`CREATE SCHEMA IF NOT EXISTS drizzle`;
   await sql`
     CREATE TABLE IF NOT EXISTS drizzle."__drizzle_migrations" (
@@ -91,9 +108,10 @@ async function main() {
       INSERT INTO drizzle."__drizzle_migrations" (hash, created_at)
       VALUES (${hash}, ${TIMESTAMPS[tag]})
     `;
-    console.log(`done: ${tag}`);
+    console.log(`applied: ${tag}`);
   }
 
+  await sql`SELECT pg_advisory_unlock(${MIGRATION_LOCK_ID})`;
   await sql.end();
   console.log("All pending migrations processed.");
 }

@@ -17,6 +17,7 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
     "db:apply-pending": "tsx --env-file=.env scripts/apply-pending-migrations.ts",
+    "db:migrate:deploy": "tsx scripts/apply-pending-migrations.ts --deploy",
     "db:generate": "drizzle-kit generate",
     "db:fix-orphaned": "tsx scripts/fix-orphaned-data.ts",
     "backfill:converted-leads": "tsx --env-file=.env scripts/backfill-converted-leads.ts",

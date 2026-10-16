@@ -1,4 +1,5 @@
 {
+  "buildCommand": "pnpm db:migrate:deploy && pnpm build",
   "crons": [
     {
       "path": "/api/cron/daily-notifications",
