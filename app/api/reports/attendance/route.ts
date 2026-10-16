@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getAttendanceReport } from "@/server/queries/reports";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
@@ -36,10 +36,7 @@ export async function GET(req: NextRequest) {
       });
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load attendance report",
-        500
-      );
+      return serverError(error, { route: "reports/attendance", orgId: session.orgId }, "Failed to load attendance report.");
     }
   });
 }
