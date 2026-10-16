@@ -18,6 +18,7 @@ import { sendLeaveRequestEmail } from "@/lib/email";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
 import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
+import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 
 const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
@@ -223,6 +224,21 @@ export async function POST(req: NextRequest) {
           // Nobody in the org can approve this one (see resolveLeaveApprover).
           status: approver.autoApprove ? "APPROVED" : "PENDING",
         }).returning({ id: leaveRequests.id });
+
+        // An auto-approved leave is an approved leave: deduct it in the same
+        // transaction, or the balance never moved (QA-0018).
+        if (row?.id && approver.autoApprove) {
+          await deductApprovedLeaveBalance(tx, {
+            id: row.id,
+            orgId: session.orgId,
+            userId: session.user.id,
+            leaveTypeId: body.leaveTypeId,
+            startDate: normalizedStart,
+            endDate: normalizedEnd,
+            isHalfDay: body.isHalfDay ?? false,
+          });
+        }
+
         return row?.id ?? false;
       });
 

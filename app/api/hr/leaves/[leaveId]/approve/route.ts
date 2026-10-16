@@ -6,6 +6,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { createNotification } from "@/server/actions/create-notification";
 import { sendLeaveStatusUpdateEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
+import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { LEAVE_POLICY } from "@/lib/leave-policy";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
@@ -63,53 +64,10 @@ export async function PUT(
         })
         .where(eq(leaveRequests.id, leaveId));
 
-      if (existing.leaveTypeId) {
-        const leaveType = await tx.query.leaveTypes.findFirst({
-          where: eq(leaveTypes.id, existing.leaveTypeId),
-          columns: { name: true },
-        });
-
-        if (leaveType?.name !== LEAVE_POLICY.UNPAID.name) {
-          const start = new Date(`${existing.startDate}T00:00:00Z`);
-          const end = new Date(`${existing.endDate}T00:00:00Z`);
-          let diffDays = existing.isHalfDay ? 0.5 : 0;
-          if (!existing.isHalfDay) {
-            const cursor = new Date(start);
-            while (cursor <= end) {
-              const day = cursor.getUTCDay();
-              if (day !== 0 && day !== 6) diffDays++;
-              cursor.setUTCDate(cursor.getUTCDate() + 1);
-            }
-          }
-
-          const leaveYear = start.getUTCFullYear();
-          const balanceRecord = await tx.query.leaveBalances.findFirst({
-            where: and(
-              eq(leaveBalances.userId, existing.userId),
-              eq(leaveBalances.leaveTypeId, existing.leaveTypeId),
-              eq(leaveBalances.year, leaveYear),
-            ),
-          });
-
-          if (balanceRecord) {
-            const available = Number(balanceRecord.balance);
-            const lopDays = available <= 0 ? diffDays : Math.max(0, diffDays - available);
-            const paidDays = diffDays - lopDays;
-            const newBal = Math.max(0, available - paidDays);
-            lopDaysApplied = lopDays;
-            balanceAfter = newBal;
-
-            await tx.update(leaveRequests)
-              .set({ lopDays: lopDays.toString() })
-              .where(eq(leaveRequests.id, leaveId));
-            await tx.update(leaveBalances)
-              .set({ balance: newBal.toString() })
-              .where(eq(leaveBalances.id, balanceRecord.id));
-          }
-        }
-      }
+      const deduction = await deductApprovedLeaveBalance(tx, existing);
+      lopDaysApplied = deduction.lopDays;
+      balanceAfter = deduction.balanceAfter;
     });
-
     const employee = await db.query.users.findFirst({
       where: eq(users.id, existing.userId),
       columns: { email: true, name: true },
