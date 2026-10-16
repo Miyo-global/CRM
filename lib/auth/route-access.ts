@@ -6,9 +6,29 @@ const EVERYONE: string[] = [...SYSTEM_ROLES];
 /** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
 const HR_TEAM: string[] = ["CEO", "HR"];
 
+/** Org-admin pages under /settings (MIYO-0024). */
+export const ADMIN_SETTINGS_PAGES = [
+  "members",
+  "roles",
+  "permissions",
+  "organization",
+  "custom-fields",
+  "data-hub",
+  "email-templates",
+  "job-roles",
+  "payroll-schedule",
+  "termination-reasons",
+  "webhooks",
+  "audit-log",
+  "ai",
+  "branches",
+] as const;
+
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr": HR_TEAM,
   "/hr/onboarding": HR_TEAM,
+  // New hires open their own checklist (linked from the onboarding-welcome email).
+  "/hr/onboarding/my-tasks": EVERYONE,
   "/hr/payroll": HR_TEAM,
   "/hr/documents": HR_TEAM,
   "/hr/work-logs": EVERYONE,
@@ -31,9 +51,12 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/timesheets": EVERYONE,
   "/support": EVERYONE,
   "/support/inbox": EVERYONE,
-  "/settings": HR_TEAM,
-  "/settings/roles": HR_TEAM,
-  "/settings/branches": HR_TEAM,
+  // /settings itself is the personal account page (profile, security, MFA).
+  // Every admin settings page is listed explicitly; ADMIN_SETTINGS_PAGES
+  // below is checked against app/(dashboard)/settings/* in the tests.
+  "/settings": EVERYONE,
+  "/settings/notifications": EVERYONE,
+  ...Object.fromEntries(ADMIN_SETTINGS_PAGES.map((p) => [`/settings/${p}`, HR_TEAM])),
   "/notifications": EVERYONE,
   "/ceo": HR_TEAM,
 

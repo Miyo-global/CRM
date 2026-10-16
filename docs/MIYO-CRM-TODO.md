@@ -222,12 +222,12 @@ ATS items start at MIYO-0626.
 
 ### Critical · Access control
 
-- [ ] MIYO-0024 [Critical][Access control] Employees cannot open Profile/Security (/profile → /settings is HR-only) and MFA enforcement loops
+- [x] MIYO-0024 [Critical][Access control] Employees cannot open Profile/Security (/profile → /settings is HR-only) and MFA enforcement loops
   - **Where:** lib/auth/route-access.ts:34 (`"/settings": HR_TEAM`), app/(dashboard)/profile/page.tsx (redirects to /settings#profile), middleware.ts:201-211
   - **Problem:** Non-HR users are bounced from /settings to the dashboard; with mfaEnforced, middleware sends them to /settings?tab=security, which bounces them again (design doc N3, QA T6).
   - **Fix:** Map `/settings` (the personal [[...rest]] page) to EVERYONE and list each admin page explicitly as HR_TEAM: /settings/members, roles, permissions, organization, custom-fields, data-hub, email-templates, job-roles, payroll-schedule, termination-reasons, webhooks, audit-log, ai. Add route-access tests.
   - **Acceptance check:** Signed in as ENGINEERING: user menu → Profile opens settings profile; /settings/members redirects; MFA-enforced user can complete setup.
-- [ ] MIYO-0025 [Critical][Access control] New hires cannot open /hr/onboarding/my-tasks
+- [x] MIYO-0025 [Critical][Access control] New hires cannot open /hr/onboarding/my-tasks
   - **Where:** lib/auth/route-access.ts:11 (`"/hr/onboarding": HR_TEAM`)
   - **Problem:** The more specific /hr/onboarding/my-tasks has no entry, so it inherits HR_TEAM (design doc N15). The onboarding-welcome email links there.
   - **Fix:** Add `"/hr/onboarding/my-tasks": EVERYONE`.

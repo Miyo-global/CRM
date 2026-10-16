@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { canAccessRoute } from "./route-access";
+import { readdirSync } from "fs";
+import { join } from "path";
+import { ADMIN_SETTINGS_PAGES, canAccessRoute } from "./route-access";
 import { SYSTEM_ROLES } from "@/lib/rbac/permissions";
 import { ROLE_LABELS } from "@/lib/rbac/roles";
 import { ALL_ROLES } from "@/lib/constants/roles";
 
 describe("canAccessRoute", () => {
   it("denies ENGINEERING on HR and settings", () => {
-    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings"]) {
+    for (const path of ["/hr", "/hr/payroll", "/hr/employees", "/settings/members"]) {
       expect(canAccessRoute(path, "ENGINEERING")).toBe(false);
     }
   });
@@ -57,5 +59,30 @@ describe("role catalog", () => {
 
   it("every system role has a label", () => {
     for (const role of SYSTEM_ROLES) expect(ROLE_LABELS[role]).toBeTruthy();
+  });
+});
+
+describe("settings and onboarding access (MIYO-0024, MIYO-0025)", () => {
+  it("every employee can open their own account settings and onboarding tasks", () => {
+    expect(canAccessRoute("/settings", "ENGINEERING")).toBe(true);
+    expect(canAccessRoute("/settings/notifications", "ENGINEERING")).toBe(true);
+    expect(canAccessRoute("/hr/onboarding/my-tasks", "ENGINEERING")).toBe(true);
+    expect(canAccessRoute("/hr/onboarding", "ENGINEERING")).toBe(false);
+  });
+
+  it("admin settings pages stay HR-only", () => {
+    for (const page of ADMIN_SETTINGS_PAGES) {
+      expect(canAccessRoute(`/settings/${page}`, "ENGINEERING")).toBe(false);
+      expect(canAccessRoute(`/settings/${page}`, "HR")).toBe(true);
+    }
+  });
+
+  it("every settings page folder is classified (new admin pages must be listed)", () => {
+    const dir = join(process.cwd(), "app/(dashboard)/settings");
+    const personal = new Set(["[[...rest]]", "notifications"]);
+    const pages = readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !personal.has(d.name))
+      .map((d) => d.name);
+    for (const page of pages) expect(ADMIN_SETTINGS_PAGES).toContain(page);
   });
 });
