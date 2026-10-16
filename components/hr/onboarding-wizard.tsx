@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, ChevronLeft } from "lucide-react";
-import { useHrDepartments, useOnboardEmployee, useCheckEmailExists } from "@/lib/api/hooks/hr";
+import { useHrDepartments, useOnboardEmployee, useCheckEmailExists, useHrEmployees, isPaginatedEmployees } from "@/lib/api/hooks/hr";
 import { useRolesList } from "@/lib/api/hooks/roles";
 import { useRouter } from "next/navigation";
 import { StepPersonalInfo } from "./_onboarding/step-personal-info";
@@ -74,6 +74,17 @@ export function OnboardingWizard() {
   const onboardEmployee = useOnboardEmployee();
   const checkEmailExists = useCheckEmailExists();
 
+  // Candidate managers for the Reporting Manager field (QA-0021).
+  const { data: employeesData } = useHrEmployees();
+  const managerOptions = useMemo(() => {
+    const list = isPaginatedEmployees(employeesData) ? employeesData.data : employeesData ?? [];
+    return list.map((e) => ({
+      id: e.id,
+      name: e.name ?? ([e.firstName, e.lastName].filter(Boolean).join(" ") || e.email || "Employee"),
+      subtitle: e.designation ?? undefined,
+    }));
+  }, [employeesData]);
+
   const assignableRoles = useMemo(
     () => (orgRoles ?? []).filter((r) => r.slug !== "CEO"),
     [orgRoles]
@@ -92,7 +103,7 @@ export function OnboardingWizard() {
     defaultValues: {
       firstName: "", lastName: "", email: "", phone: "",
       whatsappSameAsPhone: true, whatsappNumber: "", gender: "MALE",
-      designation: "", departmentId: undefined, departmentName: "",
+      designation: "", departmentId: undefined, departmentName: "", reportingTo: "",
       role: "ENGINEERING", employeeId: "", joiningDate: new Date(),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
       taxId: "", monthlySalary: undefined,
@@ -278,6 +289,7 @@ export function OnboardingWizard() {
                 departments={departments}
                 allDepartmentOptions={allDepartmentOptions}
                 assignableRoles={assignableRoles}
+                managerOptions={managerOptions}
               />
             )}
             {currentStep === 3 && <StepSkillsPay form={form} />}
@@ -287,6 +299,7 @@ export function OnboardingWizard() {
                 form={form}
                 allDepartmentOptions={allDepartmentOptions}
                 assignableRoles={assignableRoles}
+                managerOptions={managerOptions}
                 confirmed={reviewConfirmed}
                 onConfirmedChange={setReviewConfirmed}
               />

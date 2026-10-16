@@ -27,6 +27,7 @@ interface StepReviewProps {
   form: UseFormReturn<FormValues>;
   allDepartmentOptions: (Department & { isCommon?: boolean })[];
   assignableRoles: Role[];
+  managerOptions: { id: string; name: string }[];
   confirmed: boolean;
   onConfirmedChange: (value: boolean) => void;
 }
@@ -93,6 +94,7 @@ export function StepReview({
   form,
   allDepartmentOptions,
   assignableRoles,
+  managerOptions,
   confirmed,
   onConfirmedChange,
 }: StepReviewProps) {
@@ -101,6 +103,8 @@ export function StepReview({
 
   const departmentName =
     allDepartmentOptions.find((d) => d.id === values.departmentId)?.name ?? "";
+  const managerName =
+    managerOptions.find((m) => m.id === values.reportingTo)?.name ?? "Not set";
   const roleName =
     assignableRoles.find((r) => r.slug === values.role)?.name ?? values.role;
   const whatsappDisplay = values.whatsappSameAsPhone
@@ -134,6 +138,7 @@ export function StepReview({
         <ReviewField label={EMPLOYMENT_FIELD_COPY.designation.label} value={values.designation} />
         <ReviewField label={EMPLOYMENT_FIELD_COPY.department.label} value={departmentName} />
         <ReviewField label={EMPLOYMENT_FIELD_COPY.systemRole.label} value={roleName} />
+        <ReviewField label="Reporting Manager" value={managerName} />
         <ReviewField
           label="Employee ID"
           value={values.employeeId?.trim() || "Auto-generated"}

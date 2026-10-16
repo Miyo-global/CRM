@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
 import { ROLE_OPTIONS } from "@/lib/rbac/roles";
+import { EmployeeAssignCombobox, type EmployeeAssignOption } from "@/components/hr/employee-assign-combobox";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -42,9 +43,10 @@ interface StepEmploymentProps {
   departments: Department[] | undefined;
   allDepartmentOptions: (Department & { isCommon?: boolean })[];
   assignableRoles: Role[];
+  managerOptions: EmployeeAssignOption[];
 }
 
-export function StepEmployment({ form, departments, allDepartmentOptions, assignableRoles }: StepEmploymentProps) {
+export function StepEmployment({ form, departments, allDepartmentOptions, assignableRoles, managerOptions }: StepEmploymentProps) {
   const companyEstablishedDate = useMemo(() => getCompanyEstablishedDate(), []);
 
   const selectedDepartmentId = form.watch("departmentId");
@@ -198,7 +200,33 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
             </Select>
             <FormDescription className="text-xs">
               {EMPLOYMENT_FIELD_COPY.systemRole.description}
-              {selectedDepartmentName ? ` Roles are filtered to fit the ${selectedDepartmentName} team.` : ""}
+              {selectedDepartmentName
+                ? ` Showing the roles that fit the ${selectedDepartmentName} team.`
+                : " Pick a department first to see the roles that fit it."}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="reportingTo"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Reporting Manager</FormLabel>
+            <FormControl>
+              <EmployeeAssignCombobox
+                employees={managerOptions}
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                placeholder="Select a manager (optional)"
+                searchPlaceholder="Search employees…"
+                ariaLabel="Reporting manager"
+                showUnassigned
+              />
+            </FormControl>
+            <FormDescription className="text-xs">
+              Who this person reports to. The manager can approve their leave and see their team data.
             </FormDescription>
             <FormMessage />
           </FormItem>

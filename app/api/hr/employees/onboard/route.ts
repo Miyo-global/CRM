@@ -80,6 +80,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // A reporting manager chosen in the wizard must be a member of this org.
+    let reportingTo: string | null = body.reportingTo?.trim() || null;
+    if (reportingTo) {
+      const manager = await db.query.organizationMembers.findFirst({
+        where: and(
+          eq(organizationMembers.userId, reportingTo),
+          eq(organizationMembers.orgId, session.orgId),
+        ),
+        columns: { id: true },
+      });
+      if (!manager) return err("Select a reporting manager from your organisation.", 400);
+    } else {
+      reportingTo = null;
+    }
+
     if (departmentName && !isRoleAllowedForDepartment(onboardRole, departmentName)) {
       return err(DEPARTMENT_ROLE_MISMATCH_MESSAGE, 400);
     }
@@ -132,6 +147,7 @@ export async function POST(req: NextRequest) {
           password: passwordHash,
           designation: body.designation,
           departmentId,
+          reportingTo: reportingTo ?? null,
           role: body.role || "ENGINEERING",
           employeeId,
           joiningDate: formatDateOnly(body.joiningDate),

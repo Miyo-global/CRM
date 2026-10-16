@@ -631,6 +631,8 @@ export const onboardEmployeeInputSchema = z
       message: "Department is required",
     }),
     departmentName: z.string().trim().optional(),
+    /** Reporting manager, settable during onboarding (QA-0021). */
+    reportingTo: z.string().trim().optional(),
     role: z.string().default("ENGINEERING"),
     employeeId: optionalEmployeeIdSchema().transform((val) => {
       const trimmed = val?.trim();
