@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return err("You do not have access to content brief generation.", 403);
     }
     if (!isOpenAIConfigured()) {
-      return err("AI features are not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const body = await req.json();

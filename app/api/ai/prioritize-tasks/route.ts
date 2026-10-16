@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   void req;
   return withAuth<PriorityResponse>(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI is not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const pendingTasks = await db

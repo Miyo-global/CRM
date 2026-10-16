@@ -22,7 +22,7 @@ const generateSchema = z.object({
 export async function POST(req: NextRequest) {
   return withAuth<unknown>(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI email generation is not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const input = await parseBody(req, generateSchema);

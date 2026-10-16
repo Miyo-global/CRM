@@ -31,7 +31,7 @@ type ParsedFilters = z.infer<typeof FilterSchema>;
 export async function POST(req: NextRequest) {
   return withAuth<unknown>(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI search is not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const body = await req.json();

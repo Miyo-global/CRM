@@ -16,7 +16,7 @@ import {
   FormInput, CalendarRange, FileSearch, LayoutTemplate, Grid3X3,
 } from "lucide-react";
 
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
+import { AI_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 export interface NavRoute {
   label: string;
@@ -47,7 +47,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
-            { label: "AI Hub", icon: Sparkles, href: "/ai" },
+            ...(AI_MODULE_ENABLED ? [{ label: "AI Hub", icon: Sparkles, href: "/ai" }] : []),
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "QR Codes", icon: QrCode, href: "/ceo/qr-code" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
@@ -187,7 +187,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
-            { label: "AI Hub", icon: Sparkles, href: "/ai" },
+            ...(AI_MODULE_ENABLED ? [{ label: "AI Hub", icon: Sparkles, href: "/ai" }] : []),
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
           ],

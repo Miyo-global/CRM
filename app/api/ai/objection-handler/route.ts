@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       return err("You do not have access to the objection handler.", 403);
     }
     if (!isOpenAIConfigured()) {
-      return err("AI features are not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const { objection, dealStage, productName, dealValue } = await parseBody(req, RequestSchema);

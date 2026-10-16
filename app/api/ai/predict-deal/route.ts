@@ -11,7 +11,7 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI prediction is not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const { dealId } = await parseBody(req, schema);

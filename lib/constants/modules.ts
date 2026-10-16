@@ -8,3 +8,11 @@
  * OPEN QUESTION for Tarun: confirm the CRM module stays off for Miyo Global.
  */
 export const CRM_MODULE_ENABLED = process.env.NEXT_PUBLIC_CRM_MODULE === "on";
+
+/**
+ * AI features (AI hub, AI-assisted drafts). The hub is only offered when a
+ * provider key is configured server-side, so an unconfigured deployment never
+ * shows users a page of dead actions (QA-0003). Set NEXT_PUBLIC_AI_MODULE=on
+ * together with the server-side provider key to enable it.
+ */
+export const AI_MODULE_ENABLED = process.env.NEXT_PUBLIC_AI_MODULE === "on";

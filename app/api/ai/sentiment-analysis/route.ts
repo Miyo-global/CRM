@@ -21,7 +21,7 @@ const SentimentSchema = z.object({
 export async function POST(req: NextRequest) {
   return withAuth(async () => {
     if (!isOpenAIConfigured()) {
-      return err("AI features are not configured. Set OPENAI_API_KEY.", 503);
+      return err("AI features are not available right now.", 503);
     }
 
     const body = await req.json();
