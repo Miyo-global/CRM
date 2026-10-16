@@ -170,9 +170,14 @@ export function employmentWindow(input: EmploymentWindowInput): EmploymentWindow
   };
 }
 
-/** Salary actually earned for the month, before any deduction. */
+/**
+ * Salary actually earned for the month, before any deduction.
+ *
+ * Proration divides by 31 like every other per-day figure, not by the month's
+ * length — a 30-day month was paying salary/30 per day (QA-0053).
+ */
 export function earnedSalary(monthlySalary: number, window: EmploymentWindow): number {
   if (window.empty) return 0;
   if (!PRORATE_JOINERS || window.daysEmployed >= window.calendarDays) return round2(monthlySalary);
-  return round2((monthlySalary * window.daysEmployed) / window.calendarDays);
+  return round2((monthlySalary * window.daysEmployed) / PER_DAY_DIVISOR);
 }
