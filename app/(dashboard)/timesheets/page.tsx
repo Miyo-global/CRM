@@ -302,6 +302,7 @@ export default function TimesheetsPage() {
       title="Daily work logs"
       actions={
         <LogTimeDialog
+          defaultOpen={searchParams.get("new") === "1"}
           trigger={
             <Button>
               <Plus className="size-4" aria-hidden="true" />

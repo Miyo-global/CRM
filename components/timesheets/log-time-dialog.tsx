@@ -47,13 +47,15 @@ import { ScrollArea } from "../ui/scroll-area";
 
 interface LogTimeDialogProps {
   trigger?: React.ReactNode;
+  /** Open on mount — used by the Global Create menu (QA-0039). */
+  defaultOpen?: boolean;
 }
 
 const ACCEPT_ATTACHMENTS = "image/jpeg,image/png,image/gif,image/webp,application/pdf";
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
-export function LogTimeDialog({ trigger }: LogTimeDialogProps) {
-  const [open, setOpen] = useState(false);
+export function LogTimeDialog({ trigger, defaultOpen = false }: LogTimeDialogProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<(string | null)[]>([]);

@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 
 
 interface SearchResult {
-  id: number;
-  type: "lead" | "deal" | "contact" | "client" | "ticket";
+  id: number | string;
+  type: "ticket" | "project" | "employee";
   title: string;
   subtitle: string;
   href: string;
@@ -291,7 +291,7 @@ export function CommandPalette() {
         >
           <div className="relative">
             <CommandInput
-              placeholder="Search pages, people, deals…"
+              placeholder="Search pages, people, projects, tickets…"
               value={query}
               onValueChange={setQuery}
               className="pr-20"

@@ -106,7 +106,10 @@ function InboxContent() {
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
+  // The Global Create menu links here with ?new=1 (QA-0039).
+  const [createOpen, setCreateOpen] = useState(
+    () => new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("new") === "1",
+  );
 
   const statusFilter = searchParams.get("status") || "all";
   const priorityFilter = searchParams.get("priority") || "all";

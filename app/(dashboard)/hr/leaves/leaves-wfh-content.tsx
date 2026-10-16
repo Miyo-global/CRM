@@ -48,7 +48,10 @@ export function LeavesWfhContent() {
   const { data: thisWeekData } = useHrLeavesThisWeek();
   const { data: pendingWfhRequests } = useHrPendingWfhRequests();
 
-  const [leaveSheetOpen, setLeaveSheetOpen] = useState(false);
+  // The Global Create menu links here with ?apply=leave (QA-0039).
+  const [leaveSheetOpen, setLeaveSheetOpen] = useState(
+    () => new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("apply") === "leave",
+  );
   const [wfhSheetOpen, setWfhSheetOpen] = useState(false);
 
   const handleOpenLeaveSheet = useCallback(() => setLeaveSheetOpen(true), []);

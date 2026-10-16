@@ -25,13 +25,19 @@ import { NotificationBell } from "./notification-bell";
 import { ThemeToggle } from "./theme-toggle";
 import { openCommandPalette } from "./shortcuts-provider";
 
-/** Links to the existing pages where each record is created. Shown only when the role's nav contains the href. */
+/**
+ * Global Create targets.
+ *
+ * Each link opens the create form on arrival; they used to land on the page
+ * (support analytics with no form) or do nothing at all (QA-0039). `navHref`
+ * is the plain page path used to decide whether the role's menu has it.
+ */
 const CREATE_ITEMS = [
-  { label: "New lead", href: "/crm/leads", icon: Contact2 },
-  { label: "New deal", href: "/crm/deals", icon: Handshake },
-  { label: "New ticket", href: "/support", icon: LifeBuoy },
-  { label: "Log time", href: "/timesheets", icon: Timer },
-  { label: "Apply leave", href: "/hr/leaves", icon: CalendarCheck },
+  { label: "New lead", navHref: "/crm/leads", href: "/crm/leads?new=1", icon: Contact2 },
+  { label: "New deal", navHref: "/crm/deals", href: "/crm/deals?new=1", icon: Handshake },
+  { label: "New support ticket", navHref: "/support", href: "/support/inbox?new=1", icon: LifeBuoy },
+  { label: "Log time", navHref: "/timesheets", href: "/timesheets?new=1", icon: Timer },
+  { label: "Apply for leave", navHref: "/hr/leaves", href: "/hr/leaves?apply=leave", icon: CalendarCheck },
 ] as const;
 
 interface TopbarProps {
@@ -53,7 +59,7 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
 
   const createItems = useMemo(() => {
     const paths = new Set(navGroups.flatMap((g) => g.routes.map((r) => navHrefPath(r.href))));
-    return CREATE_ITEMS.filter((item) => paths.has(item.href));
+    return CREATE_ITEMS.filter((item) => paths.has(item.navHref));
   }, [navGroups]);
 
   return (
