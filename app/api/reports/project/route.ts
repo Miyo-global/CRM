@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
+import { withAuth, ok, toNumber, serverError } from "@/lib/api/helpers";
 import { getProjectReport } from "@/server/queries/reports";
 
 export async function GET(req: NextRequest) {
@@ -20,10 +20,7 @@ export async function GET(req: NextRequest) {
       });
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load project report",
-        500
-      );
+      return serverError(error, { route: "reports/project", orgId: session.orgId }, "Failed to load project report.");
     }
   });
 }
