@@ -76,6 +76,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
 import { plural } from "@/lib/format-utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
 const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
@@ -768,7 +769,7 @@ function OneOnOnesTab() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Date</label>
-            <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+            <DatePicker value={scheduledDate} onChange={setScheduledDate} />
             {formErrors.date && <p className="text-2xs text-destructive">{formErrors.date}</p>}
           </div>
           <div className="space-y-1.5">

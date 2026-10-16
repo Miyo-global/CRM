@@ -31,6 +31,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { DatePicker } from "@/components/ui/date-picker";
 
 function statusTone(status: string | null): Tone {
   if (status === "PUBLISHED") return "success";
@@ -216,11 +217,11 @@ export default function TrainingPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Start Date</label>
-            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <DatePicker value={startDate} onChange={setStartDate} />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">End Date</label>
-            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <DatePicker value={endDate} onChange={setEndDate} />
           </div>
         </div>
       </HrSheet>

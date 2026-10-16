@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Employee } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { DatePicker } from "@/components/ui/date-picker";
 
 type AppraisalStage =
   | "CYCLE_INITIATION" | "SELF_REVIEW" | "MANAGER_REVIEW" | "CEO_REVIEW"
@@ -470,11 +471,11 @@ export function AppraisalsTab() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground">Period start *</Label>
-                  <Input type="date" value={pStart} onChange={(e) => setPStart(e.target.value)} />
+                  <DatePicker value={pStart} onChange={setPStart} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground">Period end *</Label>
-                  <Input type="date" value={pEnd} onChange={(e) => setPEnd(e.target.value)} />
+                  <DatePicker value={pEnd} onChange={setPEnd} />
                 </div>
               </div>
               <Button className="w-full" onClick={handleCreate} disabled={create.isPending} loading={create.isPending}>Create appraisal</Button>

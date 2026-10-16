@@ -16,6 +16,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { Plus, Award, Calendar, ExternalLink, AlertTriangle } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export default function CertificationsPage() {
   const { data: certs, isLoading, isError, error, refetch } = useCertifications();
@@ -118,11 +119,11 @@ export default function CertificationsPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Issue Date</label>
-            <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+            <DatePicker value={issueDate} onChange={setIssueDate} />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Expiry Date</label>
-            <Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+            <DatePicker value={expiryDate} onChange={setExpiryDate} />
           </div>
         </div>
         <div className="space-y-1.5">

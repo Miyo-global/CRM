@@ -51,6 +51,8 @@ import {
 } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { format, isPast, isToday, differenceInDays } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 
 const STATUS_CONFIG: Record<ProjectMilestone["status"], { label: string; tone: Tone; color: string }> = {
   PENDING: { label: "Pending", tone: "neutral", color: "text-muted-foreground" },
@@ -106,23 +108,41 @@ function MilestoneDialog({
           <SheetTitle>{isEdit ? "Edit Milestone" : "New Milestone"}</SheetTitle>
         </SheetHeader>
         <div className="space-y-4 py-2">
+          {/* Labels are tied to their inputs, and the date uses the same
+              picker as every other form (QA-D012). */}
           <div className="space-y-1">
-            <Label>Name *</Label>
-            <Input placeholder="e.g. MVP Launch" value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="milestone-name">Name *</Label>
+            <Input
+              id="milestone-name"
+              placeholder="e.g. MVP Launch"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           <div className="space-y-1">
-            <Label>Description</Label>
-            <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Label htmlFor="milestone-description">Description</Label>
+            <Textarea
+              id="milestone-description"
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label>Target Date *</Label>
-              <Input type="date" min={isEdit ? undefined : today} value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+              <Label htmlFor="milestone-target-date">Target Date *</Label>
+              <DatePicker
+                id="milestone-target-date"
+                value={targetDate}
+                onChange={setTargetDate}
+                fromDate={isEdit ? undefined : parseISO(today)}
+                placeholder="Pick a target date"
+              />
             </div>
             <div className="space-y-1">
-              <Label>Status</Label>
+              <Label htmlFor="milestone-status">Status</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as ProjectMilestone["status"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="milestone-status"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PENDING">Pending</SelectItem>
                   <SelectItem value="ACHIEVED">Achieved</SelectItem>

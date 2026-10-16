@@ -18,6 +18,7 @@ import { Plus, Briefcase, Calendar, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface Alumni {
   id: number; name: string; email: string | null; phone: string | null;
@@ -137,7 +138,7 @@ export default function AlumniPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Exit Date</label>
-            <Input type="date" value={exitDate} onChange={(e) => setExitDate(e.target.value)} />
+            <DatePicker value={exitDate} onChange={setExitDate} />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Current Company</label>

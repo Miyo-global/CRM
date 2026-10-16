@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { Plus, IndianRupee, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatINRWhole } from "@/lib/format-utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface FnfSettlement {
   id: number; userId: string; employeeName: string | null; lastWorkingDate: string | null;
@@ -166,7 +167,7 @@ function FnfContent() {
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Last Working Date</label>
-          <Input type="date" value={lwd} onChange={(e) => setLwd(e.target.value)} />
+          <DatePicker value={lwd} onChange={setLwd} />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">

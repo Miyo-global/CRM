@@ -26,6 +26,7 @@ import {
 import { useSession } from "next-auth/react";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import type { Tone } from "@/lib/design/tones";
+import { DatePicker } from "@/components/ui/date-picker";
 
 function statusTone(s: string | null): Tone {
   if (s === "ACTIVE") return "success";
@@ -179,7 +180,7 @@ export default function SurveysPage() {
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Closes At</label>
-          <Input type="date" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} />
+          <DatePicker value={closesAt} onChange={setClosesAt} />
         </div>
         <p className="text-xs text-muted-foreground">A default satisfaction question will be added. Edit questions after creation.</p>
       </HrSheet>

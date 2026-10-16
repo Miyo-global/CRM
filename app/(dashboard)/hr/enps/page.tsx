@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface EnpsSurvey {
   id: number; title: string; status: string | null; score: number | null;
@@ -161,7 +162,7 @@ export default function EnpsPage() {
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Closes At</label>
-          <Input type="date" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} />
+          <DatePicker value={closesAt} onChange={setClosesAt} />
         </div>
       </HrSheet>
 

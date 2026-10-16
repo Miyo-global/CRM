@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface TicketDraft {
   title: string;
@@ -133,11 +134,11 @@ function ApplyDialog({
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Start Date</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <DatePicker value={startDate} onChange={setStartDate} />
             </div>
             <div className="space-y-1">
               <Label>End Date</Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <DatePicker value={endDate} onChange={setEndDate} />
             </div>
           </div>
           <div className="space-y-1 rounded-md border border-border bg-surface-sunken/60 p-3 text-sm">
