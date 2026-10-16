@@ -2,6 +2,7 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { professionalTax as professionalTaxForMonth } from "@/lib/payroll/rules";
 
 const calcSchema = z.object({
   annualCtc: z.number().positive(),
@@ -48,7 +49,8 @@ export async function POST(req: NextRequest) {
     const pfEmployer = pfOptOut ? 0 : Math.min(basic * 0.12, 21600);
     const esiEmployee = annualCtc <= 252000 ? annualCtc * 0.0075 : 0;
     const esiEmployer = annualCtc <= 252000 ? annualCtc * 0.0325 : 0;
-    const professionalTax = 2400;
+    // Monthly PT band on monthly CTC (same basis as payroll), x 12.
+    const professionalTax = professionalTaxForMonth(annualCtc / 12) * 12;
     const standardDeduction = 75000;
 
     const grossSalary = annualCtc - pfEmployer - esiEmployer;

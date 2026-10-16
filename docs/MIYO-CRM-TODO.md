@@ -196,7 +196,7 @@ ATS items start at MIYO-0626.
   - **Problem:** New structures created without an explicit PT store 200. load-inputs only honours a structure PT of 0, but the stored 200 is shown in the UI/structure screens.
   - **Fix:** Drop the default (nullable, null = use bands) via additive migration `ALTER COLUMN professional_tax DROP DEFAULT`; display 'By band' when null.
   - **Acceptance check:** Creating a structure without PT stores null and the preview shows ₹150/₹250 by band.
-- [ ] MIYO-0020 [Critical][Payroll] Tax calculator API uses a hard-coded annual PT of ₹2,400 (₹200/month)
+- [x] MIYO-0020 [Critical][Payroll] Tax calculator API uses a hard-coded annual PT of ₹2,400 (₹200/month)
   - **Where:** app/api/hr/tax-calculator/route.ts:51
   - **Problem:** `const professionalTax = 2400;` ignores the bands.
   - **Fix:** Use professionalTax(monthlyGross) × 12.
