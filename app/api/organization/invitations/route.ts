@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getInvitations } from "@/server/queries/organization";
 import { db } from "@/lib/db";
 import { invitations } from "@/lib/db/schema";
@@ -20,10 +20,7 @@ export async function GET() {
       const data = await getInvitations(session.orgId);
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load invitations",
-        500
-      );
+      return serverError(error, { route: "organization/invitations", orgId: session.orgId }, "Failed to load invitations.");
     }
   });
 }
@@ -47,10 +44,7 @@ export async function DELETE(req: NextRequest) {
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to cancel invitation",
-        500
-      );
+      return serverError(error, { route: "organization/invitations", orgId: session.orgId }, "Failed to cancel invitation.");
     }
   });
 }
