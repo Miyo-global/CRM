@@ -57,6 +57,7 @@ import {
   type TemplateFieldErrors,
 } from "@/lib/hr/email-template-validation";
 import { TemplateFormFields, TemplateFieldInput } from "./_components/template-form";
+import { plural } from "@/lib/format-utils";
 
 interface EmailTemplate {
   id: number;
@@ -502,7 +503,7 @@ function EmailTemplatesContent() {
   return (
     <PageWrapper
       title="Email templates"
-      badge={`${templates?.length ?? 0} templates`}
+      badge={plural(templates?.length ?? 0, "template")}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
           <Plus className="size-3.5" aria-hidden="true" />

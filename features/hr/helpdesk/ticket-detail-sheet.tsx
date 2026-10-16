@@ -124,10 +124,12 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
       <IconChip icon={ArrowRight} tone="neutral" size="sm" />
       <span className="flex flex-wrap items-center gap-1.5">
         <span className="font-medium text-foreground">{comment.authorName ?? "Someone"}</span>
-        changed status
+        {/* JSX drops the newline, so this read "changed statusfrom"
+            (QA-D009). */}
+        <span>changed status</span>
         {from && (
           <>
-            from{" "}
+            <span>from</span>{" "}
             <StatusPill tone={statusTone(from)}>
               {STATUS_LABELS[from] ?? from}
             </StatusPill>

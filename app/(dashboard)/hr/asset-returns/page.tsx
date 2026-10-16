@@ -48,6 +48,7 @@ import { HandoverPhotoCapture } from "@/components/hr/handover-photo-capture";
 import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox";
 import { useHrEmployees, useHrAssets, isPaginatedEmployees } from "@/lib/api/hooks";
 import type { Asset, Employee } from "@/types/hr";
+import { plural } from "@/lib/format-utils";
 
 interface AssetReturn {
   id: number;
@@ -451,7 +452,7 @@ export default function AssetReturnsPage() {
   return (
     <PageWrapper
       title="Asset returns"
-      badge={`${items?.length ?? 0} items`}
+      badge={plural(items?.length ?? 0, "item")}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>

@@ -296,7 +296,7 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                             <div className="min-w-0">
                               <p className="truncate font-medium">{cycle.name}</p>
                               <p className="text-xs text-muted-foreground tabular-nums">
-                                {cycle.completedItems}/{cycle.totalItems} items completed
+                                {cycle.completedItems}/{cycle.totalItems} {cycle.totalItems === 1 ? "item" : "items"} completed
                               </p>
                             </div>
                             <StatusPill tone="success">Completed</StatusPill>

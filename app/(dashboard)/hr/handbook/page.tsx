@@ -38,6 +38,7 @@ import { handbookVersionSchema } from "@/lib/validations/handbook";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { viewFile } from "@/hooks/use-file-url";
+import { plural } from "@/lib/format-utils";
 
 interface HandbookVersion {
   id: number;
@@ -413,7 +414,7 @@ function HandbookAdminContent() {
   return (
     <PageWrapper
       title="Employee handbook"
-      badge={`${versions?.length ?? 0} versions`}
+      badge={plural(versions?.length ?? 0, "version")}
       actions={
         <Button size="sm" onClick={() => { form.reset(); setSheetOpen(true); }}>
           <Plus className="size-3.5" aria-hidden="true" />

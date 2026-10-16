@@ -56,6 +56,7 @@ import {
 import { Plus, FileText, Trash2, Pencil, Star, StarOff, ChevronDown, Settings2, FileSignature } from "lucide-react";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_TOKEN_LEGEND, HR_LETTER_DEFAULT_BODIES } from "@/lib/hr/hr-letter-tokens";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { plural } from "@/lib/format-utils";
 
 const ADMIN_ROLES = new Set(["CEO", "ADMIN"]);
 
@@ -709,7 +710,7 @@ function OfferLetterTemplatesContent() {
   return (
     <PageWrapper
       title="Offer letter templates"
-      badge={`${templates?.length ?? 0} templates`}
+      badge={plural(templates?.length ?? 0, "template")}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (

@@ -64,6 +64,7 @@ import {
 } from "@/lib/api/hooks/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import type { Document } from "@/types/hr";
+import { plural } from "@/lib/format-utils";
 
 const DOCUMENT_TYPES = [
   { value: "CONTRACT", label: "Contract" },
@@ -186,7 +187,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
   const handleVersionHistory = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      toast.info(`Document "${doc.name}" has ${doc.version} versions.`);
+      toast.info(`Document "${doc.name}" has ${plural(doc.version ?? 0, "version")}.`);
     },
     [doc.name, doc.version],
   );

@@ -288,3 +288,14 @@ export function roundMoney(n: number): number {
 export function formatINRRange(min: number, max: number): string {
   return `${formatINRCompact(min)} – ${formatINRCompact(max)}`;
 }
+
+/**
+ * "1 item", "2 items" — counts with the right noun.
+ *
+ * Badges read "1 items", "1 versions", "1 reviews" (QA-D009). Pass the plural
+ * when it is not a simple -s.
+ */
+export function plural(count: number, singular: string, pluralForm?: string): string {
+  const noun = count === 1 ? singular : (pluralForm ?? `${singular}s`);
+  return `${count} ${noun}`;
+}

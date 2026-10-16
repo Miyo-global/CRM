@@ -75,6 +75,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
+import { plural } from "@/lib/format-utils";
 
 const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
 const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
@@ -234,7 +235,7 @@ function ReviewsTab() {
 
   return (
     <div className="space-y-4">
-      <TabHeader count={`${reviewsList.length} reviews`}>
+      <TabHeader count={plural(reviewsList.length, "review")}>
         <Button size="sm" onClick={() => setSheetOpen(true)}>
           <Plus className="size-4" />New Review
         </Button>
