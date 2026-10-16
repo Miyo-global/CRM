@@ -271,7 +271,10 @@ export default function OrgChartPage() {
   const deptGroups = useMemo(() => {
     const groups = new Map<string, Employee[]>();
     for (const emp of employees) {
-      const name = emp.departmentId ? (deptMap.get(emp.departmentId) ?? "Other") : "Unassigned";
+      // A department id with no matching record went to "Other" while people
+      // with no department went to "Unassigned", which read as two kinds of
+      // the same thing (QA-D008). Both are "No department".
+      const name = (emp.departmentId && deptMap.get(emp.departmentId)) || "No department";
       if (!groups.has(name)) groups.set(name, []);
       groups.get(name)!.push(emp);
     }
@@ -292,10 +295,8 @@ export default function OrgChartPage() {
         return { name, members, roleGroups };
       })
       .sort((a, b) => {
-        if (a.name === "Unassigned") return 1;
-        if (b.name === "Unassigned") return -1;
-        if (a.name === "Other") return 1;
-        if (b.name === "Other") return -1;
+        if (a.name === "No department") return 1;
+        if (b.name === "No department") return -1;
         return a.name.localeCompare(b.name);
       });
   }, [employees, deptMap]);

@@ -313,6 +313,9 @@ function MembersSettingsContent() {
                 </div>
               </CardHeader>
               <CardContent className="border-t border-border p-0">
+                    {/* The card clipped a table wider than it, cutting off the
+                        last columns with no way to reach them (QA-D008). */}
+                    <div className="overflow-x-auto">
                     <Table className="min-w-225">
                       <TableHeader>
                         <TableRow>
@@ -352,6 +355,7 @@ function MembersSettingsContent() {
                         )}
                       </TableBody>
                     </Table>
+                    </div>
                 {membersData && membersData.pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between border-t border-border px-5 py-3">
                     <span className="text-sm text-muted-foreground tabular-nums">
