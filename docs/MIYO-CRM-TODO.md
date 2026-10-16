@@ -89,7 +89,7 @@ ATS items start at MIYO-0626.
 
 ### Critical · Prod/Deploy
 
-- [ ] MIYO-0001 [Critical][Prod/Deploy] Apply migrations 0126–0156 to the production database (projects.deleted_at missing) **[confirm on prod]** — _agent part done: SQL verified idempotent; awaiting Tarun prod run_
+- [x] MIYO-0001 [Critical][Prod/Deploy] Apply migrations 0126–0156 to the production database (projects.deleted_at missing) **[confirm on prod]** — _applied 16 Oct via Neon (0152-0158 + 18 rows in drizzle.__drizzle_migrations); page load check pending_
   - **Where:** drizzle/0154_projects_build_port_phase1.sql, 0155_project_invitations.sql, 0156_project_intake_token_client_portal.sql, scripts/apply-pending-migrations.ts
   - **Problem:** Prod 16 Oct 11:30 IST: /dashboard fails with `Failed query: select count(*) from "projects" where (... "projects"."deleted_at" is null)`, /projects stuck on skeletons, /timesheets/team 500. PR #4 (merged 16 Oct 10:44 IST) added `projects.deleted_at`, `tickets.version/rank/deleted_at`, `ticket_activity`, `project_client_grants` etc. The code is deployed, the columns are not. drizzle/meta/_journal.json only lists 69 migrations up to 0125; 0126–0156 are applied only by the manual `pnpm db:apply-pending` script.
   - **Fix:** Tarun (not the agent) runs `pnpm db:apply-pending` against production from a trusted machine after a DB snapshot. The agent must NOT connect to production; it only verifies the SQL is idempotent (`IF NOT EXISTS`) and lists the exact command in the commit message.
