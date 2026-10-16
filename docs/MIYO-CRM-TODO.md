@@ -214,7 +214,7 @@ ATS items start at MIYO-0626.
   - **Problem:** They call auth() directly, so a deactivated user or a session that has not passed MFA can still read and upload files (design doc N2).
   - **Fix:** Wrap each handler in withAuth and use session.orgId.
   - **Acceptance check:** A deactivated user's session gets 403 on /api/storage/download.
-- [ ] MIYO-0023 [Critical][Security] Any employee can download any other employee's documents in the same org
+- [x] MIYO-0023 [Critical][Security] Any employee can download any other employee's documents in the same org
   - **Where:** app/api/storage/download/route.ts:124-142 (org check only), lib/storage fileBelongsToOrg
   - **Problem:** Authorisation is org-level; payslips, ID proofs and bank docs of colleagues are downloadable by key.
   - **Fix:** Look up the owning record (employee document, payslip, ticket attachment) for the key; allow owner, HR/CEO/Admin, or project members for project files; otherwise 404.

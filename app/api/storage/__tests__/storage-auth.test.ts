@@ -11,10 +11,12 @@ vi.mock("@/lib/storage", () => ({
   getFileKeyFromUrl: (u: string) => u,
   getFileStream: async () => ({ body: null, contentType: "image/png" }),
   getFileNameFromKey: (k: string) => k,
-  getOrgIdFromKey: (k: string) => k.split("/")[0],
+  getOrgIdFromKey: (k: string) => k.split("/")[1],
   uploadFile: async () => ({}),
 }));
 vi.mock("@/lib/audit-log", () => ({ createAuditLog: async () => {} }));
+const canRead = vi.fn(async () => true);
+vi.mock("@/lib/storage-access", () => ({ canReadFile: () => canRead() }));
 
 const download = await import("../download/route");
 const image = await import("../image/route");
@@ -24,18 +26,24 @@ const req = (path: string) => new NextRequest(`http://localhost/api/storage/${pa
 describe("storage routes use withAuth (MIYO-0022)", () => {
   it("deactivated user gets 403 on download and image", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", isActive: false }, orgId: "org1" });
-    expect((await download.GET(req("download?key=org1/a.pdf"))).status).toBe(403);
-    expect((await image.GET(req("image?key=org1/a.png"))).status).toBe(403);
+    expect((await download.GET(req("download?key=o/org1/a.pdf"))).status).toBe(403);
+    expect((await image.GET(req("image?key=o/org1/a.png"))).status).toBe(403);
   });
 
   it("session that has not passed MFA gets 403", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", isActive: true }, orgId: "org1", mfaSatisfied: false });
-    expect((await download.GET(req("download?key=org1/a.pdf"))).status).toBe(403);
+    expect((await download.GET(req("download?key=o/org1/a.pdf"))).status).toBe(403);
   });
 
   it("active user in the key's org gets a signed URL", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", isActive: true }, orgId: "org1" });
-    const res = await download.GET(req("download?key=org1/a.pdf"));
+    const res = await download.GET(req("download?key=o/org1/a.pdf"));
     expect(res.status).toBe(200);
+  });
+
+  it("someone else's private file is 404 (MIYO-0023)", async () => {
+    authMock.mockResolvedValue({ user: { id: "u1", isActive: true }, orgId: "org1" });
+    canRead.mockResolvedValueOnce(false);
+    expect((await download.GET(req("download?key=o/org1/documents/payslip.pdf"))).status).toBe(404);
   });
 });

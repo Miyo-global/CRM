@@ -1,6 +1,7 @@
 import { Readable } from "stream";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api/helpers";
+import { canReadFile } from "@/lib/storage-access";
 import { logger } from "@/lib/logger";
 import { createAuditLog } from "@/lib/audit-log";
 import {
@@ -128,6 +129,11 @@ export async function GET(req: NextRequest) {
         if (!belongs) {
           return NextResponse.json({ error: "Access denied" }, { status: 403 });
         }
+      }
+
+      if (!(await canReadFile(session.user, session.orgId, fileKey, originalRef))) {
+        // 404, not 403: do not confirm that someone else's file exists.
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
       }
 
       createAuditLog({
