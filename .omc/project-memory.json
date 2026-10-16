@@ -354,6 +354,18 @@
       "accessCount": 1,
       "lastAccessed": 1792149357959,
       "type": "file"
+    },
+    {
+      "path": "lib/hr/send-celebration-greetings.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792149779448,
+      "type": "file"
+    },
+    {
+      "path": "server/actions/daily-notifications.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792149824918,
+      "type": "file"
     }
   ],
   "userDirectives": []
