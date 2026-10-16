@@ -1,4 +1,4 @@
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, err, parseBody, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, lte, gte, desc, notInArray } from "drizzle-orm";
@@ -284,8 +284,7 @@ export async function POST(req: NextRequest) {
 
       return ok({ success: true });
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Request failed";
-      return err(message, 400);
+      return userErrorOr500(e, { route: "hr/leaves", orgId: session.orgId }, "Request failed.");
     }
   });
 }
