@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useMemo, useCallback, memo } from "react";
+import { use, useState, useMemo, useCallback } from "react";
 import { usePages, useCreatePage, useUpdatePage } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,20 @@ function buildTree(pages: ProjectPage[]): ProjectPage[] {
     }
   }
 
-  return roots;
+  // Pinned pages sort to the top of their level instead of being repeated in
+  // a separate section above the tree (QA-0077).
+  const sortLevel = (nodes: ProjectPage[]): ProjectPage[] => {
+    nodes.sort((a, b) => {
+      if (!!a.isPinned !== !!b.isPinned) return a.isPinned ? -1 : 1;
+      return a.title.localeCompare(b.title);
+    });
+    for (const node of nodes) {
+      if (node.children?.length) sortLevel(node.children);
+    }
+    return nodes;
+  };
+
+  return sortLevel(roots);
 }
 
 function PageTreeItem({
@@ -157,33 +170,6 @@ function PageTreeItem({
   );
 }
 
-interface PinnedPageItemProps {
-  page: ProjectPage;
-  activePage: number | null;
-  onSelect: (id: number) => void;
-}
-
-const PinnedPageItem = memo(function PinnedPageItem({
-  page,
-  activePage,
-  onSelect,
-}: PinnedPageItemProps) {
-  const handleClick = useCallback(() => onSelect(page.id), [onSelect, page.id]);
-
-  return (
-    <div
-      onClick={handleClick}
-      className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
-        activePage === page.id ? "bg-brand-soft text-brand-soft-foreground" : "hover:bg-muted",
-      )}
-    >
-      <Pin className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span className="shrink-0 text-base">{page.icon ?? "📄"}</span>
-      <span className="truncate text-sm" title={page.title}>{page.title}</span>
-    </div>
-  );
-});
 
 export default function PagesPage({
   params,
@@ -230,10 +216,6 @@ export default function PagesPage({
     isPinned: p.isPinned,
   })), [pages]);
   const tree = useMemo(() => buildTree(mappedPages), [mappedPages]);
-  const pinnedPages = useMemo(
-    () => mappedPages.filter((p) => p.isPinned),
-    [mappedPages]
-  );
   const selectedPage = useMemo(
     () => mappedPages.find((p) => p.id === activePage),
     [mappedPages, activePage]
@@ -355,22 +337,6 @@ export default function PagesPage({
             aria-label="Pages"
             className="max-h-56 shrink-0 space-y-1 overflow-y-auto border-b border-border bg-surface-sunken/40 p-3 md:max-h-none md:w-64 md:border-r md:border-b-0"
           >
-            {pinnedPages.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-1 px-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Pinned
-                </p>
-                {pinnedPages.map((page) => (
-                  <PinnedPageItem
-                    key={`pin-${page.id}`}
-                    page={page}
-                    activePage={activePage}
-                    onSelect={handleSelectPage}
-                  />
-                ))}
-                <div className="my-2 border-b border-border" />
-              </div>
-            )}
             {tree.map((page) => (
               <PageTreeItem
                 key={page.id}
