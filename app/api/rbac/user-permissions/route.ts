@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, serverError } from "@/lib/api/helpers";
 import { getUserPermissions } from "@/server/queries/rbac";
 
 export async function GET() {
@@ -7,10 +7,7 @@ export async function GET() {
       const data = await getUserPermissions(session.user.id, session.orgId);
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load user permissions",
-        500
-      );
+      return serverError(error, { route: "rbac/user-permissions", orgId: session.orgId }, "Failed to load user permissions.");
     }
   });
 }
