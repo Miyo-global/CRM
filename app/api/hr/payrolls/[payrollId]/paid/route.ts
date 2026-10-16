@@ -4,6 +4,7 @@ import { payrolls, salaryLoans } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { isPayrollApprover } from "@/lib/constants/roles";
 import { sendPayslipEmailForPayroll } from "@/lib/hr/send-payslip-email";
 import { logger } from "@/lib/logger";
 
@@ -21,6 +22,12 @@ export async function PATCH(
     });
 
     if (!existing) return err("Payroll not found.", 404);
+
+    // Paying takes the same authority as approving (QA-0023).
+    if (!isPayrollApprover(session.user.role)) {
+      return err("Only the CEO or an Admin can mark a payroll as paid.", 403);
+    }
+
     if (existing.status === "PAID") {
       return err("Payroll is already marked as paid.", 400);
     }

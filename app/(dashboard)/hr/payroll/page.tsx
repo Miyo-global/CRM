@@ -265,7 +265,7 @@ export default function PayrollPage() {
         onError: (error) => {
           if (isAxiosError(error) && error.response?.status === 403) {
             toast.error(getErrorMessage(error), {
-              description: "Only the CEO can approve payrolls. It stays in DRAFT until the CEO approves it.",
+              description: "Only the CEO or an Admin can approve payrolls. It stays in DRAFT until one of them approves it.",
             });
             return;
           }
@@ -551,6 +551,7 @@ export default function PayrollPage() {
             month={selectedMonthPart}
             employeeFilter={employeeFilter}
             currentUserRole={currentUserRole}
+            currentUserId={session?.user?.id}
             onYearChange={setSelectedYear}
             onMonthChange={setSelectedMonthPart}
             onEmployeeFilterChange={setEmployeeFilter}

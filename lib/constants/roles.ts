@@ -102,3 +102,18 @@ export function canAccess(
 export function hasRole(role: string | undefined | null, allowed: readonly string[]): boolean {
   return !!role && allowed.includes(role);
 }
+
+/**
+ * Who signs off payroll (QA-0023).
+ *
+ * Approval used to be CEO-only, which deadlocked an org with no CEO user and
+ * left the CEO's own payroll unapprovable, while mark-as-paid accepted any
+ * admin — HR could pay what it could not approve. Approving and paying now
+ * take the same authority, and anyone in this list can approve a colleague's
+ * payroll (never their own).
+ */
+export const PAYROLL_APPROVER_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
+
+export function isPayrollApprover(role: string | undefined | null): boolean {
+  return !!role && PAYROLL_APPROVER_ROLES.includes(role);
+}

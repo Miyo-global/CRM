@@ -4,6 +4,7 @@ import { payrolls, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { isPayrollApprover } from "@/lib/constants/roles";
 import { sendPayrollApprovedEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
@@ -22,15 +23,18 @@ export async function PATCH(
 
     if (!existing) return err("Payroll not found.", 404);
 
-    if (session.user.role !== "CEO") {
+    if (!isPayrollApprover(session.user.role)) {
       return err(
-        "Only the CEO can approve payrolls. This payroll will stay in DRAFT until the CEO reviews and approves it.",
-        403
+        "Only the CEO or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it.",
+        403,
       );
     }
 
     if (existing.userId === session.user.id) {
-      return err("The CEO cannot approve their own payroll. Please contact a board-level admin to process this payroll.", 403);
+      return err(
+        "You cannot approve your own payroll. Another CEO or Admin has to approve it.",
+        403,
+      );
     }
 
     if (existing.status === "PAID")

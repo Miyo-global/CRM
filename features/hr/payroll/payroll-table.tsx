@@ -44,6 +44,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import type { Tone } from "@/lib/design/tones";
 import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { isPayrollApprover } from "@/lib/constants/roles";
 
 const PAYROLL_STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -68,6 +69,7 @@ interface PayrollTableProps {
   month: string;
   employeeFilter: string;
   currentUserRole?: string;
+  currentUserId?: string;
   onYearChange: (value: string) => void;
   onMonthChange: (value: string) => void;
   onEmployeeFilterChange: (value: string) => void;
@@ -92,6 +94,7 @@ export function PayrollTable({
   month,
   employeeFilter,
   currentUserRole,
+  currentUserId,
   onYearChange,
   onMonthChange,
   onEmployeeFilterChange,
@@ -162,7 +165,7 @@ export function PayrollTable({
           <CardTitle>
             Payroll for {selectedMonthLabel}
           </CardTitle>
-          <CardDescription>Only the CEO can approve a payroll.</CardDescription>
+          <CardDescription>Only the CEO or an Admin can approve a payroll, and never their own.</CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
             <Select value={year} onValueChange={onYearChange}>
               <SelectTrigger className="h-9" aria-label="Year">
@@ -288,7 +291,7 @@ export function PayrollTable({
                               </Button>
                             )}
                             {payroll.status === "DRAFT" &&
-                              (currentUserRole === "CEO" ? (
+                              (isPayrollApprover(currentUserRole) && payroll.userId !== currentUserId ? (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -302,9 +305,9 @@ export function PayrollTable({
                               ) : (
                                 <span
                                   className="text-2xs text-muted-foreground"
-                                  title="Only the CEO can approve payrolls. This payroll stays in DRAFT until the CEO approves it."
+                                  title="Only the CEO or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it."
                                 >
-                                  Awaiting CEO approval
+                                  Awaiting approval
                                 </span>
                               ))}
                             {payroll.status === "APPROVED" && (
