@@ -9,7 +9,6 @@ import { payrollRowValues } from "@/lib/payroll/to-row";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { createAuditLog } from "@/lib/audit-log";
-import { getErrorMessage } from "@/lib/get-error-message";
 
 const generateSinglePayrollSchema = z
   .object({
@@ -115,8 +114,9 @@ export async function POST(req: NextRequest) {
         )
         .returning();
     } catch (error) {
-      const message = getErrorMessage(error).toLowerCase();
-      if (message.includes("uniq_payroll_org_user_month") || message.includes("duplicate key")) {
+      // Postgres unique_violation, raw or wrapped by Drizzle (error.cause).
+      const e = error as { code?: string; cause?: { code?: string } };
+      if (e?.code === "23505" || e?.cause?.code === "23505") {
         return err("Payroll already exists for this employee and month.", 409);
       }
       throw error;
