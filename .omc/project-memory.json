@@ -330,6 +330,12 @@
       "accessCount": 1,
       "lastAccessed": 1792147683177,
       "type": "file"
+    },
+    {
+      "path": "app/api/no-direct-auth.test.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792147985188,
+      "type": "file"
     }
   ],
   "userDirectives": []

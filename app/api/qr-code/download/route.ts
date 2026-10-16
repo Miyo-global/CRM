@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { withAuth } from "@/lib/api/helpers";
 import { getQRCodeImageUrl } from "@/app/(dashboard)/ceo/qr-code/actions";
 import { db } from "@/lib/db";
 import { qrCodes, organizationMembers } from "@/lib/db/schema";
@@ -39,12 +39,10 @@ function sanitizeFilename(name: string): string {
 }
 
 export async function GET(req: NextRequest) {
+  // withAuth, not auth(): it is the one place MFA, deactivation and session
+  // revocation are enforced (QA-0006).
+  return withAuth(async (session) => {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const searchParams = req.nextUrl.searchParams;
     const slug = searchParams.get("slug");
     const format = searchParams.get("format") || "png";
@@ -187,4 +185,5 @@ export async function GET(req: NextRequest) {
     logger.error("QR download route error", error);
     return NextResponse.json({ error: "Download failed" }, { status: 500 });
   }
+  });
 }

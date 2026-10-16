@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { withAuth } from "@/lib/api/helpers";
 import { appUrl } from "@/lib/app-url";
 import { NextResponse } from "next/server";
 
@@ -9,11 +9,9 @@ const SCOPES = [
 ];
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/signin", req.url));
-  }
-
+  // withAuth, not auth(): it is the one place MFA, deactivation and session
+  // revocation are enforced (QA-0006).
+  return withAuth(async (session) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     // Avoid dumping a bare JSON error onto a blank page. Send the user back to
@@ -36,4 +34,5 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("state", state);
 
   return NextResponse.redirect(url);
+  });
 }

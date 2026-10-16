@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import ExcelJS from "exceljs";
-import { auth } from "@/lib/auth";
+import { withAuth } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { expenses, organizationMembers } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -136,12 +136,10 @@ async function readRowsFromFile(file: File): Promise<ParsedImportRow[]> {
 }
 
 export async function POST(req: Request) {
+  // withAuth, not auth(): it is the one place MFA, deactivation and session
+  // revocation are enforced (QA-0006).
+  return withAuth<unknown>(async (session) => {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     if (!session.orgId) {
       return NextResponse.json({ error: "No organization found" }, { status: 400 });
     }
@@ -348,4 +346,5 @@ export async function POST(req: Request) {
     logger.error("Expense import error", { error: error instanceof Error ? error.message : "Unknown" });
     return NextResponse.json({ error: "Failed to import expenses" }, { status: 500 });
   }
+  });
 }
