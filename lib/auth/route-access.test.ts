@@ -96,3 +96,28 @@ describe("settings and onboarding access (MIYO-0024, MIYO-0025)", () => {
     for (const page of pages) expect(ADMIN_SETTINGS_PAGES).toContain(page);
   });
 });
+
+describe("previously unmapped pages (QA-0065)", () => {
+  it("keeps manager and HR pages away from a low-privilege role", () => {
+    for (const path of [
+      "/reports",
+      "/portal",
+      "/tasks/overdue",
+      "/timesheets/team",
+      "/hr/leaves/policies",
+    ]) {
+      expect(canAccessRoute(path, "SALES")).toBe(false);
+    }
+  });
+
+  it("still lets everyone open their own leave and timesheets", () => {
+    expect(canAccessRoute("/hr/leaves", "SALES")).toBe(true);
+    expect(canAccessRoute("/timesheets", "SALES")).toBe(true);
+  });
+
+  it("lets HR open the policy editor and the team views", () => {
+    expect(canAccessRoute("/hr/leaves/policies", "HR")).toBe(true);
+    expect(canAccessRoute("/timesheets/team", "HR")).toBe(true);
+    expect(canAccessRoute("/reports", "HR")).toBe(true);
+  });
+});

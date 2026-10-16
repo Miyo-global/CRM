@@ -59,6 +59,9 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/my-assets": EVERYONE,
   "/hr/my-bonuses": EVERYONE,
   "/hr/leaves": EVERYONE,
+  // Longest prefix wins, so the policy editor stays with the people team even
+  // though /hr/leaves is open to everyone (QA-0065).
+  "/hr/leaves/policies": HR_TEAM,
   "/hr/expenses": EVERYONE,
   "/hr/attendance": EVERYONE,
   "/hr/exit": EVERYONE,
@@ -68,6 +71,7 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   // Bare ticket links resolve to the project-scoped page (QA-0026).
   "/tickets": EVERYONE,
   "/timesheets": EVERYONE,
+  "/timesheets/team": HR_TEAM,
   "/support": EVERYONE,
   "/support/inbox": EVERYONE,
   // /settings itself is the personal account page (profile, security, MFA).
@@ -85,6 +89,12 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/ai": HR_TEAM,
   "/dashboard/admin-health": HR_TEAM,
   "/dashboard/branches": HR_TEAM,
+
+  // Pages that had no entry and so opened for every role (QA-0065).
+  "/reports": HR_TEAM,
+  "/portal": HR_TEAM,
+  "/tasks": EVERYONE,
+  "/tasks/overdue": HR_TEAM,
 
   "/calendar": EVERYONE,
   // The denied view itself is open to everyone (QA-0034).
