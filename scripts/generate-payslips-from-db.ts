@@ -9,6 +9,7 @@
  *   npx tsx --env-file=.env scripts/generate-payslips-from-db.ts [YYYY-MM] [employeeId ...]
  */
 import "dotenv/config";
+import { professionalTax } from "@/lib/payroll/rules";
 import fs from "fs/promises";
 import path from "path";
 import { PAYSLIP_OUTPUT_DIR } from "@/lib/constants/paths";
@@ -31,7 +32,6 @@ import {
   computeTotalDeductionsAndNet,
   computeStrictAttendance,
   PAYROLL_EXCLUDED_LEAVE_STATUS,
-  PROFESSIONAL_TAX_INR,
   roundInr,
   type LeaveCoverage,
   type StrictAttendanceResult,
@@ -239,7 +239,7 @@ async function main() {
     });
     const { basicSalary, hra, specialAllowance } = splitMonthlyCtc505025(targetCtc);
     const ctcMonthly = roundInr(targetCtc);
-    const ptAmount = PROFESSIONAL_TAX_INR;
+    const ptAmount = professionalTax(ctcMonthly);
     const structureDeductions = parseFloat(salary?.deductions ?? "0");
     const grossSalary = roundInr(basicSalary + hra + specialAllowance);
 

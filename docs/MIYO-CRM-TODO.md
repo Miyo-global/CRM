@@ -186,7 +186,7 @@ ATS items start at MIYO-0626.
   - **Problem:** Prod 16 Oct: Qa Alpha's Oct 2026 draft (generated 15 Oct) still shows PT ₹200, LOP 10 days (−₹3,226), net ₹6,574. Drafts are frozen at generation time, so fixed rules never reach them; the generate route refuses to regenerate (design doc N17).
   - **Fix:** Add 'Recalculate draft' (single and bulk, HR/CEO/Admin) that re-runs computePayroll for DRAFT rows only and writes an audit log with before/after net. Never touch APPROVED/PAID.
   - **Acceptance check:** After the fix, recalculating Qa Alpha's Oct draft gives PT ₹150 and LOP 0 for days before 15 Oct; APPROVED rows are unchanged.
-- [ ] MIYO-0018 [Critical][Payroll] Remove the legacy ₹200 PT constant and env default
+- [x] MIYO-0018 [Critical][Payroll] Remove the legacy ₹200 PT constant and env default
   - **Where:** lib/hr/payroll-calculations.ts:16 (`PROFESSIONAL_TAX_INR = envNumber("NEXT_PUBLIC_PROFESSIONAL_TAX", 200)`), scripts/generate-*-payslips*.ts (not scripts/generate-miyo-payslips.ts)
   - **Problem:** A second PT source still defaults to 200 and is used by legacy scripts.
   - **Fix:** Delete PROFESSIONAL_TAX_INR; make the legacy scripts import professionalTax() from lib/payroll/rules. Do not touch scripts/generate-miyo-payslips.ts.

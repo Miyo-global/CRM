@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  PROFESSIONAL_TAX_INR,
   HOLIDAY_WORK_FULL_DAY_HOURS,
   buildPayslipPreviewFromEmployee,
   calendarDaysInMonth,
@@ -16,7 +15,7 @@ import {
 
 void perDaySalaryForLop;
 void computeTotalDeductionsAndNet;
-void PROFESSIONAL_TAX_INR;
+const PROFESSIONAL_TAX_INR = 250; // PT band for every salary in these fixtures (> ₹11,000)
 
 describe("splitMonthlyCtc505025", () => {
   it("splits monthly CTC into 50% basic, 25% HRA, 25% special", () => {
@@ -100,7 +99,7 @@ describe("computeTotalDeductionsAndNet", () => {
     expect(result.netSalary).toBe(30000 - PROFESSIONAL_TAX_INR);
   });
 
-  it("₹27,000 gross → ₹26,800 net and ₹25,000 gross → ₹24,800 net when only PT applies", () => {
+  it("₹27,000 gross → ₹26,750 net and ₹25,000 gross → ₹24,750 net when only PT applies", () => {
     const r27 = computeTotalDeductionsAndNet({
       month: "2026-05",
       monthlySalary: 27000,
@@ -110,8 +109,8 @@ describe("computeTotalDeductionsAndNet", () => {
 
       otherDeductions: 0,
     });
-    expect(r27.totalDeductions).toBe(200);
-    expect(r27.netSalary).toBe(26800);
+    expect(r27.totalDeductions).toBe(250);
+    expect(r27.netSalary).toBe(26750);
 
     const r25 = computeTotalDeductionsAndNet({
       month: "2026-05",
@@ -122,7 +121,7 @@ describe("computeTotalDeductionsAndNet", () => {
 
       otherDeductions: 0,
     });
-    expect(r25.netSalary).toBe(24800);
+    expect(r25.netSalary).toBe(24750);
   });
 
   it("applies LOP deduction proportional to days", () => {
@@ -169,7 +168,7 @@ describe("computeTotalDeductionsAndNet", () => {
 });
 
 describe("buildPayslipPreviewFromEmployee", () => {
-  it("matches typical payslip: ₹27k gross (50/25/25) − ₹200 PT = ₹26,800 net", () => {
+  it("matches typical payslip: ₹27k gross (50/25/25) − ₹250 PT = ₹26,750 net", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 27000,
       month: "2026-05",
@@ -187,10 +186,10 @@ describe("buildPayslipPreviewFromEmployee", () => {
     expect(preview.hra).toBe(6750);
     expect(preview.allowances).toBe(6750);
     expect(preview.grossSalary).toBe(27000);
-    expect(preview.netSalary).toBe(26800);
+    expect(preview.netSalary).toBe(26750);
   });
 
-  it("₹25k gross (50/25/25) − ₹200 PT = ₹24,800 net", () => {
+  it("₹25k gross (50/25/25) − ₹250 PT = ₹24,750 net", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 25000,
       month: "2026-05",
@@ -205,7 +204,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
       salaryStructureDeductions: 0,
     });
     expect(preview.grossSalary).toBe(25000);
-    expect(preview.netSalary).toBe(24800);
+    expect(preview.netSalary).toBe(24750);
   });
 
   it("uses default 50/25/25 split when no explicit components provided", () => {
@@ -298,7 +297,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
     expect(preview.netSalary).toBe(preview.grossSalary - preview.totalDeductions);
   });
 
-  it("₹24,999 CTC (50/25/25) − ₹200 PT = ₹24,799 net", () => {
+  it("₹24,999 CTC (50/25/25) − ₹250 PT = ₹24,749 net", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 24999,
       month: "2026-05",
@@ -313,7 +312,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
       salaryStructureDeductions: 0,
     });
     expect(preview.grossSalary).toBe(24999);
-    expect(preview.netSalary).toBe(24799);
+    expect(preview.netSalary).toBe(24749);
   });
 });
 

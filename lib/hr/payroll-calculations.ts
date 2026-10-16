@@ -1,4 +1,4 @@
-import { PER_DAY_DIVISOR } from "@/lib/payroll/rules";
+import { PER_DAY_DIVISOR, professionalTax } from "@/lib/payroll/rules";
 
 
 function envNumber(name: string, fallback: number): number {
@@ -7,15 +7,6 @@ function envNumber(name: string, fallback: number): number {
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
-
-/**
- * Flat monthly professional tax deduction.
- *
- * In India this is levied by the state, not the union, so the amount and even
- * whether it applies at all vary by where the employee is engaged — the 200
- * default matches Telangana. Set to 0 where it does not apply.
- */
-export const PROFESSIONAL_TAX_INR = envNumber("NEXT_PUBLIC_PROFESSIONAL_TAX", 200);
 
 /** Hours worked on a holiday that count as a full compensatory day. */
 export const HOLIDAY_WORK_FULL_DAY_HOURS = envNumber(
@@ -203,7 +194,7 @@ export function computeTotalDeductionsAndNet(params: {
   totalDeductions: number;
   netSalary: number;
 } {
-  const pt = roundInr(params.professionalTax ?? PROFESSIONAL_TAX_INR);
+  const pt = roundInr(params.professionalTax ?? professionalTax(params.monthlySalary || params.grossSalary));
   const lopDeduction = roundInr(
     rawLopDeduction(params.month, params.monthlySalary, params.grossSalary, params.lopDays)
   );
@@ -254,7 +245,7 @@ export function buildPayslipPreviewFromEmployee(input: PayslipPreviewInput) {
   const otAmt = input.overtimeAmount || 0;
   const bonusAmt = input.bonus || 0;
   const structDed = input.salaryStructureDeductions ?? 0;
-  const pt = input.professionalTax ?? PROFESSIONAL_TAX_INR;
+  const pt = input.professionalTax ?? professionalTax(monthlySalary);
 
   let basicPay: number;
   let hra: number;
