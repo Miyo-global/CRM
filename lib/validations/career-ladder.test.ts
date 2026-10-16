@@ -4,6 +4,7 @@ import {
   createCareerLadderSchema,
   filterCareerLadderTitleInput,
   getCareerLadderTitleError,
+  updateCareerLadderSchema,
 } from "./career-ladder";
 
 describe("filterCareerLadderTitleInput", () => {
@@ -47,5 +48,17 @@ describe("createCareerLadderSchema", () => {
       description: "Growth track for engineers.",
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("adding a level with only a title", () => {
+  it("is accepted (QA-0016)", () => {
+    const parsed = updateCareerLadderSchema.safeParse({
+      levels: [{ level: 1, title: "QA Level 1" }],
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.levels?.[0]).toMatchObject({ description: "", minExperience: 0 });
+    }
   });
 });

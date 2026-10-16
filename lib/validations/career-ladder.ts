@@ -56,11 +56,20 @@ const levelSchema = z
   .object({
     level: z.number().int().min(1, "Level must be at least 1").max(20, "Level cannot exceed 20"),
     title: careerLadderTitleSchema,
-    description: z.string().trim().min(1, "Level description is required").max(1000, "Description must be 1000 characters or less"),
+    // A level only needs a title and a position: requiring a description and
+    // years of experience made a valid Add Level submit 400 (QA-0016).
+    description: z
+      .string()
+      .trim()
+      .max(1000, "Description must be 1000 characters or less")
+      .optional()
+      .default(""),
     minExperience: z
       .number()
       .min(0, "Min experience cannot be negative")
-      .max(40, "Min experience cannot exceed 40 years"),
+      .max(40, "Min experience cannot exceed 40 years")
+      .optional()
+      .default(0),
     skills: z
       .preprocess((v) => v ?? [], z.array(z.string().trim().min(1).max(100, "Each skill must be 100 characters or less"))
       .max(30, "A level can have at most 30 skills")),
