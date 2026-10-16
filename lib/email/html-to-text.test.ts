@@ -30,3 +30,16 @@ describe("plain-text alternative (A24)", () => {
     expect(text).not.toMatch(/<[a-z]/i);
   });
 });
+
+describe("plain-text part", () => {
+  it("renders a mailto link as the bare address", () => {
+    expect(htmlToText('<p>Write to <a href="mailto:support@x.com">support@x.com</a>.</p>')).toBe(
+      "Write to support@x.com.",
+    );
+  });
+
+  it("collapses the blank lines a table layout leaves behind", () => {
+    const html = "<table><tr><td>\n  <p>One</p>\n</td></tr><tr><td>\n  <p>Two</p>\n</td></tr></table>";
+    expect(htmlToText(html)).toBe("One\n\nTwo");
+  });
+});

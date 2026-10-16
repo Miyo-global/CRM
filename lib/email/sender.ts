@@ -42,7 +42,11 @@ export function htmlToText(html: string): string {
     .replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, label) => {
       const text = String(label).replace(/<[^>]*>/g, "").trim();
-      return text && text !== href ? `${text}: ${href}` : String(href);
+      const url = String(href);
+      // A mailto link reads as the address itself; repeating it as
+      // "support@x.com: mailto:support@x.com" is noise (QA-0009).
+      const target = url.startsWith("mailto:") ? url.slice(7) : url;
+      return text && text !== target ? `${text}: ${target}` : target;
     })
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|div|tr|h[1-6]|li|table|section)>/gi, "\n")
@@ -54,10 +58,12 @@ export function htmlToText(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
+    // Trim first, then collapse: trimming after collapsing turns indented
+    // layout rows back into runs of blank lines (QA-0009).
     .split("\n")
     .map((line) => line.trim())
     .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
