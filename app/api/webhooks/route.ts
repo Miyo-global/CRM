@@ -6,25 +6,9 @@ import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { isSafePublicHttpsUrl } from "@/lib/security/ssrf";
+import { WEBHOOK_EVENTS } from "@/lib/webhooks/events";
 
-const webhookEventSchema = z.enum([
-  "*",
-  "lead.created",
-  "lead.status_changed",
-  "lead.assigned",
-  "lead.converted",
-  "deal.created",
-  "deal.stage_changed",
-  "deal.won",
-  "deal.lost",
-  "resignation.submitted",
-  "resignation.approved",
-  "termination.submitted",
-  "termination.approved",
-  "invoice.created",
-  "invoice.paid",
-  "employee.onboarded",
-]);
+const webhookEventSchema = z.enum(["*", ...WEBHOOK_EVENTS]);
 
 const createSchema = z.object({
   url: z

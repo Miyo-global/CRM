@@ -40,6 +40,9 @@ const AVAILABLE_EVENTS = [
   { id: "invoice.created", label: "Invoice Created" },
   { id: "invoice.paid", label: "Invoice Paid" },
   { id: "employee.onboarded", label: "Employee Onboarded" },
+  // Dispatched by the app but previously not subscribable (QA-0054).
+  { id: "employee.hired", label: "Employee Hired" },
+  { id: "leave.approved", label: "Leave Approved" },
 ];
 
 interface WebhookEndpoint {
@@ -58,6 +61,24 @@ interface CreateWebhookInput {
   url: string;
   description?: string;
   events: string[];
+}
+
+interface WebhookDelivery {
+  id: number;
+  event: string;
+  statusCode: number | null;
+  success: boolean | null;
+  responseBody: string | null;
+  createdAt: string;
+}
+
+/** Recent delivery attempts for one endpoint (QA-0054). */
+function useWebhookDeliveries(webhookId: number | null) {
+  return useQuery({
+    queryKey: ["webhooks", webhookId, "deliveries"],
+    enabled: webhookId !== null,
+    queryFn: () => apiClient.get<WebhookDelivery[]>(`/webhooks/${webhookId}/deliveries`),
+  });
 }
 
 function useWebhooks() {
@@ -107,6 +128,7 @@ function WebhooksContent() {
   const deleteWebhook = useDeleteWebhook();
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [deliveriesFor, setDeliveriesFor] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showSecrets, setShowSecrets] = useState<Record<number, boolean>>({});
   const [url, setUrl] = useState("");
@@ -239,6 +261,14 @@ function WebhooksContent() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground tabular-nums">
                       Created {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
+                      <Button
+                        variant="link"
+                        size="xs"
+                        className="h-auto p-0 text-xs"
+                        onClick={() => setDeliveriesFor(wh.id)}
+                      >
+                        Recent deliveries
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
@@ -327,6 +357,15 @@ function WebhooksContent() {
         </SheetContent>
       </Sheet>
 
+      <Sheet open={deliveriesFor !== null} onOpenChange={(o) => !o && setDeliveriesFor(null)}>
+        <SheetContent size="md" className="w-full">
+          <SheetHeader>
+            <SheetTitle>Recent deliveries</SheetTitle>
+          </SheetHeader>
+          <WebhookDeliveries webhookId={deliveriesFor} />
+        </SheetContent>
+      </Sheet>
+
       <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -347,5 +386,40 @@ function WebhooksContent() {
         </AlertDialogContent>
       </AlertDialog>
     </PageWrapper>
+  );
+}
+
+/** Delivery log for one endpoint: a dead endpoint used to be invisible (QA-0054). */
+function WebhookDeliveries({ webhookId }: { webhookId: number | null }) {
+  const { data, isLoading } = useWebhookDeliveries(webhookId);
+
+  if (isLoading) return <p className="p-4 text-sm text-muted-foreground">Loading…</p>;
+  if (!data || data.length === 0) {
+    return (
+      <p className="p-4 text-sm text-muted-foreground">
+        No deliveries yet. Each attempt is recorded here with its response code.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="divide-y divide-border px-4">
+      {data.map((d) => (
+        <li key={d.id} className="py-3 text-sm">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-mono text-xs">{d.event}</span>
+            <StatusPill tone={d.success ? "success" : "danger"} dot>
+              {d.statusCode ?? "no response"}
+            </StatusPill>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+            {new Date(d.createdAt).toLocaleString(DEFAULT_LOCALE)}
+          </p>
+          {!d.success && d.responseBody && (
+            <p className="mt-1 break-words text-xs text-danger-strong">{d.responseBody}</p>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
