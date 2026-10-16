@@ -11,6 +11,7 @@ import { departments, organizations } from "@/lib/db/schema";
 import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { redactSalary } from "@/lib/hr/redact-salary";
+import { toDirectoryEntry } from "@/lib/hr/directory-view";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
@@ -23,7 +24,21 @@ export async function GET(
     const { employeeId: id } = await params;
     const employee = await getEmployee(session.orgId, id);
     if (!employee) return err("Employee not found.", 404);
-    return ok(redactSalary(employee, session.user));
+
+    // Any employee could read anyone's full profile by id (QA-0063). Self,
+    // the person's manager and admins get the record; everyone else gets the
+    // same card the directory shows.
+    const isManagerOfTarget =
+      "reportingTo" in employee && employee.reportingTo === session.user.id;
+    if (
+      isAdminOrOwner(session.user.role) ||
+      session.user.id === id ||
+      isManagerOfTarget
+    ) {
+      return ok(redactSalary(employee, session.user));
+    }
+
+    return ok(toDirectoryEntry(redactSalary(employee, session.user), session.user));
   });
 }
 
