@@ -240,19 +240,9 @@ export default function PagesPage({
   );
 
   const handleSelectPage = useCallback((pageId: number) => {
-    setActivePage((prev) => {
-      if (prev !== null) {
-        const target = (pages ?? []).find((p) => p.id === prev);
-        const prevContent = typeof target?.content === "string"
-          ? target.content
-          : JSON.stringify(target?.content ?? "");
-        // We capture editContent via closure but need a functional approach.
-        // Use the setter only; auto-save on unmount is handled separately.
-      }
-      return pageId;
-    });
+    setActivePage(pageId);
     const target = (pages ?? []).find((p) => p.id === pageId);
-    setEditContent(typeof target?.content === "string" ? target.content : JSON.stringify(target?.content ?? ""));
+    setEditContent(pageBodyText(target?.content));
   }, [pages]);
 
   const handleTogglePin = useCallback((pageId: number, pinned: boolean) => {
@@ -433,4 +423,16 @@ export default function PagesPage({
       )}
     </PageWrapper>
   );
+}
+
+/**
+ * The page body as editable text.
+ *
+ * A page with no body stringified to the two characters `""`, which the editor
+ * then showed as content (QA-0061).
+ */
+function pageBodyText(content: unknown): string {
+  if (content == null) return "";
+  if (typeof content === "string") return content;
+  return JSON.stringify(content, null, 2);
 }
