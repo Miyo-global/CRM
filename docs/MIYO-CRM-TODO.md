@@ -242,7 +242,7 @@ ATS items start at MIYO-0626.
   - **Problem:** The card renders the server message verbatim.
   - **Fix:** Pass getErrorMessage(error) and a Retry button; never render `error.message` directly. Apply the same to components/ui/query-error-state.tsx default.
   - **Acceptance check:** With the API returning a SQL error, the card reads 'Could not load dashboard stats. Retry'.
-- [ ] MIYO-0027 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/ai/helpdesk-reply
+- [x] MIYO-0027 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/ai/helpdesk-reply — _no response leak: error.message is only logged_
   - **Where:** app/api/ai/helpdesk-reply/route.ts
   - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
   - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
