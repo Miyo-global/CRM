@@ -40,7 +40,13 @@ export interface ProjectBudget {
   remaining: number;
   utilizationPct: number;
   totalHours: number;
-  memberBreakdown: { userId: string; hours: number; cost: number }[];
+  memberBreakdown: {
+    userId: string;
+    name: string | null;
+    image: string | null;
+    hours: number;
+    cost: number;
+  }[];
 }
 
 export interface ResourceAllocationEntry {

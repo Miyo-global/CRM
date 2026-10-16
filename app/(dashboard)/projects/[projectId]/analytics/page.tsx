@@ -130,8 +130,13 @@ export default function AnalyticsPage({
   const assigneeData = useMemo(() => {
     if (!analytics?.assigneeCompletion) return [];
     return analytics.assigneeCompletion.map(
-      (entry: { assigneeId: string | null; total: number; completed: number }) => ({
-        name: entry.assigneeId != null ? `User ${entry.assigneeId}` : "Unassigned",
+      (entry: {
+        assigneeId: string | null;
+        assigneeName?: string | null;
+        total: number;
+        completed: number;
+      }) => ({
+        name: entry.assigneeName?.trim() || (entry.assigneeId ? "Unnamed member" : "Unassigned"),
         completed: entry.completed,
         total: entry.total,
         rate: entry.total > 0 ? Math.round((entry.completed / entry.total) * 100) : 0,

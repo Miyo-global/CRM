@@ -302,15 +302,20 @@ export async function getProjectAnalytics(orgId: string, projectId: number) {
       .from(tickets)
       .where(orgFilter)
       .groupBy(tickets.priority),
+    // Join the assignee so analytics can show a name: the chart used to
+    // label bars "User <uuid>" (QA-0059).
     db
       .select({
         assigneeId: tickets.assigneeId,
+        assigneeName: users.name,
+        assigneeImage: users.image,
         total: count(),
         completed: count(sql`CASE WHEN ${tickets.status} = 'DONE' THEN 1 END`),
       })
       .from(tickets)
+      .leftJoin(users, eq(tickets.assigneeId, users.id))
       .where(and(orgFilter, sql`${tickets.assigneeId} IS NOT NULL`))
-      .groupBy(tickets.assigneeId),
+      .groupBy(tickets.assigneeId, users.name, users.image),
   ]);
 
   const twelveWeeksAgo = new Date();

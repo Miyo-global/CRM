@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { projects, projectMembers, timesheets, tickets } from "@/lib/db/schema";
+import { projects, projectMembers, timesheets, tickets, users } from "@/lib/db/schema";
 import { eq, and, sum } from "drizzle-orm";
 import { z } from "zod";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
@@ -26,13 +26,23 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
     });
     if (!project) return err("Project not found", 404);
 
-    const members = await db.query.projectMembers.findMany({
-      where: eq(projectMembers.projectId, projectId),
-      columns: { userId: true, hourlyRate: true },
-    });
+    // Names and avatars, so the breakdown does not show raw ids (QA-0059).
+    const members = await db
+      .select({
+        userId: projectMembers.userId,
+        hourlyRate: projectMembers.hourlyRate,
+        name: users.name,
+        image: users.image,
+      })
+      .from(projectMembers)
+      .leftJoin(users, eq(projectMembers.userId, users.id))
+      .where(eq(projectMembers.projectId, projectId));
 
     const memberRates = new Map(
       members.map((m) => [m.userId, Number(m.hourlyRate ?? 0)]),
+    );
+    const memberProfiles = new Map(
+      members.map((m) => [m.userId, { name: m.name, image: m.image }]),
     );
 
     const [{ value: totalHours }] = await db
@@ -47,7 +57,13 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
         ),
       );
 
-    const memberCosts: { userId: string; hours: number; cost: number }[] = [];
+    const memberCosts: {
+      userId: string;
+      name: string | null;
+      image: string | null;
+      hours: number;
+      cost: number;
+    }[] = [];
     for (const [userId, rate] of memberRates) {
       const [{ value: hrs }] = await db
         .select({ value: sum(timesheets.hours) })
@@ -62,7 +78,14 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
           ),
         );
       const hours = Number(hrs ?? 0);
-      memberCosts.push({ userId, hours, cost: hours * rate });
+      const profile = memberProfiles.get(userId);
+      memberCosts.push({
+        userId,
+        name: profile?.name ?? null,
+        image: profile?.image ?? null,
+        hours,
+        cost: hours * rate,
+      });
     }
 
     const actualCost = memberCosts.reduce((acc, m) => acc + m.cost, 0);

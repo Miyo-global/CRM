@@ -154,8 +154,9 @@ export default function BudgetPage({ params }: { params: Promise<{ projectId: st
                   <TableRow key={m.userId}>
                     <TableCell className="pl-5">
                       <div className="flex items-center gap-2">
+                        {/* The row used to show a truncated uuid (QA-0059). */}
                         <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                        <span className="font-mono text-xs text-muted-foreground" title={m.userId}>{m.userId.substring(0, 8)}…</span>
+                        <span className="text-sm">{m.name?.trim() || "Unnamed member"}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-xs text-muted-foreground tabular-nums">{m.hours.toFixed(1)} hrs</TableCell>

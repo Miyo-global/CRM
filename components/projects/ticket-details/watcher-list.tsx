@@ -96,16 +96,15 @@ export function WatcherList({
               <div
                 key={watcherIdStr}
                 className="relative group inline-flex items-center gap-0.5"
-                title={
-                  [w.user?.firstName, w.user?.lastName].filter(Boolean).join(" ") ||
-                  watcherIdStr
-                }
+                // The API returns `name`; reading only firstName/lastName left
+                // the tooltip showing a raw id and the initials blank
+                // (QA-0059).
+                title={watcherDisplayName(w.user) ?? "Unnamed member"}
               >
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={resolveImageUrl(w.user?.image)} />
                   <AvatarFallback className="text-3xs bg-brand-soft text-brand-text">
-                    {w.user?.firstName?.[0]}
-                    {w.user?.lastName?.[0]}
+                    {watcherInitials(w.user)}
                   </AvatarFallback>
                 </Avatar>
                 {canRemove && (
@@ -165,4 +164,27 @@ export function WatcherList({
       )}
     </div>
   );
+}
+
+interface WatcherUser {
+  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+}
+
+function watcherDisplayName(user?: WatcherUser | null): string | null {
+  if (!user) return null;
+  const fromParts = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+  return fromParts || user.name?.trim() || user.email?.trim() || null;
+}
+
+function watcherInitials(user?: WatcherUser | null): string {
+  const name = watcherDisplayName(user);
+  if (!name) return "?";
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }
