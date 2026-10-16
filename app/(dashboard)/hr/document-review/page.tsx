@@ -191,14 +191,16 @@ function useReviewDocument() {
 }
 
 
-function toTitleCase(name: string | null): string {
-  if (!name) return "Unknown";
-  return name
-    .trim()
-    .replace(/\s+/g, " ")
-    .split(" ")
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w))
-    .join(" ");
+/**
+ * An employee's name as stored.
+ *
+ * This used to re-case every word, turning "QA Emp Tenk" into "Qa Emp Tenk"
+ * and "Sudheer Reddy" into whatever casing the splitter produced (QA-D001).
+ * A person's name is theirs; only the whitespace is tidied.
+ */
+function displayName(name: string | null): string {
+  const trimmed = name?.trim().replace(/\s+/g, " ");
+  return trimmed || "Unknown";
 }
 
 function docStatusTone(status: OnboardingDoc["status"]): Tone {
@@ -675,7 +677,7 @@ export default function DocumentReviewPage() {
                               </AvatarFallback>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{toTitleCase(emp.userName)}</p>
+                              <p>{displayName(emp.userName)}</p>
                               {emp.employeeId ? (
                                 <p className="text-2xs opacity-80">ID: {emp.employeeId}</p>
                               ) : null}
@@ -683,8 +685,8 @@ export default function DocumentReviewPage() {
                           </Tooltip>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate" title={toTitleCase(emp.userName)}>
-                            {toTitleCase(emp.userName)}
+                          <p className="text-sm font-medium truncate" title={displayName(emp.userName)}>
+                            {displayName(emp.userName)}
                           </p>
                           <p className="text-2xs text-muted-foreground truncate">
                             {getRoleLabel(emp.role)}
@@ -744,7 +746,7 @@ export default function DocumentReviewPage() {
                           size="xs"
                           variant="outline"
                           onClick={() => handleOpenReview(emp)}
-                          aria-label={`Review documents for ${toTitleCase(emp.userName)}`}
+                          aria-label={`Review documents for ${displayName(emp.userName)}`}
                         >
                           <Eye className="size-3.5" aria-hidden />
                           Review
@@ -753,7 +755,7 @@ export default function DocumentReviewPage() {
                           size="xs"
                           variant="ghost"
                           onClick={() => handleOpenUploadFor(emp)}
-                          aria-label={`Upload document for ${toTitleCase(emp.userName)}`}
+                          aria-label={`Upload document for ${displayName(emp.userName)}`}
                         >
                           <Upload className="size-3.5" aria-hidden />
                           Upload
@@ -775,7 +777,7 @@ export default function DocumentReviewPage() {
         <SheetContent side="right" className="flex flex-col p-0 gap-0 sm:max-w-lg w-full">
           <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b border-border space-y-2">
             <SheetTitle className="text-base">
-              {toTitleCase(reviewUserName)} — Document Review
+              {displayName(reviewUserName)} — Document Review
             </SheetTitle>
             <SheetDescription className="text-xs">
               {employeeDetail?.progress ? (
@@ -926,7 +928,7 @@ export default function DocumentReviewPage() {
         open={approveDoc !== null}
         onOpenChange={(open) => { if (!open) setApproveDoc(null); }}
         title="Approve document"
-        description={`Approve "${approveDoc?.documentTypeName}" submitted by ${toTitleCase(reviewUserName)}?`}
+        description={`Approve "${approveDoc?.documentTypeName}" submitted by ${displayName(reviewUserName)}?`}
         confirmLabel="Approve"
         variant="default"
         onConfirm={handleApprove}
@@ -1003,7 +1005,7 @@ export default function DocumentReviewPage() {
             setUploadForUserRole(null);
           }
         }}
-        title={`Upload for ${toTitleCase(uploadForUserName)}`}
+        title={`Upload for ${displayName(uploadForUserName)}`}
         description={
           uploadForUserRole
             ? `Submit a document on behalf of this employee. Showing types required for ${getRoleLabel(uploadForUserRole)}.`

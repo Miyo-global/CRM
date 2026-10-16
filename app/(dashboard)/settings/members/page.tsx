@@ -48,6 +48,7 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 import { ROLE_OPTIONS } from "@/lib/rbac/roles";
+import { getRoleLabel } from "@/lib/rbac/roles";
 
 /** Every system role, labelled (A12, A13). */
 const ALL_ROLES = ROLE_OPTIONS;
@@ -496,7 +497,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
       </TableCell>
       <TableCell className="px-5 text-sm text-muted-foreground">{member.email}</TableCell>
       <TableCell className="px-5">
-        <StatusPill tone={ROLE_TONES[member.role] ?? "neutral"}>{member.role}</StatusPill>
+        <StatusPill tone={ROLE_TONES[member.role] ?? "neutral"}>{getRoleLabel(member.role)}</StatusPill>
       </TableCell>
       <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}

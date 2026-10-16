@@ -46,6 +46,7 @@ import { isAdminOrOwner } from "@/lib/constants/roles";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
+import { getRoleLabel } from "@/lib/rbac/roles";
 import {
   useHelpdeskTicketComments,
   useAddHelpdeskTicketComment,
@@ -221,7 +222,7 @@ export function TicketDetailSheet({
       { value: "", label: "Unassigned" },
       ...(assignees ?? []).map((m) => ({
         value: m.userId,
-        label: m.name ? `${m.name} (${m.role})` : m.email,
+        label: m.name ? `${m.name} (${getRoleLabel(m.role)})` : m.email,
       })),
     ],
     [assignees],

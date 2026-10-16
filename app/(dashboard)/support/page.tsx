@@ -31,6 +31,7 @@ import { staggerContainer, fadeUp, slideInLeft } from "@/lib/motion-variants";
 import { safeMax, calcPercent } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors, sparkColors } from "@/lib/theme-constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRoleLabel } from "@/lib/rbac/roles";
 
 const formatTicketValue = (v: number) => v.toLocaleString();
 
@@ -321,7 +322,7 @@ export default function SupportDashboardPage() {
                         <span className="font-medium text-foreground">{member.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{member.role}</TableCell>
+                    <TableCell className="text-muted-foreground">{getRoleLabel(member.role)}</TableCell>
                     <TableCell>
                       <StatusPill tone="neutral">{member.access}</StatusPill>
                     </TableCell>

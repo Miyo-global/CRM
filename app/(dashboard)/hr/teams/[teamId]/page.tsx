@@ -15,6 +15,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import type { TeamDetail } from "@/app/api/hr/teams/[teamId]/route";
 import { QueryErrorState } from "@/components/ui/query-error-state";
+import { getRoleLabel } from "@/lib/rbac/roles";
 
 function useTeamDetail(teamId: string) {
   return useQuery({
@@ -83,7 +84,7 @@ export default function TeamPage({ params }: { params: Promise<{ teamId: string 
                       <p className="text-xs text-muted-foreground truncate">{member.designation}</p>
                     )}
                     <Badge variant="outline" className="mt-1">
-                      {member.role}
+                      {getRoleLabel(member.role)}
                     </Badge>
                   </div>
                 </Link>
