@@ -1,5 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { redactSalary } from "@/lib/hr/redact-salary";
+import { toDirectoryEntry } from "@/lib/hr/directory-view";
 import { getEmployees, getEmployeesPaginated } from "@/server/queries/hr";
 import { clampPageSize, DEFAULT_PAGE_SIZE } from "@/lib/pagination-constants";
 import type { EmployeeListFilters } from "@/server/queries/hr/employees";
@@ -47,10 +48,20 @@ export async function GET(req: NextRequest) {
         limit ? clampPageSize(Number(limit)) : DEFAULT_PAGE_SIZE,
         listFilters,
       );
-      return ok({ ...data, data: data.data.map((row) => redactSalary(row, session.user)) });
+      return ok({
+        ...data,
+        // Non-admins get a directory card, not the HR record (QA-0062).
+        data: data.data.map(
+          (row) => toDirectoryEntry(redactSalary(row, session.user), session.user) as Employee,
+        ),
+      });
     }
 
     const data = await getEmployees(session.orgId);
-    return ok(data.map((row) => redactSalary(row, session.user)));
+    return ok(
+      data.map(
+        (row) => toDirectoryEntry(redactSalary(row, session.user), session.user) as Employee,
+      ),
+    );
   });
 }
