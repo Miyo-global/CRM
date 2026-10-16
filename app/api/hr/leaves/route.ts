@@ -19,6 +19,7 @@ import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
 import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
 import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
+import { holidayDatesInRange } from "@/lib/hr/leave-working-days-server";
 
 const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
@@ -119,15 +120,23 @@ export async function POST(req: NextRequest) {
         return err("Start date must be before or equal to end date.", 400);
       }
 
+      // Declared holidays do not count as leave (QA-0019).
+      const orgHolidays = await holidayDatesInRange(
+        session.orgId,
+        normalizedStart,
+        normalizedEnd,
+      );
+
       const requestedDays = calculateLeaveWorkingDays({
         startDate: body.startDate,
         endDate: body.endDate,
         isHalfDay: body.isHalfDay ?? false,
+        holidays: orgHolidays,
       });
 
       if (!body.isHalfDay && requestedDays <= 0) {
         return err(
-          "Leave cannot be requested for dates that are only Sundays. Select working days.",
+          "Leave cannot be requested for dates that are only Sundays or holidays. Select working days.",
           400,
         );
       }
@@ -137,6 +146,7 @@ export async function POST(req: NextRequest) {
           startDate: body.startDate,
           endDate: body.startDate,
           isHalfDay: false,
+          holidays: orgHolidays,
         });
         if (halfDayWorkingDays <= 0) {
           return err(

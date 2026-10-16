@@ -1,7 +1,8 @@
-import { eachDayOfInterval, format, isSunday, startOfDay } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { z } from "zod";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import { getTodayString } from "@/lib/date-utils";
+import { countWorkingDays, workingDates } from "@/lib/hr/leave-working-days";
 
 export const leaveRequestPrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
 
@@ -29,37 +30,32 @@ function isValidLocalDateString(value: string): boolean {
   return !Number.isNaN(d.getTime());
 }
 
+/**
+ * Thin wrapper over the shared working-day rule so apply, preview, display and
+ * the approval deduction all count the same days (QA-0019). Pass the org's
+ * declared holidays to exclude them.
+ */
 export function calculateLeaveWorkingDays({
   startDate,
   endDate,
   isHalfDay,
+  holidays,
 }: {
   startDate: string;
   endDate: string;
   isHalfDay: boolean;
+  holidays?: Iterable<string>;
 }): number {
-  if (isHalfDay) return 0.5;
-  if (!startDate.trim() || !endDate.trim()) return 0;
-  const start = parseLocalDate(startDate);
-  const end = parseLocalDate(endDate);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
-    return 0;
-  }
-
-  const days = eachDayOfInterval({ start, end });
-
-  return days.filter((day) => !isSunday(day)).length;
+  return countWorkingDays(startDate, endDate, { isHalfDay, holidays });
 }
 
 /** Working days between start and end (inclusive), as YYYY-MM-DD strings. */
-export function enumerateWorkingDateStrings(startDate: string, endDate: string): string[] {
-  if (!isValidLocalDateString(startDate) || !isValidLocalDateString(endDate)) return [];
-  const start = parseLocalDate(startDate);
-  const end = parseLocalDate(endDate);
-  if (end < start) return [];
-  return eachDayOfInterval({ start, end })
-    .filter((day) => !isSunday(day))
-    .map((day) => format(day, "yyyy-MM-dd"));
+export function enumerateWorkingDateStrings(
+  startDate: string,
+  endDate: string,
+  holidays?: Iterable<string>,
+): string[] {
+  return workingDates(startDate, endDate, holidays);
 }
 
 export interface WfhRequestSchemaOptions {

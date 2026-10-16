@@ -25,6 +25,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
+import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 
 import { LeaveRequestSheet } from "@/features/hr/leaves/leave-request-sheet";
 import { WfhRequestSheet } from "@/features/hr/leaves/wfh-request-sheet";
@@ -78,6 +79,7 @@ export function LeavesWfhContent() {
 
   // Days already awaiting approval, so the balance hint and validation count
   // them against the balance (A29).
+  const holidayDates = useHolidayDates();
   const pendingDaysByType = useMemo(() => {
     const byType: Record<string, number> = {};
     for (const request of myLeaveRequests) {
@@ -90,10 +92,11 @@ export function LeavesWfhContent() {
           startDate: String(request.startDate),
           endDate: String(request.endDate),
           isHalfDay: request.isHalfDay ?? false,
+          holidays: holidayDates,
         });
     }
     return byType;
-  }, [myLeaveRequests]);
+  }, [myLeaveRequests, holidayDates]);
 
 
   if (contextLoading || myLoading) {

@@ -26,6 +26,7 @@ import {
   calculateLeaveWorkingDays,
   createLeaveRequestSchema,
 } from "@/lib/validations/leave-request";
+import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 import {
   LEAVE_ATTACHMENT_ACCEPT,
   LEAVE_ATTACHMENT_ALLOWED_EXTENSIONS,
@@ -98,6 +99,7 @@ export function LeaveRequestSheet({
   const watchedEndDate = form.watch("endDate");
   const watchedHalfDay = form.watch("halfDay");
 
+  const holidayDates = useHolidayDates();
   const { requestedDays, balancePreview } = useMemo(() => {
     if (!watchedLeaveTypeId || !watchedStartDate || !watchedEndDate) {
       return { requestedDays: 0, balancePreview: null };
@@ -106,6 +108,7 @@ export function LeaveRequestSheet({
       startDate: watchedStartDate,
       endDate: watchedEndDate,
       isHalfDay: watchedHalfDay,
+      holidays: holidayDates,
     });
     const selectedType = leaveTypes.find((t) => t.id.toString() === watchedLeaveTypeId);
     if (!selectedType) return { requestedDays: days, balancePreview: null };
@@ -129,7 +132,7 @@ export function LeaveRequestSheet({
         typeName: selectedType.name,
       },
     };
-  }, [watchedLeaveTypeId, watchedStartDate, watchedEndDate, watchedHalfDay, leaveTypes, balances]);
+  }, [watchedLeaveTypeId, watchedStartDate, watchedEndDate, watchedHalfDay, leaveTypes, balances, holidayDates, pendingDaysByType]);
 
   const leaveDayLimitError = useMemo(() => {
     if (!watchedLeaveTypeId || !watchedStartDate || !watchedEndDate) return null;
