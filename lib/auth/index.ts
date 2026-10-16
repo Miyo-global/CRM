@@ -12,6 +12,7 @@ import { redis } from "../redis";
 import { randomUUID } from "crypto";
 import { getDeviceId } from "../device-fingerprint";
 import { sendAccountLockedEmail, sendNewDeviceLoginEmail } from "../email";
+import { clearFailedAttempts, recordFailedAttempt } from "./failed-attempts";
 import { createAuditLog } from "../audit-log";
 
 interface UserSessionCache {
@@ -147,20 +148,14 @@ const credentialsProvider = Credentials({
       );
 
       if (!isValid) {
-        const attempts = (user.loginAttempts ?? 0) + 1;
-        const lockUpdate: Record<string, unknown> = { loginAttempts: attempts };
-        if (attempts >= 5) {
-          // Escalating cooldown rather than a flat 15 minutes: a few wrong
-          // guesses cost the real owner a minute, while sustained guessing
-          // still backs off hard (QA-0037).
-          const cooldownMinutes = attempts >= 10 ? 15 : attempts >= 7 ? 5 : 1;
-          lockUpdate.lockedUntil = new Date(Date.now() + cooldownMinutes * 60 * 1000);
-          logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, cooldownMinutes });
+        // Escalating cooldown, shared with MFA verification (QA-0037, QA-0038).
+        const { attempts, lockedUntil } = await recordFailedAttempt(user.id, user.loginAttempts);
+        if (lockedUntil) {
+          logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, lockedUntil });
           sendAccountLockedEmail(user.email, user.name ?? user.email).catch((e) => logger.error("Auth: account-locked email failed", { userId: user.id, error: e }));
         } else {
           logger.warn("Auth: failed login attempt", { userId: user.id, email: normalizedEmail, attempt: attempts });
         }
-        await db.update(users).set(lockUpdate).where(eq(users.id, user.id));
         return null;
       }
 
@@ -174,7 +169,7 @@ const credentialsProvider = Credentials({
       logger.info("Auth: successful login", { userId: user.id, email: normalizedEmail });
 
       if (user.loginAttempts && user.loginAttempts > 0) {
-        await db.update(users).set({ loginAttempts: 0, lockedUntil: null }).where(eq(users.id, user.id));
+        await clearFailedAttempts(user.id);
       }
 
       const existingMembership = await db.query.organizationMembers.findFirst({

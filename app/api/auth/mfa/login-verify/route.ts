@@ -9,6 +9,7 @@ import { users, mfaBackupCodes } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { clearFailedAttempts, isLocked, recordFailedAttempt } from "@/lib/auth/failed-attempts";
 
 const schema = z.union([
   z.object({ token: z.string().length(6), backupCode: z.undefined() }),
@@ -35,11 +36,24 @@ export async function POST(req: NextRequest) {
 
   const user = await db.query.users.findFirst({
     where: eq(users.id, session.user.id),
-    columns: { id: true, totpSecret: true, totpEnabled: true },
+    columns: {
+      id: true,
+      totpSecret: true,
+      totpEnabled: true,
+      loginAttempts: true,
+      lockedUntil: true,
+    },
   });
 
   if (!user?.totpEnabled || !user.totpSecret) {
     return err("MFA is not enabled for this account", 400);
+  }
+
+  // Codes could be tried without limit (QA-0038): the account's failed-attempt
+  // cooldown now covers MFA verification as well as password sign-in.
+  if (isLocked(user.lockedUntil)) {
+    logger.warn("Auth: MFA verification attempted during cooldown", { userId: user.id });
+    return err("Too many attempts. Try again in a few minutes.", 429);
   }
 
   let verified = false;
@@ -67,9 +81,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (!verified) {
-    logger.warn("Auth: failed MFA login verification", { userId: user.id });
+    const { attempts, lockedUntil } = await recordFailedAttempt(user.id, user.loginAttempts);
+    logger.warn("Auth: failed MFA login verification", { userId: user.id, attempts });
+    if (lockedUntil) {
+      return err("Too many attempts. Try again in a few minutes.", 429);
+    }
     return err("Invalid code", 400);
   }
+
+  await clearFailedAttempts(user.id);
 
   if (!redis) {
     logger.error("Auth: MFA login-verify cannot persist grant — Redis unavailable", { userId: user.id });
