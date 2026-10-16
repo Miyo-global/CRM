@@ -48,6 +48,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/helpdesk": EVERYONE,
   "/profile": EVERYONE,
   "/projects": EVERYONE,
+  // Bare ticket links resolve to the project-scoped page (QA-0026).
+  "/tickets": EVERYONE,
   "/timesheets": EVERYONE,
   "/support": EVERYONE,
   "/support/inbox": EVERYONE,
