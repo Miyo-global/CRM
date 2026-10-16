@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { attendance } from "@/lib/db/schema";
 import { timesheets } from "@/lib/db/schema/projects";
@@ -129,8 +129,7 @@ export async function POST(req: NextRequest) {
         shouldLogOvertime: totalDailyWork > OVERTIME_PROMPT_MIN_HOURS,
       });
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Check-out failed";
-      return err(message, 400);
+      return userErrorOr500(e, { route: "hr/attendance/check-out", orgId: session.orgId }, "Check-out failed.");
     }
   });
 }
