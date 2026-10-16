@@ -50,11 +50,37 @@ export async function POST(req: NextRequest) {
     });
     if (roleError) return err(roleError.message, roleError.status);
 
-    const deptRow = await db.query.departments.findFirst({
-      where: and(eq(departments.id, body.departmentId), eq(departments.orgId, session.orgId)),
-      columns: { name: true },
-    });
-    if (deptRow && !isRoleAllowedForDepartment(onboardRole, deptRow.name)) {
+    // The wizard offers common departments that do not exist yet under
+    // placeholder negative ids. Storing one left the profile Unassigned
+    // (QA-0020), so resolve it to a real department here, creating it once.
+    let departmentId = body.departmentId;
+    let departmentName = body.departmentName?.trim();
+
+    if (departmentId > 0) {
+      const deptRow = await db.query.departments.findFirst({
+        where: and(eq(departments.id, departmentId), eq(departments.orgId, session.orgId)),
+        columns: { name: true },
+      });
+      if (!deptRow) return err("Select a department that exists in your organisation.", 400);
+      departmentName = deptRow.name;
+    } else {
+      if (!departmentName) return err("Department is required.", 400);
+      const existing = await db.query.departments.findFirst({
+        where: and(eq(departments.orgId, session.orgId), eq(departments.name, departmentName)),
+        columns: { id: true },
+      });
+      if (existing) {
+        departmentId = existing.id;
+      } else {
+        const [created] = await db
+          .insert(departments)
+          .values({ orgId: session.orgId, name: departmentName })
+          .returning({ id: departments.id });
+        departmentId = created.id;
+      }
+    }
+
+    if (departmentName && !isRoleAllowedForDepartment(onboardRole, departmentName)) {
       return err(DEPARTMENT_ROLE_MISMATCH_MESSAGE, 400);
     }
 
@@ -105,7 +131,7 @@ export async function POST(req: NextRequest) {
           gender: body.gender,
           password: passwordHash,
           designation: body.designation,
-          departmentId: body.departmentId,
+          departmentId,
           role: body.role || "ENGINEERING",
           employeeId,
           joiningDate: formatDateOnly(body.joiningDate),
@@ -129,7 +155,7 @@ export async function POST(req: NextRequest) {
 
       // Keep the department_members join table in sync with users.departmentId
       // so the department delete-guard and headcount stay accurate (D18).
-      await syncUserDepartmentMembership(tx, u.id, body.departmentId);
+      await syncUserDepartmentMembership(tx, u.id, departmentId);
 
       if (body.monthlySalary && body.monthlySalary > 0) {
         const basicSalary = body.monthlySalary * 0.5;
