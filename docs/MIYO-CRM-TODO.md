@@ -109,7 +109,7 @@ ATS items start at MIYO-0626.
   - **Problem:** Journal has 69 entries (last 0125_document_types_sort_order_decimal) while drizzle/ has 166 SQL files; snapshots only to 0006.
   - **Fix:** Regenerate a baseline snapshot from the current schema (drizzle-kit introspect against a DB built from all SQL files), register 0126–0156 in the journal with their real timestamps, keep SQL files unchanged.
   - **Acceptance check:** `pnpm db:generate` on unchanged schema produces 'No schema changes'.
-- [ ] MIYO-0005 [Critical][Prod/Deploy] Add a post-deploy smoke check
+- [x] MIYO-0005 [Critical][Prod/Deploy] Add a post-deploy smoke check
   - **Where:** .github/workflows/ (new smoke.yml), app/api/health/route.ts
   - **Problem:** Outage on 16 Oct was only noticed by manual testing.
   - **Fix:** Extend /api/health to run `select 1 from projects where deleted_at is null limit 1` and one query per new table (behind a secret header); add a workflow that hits it after each production deploy and fails loudly.

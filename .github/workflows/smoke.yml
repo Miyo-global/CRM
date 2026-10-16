@@ -1,0 +1,23 @@
+name: Post-deploy smoke
+
+# MIYO-0005: Vercel reports each deployment to GitHub; after a successful
+# Production deploy, hit /api/health with the internal token so it runs the
+# schema probes (missing migration columns -> 503 -> red job).
+on:
+  deployment_status:
+
+jobs:
+  smoke:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health and schema check
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          URL: ${{ vars.PROD_URL || 'https://crm.miyoglobal.com' }}
+        run: |
+          body=$(curl -sS --max-time 60 -w '\n%{http_code}' -H "Authorization: Bearer $CRON_SECRET" "$URL/api/health")
+          code=$(echo "$body" | tail -1)
+          echo "$body" | head -n -1
+          [ "$code" = "200" ] || { echo "::error::/api/health returned $code"; exit 1; }
+          echo "$body" | head -n -1 | grep -q '"schema":{"status":"ok"' || { echo "::error::schema probes did not run or failed (is CRON_SECRET set?)"; exit 1; }
