@@ -406,7 +406,9 @@ export function LeaveApprovalsContent({
   }, []);
 
   const handleRejectFromTable = useCallback((requestId: number, reason?: string) => {
-    if (reason !== undefined) {
+    // A reason is required now, so an empty one opens the sheet instead of
+    // sending a rejection the employee cannot act on (QA-0071).
+    if (reason !== undefined && reason.trim().length > 0) {
       rejectMutation.mutate(
         { leaveId: requestId, reason: reason.trim() },
         {
@@ -577,12 +579,12 @@ export function LeaveApprovalsContent({
           <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
             <SheetTitle className="font-display text-lg font-bold">Reject WFH Request</SheetTitle>
             <p className="text-sm text-muted-foreground">
-              Provide a reason for rejecting this request (optional).
+              The employee sees this reason on their request.
             </p>
           </SheetHeader>
           <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Rejection Reason</label>
+              <label className="text-sm font-medium">Rejection reason</label>
               <Textarea
                 placeholder="E.g. Not enough prior notice, project deadline..."
                 value={rejectionReason}
@@ -612,12 +614,12 @@ export function LeaveApprovalsContent({
           <SheetHeader className="border-b border-border px-6 pb-4 pt-5">
             <SheetTitle className="font-display text-lg font-bold">Reject Leave Request</SheetTitle>
             <p className="text-sm text-muted-foreground">
-              Provide a reason for rejecting this request (optional).
+              The employee sees this reason on their request.
             </p>
           </SheetHeader>
           <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Rejection Reason</label>
+              <label className="text-sm font-medium">Rejection reason</label>
               <Textarea
                 placeholder="E.g. Insufficient leave balance, conflicting schedule..."
                 value={leaveRejectionReason}
@@ -635,6 +637,7 @@ export function LeaveApprovalsContent({
               variant="destructive"
               onClick={handleLeaveRejectConfirm}
               loading={rejectMutation.isPending}
+              disabled={rejectMutation.isPending || leaveRejectionReason.trim().length === 0}
             >
               Reject Request
             </Button>

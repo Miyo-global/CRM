@@ -10,7 +10,9 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 
 const bodySchema = z.object({
-  reason: z.string().optional(),
+  // A rejection with no reason left the employee nothing to act on
+  // (QA-0071).
+  reason: z.string().trim().min(1, "Give a reason for the rejection.").max(500),
   comment: z.string().optional(),
 });
 
@@ -23,16 +25,20 @@ export async function PUT(
     const leaveId = Number(id);
     if (isNaN(leaveId)) return err("Invalid leave request ID.", 400);
 
-    let reason: string | undefined;
+    let reason: string;
     let comment: string | undefined;
     try {
-      const raw = await req.json() as unknown;
-      const parsed = bodySchema.safeParse(raw);
-      if (parsed.success) {
-        reason = parsed.data.reason;
-        comment = parsed.data.comment;
+      const parsed = bodySchema.safeParse(await req.json());
+      if (!parsed.success) {
+        return err(
+          parsed.error.issues[0]?.message ?? "Give a reason for the rejection.",
+          400,
+        );
       }
+      reason = parsed.data.reason;
+      comment = parsed.data.comment;
     } catch {
+      return err("Give a reason for the rejection.", 400);
     }
 
     const existing = await db.query.leaveRequests.findFirst({
@@ -55,7 +61,7 @@ export async function PUT(
       .set({
         status: "REJECTED",
         approverId: session.user.id,
-        rejectionReason: reason ?? null,
+        rejectionReason: reason,
         managerComment: comment ?? null,
       })
       .where(eq(leaveRequests.id, leaveId));
@@ -92,7 +98,7 @@ export async function PUT(
         userId: existing.userId,
         type: "ERROR",
         title: "Leave Rejected",
-        message: `Your leave request has been rejected.${reason ? ` Reason: ${reason}` : ""}${comment ? ` — "${comment}"` : ""}`,
+        message: `Your leave request has been rejected. Reason: ${reason}${comment ? ` — "${comment}"` : ""}`,
         link: "/hr/leaves",
       }),
       writeAuditLog({
@@ -112,7 +118,7 @@ export async function PUT(
             existing.endDate,
             "REJECTED",
             session.user.name ?? "HR",
-            reason ?? "",
+            reason,
             balanceAfter,
           ).catch(() => undefined)
         : Promise.resolve(),

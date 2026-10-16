@@ -6,6 +6,7 @@ import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { holidayDatesInRange } from "@/lib/hr/leave-working-days-server";
 import { getCasualMonthlyCapError } from "@/server/actions/leave-actions/leave-balance";
 import { isUnpaidLeaveType, LEAVE_POLICY } from "@/lib/leave-policy";
+import { getTodayString } from "@/lib/date-utils";
 
 export interface LeaveRequestCheckInput {
   orgId: string;
@@ -41,6 +42,18 @@ export async function checkLeaveRequest(
 ): Promise<LeaveRequestCheck> {
   const start = input.startDate.slice(0, 10);
   const end = input.endDate.slice(0, 10);
+
+  // Leave cannot be applied for days already past: HR adjusts attendance for
+  // those instead (QA-0071).
+  if (start < getTodayString()) {
+    return {
+      requestedDays: 0,
+      available: 0,
+      balanceAfter: null,
+      error: "Leave cannot start in the past. Ask HR to correct attendance for days already gone.",
+      leaveTypeName: null,
+    };
+  }
 
   if (start > end) {
     return {
