@@ -18,10 +18,9 @@ _axios.interceptors.response.use(
   (res) => res,
   (error: unknown) => {
     if (axios.isAxiosError(error)) {
-      const apiMessage = (error.response?.data as { error?: string })?.error;
-      if (apiMessage) {
-
-        error.message = apiMessage;
+      const data = error.response?.data as { error?: string; errorId?: string } | undefined;
+      if (data?.error) {
+        error.message = data.errorId ? `${data.error} (ref ${data.errorId})` : data.error;
       }
     }
     return Promise.reject(error);

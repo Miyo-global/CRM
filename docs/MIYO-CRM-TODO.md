@@ -117,12 +117,12 @@ ATS items start at MIYO-0626.
 
 ### Critical · Prod/Errors
 
-- [ ] MIYO-0006 [Critical][Prod/Errors] Stop returning raw database errors (SQL text, org IDs) to the browser from dashboard APIs
+- [x] MIYO-0006 [Critical][Prod/Errors] Stop returning raw database errors (SQL text, org IDs) to the browser from dashboard APIs
   - **Where:** app/api/dashboard/stats/route.ts:11, active-sprint/route.ts:15, recent-activity/route.ts:15, recent-projects/route.ts:15, team-availability/route.ts:11
   - **Problem:** These handlers return `error instanceof Error ? error.message : ...`, so Postgres errors with the full SQL and the org id are shown in the dashboard error card and toasts (prod 16 Oct).
   - **Fix:** Return a fixed message (`Could not load dashboard stats.`) with a generated `errorId`; log the original error with logger.error({ errorId, route, orgId }).
   - **Acceptance check:** Force a DB error locally: the UI shows only the generic text and an error ID; the server log has the SQL.
-- [ ] MIYO-0007 [Critical][Prod/Errors] Add a central safe-error helper for API routes
+- [x] MIYO-0007 [Critical][Prod/Errors] Add a central safe-error helper for API routes
   - **Where:** lib/api/helpers.ts (new `serverError(e, ctx)`), lib/logger.ts
   - **Problem:** 40 route files hand-roll `error.message` passthrough (see the per-file items below).
   - **Fix:** Add `serverError(error, { route, orgId })` that logs and returns `{ error: 'Something went wrong. Please try again.', errorId }` with status 500; ZodError keeps the existing 400 path.

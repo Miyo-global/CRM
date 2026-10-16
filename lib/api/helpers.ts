@@ -40,6 +40,27 @@ export function err(message: string, status = 400): NextResponse<never> {
   return NextResponse.json({ error: message }, { status }) as NextResponse<never>;
 }
 
+export const GENERIC_ERROR = "Something went wrong. Please try again.";
+
+/**
+ * 500 response that never leaks the underlying error (SQL text, org ids,
+ * stack frames) to the browser. The original error is logged with a short
+ * errorId that is also returned, so a user report can be matched to the log.
+ * Zod errors keep their 400 path.
+ */
+export function serverError(
+  error: unknown,
+  ctx: { route: string; orgId?: string },
+  message = GENERIC_ERROR,
+): NextResponse<never> {
+  if (error instanceof z.ZodError) {
+    return err(`Validation failed: ${error.issues.map((i) => i.message).join("; ")}`, 400);
+  }
+  const errorId = crypto.randomUUID().slice(0, 8);
+  logger.error(`${ctx.route} failed`, { errorId, ...ctx, error: error instanceof Error ? { message: error.message, stack: error.stack } : error });
+  return NextResponse.json({ error: message, errorId }, { status: 500 }) as NextResponse<never>;
+}
+
 export async function withAuth<T>(
   handler: (session: AuthSession) => Promise<NextResponse<T>>
 ): Promise<NextResponse<T>> {

@@ -18,7 +18,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-const { withAuth, withRoles } = await import("./helpers");
+const { withAuth, withRoles, serverError } = await import("./helpers");
 const handler = async () => NextResponse.json({ ok: true });
 
 function signIn(extra: Record<string, unknown> = {}) {
@@ -81,5 +81,19 @@ describe("withRoles", () => {
   it("allows listed roles", async () => {
     signIn({ user: { id: "u1", role: "CEO", isActive: true } });
     expect((await withRoles(["CEO"])(handler)).status).toBe(200);
+  });
+});
+
+describe("serverError", () => {
+  it("never returns the underlying error text", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = serverError(new Error('Failed query: select * from "projects" where org_id = $1 params: org_abc'), { route: "t", orgId: "org_abc" });
+    const body = await res.json();
+    expect(res.status).toBe(500);
+    expect(body.error).toBe("Something went wrong. Please try again.");
+    expect(body.errorId).toMatch(/^[0-9a-f]{8}$/);
+    expect(JSON.stringify(body)).not.toMatch(/select|org_abc/i);
+    expect(spy.mock.calls[0][0]).toContain(body.errorId);
+    spy.mockRestore();
   });
 });

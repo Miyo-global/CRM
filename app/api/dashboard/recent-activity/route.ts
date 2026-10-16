@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, serverError } from "@/lib/api/helpers";
 import { getRecentActivity } from "@/server/queries/dashboard";
 
 export async function GET() {
@@ -11,10 +11,7 @@ export async function GET() {
       );
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load recent activity",
-        500
-      );
+      return serverError(error, { route: "dashboard/recent-activity", orgId: session.orgId }, "Could not load recent activity.");
     }
   });
 }

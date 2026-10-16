@@ -23,7 +23,9 @@ export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data;
     if (typeof data === "object" && data !== null && "error" in data) {
-      return sanitizeUserMessage(String((data as { error: string }).error));
+      const { error: msg, errorId } = data as { error: string; errorId?: string };
+      const clean = sanitizeUserMessage(String(msg));
+      return errorId ? `${clean} (ref ${errorId})` : clean;
     }
     if (error.response?.status === 401) return "Session expired. Please sign in again.";
     if (error.response?.status === 403) return "You don't have permission for this action.";
