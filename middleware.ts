@@ -125,6 +125,22 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Common addresses people try by hand; this app signs in at /signin
+  // (QA-D006).
+  const LEGACY_AUTH_PATHS: Record<string, string> = {
+    "/login": "/signin",
+    "/log-in": "/signin",
+    "/register": "/signup",
+    "/sign-in": "/signin",
+    "/sign-up": "/signup",
+  };
+  const legacyTarget = LEGACY_AUTH_PATHS[pathname];
+  if (legacyTarget) {
+    const url = req.nextUrl.clone();
+    url.pathname = legacyTarget;
+    return NextResponse.redirect(url);
+  }
+
   if ((pathname === "/signup" || pathname.startsWith("/signup/")) && !isSignupEnabled()) {
     const url = req.nextUrl.clone();
     url.pathname = "/signin";

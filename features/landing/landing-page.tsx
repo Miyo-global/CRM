@@ -22,6 +22,7 @@ import {
   features, stats, testimonials,
 } from "./landing-shared";
 import { LandingFooter } from "./landing-footer";
+import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 
 const whyPoints = [
   {
@@ -49,6 +50,11 @@ const dashboardPreview = [
 ];
 
 export function LandingPage() {
+  // Self-signup is off in this deployment, so "Get started" and "Start for
+  // free" led to the sign-in page and promised something that does not exist
+  // (QA-D006).
+  const signupEnabled = isSignupEnabled();
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -85,8 +91,8 @@ export function LandingPage() {
               <Link href="/signin">Sign In</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signin">
-                Get Started
+              <Link href={signupEnabled ? "/signup" : "/signin"}>
+                {signupEnabled ? "Get started" : "Sign in"}
                 <ArrowRight className="size-3.5" />
               </Link>
             </Button>
@@ -140,8 +146,8 @@ export function LandingPage() {
                 className="flex flex-col sm:flex-row items-center justify-center gap-3"
               >
                 <Button asChild size="lg" className="px-8">
-                  <Link href="/signin">
-                    Start for free
+                  <Link href={signupEnabled ? "/signup" : "/signin"}>
+                    {signupEnabled ? "Start for free" : "Sign in to your account"}
                     <ArrowRight />
                   </Link>
                 </Button>
@@ -306,8 +312,8 @@ export function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button asChild size="lg" className="px-10">
-                  <Link href="/signin">
-                    Start for free
+                  <Link href={signupEnabled ? "/signup" : "/signin"}>
+                    {signupEnabled ? "Start for free" : "Sign in to your account"}
                     <ArrowRight />
                   </Link>
                 </Button>

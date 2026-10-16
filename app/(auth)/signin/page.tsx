@@ -124,6 +124,11 @@ export default function SignInPage() {
         aria-busy={isPending}
         noValidate
         className="flex flex-col gap-4"
+        // A failed attempt's banner used to sit above new field errors until
+        // the next submit (QA-D006).
+        onChange={() => {
+          if (signInMutation.isError) signInMutation.reset();
+        }}
       >
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
