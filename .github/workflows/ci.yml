@@ -57,3 +57,34 @@ jobs:
       - name: CI complete
         if: success()
         run: echo "✅ Type check, lint, and build all passed."
+
+  schema-drift:
+    name: Schema drift (MIYO-0003)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: drift
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/drift
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # Replay every migration in order. Older files depend on tables that were
+      # created by `drizzle-kit push`, so errors are tolerated here; those gaps
+      # are listed in scripts/schema-drift-baseline.txt.
+      - name: Replay migrations
+        run: for f in drizzle/*.sql; do psql "$DATABASE_URL" -q -f "$f" >/dev/null 2>&1 || true; done
+      - name: Check schema drift
+        run: pnpm db:check-drift

@@ -99,7 +99,7 @@ ATS items start at MIYO-0626.
   - **Problem:** There is no automated migration step; Vercel only runs `next build`. Any schema change ships code before columns exist (root cause of the 16 Oct outage).
   - **Fix:** Add a `db:migrate:deploy` script that runs scripts/apply-pending-migrations.ts with a lock (pg_advisory_lock) and exits non-zero on failure; run it in a GitHub Actions job on push to main before the Vercel production promote (or as Vercel `buildCommand: pnpm db:migrate:deploy && pnpm build` with `DATABASE_URL_MIGRATE`). Document required secret names only.
   - **Acceptance check:** A test migration that adds a nullable column is applied automatically on the next push to main; the job log shows `applied: <name>`; a failing migration blocks the deploy.
-- [ ] MIYO-0003 [Critical][Prod/Deploy] Add a schema-drift check that fails CI when code references columns not created by any migration
+- [x] MIYO-0003 [Critical][Prod/Deploy] Add a schema-drift check that fails CI when code references columns not created by any migration
   - **Where:** scripts/ (new check-schema-drift.ts), .github/workflows/ci.yml, drizzle/
   - **Problem:** drizzle/meta snapshots stop at 0006 and the journal at 0125, so `drizzle-kit generate` cannot detect drift (PR #4 notes: 'Drizzle snapshot files need repair').
   - **Fix:** In CI, start postgres:16, apply every drizzle/*.sql in order, then run `drizzle-kit export`/introspect and diff against lib/db/schema; fail on any table/column in schema but not in DB.
