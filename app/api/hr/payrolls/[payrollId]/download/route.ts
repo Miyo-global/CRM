@@ -57,7 +57,12 @@ export async function GET(
       orgFullNameOverride: ORG_FULL_NAME_HEADER,
     } as const;
 
-    if (req.nextUrl.searchParams.get("format") === "pdf") {
+    // A link called "download" served text/html, so the file people saved was
+    // a web page while the emailed attachment was a real PDF (QA-0073). PDF is
+    // the default now; the print view is ?format=html.
+    const format = req.nextUrl.searchParams.get("format") ?? "pdf";
+
+    if (format !== "html") {
       if (!employee) return err("Employee not found.", 404);
       const pdfData = buildPayslipPdfDataFromPayroll(payroll, employee, org ?? { name: null, address: null }, vmOpts);
       const buffer = await generatePayslipPdf(pdfData);

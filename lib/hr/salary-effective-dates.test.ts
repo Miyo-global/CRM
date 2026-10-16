@@ -114,3 +114,23 @@ describe("resolvePayrollMonthlyCtc", () => {
     ).toBe(componentsFromStructureRow(fb).ctcMonthly);
   });
 });
+
+describe("allowances count towards CTC (QA-0073)", () => {
+  const base = {
+    effectiveFrom: "2026-01-01",
+    effectiveTo: null,
+    basicSalary: "10000",
+    hraPercentage: "50",
+    specialAllowance: "2000",
+  };
+
+  it("adds fixed allowances to basic, HRA and special", () => {
+    const withAllowance = componentsFromStructureRow({ ...base, allowances: "3000" });
+    expect(withAllowance.allowances).toBe(3000);
+    expect(withAllowance.ctcMonthly).toBe(10000 + 5000 + 2000 + 3000);
+  });
+
+  it("treats a missing allowance as zero", () => {
+    expect(componentsFromStructureRow(base).ctcMonthly).toBe(17000);
+  });
+});

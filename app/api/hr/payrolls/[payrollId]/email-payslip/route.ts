@@ -25,7 +25,7 @@ export async function POST(
       return err("Payslip email can only be sent for PAID payrolls.", 400);
     }
 
-    const { emailSent, emailError } = await sendPayslipEmailForPayroll(session.orgId, existing);
+    const { emailSent, emailError } = await sendPayslipEmailForPayroll(session.orgId, existing, { force: true });
 
     try {
       await createAuditLog({

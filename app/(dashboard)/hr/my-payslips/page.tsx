@@ -71,7 +71,7 @@ export default function MyPayslipsPage() {
     setPreviewError(null);
     setPreviewHtml(null);
 
-    void fetch(`/api/hr/payrolls/${selectedPayslip.id}/download?toolbar=0`, {
+    void fetch(`/api/hr/payrolls/${selectedPayslip.id}/download?format=html&toolbar=0`, {
       credentials: "include",
       signal: ac.signal,
     })

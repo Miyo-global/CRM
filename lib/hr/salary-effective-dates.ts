@@ -29,6 +29,8 @@ export type SalaryStructureLike = {
   basicSalary: string;
   hraPercentage: string | null;
   specialAllowance: string | null;
+  /** Fixed monthly allowances on top of basic, HRA and special. */
+  allowances?: string | null;
 };
 
 export function pickSalaryStructureForPayrollMonth<T extends SalaryStructureLike>(
@@ -51,14 +53,18 @@ export function componentsFromStructureRow(s: SalaryStructureLike): {
   basicSalary: number;
   hra: number;
   specialAllowance: number;
+  allowances: number;
   ctcMonthly: number;
 } {
   const basicSalary = roundInr(parseFloat(s.basicSalary));
   const hraPct = parseFloat(s.hraPercentage ?? "50");
   const hra = roundInr((basicSalary * hraPct) / 100);
   const specialAllowance = roundInr(parseFloat(s.specialAllowance ?? "0"));
-  const ctcMonthly = roundInr(basicSalary + hra + specialAllowance);
-  return { basicSalary, hra, specialAllowance, ctcMonthly };
+  // Allowances were stored and shown but left out of the CTC, so editing them
+  // did not move payroll (QA-0073).
+  const allowances = roundInr(parseFloat(s.allowances ?? "0"));
+  const ctcMonthly = roundInr(basicSalary + hra + specialAllowance + allowances);
+  return { basicSalary, hra, specialAllowance, allowances, ctcMonthly };
 }
 
 export function resolvePayrollMonthlyCtc(input: {

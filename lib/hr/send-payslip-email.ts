@@ -7,6 +7,7 @@ import { buildPayslipPdfDataFromPayroll, generatePayslipPdf } from "@/lib/paysli
 import { getPayslipEmailTemplate } from "@/lib/email-templates/hr";
 import { countApprovedLeaveDaysInMonth } from "@/server/queries/hr/payslip-leave-days";
 import { logger } from "@/lib/logger";
+import { redis } from "@/lib/redis";
 import { appUrl } from "@/lib/app-url";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
@@ -27,11 +28,27 @@ type PayrollRow = {
 
 const ORG_FULL_NAME_HEADER = "Miyo Global";
 
+/**
+ * Sends the payslip for one payroll row.
+ *
+ * Marking paid twice, or a retry of the same action, sent the employee two
+ * identical payslip mails (QA-0073). A marker keyed by payroll id suppresses
+ * the repeat; the explicit "email payslip" button passes force.
+ */
 export async function sendPayslipEmailForPayroll(
   orgId: string,
-  payroll: PayrollRow
+  payroll: PayrollRow,
+  opts?: { force?: boolean }
 ): Promise<PayslipEmailResult> {
   try {
+    const sentKey = `payslip-email:${orgId}:${payroll.id}`;
+    if (!opts?.force) {
+      const alreadySent = await redis.get<boolean>(sentKey).catch(() => null);
+      if (alreadySent) {
+        logger.info("Payslip email already sent, skipping", { payrollId: payroll.id });
+        return { emailSent: true };
+      }
+    }
     const [employee, org] = await Promise.all([
       db.query.users.findFirst({ where: eq(users.id, payroll.userId) }),
       db.query.organizations.findFirst({ where: eq(organizations.id, orgId) }),
@@ -85,6 +102,10 @@ export async function sendPayslipEmailForPayroll(
         },
       ],
     });
+
+    // Thirty days is longer than any payroll cycle, so a repeat of the same
+    // action is covered.
+    await redis.set(sentKey, true, { ex: 30 * 24 * 60 * 60 }).catch(() => undefined);
 
     return { emailSent: true };
   } catch (e) {
