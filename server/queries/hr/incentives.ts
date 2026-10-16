@@ -8,13 +8,17 @@ import type { Incentive, IncentivesResult, IncentiveStats, IncentiveConfig, Ince
 
 export async function getIncentives(
   orgId: string,
-  params?: { status?: string; page?: number; limit?: number }
+  params?: { status?: string; page?: number; limit?: number; salesRepId?: string }
 ): Promise<IncentivesResult> {
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 20;
   const offset = (page - 1) * limit;
 
   const conditions = [eq(incentives.orgId, orgId)];
+  // Non-admins see only their own incentives (QA-0028).
+  if (params?.salesRepId) {
+    conditions.push(eq(incentives.salesRepId, params.salesRepId));
+  }
   if (params?.status) {
     conditions.push(eq(incentives.status, params.status as "PENDING" | "APPROVED" | "REJECTED" | "ADDED_TO_PAYROLL"));
   }
