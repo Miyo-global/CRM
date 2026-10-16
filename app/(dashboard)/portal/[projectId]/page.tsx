@@ -9,11 +9,21 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { usePortalProject } from "@/lib/api/hooks/projects/portal";
 import { isDoneStatus } from "@/lib/projects/project-health";
 import { PortalRequestForm } from "@/features/projects/client-portal/portal-request-form";
+import { useSession } from "next-auth/react";
+import { isAdminOrOwner } from "@/lib/constants/roles";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 export default function PortalProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId: raw } = use(params);
   const projectId = /^\d+$/.test(raw) ? Number(raw) : 0;
-  const { data, isLoading } = usePortalProject(projectId);
+  const { data, isLoading, error } = usePortalProject(projectId);
+  const { data: session } = useSession();
+  const isAdmin = isAdminOrOwner(session?.user?.role);
+  // A disabled portal answered 403 and the page showed the generic
+  // "doesn't exist" message (QA-D013).
+  const portalOff = /client portal is turned off/i.test(
+    error ? getErrorMessage(error) : "",
+  );
 
   if (isLoading) {
     return (
@@ -25,6 +35,26 @@ export default function PortalProjectPage({ params }: { params: Promise<{ projec
       </PageWrapper>
     );
   }
+  if (portalOff) {
+    return (
+      <PageWrapper title="Client portal">
+        <EmptyState
+          title="The client portal is turned off"
+          description={
+            isAdmin
+              ? "Turn it on under Settings → Organization to share projects with clients again."
+              : "Your team has disabled client access for now. Ask them to turn it back on."
+          }
+          action={
+            isAdmin
+              ? { label: "Open organization settings", href: "/settings/organization" }
+              : undefined
+          }
+        />
+      </PageWrapper>
+    );
+  }
+
   if (!data?.project) {
     return (
       <PageWrapper title="Project">
