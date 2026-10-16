@@ -82,6 +82,7 @@ function MembersSettingsContent() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<string>("ENGINEERING");
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   const memberSearch = searchParams.get("q") || "";
   const page = Number(searchParams.get("page")) || 1;
@@ -120,8 +121,21 @@ function MembersSettingsContent() {
 
   const handleInvite = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    // `required` alone did nothing here: the browser skips it on a form
+    // submitted from a button inside a card, so an empty invite was a silent
+    // no-op (QA-0069).
+    const email = inviteEmail.trim();
+    if (!email) {
+      setInviteError("Enter the email address to invite.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setInviteError("Enter a valid email address.");
+      return;
+    }
+    setInviteError(null);
     inviteUser.mutate(
-      { email: inviteEmail, role: inviteRole },
+      { email, role: inviteRole },
       {
         onSuccess: () => {
           toast.success("Invitation sent!");
@@ -236,8 +250,15 @@ function MembersSettingsContent() {
                         placeholder="user@example.com"
                         value={inviteEmail}
                         onChange={handleEmailChange}
+                        aria-invalid={inviteError ? true : undefined}
+                        aria-describedby={inviteError ? "email-error" : undefined}
                         required
                       />
+                      {inviteError && (
+                        <p id="email-error" role="alert" className="text-xs text-danger-strong">
+                          {inviteError}
+                        </p>
+                      )}
                     </div>
                     <div className="w-full space-y-1.5 sm:w-44">
                       <Label className="text-sm">Role</Label>
@@ -251,7 +272,12 @@ function MembersSettingsContent() {
                       </Select>
                     </div>
                     <div className="flex w-full flex-col justify-end sm:w-auto sm:shrink-0">
-                      <Button type="submit" disabled={inviteUser.isPending} loading={inviteUser.isPending} className="w-full sm:w-auto">
+                      <Button
+                      type="submit"
+                      disabled={inviteUser.isPending || inviteEmail.trim().length === 0}
+                      loading={inviteUser.isPending}
+                      className="w-full sm:w-auto"
+                    >
                         {inviteUser.isPending ? "Sending..." : "Send"}
                       </Button>
                     </div>
@@ -358,8 +384,15 @@ function MembersSettingsContent() {
                       placeholder="user@example.com"
                       value={inviteEmail}
                       onChange={handleEmailChange}
+                      aria-invalid={inviteError ? true : undefined}
+                      aria-describedby={inviteError ? "inv-tab-email-error" : undefined}
                       required
                     />
+                    {inviteError && (
+                      <p id="inv-tab-email-error" role="alert" className="text-xs text-danger-strong">
+                        {inviteError}
+                      </p>
+                    )}
                   </div>
                   <div className="w-full space-y-1.5 sm:w-44">
                     <Label className="text-sm">Role</Label>
@@ -373,7 +406,12 @@ function MembersSettingsContent() {
                     </Select>
                   </div>
                   <div className="flex w-full flex-col justify-end sm:w-auto sm:shrink-0">
-                    <Button type="submit" disabled={inviteUser.isPending} loading={inviteUser.isPending} className="w-full sm:w-auto">
+                    <Button
+                      type="submit"
+                      disabled={inviteUser.isPending || inviteEmail.trim().length === 0}
+                      loading={inviteUser.isPending}
+                      className="w-full sm:w-auto"
+                    >
                       {inviteUser.isPending ? "Sending..." : "Send Invite"}
                     </Button>
                   </div>
