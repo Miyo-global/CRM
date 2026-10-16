@@ -1,6 +1,6 @@
 import { Readable } from "stream";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { withAuth } from "@/lib/api/helpers";
 import { logger } from "@/lib/logger";
 import { createAuditLog } from "@/lib/audit-log";
 import {
@@ -13,7 +13,6 @@ import {
 } from "@/lib/storage";
 import { db } from "@/lib/db";
 import {
-  organizationMembers,
   documents,
   candidateDocumentsVault,
   handbookVersions,
@@ -94,83 +93,74 @@ function isValidFileKey(fileKey: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!isStorageConfigured()) {
-      return NextResponse.json({ error: "Cloud storage not configured" }, { status: 503 });
-    }
-
-    const searchParams = req.nextUrl.searchParams;
-    const url = searchParams.get("url");
-    const key = searchParams.get("key");
-    const rawExpires = parseInt(searchParams.get("expiresIn") || "3600", 10);
-    const expiresIn = isNaN(rawExpires) ? 3600 : Math.min(Math.max(rawExpires, 60), 86400);
-    const attachment = searchParams.get("attachment") === "1";
-    const inline = searchParams.get("inline") === "1";
-
-    if (!url && !key) {
-      return NextResponse.json({ error: "URL or key required" }, { status: 400 });
-    }
-
-    const fileKey = key || (url ? getFileKeyFromUrl(url) : "");
-    const originalRef = url || key || "";
-    if (!fileKey || !isValidFileKey(fileKey)) {
-      return NextResponse.json({ error: "Invalid file reference" }, { status: 400 });
-    }
-
-    const member = await db.query.organizationMembers.findFirst({
-      where: eq(organizationMembers.userId, session.user.id),
-    });
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const keyOrg = getOrgIdFromKey(fileKey);
-    if (keyOrg) {
-      if (keyOrg !== member.orgId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  // withAuth: MFA, deactivation and session-revocation checks (MIYO-0022).
+  return withAuth(async (session) => {
+    try {
+      if (!isStorageConfigured()) {
+        return NextResponse.json({ error: "Cloud storage not configured" }, { status: 503 });
       }
-    } else {
-      const belongs = await fileBelongsToOrg(fileKey, member.orgId, originalRef);
-      if (!belongs) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+
+      const searchParams = req.nextUrl.searchParams;
+      const url = searchParams.get("url");
+      const key = searchParams.get("key");
+      const rawExpires = parseInt(searchParams.get("expiresIn") || "3600", 10);
+      const expiresIn = isNaN(rawExpires) ? 3600 : Math.min(Math.max(rawExpires, 60), 86400);
+      const attachment = searchParams.get("attachment") === "1";
+      const inline = searchParams.get("inline") === "1";
+
+      if (!url && !key) {
+        return NextResponse.json({ error: "URL or key required" }, { status: 400 });
       }
-    }
 
-    createAuditLog({
-      action: "file.download",
-      userId: session.user.id,
-      orgId: member.orgId,
-      metadata: { fileKey },
-    }).catch((err) => {
-      logger.error("Failed to create audit log for file download", { error: err instanceof Error ? err.message : "Unknown" });
-    });
-
-    if (attachment || inline) {
-      const { body, contentType } = await getFileStream(fileKey);
-      const filename = getFileNameFromKey(fileKey);
-      const webStream = Readable.toWeb(body) as ReadableStream;
-      const disposition = attachment ? "attachment" : "inline";
-      const headers: Record<string, string> = {
-        "Content-Type": contentType ?? getMimeType(fileKey),
-        "Content-Disposition": `${disposition}; filename="${filename.replace(/"/g, "%22")}"`,
-        "X-Content-Type-Options": "nosniff",
-      };
-      if (inline) {
-        headers["X-Frame-Options"] = "SAMEORIGIN";
-        headers["Content-Security-Policy"] = "frame-ancestors 'self'";
+      const fileKey = key || (url ? getFileKeyFromUrl(url) : "");
+      const originalRef = url || key || "";
+      if (!fileKey || !isValidFileKey(fileKey)) {
+        return NextResponse.json({ error: "Invalid file reference" }, { status: 400 });
       }
-      return new NextResponse(webStream, { headers });
-    }
 
-    const signedUrl = await getFileUrl(fileKey, expiresIn);
-    return NextResponse.json({ url: signedUrl });
-  } catch (error) {
-    logger.error("Download error", error);
-    return NextResponse.json({ error: "File not found" }, { status: 404 });
-  }
+      const keyOrg = getOrgIdFromKey(fileKey);
+      if (keyOrg) {
+        if (keyOrg !== session.orgId) {
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+      } else {
+        const belongs = await fileBelongsToOrg(fileKey, session.orgId, originalRef);
+        if (!belongs) {
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+      }
+
+      createAuditLog({
+        action: "file.download",
+        userId: session.user.id,
+        orgId: session.orgId,
+        metadata: { fileKey },
+      }).catch((err) => {
+        logger.error("Failed to create audit log for file download", { error: err instanceof Error ? err.message : "Unknown" });
+      });
+
+      if (attachment || inline) {
+        const { body, contentType } = await getFileStream(fileKey);
+        const filename = getFileNameFromKey(fileKey);
+        const webStream = Readable.toWeb(body) as ReadableStream;
+        const disposition = attachment ? "attachment" : "inline";
+        const headers: Record<string, string> = {
+          "Content-Type": contentType ?? getMimeType(fileKey),
+          "Content-Disposition": `${disposition}; filename="${filename.replace(/"/g, "%22")}"`,
+          "X-Content-Type-Options": "nosniff",
+        };
+        if (inline) {
+          headers["X-Frame-Options"] = "SAMEORIGIN";
+          headers["Content-Security-Policy"] = "frame-ancestors 'self'";
+        }
+        return new NextResponse(webStream, { headers });
+      }
+
+      const signedUrl = await getFileUrl(fileKey, expiresIn);
+      return NextResponse.json({ url: signedUrl });
+    } catch (error) {
+      logger.error("Download error", error);
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+  });
 }

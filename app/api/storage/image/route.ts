@@ -1,11 +1,10 @@
 import { Readable } from "stream";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../lib/auth";
+import { withAuth } from "@/lib/api/helpers";
 import { logger } from "../../../../lib/logger";
 import { getFileStream, isStorageConfigured, getOrgIdFromKey } from "../../../../lib/storage";
 import { db } from "../../../../lib/db";
 import {
-  organizationMembers,
   documents,
   candidateDocumentsVault,
 } from "../../../../lib/db/schema";
@@ -64,60 +63,51 @@ function isValidFileKey(key: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const key = req.nextUrl.searchParams.get("key");
-    if (!key || !isValidFileKey(key)) {
-      return NextResponse.json({ error: "Invalid key parameter" }, { status: 400 });
-    }
-
-    if (!isStorageConfigured()) {
-      return NextResponse.json({ error: "Storage not available" }, { status: 503 });
-    }
-
-    const member = await db.query.organizationMembers.findFirst({
-      where: eq(organizationMembers.userId, session.user.id),
-    });
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const keyOrg = getOrgIdFromKey(key);
-    if (keyOrg) {
-      if (keyOrg !== member.orgId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  // withAuth: MFA, deactivation and session-revocation checks (MIYO-0022).
+  return withAuth(async (session) => {
+    try {
+      const key = req.nextUrl.searchParams.get("key");
+      if (!key || !isValidFileKey(key)) {
+        return NextResponse.json({ error: "Invalid key parameter" }, { status: 400 });
       }
-    } else {
-      const belongs = await fileBelongsToOrg(key, member.orgId);
-      if (!belongs) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
-      }
-    }
 
-    const { body, contentType } = await getFileStream(key);
-    const webStream = Readable.toWeb(body) as ReadableStream;
-    const SAFE_IMAGE_TYPES = new Set([
-      "image/png",
-      "image/jpeg",
-      "image/gif",
-      "image/webp",
-      "image/avif",
-    ]);
-    const rawType = contentType ?? getMimeType(key);
-    const safeType = SAFE_IMAGE_TYPES.has(rawType) ? rawType : "application/octet-stream";
-    return new NextResponse(webStream, {
-      headers: {
-        "Content-Type": safeType,
-        "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "private, max-age=86400",
-      },
-    });
-  } catch (error) {
-    logger.error("Image proxy error", { error: error instanceof Error ? error.message : "Unknown" });
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+      if (!isStorageConfigured()) {
+        return NextResponse.json({ error: "Storage not available" }, { status: 503 });
+      }
+
+      const keyOrg = getOrgIdFromKey(key);
+      if (keyOrg) {
+        if (keyOrg !== session.orgId) {
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+      } else {
+        const belongs = await fileBelongsToOrg(key, session.orgId);
+        if (!belongs) {
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+      }
+
+      const { body, contentType } = await getFileStream(key);
+      const webStream = Readable.toWeb(body) as ReadableStream;
+      const SAFE_IMAGE_TYPES = new Set([
+        "image/png",
+        "image/jpeg",
+        "image/gif",
+        "image/webp",
+        "image/avif",
+      ]);
+      const rawType = contentType ?? getMimeType(key);
+      const safeType = SAFE_IMAGE_TYPES.has(rawType) ? rawType : "application/octet-stream";
+      return new NextResponse(webStream, {
+        headers: {
+          "Content-Type": safeType,
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "private, max-age=86400",
+        },
+      });
+    } catch (error) {
+      logger.error("Image proxy error", { error: error instanceof Error ? error.message : "Unknown" });
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+  });
 }

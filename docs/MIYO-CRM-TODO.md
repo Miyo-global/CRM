@@ -209,7 +209,7 @@ ATS items start at MIYO-0626.
   - **Problem:** A header name with a space is invalid; fetch throws, so every webhook delivery fails (design doc N1).
   - **Fix:** Rename to `X-Miyo-Signature`; update settings/webhooks docs; add a unit test that builds the request headers.
   - **Acceptance check:** Test passes; a delivery to a request bin succeeds with header X-Miyo-Signature.
-- [ ] MIYO-0022 [Critical][Security] Storage download/image/upload routes bypass withAuth (no MFA, deactivation or revocation checks)
+- [x] MIYO-0022 [Critical][Security] Storage download/image/upload routes bypass withAuth (no MFA, deactivation or revocation checks)
   - **Where:** app/api/storage/download/route.ts:98, image/route.ts:68, upload/route.ts:24
   - **Problem:** They call auth() directly, so a deactivated user or a session that has not passed MFA can still read and upload files (design doc N2).
   - **Fix:** Wrap each handler in withAuth and use session.orgId.
