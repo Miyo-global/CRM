@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 
 const trimmed = (min: number, max: number, label: string) =>
   z
@@ -40,11 +41,9 @@ export const handbookVersionSchema = z.object({
     .max(2000, "Description must be at most 2000 characters")
     .optional()
     .or(z.literal("")),
-  documentUrl: z
-    .string()
-    .trim()
+  // An uploaded handbook file arrives as a storage key, not a URL (QA-0017).
+  documentUrl: storedFileRefSchema
     .max(2048, "Document URL is too long")
-    .url("Enter a valid URL (https://...)")
     .optional()
     .or(z.literal("")),
 });

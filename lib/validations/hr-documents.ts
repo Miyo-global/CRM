@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 
 export const DOCUMENT_DESCRIPTION_MAX = 500;
 export const DOCUMENT_NAME_MAX = 255;
@@ -51,13 +52,7 @@ export const createDocumentBodySchema = z.object({
     "RESUME",
     "OTHER",
   ]),
-  fileUrl: z
-    .string()
-    .min(1)
-    .refine(
-      (val) => val.startsWith("/") || val.startsWith("http://") || val.startsWith("https://"),
-      { message: "Must be a valid URL or a relative path starting with /" },
-    ),
+  fileUrl: storedFileRefSchema,
   fileName: z.string().optional(),
   fileSize: z.number().int().positive().optional(),
   mimeType: z.string().optional(),

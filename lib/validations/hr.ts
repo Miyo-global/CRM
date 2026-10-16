@@ -10,6 +10,7 @@ import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { bankDetailsSchema } from "@/lib/validations/bank-details";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 
 /**
  * Department ↔ System-Role compatibility (D10).
@@ -426,10 +427,7 @@ const requiredDateSchema = (label: string) =>
   z.coerce.date({
     message: `${label} is required`,
   });
-const fileUrlSchema = z.string().min(1).refine(
-  (val) => val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://'),
-  { message: "Must be a valid URL or a relative path starting with /" }
-);
+const fileUrlSchema = storedFileRefSchema;
 
 export const createDepartmentInputSchema = z.object({
   name: z.string().min(1, "Department name is required"),
@@ -813,7 +811,7 @@ export const updateEmployeeProfileBodySchema = z
     designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number").optional(),
     departmentId: z.number().int().positive().optional(),
     phone: optionalPhoneSchema("Phone number").optional(),
-    image: z.string().trim().url("Profile image must be a valid URL").max(2048, "Image URL is too long").optional().or(z.literal("")),
+    image: storedFileRefSchema.max(2048, "Image URL is too long").optional().or(z.literal("")),
     isActive: z.boolean().optional(),
     hasDashboardAccess: z.boolean().optional(),
     role: z.string().min(1).optional(),

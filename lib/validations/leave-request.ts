@@ -1,5 +1,6 @@
 import { eachDayOfInterval, format, isSunday, startOfDay } from "date-fns";
 import { z } from "zod";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import { getTodayString } from "@/lib/date-utils";
 
 export const leaveRequestPrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
@@ -9,7 +10,7 @@ const dateStringSchema = z
   .min(1, "Date is required")
   .refine((value) => isValidLocalDateString(value), "Invalid date");
 
-const leaveAttachmentSchema = z.string().url("Attachment must be a valid URL");
+const leaveAttachmentSchema = storedFileRefSchema;
 
 export const MAX_LEAVE_ATTACHMENTS = 1;
 

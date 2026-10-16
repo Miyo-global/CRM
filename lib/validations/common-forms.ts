@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import { getTodayIST } from "@/lib/hr/application-dates";
 import { formatJobPostingLocation, formatJobPostingTitle } from "@/lib/hr/job-posting-format";
 import { cleanRequiredName, cleanStrictName } from "@/lib/validations/text-rules";
@@ -22,10 +23,7 @@ export const optionalUrl = z
   .optional()
   .or(z.literal(""));
 
-export const optionalAttachmentUrl = z
-  .string()
-  .trim()
-  .url("Attachment must be a valid URL")
+export const optionalAttachmentUrl = storedFileRefSchema
   .max(2048, "URL is too long")
   .optional()
   .or(z.literal(""));

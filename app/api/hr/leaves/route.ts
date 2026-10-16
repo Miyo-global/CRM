@@ -12,6 +12,7 @@ import {
 } from "@/server/actions/leave-actions/leave-balance";
 import { createNotification } from "@/server/actions/create-notification";
 import { z } from "zod";
+import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import type { NextRequest } from "next/server";
 import { sendLeaveRequestEmail } from "@/lib/email";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
@@ -25,7 +26,7 @@ const createLeaveSchema = z.object({
   reason: z.string().trim().min(1, "Reason is required").max(500, "Reason must be 500 characters or less"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional().default("MEDIUM"),
   approverId: z.string().optional(),
-  attachmentUrl: z.string().url("Attachment must be a valid URL").optional(),
+  attachmentUrl: storedFileRefSchema.optional(),
   isHalfDay: z.boolean().optional().default(false),
   halfDayPeriod: z.enum(["AM", "PM"]).optional(),
 });
