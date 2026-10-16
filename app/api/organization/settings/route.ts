@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, err, parseBody, serverError } from "@/lib/api/helpers";
 import { getOrgSettings } from "@/server/queries/organization";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
@@ -77,10 +77,7 @@ export async function GET() {
         minMonthlySalary,
       });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load organization settings",
-        500
-      );
+      return serverError(error, { route: "organization/settings", orgId: session.orgId }, "Failed to load organization settings.");
     }
   });
 }
@@ -221,10 +218,7 @@ export async function PATCH(req: NextRequest) {
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to update organization settings",
-        500
-      );
+      return serverError(error, { route: "organization/settings", orgId: session.orgId }, "Failed to update organization settings.");
     }
   });
 }
