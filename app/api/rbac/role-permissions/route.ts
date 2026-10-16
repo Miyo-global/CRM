@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getRolePermissions } from "@/server/queries/rbac";
 import { db } from "@/lib/db";
 import { rolePermissions } from "@/lib/db/schema";
@@ -35,10 +35,7 @@ export async function GET(req: NextRequest) {
       const data = await getRolePermissions(role, session.orgId);
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load role permissions",
-        500
-      );
+      return serverError(error, { route: "rbac/role-permissions", orgId: session.orgId }, "Failed to load role permissions.");
     }
   });
 }
@@ -81,10 +78,7 @@ export async function POST(req: NextRequest) {
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to assign role permission",
-        500
-      );
+      return serverError(error, { route: "rbac/role-permissions", orgId: session.orgId }, "Failed to assign role permission.");
     }
   });
 }
