@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatCalendarDate } from "@/lib/date-utils";
+import { periodStatus } from "@/lib/projects/period-status";
 
 const createCycleSchema = z.object({
   name: z.string().min(1, "Name is required").regex(/^[A-Za-z]/, "Name must start with a letter").max(100),
@@ -44,9 +45,25 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data: cycles, isLoading, isError, error, refetch } = useCycles(projectId);
-  const activeCycles = cycles?.filter((c) => c.status === "active") ?? [];
-  const upcomingCycles = cycles?.filter((c) => c.status === "draft") ?? [];
-  const completedCycles = cycles?.filter((c) => c.status === "completed") ?? [];
+  // Group by the status the dates imply, the same way the detail view does,
+  // so a cycle that has started is not listed as upcoming (QA-0075).
+  const cyclesWithStatus = (cycles ?? []).map((c) => ({
+    cycle: c,
+    derived: periodStatus({
+      storedStatus: c.status,
+      startDate: c.startDate,
+      endDate: c.endDate,
+    }),
+  }));
+  const activeCycles = cyclesWithStatus
+    .filter((c) => c.derived === "active" || c.derived === "ended")
+    .map((c) => c.cycle);
+  const upcomingCycles = cyclesWithStatus
+    .filter((c) => c.derived === "upcoming")
+    .map((c) => c.cycle);
+  const completedCycles = cyclesWithStatus
+    .filter((c) => c.derived === "completed" || c.derived === "cancelled")
+    .map((c) => c.cycle);
   const [showCompleted, setShowCompleted] = useState(false);
 
   const createMutation = useCreateCycle();
