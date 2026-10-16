@@ -127,7 +127,7 @@ ATS items start at MIYO-0626.
   - **Problem:** 40 route files hand-roll `error.message` passthrough (see the per-file items below).
   - **Fix:** Add `serverError(error, { route, orgId })` that logs and returns `{ error: 'Something went wrong. Please try again.', errorId }` with status 500; ZodError keeps the existing 400 path.
   - **Acceptance check:** Unit test: a thrown Error('select * from x') produces a body without 'select'.
-- [ ] MIYO-0008 [Critical][Prod/Errors] Harden getErrorMessage so SQL, stack traces and UUIDs never reach toasts
+- [x] MIYO-0008 [Critical][Prod/Errors] Harden getErrorMessage so SQL, stack traces and UUIDs never reach toasts
   - **Where:** lib/get-error-message.ts
   - **Problem:** TECHNICAL_PATTERNS strips API paths and stack frames but not `Failed query:`, SQL keywords, `params:` lists or UUID/org ids.
   - **Fix:** Add patterns for /Failed query:.*/s, /\bparams:.*$/s, UUIDs and `org_[a-z0-9]+`; if anything was stripped, return the generic message.

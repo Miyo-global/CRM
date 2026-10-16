@@ -9,13 +9,28 @@ const TECHNICAL_PATTERNS: RegExp[] = [
   /ZodError|ValidationError/gi,
 ];
 
+/** Any match means the message is a raw server/DB error: show the generic text. */
+const SENSITIVE_PATTERNS: RegExp[] = [
+  /Failed query:/i,
+  /\bparams:/i,
+  /\b(select|insert into|update|delete from)\b[^.]*\bfrom\s+"?\w+"?\s*(where|limit|join|order|;|$)/im,
+  /\b(relation|column) "[^"]+"( of relation "[^"]+")? does not exist/i,
+  /violates (unique|foreign key|not-null|check) constraint/i,
+  /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i,
+  /\borg_[a-z0-9]+/i,
+  /\bat\s+[\w$.<>]+\s*\(/,
+];
+
+const GENERIC = "Something went wrong. Please try again.";
+
 function sanitizeUserMessage(message: string): string {
+  if (SENSITIVE_PATTERNS.some((p) => p.test(message))) return GENERIC;
   let out = message.trim();
   for (const pattern of TECHNICAL_PATTERNS) {
     out = out.replace(pattern, "").trim();
   }
   out = out.replace(/\s{2,}/g, " ").trim();
-  if (!out || out.length < 3) return "Something went wrong. Please try again.";
+  if (!out || out.length < 3) return GENERIC;
   return out;
 }
 
