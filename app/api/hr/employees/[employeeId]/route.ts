@@ -13,6 +13,7 @@ import { createAuditLog } from "@/lib/audit-log";
 import { redactSalary } from "@/lib/hr/redact-salary";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
+import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 
 export async function GET(
   _req: NextRequest,
@@ -51,6 +52,7 @@ export async function PATCH(
     }
 
     const body = await parseBody(req, updateEmployeeProfileBodySchema);
+    let previousRole: string | null = null;
 
     if (body.isActive === false) {
       return err(
@@ -85,6 +87,21 @@ export async function PATCH(
         where: eq(users.id, targetUserId),
         columns: { role: true, departmentId: true },
       });
+
+      // Privilege-escalation gate (QA-0002).
+      if (body.role !== undefined) {
+        const roleError = await checkRoleAssignment({
+          orgId: session.orgId,
+          actorRole: session.user.role,
+          actorId: session.user.id,
+          targetUserId,
+          targetCurrentRole: currentUser?.role ?? null,
+          newRole: body.role,
+        });
+        if (roleError) return err(roleError.message, roleError.status);
+        previousRole = currentUser?.role ?? null;
+      }
+
       const effectiveRole = body.role ?? currentUser?.role ?? undefined;
       const effectiveDepartmentId = body.departmentId ?? currentUser?.departmentId ?? null;
       if (effectiveRole && effectiveDepartmentId != null) {
@@ -233,6 +250,17 @@ export async function PATCH(
           joiningDate: activatedUser?.joiningDate ?? new Date().toISOString().split("T")[0],
         },
       });
+    }
+
+    if (updateData.role !== undefined) {
+      void createAuditLog({
+        action: "role.changed",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: targetUserId,
+        targetType: "employee",
+        metadata: { from: previousRole, to: updateData.role },
+      }).catch(() => {});
     }
 
     void createAuditLog({

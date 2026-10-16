@@ -23,6 +23,7 @@ import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
+import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 
 export async function POST(req: NextRequest) {
   return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
@@ -38,6 +39,17 @@ export async function POST(req: NextRequest) {
     // Server-side department ↔ role compatibility (D10): resolve the canonical
     // department name so we do not rely solely on the client-supplied name.
     const onboardRole = body.role || "ENGINEERING";
+
+    // Privilege-escalation gate (QA-0002): HR cannot onboard a CEO/ADMIN, and
+    // an unknown role string is rejected instead of stored.
+    const roleError = await checkRoleAssignment({
+      orgId: session.orgId,
+      actorRole: session.user.role,
+      actorId: session.user.id,
+      newRole: onboardRole,
+    });
+    if (roleError) return err(roleError.message, roleError.status);
+
     const deptRow = await db.query.departments.findFirst({
       where: and(eq(departments.id, body.departmentId), eq(departments.orgId, session.orgId)),
       columns: { name: true },
