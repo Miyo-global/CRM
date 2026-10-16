@@ -132,6 +132,24 @@ export default function ExpensesPage() {
     [updateStatusMutation, refetch],
   );
 
+  // Approved expenses had no way to be recorded as reimbursed (QA-0044).
+  const handleMarkPaid = useCallback(
+    (expenseId: number) => {
+      toast.promise(
+        updateStatusMutation.mutateAsync({ expenseId, status: "PAID" }),
+        {
+          loading: "Marking as reimbursed...",
+          success: () => {
+            void refetch();
+            return "Expense marked as reimbursed";
+          },
+          error: "Failed to update expense",
+        },
+      );
+    },
+    [updateStatusMutation, refetch],
+  );
+
   const handleReject = useCallback(
     (expenseId: number) => {
       if (!rejectionReason.trim()) return;
@@ -328,6 +346,7 @@ export default function ExpensesPage() {
               isPending={updateStatusMutation.isPending}
               currentUserId={session?.user?.id}
               onApprove={handleApprove}
+              onMarkPaid={handleMarkPaid}
               onRejectStart={(id) => {
                 setRejectingId(id);
                 setRejectionReason("");

@@ -158,6 +158,8 @@ interface AdminExpenseItemProps {
   onRejectConfirm: (id: number) => void;
   onRejectCancel: () => void;
   onRejectionReasonChange: (reason: string) => void;
+  /** Records an approved expense as reimbursed (QA-0044). */
+  onMarkPaid: (id: number) => void;
 }
 
 export function AdminExpenseItem({
@@ -171,6 +173,7 @@ export function AdminExpenseItem({
   onRejectConfirm,
   onRejectCancel,
   onRejectionReasonChange,
+  onMarkPaid,
 }: AdminExpenseItemProps) {
   const status = expense.status || "PENDING";
   const catConfig = getCategoryConfig(expense.category || "Other");
@@ -375,6 +378,18 @@ export function AdminExpenseItem({
               disabled={isPending}
             >
               Approve
+            </Button>
+          </div>
+        ) : status === "APPROVED" ? (
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => onMarkPaid(expense.id)}
+              disabled={isPending}
+            >
+              Mark reimbursed
             </Button>
           </div>
         ) : null}

@@ -174,6 +174,7 @@ interface AdminExpenseListProps {
   currentUserId?: string;
   onApprove: (id: number) => void;
   onRejectStart: (id: number) => void;
+  onMarkPaid: (id: number) => void;
   onRejectConfirm: (id: number) => void;
   onRejectCancel: () => void;
   onRejectionReasonChange: (reason: string) => void;
@@ -195,6 +196,7 @@ export function AdminExpenseList({
   currentUserId,
   onApprove,
   onRejectStart,
+  onMarkPaid,
   onRejectConfirm,
   onRejectCancel,
   onRejectionReasonChange,
@@ -232,6 +234,7 @@ export function AdminExpenseList({
                 currentUserId={currentUserId}
                 onApprove={onApprove}
                 onRejectStart={onRejectStart}
+                onMarkPaid={onMarkPaid}
                 onRejectConfirm={onRejectConfirm}
                 onRejectCancel={onRejectCancel}
                 onRejectionReasonChange={onRejectionReasonChange}

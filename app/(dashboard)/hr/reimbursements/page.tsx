@@ -25,6 +25,8 @@ import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { formatINRWhole } from "@/lib/format-utils";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 function statusTone(s: string | null): Tone {
   if (s === "APPROVED" || s === "PAID") return "success";
@@ -41,6 +43,8 @@ export default function ReimbursementsPage() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [rejectId, setRejectId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [payId, setPayId] = useState<number | null>(null);
 
   const handleCreate = useCallback(
     (values: ReimbursementRequestFormValues) => {
@@ -72,11 +76,24 @@ export default function ReimbursementsPage() {
 
   const handleReject = useCallback(() => {
     if (!rejectId) return;
-    process.mutate({ id: rejectId, status: "REJECTED" }, {
-      onSuccess: () => { toast.success("Rejected"); setRejectId(null); },
+    // The reason is recorded, not discarded (QA-0044).
+    process.mutate({ id: rejectId, status: "REJECTED", rejectionReason: rejectReason.trim() }, {
+      onSuccess: () => {
+        toast.success("Reimbursement rejected");
+        setRejectId(null);
+        setRejectReason("");
+      },
       onError: (e) => toast.error(getErrorMessage(e)),
     });
-  }, [rejectId, process]);
+  }, [rejectId, rejectReason, process]);
+
+  const handleMarkPaid = useCallback(() => {
+    if (!payId) return;
+    process.mutate({ id: payId, status: "PAID" }, {
+      onSuccess: () => { toast.success("Marked as paid"); setPayId(null); },
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
+  }, [payId, process]);
 
   if (isLoading) {
     return (
@@ -145,6 +162,12 @@ export default function ReimbursementsPage() {
                             <XCircle className="size-4" aria-hidden="true" />Reject
                           </Button>
                         </div>
+                      ) : r.status === "APPROVED" ? (
+                        <div className="flex justify-end">
+                          <Button size="sm" variant="outline" onClick={() => setPayId(r.id)} disabled={process.isPending}>
+                            <IndianRupee className="size-4" aria-hidden="true" />Mark paid
+                          </Button>
+                        </div>
                       ) : null}
                     </TableCell>
                   )}
@@ -176,12 +199,36 @@ export default function ReimbursementsPage() {
 
       <ConfirmActionDialog
         open={rejectId !== null}
-        onOpenChange={(open) => { if (!open) setRejectId(null); }}
+        onOpenChange={(open) => { if (!open) { setRejectId(null); setRejectReason(""); } }}
         title="Reject reimbursement"
-        description="Are you sure you want to reject this reimbursement request?"
+        description="The employee sees this reason on their request."
         confirmLabel="Reject"
         variant="destructive"
         onConfirm={handleReject}
+        isPending={process.isPending}
+        confirmDisabled={rejectReason.trim().length === 0}
+      >
+        <div className="space-y-1.5 py-1">
+          <Label htmlFor="reimbursement-reject-reason">Reason</Label>
+          <Textarea
+            id="reimbursement-reject-reason"
+            value={rejectReason}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectReason(e.target.value)}
+            placeholder="Why is this request rejected?"
+            rows={3}
+            maxLength={500}
+          />
+        </div>
+      </ConfirmActionDialog>
+
+      <ConfirmActionDialog
+        open={payId !== null}
+        onOpenChange={(open) => { if (!open) setPayId(null); }}
+        title="Mark reimbursement as paid"
+        description="Record that this approved reimbursement has been paid out."
+        confirmLabel="Mark paid"
+        variant="default"
+        onConfirm={handleMarkPaid}
         isPending={process.isPending}
       />
     </PageWrapper>

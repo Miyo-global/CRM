@@ -23,6 +23,13 @@ interface ConfirmActionDialogProps {
   variant?: "default" | "destructive";
   isPending?: boolean;
   onConfirm: () => void;
+  /**
+   * Extra content between the description and the buttons — used to collect a
+   * rejection reason, which approvals used to discard silently (QA-0044).
+   */
+  children?: React.ReactNode;
+  /** Disables Confirm, e.g. until a required reason is typed. */
+  confirmDisabled?: boolean;
 }
 
 export function ConfirmActionDialog({
@@ -35,6 +42,8 @@ export function ConfirmActionDialog({
   variant = "destructive",
   isPending = false,
   onConfirm,
+  children,
+  confirmDisabled = false,
 }: ConfirmActionDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -43,11 +52,12 @@ export function ConfirmActionDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            disabled={isPending}
+            disabled={isPending || confirmDisabled}
             aria-busy={isPending || undefined}
             className={variant === "destructive" ? buttonVariants({ variant: "destructive" }) : undefined}
           >

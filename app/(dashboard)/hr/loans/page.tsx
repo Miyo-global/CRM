@@ -22,7 +22,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2, XCircle, Banknote } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, IndianRupee, Banknote } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -64,6 +64,19 @@ export default function LoansPage() {
       },
     );
   }, [amount, reason, totalEmis, create]);
+
+  const [disburseId, setDisburseId] = useState<number | null>(null);
+  const [repaidId, setRepaidId] = useState<number | null>(null);
+
+  const handleTransition = useCallback(
+    (id: number, status: "ACTIVE" | "REPAID", done: () => void, message: string) => {
+      process.mutate({ id, status }, {
+        onSuccess: () => { toast.success(message); done(); },
+        onError: (e) => toast.error(getErrorMessage(e)),
+      });
+    },
+    [process],
+  );
 
   const handleApprove = useCallback((id: number) => {
     process.mutate({ id, status: "APPROVED" }, {
@@ -157,6 +170,18 @@ export default function LoansPage() {
                             <XCircle className="size-4" aria-hidden="true" />Reject
                           </Button>
                         </div>
+                      ) : loan.status === "APPROVED" ? (
+                        <div className="flex justify-end">
+                          <Button size="sm" variant="outline" onClick={() => setDisburseId(loan.id)} disabled={process.isPending}>
+                            <IndianRupee className="size-4" aria-hidden="true" />Mark disbursed
+                          </Button>
+                        </div>
+                      ) : loan.status === "ACTIVE" ? (
+                        <div className="flex justify-end">
+                          <Button size="sm" variant="outline" onClick={() => setRepaidId(loan.id)} disabled={process.isPending}>
+                            <CheckCircle2 className="size-4" aria-hidden="true" />Mark repaid
+                          </Button>
+                        </div>
                       ) : null}
                     </TableCell>
                   )}
@@ -190,6 +215,29 @@ export default function LoansPage() {
         confirmLabel="Reject"
         variant="destructive"
         onConfirm={handleReject}
+        isPending={process.isPending}
+      />
+
+      {/* The lifecycle after approval was a dead end in the UI (QA-0044). */}
+      <ConfirmActionDialog
+        open={disburseId !== null}
+        onOpenChange={(open) => { if (!open) setDisburseId(null); }}
+        title="Mark loan as disbursed"
+        description="Record that the approved loan has been paid out. EMI recovery starts from the next payroll."
+        confirmLabel="Mark disbursed"
+        variant="default"
+        onConfirm={() => disburseId && handleTransition(disburseId, "ACTIVE", () => setDisburseId(null), "Loan marked as disbursed")}
+        isPending={process.isPending}
+      />
+
+      <ConfirmActionDialog
+        open={repaidId !== null}
+        onOpenChange={(open) => { if (!open) setRepaidId(null); }}
+        title="Mark loan as repaid"
+        description="Close this loan. No further EMIs will be recovered."
+        confirmLabel="Mark repaid"
+        variant="default"
+        onConfirm={() => repaidId && handleTransition(repaidId, "REPAID", () => setRepaidId(null), "Loan closed")}
         isPending={process.isPending}
       />
     </PageWrapper>
