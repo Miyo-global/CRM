@@ -1,0 +1,3718 @@
+# Miyo Global CRM: master to-do
+
+Repo: github.com/Miyo-global/CRM (branch `main`, audited at `831cf85`, 16 Oct 2026). Prod: https://crm.miyoglobal.com.
+Generated from a read-only audit: install/typecheck/lint/test/build runs, code review of 126 pages and 468 API routes, the QA reports (rounds 1–3 + final), design doc §18/§20, and the 16 Oct prod checks.
+
+## Instructions for the coding agent (Claude Code / Cursor)
+
+1. Work **strictly in order**, top to bottom. Do not skip ahead except where an item says it is blocked on a decision; if so, leave it unchecked and continue.
+2. After each item (or a small group of items in the same module and file), run:
+   `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
+   All four must pass (lint: 0 errors; do not add new warnings).
+3. Commit with the item ID(s) in the message, e.g. `fix(payroll): per-day rate = salary/31 [MIYO-0014]`, then **push directly to `main`** (Tarun asked for this; no PRs).
+4. Tick the checkbox in this file in the same commit.
+5. Run `graphify update .` after code changes, as CLAUDE.md requires.
+6. **Never touch** `.omc/`, `scripts/generate-miyo-payslips.ts` or any `.env*` file. Never read secrets.
+7. **Never connect to the production database**, and never run `db:push`, `db:migrate`, `db:apply-pending` or seeds against it. Items marked **[confirm on prod]** need Tarun to run/check something on production; write the script or SQL, commit it, and note in the commit message what Tarun must run.
+8. Migrations: additive only (`IF NOT EXISTS`), one new file per change, registered in `scripts/apply-pending-migrations.ts` and `drizzle/meta/_journal.json`.
+9. If the build breaks and you cannot fix it inside the current item, **stop and report** (item ID, command, error). Do not push a broken main.
+10. Design rule for every UI change: simple and clean, not AI-looking. No gradients, glow, illustrations, emoji or filler copy. Palette: gold `#D4AF37`, ink `#201E1F`, silver `#D8D8D8`, plus neutral greys. Show times in IST with a label.
+11. Payroll rules (source of truth): PT ₹150 if gross ≤ ₹11,000, else ₹250. Basic 50 %, HRA 25 %, Special 25 %. Per-day = salary ÷ 31. Net = salary − LOP days × per-day − PT + OT (OT = OT days × per-day, 1×). LOP never counts days before the joining date.
+12. Email templates: the target designs live in `email-templates/` next to this file (one `.html` + one `.txt` per template, see `email-templates/README.md`). Copy them into the repo (e.g. `lib/email-templates/files/`) as part of the base-layout item.
+
+## Counts
+
+| Severity | Bug fixes & improvements | ATS build | Total |
+|---|---|---|---|
+| Critical | 25 | 0 | 25 |
+| High | 81 | 33 | 114 |
+| Medium | 94 | 25 | 119 |
+| Low | 425 | 4 | 429 |
+| **Total** | **625** | **62** | **687** |
+
+ATS items start at MIYO-0626.
+
+## Build port status (short)
+
+- PR #4 (merged 16 Oct 2026, 10:44 IST) ported Streamline "Build" **into `/projects`**. There is no `/build` route, nav group or flag; `/build` 404s and `/projects/build` is read as a project id. Nothing is broken by design there; it is a naming/visibility question (decision D1).
+- On prod the port is **not working**: the code is deployed but migrations 0154–0156 (and possibly others after 0125) are not applied, so `projects.deleted_at` is missing → /dashboard error, /projects skeletons, /timesheets/team 500.
+- Ported: board (drag/drop, WIP), backlog, epics, sprints, cycles, modules, milestones, intake (+ public form), pages, views, timeline, analytics, budget, my tickets, templates, resource allocation, settings, ticket detail, client portal.
+- Missing vs Streamline: checklists, intercepting ticket pane, cross-project my work, releases, roadmap, goals, automations, workflow transitions, files, import/export, inbox, teams, workload, updates, risks/decisions, meetings, approvals, change requests, incidents, bugs/QA boards, whiteboard, webhooks, AI. See STATUS.md.
+
+## Decisions needed from Tarun (agent: do not guess these)
+
+- D1 Where Build lives: keep it as Projects (and maybe rename the nav group to "Build"), or add `/build` as an alias.
+- D2 Who approves payroll: CEO only today (and the CEO can't approve their own row). Options: CEO or Admin; or two-step HR → CEO.
+- D3 Half-day threshold for attendance (any check-in counts as a full day today).
+- D4 Free/paid leave days per year and whether manager approval is required before HR.
+- D5 Whether the leave policy should be editable in Settings.
+- D6 Whether public sign-up (`/signup`) stays open.
+- D7 PT basis for mid-month joiners: prorated gross or full monthly salary.
+- D8 Which ATS stages and approval flow to use by default (proposal in ATS-MASTER-PROMPT.md).
+
+## Module index
+
+- Prod/Deploy: 5 item(s), first MIYO-0001 (items appear under each severity)
+- Prod/Errors: 39 item(s), first MIYO-0006 (items appear under each severity)
+- Prod/Performance: 10 item(s), first MIYO-0009 (items appear under each severity)
+- Build port: 27 item(s), first MIYO-0012 (items appear under each severity)
+- Payroll: 19 item(s), first MIYO-0014 (items appear under each severity)
+- Security: 13 item(s), first MIYO-0021 (items appear under each severity)
+- Access control: 8 item(s), first MIYO-0024 (items appear under each severity)
+- Leave: 5 item(s), first MIYO-0087 (items appear under each severity)
+- Attendance: 3 item(s), first MIYO-0089 (items appear under each severity)
+- Jobs & cron: 14 item(s), first MIYO-0090 (items appear under each severity)
+- Onboarding: 8 item(s), first MIYO-0093 (items appear under each severity)
+- Employees & settings: 8 item(s), first MIYO-0095 (items appear under each severity)
+- Email templates: 92 item(s), first MIYO-0097 (items appear under each severity)
+- Tests: 13 item(s), first MIYO-0101 (items appear under each severity)
+- Leftovers: 22 item(s), first MIYO-0173 (items appear under each severity)
+- Design/UI: 116 item(s), first MIYO-0177 (items appear under each severity)
+- Dead code: 28 item(s), first MIYO-0183 (items appear under each severity)
+- Code hygiene: 184 item(s), first MIYO-0185 (items appear under each severity)
+- QA data cleanup: 11 item(s), first MIYO-0615 (items appear under each severity)
+- ATS/0 Foundation: 6 item(s), first MIYO-0626 (items appear under each severity)
+- ATS/1 Requisitions & jobs: 5 item(s), first MIYO-0632 (items appear under each severity)
+- ATS/2 Careers site: 5 item(s), first MIYO-0637 (items appear under each severity)
+- ATS/3 Candidates: 8 item(s), first MIYO-0642 (items appear under each severity)
+- ATS/4 Pipeline: 6 item(s), first MIYO-0650 (items appear under each severity)
+- ATS/5 Interviews: 5 item(s), first MIYO-0656 (items appear under each severity)
+- ATS/6 Offers & hire: 3 item(s), first MIYO-0661 (items appear under each severity)
+- ATS/7 Emails: 10 item(s), first MIYO-0664 (items appear under each severity)
+- ATS/8 Reports: 4 item(s), first MIYO-0674 (items appear under each severity)
+- ATS/9 Privacy & retention: 4 item(s), first MIYO-0678 (items appear under each severity)
+- ATS/10 Tests: 6 item(s), first MIYO-0682 (items appear under each severity)
+
+---
+
+## Critical
+
+### Critical · Prod/Deploy
+
+- [ ] MIYO-0001 [Critical][Prod/Deploy] Apply migrations 0126–0156 to the production database (projects.deleted_at missing) **[confirm on prod]** — _agent part done: SQL verified idempotent; awaiting Tarun prod run_
+  - **Where:** drizzle/0154_projects_build_port_phase1.sql, 0155_project_invitations.sql, 0156_project_intake_token_client_portal.sql, scripts/apply-pending-migrations.ts
+  - **Problem:** Prod 16 Oct 11:30 IST: /dashboard fails with `Failed query: select count(*) from "projects" where (... "projects"."deleted_at" is null)`, /projects stuck on skeletons, /timesheets/team 500. PR #4 (merged 16 Oct 10:44 IST) added `projects.deleted_at`, `tickets.version/rank/deleted_at`, `ticket_activity`, `project_client_grants` etc. The code is deployed, the columns are not. drizzle/meta/_journal.json only lists 69 migrations up to 0125; 0126–0156 are applied only by the manual `pnpm db:apply-pending` script.
+  - **Fix:** Tarun (not the agent) runs `pnpm db:apply-pending` against production from a trusted machine after a DB snapshot. The agent must NOT connect to production; it only verifies the SQL is idempotent (`IF NOT EXISTS`) and lists the exact command in the commit message.
+  - **Acceptance check:** After Tarun runs it: `select column_name from information_schema.columns where table_name='projects' and column_name='deleted_at'` returns 1 row; /dashboard, /projects and /timesheets/team load without errors on prod.
+- [ ] MIYO-0002 [Critical][Prod/Deploy] Add a migration step to the deploy pipeline
+  - **Where:** package.json scripts, vercel.json (add buildCommand) or .github/workflows/ci.yml, scripts/apply-pending-migrations.ts
+  - **Problem:** There is no automated migration step; Vercel only runs `next build`. Any schema change ships code before columns exist (root cause of the 16 Oct outage).
+  - **Fix:** Add a `db:migrate:deploy` script that runs scripts/apply-pending-migrations.ts with a lock (pg_advisory_lock) and exits non-zero on failure; run it in a GitHub Actions job on push to main before the Vercel production promote (or as Vercel `buildCommand: pnpm db:migrate:deploy && pnpm build` with `DATABASE_URL_MIGRATE`). Document required secret names only.
+  - **Acceptance check:** A test migration that adds a nullable column is applied automatically on the next push to main; the job log shows `applied: <name>`; a failing migration blocks the deploy.
+- [ ] MIYO-0003 [Critical][Prod/Deploy] Add a schema-drift check that fails CI when code references columns not created by any migration
+  - **Where:** scripts/ (new check-schema-drift.ts), .github/workflows/ci.yml, drizzle/
+  - **Problem:** drizzle/meta snapshots stop at 0006 and the journal at 0125, so `drizzle-kit generate` cannot detect drift (PR #4 notes: 'Drizzle snapshot files need repair').
+  - **Fix:** In CI, start postgres:16, apply every drizzle/*.sql in order, then run `drizzle-kit export`/introspect and diff against lib/db/schema; fail on any table/column in schema but not in DB.
+  - **Acceptance check:** CI fails on a branch that adds a column to lib/db/schema without a migration, and passes on main.
+- [ ] MIYO-0004 [Critical][Prod/Deploy] Repair drizzle meta snapshots and journal so `pnpm db:generate` works
+  - **Where:** drizzle/meta/_journal.json, drizzle/meta/*_snapshot.json
+  - **Problem:** Journal has 69 entries (last 0125_document_types_sort_order_decimal) while drizzle/ has 166 SQL files; snapshots only to 0006.
+  - **Fix:** Regenerate a baseline snapshot from the current schema (drizzle-kit introspect against a DB built from all SQL files), register 0126–0156 in the journal with their real timestamps, keep SQL files unchanged.
+  - **Acceptance check:** `pnpm db:generate` on unchanged schema produces 'No schema changes'.
+- [ ] MIYO-0005 [Critical][Prod/Deploy] Add a post-deploy smoke check
+  - **Where:** .github/workflows/ (new smoke.yml), app/api/health/route.ts
+  - **Problem:** Outage on 16 Oct was only noticed by manual testing.
+  - **Fix:** Extend /api/health to run `select 1 from projects where deleted_at is null limit 1` and one query per new table (behind a secret header); add a workflow that hits it after each production deploy and fails loudly.
+  - **Acceptance check:** Smoke job is green on prod after migrations; red if a column is missing.
+
+### Critical · Prod/Errors
+
+- [ ] MIYO-0006 [Critical][Prod/Errors] Stop returning raw database errors (SQL text, org IDs) to the browser from dashboard APIs
+  - **Where:** app/api/dashboard/stats/route.ts:11, active-sprint/route.ts:15, recent-activity/route.ts:15, recent-projects/route.ts:15, team-availability/route.ts:11
+  - **Problem:** These handlers return `error instanceof Error ? error.message : ...`, so Postgres errors with the full SQL and the org id are shown in the dashboard error card and toasts (prod 16 Oct).
+  - **Fix:** Return a fixed message (`Could not load dashboard stats.`) with a generated `errorId`; log the original error with logger.error({ errorId, route, orgId }).
+  - **Acceptance check:** Force a DB error locally: the UI shows only the generic text and an error ID; the server log has the SQL.
+- [ ] MIYO-0007 [Critical][Prod/Errors] Add a central safe-error helper for API routes
+  - **Where:** lib/api/helpers.ts (new `serverError(e, ctx)`), lib/logger.ts
+  - **Problem:** 40 route files hand-roll `error.message` passthrough (see the per-file items below).
+  - **Fix:** Add `serverError(error, { route, orgId })` that logs and returns `{ error: 'Something went wrong. Please try again.', errorId }` with status 500; ZodError keeps the existing 400 path.
+  - **Acceptance check:** Unit test: a thrown Error('select * from x') produces a body without 'select'.
+- [ ] MIYO-0008 [Critical][Prod/Errors] Harden getErrorMessage so SQL, stack traces and UUIDs never reach toasts
+  - **Where:** lib/get-error-message.ts
+  - **Problem:** TECHNICAL_PATTERNS strips API paths and stack frames but not `Failed query:`, SQL keywords, `params:` lists or UUID/org ids.
+  - **Fix:** Add patterns for /Failed query:.*/s, /\bparams:.*$/s, UUIDs and `org_[a-z0-9]+`; if anything was stripped, return the generic message.
+  - **Acceptance check:** Vitest: getErrorMessage on an axios error whose body is the 16 Oct message returns 'Something went wrong. Please try again.'
+
+### Critical · Prod/Performance
+
+- [ ] MIYO-0009 [Critical][Prod/Performance] Measure: add Server-Timing and request logs to find where the 30–90 s loads go **[confirm on prod]**
+  - **Where:** middleware.ts, lib/api/helpers.ts withAuth, instrumentation.ts (Sentry is installed)
+  - **Problem:** Prod pages take 30–90 s and direct loads time out (QA rounds 1–3 and 16 Oct). No timing data exists.
+  - **Fix:** Enable Sentry performance tracing (tracesSampleRate 0.2) and add a Server-Timing header in withAuth (auth, session-check, membership, handler).
+  - **Acceptance check:** One prod load of /dashboard produces a Sentry transaction showing each DB span.
+- [ ] MIYO-0010 [Critical][Prod/Performance] Check that the Vercel function region matches the Postgres region **[confirm on prod]**
+  - **Where:** vercel.json (no `regions` set), DATABASE_URL host
+  - **Problem:** Without `regions`, functions run in iad1 by default; if the DB is in Mumbai/Singapore every query crosses continents, and withAuth alone makes 2–3 round trips per request.
+  - **Fix:** Confirm the DB region with Tarun, then set `"regions": ["bom1"]` (or the DB's region) in vercel.json.
+  - **Acceptance check:** Server-Timing for a trivial API drops below 300 ms on prod.
+- [ ] MIYO-0011 [Critical][Prod/Performance] Cut withAuth round trips: cache session-revocation and membership lookups per request
+  - **Where:** lib/api/helpers.ts:43-140
+  - **Problem:** Every API call does a userSessions lookup and (when orgId missing) an organizationMembers lookup before the handler. The dashboard fires ~20 widget APIs in parallel → 40–60 extra queries per page load. lib/redis.ts is in-memory and not shared across serverless instances, so the cache rarely hits.
+  - **Fix:** Put the revocation check behind a short signed JWT claim refresh (e.g. re-check DB at most every 60 s via token `sessionCheckedAt`), and always carry orgId in the JWT.
+  - **Acceptance check:** Dashboard load issues ≤ 1 auth query per API call; median API latency halves.
+
+### Critical · Build port
+
+- [ ] MIYO-0012 [Critical][Build port] Decide and document where 'Build' lives: it was ported INTO Projects, there is no /build route
+  - **Where:** app/(dashboard)/projects/**, components/layout/sidebar/sidebar-nav-items.ts:146-151
+  - **Problem:** Prod check 16 Oct: no Build module in the top nav (Core / HR / Projects & Time / System); /build is 404; /projects/build is treated as a project id. In code, PR #4 ported Build into /projects (overview, board, tickets/[ticketKey], cycles, intake, settings/members, portal). Nothing is named Build. On prod the Projects area is also broken by the missing migration, so none of the port is usable yet.
+  - **Fix:** Ask Tarun whether the module should be called 'Build'. If yes: rename the nav group to 'Build', add `/build` → `/projects` redirect in next.config.ts, keep URLs stable. If no: add a redirect from /build to /projects anyway so old Streamline links work.
+  - **Acceptance check:** Top nav shows the agreed label; /build redirects to /projects; /projects/build shows the 'project doesn't exist' view only for real ids.
+- [ ] MIYO-0013 [Critical][Build port] Treat the Build port as NOT deployed until migrations are applied and a prod smoke test passes **[confirm on prod]**
+  - **Where:** STATUS.md, drizzle/0154–0156
+  - **Problem:** Code is on main but the DB lacks its columns; every projects query fails on prod.
+  - **Fix:** After MIYO migration item is done, run the PR #4 manual QA list on prod (create project via wizard, board drag, ticket page, comment mention, member role change, delete/restore).
+  - **Acceptance check:** All PR #4 manual QA steps pass on crm.miyoglobal.com.
+
+### Critical · Payroll
+
+- [ ] MIYO-0014 [Critical][Payroll] Per-day rate must be salary ÷ 31, not ÷ calendar days
+  - **Where:** lib/payroll/rules.ts perDayRate() and daysInMonth(); lib/payroll/load-inputs.ts:156; lib/payroll/compute.ts:94
+  - **Problem:** perDayRate divides by days in the month (28–31). Tarun's rule and his August sheet use ÷31 always. In February each LOP day is ~10.7 % too expensive.
+  - **Fix:** Add `PER_DAY_DIVISOR = 31` to rules.ts and use it in perDayRate (keep daysInMonth for proration only). Update lib/payroll/__tests__/rules.test.ts.
+  - **Acceptance check:** Test: perDayRate(31000,'2026-02') === 1000 and perDayRate(31000,'2026-10') === 1000.
+- [ ] MIYO-0015 [Critical][Payroll] Approved paid leave must never produce LOP
+  - **Where:** lib/hr/payroll-calculations.ts computeStrictAttendance() (leaveByDate is accepted but never read), lib/hr/payroll-attendance.ts
+  - **Problem:** A weekday with no check-in counts as LOP after the free-leave budget even if the employee has APPROVED sick/casual leave for that date (design doc N7).
+  - **Fix:** Inside the loop, before the leave-budget branch: if leaveByDate.get(date) is FULL → paidLeaveDays++ and continue; HALF → 0.5 paid, 0.5 evaluated. Unpaid leave types count as LOP.
+  - **Acceptance check:** Test: an employee with 3 approved casual-leave days and no check-ins on those days has lopDays 0.
+- [ ] MIYO-0016 [Critical][Payroll] OT must pay 1× per-day, not 2× (structure default and loader fallback)
+  - **Where:** lib/payroll/load-inputs.ts:157-158 (`?? "2.00"`), lib/db/schema/hr/_all.ts:178-179 (sundayOtMultiplier/holidayOtMultiplier default "2.00")
+  - **Problem:** rules.ts says OVERTIME_DAY_MULTIPLIER = 1 (Tarun's sheet: 2 OT days on ₹33,200 = ₹2,141.94), but the live loader and schema default use 2.00, so OT is paid double.
+  - **Fix:** Change the loader fallback to OVERTIME_DAY_MULTIPLIER, change schema defaults to "1.00" with an additive migration (`ALTER ... SET DEFAULT`), and add a data migration note for existing structures (Tarun decides whether to rewrite them).
+  - **Acceptance check:** Test on loadPayrollInputs with an approved EXTRA_PAY Sunday: overtimeAmount === perDay × 1.
+- [ ] MIYO-0017 [Critical][Payroll] Recompute or regenerate existing DRAFT payrolls after the rules fix **[confirm on prod]**
+  - **Where:** app/api/hr/payrolls/generate/route.ts (duplicate check blocks regeneration), new route POST /api/hr/payrolls/recompute
+  - **Problem:** Prod 16 Oct: Qa Alpha's Oct 2026 draft (generated 15 Oct) still shows PT ₹200, LOP 10 days (−₹3,226), net ₹6,574. Drafts are frozen at generation time, so fixed rules never reach them; the generate route refuses to regenerate (design doc N17).
+  - **Fix:** Add 'Recalculate draft' (single and bulk, HR/CEO/Admin) that re-runs computePayroll for DRAFT rows only and writes an audit log with before/after net. Never touch APPROVED/PAID.
+  - **Acceptance check:** After the fix, recalculating Qa Alpha's Oct draft gives PT ₹150 and LOP 0 for days before 15 Oct; APPROVED rows are unchanged.
+- [ ] MIYO-0018 [Critical][Payroll] Remove the legacy ₹200 PT constant and env default
+  - **Where:** lib/hr/payroll-calculations.ts:16 (`PROFESSIONAL_TAX_INR = envNumber("NEXT_PUBLIC_PROFESSIONAL_TAX", 200)`), scripts/generate-*-payslips*.ts (not scripts/generate-miyo-payslips.ts)
+  - **Problem:** A second PT source still defaults to 200 and is used by legacy scripts.
+  - **Fix:** Delete PROFESSIONAL_TAX_INR; make the legacy scripts import professionalTax() from lib/payroll/rules. Do not touch scripts/generate-miyo-payslips.ts.
+  - **Acceptance check:** `grep -rn "200" lib/hr/payroll-calculations.ts` has no PT constant; rules.test.ts passes.
+- [ ] MIYO-0019 [Critical][Payroll] salary_structures.professional_tax defaults to "200" in the schema
+  - **Where:** lib/db/schema/hr/_all.ts:168, lib/payroll/load-inputs.ts:176-206
+  - **Problem:** New structures created without an explicit PT store 200. load-inputs only honours a structure PT of 0, but the stored 200 is shown in the UI/structure screens.
+  - **Fix:** Drop the default (nullable, null = use bands) via additive migration `ALTER COLUMN professional_tax DROP DEFAULT`; display 'By band' when null.
+  - **Acceptance check:** Creating a structure without PT stores null and the preview shows ₹150/₹250 by band.
+- [ ] MIYO-0020 [Critical][Payroll] Tax calculator API uses a hard-coded annual PT of ₹2,400 (₹200/month)
+  - **Where:** app/api/hr/tax-calculator/route.ts:51
+  - **Problem:** `const professionalTax = 2400;` ignores the bands.
+  - **Fix:** Use professionalTax(monthlyGross) × 12.
+  - **Acceptance check:** Calculator for ₹10,000/month shows annual PT ₹1,800; for ₹25,000 shows ₹3,000.
+
+### Critical · Security
+
+- [ ] MIYO-0021 [Critical][Security] Fix the outbound webhook signature header name (contains a space)
+  - **Where:** lib/inngest/functions/webhook-dispatcher.ts:65 (`"X-Miyo Global-Signature"`)
+  - **Problem:** A header name with a space is invalid; fetch throws, so every webhook delivery fails (design doc N1).
+  - **Fix:** Rename to `X-Miyo-Signature`; update settings/webhooks docs; add a unit test that builds the request headers.
+  - **Acceptance check:** Test passes; a delivery to a request bin succeeds with header X-Miyo-Signature.
+- [ ] MIYO-0022 [Critical][Security] Storage download/image/upload routes bypass withAuth (no MFA, deactivation or revocation checks)
+  - **Where:** app/api/storage/download/route.ts:98, image/route.ts:68, upload/route.ts:24
+  - **Problem:** They call auth() directly, so a deactivated user or a session that has not passed MFA can still read and upload files (design doc N2).
+  - **Fix:** Wrap each handler in withAuth and use session.orgId.
+  - **Acceptance check:** A deactivated user's session gets 403 on /api/storage/download.
+- [ ] MIYO-0023 [Critical][Security] Any employee can download any other employee's documents in the same org
+  - **Where:** app/api/storage/download/route.ts:124-142 (org check only), lib/storage fileBelongsToOrg
+  - **Problem:** Authorisation is org-level; payslips, ID proofs and bank docs of colleagues are downloadable by key.
+  - **Fix:** Look up the owning record (employee document, payslip, ticket attachment) for the key; allow owner, HR/CEO/Admin, or project members for project files; otherwise 404.
+  - **Acceptance check:** Employee A requesting employee B's payslip key gets 404; HR gets the file.
+
+### Critical · Access control
+
+- [ ] MIYO-0024 [Critical][Access control] Employees cannot open Profile/Security (/profile → /settings is HR-only) and MFA enforcement loops
+  - **Where:** lib/auth/route-access.ts:34 (`"/settings": HR_TEAM`), app/(dashboard)/profile/page.tsx (redirects to /settings#profile), middleware.ts:201-211
+  - **Problem:** Non-HR users are bounced from /settings to the dashboard; with mfaEnforced, middleware sends them to /settings?tab=security, which bounces them again (design doc N3, QA T6).
+  - **Fix:** Map `/settings` (the personal [[...rest]] page) to EVERYONE and list each admin page explicitly as HR_TEAM: /settings/members, roles, permissions, organization, custom-fields, data-hub, email-templates, job-roles, payroll-schedule, termination-reasons, webhooks, audit-log, ai. Add route-access tests.
+  - **Acceptance check:** Signed in as ENGINEERING: user menu → Profile opens settings profile; /settings/members redirects; MFA-enforced user can complete setup.
+- [ ] MIYO-0025 [Critical][Access control] New hires cannot open /hr/onboarding/my-tasks
+  - **Where:** lib/auth/route-access.ts:11 (`"/hr/onboarding": HR_TEAM`)
+  - **Problem:** The more specific /hr/onboarding/my-tasks has no entry, so it inherits HR_TEAM (design doc N15). The onboarding-welcome email links there.
+  - **Fix:** Add `"/hr/onboarding/my-tasks": EVERYONE`.
+  - **Acceptance check:** Test canAccessRoute('/hr/onboarding/my-tasks','ENGINEERING') === true.
+
+## High
+
+### High · Prod/Errors
+
+- [ ] MIYO-0026 [High][Prod/Errors] Make the dashboard error card show a friendly message with Retry only
+  - **Where:** app/(dashboard)/dashboard/page.tsx:246 (QueryErrorState title 'Failed to load dashboard stats')
+  - **Problem:** The card renders the server message verbatim.
+  - **Fix:** Pass getErrorMessage(error) and a Retry button; never render `error.message` directly. Apply the same to components/ui/query-error-state.tsx default.
+  - **Acceptance check:** With the API returning a SQL error, the card reads 'Could not load dashboard stats. Retry'.
+- [ ] MIYO-0027 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/ai/helpdesk-reply
+  - **Where:** app/api/ai/helpdesk-reply/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0028 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/ai/support-reply
+  - **Where:** app/api/ai/support-reply/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0029 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/auth/forgot-password
+  - **Where:** app/api/auth/forgot-password/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0030 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/calendar/events
+  - **Where:** app/api/calendar/events/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0031 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/expenses/import
+  - **Where:** app/api/expenses/import/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0032 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/attendance/break
+  - **Where:** app/api/hr/attendance/break/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0033 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/attendance/check-in
+  - **Where:** app/api/hr/attendance/check-in/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0034 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/attendance/check-out
+  - **Where:** app/api/hr/attendance/check-out/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0035 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/leaves
+  - **Where:** app/api/hr/leaves/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0036 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/payrolls
+  - **Where:** app/api/hr/payrolls/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0037 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/performance/appraisals
+  - **Where:** app/api/hr/performance/appraisals/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0038 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/performance/seed
+  - **Where:** app/api/hr/performance/seed/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0039 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/termination/[terminationId]/send-email
+  - **Where:** app/api/hr/termination/[terminationId]/send-email/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0040 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/hr/wfh
+  - **Where:** app/api/hr/wfh/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0041 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/notifications/dispatch
+  - **Where:** app/api/notifications/dispatch/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0042 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/organization/invitations
+  - **Where:** app/api/organization/invitations/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0043 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/organization/members/[memberId]
+  - **Where:** app/api/organization/members/[memberId]/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0044 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/organization/members
+  - **Where:** app/api/organization/members/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0045 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/organization/settings
+  - **Where:** app/api/organization/settings/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0046 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/rbac/permissions
+  - **Where:** app/api/rbac/permissions/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0047 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/rbac/role-permissions
+  - **Where:** app/api/rbac/role-permissions/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0048 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/rbac/user-permissions
+  - **Where:** app/api/rbac/user-permissions/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0049 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/reports/attendance
+  - **Where:** app/api/reports/attendance/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0050 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/reports/payroll
+  - **Where:** app/api/reports/payroll/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0051 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/reports/project
+  - **Where:** app/api/reports/project/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0052 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/reports/team-performance
+  - **Where:** app/api/reports/team-performance/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0053 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/roles/[roleId]
+  - **Where:** app/api/roles/[roleId]/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0054 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/roles
+  - **Where:** app/api/roles/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0055 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/storage/download
+  - **Where:** app/api/storage/download/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0056 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/storage/image
+  - **Where:** app/api/storage/image/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0057 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/storage/upload
+  - **Where:** app/api/storage/upload/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0058 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/support/[supportTicketId]/messages
+  - **Where:** app/api/support/[supportTicketId]/messages/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0059 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/support/[supportTicketId]
+  - **Where:** app/api/support/[supportTicketId]/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0060 [High][Prod/Errors] Use serverError() instead of returning error.message in /api/support
+  - **Where:** app/api/support/route.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+- [ ] MIYO-0061 [High][Prod/Errors] Use serverError() instead of returning error.message in server/actions/create-notification.ts
+  - **Where:** server/actions/create-notification.ts
+  - **Problem:** Catch block returns `error instanceof Error ? error.message : …` to the client, which can expose SQL, table names or ids (same class as the 16 Oct dashboard leak).
+  - **Fix:** Replace with `return serverError(error, { route, orgId: session.orgId })`; keep intentional user-facing validation messages as explicit err('…', 400).
+  - **Acceptance check:** Simulated DB failure returns the generic message and an errorId; grep for `instanceof Error ? error.message` in this file returns nothing.
+
+### High · Prod/Performance
+
+- [ ] MIYO-0062 [High][Prod/Performance] Replace the in-memory redis shim with a shared KV store (design doc N4)
+  - **Where:** lib/redis.ts
+  - **Problem:** Process-local Map: rate limits, IP allowlist, MFA markers and caches are per-instance and lost on cold start (also hurts performance, nothing stays cached).
+  - **Fix:** Use Upstash Redis or Vercel KV behind the same interface; keep the Map as a dev fallback only.
+  - **Acceptance check:** Two concurrent instances share a rate-limit counter in a test.
+- [ ] MIYO-0063 [High][Prod/Performance] Collapse the dashboard's widget requests into one aggregated endpoint
+  - **Where:** app/api/dashboard/* (21 endpoints), app/(dashboard)/dashboard/page.tsx, components/dashboard/widgets/*
+  - **Problem:** 21 separate dashboard APIs, each paying auth cost; cold starts multiply.
+  - **Fix:** Add GET /api/dashboard/summary returning the above-the-fold data in one call (role-aware), keep the rest lazy below the fold.
+  - **Acceptance check:** Network tab on /dashboard shows ≤ 4 API calls before first meaningful paint.
+- [ ] MIYO-0064 [High][Prod/Performance] Stop the sidebar waiting for client-side useSession before rendering navigation
+  - **Where:** components/layout/app-sidebar.tsx:36, app/(dashboard)/layout.tsx
+  - **Problem:** QA: long sidebar skeletons and the wrong (employee) view for ~40 s until role loads.
+  - **Fix:** Read the session in the server layout and pass role/nav groups as props; keep useSession only for updates.
+  - **Acceptance check:** Hard reload shows the correct sidebar in the first HTML response.
+- [ ] MIYO-0065 [High][Prod/Performance] Remove `force-dynamic` from routes that can be cached
+  - **Where:** app/api/hr/dashboard/*/route.ts and others with `export const dynamic = "force-dynamic"`
+  - **Problem:** Forces every request to hit the DB even for org-level aggregates that change rarely.
+  - **Fix:** Use `unstable_cache`/`revalidateTag` per org for metrics (headcount, trends) with 60–300 s TTL; tag-invalidate on writes.
+  - **Acceptance check:** Second load of /hr dashboard serves metrics from cache (Server-Timing shows cache hit).
+- [ ] MIYO-0066 [High][Prod/Performance] Add missing indexes for hot project queries after the Build port
+  - **Where:** lib/db/schema/projects.ts, new migration
+  - **Problem:** New filters `deleted_at is null`, `(project_id, rank)`, `ticket_activity (project_id, created_at)` run on every board/overview load; check each has an index (only some were added in 0154).
+  - **Fix:** Run EXPLAIN on the overview, board and list queries against a seeded local DB; add partial indexes `where deleted_at is null` where seq scans appear.
+  - **Acceptance check:** EXPLAIN shows index scans for board/list/overview queries.
+
+### High · Build port
+
+- [ ] MIYO-0067 [High][Build port] Make the projects layout reject non-numeric project ids with a 404 instead of a 'doesn't exist' page that looks like a module
+  - **Where:** app/(dashboard)/projects/[projectId]/layout.tsx, access-denied-view.tsx
+  - **Problem:** /projects/build renders the project access view. Fine for security, confusing for users looking for Build.
+  - **Fix:** If projectId is not an integer, call notFound().
+  - **Acceptance check:** /projects/abc returns the app's 404 page.
+- [ ] MIYO-0068 [High][Build port] Add a unique index on tickets (project_id, ticket_number)
+  - **Where:** lib/db/schema/projects.ts:111, new migration
+  - **Problem:** Numbers are assigned under an advisory lock only (PR #4 gap); a bug or manual insert can duplicate KEY-123.
+  - **Fix:** Additive `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS ... where deleted_at is null` after checking for duplicates.
+  - **Acceptance check:** Inserting a duplicate number fails.
+- [ ] MIYO-0069 [High][Build port] Use timestamptz (or treat naive timestamps as UTC) in the projects area
+  - **Where:** lib/db/schema/projects.ts (49 timestamp columns, 0 withTimezone)
+  - **Problem:** PR #4 QA saw 'in about 5 hours' relative times; prod also shows UTC payroll times.
+  - **Fix:** Add a parse helper that appends 'Z' to naive timestamps for display; plan an additive migration to timestamptz later.
+  - **Acceptance check:** Ticket created now shows 'just now' in IST.
+- [ ] MIYO-0070 [High][Build port] Unify the two status systems (tickets.status text vs project_statuses)
+  - **Where:** lib/db/schema/projects.ts, components/projects/kanban-board.tsx, app/api/projects/[projectId]/statuses
+  - **Problem:** PR #4 gap: both coexist, so board columns, WIP limits and filters can disagree.
+  - **Fix:** Make project_statuses the source; keep tickets.status as a denormalised key written from it; backfill.
+  - **Acceptance check:** Renaming a status renames the board column and filters.
+
+### High · Payroll
+
+- [ ] MIYO-0071 [High][Payroll] Decision: who approves payroll — CEO-only blocks Admin and deadlocks the CEO's own payroll
+  - **Where:** app/api/hr/payrolls/[payrollId]/approve/route.ts:25-33
+  - **Problem:** Only role CEO may approve, and the CEO cannot approve their own row, so the CEO's payroll can never be approved (design doc N8). Prod 16 Oct: Admin sees 'Only the CEO can approve a payroll'.
+  - **Fix:** DECISION NEEDED from Tarun (Q8). Default proposal: CEO approves everyone else; ADMIN may approve the CEO's own payroll; record approver in audit log. Implement behind a constant in lib/payroll/rules.ts.
+  - **Acceptance check:** CEO payroll can be approved by Admin; Admin still cannot approve others unless Tarun chooses that.
+- [ ] MIYO-0072 [High][Payroll] Make payroll approve/paid transitions atomic
+  - **Where:** app/api/hr/payrolls/[payrollId]/approve/route.ts, [payrollId]/paid/route.ts
+  - **Problem:** Status is read, checked, then updated without a status condition, so two clicks can double-approve/double-send emails.
+  - **Fix:** Use `update ... where id = ? and status = 'DRAFT' returning *` and treat 0 rows as 409.
+  - **Acceptance check:** Two concurrent approve requests: one 200, one 409, one email sent.
+- [ ] MIYO-0073 [High][Payroll] Payroll timestamps shown without timezone and in UTC
+  - **Where:** features/hr/payroll/payroll-record-preview-sheet.tsx:223-232 (dt()), payrolls.createdAt/approvedAt/paidAt are `timestamp` without time zone
+  - **Problem:** Prod 16 Oct: 'Created 15 Oct 2026, 03:20 AM' for a record created ~08:50 IST. Naive timestamps are parsed as local time.
+  - **Fix:** Format all payroll timestamps with timeZone 'Asia/Kolkata' and an 'IST' suffix via one helper; treat DB naive timestamps as UTC when parsing (append 'Z').
+  - **Acceptance check:** The same record shows 'Created 15 Oct 2026, 08:50 AM IST'.
+- [ ] MIYO-0074 [High][Payroll] Block or warn when generating payroll for the current, unfinished month
+  - **Where:** app/api/hr/payrolls/generate/route.ts, app/(dashboard)/hr/payroll/page.tsx
+  - **Problem:** QA: payroll for October generated on 15 Oct silently; with recompute available it should at least warn.
+  - **Fix:** Show a confirm dialog 'October is not over. Days after today are counted as present.' and store `generatedThrough` on the row.
+  - **Acceptance check:** Generating for the current month shows the warning; the row stores generatedThrough.
+- [ ] MIYO-0075 [High][Payroll] Half-day check-ins count as full present days
+  - **Where:** lib/hr/payroll-calculations.ts computeStrictAttendance (`loggedIn = workHoursByDate.has(date)`)
+  - **Problem:** Any check-in, even 10 minutes, counts as a full day; workHours is ignored.
+  - **Fix:** DECISION for Tarun: threshold (e.g. < 4 h = half day). Implement as HALF_DAY_MIN_HOURS in rules.ts.
+  - **Acceptance check:** Test: 3 h logged → 0.5 present.
+- [ ] MIYO-0076 [High][Payroll] Free monthly leave day (1 + carry, max 2) is not in Tarun's rule list
+  - **Where:** lib/hr/payroll-calculations.ts (`leaveBudget = input.freeLeaveDays ?? MONTHLY_FREE_LEAVE_DAYS`)
+  - **Problem:** Absences are auto-converted to paid leave before LOP. The August sheet does this by hand (Deeraj 3 leaves → 1 LOP), but it is not written down (design doc Q4).
+  - **Fix:** DECISION for Tarun. Move the value to rules.ts with a comment-free named constant and show it on the leave policy page.
+  - **Acceptance check:** Policy page states the free-leave rule; tests cover 0, 1, 2 free days.
+
+### High · Security
+
+- [ ] MIYO-0077 [High][Security] Encrypt PII at rest: taxId, bankDetails, googleRefreshToken
+  - **Where:** lib/db/schema/auth.ts:54-56, :92; reuse encryptSecret/decryptSecret already used for totpSecret (app/api/auth/mfa/setup/route.ts:26)
+  - **Problem:** PAN, bank account numbers and Google refresh tokens are stored in plain text (design doc N16).
+  - **Fix:** Encrypt on write, decrypt on read in one data-access helper; add a one-off backfill script (Tarun runs it, never the agent against prod).
+  - **Acceptance check:** Row in DB shows ciphertext; UI shows the value; backfill script is idempotent.
+- [ ] MIYO-0078 [High][Security] Biometric webhook trusts the caller-supplied orgId when BIOMETRIC_ORG_ID is unset
+  - **Where:** app/api/hr/integrations/biometric/route.ts:35-45
+  - **Problem:** With only the API key configured, any orgId in the body is accepted.
+  - **Fix:** Require BIOMETRIC_ORG_ID (503 if missing) and ignore body.orgId; return 400 on schema errors instead of a 500 (parse is outside withAuth).
+  - **Acceptance check:** Request with a different orgId gets 403; malformed body gets 400.
+- [ ] MIYO-0079 [High][Security] Disable or gate public sign-up **[confirm on prod]**
+  - **Where:** app/(auth)/signup/page.tsx, app/api/auth/signup/route.ts
+  - **Problem:** An internal HR system exposes self sign-up; new orgs/users can be created from the internet.
+  - **Fix:** Confirm with Tarun; default to invite-only: return 404 from /signup and the API unless ALLOW_PUBLIC_SIGNUP=1.
+  - **Acceptance check:** /signup returns 404 on prod.
+- [ ] MIYO-0080 [High][Security] Audit-log MFA reset/disable and notify the user
+  - **Where:** app/api/auth/mfa/reset/route.ts, disable/route.ts, verify/route.ts
+  - **Problem:** No createAuditLog call and no email on MFA changes.
+  - **Fix:** Add audit entries `auth.mfa_enabled|disabled|reset` and send the new auth-mfa-* templates.
+  - **Acceptance check:** Resetting a user's MFA creates an audit row and sends email-templates/auth-mfa-reset-by-admin.
+- [ ] MIYO-0081 [High][Security] Escape LIKE wildcards in project and ticket search
+  - **Where:** app/api/projects/route.ts:91-92, app/api/projects/[projectId]/tickets/route.ts:36-37, server/queries/projects.ts:36
+  - **Problem:** `%`/`_` in search become wildcards (PR #4 open gap); `%` returns everything.
+  - **Fix:** Add lib/db/escape-like.ts and use `ILIKE ... ESCAPE '\\'`.
+  - **Acceptance check:** Searching '100%' only matches titles containing '100%'.
+- [ ] MIYO-0082 [High][Security] Escape LIKE wildcards in the remaining 12 ilike() call sites
+  - **Where:** `grep -rn "ilike(" app server lib` (12 hits)
+  - **Problem:** Same wildcard issue in HR searches.
+  - **Fix:** Use the escape helper everywhere.
+  - **Acceptance check:** grep shows every ilike uses escapeLike().
+
+### High · Access control
+
+- [ ] MIYO-0083 [High][Access control] /settings/notifications must be reachable by every employee
+  - **Where:** lib/auth/route-access.ts
+  - **Problem:** Notification preferences are personal but blocked by the /settings HR_TEAM entry.
+  - **Fix:** Add `"/settings/notifications": EVERYONE`.
+  - **Acceptance check:** Employee can save notification preferences.
+- [ ] MIYO-0084 [High][Access control] Manager sees Approve on leave but the API rejects it
+  - **Where:** lib/auth/leave-approval.ts canApproveLeaveRequest (role-only), approver chain in lib/auth/leave-approval-roles.ts
+  - **Problem:** Requests are routed to managers but only HR/CEO/ADMIN roles may approve (design doc N9, Q13).
+  - **Fix:** DECISION for Tarun. If yes: allow when isManagerOf(session.user.id, requestUserId). If no: hide the buttons and stop routing to managers.
+  - **Acceptance check:** UI and API agree for a manager account.
+- [ ] MIYO-0085 [High][Access control] Holiday edit rights differ between API and server actions
+  - **Where:** app/api/hr/holidays/*, server/actions/* holiday actions
+  - **Problem:** API allows HR, server actions deny HR (design doc N14).
+  - **Fix:** Use one helper canManageHolidays(role) = CEO/HR/ADMIN.
+  - **Acceptance check:** HR can edit a holiday via both paths.
+- [ ] MIYO-0086 [High][Access control] Remove leftover branch routes from the access map
+  - **Where:** lib/auth/route-access.ts:36 (`/settings/branches`), :42 (`/dashboard/branches`)
+  - **Problem:** Branches were removed (D-6) but the map and links remain.
+  - **Fix:** Delete both entries.
+  - **Acceptance check:** grep 'branches' lib/auth/route-access.ts returns nothing.
+
+### High · Leave
+
+- [ ] MIYO-0087 [High][Leave] Auto-approved leave does not deduct the balance
+  - **Where:** app/api/hr/leaves/route.ts POST (auto-approve branch)
+  - **Problem:** Design doc N10.
+  - **Fix:** Call the same deduction helper used by the approve route inside the insert transaction.
+  - **Acceptance check:** Auto-approved 1-day casual leave reduces balance by 1.
+- [ ] MIYO-0088 [High][Leave] Approvals tab and Pending sub-tab show no count badge **[confirm on prod]**
+  - **Where:** app/(dashboard)/hr/leaves/leaves-wfh-content.tsx:67 (actionableLeaveCount), tab triggers
+  - **Problem:** Prod 16 Oct: 1 pending request but no badge on 'Approvals' or 'Pending'.
+  - **Fix:** Render <Badge> with actionableLeaveCount on both triggers when > 0, using the same number as the sidebar badge.
+  - **Acceptance check:** With 1 pending request both tabs show '1'; sidebar badge also shows 1.
+
+### High · Attendance
+
+- [ ] MIYO-0089 [High][Attendance] Attendance calendar marks days before joining as Absent **[confirm on prod]**
+  - **Where:** features/hr/attendance/* calendar, lib/hr/payroll-attendance.ts
+  - **Problem:** QA Critical (📷 05). Commit 53b6615 claims employment-aware calendar — re-verify on prod with Qa Alpha (joined 15 Oct).
+  - **Fix:** If still wrong: render days before joiningDate as 'Not employed' (neutral).
+  - **Acceptance check:** Qa Alpha's October calendar shows 1–14 Oct neutral.
+
+### High · Jobs & cron
+
+- [ ] MIYO-0090 [High][Jobs & cron] Run `daily-notifications` from one scheduler only
+  - **Where:** vercel.json (0 9 * * * (14:30 IST)) and lib/inngest/functions/daily-notifications.ts (0 8 * * * (13:30 IST))
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('daily-notifications').
+  - **Acceptance check:** Only one schedule for daily-notifications exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0091 [High][Jobs & cron] Run `monthly-leave-reset` from one scheduler only
+  - **Where:** vercel.json (0 0 1 * *) and lib/inngest/functions/monthly-leave-reset.ts (0 0 1 * * (no cronIdempotencyCheck in the Inngest path))
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('monthly-leave-reset').
+  - **Acceptance check:** Only one schedule for monthly-leave-reset exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0092 [High][Jobs & cron] Confirm Inngest is connected in production (birthday wishes and auto-payroll depend on it) **[confirm on prod]**
+  - **Where:** app/api/inngest/route.ts, lib/inngest/functions/celebration-greetings.ts, auto-payroll-generation.ts
+  - **Problem:** QA Round 3: the birthday person got no wish/email. celebration-greetings only exists in Inngest (design doc Q9).
+  - **Fix:** Tarun checks the Inngest dashboard for app sync and recent runs; if not connected, set INNGEST_SIGNING_KEY/EVENT_KEY in Vercel and sync. Add /api/health check that reports last celebration run.
+  - **Acceptance check:** Inngest dashboard shows celebration-greetings ran today at 08:00 IST.
+
+### High · Onboarding
+
+- [ ] MIYO-0093 [High][Onboarding] Password policy rejects common special characters such as # and _
+  - **Where:** lib/password-utils.ts:9,22, lib/utils/password-validation.ts:32, lib/validations/hr.ts:459, app/api/auth/accept-invitation/route.ts:20, app/api/auth/reset-password/route.ts:19, app/(auth)/reset-password/page.tsx:73, features/settings/settings-security.tsx:26,38
+  - **Problem:** Regex allows only @$!%*?& and forbids every other character (QA Round 3 bug 2). Seven copies of the rule.
+  - **Fix:** One shared PASSWORD_POLICY in lib/password-utils.ts: ≥ 8 chars, upper, lower, digit, any non-alphanumeric; no character whitelist. Import it everywhere.
+  - **Acceptance check:** Vitest: 'Abcdef1#' and 'Abcdef1_' valid; UI checklist says 'One symbol'.
+- [ ] MIYO-0094 [High][Onboarding] Banking step Next does nothing when an earlier step has an error **[confirm on prod]**
+  - **Where:** components/hr/onboarding-wizard.tsx, components/hr/_onboarding/step-banking.tsx
+  - **Problem:** QA High; design doc says needs re-test.
+  - **Fix:** On submit failure, jump to the first step with an error and focus the field.
+  - **Acceptance check:** Leave DOB empty, go to Banking, press Next → wizard returns to Personal with the DOB error focused.
+
+### High · Employees & settings
+
+- [ ] MIYO-0095 [High][Employees & settings] Members table shows raw enum roles (CUSTOMER_SUPPORT) **[confirm on prod]**
+  - **Where:** app/(dashboard)/settings/members/page.tsx:461 and :529 (`{member.role}`, `{inv.role}`)
+  - **Problem:** Prod 16 Oct.
+  - **Fix:** Use the role label map (the same one used for the role Select) → 'Customer support'.
+  - **Acceptance check:** Members table shows 'Customer support'.
+- [ ] MIYO-0096 [High][Employees & settings] Members table overflows horizontally and cuts off Department **[confirm on prod]**
+  - **Where:** app/(dashboard)/settings/members/page.tsx
+  - **Problem:** Prod 16 Oct at 1280 px.
+  - **Fix:** Let the table scroll inside its card (overflow-x-auto on the wrapper), truncate email with a tooltip, and move Department before Joined.
+  - **Acceptance check:** At 1280 px all columns are visible; at 768 px the table scrolls inside the card.
+
+### High · Email templates
+
+- [ ] MIYO-0097 [High][Email templates] Replace the email base layout with the table-based gold/ink layout
+  - **Where:** lib/email-templates/base.ts getEmailTemplate()
+  - **Problem:** Current base: <style>-block classes, gradient header and button (`linear-gradient(135deg, ink …)`), div layout, preheader as <meta name=description> (never shown), Google Fonts @import, hover transform, footer 'Miyo Global CRM / Enterprise Resource Management System', text 'Miyo Global' instead of the logo (logoUrl defined, unused).
+  - **Fix:** Port the shell from email-templates/*.html (see email-templates/README.md): 600 px table, inline styles only, ink header with logo.png, 3 px gold rule, hidden preheader div, single gold CTA with ink text, plain footer with org name/address/support. Expose `renderEmail(id, vars)` that loads subject/preheader/html/txt and HTML-escapes vars.
+  - **Acceptance check:** Snapshot test renders every template id; Litmus/Gmail/Outlook preview shows the logo, no gradients, preheader visible in inbox list.
+- [ ] MIYO-0098 [High][Email templates] Send hand-written plain-text parts instead of auto-converted HTML
+  - **Where:** lib/email/sender.ts:39-74 (htmlToText fallback)
+  - **Problem:** QA Round 3: welcome mail text part was raw CSS. Fixed by stripping <style>, but auto text is still noisy (link lists, spacing).
+  - **Fix:** renderEmail returns the .txt from email-templates; sendEmail requires `text` for every template-based mail.
+  - **Acceptance check:** Every sent mail has a text part identical to email-templates/<id>.txt with variables filled.
+- [ ] MIYO-0099 [High][Email templates] Never HTML-escape values used in email subjects
+  - **Where:** lib/email-templates/hr.ts:690 (payslip subject from escaped sMonth/sOrg), other `title:` built from escaped vars
+  - **Problem:** An org or employee name with '&' or an apostrophe appears as '&amp;' / '&#39;' in the subject line.
+  - **Fix:** Build subjects from raw values; escape only inside HTML.
+  - **Acceptance check:** Test: org 'A & B' → subject 'Your payslip for October 2026' body shows 'A &amp; B' in HTML source only.
+- [ ] MIYO-0100 [High][Email templates] Remove ' - Miyo Global' suffixes and emoji from all subjects/headings
+  - **Where:** lib/email-templates/*.ts (≈60 headings with emoji, ≈20 titles ending '- Miyo Global')
+  - **Problem:** Inbox looks spammy; emoji render inconsistently.
+  - **Fix:** Covered by replacing each template (items below); add a unit test that fails if any subject or heading contains an emoji or '- Miyo Global'.
+  - **Acceptance check:** Test passes for all template ids.
+
+### High · Tests
+
+- [ ] MIYO-0101 [High][Tests] Add tests for lib/payroll/load-inputs.ts (OT multiplier, structure PT, exits, loans)
+  - **Where:** lib/payroll/__tests__/load-inputs.test.ts (new)
+  - **Problem:** Only rules.ts helpers are tested; the live loader that pays 2× OT is untested (design doc N5).
+  - **Fix:** Mock db with fixtures; cover OT 1×, PT bands, structure PT 0, exit proration, loan EMI.
+  - **Acceptance check:** Coverage of load-inputs ≥ 90 % lines.
+- [ ] MIYO-0102 [High][Tests] Golden payroll test from Tarun's August sheet
+  - **Where:** lib/payroll/__tests__/august-sheet.test.ts (new), /workspace/miyo-qa/payroll.xlsx values
+  - **Problem:** No end-to-end check against real numbers.
+  - **Fix:** Encode the 11 rows (salary, LOP, OT days) and expected nets under the ₹150/₹250 rule (report §5.2): e.g. 28,350→28,100; 20,000 with 1 LOP→19,104.84; 33,200 with 2 OT days→35,091.94.
+  - **Acceptance check:** All 11 rows match to the paisa.
+- [ ] MIYO-0103 [High][Tests] Golden test for the QA October joiners
+  - **Where:** lib/payroll/__tests__/qa-october.test.ts
+  - **Problem:** QA §5.1: Alpha ₹10,000 joined 15 Oct, Bravo ₹25,000 joined 1 Oct, etc.
+  - **Fix:** Assert PT 150/250, zero LOP before joining, proration per PRORATE_JOINERS.
+  - **Acceptance check:** Bravo net = ₹24,750 for a full October with no absences.
+- [ ] MIYO-0104 [High][Tests] Route-access contract test: every role × every page
+  - **Where:** lib/auth/route-access.test.ts
+  - **Problem:** N3/N15 bugs slipped through.
+  - **Fix:** Table-driven test for all 126 pages and all roles (EVERYONE vs HR_TEAM expectations).
+  - **Acceptance check:** Test fails if /settings or /hr/onboarding/my-tasks regress.
+- [ ] MIYO-0105 [High][Tests] Storage authorisation tests
+  - **Where:** app/api/storage/__tests__ (new)
+  - **Problem:** No tests for cross-employee document access.
+  - **Fix:** Owner allowed, colleague 404, HR allowed, deactivated 403.
+  - **Acceptance check:** All four cases pass.
+- [ ] MIYO-0106 [High][Tests] Leave tests: approved leave vs LOP, auto-approve deduction, manager approval
+  - **Where:** lib/hr/payroll-strict-attendance.test.ts, app/api/hr/leaves/__tests__
+  - **Problem:** N7, N9, N10 untested.
+  - **Fix:** Add cases for each.
+  - **Acceptance check:** Tests pass after fixes, fail before.
+
+## Medium
+
+### Medium · Prod/Performance
+
+- [ ] MIYO-0107 [Medium][Prod/Performance] Lower the postgres pool size for serverless **[confirm on prod]**
+  - **Where:** lib/db.ts:33 (`max = isServerless ? 15 : ... 75`)
+  - **Problem:** 15 connections per serverless instance can exhaust the DB connection limit under load and cause timeouts.
+  - **Fix:** Use max 1–3 per instance with a pooled connection string (PgBouncer/Neon pooler).
+  - **Acceptance check:** Load test with 50 concurrent users shows no 'too many connections'.
+- [ ] MIYO-0108 [Medium][Prod/Performance] Rename middleware.ts to proxy.ts (Next 16 deprecation)
+  - **Where:** middleware.ts
+  - **Problem:** `pnpm build` warns: The "middleware" file convention is deprecated. Please use "proxy" instead.
+  - **Fix:** Run `npx @next/codemod@canary middleware-to-proxy .` and re-test auth redirects and MFA gate.
+  - **Acceptance check:** Build output has no deprecation warning; signed-out redirect still works.
+
+### Medium · Build port
+
+- [ ] MIYO-0109 [Medium][Build port] Honour canViewComments on client grants
+  - **Where:** lib/projects/client-access.ts:11,36, app/api/portal/projects/**
+  - **Problem:** Stored but never used (PR #4 gap).
+  - **Fix:** Return client-visible comments only when canViewComments is true; add a comments section to the portal.
+  - **Acceptance check:** Grant without the flag sees no comments; with it sees only client-visible ones.
+- [ ] MIYO-0110 [Medium][Build port] Intercepting-route ticket side pane
+  - **Where:** app/(dashboard)/projects/[projectId]/@panel/(.)tickets/[ticketKey] (new)
+  - **Problem:** Board opens a Sheet; Build has a deep-linkable intercepted pane (PR #4 'partial').
+  - **Fix:** Add the parallel/intercepting route per node_modules/next/dist/docs; Sheet and page share one body.
+  - **Acceptance check:** Opening a card updates the URL; refresh shows the full page; back closes the pane.
+- [ ] MIYO-0111 [Medium][Build port] Ticket checklists
+  - **Where:** lib/db/schema/projects.ts (ticket_checklists, ticket_checklist_items), components/projects/ticket-details
+  - **Problem:** Skipped in PR #4; Streamline has features/build/ticket-details/ticket-checklists.tsx.
+  - **Fix:** Add tables + CRUD API + UI with progress on cards.
+  - **Acceptance check:** Checklist items can be added, ticked, reordered; card shows 2/5.
+- [ ] MIYO-0112 [Medium][Build port] Workflow transitions (allowed status moves)
+  - **Where:** features/build/workflow/* in Streamline; CRM has WIP limits only
+  - **Problem:** Any status can move to any status.
+  - **Fix:** Add project_status_transitions and enforce in move-ticket.ts (409 on disallowed).
+  - **Acceptance check:** Disallowed move rolls back with a toast.
+- [ ] MIYO-0113 [Medium][Build port] Cross-project 'My work' page
+  - **Where:** Streamline features/build/my-work, all-work; CRM has per-project my-tickets only
+  - **Problem:** No single place to see my tickets across projects.
+  - **Fix:** Add /projects/my-work listing assigned tickets across accessible projects with filters.
+  - **Acceptance check:** User sees tickets from 3 projects in one list.
+- [ ] MIYO-0114 [Medium][Build port] Releases / versions
+  - **Where:** Streamline features/build/releases
+  - **Problem:** Missing.
+  - **Fix:** releases table (projectId, name, targetDate, status) + ticket.fixVersion; release page with progress.
+  - **Acceptance check:** Tickets can be assigned to a release; release shows % done.
+- [ ] MIYO-0115 [Medium][Build port] Roadmap across projects
+  - **Where:** Streamline features/build/roadmap; CRM has per-project timeline
+  - **Problem:** Missing portfolio view.
+  - **Fix:** /projects/roadmap with epics/milestones across projects on a timeline.
+  - **Acceptance check:** Roadmap shows milestones from all accessible projects.
+- [ ] MIYO-0116 [Medium][Build port] Project status updates (health posts)
+  - **Where:** Streamline features/build/updates
+  - **Problem:** Missing; overview has health signal only.
+  - **Fix:** project_updates (status on-track/at-risk/off-track, body, author); overview shows latest.
+  - **Acceptance check:** Manager posts an update; overview shows it.
+- [ ] MIYO-0117 [Medium][Build port] Risks and decisions log
+  - **Where:** Streamline build/[projectId]/risks, decisions
+  - **Problem:** Missing.
+  - **Fix:** Simple risk register and decision log per project.
+  - **Acceptance check:** Risks and decisions can be created and listed.
+- [ ] MIYO-0118 [Medium][Build port] Saved board filters wired to project_views
+  - **Where:** Streamline use-board-saved-views.ts; CRM has project_views + /views page
+  - **Problem:** Verify the board can save/apply the current URL filters as a view.
+  - **Fix:** Add 'Save view' on the board writing project_views.
+  - **Acceptance check:** Saved view restores filters.
+- [ ] MIYO-0119 [Medium][Build port] Project files tab
+  - **Where:** Streamline features/build/files
+  - **Problem:** Attachments exist per ticket only.
+  - **Fix:** Project-level files list (R2) with access via the project helper.
+  - **Acceptance check:** Files upload and download only for members.
+- [ ] MIYO-0120 [Medium][Build port] Workload view by assignee
+  - **Where:** Streamline features/build/workload; CRM resource-allocation is org-level
+  - **Problem:** Per-project workload missing.
+  - **Fix:** Board grouped by assignee with estimate totals.
+  - **Acceptance check:** Workload shows hours per person per cycle.
+- [ ] MIYO-0121 [Medium][Build port] Import/export tickets (CSV)
+  - **Where:** Streamline features/build/import-export
+  - **Problem:** Missing.
+  - **Fix:** CSV export of filtered tickets; CSV import with column mapping and dry run.
+  - **Acceptance check:** Export then import round-trips 50 tickets.
+- [ ] MIYO-0122 [Medium][Build port] Project webhooks
+  - **Where:** Streamline features/build/webhooks
+  - **Problem:** Org webhooks exist but no ticket events.
+  - **Fix:** Emit ticket.created/updated/moved events to the org webhook dispatcher (after the header fix).
+  - **Acceptance check:** A ticket move delivers a webhook.
+- [ ] MIYO-0123 [Medium][Build port] Automations (simple rules)
+  - **Where:** Streamline features/build/automations
+  - **Problem:** Missing.
+  - **Fix:** Rules: when status → Done then set resolvedAt/notify; when label X then assign Y. Run in Inngest.
+  - **Acceptance check:** Rule fires once per event.
+
+### Medium · Payroll
+
+- [ ] MIYO-0124 [Medium][Payroll] Onboarding stores 25 % in `allowances` instead of `specialAllowance`
+  - **Where:** app/api/hr/employees/onboard/route.ts (salary structure insert)
+  - **Problem:** Design doc N19: the split is 50/25/25 but the third part lands in the wrong column.
+  - **Fix:** Write specialAllowance; leave allowances 0.
+  - **Acceptance check:** New hire structure has specialAllowance = 25 % of CTC.
+- [ ] MIYO-0125 [Medium][Payroll] Loan EMI skipped for low net pay is silent, and ceil EMIs over-collect
+  - **Where:** lib/payroll/compute.ts:120-123, salary loans
+  - **Problem:** If net room < EMI the EMI is skipped without telling anyone; EMIs computed with ceil collect up to ₹(n−1) extra (design doc N18).
+  - **Fix:** Return `emiSkipped: true` and notify HR; make the last EMI the remainder.
+  - **Acceptance check:** Test: 3-EMI loan of ₹1,000 collects 334+333+333.
+- [ ] MIYO-0126 [Medium][Payroll] Payslip download is impossible for drafts, so HR cannot review before approval
+  - **Where:** app/api/hr/payrolls/preview-pdf/route.ts, my-payslips download
+  - **Problem:** QA 4.8: download only after PAID + CEO approval.
+  - **Fix:** Allow HR/CEO/Admin to download a watermarked 'DRAFT' PDF.
+  - **Acceptance check:** HR downloads a DRAFT PDF with a visible DRAFT watermark.
+- [ ] MIYO-0127 [Medium][Payroll] Payroll empty state has no action **[confirm on prod]**
+  - **Where:** app/(dashboard)/hr/payroll/page.tsx
+  - **Problem:** QA: empty state promised 'Generate payroll for all employees' without a button (copy since changed; re-verify).
+  - **Fix:** Empty state = one line + 'Generate payroll' primary button opening the existing dialog.
+  - **Acceptance check:** Empty month shows the button and it opens the dialog.
+- [ ] MIYO-0128 [Medium][Payroll] Show 'Approved' / 'Paid' rows only when set
+  - **Where:** features/hr/payroll/payroll-record-preview-sheet.tsx:226-232
+  - **Problem:** QA: 'Approved: | Paid:' shown blank.
+  - **Fix:** Render the row only when the date exists, otherwise show the status 'Waiting for CEO approval'.
+  - **Acceptance check:** Draft record shows no blank Approved/Paid rows.
+
+### Medium · Security
+
+- [ ] MIYO-0129 [Medium][Security] Org-wide ticket labels can be created by any employee
+  - **Where:** app/api/projects/labels/route.ts:26-35
+  - **Problem:** POST only needs withAuth.
+  - **Fix:** Require project manager role or HR/CEO/Admin.
+  - **Acceptance check:** Viewer gets 403 on POST /api/projects/labels.
+- [ ] MIYO-0130 [Medium][Security] Turnstile env vars configured but never verified
+  - **Where:** .env.example TURNSTILE_*, app/(public)/intake/[token], app/api/public/intake/[token]/route.ts
+  - **Problem:** Public intake form has no bot protection (design doc N21).
+  - **Fix:** Verify a Turnstile token in the public intake POST (also reused by the ATS apply form).
+  - **Acceptance check:** POST without a valid token returns 400.
+- [ ] MIYO-0131 [Medium][Security] Fine-grained permission UI is not enforced
+  - **Where:** lib/rbac/*, app/(dashboard)/settings/permissions/page.tsx
+  - **Problem:** Permissions can be toggled in the UI but routes check roles, not permissions (design doc N22).
+  - **Fix:** Either enforce `hasPermission()` in withRoles or hide the permissions page.
+  - **Acceptance check:** Toggling a permission changes API behaviour, or the page is gone.
+- [ ] MIYO-0132 [Medium][Security] Add Content-Security-Policy nonces instead of unsafe-inline
+  - **Where:** lib/security/csp.ts, next.config.ts
+  - **Problem:** Design doc §14 proposal (nonce CSP).
+  - **Fix:** Generate a nonce in proxy/middleware and pass to scripts.
+  - **Acceptance check:** CSP header has no 'unsafe-inline' for script-src.
+
+### Medium · Access control
+
+- [ ] MIYO-0133 [Medium][Access control] Unknown /settings/<page> renders Account Settings instead of 404
+  - **Where:** app/(dashboard)/settings/[[...rest]]/page.tsx
+  - **Problem:** QA 4.3: /settings/unknown-page silently shows account settings.
+  - **Fix:** Accept only known tab slugs; call notFound() otherwise.
+  - **Acceptance check:** /settings/xyz shows the 404 page.
+- [ ] MIYO-0134 [Medium][Access control] Admin's own expense is auto-approved **[confirm on prod]**
+  - **Where:** app/api/hr/expenses (create), lib/auth/role-guards isExpenseAdmin
+  - **Problem:** QA 4.10: EXP-2026-001 auto-approved; Pending stays 0.
+  - **Fix:** Never auto-approve the submitter's own claim; route Admin claims to CEO.
+  - **Acceptance check:** Admin submits a claim → status PENDING, CEO sees it.
+
+### Medium · Leave
+
+- [ ] MIYO-0135 [Medium][Leave] Send the 'Leave Request' email only after the request is committed **[confirm on prod]**
+  - **Where:** app/api/hr/leaves/route.ts:16, server/actions/leave-actions/leave-requests.ts:16
+  - **Problem:** QA 4.4: HR got two emails; the second came from a rejected overlapping attempt.
+  - **Fix:** Send after the insert returns a row; overlap rejection returns before any email.
+  - **Acceptance check:** Overlapping request → 409 and no email.
+- [ ] MIYO-0136 [Medium][Leave] Leave policy page is read-only; entitlements come from env/constants
+  - **Where:** app/(dashboard)/hr/leaves/policies/page.tsx
+  - **Problem:** Design doc T10/Q14.
+  - **Fix:** DECISION for Tarun; if editable, add leave_policies table (orgId, leaveTypeId, annualQuota, monthlyAccrual, carryForwardMax) and a form for HR.
+  - **Acceptance check:** HR edits casual quota and new balances use it.
+
+### Medium · Attendance
+
+- [ ] MIYO-0137 [Medium][Attendance] Check-in times follow the browser timezone instead of IST **[confirm on prod]**
+  - **Where:** features/hr/attendance/check-in-button.tsx and attendance tables
+  - **Problem:** QA 4.6; attendance fixed in 53b6615 but other UTC slicing remains (document expiry).
+  - **Fix:** Use one formatIst() helper everywhere times are shown.
+  - **Acceptance check:** With browser TZ = UTC, check-in still shows IST.
+
+### Medium · Jobs & cron
+
+- [ ] MIYO-0138 [Medium][Jobs & cron] Run `holiday-notifications` from one scheduler only
+  - **Where:** vercel.json (0 12 * * * (17:30 IST)) and lib/inngest/functions/holiday-notifications.ts (0 8 * * * (13:30 IST))
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('holiday-notifications').
+  - **Acceptance check:** Only one schedule for holiday-notifications exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0139 [Medium][Jobs & cron] Run `auto-checkout` from one scheduler only
+  - **Where:** vercel.json (0 19 * * * (00:30 IST)) and lib/inngest/functions/auto-checkout.ts (0 * * * * (hourly))
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('auto-checkout').
+  - **Acceptance check:** Only one schedule for auto-checkout exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0140 [Medium][Jobs & cron] Run `weekly-attendance-report` from one scheduler only
+  - **Where:** vercel.json (0 9 * * 6 (Sat 14:30 IST)) and lib/inngest/functions/weekly-attendance-report.ts (0 8 * * 1 (Mon 13:30 IST))
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('weekly-attendance-report').
+  - **Acceptance check:** Only one schedule for weekly-attendance-report exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0141 [Medium][Jobs & cron] Run `weekly-ceo-recap` from one scheduler only
+  - **Where:** vercel.json (0 10 * * 1) and lib/inngest/functions/weekly-ceo-recap.ts (0 9 * * 1)
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('weekly-ceo-recap').
+  - **Acceptance check:** Only one schedule for weekly-ceo-recap exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0142 [Medium][Jobs & cron] Run `monthly-expense-report` from one scheduler only
+  - **Where:** vercel.json (0 9 1 * *) and lib/inngest/functions/monthly-expense-report.ts (0 8 1 * *)
+  - **Problem:** The same job is scheduled twice (design doc N11). Emails/notifications can go out twice; the Inngest path does not share the cron route's idempotency guard.
+  - **Fix:** Keep the Inngest function (retries, steps) and remove the vercel.json entry, OR keep Vercel and remove it from lib/inngest/functions/index.ts — after Tarun confirms Inngest is connected in production. Wrap the remaining one with cronIdempotencyCheck('monthly-expense-report').
+  - **Acceptance check:** Only one schedule for monthly-expense-report exists in the repo; a manual double trigger runs the work once.
+- [ ] MIYO-0143 [Medium][Jobs & cron] Delete the dead cron `close-expired-job-postings`
+  - **Where:** vercel.json (path /api/cron/close-expired-job-postings — no route exists)
+  - **Problem:** 404 every day (design doc N12). Recruitment was removed; the ATS will add its own job.
+  - **Fix:** Remove the entry.
+  - **Acceptance check:** vercel.json has no close-expired-job-postings.
+- [ ] MIYO-0144 [Medium][Jobs & cron] `scheduled-reports` cron route is never scheduled and sends Sales/Lead reports
+  - **Where:** app/api/cron/scheduled-reports/route.ts (subjects 'Daily Lead Report', 'Weekly Sales Report')
+  - **Problem:** Dead CRM leftover.
+  - **Fix:** Delete the route (or rewrite as HR reports if Tarun wants them).
+  - **Acceptance check:** Route removed; dead-code check still green.
+- [ ] MIYO-0145 [Medium][Jobs & cron] Deactivate accounts automatically on the last working day
+  - **Where:** app/api/hr/exit, new Inngest function
+  - **Problem:** Resignation COMPLETED does not deactivate the account (design doc N13).
+  - **Fix:** Daily job: users whose approved resignation lastWorkingDate < today IST → isActive=false, revoke sessions, send auth-account-deactivated to personal email.
+  - **Acceptance check:** Test user with yesterday's last day is inactive after the job.
+- [ ] MIYO-0146 [Medium][Jobs & cron] Holiday added after both daily runs gets no reminder
+  - **Where:** lib/inngest/functions/holiday-notifications.ts
+  - **Problem:** Design doc §11.4 edge case.
+  - **Fix:** When a holiday is created for tomorrow after 13:30 IST, send the reminder immediately (or schedule an Inngest event).
+  - **Acceptance check:** Holiday created at 18:00 for tomorrow → reminder sent within a minute.
+- [ ] MIYO-0147 [Medium][Jobs & cron] Auto-absent emails to every absentee every day; add an HR digest
+  - **Where:** server/actions/auto-absent-leave.ts
+  - **Problem:** Notification noise (QA 4.5, design doc §11.5).
+  - **Fix:** Keep the employee email (new template attendance-auto-absent) but send HR one daily digest instead of per-person mails.
+  - **Acceptance check:** HR receives one digest per day.
+
+### Medium · Onboarding
+
+- [ ] MIYO-0148 [Medium][Onboarding] Personal step 'Checking…' email check hangs > 25 s **[confirm on prod]**
+  - **Where:** components/hr/_onboarding/step-personal-info.tsx:128, app/api/hr/employees/check-email/route.ts
+  - **Problem:** QA Round 3 bug 3.
+  - **Fix:** Debounce 400 ms, abort previous request, 5 s timeout with a 'could not check' fallback that lets the user continue (server re-checks on submit).
+  - **Acceptance check:** Check completes < 2 s on prod; timeout shows fallback.
+- [ ] MIYO-0149 [Medium][Onboarding] Remove unused toTitleCase from the onboarding wizard
+  - **Where:** components/hr/onboarding-wizard.tsx:52
+  - **Problem:** Names are now stored as typed (lib/utils/person-name.ts); the old helper remains.
+  - **Fix:** Delete it if unused; otherwise make sure it never touches person names.
+  - **Acceptance check:** grep toTitleCase returns nothing in components/hr.
+
+### Medium · Employees & settings
+
+- [ ] MIYO-0150 [Medium][Employees & settings] Two employee directories (/hr cards vs /hr/employees table) **[confirm on prod]**
+  - **Where:** app/(dashboard)/hr/page.tsx, app/(dashboard)/hr/employees/page.tsx
+  - **Problem:** QA 4.11.
+  - **Fix:** Keep /hr/employees (table) as the directory; /hr becomes the HR overview without a duplicate list.
+  - **Acceptance check:** Only one employee list exists.
+- [ ] MIYO-0151 [Medium][Employees & settings] Incentives cannot be created
+  - **Where:** app/(dashboard)/hr/incentives/page.tsx, app/api/hr/incentives
+  - **Problem:** QA 4.10 / design doc: still open, '?' placeholders.
+  - **Fix:** Add 'New incentive' sheet (employee, amount ₹, period, reason) using the existing API, or hide the page.
+  - **Acceptance check:** HR creates an incentive and sees it listed.
+- [ ] MIYO-0152 [Medium][Employees & settings] Reimbursements and Loans missing from the employee sidebar
+  - **Where:** components/layout/sidebar/sidebar-nav-items.ts
+  - **Problem:** QA 4.10; design doc still open. The highlight falls on Employees.
+  - **Fix:** Add both under My HR for every role; fix active-state matching.
+  - **Acceptance check:** Employee sees Reimbursements/Loans; correct item highlighted.
+- [ ] MIYO-0153 [Medium][Employees & settings] My Documents missing from the non-admin sidebar
+  - **Where:** components/layout/sidebar/sidebar-nav-items.ts, app/(dashboard)/hr/my-documents
+  - **Problem:** Page exists (acbf321) but employees cannot find it (design doc T6).
+  - **Fix:** Add 'My documents' under My HR for all roles.
+  - **Acceptance check:** Employee sidebar shows My documents.
+
+### Medium · Email templates
+
+- [ ] MIYO-0154 [Medium][Email templates] Move inline-HTML emails into the template system
+  - **Where:** server/actions/auto-absent-leave.ts, lib/hr/late-arrival-after-check-in.ts, app/api/hr/onboarding/reminders/route.ts, app/api/hr/holiday-work-requests/route.ts, lib/hr/one-on-one-invite.ts, lib/calendar-event-notifications.ts, app/api/hr/*/export/email/route.ts (6), server/actions/expense-export.ts, server/actions/weekly-ceo-recap.ts
+  - **Problem:** These build their own HTML strings, bypassing branding and escaping.
+  - **Fix:** Switch each to renderEmail() with the matching template id (attendance-auto-absent, attendance-late-arrival, onboarding-reminder, attendance-holiday-work-*, one-on-one-invite, calendar-event, data-export-ready, weekly-ceo-recap).
+  - **Acceptance check:** `grep -rn "<p" app/api server/actions lib/hr | grep sendEmail -l` returns nothing.
+- [ ] MIYO-0155 [Medium][Email templates] Email test endpoint hard-codes old subjects
+  - **Where:** app/api/settings/email-templates/test/route.ts
+  - **Problem:** Subjects 'Verify Your Email Address - Miyo Global' etc. duplicated here.
+  - **Fix:** Render via renderEmail(id) for any template id so the test mail equals production.
+  - **Acceptance check:** Settings → Email templates → Send test sends the new design.
+- [ ] MIYO-0156 [Medium][Email templates] Wire the senders that have no production caller
+  - **Where:** sendAssetAssignedEmail, sendAssetAssignedHrEmail (hr-assets notifyAssetAssignment), sendDocumentExpiryReminderEmail, sendPasswordExpiryWarningEmail, sendPayslipGeneratedEmail, sendHolidayAnnouncementEmail, sendBulkCompanyAnnouncement
+  - **Problem:** Design doc §11.2 'Dead' list.
+  - **Fix:** Call asset-assigned on assignment, document-expiry from a daily job, password-expiry from a daily job when passwordExpiryDays is set; delete sendPayslipGeneratedEmail (payroll-payslip covers it).
+  - **Acceptance check:** Each kept sender has at least one caller and a test.
+- [ ] MIYO-0157 [Medium][Email templates] Merge the two welcome emails a new hire gets on day one
+  - **Where:** auth-welcome-set-password (onboard API) and onboarding-welcome (Inngest initiate-onboarding)
+  - **Problem:** Two 'Welcome to Miyo Global' mails arrive together.
+  - **Fix:** Send auth-welcome-set-password at hire; send onboarding-welcome 2 days before joining date (or on hire if joining ≤ 2 days away).
+  - **Acceptance check:** New hire joining in a week receives one mail today and one 2 days before.
+- [ ] MIYO-0158 [Medium][Email templates] Send work emails for deactivation/termination to the personal address
+  - **Where:** auth-account-deactivated, exit-termination-notice senders
+  - **Problem:** Mail goes to the work inbox that is being deactivated.
+  - **Fix:** Use users.personalEmail when present, else work email.
+  - **Acceptance check:** Deactivated user with personal email receives it there.
+- [ ] MIYO-0159 [Medium][Email templates] Replace email template `auth-welcome-set-password`
+  - **Where:** Current: getWelcomeEmailTemplate (lib/email-templates/auth.ts) via sendWelcomeEmail. New: email-templates/auth-welcome-set-password.html + .txt. Trigger: POST /api/hr/employees/onboard. To: the new employee.
+  - **Problem:** Emoji in the heading ('🚀'); Generic onboarding bullet list that does not match what the app offers on day one; Shows the email address in a monospace 'credential box' although no credential is sent; Name is shown as stored; QA saw re-cased names ('Qa') in Round 3 — confirm the stored value is now as typed; Expiry (7 days) is hard-coded in copy and not read from the token TTL; QA Round 3: text part was raw CSS (now fixed by htmlToText in lib/email/sender.ts — keep the hand-written .txt instead of auto-conversion)
+  - **Fix:** Implement with renderEmail('auth-welcome-set-password', vars). Subject: "Set up your {{org_name}} account". Preheader: "Your account is ready. Choose a password to sign in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0160 [Medium][Email templates] Replace email template `auth-password-reset`
+  - **Where:** Current: getPasswordResetEmailTemplate. New: email-templates/auth-password-reset.html + .txt. Trigger: POST /api/auth/forgot-password. To: the user.
+  - **Problem:** Yellow warning banner styling; Does not say when the request was made or from where
+  - **Fix:** Implement with renderEmail('auth-password-reset', vars). Subject: "Reset your password". Preheader: "Use this link within 1 hour to choose a new password.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0161 [Medium][Email templates] Replace email template `leave-request-approver`
+  - **Where:** Current: getLeaveRequestEmailTemplate (hr.ts) via sendLeaveRequestEmail. New: email-templates/leave-request-approver.html + .txt. Trigger: leave applied. To: resolved approver + HR_LEAVE_NOTIFY_EMAIL.
+  - **Problem:** Emoji heading ('📅'); QA Round 3: HR got 'Leave Request' twice for one request (second from a rejected overlap attempt) — send only after the insert commits; Subject suffix ' - Miyo Global' on every email; Balance after approval not shown
+  - **Fix:** Implement with renderEmail('leave-request-approver', vars). Subject: "Leave request: {{employee_name}}, {{date_range}}". Preheader: "{{leave_type}} · {{day_count}} days · waiting for your approval". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0162 [Medium][Email templates] Replace email template `leave-approved`
+  - **Where:** Current: getLeaveStatusUpdateEmailTemplate (approved branch). New: email-templates/leave-approved.html + .txt. Trigger: leave approved. To: the employee.
+  - **Problem:** One template with emoji branches for approve and reject ('✅'/'❌'); Does not show remaining balance
+  - **Fix:** Implement with renderEmail('leave-approved', vars). Subject: "Leave approved: {{date_range}}". Preheader: "{{leave_type}} approved by {{approver_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0163 [Medium][Email templates] Replace email template `leave-rejected`
+  - **Where:** Current: getLeaveStatusUpdateEmailTemplate (rejected branch). New: email-templates/leave-rejected.html + .txt. Trigger: leave rejected. To: the employee.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('leave-rejected', vars). Subject: "Leave not approved: {{date_range}}". Preheader: "{{approver_name}} added a note.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0164 [Medium][Email templates] Replace email template `payroll-payslip`
+  - **Where:** Current: getPayslipEmailTemplate (hr.ts) + lib/hr/send-payslip-email.ts. New: email-templates/payroll-payslip.html + .txt. Trigger: payroll marked PAID. To: the employee.
+  - **Problem:** Subject built from HTML-escaped values (an org name with '&' shows '&amp;' in the subject); Green success box styling; Two subject lines exist (template builds one, send-payslip-email.ts builds another); Net only; no gross/deduction summary
+  - **Fix:** Implement with renderEmail('payroll-payslip', vars). Subject: "Your payslip for {{month_label}}". Preheader: "Net pay ₹{{net_pay}} · PDF attached". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0165 [Medium][Email templates] Replace email template `celebration-birthday`
+  - **Where:** Current: getCelebrationEmailTemplate (birthday branch). New: email-templates/celebration-birthday.html + .txt. Trigger: Inngest celebration-greetings 08:00 IST. To: the person.
+  - **Problem:** Hard-codes 'Miyo Global' instead of {{org_name}}; QA Round 3: birthday person got no email — only runs if Inngest is connected in production; Title suffix ' - Miyo Global'
+  - **Fix:** Implement with renderEmail('celebration-birthday', vars). Subject: "Happy birthday, {{first_name}}". Preheader: "Wishing you a great year ahead from everyone at {{org_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0166 [Medium][Email templates] Replace email template `holiday-reminder`
+  - **Where:** Current: getHolidayAnnouncementEmailTemplate (organization.ts) via sendBulkHolidayAnnouncement. New: email-templates/holiday-reminder.html + .txt. Trigger: holiday-notifications (day before). To: all active members.
+  - **Problem:** Emojis ('🎉', '💬', '🎊'); Always says 'OFFICE CLOSED' in green even for half-day holidays; 'Dear Team' + filler paragraph about finishing urgent tasks; QA: 'QA Test Holiday' (25 Oct 2031) will trigger this for everyone unless deleted
+  - **Fix:** Implement with renderEmail('holiday-reminder', vars). Subject: "Holiday tomorrow: {{holiday_name}}". Preheader: "{{holiday_date}} · {{closure_type}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+
+### Medium · Tests
+
+- [ ] MIYO-0167 [Medium][Tests] Webhook dispatcher test
+  - **Where:** lib/inngest/functions/__tests__/webhook-dispatcher.test.ts
+  - **Problem:** Header bug undetected.
+  - **Fix:** Assert header names are valid tokens and signature matches HMAC.
+  - **Acceptance check:** Test passes.
+- [ ] MIYO-0168 [Medium][Tests] Error-safety test for API helpers
+  - **Where:** lib/api/__tests__/server-error.test.ts
+  - **Problem:** Prevent SQL leaks.
+  - **Fix:** Thrown DB error → body has no SQL.
+  - **Acceptance check:** Test passes.
+- [ ] MIYO-0169 [Medium][Tests] Email template snapshot + lint test
+  - **Where:** lib/email-templates/__tests__/templates.test.ts
+  - **Problem:** No coverage of templates.
+  - **Fix:** Render all ids with sample vars; assert no '{{' left, no emoji in subject/heading, text part present.
+  - **Acceptance check:** Test passes for all ids.
+- [ ] MIYO-0170 [Medium][Tests] Cron/Inngest uniqueness test
+  - **Where:** scripts/check-schedules.test.ts
+  - **Problem:** Duplicate schedules.
+  - **Fix:** Parse vercel.json and inngest functions; fail if a job id appears in both.
+  - **Acceptance check:** Test passes after the dedupe items.
+- [ ] MIYO-0171 [Medium][Tests] Add Playwright golden paths (sign in, onboard, leave apply/approve, payroll generate, project board)
+  - **Where:** e2e/ (new), playwright.config.ts
+  - **Problem:** README mentions Playwright but there are no e2e tests (design doc §16).
+  - **Fix:** Run against local dev + local DB with seeded data; never against prod.
+  - **Acceptance check:** `pnpm e2e` passes locally and in CI.
+- [ ] MIYO-0172 [Medium][Tests] Coverage gate ≥ 50 % on lib/ and server/
+  - **Where:** vitest.config.ts, ci.yml
+  - **Problem:** 97 test files/846 tests but no coverage threshold.
+  - **Fix:** Enable @vitest/coverage-v8 thresholds; raise gradually.
+  - **Acceptance check:** CI fails below threshold.
+
+### Medium · Leftovers
+
+- [ ] MIYO-0173 [Medium][Leftovers] Topbar 'Create' menu links to removed CRM pages (/crm/leads, /crm/deals)
+  - **Where:** components/layout/topbar.tsx:30-31
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete both CREATE_ITEMS entries and the unused icons.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0174 [Medium][Leftovers] Dashboard recent-activity links to removed /dashboard/branches
+  - **Where:** features/dashboard/recent-activity-card.tsx:72
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove the branch activity branch; drop 'branch' items from the recent-activity API.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0175 [Medium][Leftovers] HR overview 'Open Positions' card links to removed /hr/recruitment
+  - **Where:** features/hr/hr-dashboard-overview.tsx:730-736
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove the card (re-add when the ATS ships, linking to /recruitment).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0176 [Medium][Leftovers] AI hub offers sales tools (Deal prediction, Objection handler, Meeting prep, Lead scoring, Enrich lead, Churn risk, Next action)
+  - **Where:** app/(dashboard)/ai/page.tsx:48-231; app/api/ai/{predict-deal,objection-handler,meeting-prep,score-lead,enrich-lead,churn-risk,next-action,content-brief,subject-lines,sentiment-analysis}
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove the sales features and their routes/hooks (lib/api/hooks/ai.ts); keep HR ones.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+
+### Medium · Design/UI
+
+- [ ] MIYO-0177 [Medium][Design/UI] Landing page shows fake testimonials and star ratings
+  - **Where:** features/landing/landing-shared.tsx:123-145, landing-page.tsx:272-291
+  - **Problem:** Invented quotes ('Arjun Mehta', 'Priya Sharma' praising a 'sprint + CRM combo') with 5-star rows. Looks AI-generated and is untrue.
+  - **Fix:** Delete the testimonials section.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0178 [Medium][Design/UI] Stat cards accept rainbow colours (red/blue/purple/green)
+  - **Where:** components/ui/stat-card.tsx:29 (`color?: "gold"|"blue"|"green"|"red"|"purple"`), callers in features/hr/hr-dashboard-overview.tsx, features/dashboard/hr-widgets.tsx, app/(dashboard)/hr/onboarding/page.tsx
+  - **Problem:** Coloured stat tiles and numbers (QA design review).
+  - **Fix:** Remove the color prop; numbers in ink, one gold accent for the primary metric only. Update all callers.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0179 [Medium][Design/UI] Icon chip in every card header and list row (85 files use IconChip)
+  - **Where:** components/ui/icon-chip.tsx and the 85 importing files (rg -l IconChip)
+  - **Problem:** Icon overload makes pages look generated (QA 📷 02).
+  - **Fix:** Remove IconChip from card headers and list rows; keep icons only in navigation and buttons. Do it page by page (see items below).
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0180 [Medium][Design/UI] Leaves page shows the same balance three times and colours disagree
+  - **Where:** app/(dashboard)/hr/leaves/leaves-wfh-content.tsx
+  - **Problem:** QA 📷 04: Available 8 / Casual 2/12 / chart; sick red vs blue.
+  - **Fix:** One balance table; one colour per leave type from a shared map.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0181 [Medium][Design/UI] Attendance page is overcrowded (timer, calendar, heatmap, requests)
+  - **Where:** app/(dashboard)/hr/attendance/page.tsx
+  - **Problem:** QA 📷 05; heatmap contradicts stats.
+  - **Fix:** Remove the heatmap; tabs: Today, Calendar, Requests.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0182 [Medium][Design/UI] Members/roles pages: role pills use rainbow tones
+  - **Where:** app/(dashboard)/settings/members/page.tsx:461 (ROLE_TONES)
+  - **Problem:** Coloured pills per role.
+  - **Fix:** Neutral pill for all roles.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+
+### Medium · Dead code
+
+- [ ] MIYO-0183 [Medium][Dead code] Make `pnpm lint:dead-code` part of CI once it is green
+  - **Where:** .github/workflows/ci.yml, package.json
+  - **Problem:** The check exists but exits 1 on main and is not enforced.
+  - **Fix:** Add it to CI after the dead-code items are done.
+  - **Acceptance check:** CI runs lint:dead-code and it passes.
+- [ ] MIYO-0184 [Medium][Dead code] Remove the duplicate email sender layer (lib/email.ts vs lib/email/*.ts)
+  - **Where:** lib/email.ts (1,054 lines, 54 senders) and lib/email/{announcements,auth,crm,hr-documents,hr-employees,hr-expenses,hr-helpdesk,hr-payroll,hr-performance,hr-reports,onboarding,projects,support}.ts (0 importers)
+  - **Problem:** Every sender exists twice; `@/lib/email` resolves to lib/email.ts, so the lib/email/* copies (except hr-appraisal-pip, hr-assets, hr-bonuses, hr-leaves) are dead and can drift.
+  - **Fix:** Pick lib/email/* as the home, add lib/email/index.ts re-exporting all senders, delete lib/email.ts. Watch that hr-leaves.ts and lib/email.ts both define sendLeaveRequestEmail — keep one.
+  - **Acceptance check:** Only one definition of each sender (`grep -rn "export async function sendLeaveRequestEmail" lib` → 1 hit); all imports compile.
+
+### Medium · Code hygiene
+
+- [ ] MIYO-0185 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/assets/page.tsx
+  - **Where:** app/(dashboard)/hr/assets/page.tsx lines 205, 208
+  - **Problem:** The 'employeeList' conditional could make the dependencies of useCallback Hook (at line 308) change on every r; The 'employeeList' conditional could make the dependencies of useCallback Hook (at line 318) change on every r; The 'employeeList' conditional could make the dependencies of useMemo Hook (at line 246) change on every rende; The 'items' conditional could make the dependencies of useCallback Hook (at line 385) change on every render. ; The 'items' conditional could make the dependencies of useCallback Hook (at line 409) change on every render. ; The 'items' conditional could make the d
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0186 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/career-profiles/page.tsx
+  - **Where:** app/(dashboard)/hr/career-profiles/page.tsx lines 64
+  - **Problem:** The 'ladders' conditional could make the dependencies of useMemo Hook (at line 83) change on every render. To 
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0187 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/document-review/page.tsx
+  - **Where:** app/(dashboard)/hr/document-review/page.tsx lines 458
+  - **Problem:** The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 464) change on ever; The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 470) change on ever; The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 495) change on ever
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0188 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/document-types/page.tsx
+  - **Where:** app/(dashboard)/hr/document-types/page.tsx lines 218
+  - **Problem:** The 'list' logical expression could make the dependencies of useCallback Hook (at line 269) change on every re
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0189 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/employees/skills-matrix/page.tsx
+  - **Where:** app/(dashboard)/hr/employees/skills-matrix/page.tsx lines 145, 146
+  - **Problem:** The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 174) change on ever; The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 221) change on ever; The 'allEmployees' logical expression could make the dependencies of useMemo Hook (at line 229) change on ever; The 'allSkills' logical expression could make the dependencies of useMemo Hook (at line 181) change on every r; The 'allSkills' logical expression could make the dependencies of useMemo Hook (at line 248) change on every r
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0190 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/holidays/page.tsx
+  - **Where:** app/(dashboard)/hr/holidays/page.tsx lines 174, 260
+  - **Problem:** React Hook useCallback has missing dependencies: 'isHalfDay', 'message', and 'name'. Either include them or re; The 'holidays' logical expression could make the dependencies of useMemo Hook (at line 275) change on every re
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0191 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/leaves/leaves-wfh-content.tsx
+  - **Where:** app/(dashboard)/hr/leaves/leaves-wfh-content.tsx lines 60
+  - **Problem:** The 'myLeaveRequests' logical expression could make the dependencies of useMemo Hook (at line 96) change on ev
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0192 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/my-payslips/page.tsx
+  - **Where:** app/(dashboard)/hr/my-payslips/page.tsx lines 102
+  - **Problem:** React Hook useEffect has a missing dependency: 'selectedPayslip'. Either include it or remove the dependency a
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0193 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/hr/offer-letter-templates/page.tsx
+  - **Where:** app/(dashboard)/hr/offer-letter-templates/page.tsx lines 612, 642
+  - **Problem:** React Hook useCallback has missing dependencies: 'documentType' and 'showSignatureBlock'. Either include them 
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0194 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in app/(dashboard)/support/page.tsx
+  - **Where:** app/(dashboard)/support/page.tsx lines 40, 41, 44
+  - **Problem:** The 'ticketStatusBreakdown' logical expression could make the dependencies of useMemo Hook (at line 49) change; The 'ticketVolumeTimeline' logical expression could make the dependencies of useMemo Hook (at line 61) change ; The 'ticketsByPriority' logical expression could make the dependencies of useMemo Hook (at line 53) change on ; The 'ticketsByPriority' logical expression could make the dependencies of useMemo Hook (at line 57) change on 
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0195 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in components/projects/ticket-details/ticket-sidebar.tsx
+  - **Where:** components/projects/ticket-details/ticket-sidebar.tsx lines 135
+  - **Problem:** The 'currentAssigneeIds' conditional could make the dependencies of useMemo Hook (at line 165) change on every
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0196 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in components/projects/ticket-details/ticket-subtasks.tsx
+  - **Where:** components/projects/ticket-details/ticket-subtasks.tsx lines 73
+  - **Problem:** The 'subtaskQueryKey' array makes the dependencies of useCallback Hook (at line 87) change on every render. Mo
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0197 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in features/hr/attendance/check-in-button.tsx
+  - **Where:** features/hr/attendance/check-in-button.tsx lines 74
+  - **Problem:** React Hook useEffect has a missing dependency: 'statusData'. Either include it or remove the dependency array
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0198 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in features/hr/documents/template-editor.tsx
+  - **Where:** features/hr/documents/template-editor.tsx lines 165
+  - **Problem:** React Hook useEffect has a missing dependency: 'template'. Either include it or remove the dependency array
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0199 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in features/hr/leaves/leave-request-sheet.tsx
+  - **Where:** features/hr/leaves/leave-request-sheet.tsx lines 132
+  - **Problem:** React Hook useMemo has a missing dependency: 'pendingDaysByType'. Either include it or remove the dependency a
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+- [ ] MIYO-0200 [Medium][Code hygiene] Fix react-hooks/exhaustive-deps in features/onboarding/documents-tab.tsx
+  - **Where:** features/onboarding/documents-tab.tsx lines 82
+  - **Problem:** React Hook useEffect has a missing dependency: 'savedUploads'. Either include it or remove the dependency arra
+  - **Fix:** Memoise the derived arrays (`useMemo(() => data ?? [], [data])`) or add the missing deps; do not disable the rule.
+  - **Acceptance check:** `pnpm lint` shows no exhaustive-deps warning for this file; the page still renders and filters correctly.
+
+## Low
+
+### Low · Build port
+
+- [ ] MIYO-0201 [Low][Build port] Goals/OKRs
+  - **Where:** Streamline features/build/goals
+  - **Problem:** Missing.
+  - **Fix:** Decide with Tarun whether needed (HR already has goals in performance).
+  - **Acceptance check:** Decision recorded.
+- [ ] MIYO-0202 [Low][Build port] Incidents, bugs and QA boards
+  - **Where:** Streamline build/[projectId]/incidents, bugs, qa
+  - **Problem:** Missing.
+  - **Fix:** Decide: tickets with type BUG/INCIDENT and saved views may be enough.
+  - **Acceptance check:** Decision recorded.
+- [ ] MIYO-0203 [Low][Build port] Approvals and change requests
+  - **Where:** Streamline build/[projectId]/approvals, change-requests
+  - **Problem:** Missing.
+  - **Fix:** Decide scope with Tarun.
+  - **Acceptance check:** Decision recorded.
+- [ ] MIYO-0204 [Low][Build port] Meetings, whiteboard, chat, feedbucket, drafts, command center, managed products, portfolios, programs, teams, inbox, AI
+  - **Where:** Streamline features/build/* (meetings, whiteboard, feedbucket, drafts, command-center, managed-products, portfolios, programs, teams, inbox, ai)
+  - **Problem:** Not ported.
+  - **Fix:** List in STATUS.md as out of scope unless Tarun asks; do not build speculatively.
+  - **Acceptance check:** STATUS.md lists them as not planned.
+- [ ] MIYO-0205 [Low][Build port] Client portal entry in navigation for granted clients
+  - **Where:** app/(dashboard)/portal/**, sidebar
+  - **Problem:** /portal exists but no nav entry; flag clientPortal defaults false.
+  - **Fix:** Show 'Client portal' in nav only for users with an active grant when the org flag is on.
+  - **Acceptance check:** Granted client sees the entry; staff do not.
+- [ ] MIYO-0206 [Low][Build port] Rename 'Projects & Time' nav group if Tarun wants 'Build'
+  - **Where:** components/layout/sidebar/sidebar-nav-items.ts:146,285
+  - **Problem:** See the Build visibility decision item.
+  - **Fix:** Apply the chosen label.
+  - **Acceptance check:** Nav shows the chosen label.
+
+### Low · Payroll
+
+- [ ] MIYO-0207 [Low][Payroll] Mid-month joiner PT: confirm on full salary vs earned
+  - **Where:** lib/payroll/compute.ts:105-107
+  - **Problem:** PT is computed on monthly salary even for prorated joiners (design doc Q6).
+  - **Fix:** DECISION for Tarun/CA; implement chosen basis in rules.ts.
+  - **Acceptance check:** Documented and tested.
+
+### Low · Leave
+
+- [ ] MIYO-0208 [Low][Leave] Approve has no confirmation and takes ~5 s to update
+  - **Where:** app/(dashboard)/hr/leaves approvals list
+  - **Problem:** QA 4.4.
+  - **Fix:** Optimistic update with undo toast (no blocking dialog).
+  - **Acceptance check:** Row moves instantly; Undo within 5 s reverts.
+
+### Low · Attendance
+
+- [ ] MIYO-0209 [Low][Attendance] 'Check In' quick action shown while clocked in **[confirm on prod]**
+  - **Where:** components/dashboard/widgets/quick-actions-widget.tsx (also flagged unreachable by dead-code)
+  - **Problem:** QA 📷 02.
+  - **Fix:** Hide or switch to 'Check out' based on status.
+  - **Acceptance check:** Clocked-in user sees 'Check out'.
+
+### Low · Jobs & cron
+
+- [ ] MIYO-0210 [Low][Jobs & cron] Notification preferences are not checked by senders
+  - **Where:** lib/email/*, notification_preferences, /settings/notifications
+  - **Problem:** Design doc §11.1: no sender checks preferences.
+  - **Fix:** Add shouldSend(userId, category, channel) in lib/email/sender.ts and use it for non-transactional mails.
+  - **Acceptance check:** Turning off 'Announcements' email stops announcement emails.
+
+### Low · Onboarding
+
+- [ ] MIYO-0211 [Low][Onboarding] DOB picker opens on a fully disabled month **[confirm on prod]**
+  - **Where:** components/hr/_onboarding/step-personal-info.tsx (date picker defaultMonth)
+  - **Problem:** QA: opens Dec 2008 with every day disabled.
+  - **Fix:** defaultMonth = the latest allowed date (today − 18 y).
+  - **Acceptance check:** Picker opens on a month with selectable days.
+- [ ] MIYO-0212 [Low][Onboarding] Warn when the joining date is in the past
+  - **Where:** components/hr/_onboarding/step-employment.tsx
+  - **Problem:** QA 4.1: allowed silently.
+  - **Fix:** Show an inline warning 'Joining date is in the past; payroll for earlier months is not generated automatically'.
+  - **Acceptance check:** Past date shows the warning.
+- [ ] MIYO-0213 [Low][Onboarding] Admin-facing copy on /hr/onboarding/[userId] speaks to the employee
+  - **Where:** app/(dashboard)/hr/onboarding/[userId]/page.tsx:155
+  - **Problem:** 'Complete each task to finish your onboarding.' shown to HR/Admin.
+  - **Fix:** Use 'Tasks for {name}' when viewer ≠ the employee.
+  - **Acceptance check:** Admin sees the admin copy.
+- [ ] MIYO-0214 [Low][Onboarding] Onboarding progress tab says 'No onboardings in progress' right after a hire **[confirm on prod]**
+  - **Where:** app/(dashboard)/hr/onboarding/page.tsx
+  - **Problem:** QA Round 3 bug 24; checklist auto-start fixed in 49f0872 — re-verify.
+  - **Fix:** Invalidate the onboarding list query after the wizard succeeds.
+  - **Acceptance check:** New hire appears in Progress without reload.
+
+### Low · Employees & settings
+
+- [ ] MIYO-0215 [Low][Employees & settings] Organisation settings logo <img> elements lack alt and use <img>
+  - **Where:** app/(dashboard)/settings/organization/page.tsx:339,374,380
+  - **Problem:** Lint: jsx-a11y/alt-text and @next/next/no-img-element.
+  - **Fix:** Use next/image with alt="Organisation logo".
+  - **Acceptance check:** Lint warnings gone for this file.
+- [ ] MIYO-0216 [Low][Employees & settings] AI settings show cost as '$0.00'
+  - **Where:** app/(dashboard)/settings/ai/page.tsx:61
+  - **Problem:** Dollar sign in an INR app.
+  - **Fix:** Format with the org currency (₹) or show tokens only.
+  - **Acceptance check:** No '$' on the page.
+
+### Low · Email templates
+
+- [ ] MIYO-0217 [Low][Email templates] Attach .ics to interview and 1:1 invites
+  - **Where:** lib/hr/one-on-one-invite.ts, lib/calendar-event-notifications.ts (and ATS interview invite)
+  - **Problem:** Calendar invites without an ICS file are easy to miss.
+  - **Fix:** Generate ICS (METHOD:REQUEST, TZID Asia/Kolkata) and attach.
+  - **Acceptance check:** Gmail shows the 'Add to calendar' card.
+- [ ] MIYO-0218 [Low][Email templates] Replace email template `auth-verify-email`
+  - **Where:** Current: getVerificationEmailTemplate. New: email-templates/auth-verify-email.html + .txt. Trigger: POST /api/auth/signup, /api/auth/resend-verification. To: the user.
+  - **Problem:** 'Thank you for signing up!' marketing tone; Yellow 'Security Notice' banner for a routine message; Public sign-up may not be wanted for an internal HR app (see the Security section)
+  - **Fix:** Implement with renderEmail('auth-verify-email', vars). Subject: "Confirm your email address". Preheader: "One click to confirm your email for {{org_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0219 [Low][Email templates] Replace email template `auth-password-changed`
+  - **Where:** Current: getPasswordChangeConfirmationEmailTemplate. New: email-templates/auth-password-changed.html + .txt. Trigger: password reset / change. To: the user.
+  - **Problem:** Emoji heading ('🔒'); Generic 'security tips' list including 'Enable two-factor authentication if available' — MFA exists, link to it; No time or device of the change
+  - **Fix:** Implement with renderEmail('auth-password-changed', vars). Subject: "Your password was changed". Preheader: "If this was not you, reset your password now.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0220 [Low][Email templates] Replace email template `auth-account-locked`
+  - **Where:** Current: getAccountLockedEmailTemplate. New: email-templates/auth-account-locked.html + .txt. Trigger: 5th failed sign-in. To: the user.
+  - **Problem:** '15 minutes' hard-coded in copy; Two competing actions (reset button + support link)
+  - **Fix:** Implement with renderEmail('auth-account-locked', vars). Subject: "Your account is temporarily locked". Preheader: "Too many failed sign-in attempts. It unlocks at {{unlock_at}} IST.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0221 [Low][Email templates] Replace email template `auth-new-device-login`
+  - **Where:** Current: getNewDeviceLoginEmailTemplate. New: email-templates/auth-new-device-login.html + .txt. Trigger: sign-in from an unknown device. To: the user.
+  - **Problem:** Raw user-agent string shown to the user; Time not labelled IST
+  - **Fix:** Implement with renderEmail('auth-new-device-login', vars). Subject: "New sign-in to your account". Preheader: "{{device}} · {{location}} · {{signed_in_at}} IST". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0222 [Low][Email templates] Replace email template `auth-password-expiry`
+  - **Where:** Current: getPasswordExpiryWarningEmailTemplate (no production caller). New: email-templates/auth-password-expiry.html + .txt. Trigger: daily job when organizations.passwordExpiryDays is set (to be wired). To: the user.
+  - **Problem:** Sender has no production caller (dead)
+  - **Fix:** Implement with renderEmail('auth-password-expiry', vars). Subject: "Your password expires on {{expires_on}}". Preheader: "Change it before {{expires_on}} to avoid being locked out.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0223 [Low][Email templates] Replace email template `auth-account-deactivated`
+  - **Where:** Current: getAccountDeactivationEmailTemplate. New: email-templates/auth-account-deactivated.html + .txt. Trigger: HR deactivates a user / last working day. To: the user (personal email if available).
+  - **Problem:** Emoji heading ('👋'); Lists 'The CRM dashboard and all projects' (CRM wording); Says who deactivated (exposes an HR person's name unnecessarily); Sent to the work address that is being deactivated — should go to the personal email
+  - **Fix:** Implement with renderEmail('auth-account-deactivated', vars). Subject: "Your {{org_name}} account has been deactivated". Preheader: "You can no longer sign in. Contact HR with any questions.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0224 [Low][Email templates] Replace email template `auth-invitation`
+  - **Where:** Current: getInvitationEmailTemplate (lib/email-templates/organization.ts). New: email-templates/auth-invitation.html + .txt. Trigger: settings/members invite, project invite (invitations table). To: the invitee.
+  - **Problem:** Emoji heading ('🎉 You're Invited!'); Same copy for org and project invites; project name/role not shown
+  - **Fix:** Implement with renderEmail('auth-invitation', vars). Subject: "{{inviter_name}} invited you to {{org_name}}". Preheader: "Accept the invitation to join {{invite_target}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0225 [Low][Email templates] Replace email template `auth-mfa-enabled`
+  - **Where:** Current: NEW (no email today; app/api/auth/mfa/verify). New: email-templates/auth-mfa-enabled.html + .txt. Trigger: MFA turned on. To: the user.
+  - **Problem:** Missing: MFA enable/disable/admin reset send no email at all
+  - **Fix:** Implement with renderEmail('auth-mfa-enabled', vars). Subject: "Two-step verification is on". Preheader: "Your account now asks for a code at sign-in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0226 [Low][Email templates] Replace email template `auth-mfa-disabled`
+  - **Where:** Current: NEW (app/api/auth/mfa/disable). New: email-templates/auth-mfa-disabled.html + .txt. Trigger: MFA turned off by the user. To: the user.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('auth-mfa-disabled', vars). Subject: "Two-step verification was turned off". Preheader: "Your account no longer asks for a code at sign-in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0227 [Low][Email templates] Replace email template `auth-mfa-reset-by-admin`
+  - **Where:** Current: NEW (app/api/auth/mfa/reset). New: email-templates/auth-mfa-reset-by-admin.html + .txt. Trigger: Admin resets a user's MFA. To: the user.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('auth-mfa-reset-by-admin', vars). Subject: "Your two-step verification was reset". Preheader: "Set it up again the next time you sign in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0228 [Low][Email templates] Replace email template `onboarding-welcome`
+  - **Where:** Current: getOnboardingWelcomeEmailTemplate (notifications.ts) via Inngest initiate-onboarding. New: email-templates/onboarding-welcome.html + .txt. Trigger: onboarding checklist started. To: the new hire.
+  - **Problem:** Emoji heading ('🎉 Welcome to the Team!'); Overlaps with auth-welcome-set-password: the new hire gets two 'Welcome' emails on the same day; Preheader 'Your onboarding journey starts now!' is filler
+  - **Fix:** Implement with renderEmail('onboarding-welcome', vars). Subject: "Your first day at {{org_name}}: {{joining_date}}". Preheader: "What to expect on day one and the tasks waiting for you.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0229 [Low][Email templates] Replace email template `onboarding-tasks-assigned`
+  - **Where:** Current: getOnboardingTaskEmailTemplate. New: email-templates/onboarding-tasks-assigned.html + .txt. Trigger: onboarding task assigned to HR/IT/manager. To: task owner.
+  - **Problem:** Emoji heading; No due date per task
+  - **Fix:** Implement with renderEmail('onboarding-tasks-assigned', vars). Subject: "Onboarding task for {{employee_name}}: {{task_title}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0230 [Low][Email templates] Replace email template `onboarding-reminder`
+  - **Where:** Current: inline HTML in app/api/hr/onboarding/reminders/route.ts. New: email-templates/onboarding-reminder.html + .txt. Trigger: POST /api/hr/onboarding/reminders. To: task owners.
+  - **Problem:** Inline HTML outside the template system, not using the shared layout; Subject 'Onboarding Reminder — Pending Tasks' gives no count or name
+  - **Fix:** Implement with renderEmail('onboarding-reminder', vars). Subject: "{{pending_count}} onboarding tasks still open". Preheader: "Oldest is due {{oldest_due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0231 [Low][Email templates] Replace email template `onboarding-complete-employee`
+  - **Where:** Current: getOnboardingCompleteEmployeeEmailTemplate. New: email-templates/onboarding-complete-employee.html + .txt. Trigger: last onboarding task completed. To: the new hire.
+  - **Problem:** Emoji heading ('🎉 Onboarding Complete!'); Preheader 'You're all set!' is filler
+  - **Fix:** Implement with renderEmail('onboarding-complete-employee', vars). Subject: "Onboarding complete". Preheader: "All your onboarding tasks are done.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0232 [Low][Email templates] Replace email template `onboarding-complete-hr`
+  - **Where:** Current: getOnboardingCompleteHrEmailTemplate. New: email-templates/onboarding-complete-hr.html + .txt. Trigger: last onboarding task completed. To: HR.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('onboarding-complete-hr', vars). Subject: "{{employee_name}} finished onboarding". Preheader: "All {{task_count}} tasks are complete.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0233 [Low][Email templates] Replace email template `leave-cancelled`
+  - **Where:** Current: getLeaveCancellationEmailTemplate. New: email-templates/leave-cancelled.html + .txt. Trigger: employee cancels leave. To: the approver.
+  - **Problem:** Emoji heading ('🚫')
+  - **Fix:** Implement with renderEmail('leave-cancelled', vars). Subject: "Leave cancelled: {{employee_name}}, {{date_range}}". Preheader: "No action needed.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0234 [Low][Email templates] Replace email template `leave-escalation-hr`
+  - **Where:** Current: getLeaveHrMissedEscalationEmailTemplate. New: email-templates/leave-escalation-hr.html + .txt. Trigger: Inngest leave-escalation (pending > 2 days). To: HR.
+  - **Problem:** '[Action Required]' prefix plus warning emoji; Uses '>' in subject
+  - **Fix:** Implement with renderEmail('leave-escalation-hr', vars). Subject: "{{count}} leave requests waiting more than 2 days". Preheader: "Oldest from {{oldest_employee}} since {{oldest_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0235 [Low][Email templates] Replace email template `leave-escalation-ceo`
+  - **Where:** Current: getLeaveCeoDelegateEscalationEmailTemplate. New: email-templates/leave-escalation-ceo.html + .txt. Trigger: Inngest leave-escalation (still pending). To: CEO.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('leave-escalation-ceo', vars). Subject: "{{count}} leave requests still pending". Preheader: "HR has not acted on these yet.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0236 [Low][Email templates] Replace email template `wfh-request`
+  - **Where:** Current: getWfhRequestEmailTemplate. New: email-templates/wfh-request.html + .txt. Trigger: WFH applied. To: approvers.
+  - **Problem:** Emoji heading ('🏠')
+  - **Fix:** Implement with renderEmail('wfh-request', vars). Subject: "Work from home request: {{employee_name}}, {{date_range}}". Preheader: "Waiting for your approval.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0237 [Low][Email templates] Replace email template `attendance-auto-absent`
+  - **Where:** Current: inline HTML in server/actions/auto-absent-leave.ts. New: email-templates/attendance-auto-absent.html + .txt. Trigger: cron auto-absent-leave 12:00 IST. To: each absentee.
+  - **Problem:** Inline HTML outside the shared layout; Sent every day to every absentee; no digest for HR (QA notification-noise finding)
+  - **Fix:** Implement with renderEmail('attendance-auto-absent', vars). Subject: "No check-in recorded for {{date}}". Preheader: "Marked as {{marked_as}}. Fix it if you were working.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0238 [Low][Email templates] Replace email template `attendance-late-arrival`
+  - **Where:** Current: inline HTML in lib/hr/late-arrival-after-check-in.ts. New: email-templates/attendance-late-arrival.html + .txt. Trigger: late check-in warning. To: the employee.
+  - **Problem:** Inline HTML outside the shared layout
+  - **Fix:** Implement with renderEmail('attendance-late-arrival', vars). Subject: "Late check-in on {{date}}". Preheader: "Checked in at {{check_in_time}} IST.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0239 [Low][Email templates] Replace email template `attendance-weekly-report`
+  - **Where:** Current: getWeeklyAttendanceReportTemplate (reports.ts). New: email-templates/attendance-weekly-report.html + .txt. Trigger: weekly-attendance-report (Vercel Sat 14:30 IST AND Inngest Mon 13:30 IST — duplicate). To: management.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('attendance-weekly-report', vars). Subject: "Attendance, week of {{week_range}}". Preheader: "{{present_pct}}% present · {{late_count}} late arrivals · {{absent_count}} absences". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0240 [Low][Email templates] Replace email template `attendance-holiday-work-request`
+  - **Where:** Current: getHolidayWorkRequestEmailToHr (hr.ts) / inline in app/api/hr/holiday-work-requests/route.ts. New: email-templates/attendance-holiday-work-request.html + .txt. Trigger: holiday/Sunday work request submitted. To: HR.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('attendance-holiday-work-request', vars). Subject: "Holiday work request: {{employee_name}}, {{date}}". Preheader: "{{compensation}} requested.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0241 [Low][Email templates] Replace email template `attendance-holiday-work-decision`
+  - **Where:** Current: inline HTML in app/api/hr/holiday-work-requests (decision). New: email-templates/attendance-holiday-work-decision.html + .txt. Trigger: holiday work request decided. To: the employee.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('attendance-holiday-work-decision', vars). Subject: "Holiday work request {{decision}}: {{date}}". Preheader: "{{compensation}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0242 [Low][Email templates] Replace email template `payroll-approved`
+  - **Where:** Current: getPayrollApprovedEmailTemplate (notifications.ts). New: email-templates/payroll-approved.html + .txt. Trigger: CEO approves payroll. To: the employee.
+  - **Problem:** Emoji heading ('✅'); Tells the employee about an internal approval step; consider sending only the payslip email at PAID
+  - **Fix:** Implement with renderEmail('payroll-approved', vars). Subject: "Payroll for {{month_label}} approved". Preheader: "Payment is scheduled for {{pay_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0243 [Low][Email templates] Replace email template `celebration-work-anniversary`
+  - **Where:** Current: getCelebrationEmailTemplate (anniversary branch). New: email-templates/celebration-work-anniversary.html + .txt. Trigger: Inngest celebration-greetings 08:00 IST. To: the person.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('celebration-work-anniversary', vars). Subject: "{{years}} years at {{org_name}}". Preheader: "Thank you for {{years}} years with us.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0244 [Low][Email templates] Replace email template `company-announcement`
+  - **Where:** Current: getCompanyAnnouncementEmailTemplate. New: email-templates/company-announcement.html + .txt. Trigger: announcement posted with email on. To: members.
+  - **Problem:** Emoji heading ('📢'); Subject 'Announcement: … - Miyo Global'
+  - **Fix:** Implement with renderEmail('company-announcement', vars). Subject: "{{announcement_title}}". Preheader: "{{announcement_summary}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0245 [Low][Email templates] Replace email template `recognition-recipient`
+  - **Where:** Current: getRecognitionRecipientEmailTemplate. New: email-templates/recognition-recipient.html + .txt. Trigger: recognition given. To: the recipient.
+  - **Problem:** Emoji in heading ('🎉'); Centered heading inconsistent with other templates
+  - **Fix:** Implement with renderEmail('recognition-recipient', vars). Subject: "{{giver_name}} recognised your work". Preheader: ""{{message_snippet}}"". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0246 [Low][Email templates] Replace email template `recognition-shoutout`
+  - **Where:** Current: getRecognitionShoutoutEmailTemplate. New: email-templates/recognition-shoutout.html + .txt. Trigger: recognition shared org-wide. To: the org.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('recognition-shoutout', vars). Subject: "Shout-out for {{recipient_name}}". Preheader: "From {{giver_name}}: "{{message_snippet}}"". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0247 [Low][Email templates] Replace email template `expense-submitted`
+  - **Where:** Current: getExpenseSubmittedEmailTemplate. New: email-templates/expense-submitted.html + .txt. Trigger: expense submitted. To: approver.
+  - **Problem:** Emoji heading ('🧾'); QA Round 1: admin's own expense auto-approved — make sure this mail goes to a different approver
+  - **Fix:** Implement with renderEmail('expense-submitted', vars). Subject: "Expense claim: {{employee_name}}, ₹{{amount}}". Preheader: "{{category}} · {{expense_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0248 [Low][Email templates] Replace email template `expense-approved`
+  - **Where:** Current: getExpenseApprovedEmailTemplate. New: email-templates/expense-approved.html + .txt. Trigger: expense approved. To: the employee.
+  - **Problem:** Emoji heading ('✅')
+  - **Fix:** Implement with renderEmail('expense-approved', vars). Subject: "Expense approved: ₹{{amount}}". Preheader: "It will be reimbursed with {{reimbursement_cycle}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0249 [Low][Email templates] Replace email template `expense-rejected`
+  - **Where:** Current: getExpenseRejectedEmailTemplate. New: email-templates/expense-rejected.html + .txt. Trigger: expense rejected. To: the employee.
+  - **Problem:** Emoji heading ('❌')
+  - **Fix:** Implement with renderEmail('expense-rejected', vars). Subject: "Expense not approved: ₹{{amount}}". Preheader: "{{approver_name}} added a note.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0250 [Low][Email templates] Replace email template `expense-paid`
+  - **Where:** Current: getExpensePaidEmailTemplate. New: email-templates/expense-paid.html + .txt. Trigger: expense marked paid. To: the employee.
+  - **Problem:** Emoji heading ('💰')
+  - **Fix:** Implement with renderEmail('expense-paid', vars). Subject: "Expense reimbursed: ₹{{amount}}". Preheader: "Paid on {{paid_on}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0251 [Low][Email templates] Replace email template `expense-monthly-report`
+  - **Where:** Current: getMonthlyExpenseReportTemplate. New: email-templates/expense-monthly-report.html + .txt. Trigger: monthly-expense-report (Vercel 14:30 IST and Inngest 13:30 IST on the 1st — duplicate). To: management.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('expense-monthly-report', vars). Subject: "Expenses for {{month_label}}: ₹{{total}}". Preheader: "{{claim_count}} claims · {{pending_count}} pending". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0252 [Low][Email templates] Replace email template `bonus-paid-employee`
+  - **Where:** Current: getBonusPaidEmployeeEmailTemplate (bonus.ts). New: email-templates/bonus-paid-employee.html + .txt. Trigger: bonus marked PAID. To: the employee.
+  - **Problem:** Emoji heading ('🎉 Bonus Marked as Paid'); Internal wording 'marked as paid'
+  - **Fix:** Implement with renderEmail('bonus-paid-employee', vars). Subject: "Your bonus of ₹{{amount}} has been paid". Preheader: "{{bonus_type}} · paid on {{paid_on}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0253 [Low][Email templates] Replace email template `bonus-paid-stakeholder`
+  - **Where:** Current: getBonusPaidStakeholderEmailTemplate. New: email-templates/bonus-paid-stakeholder.html + .txt. Trigger: bonus marked PAID. To: stakeholders.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('bonus-paid-stakeholder', vars). Subject: "Bonus paid: {{employee_name}}, ₹{{amount}}". Preheader: "{{bonus_type}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0254 [Low][Email templates] Replace email template `exit-resignation-submitted`
+  - **Where:** Current: getResignationSubmittedEmailTemplate. New: email-templates/exit-resignation-submitted.html + .txt. Trigger: resignation submitted. To: HR, CEO, Admin (except submitter) + manager.
+  - **Problem:** Emoji heading ('📝'); Goes to every CEO/HR/ADMIN; the manager is not included
+  - **Fix:** Implement with renderEmail('exit-resignation-submitted', vars). Subject: "Resignation: {{employee_name}}". Preheader: "Requested last day {{last_working_day}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0255 [Low][Email templates] Replace email template `exit-resignation-accepted`
+  - **Where:** Current: getResignationApprovedEmailTemplate. New: email-templates/exit-resignation-accepted.html + .txt. Trigger: CEO approves resignation. To: the employee.
+  - **Problem:** Emoji heading ('✅ Resignation Accepted')
+  - **Fix:** Implement with renderEmail('exit-resignation-accepted', vars). Subject: "Your resignation has been accepted". Preheader: "Last working day: {{last_working_day}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0256 [Low][Email templates] Replace email template `exit-termination-notice`
+  - **Where:** Current: getTerminationEmailTemplate. New: email-templates/exit-termination-notice.html + .txt. Trigger: termination letter sent. To: the employee (personal email).
+  - **Problem:** Sent to the work address that will be deactivated; Title suffix ' - Miyo Global'
+  - **Fix:** Implement with renderEmail('exit-termination-notice', vars). Subject: "Notice of termination of employment". Preheader: "Please read the attached letter.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0257 [Low][Email templates] Replace email template `perf-review-assigned`
+  - **Where:** Current: getReviewAssignedEmailTemplate (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-review-assigned.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Emoji heading
+  - **Fix:** Implement with renderEmail('perf-review-assigned', vars). Subject: "Review to complete: {{employee_name}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0258 [Low][Email templates] Replace email template `perf-self-review-reminder`
+  - **Where:** Current: getSelfReviewReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-self-review-reminder.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Emoji heading
+  - **Fix:** Implement with renderEmail('perf-self-review-reminder', vars). Subject: "Self-review due {{due_date}}". Preheader: "{{cycle_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0259 [Low][Email templates] Replace email template `perf-manager-review-reminder`
+  - **Where:** Current: getManagerReviewReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-manager-review-reminder.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Emoji heading
+  - **Fix:** Implement with renderEmail('perf-manager-review-reminder', vars). Subject: "{{pending_count}} reviews waiting for you". Preheader: "{{cycle_name}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0260 [Low][Email templates] Replace email template `perf-review-published`
+  - **Where:** Current: getReviewPublishedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-review-published.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Emoji heading
+  - **Fix:** Implement with renderEmail('perf-review-published', vars). Subject: "Your {{cycle_name}} review is ready". Preheader: "Shared by {{manager_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0261 [Low][Email templates] Replace email template `perf-goal-setting-reminder`
+  - **Where:** Current: getGoalSettingReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-goal-setting-reminder.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Emoji heading
+  - **Fix:** Implement with renderEmail('perf-goal-setting-reminder', vars). Subject: "Set your goals for {{quarter}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0262 [Low][Email templates] Replace email template `perf-appraisal-stage-assigned`
+  - **Where:** Current: getAppraisalStageAssignedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-stage-assigned.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-appraisal-stage-assigned', vars). Subject: "Appraisal step for you: {{stage_label}}". Preheader: "{{employee_name}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0263 [Low][Email templates] Replace email template `perf-appraisal-finalized`
+  - **Where:** Current: getAppraisalFinalApprovedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-finalized.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-appraisal-finalized', vars). Subject: "Appraisal finalised: {{employee_name}}". Preheader: "Final rating {{rating}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0264 [Low][Email templates] Replace email template `perf-appraisal-due-reminder`
+  - **Where:** Current: getAppraisalDueReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-due-reminder.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-appraisal-due-reminder', vars). Subject: "Due tomorrow: {{stage_label}}". Preheader: "{{employee_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0265 [Low][Email templates] Replace email template `perf-unsatisfactory-notice`
+  - **Where:** Current: getUnsatisfactoryPerformanceNoticeEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-unsatisfactory-notice.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-unsatisfactory-notice', vars). Subject: "Performance discussion: next steps". Preheader: "From {{manager_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0266 [Low][Email templates] Replace email template `perf-pip-initiated`
+  - **Where:** Current: getPIPInitiatedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-initiated.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-initiated', vars). Subject: "Performance improvement plan". Preheader: "Starts {{start_date}} · {{duration_days}} days". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0267 [Low][Email templates] Replace email template `perf-pip-manager-activated`
+  - **Where:** Current: getPIPManagerActivatedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-manager-activated.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-manager-activated', vars). Subject: "PIP active: {{employee_name}}". Preheader: "Check-ins start {{first_checkin}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0268 [Low][Email templates] Replace email template `perf-pip-checkin-reminder`
+  - **Where:** Current: getPIPCheckInDueReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-checkin-reminder.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-checkin-reminder', vars). Subject: "PIP check-in on {{due_date}}". Preheader: "{{employee_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0269 [Low][Email templates] Replace email template `perf-pip-completed`
+  - **Where:** Current: getPIPSuccessEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-completed.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-completed', vars). Subject: "Your improvement plan is complete". Preheader: "Well done.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0270 [Low][Email templates] Replace email template `perf-pip-not-successful`
+  - **Where:** Current: getPIPFailedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-not-successful.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-not-successful', vars). Subject: "Outcome of your improvement plan". Preheader: "Please read the next steps.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0271 [Low][Email templates] Replace email template `perf-pip-extended`
+  - **Where:** Current: getPIPExtendedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-extended.html + .txt. Trigger: performance module. To: see trigger.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('perf-pip-extended', vars). Subject: "Your improvement plan has been extended". Preheader: "New end date {{end_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0272 [Low][Email templates] Replace email template `asset-assigned-employee`
+  - **Where:** Current: getAssetAssignedEmailTemplate (no production caller per design doc §11.2). New: email-templates/asset-assigned-employee.html + .txt. Trigger: asset assigned. To: the employee.
+  - **Problem:** Emoji heading ('💻'); Sender has no production caller — wire it into the assign route
+  - **Fix:** Implement with renderEmail('asset-assigned-employee', vars). Subject: "Asset assigned to you: {{asset_name}}". Preheader: "{{asset_tag}} · please confirm receipt". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0273 [Low][Email templates] Replace email template `asset-assigned-hr`
+  - **Where:** Current: getAssetAssignedHrNotificationTemplate. New: email-templates/asset-assigned-hr.html + .txt. Trigger: asset assigned. To: HR.
+  - **Problem:** Emoji heading ('📦')
+  - **Fix:** Implement with renderEmail('asset-assigned-hr', vars). Subject: "Asset assigned: {{asset_tag}} to {{employee_name}}". Preheader: "{{asset_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0274 [Low][Email templates] Replace email template `document-expiry-reminder`
+  - **Where:** Current: getDocumentExpiryReminderEmailTemplate (no production caller). New: email-templates/document-expiry-reminder.html + .txt. Trigger: daily job (to be wired). To: the employee + HR.
+  - **Problem:** Emoji heading ('📋'); No production caller; Expiry uses UTC date slicing (design doc §18.1)
+  - **Fix:** Implement with renderEmail('document-expiry-reminder', vars). Subject: "{{document_name}} expires on {{expiry_date}}". Preheader: "Upload a renewed copy before it expires.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0275 [Low][Email templates] Replace email template `worklog-approved`
+  - **Where:** Current: getWorkLogApprovedEmailTemplate. New: email-templates/worklog-approved.html + .txt. Trigger: work log approved. To: the employee.
+  - **Problem:** Emoji heading ('✅'); No preheader
+  - **Fix:** Implement with renderEmail('worklog-approved', vars). Subject: "Work log approved: {{log_date}}". Preheader: "{{hours}} hours approved by {{approver_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0276 [Low][Email templates] Replace email template `worklog-rejected`
+  - **Where:** Current: getWorkLogRejectedEmailTemplate. New: email-templates/worklog-rejected.html + .txt. Trigger: work log rejected. To: the employee.
+  - **Problem:** Emoji heading ('❌'); No preheader
+  - **Fix:** Implement with renderEmail('worklog-rejected', vars). Subject: "Work log needs changes: {{log_date}}". Preheader: "{{approver_name}} added a note.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0277 [Low][Email templates] Replace email template `project-added`
+  - **Where:** Current: getProjectAssignmentEmailTemplate (project.ts). New: email-templates/project-added.html + .txt. Trigger: added to a project. To: the member.
+  - **Problem:** Emoji heading ('📋'); Does not show the project role (OWNER/MANAGER/CONTRIBUTOR/VIEWER from the Build port)
+  - **Fix:** Implement with renderEmail('project-added', vars). Subject: "You were added to {{project_name}}". Preheader: "Role: {{project_role}} · added by {{added_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0278 [Low][Email templates] Replace email template `ticket-assigned`
+  - **Where:** Current: getTicketAssignmentEmailTemplate. New: email-templates/ticket-assigned.html + .txt. Trigger: ticket assigned. To: assignee.
+  - **Problem:** Subject '{{key}}{{title}} - Miyo Global'
+  - **Fix:** Implement with renderEmail('ticket-assigned', vars). Subject: "[{{ticket_key}}] {{ticket_title}}". Preheader: "Assigned to you by {{assigned_by}} · {{priority}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0279 [Low][Email templates] Replace email template `ticket-review-request`
+  - **Where:** Current: getTicketReviewRequestEmailTemplate. New: email-templates/ticket-review-request.html + .txt. Trigger: ticket sent for review. To: reviewer.
+  - **Problem:** Emoji heading ('👀')
+  - **Fix:** Implement with renderEmail('ticket-review-request', vars). Subject: "[{{ticket_key}}] Review requested: {{ticket_title}}". Preheader: "From {{requested_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0280 [Low][Email templates] Replace email template `ticket-changes-requested`
+  - **Where:** Current: getTicketChangesRequestedEmailTemplate. New: email-templates/ticket-changes-requested.html + .txt. Trigger: reviewer requests changes. To: assignee.
+  - **Problem:** Emoji heading ('🔄')
+  - **Fix:** Implement with renderEmail('ticket-changes-requested', vars). Subject: "[{{ticket_key}}] Changes requested". Preheader: "{{reviewer_name}}: {{note_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0281 [Low][Email templates] Replace email template `ticket-comment`
+  - **Where:** Current: getTicketCommentEmailTemplate. New: email-templates/ticket-comment.html + .txt. Trigger: comment on a watched/assigned ticket. To: assignee and watchers.
+  - **Problem:** Mentions are rendered via mentionsToPlainText; make sure no raw mention markup leaks; No separate email for @mentions (Build port added mentions with in-app notification only)
+  - **Fix:** Implement with renderEmail('ticket-comment', vars). Subject: "[{{ticket_key}}] New comment from {{author_name}}". Preheader: "{{comment_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0282 [Low][Email templates] Replace email template `ticket-mention`
+  - **Where:** Current: NEW (features/projects/comments mentions). New: email-templates/ticket-mention.html + .txt. Trigger: @mention in a ticket comment. To: mentioned user.
+  - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
+  - **Fix:** Implement with renderEmail('ticket-mention', vars). Subject: "[{{ticket_key}}] {{author_name}} mentioned you". Preheader: "{{comment_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0283 [Low][Email templates] Replace email template `task-assigned`
+  - **Where:** Current: getTaskAssignedEmailTemplate (notifications.ts) / lib/email/crm.ts. New: email-templates/task-assigned.html + .txt. Trigger: task assigned. To: assignee.
+  - **Problem:** Emoji heading ('📌'); Lives in lib/email/crm.ts next to deal/lead senders
+  - **Fix:** Implement with renderEmail('task-assigned', vars). Subject: "Task assigned: {{task_title}}". Preheader: "Due {{due_date}} · from {{assigned_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0284 [Low][Email templates] Replace email template `support-ticket-created`
+  - **Where:** Current: getTicketCreatedEmailTemplate (notifications.ts). New: email-templates/support-ticket-created.html + .txt. Trigger: support ticket created/assigned. To: assigned agent.
+  - **Problem:** Emoji heading ('🎫')
+  - **Fix:** Implement with renderEmail('support-ticket-created', vars). Subject: "Support ticket #{{ticket_id}}: {{ticket_subject}}". Preheader: "{{priority}} · from {{requester_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0285 [Low][Email templates] Replace email template `support-ticket-reply`
+  - **Where:** Current: getTicketReplyEmailTemplate. New: email-templates/support-ticket-reply.html + .txt. Trigger: reply on support ticket. To: requester or agent.
+  - **Problem:** Emoji heading ('💬')
+  - **Fix:** Implement with renderEmail('support-ticket-reply', vars). Subject: "Re: #{{ticket_id}} {{ticket_subject}}". Preheader: "{{reply_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0286 [Low][Email templates] Replace email template `support-ticket-status`
+  - **Where:** Current: getTicketStatusEmailTemplate. New: email-templates/support-ticket-status.html + .txt. Trigger: support ticket status change. To: requester.
+  - **Problem:** Emoji heading ('🔄')
+  - **Fix:** Implement with renderEmail('support-ticket-status', vars). Subject: "Ticket #{{ticket_id}} is now {{status}}". Preheader: "{{ticket_subject}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0287 [Low][Email templates] Replace email template `helpdesk-ticket`
+  - **Where:** Current: getHelpdeskTicketEmailTemplate. New: email-templates/helpdesk-ticket.html + .txt. Trigger: HR helpdesk ticket events. To: HR / requester.
+  - **Problem:** Emoji heading ('🎫')
+  - **Fix:** Implement with renderEmail('helpdesk-ticket', vars). Subject: "HR helpdesk #{{ticket_id}}: {{ticket_subject}}". Preheader: "{{event_summary}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0288 [Low][Email templates] Replace email template `weekly-ceo-recap`
+  - **Where:** Current: getWeeklyCeoRecapTemplate + server/actions/weekly-ceo-recap.ts. New: email-templates/weekly-ceo-recap.html + .txt. Trigger: weekly-ceo-recap (Vercel Mon 15:30 IST and Inngest Mon 14:30 IST — duplicate). To: CEO.
+  - **Problem:** Duplicate schedule means it can arrive twice; Subject uses '|' separator
+  - **Fix:** Implement with renderEmail('weekly-ceo-recap', vars). Subject: "Weekly recap: {{week_range}}". Preheader: "Headcount {{headcount}} · {{joiners}} joined · {{leavers}} left · attendance {{present_pct}}%". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0289 [Low][Email templates] Replace email template `one-on-one-invite`
+  - **Where:** Current: inline HTML in lib/hr/one-on-one-invite.ts. New: email-templates/one-on-one-invite.html + .txt. Trigger: 1:1 scheduled. To: attendees.
+  - **Problem:** Inline HTML outside shared layout; Check that an .ics attachment is included
+  - **Fix:** Implement with renderEmail('one-on-one-invite', vars). Subject: "1:1 with {{organizer_name}}: {{meeting_date}}". Preheader: "{{meeting_time}} IST · {{location}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0290 [Low][Email templates] Replace email template `calendar-event`
+  - **Where:** Current: inline HTML in lib/calendar-event-notifications.ts. New: email-templates/calendar-event.html + .txt. Trigger: event created/changed/15-min reminder. To: attendees.
+  - **Problem:** Inline HTML outside shared layout; Three cases (created/changed/reminder) in one block of inline markup
+  - **Fix:** Implement with renderEmail('calendar-event', vars). Subject: "{{event_action}}: {{event_title}}, {{event_date}}". Preheader: "{{event_time}} IST · {{location}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+- [ ] MIYO-0291 [Low][Email templates] Replace email template `data-export-ready`
+  - **Where:** Current: inline HTML in app/api/hr/*/export/email routes and server/actions/expense-export.ts. New: email-templates/data-export-ready.html + .txt. Trigger: export requested by email. To: the requester.
+  - **Problem:** Six export routes build their own inline email body
+  - **Fix:** Implement with renderEmail('data-export-ready', vars). Subject: "Your {{export_name}} export is ready". Preheader: "{{row_count}} rows · attached as {{file_type}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
+  - **Acceptance check:** Send to a mail.tm inbox: subject/preheader match, layout matches the .html, text part matches the .txt, all placeholders filled, link works.
+
+### Low · Tests
+
+- [ ] MIYO-0292 [Low][Tests] axe accessibility checks on key pages
+  - **Where:** e2e/a11y.spec.ts
+  - **Problem:** No a11y checks.
+  - **Fix:** @axe-core/playwright on dashboard, leaves, payroll, projects board.
+  - **Acceptance check:** No serious violations.
+
+### Low · Leftovers
+
+- [ ] MIYO-0293 [Low][Leftovers] Notification settings list Deals/Leads/Contacts categories
+  - **Where:** app/(dashboard)/settings/notifications/page.tsx:18-26
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete the CRM categories.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0294 [Low][Leftovers] Custom fields only support Leads/Deals/Contacts
+  - **Where:** app/(dashboard)/settings/custom-fields/page.tsx:62,573-587; app/api/settings/custom-fields/route.ts:9
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Change entities to employee/project/ticket (or hide the page) and migrate the enum additively.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0295 [Low][Leftovers] Unused route POST /api/projects/from-deal reads the deals table
+  - **Where:** app/api/projects/from-deal/route.ts
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete the route (no caller).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0296 [Low][Leftovers] Unused /api/crm/support-dashboard
+  - **Where:** app/api/crm/support-dashboard/route.ts
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Move to /api/support/dashboard if used, else delete.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0297 [Low][Leftovers] Orphan loading.tsx files under removed CRM pages
+  - **Where:** app/(dashboard)/crm/quotes/loading.tsx, crm/quotes/[quoteId]/loading.tsx, crm/organizations/[organizationId]/loading.tsx
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete the app/(dashboard)/crm folder.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0298 [Low][Leftovers] CRM API hooks still shipped
+  - **Where:** lib/api/hooks/crm.ts, lib/api/hooks/crm/settings.ts, lib/api/hooks/crm/analytics.ts, lib/api/hooks/index.ts
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete and remove exports.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0299 [Low][Leftovers] CRM email senders and templates
+  - **Where:** lib/email/crm.ts (sendDealStageChangeEmail, sendLeadAssignedEmail), lib/email-templates/crm.ts, notifications.ts getDealStageChangeEmailTemplate/getLeadAssignedEmailTemplate, lib/email.ts:821-854
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete; move sendTaskAssignedEmail into lib/email/tasks.ts.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0300 [Low][Leftovers] Role templates and RBAC still list crm:* / branch:* permissions and CRM role constants
+  - **Where:** lib/rbac/permissions.ts, app/api/roles/templates/route.ts, lib/constants/roles.ts (INVOICE_ROLES, BILLING_*, EXPORT_ROLES, CHURN_ALERT_ROLES, CSAT_MANAGE_ROLES)
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete the unused permissions/constants; keep RECRUITMENT_HR_ROLES only if the ATS reuses it (see ATS section).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0301 [Low][Leftovers] Session and withAuth still carry branchId
+  - **Where:** lib/api/helpers.ts:56,90 (branchId), users.branchId, auth callbacks
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove branchId from the session type and helpers (keep the DB column until the table-drop task).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0302 [Low][Leftovers] Landing page metadata advertises 'HR, Projects & Sales Platform' and CRM
+  - **Where:** app/page.tsx (metadata), features/landing/landing-page.tsx:40,127,305, landing-shared.tsx (features mention CRM, 'Real-time Chat … Powered by Ably')
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Rewrite to HR + Projects only; drop features that do not exist (chat).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0303 [Low][Leftovers] Command palette / shortcuts reference CRM routes
+  - **Where:** components/layout/command-palette.tsx, components/layout/shortcuts-provider.tsx
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove CRM/lead/deal commands.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0304 [Low][Leftovers] Query keys and cache keys for CRM
+  - **Where:** lib/query-keys.ts, lib/cache.ts
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete CRM keys.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0305 [Low][Leftovers] Audit-log action list includes CRM actions
+  - **Where:** lib/audit-log.ts
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Remove deal/lead actions from filters.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0306 [Low][Leftovers] Unused environment variables for removed modules
+  - **Where:** ​.env.example only (RAZORPAY_*, LINKEDIN/INDEED/NAUKRI_WEBHOOK_SECRET, CHAT_MESSAGE_EDIT_WINDOW_MS) — do not open .env*
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Ask Tarun to remove them from .env.example himself (agent must not edit .env* files); list them in the commit message.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0307 [Low][Leftovers] README describes tRPC, Zustand, Playwright and CRM
+  - **Where:** README.md
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Rewrite: Next.js 16, REST route handlers, Drizzle, NextAuth v5, ZeptoMail, Inngest, Vitest; modules HR + Projects.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0308 [Low][Leftovers] docs/BACKLOG.md counts are stale (692 routes, 236 tables)
+  - **Where:** docs/BACKLOG.md
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Update to 126 pages, 468 API routes and the real table count, or delete.
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0309 [Low][Leftovers] Unused undraw illustrations in public/
+  - **Where:** public/illustrations/*.svg (auth-hero, undraw-*)
+  - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
+  - **Fix:** Delete (no references; design rule: no cartoon illustrations).
+  - **Acceptance check:** grep for the removed names in the listed files returns nothing; typecheck, lint, build pass.
+- [ ] MIYO-0310 [Low][Leftovers] Drop orphaned CRM, marketing, billing and branch tables after archiving
+  - **Where:** lib/db/schema/crm/_all.ts (1,308 lines, ~62 tables), lib/db/schema/marketing.ts, crm.ts, subscriptions, branches
+  - **Problem:** ~80 unused tables (design doc 18.3, D-7). Recruitment tables are NOT in this item; see the ATS section.
+  - **Fix:** Tarun exports the data first. Then remove the schema files and add a migration that drops them (this is the only destructive migration; do it last, behind explicit approval).
+  - **Acceptance check:** Schema has no crm/marketing tables; the drop migration is reviewed and approved by Tarun before running.
+
+### Low · Design/UI
+
+- [ ] MIYO-0311 [Low][Design/UI] Landing page stats are filler ('360°', 'Real-time', 'Secure')
+  - **Where:** features/landing/landing-shared.tsx:116-121
+  - **Problem:** Meaningless numbers.
+  - **Fix:** Delete the stats row.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0312 [Low][Design/UI] Landing hero uses a radial gold glow background
+  - **Where:** globals.css:358 (@utility brand-mark-bg), features/landing/landing-page.tsx:294
+  - **Problem:** Gradient/glow is against the 'no gradients' rule.
+  - **Fix:** Make brand-mark-bg a flat ink-950 background.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0313 [Low][Design/UI] Landing page uses scroll-reveal and stagger animations everywhere
+  - **Where:** features/landing/landing-page.tsx (21 motion uses), landing-shared.tsx
+  - **Problem:** Decorative motion feels templated.
+  - **Fix:** Remove SectionReveal/StaggerReveal; keep static layout.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0314 [Low][Design/UI] Consider replacing the marketing landing page with a plain sign-in redirect
+  - **Where:** app/page.tsx
+  - **Problem:** Internal tool; signed-out users only need to sign in.
+  - **Fix:** Ask Tarun; default: redirect / to /signin.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0315 [Low][Design/UI] Emoji in the HR overview (🎂/🏆) and '✓ ⋯' glyph counters
+  - **Where:** features/hr/hr-dashboard-overview.tsx:483,669
+  - **Problem:** Emoji/glyphs as UI.
+  - **Fix:** Use text ('Birthday', 'Anniversary') and plain numbers '3 approved · 2 pending'.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0316 [Low][Design/UI] Emoji default page icon (📄) in project Pages
+  - **Where:** app/(dashboard)/projects/[projectId]/pages/page.tsx:129,181,329,400
+  - **Problem:** Emoji as default icon.
+  - **Fix:** Use a FileText icon; keep user-chosen emoji optional.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0317 [Low][Design/UI] Password checklist uses ✓/○ glyphs
+  - **Where:** features/settings/settings-security.tsx:378
+  - **Problem:** Mixed glyphs.
+  - **Fix:** Use Check/Circle icons from lucide in muted colour.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0318 [Low][Design/UI] Decorative entrance animations on onboarding self-service tabs
+  - **Where:** features/onboarding/review-tab.tsx (25 motion uses), personal-info-tab.tsx (14), documents-tab.tsx (12), bank-details-tab.tsx (11)
+  - **Problem:** Fade/slide on every field group.
+  - **Fix:** Remove framer-motion wrappers; keep a simple tab switch.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0319 [Low][Design/UI] Heavy animation on Support page
+  - **Where:** app/(dashboard)/support/page.tsx (22 motion uses)
+  - **Problem:** Same.
+  - **Fix:** Remove decorative motion.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0320 [Low][Design/UI] Heavy animation on Expenses page
+  - **Where:** app/(dashboard)/hr/expenses/page.tsx (19 motion uses)
+  - **Problem:** Same.
+  - **Fix:** Remove decorative motion.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0321 [Low][Design/UI] Animation on Projects list and Timesheets
+  - **Where:** app/(dashboard)/projects/page.tsx (9), timesheets/page.tsx (7), timesheets/team/page.tsx (9)
+  - **Problem:** Same.
+  - **Fix:** Remove decorative motion; keep skeletons.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0322 [Low][Design/UI] Animation on settings pages
+  - **Where:** app/(dashboard)/settings/notifications (9), webhooks (7), payroll-schedule (7), data-hub (6)
+  - **Problem:** Same.
+  - **Fix:** Remove decorative motion.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0323 [Low][Design/UI] StatCard uses animate-fade-up on every tile
+  - **Where:** components/ui/stat-card.tsx:74
+  - **Problem:** Every dashboard tile animates in.
+  - **Fix:** Remove animate-fade-up.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0324 [Low][Design/UI] Topbar and sticky bars use backdrop blur
+  - **Where:** components/layout/topbar.tsx:60, components/ui/page-wrapper.tsx:105, components/hr/onboarding-wizard.tsx:296, components/onboarding/form-nav-buttons.tsx:20, features/projects/*:338/78
+  - **Problem:** Frosted-glass effect.
+  - **Fix:** Use solid bg-background with a bottom border.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0325 [Low][Design/UI] Sparkles/Bot 'AI' icons on buttons
+  - **Where:** features/hr/performance/ai-generate-review-button.tsx, features/hr/helpdesk/ai-suggest-reply-button.tsx, app/(dashboard)/ai/page.tsx, settings/ai/page.tsx, hr/recognition, hr/team-events, hr/onboarding/my-tasks
+  - **Problem:** AI-styled sparkle icons.
+  - **Fix:** Plain text buttons ('Draft review', 'Suggest reply'); no sparkles.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0326 [Low][Design/UI] Notifications page has five filter tabs and coloured 'Success' pills
+  - **Where:** app/(dashboard)/notifications/page.tsx
+  - **Problem:** QA 📷 06.
+  - **Fix:** Two tabs (All, Unread); neutral pills.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0327 [Low][Design/UI] 404 page uses a huge circular badge
+  - **Where:** app/not-found.tsx, app/(dashboard)/not-found.tsx
+  - **Problem:** QA 📷 07.
+  - **Fix:** Plain heading 'Page not found' + link back.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0328 [Low][Design/UI] Employee profile header gradient and duplicate badges
+  - **Where:** app/(dashboard)/hr/employees/[employeeId]/employee-details-view.tsx
+  - **Problem:** QA 4.11 (gradient header, duplicate ENGINEERING badge).
+  - **Fix:** Flat header, one role badge.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0329 [Low][Design/UI] Org chart dotted background and truncated names
+  - **Where:** app/(dashboard)/hr/org-chart/page.tsx
+  - **Problem:** QA 4.11.
+  - **Fix:** Plain background; wrap names to two lines.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0330 [Low][Design/UI] Duplicate 'Add Holiday' form on admin attendance
+  - **Where:** app/(dashboard)/hr/attendance/page.tsx, features/hr/attendance/manage-holidays-card.tsx (also unreachable per dead-code)
+  - **Problem:** QA 4.6.
+  - **Fix:** Holidays are managed only on /hr/holidays; delete the card.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0331 [Low][Design/UI] Holidays: full-page skeleton after save; confirm dialog missing the year
+  - **Where:** app/(dashboard)/hr/holidays/page.tsx (lint: missing deps at :174/:260)
+  - **Problem:** QA 4.9.
+  - **Fix:** Optimistic update; date formatted 'Sat, 25 Oct 2031'.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0332 [Low][Design/UI] Work logs show 'for this department' when filter is All
+  - **Where:** app/(dashboard)/hr/work-logs/page.tsx
+  - **Problem:** QA 4.6.
+  - **Fix:** Copy follows the filter.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0333 [Low][Design/UI] Uneven page widths across modules
+  - **Where:** components/ui/page-wrapper.tsx and pages that set their own max-w
+  - **Problem:** QA design review.
+  - **Fix:** One max width (e.g. max-w-7xl) set in PageWrapper; remove per-page max-w overrides.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0334 [Low][Design/UI] Long helper sub-headings under every page title
+  - **Where:** components/ui/page-wrapper.tsx (description prop) and callers
+  - **Problem:** QA: filler text.
+  - **Fix:** Drop descriptions that restate the title; max one short line.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0335 [Low][Design/UI] Empty states: confirm illustrations are gone everywhere **[confirm on prod]**
+  - **Where:** components/ui/empty-state.tsx:73 and callers
+  - **Problem:** QA: cartoon on every empty state (fixed in code per comment) — re-verify on prod.
+  - **Fix:** Text-only empty state with one action.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0336 [Low][Design/UI] Org settings currency field icon **[confirm on prod]**
+  - **Where:** app/(dashboard)/settings/organization/page.tsx
+  - **Problem:** QA 4.16: $ icon (re-verify; no DollarSign found in code).
+  - **Fix:** Use ₹ text prefix.
+  - **Acceptance check:** Page matches the rules in docs/CRM-UI-UX-REVAMP.md: no gradients/glow/emoji/illustrations, ink text, gold for the single primary action; screenshot attached to the commit.
+- [ ] MIYO-0337 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/account-deactivated/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0338 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/forgot-password/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0339 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/invitation/[token]/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0340 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/mfa/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0341 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/setup-password/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0342 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(auth)/verify-email/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0343 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/ai/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0344 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/ceo/qr-code/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0345 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/dashboard/admin-health/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0346 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/assessments/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0347 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/asset-returns/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0348 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/assets/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0349 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/background-verification/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0350 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/career-profiles/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0351 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/certifications/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0352 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/compliance/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0353 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/documents/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0354 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/documents/templates/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0355 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/email-templates/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0356 [Low][Design/UI] Remove decorative IconChip from employee-details-view
+  - **Where:** app/(dashboard)/hr/employees/[employeeId]/employee-details-view.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0357 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/fnf/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0358 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/handbook/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0359 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/incentives/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0360 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/learning-paths/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0361 [Low][Design/UI] Remove decorative IconChip from leave-approvals
+  - **Where:** app/(dashboard)/hr/leaves/leave-approvals.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0362 [Low][Design/UI] Remove decorative IconChip from leaves-shared
+  - **Where:** app/(dashboard)/hr/leaves/leaves-shared.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0363 [Low][Design/UI] Remove decorative IconChip from leaves-wfh-content
+  - **Where:** app/(dashboard)/hr/leaves/leaves-wfh-content.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0364 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/loans/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0365 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/offer-letter-templates/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0366 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/onboarding/my-tasks/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0367 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/onboarding/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0368 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/payroll/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0369 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/recognition/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0370 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/reimbursements/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0371 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/team-events/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0372 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/hr/training/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0373 [Low][Design/UI] Remove decorative IconChip from access-denied-view
+  - **Where:** app/(dashboard)/projects/[projectId]/access-denied-view.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0374 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/projects/[projectId]/epics/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0375 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/projects/[projectId]/settings/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0376 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/projects/[projectId]/sprints/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0377 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/projects/[projectId]/views/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0378 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/reports/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0379 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/settings/ai/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0380 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/settings/audit-log/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0381 [Low][Design/UI] Remove decorative IconChip from page
+  - **Where:** app/(dashboard)/settings/job-roles/page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0382 [Low][Design/UI] Remove decorative IconChip from token-page-shell
+  - **Where:** app/(public)/_components/token-page-shell.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0383 [Low][Design/UI] Remove decorative IconChip from not-activated-page
+  - **Where:** components/auth/not-activated-page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0384 [Low][Design/UI] Remove decorative IconChip from activity-feed
+  - **Where:** components/charts/activity-feed.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0385 [Low][Design/UI] Remove decorative IconChip from executive-kpi-widget
+  - **Where:** components/dashboard/widgets/executive-kpi-widget.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0386 [Low][Design/UI] Remove decorative IconChip from pending-approvals-widget
+  - **Where:** components/dashboard/widgets/pending-approvals-widget.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0387 [Low][Design/UI] Remove decorative IconChip from quick-actions-widget
+  - **Where:** components/dashboard/widgets/quick-actions-widget.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0388 [Low][Design/UI] Remove decorative IconChip from widget-card
+  - **Where:** components/dashboard/widgets/widget-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0389 [Low][Design/UI] Remove decorative IconChip from expense-export-dialog
+  - **Where:** components/expenses/expense-export/expense-export-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0390 [Low][Design/UI] Remove decorative IconChip from employee-projects-list
+  - **Where:** components/hr/employee-projects-list.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0391 [Low][Design/UI] Remove decorative IconChip from burndown-chart
+  - **Where:** components/projects/burndown-chart.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0392 [Low][Design/UI] Remove decorative IconChip from create-epic-dialog
+  - **Where:** components/projects/create-epic-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0393 [Low][Design/UI] Remove decorative IconChip from create-sprint-dialog
+  - **Where:** components/projects/create-sprint-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0394 [Low][Design/UI] Remove decorative IconChip from edit-epic-dialog
+  - **Where:** components/projects/edit-epic-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0395 [Low][Design/UI] Remove decorative IconChip from edit-sprint-dialog
+  - **Where:** components/projects/edit-sprint-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0396 [Low][Design/UI] Remove decorative IconChip from ticket-detail-body
+  - **Where:** components/projects/ticket-details/ticket-detail-body.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0397 [Low][Design/UI] Remove decorative IconChip from velocity-chart
+  - **Where:** components/projects/velocity-chart.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0398 [Low][Design/UI] Remove decorative IconChip from mfa-settings
+  - **Where:** components/settings/mfa-settings.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0399 [Low][Design/UI] Remove decorative IconChip from detail-header
+  - **Where:** components/shared/detail-header.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0400 [Low][Design/UI] Remove decorative IconChip from timeline
+  - **Where:** components/shared/timeline.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0401 [Low][Design/UI] Remove decorative IconChip from time-entry-detail-sheet
+  - **Where:** components/timesheets/time-entry-detail-sheet.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0402 [Low][Design/UI] Remove decorative IconChip from confirm-dialog
+  - **Where:** components/ui/confirm-dialog.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0403 [Low][Design/UI] Remove decorative IconChip from hr-widgets
+  - **Where:** features/dashboard/hr-widgets.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0404 [Low][Design/UI] Remove decorative IconChip from my-issues-card
+  - **Where:** features/dashboard/my-issues-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0405 [Low][Design/UI] Remove decorative IconChip from public-documents-card
+  - **Where:** features/dashboard/public-documents-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0406 [Low][Design/UI] Remove decorative IconChip from recent-activity-card
+  - **Where:** features/dashboard/recent-activity-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0407 [Low][Design/UI] Remove decorative IconChip from recent-projects-card
+  - **Where:** features/dashboard/recent-projects-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0408 [Low][Design/UI] Remove decorative IconChip from analytics-sections
+  - **Where:** features/hr/analytics/analytics-sections.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0409 [Low][Design/UI] Remove decorative IconChip from my-assigned-assets-view
+  - **Where:** features/hr/assets/my-assigned-assets-view.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0410 [Low][Design/UI] Remove decorative IconChip from attendance-calendar
+  - **Where:** features/hr/attendance/attendance-calendar.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0411 [Low][Design/UI] Remove decorative IconChip from attendance-heatmap
+  - **Where:** features/hr/attendance/attendance-heatmap.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0412 [Low][Design/UI] Remove decorative IconChip from check-in-button
+  - **Where:** features/hr/attendance/check-in-button.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0413 [Low][Design/UI] Remove decorative IconChip from manage-holidays-card
+  - **Where:** features/hr/attendance/manage-holidays-card.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0414 [Low][Design/UI] Remove decorative IconChip from progress-timeline
+  - **Where:** features/hr/exit/progress-timeline.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0415 [Low][Design/UI] Remove decorative IconChip from ticket-detail-sheet
+  - **Where:** features/hr/helpdesk/ticket-detail-sheet.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0416 [Low][Design/UI] Remove decorative IconChip from ai-generate-review-button
+  - **Where:** features/hr/performance/ai-generate-review-button.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0417 [Low][Design/UI] Remove decorative IconChip from landing-page
+  - **Where:** features/landing/landing-page.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0418 [Low][Design/UI] Remove decorative IconChip from complete-sprint-sheet
+  - **Where:** features/projects/sprints/complete-sprint-sheet.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0419 [Low][Design/UI] Remove decorative IconChip from sprint-planning-panel
+  - **Where:** features/projects/sprints/sprint-planning-panel.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+- [ ] MIYO-0420 [Low][Design/UI] Remove decorative IconChip from settings-security
+  - **Where:** features/settings/settings-security.tsx
+  - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
+  - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
+  - **Acceptance check:** No IconChip import left in this file (or a one-line reason in the commit); screenshot attached.
+
+### Low · Dead code
+
+- [ ] MIYO-0421 [Low][Dead code] Delete unreachable module components/dashboard/widgets/quick-actions-widget.tsx
+  - **Where:** components/dashboard/widgets/quick-actions-widget.tsx
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0422 [Low][Dead code] Delete unreachable module components/shared/timeline.tsx
+  - **Where:** components/shared/timeline.tsx
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0423 [Low][Dead code] Delete unreachable module components/ui/future-datetime-input.tsx
+  - **Where:** components/ui/future-datetime-input.tsx
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0424 [Low][Dead code] Delete unreachable module components/ui/page-back-button.tsx
+  - **Where:** components/ui/page-back-button.tsx
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0425 [Low][Dead code] Delete unreachable module features/hr/attendance/manage-holidays-card.tsx
+  - **Where:** features/hr/attendance/manage-holidays-card.tsx
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0426 [Low][Dead code] Delete unreachable module lib/ai/smart-notification.ts
+  - **Where:** lib/ai/smart-notification.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0427 [Low][Dead code] Keep lib/constants/candidate-offers.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/constants/candidate-offers.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS offers.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0428 [Low][Dead code] Keep lib/constants/interview-format.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/constants/interview-format.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS interviews.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0429 [Low][Dead code] Keep lib/data/country-states.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/data/country-states.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS job location picker.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0430 [Low][Dead code] Keep lib/data/india-locations.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/data/india-locations.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS job location picker.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0431 [Low][Dead code] Delete unreachable module lib/esign/documenso.ts
+  - **Where:** lib/esign/documenso.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0432 [Low][Dead code] Keep lib/files/extract-resume-text.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/files/extract-resume-text.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS resume parsing.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0433 [Low][Dead code] Keep lib/files/resume-file-validation.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/files/resume-file-validation.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS resume upload validation.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0434 [Low][Dead code] Keep lib/hr/job-opening-form-state.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/hr/job-opening-form-state.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS job form.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0435 [Low][Dead code] Keep lib/hr/render-offer-letter-for-offer.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/hr/render-offer-letter-for-offer.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS offer letters.
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0436 [Low][Dead code] Keep lib/integrations/job-boards.ts for the ATS (do not delete in the cleanup pass)
+  - **Where:** lib/integrations/job-boards.ts
+  - **Problem:** Unreachable today (pnpm lint:dead-code) but needed for ATS job-board posting (later).
+  - **Fix:** Leave the file; add it to an allow-list in scripts/find-dead-code.mjs with the ATS item id, and remove the allow-list entry when the ATS imports it.
+  - **Acceptance check:** `pnpm lint:dead-code` passes with the allow-list; the file is imported by the ATS once built.
+- [ ] MIYO-0437 [Low][Dead code] Delete unreachable module lib/notifications/send.ts
+  - **Where:** lib/notifications/send.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0438 [Low][Dead code] Delete unreachable module server/lib/lead-triggers.ts
+  - **Where:** server/lib/lead-triggers.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0439 [Low][Dead code] Delete unreachable module server/queries/crm-accounts.ts
+  - **Where:** server/queries/crm-accounts.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0440 [Low][Dead code] Delete unreachable module server/queries/duplicate-leads.ts
+  - **Where:** server/queries/duplicate-leads.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0441 [Low][Dead code] Delete unreachable module server/queries/invoice.ts
+  - **Where:** server/queries/invoice.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0442 [Low][Dead code] Delete unreachable module server/queries/leads.ts
+  - **Where:** server/queries/leads.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0443 [Low][Dead code] Delete unreachable module server/queries/public.ts
+  - **Where:** server/queries/public.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0444 [Low][Dead code] Delete unreachable module server/queries/sales-dashboard.ts
+  - **Where:** server/queries/sales-dashboard.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0445 [Low][Dead code] Delete unreachable module types/invoice.ts
+  - **Where:** types/invoice.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+- [ ] MIYO-0446 [Low][Dead code] Delete unreachable module types/leads.ts
+  - **Where:** types/leads.ts
+  - **Problem:** Reported by `pnpm lint:dead-code` (26 unreachable modules; the check exits 1 on main).
+  - **Fix:** Delete the file and any now-unused exports it pulled in.
+  - **Acceptance check:** `pnpm lint:dead-code` no longer lists it; typecheck/build pass.
+
+### Low · Code hygiene
+
+- [ ] MIYO-0447 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/ai/page.tsx
+  - **Where:** app/(dashboard)/ai/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): Users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0448 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/dashboard/admin-health/page.tsx
+  - **Where:** app/(dashboard)/dashboard/admin-health/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): AlertTriangle
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0449 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/dashboard/page.tsx
+  - **Where:** app/(dashboard)/dashboard/page.tsx
+  - **Problem:** 2 no-unused-vars warning(s): PendingApprovalsWidgetNew, TeamAttendanceWidgetNew
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0450 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/assessments/page.tsx
+  - **Where:** app/(dashboard)/hr/assessments/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): format
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0451 [Low][Code hygiene] Split app/(dashboard)/hr/assets/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/assets/page.tsx
+  - **Problem:** File has too many lines (855). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0452 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/assets/page.tsx
+  - **Where:** app/(dashboard)/hr/assets/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): resolvedType
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0453 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/background-verification/page.tsx
+  - **Where:** app/(dashboard)/hr/background-verification/page.tsx
+  - **Problem:** 6 no-unused-vars warning(s): BarChart2, Card, CardContent, CardHeader, CardTitle, Progress
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0454 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/career-ladders/page.tsx
+  - **Where:** app/(dashboard)/hr/career-ladders/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): Badge
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0455 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/compliance/page.tsx
+  - **Where:** app/(dashboard)/hr/compliance/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): useState
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0456 [Low][Code hygiene] Split app/(dashboard)/hr/document-review/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/document-review/page.tsx
+  - **Problem:** File has too many lines (999). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0457 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/documents/editor/[documentId]/page.tsx
+  - **Where:** app/(dashboard)/hr/documents/editor/[documentId]/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): router
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0458 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/documents/page.tsx
+  - **Where:** app/(dashboard)/hr/documents/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): statsData
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0459 [Low][Code hygiene] Split app/(dashboard)/hr/email-templates/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/email-templates/page.tsx
+  - **Problem:** File has too many lines (834). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0460 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/enps/page.tsx
+  - **Where:** app/(dashboard)/hr/enps/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): ThumbsUp
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0461 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/exit/page.tsx
+  - **Where:** app/(dashboard)/hr/exit/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): useResignationProgress
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0462 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/expenses/import-expense-sheet.tsx
+  - **Where:** app/(dashboard)/hr/expenses/import-expense-sheet.tsx
+  - **Problem:** 2 no-unused-vars warning(s): Upload, handleCancel
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0463 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/expenses/page.tsx
+  - **Where:** app/(dashboard)/hr/expenses/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): handleDelete
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0464 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/helpdesk/page.tsx
+  - **Where:** app/(dashboard)/hr/helpdesk/page.tsx
+  - **Problem:** 2 no-unused-vars warning(s): CATEGORY_OPTIONS, PRIORITY_OPTIONS
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0465 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/leaves/leave-approvals.tsx
+  - **Where:** app/(dashboard)/hr/leaves/leave-approvals.tsx
+  - **Problem:** 1 no-unused-vars warning(s): format
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0466 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/leaves/leaves-shared.tsx
+  - **Where:** app/(dashboard)/hr/leaves/leaves-shared.tsx
+  - **Problem:** 1 no-unused-vars warning(s): onReject
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0467 [Low][Code hygiene] Split app/(dashboard)/hr/offer-letter-templates/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/offer-letter-templates/page.tsx
+  - **Problem:** File has too many lines (907). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0468 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/offer-letter-templates/page.tsx
+  - **Where:** app/(dashboard)/hr/offer-letter-templates/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): useEffect
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0469 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/onboarding/[userId]/page.tsx
+  - **Where:** app/(dashboard)/hr/onboarding/[userId]/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): memo
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0470 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/onboarding/page.tsx
+  - **Where:** app/(dashboard)/hr/onboarding/page.tsx
+  - **Problem:** 2 no-unused-vars warning(s): Input, Users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0471 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/page.tsx
+  - **Where:** app/(dashboard)/hr/page.tsx
+  - **Problem:** 2 no-unused-vars warning(s): pathname, resetPage
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0472 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/payroll/page.tsx
+  - **Where:** app/(dashboard)/hr/payroll/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): isPreviewLoading
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0473 [Low][Code hygiene] Split app/(dashboard)/hr/performance/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/performance/page.tsx
+  - **Problem:** File has too many lines (965). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0474 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/skills/page.tsx
+  - **Where:** app/(dashboard)/hr/skills/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): getCategory
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0475 [Low][Code hygiene] Split app/(dashboard)/hr/termination/page.tsx below 800 lines
+  - **Where:** app/(dashboard)/hr/termination/page.tsx
+  - **Problem:** File has too many lines (826). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0476 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/termination/page.tsx
+  - **Where:** app/(dashboard)/hr/termination/page.tsx
+  - **Problem:** 7 no-unused-vars warning(s): AlertTriangle, BadgeIndianRupee, Calendar, Check, Mail, TerminationStatus, User
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0477 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/training/page.tsx
+  - **Where:** app/(dashboard)/hr/training/page.tsx
+  - **Problem:** 5 no-unused-vars warning(s): Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0478 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/hr/work-logs/page.tsx
+  - **Where:** app/(dashboard)/hr/work-logs/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): selectedUserId
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0479 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/projects/[projectId]/pages/page.tsx
+  - **Where:** app/(dashboard)/projects/[projectId]/pages/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): prevContent
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0480 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/settings/custom-fields/page.tsx
+  - **Where:** app/(dashboard)/settings/custom-fields/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): syncForm
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0481 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/settings/email-templates/page.tsx
+  - **Where:** app/(dashboard)/settings/email-templates/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): ChevronDown
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0482 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/settings/webhooks/page.tsx
+  - **Where:** app/(dashboard)/settings/webhooks/page.tsx
+  - **Problem:** 3 no-unused-vars warning(s): Textarea, setShowSecrets, showSecrets
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0483 [Low][Code hygiene] Remove unused variables/imports in app/(dashboard)/timesheets/team/page.tsx
+  - **Where:** app/(dashboard)/timesheets/team/page.tsx
+  - **Problem:** 1 no-unused-vars warning(s): _date
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0484 [Low][Code hygiene] Remove unused variables/imports in app/api/cron/scheduled-reports/route.ts
+  - **Where:** app/api/cron/scheduled-reports/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): until
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0485 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/admin-health/route.ts
+  - **Where:** app/api/dashboard/admin-health/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0486 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/birthdays/route.ts
+  - **Where:** app/api/dashboard/birthdays/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0487 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/leaves-today/route.ts
+  - **Where:** app/api/dashboard/leaves-today/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0488 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/pending-approvals/route.ts
+  - **Where:** app/api/dashboard/pending-approvals/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0489 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/pending-requests/route.ts
+  - **Where:** app/api/dashboard/pending-requests/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0490 [Low][Code hygiene] Remove unused variables/imports in app/api/dashboard/upcoming-leaves/route.ts
+  - **Where:** app/api/dashboard/upcoming-leaves/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0491 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/analytics/attendance/route.ts
+  - **Where:** app/api/hr/analytics/attendance/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): organizationMembers, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0492 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/analytics/diversity/route.ts
+  - **Where:** app/api/hr/analytics/diversity/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): count, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0493 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/analytics/route.ts
+  - **Where:** app/api/hr/analytics/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): desc
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0494 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/compliance/statutory/route.ts
+  - **Where:** app/api/hr/compliance/statutory/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): leaveBalances, payrolls
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0495 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/dashboard/compliance/route.ts
+  - **Where:** app/api/hr/dashboard/compliance/route.ts
+  - **Problem:** 5 no-unused-vars warning(s): CACHE_TTL, and, count, isNotNull, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0496 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/dashboard/export/route.ts
+  - **Where:** app/api/hr/dashboard/export/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0497 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/dashboard/metrics/route.ts
+  - **Where:** app/api/hr/dashboard/metrics/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): next7Days, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0498 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/dashboard/salary-bands/route.ts
+  - **Where:** app/api/hr/dashboard/salary-bands/route.ts
+  - **Problem:** 3 no-unused-vars warning(s): CACHE_TTL, and, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0499 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/directory/route.ts
+  - **Where:** app/api/hr/directory/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): departmentMembers
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0500 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/document-types/route.ts
+  - **Where:** app/api/hr/document-types/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0501 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/documents/assignments/counts/route.ts
+  - **Where:** app/api/hr/documents/assignments/counts/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0502 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/documents/export/email/route.ts
+  - **Where:** app/api/hr/documents/export/email/route.ts
+  - **Problem:** 5 no-unused-vars warning(s): _bcc, _cc, _msg, _subj, _to
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0503 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/exit/[resignationId]/ceo-review/route.ts
+  - **Where:** app/api/hr/exit/[resignationId]/ceo-review/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0504 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/exit/[resignationId]/letter/route.ts
+  - **Where:** app/api/hr/exit/[resignationId]/letter/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0505 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/exit/analytics/route.ts
+  - **Where:** app/api/hr/exit/analytics/route.ts
+  - **Problem:** 5 no-unused-vars warning(s): count, departmentMembers, departments, format, startOfMonth
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0506 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/expenses/[expenseId]/route.ts
+  - **Where:** app/api/hr/expenses/[expenseId]/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): parseBody
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0507 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/expenses/page-data/route.ts
+  - **Where:** app/api/hr/expenses/page-data/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): inArray
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0508 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/headcount/route.ts
+  - **Where:** app/api/hr/headcount/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): parseQuery, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0509 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/helpdesk/route.ts
+  - **Where:** app/api/hr/helpdesk/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): TicketPriority
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0510 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/holidays/route.ts
+  - **Where:** app/api/hr/holidays/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): getTodayString
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0511 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/integrations/accounting-export/route.ts
+  - **Where:** app/api/hr/integrations/accounting-export/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): err
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0512 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/integrations/google-calendar/route.ts
+  - **Where:** app/api/hr/integrations/google-calendar/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): candidates, e
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0513 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/leave-calendar/route.ts
+  - **Where:** app/api/hr/leave-calendar/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): parseQuery
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0514 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/leaves/analytics/route.ts
+  - **Where:** app/api/hr/leaves/analytics/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): CACHE_TTL
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0515 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/leaves/blackout/route.ts
+  - **Where:** app/api/hr/leaves/blackout/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): or
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0516 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/leaves/route.ts
+  - **Where:** app/api/hr/leaves/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): member
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0517 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/leaves/team/route.ts
+  - **Where:** app/api/hr/leaves/team/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0518 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/loans/route.ts
+  - **Where:** app/api/hr/loans/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): err
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0519 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/my-profile/route.ts
+  - **Where:** app/api/hr/my-profile/route.ts
+  - **Problem:** 3 no-unused-vars warning(s): googleRefreshToken, password, totpSecret
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0520 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/onboarding-docs/summary/route.ts
+  - **Where:** app/api/hr/onboarding-docs/summary/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0521 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/onboarding/reminders/route.ts
+  - **Where:** app/api/hr/onboarding/reminders/route.ts
+  - **Problem:** 3 no-unused-vars warning(s): _req, err, ne
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0522 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/payroll-reports/route.ts
+  - **Where:** app/api/hr/payroll-reports/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): organizationMembers
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0523 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/reimbursements/route.ts
+  - **Where:** app/api/hr/reimbursements/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): err
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0524 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/rich-documents/route.ts
+  - **Where:** app/api/hr/rich-documents/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): err
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0525 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/tax-calculator/route.ts
+  - **Where:** app/api/hr/tax-calculator/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): err
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0526 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/team-events/route.ts
+  - **Where:** app/api/hr/team-events/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): and, teamEventParticipants
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0527 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/termination-reasons/route.ts
+  - **Where:** app/api/hr/termination-reasons/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): _req, and
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0528 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/termination/[terminationId]/letter/route.ts
+  - **Where:** app/api/hr/termination/[terminationId]/letter/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0529 [Low][Code hygiene] Remove unused variables/imports in app/api/hr/termination/route.ts
+  - **Where:** app/api/hr/termination/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0530 [Low][Code hygiene] Remove unused variables/imports in app/api/onboarding/personal-details/route.ts
+  - **Where:** app/api/onboarding/personal-details/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): err, organizationMembers
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0531 [Low][Code hygiene] Remove unused variables/imports in app/api/onboarding/route.ts
+  - **Where:** app/api/onboarding/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0532 [Low][Code hygiene] Remove unused variables/imports in app/api/onboarding/submit/route.ts
+  - **Where:** app/api/onboarding/submit/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): organizationMembers
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0533 [Low][Code hygiene] Remove unused variables/imports in app/api/onboarding/templates/route.ts
+  - **Where:** app/api/onboarding/templates/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0534 [Low][Code hygiene] Remove unused variables/imports in app/api/org/members/route.ts
+  - **Where:** app/api/org/members/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): inArray
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0535 [Low][Code hygiene] Remove unused variables/imports in app/api/reports/source-effectiveness/route.ts
+  - **Where:** app/api/reports/source-effectiveness/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0536 [Low][Code hygiene] Remove unused variables/imports in app/api/settings/ai-usage/route.ts
+  - **Where:** app/api/settings/ai-usage/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): gte, since
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0537 [Low][Code hygiene] Remove unused variables/imports in app/api/tasks/analytics/route.ts
+  - **Where:** app/api/tasks/analytics/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): lte
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0538 [Low][Code hygiene] Remove unused variables/imports in app/api/tasks/my-queue/route.ts
+  - **Where:** app/api/tasks/my-queue/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0539 [Low][Code hygiene] Remove unused variables/imports in app/api/tasks/sequences/[sequenceId]/apply/route.ts
+  - **Where:** app/api/tasks/sequences/[sequenceId]/apply/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): taskSequenceSteps
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0540 [Low][Code hygiene] Remove unused variables/imports in app/api/tasks/sequences/route.ts
+  - **Where:** app/api/tasks/sequences/route.ts
+  - **Problem:** 1 no-unused-vars warning(s): _req
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0541 [Low][Code hygiene] Remove unused variables/imports in app/api/webhooks/[webhookId]/route.ts
+  - **Where:** app/api/webhooks/[webhookId]/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): _secret
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0542 [Low][Code hygiene] Remove unused variables/imports in app/api/webhooks/route.ts
+  - **Where:** app/api/webhooks/route.ts
+  - **Problem:** 2 no-unused-vars warning(s): _req, _secret
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0543 [Low][Code hygiene] Remove unused variables/imports in components/dashboard/widgets/executive-kpi-widget.tsx
+  - **Where:** components/dashboard/widgets/executive-kpi-widget.tsx
+  - **Problem:** 1 no-unused-vars warning(s): Briefcase
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0544 [Low][Code hygiene] Remove unused variables/imports in components/editor/tiptap-editor.tsx
+  - **Where:** components/editor/tiptap-editor.tsx
+  - **Problem:** 1 no-unused-vars warning(s): useCallback
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0545 [Low][Code hygiene] Remove unused variables/imports in components/hr/onboarding-wizard.tsx
+  - **Where:** components/hr/onboarding-wizard.tsx
+  - **Problem:** 1 no-unused-vars warning(s): toTitleCase
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0546 [Low][Code hygiene] Remove unused variables/imports in components/layout/sidebar/sidebar-nav-items.ts
+  - **Where:** components/layout/sidebar/sidebar-nav-items.ts
+  - **Problem:** 24 no-unused-vars warning(s): ClipboardCheck, Contact2, Copy, FileSearch, FlaskConical, FormInput, Globe, GraduationCap, Handshake, IndianRupee, ListChecks, Mail, Map, MapPin, Megaphone, PartyPopper, RefreshCcw, Share2, SlidersHorizontal, Smile, Target, Trophy, UserSearch, Video
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0547 [Low][Code hygiene] Remove unused variables/imports in components/projects/shared/types.ts
+  - **Where:** components/projects/shared/types.ts
+  - **Problem:** 1 no-unused-vars warning(s): TicketType
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0548 [Low][Code hygiene] Remove unused variables/imports in features/calendar/big-calendar-wrapper.tsx
+  - **Where:** features/calendar/big-calendar-wrapper.tsx
+  - **Problem:** 1 no-unused-vars warning(s): DEFAULT_LOCALE
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0549 [Low][Code hygiene] Split features/hr/analytics/analytics-sections.tsx below 800 lines
+  - **Where:** features/hr/analytics/analytics-sections.tsx
+  - **Problem:** File has too many lines (1096). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0550 [Low][Code hygiene] Remove unused variables/imports in features/hr/documents/new-folder-dialog.tsx
+  - **Where:** features/hr/documents/new-folder-dialog.tsx
+  - **Problem:** 1 no-unused-vars warning(s): useCallback
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0551 [Low][Code hygiene] Remove unused variables/imports in features/hr/employees/hr-filter-bar.tsx
+  - **Where:** features/hr/employees/hr-filter-bar.tsx
+  - **Problem:** 1 no-unused-vars warning(s): ROLE_LABELS
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0552 [Low][Code hygiene] Remove unused variables/imports in features/hr/expenses/expense-item.tsx
+  - **Where:** features/hr/expenses/expense-item.tsx
+  - **Problem:** 1 no-unused-vars warning(s): RotateCcw
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0553 [Low][Code hygiene] Split features/hr/find-expert/find-expert-view.tsx below 800 lines
+  - **Where:** features/hr/find-expert/find-expert-view.tsx
+  - **Problem:** File has too many lines (809). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0554 [Low][Code hygiene] Remove unused variables/imports in features/hr/hr-dashboard-overview.tsx
+  - **Where:** features/hr/hr-dashboard-overview.tsx
+  - **Problem:** 1 no-unused-vars warning(s): Trophy
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0555 [Low][Code hygiene] Remove unused variables/imports in features/hr/performance/appraisals-tab.tsx
+  - **Where:** features/hr/performance/appraisals-tab.tsx
+  - **Problem:** 1 no-unused-vars warning(s): isPending
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0556 [Low][Code hygiene] Split features/hr/performance/pip-tab.tsx below 800 lines
+  - **Where:** features/hr/performance/pip-tab.tsx
+  - **Problem:** File has too many lines (1504). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0557 [Low][Code hygiene] Remove unused variables/imports in features/hr/work-logs/work-log-month-group.tsx
+  - **Where:** features/hr/work-logs/work-log-month-group.tsx
+  - **Problem:** 1 no-unused-vars warning(s): isAdminOrCeo
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0558 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/crm/settings.ts
+  - **Where:** lib/api/hooks/crm/settings.ts
+  - **Problem:** 2 no-unused-vars warning(s): _et
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0559 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/hr/employees.ts
+  - **Where:** lib/api/hooks/hr/employees.ts
+  - **Problem:** 1 no-unused-vars warning(s): UseMutationOptions
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0560 [Low][Code hygiene] Split lib/api/hooks/hr/leaves-expenses.ts below 800 lines
+  - **Where:** lib/api/hooks/hr/leaves-expenses.ts
+  - **Problem:** File has too many lines (967). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0561 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/hr/leaves-expenses.ts
+  - **Where:** lib/api/hooks/hr/leaves-expenses.ts
+  - **Problem:** 3 no-unused-vars warning(s): CreatePerformanceReviewInput, Incentive, UpdateGoalInput
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0562 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/hr/performance.ts
+  - **Where:** lib/api/hooks/hr/performance.ts
+  - **Problem:** 2 no-unused-vars warning(s): CreateGoalInput, Goal
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0563 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/projects/advanced.ts
+  - **Where:** lib/api/hooks/projects/advanced.ts
+  - **Problem:** 1 no-unused-vars warning(s): UseMutationOptions
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0564 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/projects/sprints.ts
+  - **Where:** lib/api/hooks/projects/sprints.ts
+  - **Problem:** 1 no-unused-vars warning(s): UseMutationOptions
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0565 [Low][Code hygiene] Remove unused variables/imports in lib/api/hooks/projects/time-entries.ts
+  - **Where:** lib/api/hooks/projects/time-entries.ts
+  - **Problem:** 1 no-unused-vars warning(s): UseMutationOptions
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0566 [Low][Code hygiene] Remove unused variables/imports in lib/auth/helpers.ts
+  - **Where:** lib/auth/helpers.ts
+  - **Problem:** 1 no-unused-vars warning(s): organizations
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0567 [Low][Code hygiene] Remove unused variables/imports in lib/date-utils.ts
+  - **Where:** lib/date-utils.ts
+  - **Problem:** 1 no-unused-vars warning(s): e
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0568 [Low][Code hygiene] Split lib/db/schema/crm/_all.ts below 800 lines
+  - **Where:** lib/db/schema/crm/_all.ts
+  - **Problem:** File has too many lines (1308). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0569 [Low][Code hygiene] Split lib/db/schema/hr/_all.ts below 800 lines
+  - **Where:** lib/db/schema/hr/_all.ts
+  - **Problem:** File has too many lines (2312). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0570 [Low][Code hygiene] Remove unused variables/imports in lib/db/schema/hr/_all.ts
+  - **Where:** lib/db/schema/hr/_all.ts
+  - **Problem:** 1 no-unused-vars warning(s): onboardingDocStatusEnum
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0571 [Low][Code hygiene] Remove unused variables/imports in lib/db/schema/shared.ts
+  - **Where:** lib/db/schema/shared.ts
+  - **Problem:** 1 no-unused-vars warning(s): date
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0572 [Low][Code hygiene] Remove unused variables/imports in lib/email-templates/appraisal.ts
+  - **Where:** lib/email-templates/appraisal.ts
+  - **Problem:** 1 no-unused-vars warning(s): baseUrl
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0573 [Low][Code hygiene] Remove unused variables/imports in lib/email-templates/crm.ts
+  - **Where:** lib/email-templates/crm.ts
+  - **Problem:** 1 no-unused-vars warning(s): baseUrl
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0574 [Low][Code hygiene] Remove unused variables/imports in lib/email-templates/expense.ts
+  - **Where:** lib/email-templates/expense.ts
+  - **Problem:** 2 no-unused-vars warning(s): baseUrl, logoUrl
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0575 [Low][Code hygiene] Split lib/email-templates/hr.ts below 800 lines
+  - **Where:** lib/email-templates/hr.ts
+  - **Problem:** File has too many lines (804). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0576 [Low][Code hygiene] Remove unused variables/imports in lib/email-templates/organization.ts
+  - **Where:** lib/email-templates/organization.ts
+  - **Problem:** 2 no-unused-vars warning(s): baseUrl, logoUrl
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0577 [Low][Code hygiene] Remove unused variables/imports in lib/email-templates/reports.ts
+  - **Where:** lib/email-templates/reports.ts
+  - **Problem:** 2 no-unused-vars warning(s): baseUrl, logoUrl
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0578 [Low][Code hygiene] Split lib/email.ts below 800 lines
+  - **Where:** lib/email.ts
+  - **Problem:** File has too many lines (967). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0579 [Low][Code hygiene] Remove unused variables/imports in lib/hr/leave-approver-chain.ts
+  - **Where:** lib/hr/leave-approver-chain.ts
+  - **Problem:** 1 no-unused-vars warning(s): notInArray
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0580 [Low][Code hygiene] Remove unused variables/imports in lib/hr/offer-letter-branded-pdf.tsx
+  - **Where:** lib/hr/offer-letter-branded-pdf.tsx
+  - **Problem:** 1 no-unused-vars warning(s): GOLD
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0581 [Low][Code hygiene] Remove unused variables/imports in lib/hr/skills-catalog.test.ts
+  - **Where:** lib/hr/skills-catalog.test.ts
+  - **Problem:** 1 no-unused-vars warning(s): normalizeSkill
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0582 [Low][Code hygiene] Remove unused variables/imports in lib/hr/termination-reasons.ts
+  - **Where:** lib/hr/termination-reasons.ts
+  - **Problem:** 1 no-unused-vars warning(s): and
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0583 [Low][Code hygiene] Remove unused variables/imports in lib/inngest/functions/event-reminders.ts
+  - **Where:** lib/inngest/functions/event-reminders.ts
+  - **Problem:** 1 no-unused-vars warning(s): subMinutes
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0584 [Low][Code hygiene] Remove unused variables/imports in lib/integrations/job-boards.ts
+  - **Where:** lib/integrations/job-boards.ts
+  - **Problem:** 1 no-unused-vars warning(s): candidateApplications
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0585 [Low][Code hygiene] Remove unused variables/imports in lib/qr-code.ts
+  - **Where:** lib/qr-code.ts
+  - **Problem:** 3 no-unused-vars warning(s): error, join, logoError
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0586 [Low][Code hygiene] Remove unused variables/imports in lib/validations/hr-assets.test.ts
+  - **Where:** lib/validations/hr-assets.test.ts
+  - **Problem:** 1 no-unused-vars warning(s): _omit
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0587 [Low][Code hygiene] Split lib/validations/hr.ts below 800 lines
+  - **Where:** lib/validations/hr.ts
+  - **Problem:** File has too many lines (939). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0588 [Low][Code hygiene] Remove unused variables/imports in lib/validations/job-opening.test.ts
+  - **Where:** lib/validations/job-opening.test.ts
+  - **Problem:** 3 no-unused-vars warning(s): DEFAULT_CURRENCY, _
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0589 [Low][Code hygiene] Remove unused variables/imports in server/actions/appraisal-cycle-seed.ts
+  - **Where:** server/actions/appraisal-cycle-seed.ts
+  - **Problem:** 1 no-unused-vars warning(s): yy
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0590 [Low][Code hygiene] Remove unused variables/imports in server/actions/auth-actions.ts
+  - **Where:** server/actions/auth-actions.ts
+  - **Problem:** 1 no-unused-vars warning(s): ROLES
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0591 [Low][Code hygiene] Remove unused variables/imports in server/actions/create-notification.ts
+  - **Where:** server/actions/create-notification.ts
+  - **Problem:** 1 no-unused-vars warning(s): and
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0592 [Low][Code hygiene] Remove unused variables/imports in server/actions/expense-export.ts
+  - **Where:** server/actions/expense-export.ts
+  - **Problem:** 3 no-unused-vars warning(s): isAdminOrOwner, organizationMembers, users
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0593 [Low][Code hygiene] Remove unused variables/imports in server/actions/holiday-actions.ts
+  - **Where:** server/actions/holiday-actions.ts
+  - **Problem:** 2 no-unused-vars warning(s): e
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0594 [Low][Code hygiene] Remove unused variables/imports in server/actions/hr-actions.ts
+  - **Where:** server/actions/hr-actions.ts
+  - **Problem:** 2 no-unused-vars warning(s): e, error
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0595 [Low][Code hygiene] Remove unused variables/imports in server/actions/leave-actions/leave-requests.ts
+  - **Where:** server/actions/leave-actions/leave-requests.ts
+  - **Problem:** 2 no-unused-vars warning(s): ne, sql
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0596 [Low][Code hygiene] Remove unused variables/imports in server/actions/onboarding-actions.ts
+  - **Where:** server/actions/onboarding-actions.ts
+  - **Problem:** 1 no-unused-vars warning(s): error
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0597 [Low][Code hygiene] Remove unused variables/imports in server/actions/weekly-ceo-recap.ts
+  - **Where:** server/actions/weekly-ceo-recap.ts
+  - **Problem:** 1 no-unused-vars warning(s): organizations
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0598 [Low][Code hygiene] Remove unused variables/imports in server/lib/lead-triggers.ts
+  - **Where:** server/lib/lead-triggers.ts
+  - **Problem:** 1 no-unused-vars warning(s): logger
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0599 [Low][Code hygiene] Remove unused variables/imports in server/queries/crm-clients.ts
+  - **Where:** server/queries/crm-clients.ts
+  - **Problem:** 1 no-unused-vars warning(s): leads
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0600 [Low][Code hygiene] Remove unused variables/imports in server/queries/dashboard.ts
+  - **Where:** server/queries/dashboard.ts
+  - **Problem:** 4 no-unused-vars warning(s): _ts, _userId, jobPostings, userId
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0601 [Low][Code hygiene] Split server/queries/hr.ts below 800 lines
+  - **Where:** server/queries/hr.ts
+  - **Problem:** File has too many lines (1243). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0602 [Low][Code hygiene] Remove unused variables/imports in server/queries/hr.ts
+  - **Where:** server/queries/hr.ts
+  - **Problem:** 4 no-unused-vars warning(s): PaginatedEmployees, PaginatedResult, count, or
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0603 [Low][Code hygiene] Remove unused variables/imports in server/queries/hr/bonuses-export.ts
+  - **Where:** server/queries/hr/bonuses-export.ts
+  - **Problem:** 1 no-unused-vars warning(s): and
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0604 [Low][Code hygiene] Remove unused variables/imports in server/queries/hr/employees.ts
+  - **Where:** server/queries/hr/employees.ts
+  - **Problem:** 1 no-unused-vars warning(s): timesheets
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0605 [Low][Code hygiene] Remove unused variables/imports in server/queries/projects.ts
+  - **Where:** server/queries/projects.ts
+  - **Problem:** 1 no-unused-vars warning(s): inArray
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0606 [Low][Code hygiene] Remove unused variables/imports in server/queries/sales-dashboard.ts
+  - **Where:** server/queries/sales-dashboard.ts
+  - **Problem:** 2 no-unused-vars warning(s): CACHE_KEYS, crmPeople
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0607 [Low][Code hygiene] Remove unused variables/imports in server/queries/support.ts
+  - **Where:** server/queries/support.ts
+  - **Problem:** 1 no-unused-vars warning(s): subDays
+  - **Fix:** Delete the unused symbols (do not prefix with _ to silence).
+  - **Acceptance check:** `pnpm lint` shows no unused-vars warning for this file.
+- [ ] MIYO-0608 [Low][Code hygiene] Split types/hr.ts below 800 lines
+  - **Where:** types/hr.ts
+  - **Problem:** File has too many lines (1365). Maximum allowed is 800
+  - **Fix:** Split by responsibility (sub-components / hooks / schema files). No behaviour change.
+  - **Acceptance check:** File < 800 lines; lint max-lines warning gone; tests pass.
+- [ ] MIYO-0609 [Low][Code hygiene] Use router navigation instead of window.location.href in sign-up
+  - **Where:** app/(auth)/signup/page.tsx lines 111, 119
+  - **Problem:** Lint @next/next/no-location-assign-relative-destination.
+  - **Fix:** Use router.push()/redirect().
+  - **Acceptance check:** Lint warning gone.
+- [ ] MIYO-0610 [Low][Code hygiene] Add alt text to react-pdf Image elements in lib/hr/offer-letter-branded-pdf.tsx
+  - **Where:** lib/hr/offer-letter-branded-pdf.tsx (242,245,250)
+  - **Problem:** Lint jsx-a11y/alt-text.
+  - **Fix:** Pass the documented alt/aria prop or disable via the react-pdf-specific component wrapper (no eslint-disable).
+  - **Acceptance check:** Lint warning gone.
+- [ ] MIYO-0611 [Low][Code hygiene] Add alt text to react-pdf Image elements in lib/hr/payslip-branded-pdf.tsx
+  - **Where:** lib/hr/payslip-branded-pdf.tsx (198)
+  - **Problem:** Lint jsx-a11y/alt-text.
+  - **Fix:** Pass the documented alt/aria prop or disable via the react-pdf-specific component wrapper (no eslint-disable).
+  - **Acceptance check:** Lint warning gone.
+- [ ] MIYO-0612 [Low][Code hygiene] Use next/image (or a sized img with width/height) in app/(dashboard)/settings/organization/page.tsx
+  - **Where:** app/(dashboard)/settings/organization/page.tsx:339,374,380
+  - **Problem:** Lint @next/next/no-img-element; layout shift on comment images.
+  - **Fix:** Use next/image with remote pattern for the R2 domain.
+  - **Acceptance check:** Lint warning gone.
+- [ ] MIYO-0613 [Low][Code hygiene] Use next/image (or a sized img with width/height) in components/projects/ticket-details/activity-feed.tsx
+  - **Where:** components/projects/ticket-details/activity-feed.tsx:144
+  - **Problem:** Lint @next/next/no-img-element; layout shift on comment images.
+  - **Fix:** Use next/image with remote pattern for the R2 domain.
+  - **Acceptance check:** Lint warning gone.
+- [ ] MIYO-0614 [Low][Code hygiene] Use next/image (or a sized img with width/height) in components/projects/ticket-details/comment-item.tsx
+  - **Where:** components/projects/ticket-details/comment-item.tsx:206,253
+  - **Problem:** Lint @next/next/no-img-element; layout shift on comment images.
+  - **Fix:** Use next/image with remote pattern for the R2 domain.
+  - **Acceptance check:** Lint warning gone.
+
+### Low · QA data cleanup
+
+- [ ] MIYO-0615 [Low][QA data cleanup] Delete the five QA employees (maxxspace.com) **[confirm on prod]**
+  - **Where:** qaalpha8229@, qabravo19454@, qacharlie30058@, qadelta16529@, qaecho15036@maxxspace.com — users, organization_members, salary structures, leave balances, attendance, notifications
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0616 [Low][QA data cleanup] Delete 'Qa Test Employee' VC26002 (qa.test1@example.com, id e1ed6e68-ae8e-4aab-8c52-3655a0d54b21) and its skills 'Testing'/'Qa' **[confirm on prod]**
+  - **Where:** users / employee skills
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0617 [Low][QA data cleanup] Delete the 6 Oct 2026 DRAFT payrolls for the QA employees **[confirm on prod]**
+  - **Where:** payrolls where user in QA users and month='2026-10' and status='DRAFT'
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0618 [Low][QA data cleanup] Delete 'QA Test Holiday' on 25 Oct 2031 (it will email everyone on 24 Oct 2031) **[confirm on prod]**
+  - **Where:** holidays
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0619 [Low][QA data cleanup] Delete QA leave requests and restore balances (admin 10 Nov pending; Alpha 12 Nov approved; Bravo 13 Nov rejected; Echo 17 Nov approved) **[confirm on prod]**
+  - **Where:** leave_requests, leave_balances
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0620 [Low][QA data cleanup] Clock out / delete Qa Alpha's open attendance record from 15 Oct **[confirm on prod]**
+  - **Where:** attendance
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0621 [Low][QA data cleanup] Delete job titles 'QA Test Engineer', 'QA Sales Executive', 'QA Customer Support Associate', 'QA Design Associate' **[confirm on prod]**
+  - **Where:** job_roles
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0622 [Low][QA data cleanup] Delete expense EXP-2026-001 (₹1, approved) **[confirm on prod]**
+  - **Where:** expenses
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0623 [Low][QA data cleanup] Delete 'QA Test Laptop' QA-TEST-0001 **[confirm on prod]**
+  - **Where:** assets
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0624 [Low][QA data cleanup] Delete 'QA Test Project' and 'QA Test Ticket' **[confirm on prod]**
+  - **Where:** projects/tickets (support ticket 'QA Test Ticket' In Progress too)
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+- [ ] MIYO-0625 [Low][QA data cleanup] Delete leftover recruitment QA rows: 'QA Test Job' (draft) and 'QA Test Candidate' qa.test2@example.com **[confirm on prod]**
+  - **Where:** job_postings, candidates (tables still exist)
+  - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
+  - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
+  - **Acceptance check:** After Tarun runs it, the records no longer appear in the UI; the SQL file is committed without being executed by the agent.
+
+---
+
+# ATS master build
+
+Start only after every Critical and High item above is done. Work phase by phase; full design in `ATS-MASTER-PROMPT.md`. Replaces the Recruitment module removed in Oct 2026.
+
+### ATS · Phase 0 Foundation
+
+- [ ] MIYO-0626 [High][ATS/0 Foundation] Decide and record reuse/drop for every leftover recruitment table
+  - **Where:** ATS-MASTER-PROMPT.md §3, lib/db/schema/hr/_all.ts
+  - **Problem:** The Recruitment module was removed in Oct 2026 but 22 tables and 5 enums remain; building fresh tables beside them doubles the schema.
+  - **Fix:** Apply the table in ATS-MASTER-PROMPT.md §3: REUSE job_postings, candidates, candidate_applications, interviews, scorecard_templates, interview_scorecards, candidate_sources, candidate_offers, hr_offer_letter_templates, hr_offer_letter_custom_variables, job_roles, candidate_documents; REUSE-LATER interview_booking_links, candidate_referrals, background_verifications; DROP hiring_flow_templates, hiring_flow_rounds (replaced by ats_stages), candidate_documents_vault (merge into candidate_documents), interview_slas, candidate_sla_tracking, interview_questions, candidate_reference_checks. Count rows on prod first (Tarun runs the SELECT); drop only empty tables, in a later migration.
+  - **Acceptance check:** Decision table committed; a migration exists that drops only the DROP tables with `IF EXISTS`, gated behind Tarun's row-count confirmation.
+- [ ] MIYO-0627 [High][ATS/0 Foundation] Decide reuse/drop for leftover recruitment code
+  - **Where:** ATS-MASTER-PROMPT.md §3
+  - **Problem:** Unreachable files remain from the removed module.
+  - **Fix:** REUSE: lib/files/extract-resume-text.ts, lib/files/resume-file-validation.ts, lib/constants/candidate-offers.ts, lib/constants/interview-format.ts, lib/hr/render-offer-letter-for-offer.ts, lib/hr/job-opening-form-state.ts, application-field-config, lib/data/india-locations.ts. REWRITE: lib/email-templates/hr-recruitment.ts (replace with email-templates/ats-*). DROP: lib/integrations/job-boards.ts until a job-board phase, duplicate getCandidateRejectionEmail/interview helpers in lib/email-templates/hr.ts.
+  - **Acceptance check:** Each file is either imported by ATS code or deleted; `pnpm lint:dead-code` passes.
+- [ ] MIYO-0628 [High][ATS/0 Foundation] Merge the RECRUITER role (branch cursor/admin-onboarding-recruiter-role-b650, commit 7fa03d7)
+  - **Where:** lib/constants/roles.ts, user_role enum migration, lib/auth/route-access.ts
+  - **Problem:** RECRUITER exists only on an unmerged branch.
+  - **Fix:** Cherry-pick/rebase the role (enum value via `ALTER TYPE ... ADD VALUE IF NOT EXISTS`), add ATS_ROLES = [CEO, ADMIN, HR, RECRUITER]; RECRUITMENT_HR_ROLES points to it.
+  - **Acceptance check:** A RECRUITER user can open /ats and nothing in /hr/payroll.
+- [ ] MIYO-0629 [High][ATS/0 Foundation] Per-job hiring team permissions
+  - **Where:** new table ats_job_members (jobId, userId, role HIRING_MANAGER|INTERVIEWER|RECRUITER)
+  - **Problem:** Managers and interviewers need access to only their jobs.
+  - **Fix:** lib/ats/access.ts: canViewJob/canEditJob/canViewCandidate/canScore; HR/CEO/Admin/RECRUITER see all; hiring managers see their jobs; interviewers see only candidates they interview, no salary/offer fields.
+  - **Acceptance check:** Matrix test covers each role × action; interviewer gets 404 on another job's candidate.
+- [ ] MIYO-0630 [High][ATS/0 Foundation] Create the ATS schema migration (additive)
+  - **Where:** drizzle/0157_ats_core.sql, lib/db/schema/ats.ts
+  - **Problem:** Reused tables lack the columns the new design needs.
+  - **Fix:** Add: ats_requisitions, ats_stages (per org, per job override, order, type APPLIED/SCREEN/INTERVIEW/OFFER/HIRED/REJECTED, emailTemplateId, autoEmail bool), ats_job_members, ats_application_questions, ats_application_answers, ats_candidate_tags, ats_candidate_notes, ats_activity, ats_refuse_reasons, ats_consents, ats_email_log; add job_postings.slug (unique per org), publishedAt, closesAt, seo fields; candidate_applications.stageId, rating, rejectedReasonId, source; candidates.search tsvector + GIN index, phoneNormalized, linkedinUrl index. All `IF NOT EXISTS`. Register in apply-pending and the journal.
+  - **Acceptance check:** Migration applies on a fresh DB built from all SQL files and is idempotent on a second run.
+- [ ] MIYO-0631 [Medium][ATS/0 Foundation] ATS feature flag and navigation
+  - **Where:** lib/flags, components/layout/sidebar/sidebar-nav-items.ts
+  - **Problem:** Rollout should be gradual.
+  - **Fix:** Org flag `ats` (default off); nav group 'Hiring' with Jobs, Candidates, Interviews, Offers, Reports, Settings for ATS roles.
+  - **Acceptance check:** Flag off → /ats 404 and no nav; on → nav visible to ATS roles only.
+
+### ATS · Phase 1 Requisitions & jobs
+
+- [ ] MIYO-0632 [High][ATS/1 Requisitions & jobs] Requisitions with approval
+  - **Where:** /ats/requisitions, app/api/ats/requisitions/**
+  - **Problem:** No way to request headcount.
+  - **Fix:** Fields: title, department, location, employment type, openings, salary range (hidden from interviewers), justification, hiring manager. Submit → approver (CEO by default, configurable) gets ats-requisition-approval email; approve/reject with comment; history in ats_activity.
+  - **Acceptance check:** Approved requisition can be turned into a job; rejected one cannot.
+- [ ] MIYO-0633 [High][ATS/1 Requisitions & jobs] Job postings CRUD from requisitions
+  - **Where:** /ats/jobs, /ats/jobs/new, /ats/jobs/[jobId]/edit
+  - **Problem:** —
+  - **Fix:** Rich-text description (sanitised), requirements, location (india-locations), remote option, salary visibility toggle, closing date, hiring team.
+  - **Acceptance check:** Job saves, validates with zod, and appears in the list with status DRAFT.
+- [ ] MIYO-0634 [High][ATS/1 Requisitions & jobs] Publish / unpublish / close jobs
+  - **Where:** app/api/ats/jobs/[jobId]/publish
+  - **Problem:** —
+  - **Fix:** States DRAFT → PUBLISHED → CLOSED (plus ON_HOLD). Publish sets publishedAt and slug; unpublish hides from careers; closesAt auto-closes via one Inngest daily job (replace the dead close-expired-job-postings cron).
+  - **Acceptance check:** Published job appears on /careers within one request; closed job returns 410 page.
+- [ ] MIYO-0635 [Medium][ATS/1 Requisitions & jobs] Custom application questions per job
+  - **Where:** ats_application_questions, /ats/jobs/[jobId]/form
+  - **Problem:** —
+  - **Fix:** Types: short text, long text, single/multi select, yes/no, number, file; required flag; knock-out answers auto-reject (configurable).
+  - **Acceptance check:** Candidate must answer required questions; knock-out sends to Rejected with reason 'Did not meet requirement'.
+- [ ] MIYO-0636 [Medium][ATS/1 Requisitions & jobs] Job templates and duplication
+  - **Where:** /ats/jobs/[jobId] menu
+  - **Problem:** Repeated roles retyped.
+  - **Fix:** Duplicate job (without candidates); save as template.
+  - **Acceptance check:** Duplicated job is DRAFT with same form.
+
+### ATS · Phase 2 Careers site
+
+- [ ] MIYO-0637 [High][ATS/2 Careers site] Public careers page
+  - **Where:** app/(public)/careers/page.tsx (no auth), lib/auth/route-access public list
+  - **Problem:** —
+  - **Fix:** Plain list of published jobs with department/location filters, org logo, ink/gold palette, no illustrations. Server-rendered, cached with revalidateTag on publish.
+  - **Acceptance check:** Loads < 1 s uncached locally; lists only PUBLISHED jobs of the org.
+- [ ] MIYO-0638 [High][ATS/2 Careers site] Job detail page with SEO
+  - **Where:** app/(public)/careers/[slug]/page.tsx
+  - **Problem:** —
+  - **Fix:** generateMetadata (title, description, canonical, OpenGraph), JSON-LD JobPosting (datePosted, validThrough, employmentType, hiringOrganization, jobLocation, baseSalary when visible), sitemap.xml entries, robots allow.
+  - **Acceptance check:** Google Rich Results test validates JobPosting.
+- [ ] MIYO-0639 [High][ATS/2 Careers site] Apply form with R2 resume upload
+  - **Where:** app/(public)/careers/[slug]/apply, app/api/public/ats/apply
+  - **Problem:** —
+  - **Fix:** Name, email, phone, LinkedIn, resume (PDF/DOC/DOCX ≤ 5 MB via resume-file-validation.ts, magic-byte check), custom questions, consent checkbox. Upload to R2 private bucket with presigned PUT; store key only.
+  - **Acceptance check:** Application row + candidate + resume object created; candidate gets ats-application-received; team gets ats-new-application-internal.
+- [ ] MIYO-0640 [High][ATS/2 Careers site] Spam protection and rate limiting on apply
+  - **Where:** app/api/public/ats/apply
+  - **Problem:** Public endpoint.
+  - **Fix:** Cloudflare Turnstile (or hCaptcha), honeypot field, per-IP and per-email limit (5/hour) using a real store (Upstash/Postgres — lib/redis.ts is in-memory and does not work on Vercel), reject disposable domains optionally.
+  - **Acceptance check:** Sixth submission in an hour from one IP gets 429; bot without token gets 400.
+- [ ] MIYO-0641 [Medium][ATS/2 Careers site] Embeddable job list and share links
+  - **Where:** /careers?embed=1, share buttons
+  - **Problem:** —
+  - **Fix:** Minimal embed mode, UTM source capture into application.source.
+  - **Acceptance check:** Application from ?utm_source=linkedin shows source LinkedIn.
+
+### ATS · Phase 3 Candidates
+
+- [ ] MIYO-0642 [High][ATS/3 Candidates] Resume text extraction
+  - **Where:** Inngest function ats/resume.uploaded, lib/files/extract-resume-text.ts
+  - **Problem:** —
+  - **Fix:** Extract text (pdf-parse/mammoth) after upload, store candidates.resumeText, update tsvector. Failures logged, never block apply.
+  - **Acceptance check:** Uploaded PDF's text searchable within a minute.
+- [ ] MIYO-0643 [High][ATS/3 Candidates] Full-text candidate search
+  - **Where:** /ats/candidates, app/api/ats/candidates/search
+  - **Problem:** —
+  - **Fix:** Postgres websearch_to_tsquery on name, email, skills, resume text with ts_rank; filters by tag, stage, job, source, date; escaped ILIKE fallback.
+  - **Acceptance check:** Searching 'react node' finds candidates with both words in their resume.
+- [ ] MIYO-0644 [High][ATS/3 Candidates] Duplicate detection
+  - **Where:** lib/ats/duplicates.ts
+  - **Problem:** Same person applies twice.
+  - **Fix:** On apply/create, match on lower(email), normalised phone, LinkedIn URL; link to existing candidate (new application on existing profile); show 'Possible duplicate' banner with merge action for fuzzy name+phone.
+  - **Acceptance check:** Second application with same email attaches to the first candidate.
+- [ ] MIYO-0645 [High][ATS/3 Candidates] Candidate profile page
+  - **Where:** /ats/candidates/[candidateId]
+  - **Problem:** —
+  - **Fix:** Header (name, contact, current stage per application, rating), tabs: Overview, Resume (inline PDF viewer), Applications, Interviews, Scorecards, Offers, Notes, Files, Activity, Emails. Salary/offer data hidden from interviewers.
+  - **Acceptance check:** All tabs load; interviewer sees no offer tab.
+- [ ] MIYO-0646 [Medium][ATS/3 Candidates] Talent pool, tags and notes
+  - **Where:** ats_candidate_tags, ats_candidate_notes
+  - **Problem:** —
+  - **Fix:** Tag candidates, add @mention notes (notify mentioned user), pool view of candidates not in an active application.
+  - **Acceptance check:** Tagged candidate appears in pool filter.
+- [ ] MIYO-0647 [Medium][ATS/3 Candidates] Attachments on candidates
+  - **Where:** candidate_documents (reuse), R2
+  - **Problem:** —
+  - **Fix:** Upload extra files (portfolio, certificates) with access via lib/ats/access.ts and signed GET URLs.
+  - **Acceptance check:** Interviewer without access gets 404 on the file URL.
+- [ ] MIYO-0648 [Medium][ATS/3 Candidates] Activity timeline
+  - **Where:** ats_activity
+  - **Problem:** —
+  - **Fix:** Record stage changes, emails, notes, interviews, offers with actor and timestamp (IST display).
+  - **Acceptance check:** Every action shows on the timeline.
+- [ ] MIYO-0649 [Medium][ATS/3 Candidates] Manual candidate add and CSV import
+  - **Where:** /ats/candidates/new, /ats/candidates/import
+  - **Problem:** Referrals and sourced candidates.
+  - **Fix:** Form + CSV import with mapping, dry run, duplicate check.
+  - **Acceptance check:** Import of 100 rows reports created/merged/skipped.
+
+### ATS · Phase 4 Pipeline
+
+- [ ] MIYO-0650 [High][ATS/4 Pipeline] Configurable stages
+  - **Where:** /ats/settings/stages, ats_stages
+  - **Problem:** —
+  - **Fix:** Default stages: Applied, Screening, Interview, Offer, Hired, Rejected (OpenCATS/Odoo style); org-level list with per-job override; each stage may auto-send a template.
+  - **Acceptance check:** Admin adds 'Assignment' between Screening and Interview; new jobs use it.
+- [ ] MIYO-0651 [High][ATS/4 Pipeline] Kanban pipeline with drag and drop
+  - **Where:** /ats/jobs/[jobId]/pipeline
+  - **Problem:** —
+  - **Fix:** Columns = stages, cards with name, rating, days in stage, source; dnd-kit drag with optimistic update + rollback; moving to Rejected opens reason dialog; moving to a stage with autoEmail shows 'Send email?' preview (can skip).
+  - **Acceptance check:** Drag to Interview persists after refresh; activity logged.
+- [ ] MIYO-0652 [High][ATS/4 Pipeline] Bulk actions
+  - **Where:** pipeline and candidate list
+  - **Problem:** —
+  - **Fix:** Select many → move stage, reject with reason + email, tag, assign, export CSV.
+  - **Acceptance check:** Bulk reject of 20 sends 20 rejection emails (queued) and logs 20 activities.
+- [ ] MIYO-0653 [Medium][ATS/4 Pipeline] Refuse reasons linked to templates
+  - **Where:** ats_refuse_reasons
+  - **Problem:** —
+  - **Fix:** Reasons (Not qualified, Position filled, Withdrew, Salary mismatch…) each with optional template; 'Do not email' option.
+  - **Acceptance check:** Reason 'Withdrew' sends nothing.
+- [ ] MIYO-0654 [Medium][ATS/4 Pipeline] List view with filters and saved views
+  - **Where:** /ats/candidates
+  - **Problem:** —
+  - **Fix:** Table with column chooser, filters, sort, saved views per user.
+  - **Acceptance check:** Saved view restores filters.
+- [ ] MIYO-0655 [Low][ATS/4 Pipeline] Ready/blocked flag per card
+  - **Where:** candidate_applications
+  - **Problem:** Odoo kanban state.
+  - **Fix:** Simple flag + reason.
+  - **Acceptance check:** Flag visible on card.
+
+### ATS · Phase 5 Interviews
+
+- [ ] MIYO-0656 [High][ATS/5 Interviews] Interview scheduling with ICS
+  - **Where:** /ats/interviews, app/api/ats/interviews
+  - **Problem:** —
+  - **Fix:** Schedule round (type, interviewers, start/end in IST, location or meeting link). Send ats-interview-invite to the candidate and interviewers with ICS (METHOD:REQUEST, UID stable, SEQUENCE bump on reschedule, CANCEL on cancel). Conflict check on interviewer busy times.
+  - **Acceptance check:** Gmail shows an Add-to-calendar card; reschedule updates the same event.
+- [ ] MIYO-0657 [High][ATS/5 Interviews] Interview reminders
+  - **Where:** Inngest scheduled step
+  - **Problem:** —
+  - **Fix:** ats-interview-reminder 24 h before to candidate; interviewer reminder 1 h before.
+  - **Acceptance check:** Reminder sent once per interview.
+- [ ] MIYO-0658 [High][ATS/5 Interviews] Scorecards and ratings
+  - **Where:** scorecard_templates, interview_scorecards (reuse)
+  - **Problem:** —
+  - **Fix:** Template per job/round: criteria with 1–5 scale, overall recommendation (Strong no…Strong yes), notes. Interviewers can't see others' scorecards until they submit their own.
+  - **Acceptance check:** Average rating shows on the card; hidden-until-submit enforced in API.
+- [ ] MIYO-0659 [Medium][ATS/5 Interviews] Feedback request and overdue nudges
+  - **Where:** ats-interviewer-feedback-request
+  - **Problem:** —
+  - **Fix:** Send 1 h after interview end; nudge after 24 h.
+  - **Acceptance check:** Submitted scorecard stops nudges.
+- [ ] MIYO-0660 [Low][ATS/5 Interviews] Self-scheduling links (later)
+  - **Where:** interview_booking_links (reuse-later)
+  - **Problem:** —
+  - **Fix:** Candidate picks from offered slots.
+  - **Acceptance check:** Booked slot creates the interview.
+
+### ATS · Phase 6 Offers & hire
+
+- [ ] MIYO-0661 [High][ATS/6 Offers & hire] Offers with letter templates
+  - **Where:** candidate_offers, hr_offer_letter_templates (reuse), /hr/offer-letter-templates
+  - **Problem:** —
+  - **Fix:** Create offer (CTC, joining date, designation, department, manager, expiry). Render letter via render-offer-letter-for-offer.ts + offer-letter-branded-pdf.tsx. Optional approval by CEO before sending.
+  - **Acceptance check:** PDF renders with the template variables filled.
+- [ ] MIYO-0662 [High][ATS/6 Offers & hire] Candidate accept/decline page
+  - **Where:** app/(public)/offer/[token]
+  - **Problem:** —
+  - **Fix:** Tokenised page (hashed token, expiry) showing offer summary and PDF; accept (typed name + checkbox) or decline (reason). Notify HR with ats-offer-response-hr.
+  - **Acceptance check:** Accepted offer moves application to Hired-pending; expired token shows expiry page.
+- [ ] MIYO-0663 [High][ATS/6 Offers & hire] Convert hire to employee and trigger onboarding
+  - **Where:** app/api/ats/applications/[id]/hire, existing onboard flow
+  - **Problem:** —
+  - **Fix:** Prefill the existing onboard form (name, personal email, phone, designation, department, joining date, salary) from the offer; on submit create user + salary structure, mark application HIRED, close requisition opening, trigger initiate-onboarding (Inngest) and auth-welcome-set-password.
+  - **Acceptance check:** Hired candidate appears in /employees with onboarding tasks; no duplicate user if already exists.
+
+### ATS · Phase 7 Emails
+
+- [ ] MIYO-0664 [High][ATS/7 Emails] Implement candidate/team email `ats-application-received`
+  - **Where:** email-templates/ats-application-received.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on apply via renderEmail('ats-application-received', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0665 [Medium][ATS/7 Emails] Implement candidate/team email `ats-new-application-internal`
+  - **Where:** email-templates/ats-new-application-internal.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on apply, to hiring team (digest option) via renderEmail('ats-new-application-internal', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0666 [High][ATS/7 Emails] Implement candidate/team email `ats-application-rejected`
+  - **Where:** email-templates/ats-application-rejected.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on reject with an emailing reason via renderEmail('ats-application-rejected', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0667 [High][ATS/7 Emails] Implement candidate/team email `ats-interview-invite`
+  - **Where:** email-templates/ats-interview-invite.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on schedule/reschedule via renderEmail('ats-interview-invite', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0668 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interview-reminder`
+  - **Where:** email-templates/ats-interview-reminder.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send 24 h before via renderEmail('ats-interview-reminder', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0669 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interviewer-feedback-request`
+  - **Where:** email-templates/ats-interviewer-feedback-request.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send 1 h after interview via renderEmail('ats-interviewer-feedback-request', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0670 [High][ATS/7 Emails] Implement candidate/team email `ats-offer`
+  - **Where:** email-templates/ats-offer.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on offer send via renderEmail('ats-offer', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0671 [Medium][ATS/7 Emails] Implement candidate/team email `ats-offer-response-hr`
+  - **Where:** email-templates/ats-offer-response-hr.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on accept/decline via renderEmail('ats-offer-response-hr', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0672 [Medium][ATS/7 Emails] Implement candidate/team email `ats-requisition-approval`
+  - **Where:** email-templates/ats-requisition-approval.html + .txt
+  - **Problem:** New ATS email.
+  - **Fix:** Send on requisition submit via renderEmail('ats-requisition-approval', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
+  - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
+- [ ] MIYO-0673 [Medium][ATS/7 Emails] Editable per-org templates and per-stage email
+  - **Where:** /ats/settings/emails
+  - **Problem:** HR wants to adjust wording.
+  - **Fix:** Store overrides (subject, body markdown) per template id; preview with sample candidate; fall back to defaults.
+  - **Acceptance check:** Override is used in the next send; reset restores default.
+
+### ATS · Phase 8 Reports
+
+- [ ] MIYO-0674 [Medium][ATS/8 Reports] Time-to-hire and time-in-stage report
+  - **Where:** /ats/reports
+  - **Problem:** —
+  - **Fix:** Median/avg days from applied → hired per job/department; time in each stage from ats_activity.
+  - **Acceptance check:** Numbers match a hand count on seed data.
+- [ ] MIYO-0675 [Medium][ATS/8 Reports] Source effectiveness report
+  - **Where:** /ats/reports/sources
+  - **Problem:** —
+  - **Fix:** Applications, interviews, offers, hires by source.
+  - **Acceptance check:** Totals match the pipeline.
+- [ ] MIYO-0676 [Medium][ATS/8 Reports] Funnel report
+  - **Where:** /ats/reports/funnel
+  - **Problem:** —
+  - **Fix:** Conversion between stages per job with date range; CSV export.
+  - **Acceptance check:** Funnel percentages add up.
+- [ ] MIYO-0677 [Low][ATS/8 Reports] Hiring dashboard widget
+  - **Where:** /dashboard for ATS roles
+  - **Problem:** —
+  - **Fix:** Open jobs, new applications this week, interviews today.
+  - **Acceptance check:** Widget visible only to ATS roles.
+
+### ATS · Phase 9 Privacy & retention
+
+- [ ] MIYO-0678 [High][ATS/9 Privacy & retention] Consent capture
+  - **Where:** ats_consents, apply form
+  - **Problem:** DPDP Act 2023 / GDPR.
+  - **Fix:** Required consent for processing; optional consent to keep in talent pool for N months; store text version, timestamp, IP.
+  - **Acceptance check:** Consent record exists for each application.
+- [ ] MIYO-0679 [High][ATS/9 Privacy & retention] Retention and erasure
+  - **Where:** Inngest daily ats/retention, /ats/candidates/[id] delete
+  - **Problem:** —
+  - **Fix:** Org setting retention months (default 12) for rejected candidates; auto-anonymise (keep stats) and delete R2 files; manual 'erase candidate' for requests; audit log.
+  - **Acceptance check:** Candidate older than retention is anonymised and resume object deleted.
+- [ ] MIYO-0680 [Medium][ATS/9 Privacy & retention] Candidate data export on request
+  - **Where:** /ats/candidates/[id] export
+  - **Problem:** —
+  - **Fix:** JSON + files zip of candidate data.
+  - **Acceptance check:** Export contains all applications, notes visible to candidate rights, files.
+- [ ] MIYO-0681 [Medium][ATS/9 Privacy & retention] Audit log for ATS actions
+  - **Where:** existing audit_logs
+  - **Problem:** —
+  - **Fix:** Log offer create/send/accept, stage moves, deletes, exports.
+  - **Acceptance check:** Audit page shows ATS entries.
+
+### ATS · Phase 10 Tests
+
+- [ ] MIYO-0682 [High][ATS/10 Tests] ATS permission matrix tests
+  - **Where:** lib/ats/__tests__/access.test.ts
+  - **Problem:** —
+  - **Fix:** Every role × job membership × action.
+  - **Acceptance check:** Tests pass.
+- [ ] MIYO-0683 [High][ATS/10 Tests] Apply endpoint tests
+  - **Where:** app/api/public/ats/apply/__tests__
+  - **Problem:** —
+  - **Fix:** Validation, file type spoofing, rate limit, duplicate merge, consent required, emails queued.
+  - **Acceptance check:** Tests pass.
+- [ ] MIYO-0684 [Medium][ATS/10 Tests] Pipeline move/bulk tests
+  - **Where:** lib/ats/__tests__/pipeline.test.ts
+  - **Problem:** —
+  - **Fix:** Optimistic concurrency, reject reason, auto-email decisions.
+  - **Acceptance check:** Tests pass.
+- [ ] MIYO-0685 [Medium][ATS/10 Tests] Offer token and hire conversion tests
+  - **Where:** lib/ats/__tests__/offer.test.ts
+  - **Problem:** —
+  - **Fix:** Token expiry, single use, hire creates exactly one user.
+  - **Acceptance check:** Tests pass.
+- [ ] MIYO-0686 [Medium][ATS/10 Tests] Playwright ATS golden path
+  - **Where:** e2e/ats.spec.ts
+  - **Problem:** —
+  - **Fix:** Create job → publish → apply on careers → move to Interview → schedule → scorecard → offer → accept → hire → employee exists.
+  - **Acceptance check:** Passes locally against a local DB.
+- [ ] MIYO-0687 [Low][ATS/10 Tests] Email rendering tests for ats-* templates
+  - **Where:** lib/email-templates/__tests__
+  - **Problem:** —
+  - **Fix:** No placeholders left; ICS attached for interview invite.
+  - **Acceptance check:** Tests pass.
