@@ -1,16 +1,13 @@
-import { withAdmin, ok, err } from "@/lib/api/helpers";
+import { withAdmin, ok, serverError } from "@/lib/api/helpers";
 import { getAllPermissions } from "@/server/queries/rbac";
 
 export async function GET() {
-  return withAdmin(async () => {
+  return withAdmin(async (session) => {
     try {
       const data = getAllPermissions();
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load permissions",
-        500
-      );
+      return serverError(error, { route: "rbac/permissions", orgId: session.orgId }, "Failed to load permissions.");
     }
   });
 }
