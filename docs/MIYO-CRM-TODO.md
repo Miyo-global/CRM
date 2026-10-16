@@ -104,7 +104,7 @@ ATS items start at MIYO-0626.
   - **Problem:** drizzle/meta snapshots stop at 0006 and the journal at 0125, so `drizzle-kit generate` cannot detect drift (PR #4 notes: 'Drizzle snapshot files need repair').
   - **Fix:** In CI, start postgres:16, apply every drizzle/*.sql in order, then run `drizzle-kit export`/introspect and diff against lib/db/schema; fail on any table/column in schema but not in DB.
   - **Acceptance check:** CI fails on a branch that adds a column to lib/db/schema without a migration, and passes on main.
-- [ ] MIYO-0004 [Critical][Prod/Deploy] Repair drizzle meta snapshots and journal so `pnpm db:generate` works
+- [x] MIYO-0004 [Critical][Prod/Deploy] Repair drizzle meta snapshots and journal so `pnpm db:generate` works
   - **Where:** drizzle/meta/_journal.json, drizzle/meta/*_snapshot.json
   - **Problem:** Journal has 69 entries (last 0125_document_types_sort_order_decimal) while drizzle/ has 166 SQL files; snapshots only to 0006.
   - **Fix:** Regenerate a baseline snapshot from the current schema (drizzle-kit introspect against a DB built from all SQL files), register 0126–0156 in the journal with their real timestamps, keep SQL files unchanged.
