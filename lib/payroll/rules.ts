@@ -30,14 +30,16 @@ export const PRORATE_JOINERS = true;
 
 /**
  * Multiplier applied to the per-day rate for an approved extra-pay overtime
- * day when the salary structure does not set one.
- *
- * OPEN QUESTION: salary structures default `sundayOtMultiplier` /
- * `holidayOtMultiplier` to 2.00, but the QA sheet expects 2 overtime days on
- * 33,200 to pay 2,141.94 (= 2 x per-day, i.e. multiplier 1). Structure values
- * still win; this is only the fallback.
+ * day: 1x (QA sheet: 2 OT days on 33,200 pay 2,141.94). A value stored on the
+ * salary structure still wins; new structures default to 1.00 (0157).
  */
 export const OVERTIME_DAY_MULTIPLIER = 1;
+
+/** OT multiplier from a salary-structure column, falling back to 1x. */
+export function otMultiplier(stored: string | null | undefined): number {
+  const n = stored == null ? NaN : parseFloat(stored);
+  return Number.isFinite(n) ? n : OVERTIME_DAY_MULTIPLIER;
+}
 
 /** Professional tax for a monthly salary, by band. */
 export function professionalTax(monthlySalary: number): number {

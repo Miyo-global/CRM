@@ -47,6 +47,7 @@ const PENDING_TAGS = [
   "0154_projects_build_port_phase1",
   "0155_project_invitations",
   "0156_project_intake_token_client_portal",
+  "0157_salary_structure_ot_multiplier_default_1x",
 ] as const;
 
 const TIMESTAMPS: Record<string, number> = {
@@ -66,6 +67,7 @@ const TIMESTAMPS: Record<string, number> = {
   "0154_projects_build_port_phase1": 1774390154000,
   "0155_project_invitations": 1774390155000,
   "0156_project_intake_token_client_portal": 1774390156000,
+  "0157_salary_structure_ot_multiplier_default_1x": 1774390157000,
 };
 
 

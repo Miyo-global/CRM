@@ -176,7 +176,7 @@ ATS items start at MIYO-0626.
   - **Problem:** A weekday with no check-in counts as LOP after the free-leave budget even if the employee has APPROVED sick/casual leave for that date (design doc N7).
   - **Fix:** Inside the loop, before the leave-budget branch: if leaveByDate.get(date) is FULL → paidLeaveDays++ and continue; HALF → 0.5 paid, 0.5 evaluated. Unpaid leave types count as LOP.
   - **Acceptance check:** Test: an employee with 3 approved casual-leave days and no check-ins on those days has lopDays 0.
-- [ ] MIYO-0016 [Critical][Payroll] OT must pay 1× per-day, not 2× (structure default and loader fallback)
+- [x] MIYO-0016 [Critical][Payroll] OT must pay 1× per-day, not 2× (structure default and loader fallback)
   - **Where:** lib/payroll/load-inputs.ts:157-158 (`?? "2.00"`), lib/db/schema/hr/_all.ts:178-179 (sundayOtMultiplier/holidayOtMultiplier default "2.00")
   - **Problem:** rules.ts says OVERTIME_DAY_MULTIPLIER = 1 (Tarun's sheet: 2 OT days on ₹33,200 = ₹2,141.94), but the live loader and schema default use 2.00, so OT is paid double.
   - **Fix:** Change the loader fallback to OVERTIME_DAY_MULTIPLIER, change schema defaults to "1.00" with an additive migration (`ALTER ... SET DEFAULT`), and add a data migration note for existing structures (Tarun decides whether to rewrite them).

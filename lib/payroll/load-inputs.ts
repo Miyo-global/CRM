@@ -17,7 +17,7 @@ import {
   resolvePayrollMonthlyCtc,
 } from "@/lib/hr/salary-effective-dates";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
-import { daysInMonth, perDayRate, round2 } from "./rules";
+import { daysInMonth, otMultiplier, perDayRate, round2 } from "./rules";
 import type { PayrollComputeInput } from "./compute";
 
 export function todayIst(): string {
@@ -154,8 +154,8 @@ export async function loadPayrollInputs(
     });
 
     const perDay = perDayRate(monthlySalary);
-    const sundayMult = parseFloat(structure?.sundayOtMultiplier ?? "2.00");
-    const holidayMult = parseFloat(structure?.holidayOtMultiplier ?? "2.00");
+    const sundayMult = otMultiplier(structure?.sundayOtMultiplier);
+    const holidayMult = otMultiplier(structure?.holidayOtMultiplier);
     let overtimeDays = 0;
     let overtimeAmount = 0;
     for (const hwr of hwrRows) {

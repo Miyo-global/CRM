@@ -1,5 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
+import { otMultiplier, perDayRate } from "@/lib/payroll/rules";
 import {
   holidayWorkRequests,
   attendance,
@@ -8,7 +9,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, ne, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { calendarDaysInMonth, HOLIDAY_WORK_FULL_DAY_HOURS } from "@/lib/hr/payroll-calculations";
+import { HOLIDAY_WORK_FULL_DAY_HOURS } from "@/lib/hr/payroll-calculations";
 import { getStrictPayrollAttendance } from "@/lib/hr/payroll-attendance";
 import {
   pickSalaryStructureForPayrollMonth,
@@ -67,8 +68,8 @@ export async function GET(req: NextRequest) {
     });
 
     const salary = picked ?? activeSalary;
-    const sundayMult = parseFloat(salary?.sundayOtMultiplier ?? "2.00");
-    const holidayMult = parseFloat(salary?.holidayOtMultiplier ?? "2.00");
+    const sundayMult = otMultiplier(salary?.sundayOtMultiplier);
+    const holidayMult = otMultiplier(salary?.holidayOtMultiplier);
 
     const approvedRequests = await db.query.holidayWorkRequests.findMany({
       where: and(
@@ -101,8 +102,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const calDays = calendarDaysInMonth(month);
-    const dailyRate = calDays > 0 ? ctcMonthly / calDays : 0;
+    const dailyRate = perDayRate(ctcMonthly);
     const overtimeDays = eligibleDates.length;
     const overtimeAmount = Math.round(dailyRate * overtimeMultiplierSum);
 

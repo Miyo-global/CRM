@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   employmentWindow,
   overtimeAmountForDays,
+  otMultiplier,
   perDayRate,
   professionalTax,
   professionalTaxBandLabel,
@@ -105,6 +106,14 @@ describe("LOP and proration (A2 table, October 2026)", () => {
     const r = computePayroll({ month: OCT, monthlySalary: 20000, joiningDate: "2026-10-01", lopDays: 2 });
     expect(r.perDay).toBe(645.16);
     expect(r.netSalary).toBe(18459.68);
+  });
+
+  it("OT multiplier falls back to 1x; a stored value wins (MIYO-0016)", () => {
+    expect(otMultiplier(null)).toBe(1);
+    expect(otMultiplier(undefined)).toBe(1);
+    expect(otMultiplier("1.50")).toBe(1.5);
+    const perDay = perDayRate(31000);
+    expect(overtimeAmountForDays(perDay, 1, otMultiplier(null))).toBe(1000);
   });
 
   it("per-day is salary / 31 in every month, February included", () => {
