@@ -243,7 +243,7 @@ export default function DashboardPage() {
     return (
       <PageWrapper title="Dashboard">
         <QueryErrorState
-          title="Failed to load dashboard stats"
+          title="Couldn't load the dashboard"
           error={error}
           onRetry={() => refetch()}
         />

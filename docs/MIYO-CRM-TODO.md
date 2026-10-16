@@ -237,7 +237,7 @@ ATS items start at MIYO-0626.
 
 ### High · Prod/Errors
 
-- [ ] MIYO-0026 [High][Prod/Errors] Make the dashboard error card show a friendly message with Retry only
+- [x] MIYO-0026 [High][Prod/Errors] Make the dashboard error card show a friendly message with Retry only
   - **Where:** app/(dashboard)/dashboard/page.tsx:246 (QueryErrorState title 'Failed to load dashboard stats')
   - **Problem:** The card renders the server message verbatim.
   - **Fix:** Pass getErrorMessage(error) and a Retry button; never render `error.message` directly. Apply the same to components/ui/query-error-state.tsx default.

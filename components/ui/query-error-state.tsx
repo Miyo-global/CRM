@@ -3,6 +3,7 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
+import { getErrorMessage } from "../../lib/get-error-message";
 
 interface QueryErrorStateProps {
   title?: string;
@@ -11,9 +12,9 @@ interface QueryErrorStateProps {
   className?: string;
 }
 
+/** Never render a raw server message: getErrorMessage hides SQL, ids and stack frames (MIYO-0026). */
 function errorMessage(error: unknown): string | null {
-  if (error instanceof Error && error.message) return error.message;
-  return null;
+  return error ? getErrorMessage(error) : null;
 }
 
 export function QueryErrorState({
