@@ -1,25 +1,36 @@
 import { appUrl } from "@/lib/app-url";
-import { escapeHtml } from "@/lib/email-templates/base";
-import { BRAND } from "@/lib/design/brand-hex";
+import { escapeHtml, getEmailTemplate } from "@/lib/email-templates/base";
 
+/**
+ * Notification mail (marked-absent, leave pending, check-in, onboarded-HR…).
+ *
+ * This used to be its own minimal layout with a different header, a "View
+ * Details" button and no footer, so the app sent two visibly different kinds
+ * of email (QA-0040). It now renders through the shared base template.
+ */
 export function buildNotificationEmail(opts: {
   title: string;
   message: string;
   link?: string | null;
+  /** Button label, when the mail links into the app. */
+  ctaLabel?: string;
 }): { subject: string; html: string } {
-  const safeLink = opts.link && opts.link.startsWith("/") ? opts.link : null;
-  const subject = `${opts.title}`;
-  const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-    <div style="background:${BRAND.white};padding:20px 24px;border-bottom:2px solid ${BRAND.gold};">
-      <h1 style="color:${BRAND.ink};margin:0;font-size:18px;">Miyo Global</h1>
-    </div>
-    <div style="background:${BRAND.white};padding:24px;border:1px solid ${BRAND.border};border-top:none;border-radius:0 0 10px 10px;">
-      <h2 style="color:${BRAND.ink};margin-top:0;">${escapeHtml(opts.title)}</h2>
-      <p style="white-space:pre-line;">${escapeHtml(opts.message)}</p>
-      ${safeLink ? `<div style="text-align:center;margin:24px 0;">
-        <a href="${escapeHtml(appUrl + safeLink)}" style="background:${BRAND.ink};color:${BRAND.gold};padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">View Details</a>
-      </div>` : ""}
-    </div>
-  </body></html>`;
-  return { subject, html };
+  const safeLink = opts.link && opts.link.startsWith("/") && !opts.link.startsWith("//")
+    ? opts.link
+    : null;
+
+  const content = `
+    <h2 class="email-title">${escapeHtml(opts.title)}</h2>
+    <p class="email-text" style="white-space:pre-line">${escapeHtml(opts.message)}</p>
+    ${
+      safeLink
+        ? `<p class="email-text"><a class="email-button" href="${escapeHtml(appUrl + safeLink)}">${escapeHtml(opts.ctaLabel ?? "Open in the portal")}</a></p>`
+        : ""
+    }
+  `;
+
+  return {
+    subject: opts.title,
+    html: getEmailTemplate({ title: opts.title, preheader: opts.message.slice(0, 120), content }),
+  };
 }

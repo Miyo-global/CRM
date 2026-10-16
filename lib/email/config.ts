@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from "@/lib/constants/company";
 /**
  * Single source of truth for outbound-mail configuration (ZeptoMail / Zoho only).
  */
@@ -62,8 +63,14 @@ export function getFromName(): string | undefined {
   return env("EMAIL_FROM_NAME");
 }
 
+/**
+ * Reply-To for transactional mail.
+ *
+ * Every message went out with no Reply-To, so replying hit the unattended
+ * no-reply mailbox (QA-0040). Support is the default; EMAIL_REPLY_TO overrides.
+ */
 export function getReplyToAddress(): string | undefined {
-  return env("EMAIL_REPLY_TO");
+  return env("EMAIL_REPLY_TO") ?? SUPPORT_EMAIL;
 }
 
 export function emailNotConfiguredMessage(): string {

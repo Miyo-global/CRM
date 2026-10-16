@@ -94,7 +94,7 @@ export function getEmailTemplate({ title, preheader, content }: EmailTemplatePro
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;background-color:${BRAND.white};border:1px solid ${BRAND.border};">
           <tr>
             <td style="padding:20px 32px;border-bottom:2px solid ${BRAND.gold};">
-              <span style="font-size:18px;font-weight:600;color:${BRAND.ink};">Miyo Global</span>
+              <img src="${logoUrl}" width="120" alt="Miyo Global" style="display:block;width:120px;height:auto;border:0;" />
             </td>
           </tr>
           <tr>

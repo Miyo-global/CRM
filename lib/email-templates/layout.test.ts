@@ -39,3 +39,23 @@ describe("email layout", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("one layout everywhere", () => {
+  it("notification mail uses the shared base template", async () => {
+    const { buildNotificationEmail } = await import("@/lib/notifications/email");
+    const { html, subject } = buildNotificationEmail({
+      title: "Marked absent",
+      message: "You did not check in today.",
+      link: "/hr/attendance",
+    });
+    expect(subject).toBe("Marked absent");
+    expect(html).toMatch(/<table role="presentation"/);
+    expect(html).toMatch(/You received this email because/);
+    expect(html).toMatch(/\/hr\/attendance/);
+  });
+
+  it("carries the logo once", () => {
+    const html = getEmailTemplate({ title: "T", content: "<p>x</p>" });
+    expect(html.match(/logo\.png/g)?.length).toBe(1);
+  });
+});
