@@ -9,6 +9,7 @@ import { payrollRowValues } from "@/lib/payroll/to-row";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { createAuditLog } from "@/lib/audit-log";
+import { getTodayString } from "@/lib/date-utils";
 
 const generateSinglePayrollSchema = z
   .object({
@@ -89,6 +90,17 @@ export async function POST(req: NextRequest) {
     if (input.monthlySalary <= 0) {
       return err(
         "No salary applies to this month. Add a salary structure effective on or before this month, or set the monthly salary on the employee.",
+        400,
+      );
+    }
+
+    // A joiner who has not started yet would be paid a fully prorated amount
+    // with no possible loss of pay, because none of their days have happened
+    // (QA-0052). Wait until they start.
+    const joining = input.joiningDate?.slice(0, 10);
+    if (joining && joining > getTodayString()) {
+      return err(
+        `${joining} is in the future: payroll can only be generated once the employee has started.`,
         400,
       );
     }
