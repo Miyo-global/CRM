@@ -244,24 +244,29 @@ export async function POST(req: NextRequest) {
       void (async () => {
         if (approver.autoApprove) return;
 
-        const recipients = new Map<string, string>();
+        // Exactly one approver email per apply (QA-0010). The HR inbox is a
+        // fallback for a request nobody owns, not a second copy.
+        let recipientEmail: string | null = null;
+        let recipientName = "Approver";
         if (approver.approverId) {
           const approverUser = await db.query.users.findFirst({
             where: eq(users.id, approver.approverId),
             columns: { email: true, name: true },
           });
           if (approverUser?.email) {
-            recipients.set(approverUser.email.trim().toLowerCase(), approverUser.name ?? "Approver");
+            recipientEmail = approverUser.email.trim();
+            recipientName = approverUser.name ?? "Approver";
           }
         }
-        if (HR_LEAVE_NOTIFY_EMAIL) {
-          recipients.set(HR_LEAVE_NOTIFY_EMAIL.toLowerCase(), "HR");
+        if (!recipientEmail && HR_LEAVE_NOTIFY_EMAIL) {
+          recipientEmail = HR_LEAVE_NOTIFY_EMAIL;
+          recipientName = "HR";
         }
 
-        for (const [email, name] of recipients) {
+        if (recipientEmail) {
           await sendLeaveRequestEmail(
-            email,
-            name,
+            recipientEmail,
+            recipientName,
             employeeName,
             leaveLabel,
             startStr,

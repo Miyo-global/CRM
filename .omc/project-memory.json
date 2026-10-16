@@ -302,6 +302,12 @@
       "type": "file"
     },
     {
+      "path": "lib/email/sender.ts",
+      "accessCount": 2,
+      "lastAccessed": 1792149122830,
+      "type": "file"
+    },
+    {
       "path": "lib/auth/role-assignment.ts",
       "accessCount": 1,
       "lastAccessed": 1792147116081,
@@ -335,6 +341,18 @@
       "path": "app/api/no-direct-auth.test.ts",
       "accessCount": 1,
       "lastAccessed": 1792147985188,
+      "type": "file"
+    },
+    {
+      "path": "lib/email-templates/layout.test.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792149053914,
+      "type": "file"
+    },
+    {
+      "path": "app/api/hr/leaves/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792149357959,
       "type": "file"
     }
   ],
