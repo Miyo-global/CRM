@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { isOnboardingManager } from "@/lib/constants/roles";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { onboardingTasks } from "@/lib/db/schema";
@@ -28,7 +28,12 @@ export async function GET(
           eq(onboardingTasks.orgId, session.orgId)
         )
       )
-      .orderBy(onboardingTasks.createdAt);
+      // Due date first, so the list reads as a schedule rather than in
+      // creation order (QA-0072). Undated tasks sort last.
+      .orderBy(
+        sql`${onboardingTasks.dueDate} asc nulls last`,
+        onboardingTasks.title,
+      );
 
     return ok(tasks);
   });
