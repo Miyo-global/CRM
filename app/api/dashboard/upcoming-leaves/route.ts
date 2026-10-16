@@ -25,6 +25,7 @@ export async function GET(_req: NextRequest) {
         userName: users.name,
         userDesignation: users.designation,
         userImage: users.image,
+        reportingTo: users.reportingTo,
         reason: leaveRequests.reason,
         isHalfDay: leaveRequests.isHalfDay,
         halfDayPeriod: leaveRequests.halfDayPeriod,
@@ -43,14 +44,30 @@ export async function GET(_req: NextRequest) {
       .orderBy(asc(leaveRequests.startDate), asc(leaveRequests.id))
       .limit(UPCOMING_LEAVE_MAX_ROWS);
 
-    // Privacy: a colleague sees who is away, the type and the dates. The reason
-    // is for the requester, HR, Admin and the CEO only — enforced here, not in
-    // the UI (A30).
-    const canSeeReasons = hasLeaveApproverRole(session.user.role);
-    const visible = rows.map((row) => ({
-      ...row,
-      reason: canSeeReasons || row.userId === session.user.id ? row.reason : null,
-    }));
+    // Privacy (A30, QA-0043): HR, Admin and the CEO see the org; everyone else
+    // sees their own leave and their immediate team, without the leave type or
+    // the reason, which say more about a colleague than a calendar needs to.
+    const isApprover = hasLeaveApproverRole(session.user.role);
+
+    const viewer = isApprover
+      ? null
+      : await db.query.users.findFirst({
+          where: eq(users.id, session.user.id),
+          columns: { reportingTo: true },
+        });
+
+    const inMyTeam = (row: { userId: string; reportingTo: string | null }) =>
+      row.userId === session.user.id ||
+      row.reportingTo === session.user.id ||
+      (!!viewer?.reportingTo && row.reportingTo === viewer.reportingTo);
+
+    const visible = rows
+      .filter((row) => isApprover || inMyTeam(row))
+      .map(({ reportingTo: _reportingTo, ...row }) => ({
+        ...row,
+        leaveType: isApprover || row.userId === session.user.id ? row.leaveType : "Leave",
+        reason: isApprover || row.userId === session.user.id ? row.reason : null,
+      }));
 
     return ok(visible);
   });
