@@ -35,9 +35,13 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
   const status = project.status ?? "ACTIVE";
   const displayLabel = projectStatusDisplayLabels[status] ?? status;
   const statusTone = projectStatusTone[status] ?? "neutral";
-  const dateStr = project.startDate
-    ? format(new Date(project.startDate), "MMM d")
-    : null;
+  // An unlabelled date read as the due date when it was the start date
+  // (QA-0055). Show the due date when there is one, and name it either way.
+  const dateLabel = project.endDate
+    ? `Due ${format(new Date(project.endDate), "MMM d")}`
+    : project.startDate
+      ? `Starts ${format(new Date(project.startDate), "MMM d")}`
+      : null;
 
   return (
     <Link
@@ -81,10 +85,10 @@ export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectC
             limit={4}
             className="[&>div]:size-6"
           />
-          {dateStr && (
+          {dateLabel && (
             <div className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
               <Calendar className="size-3.5" aria-hidden="true" />
-              {dateStr}
+              {dateLabel}
             </div>
           )}
         </div>

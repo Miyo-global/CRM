@@ -48,7 +48,8 @@ export function TicketHeader({
 
   return (
     <div className="sticky top-0 z-sticky shrink-0 border-b border-border bg-surface-raised">
-      <Wrapper className="flex flex-col gap-2 px-5 pt-4 pb-3">
+      {/* Right padding leaves room for the sheet's close button (QA-0055). */}
+      <Wrapper className="flex flex-col gap-2 px-5 pt-4 pr-14 pb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {type && (

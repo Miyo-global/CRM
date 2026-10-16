@@ -233,7 +233,10 @@ export async function POST(req: NextRequest) {
 
     let projectKey = body.key;
     if (projectKey && (await isProjectKeyTaken(projectKey))) {
-      return err(`The key ${projectKey} is already in use`, 409);
+      return err(
+        `The key ${projectKey} is already in use by another project. Pick a different key, or leave it blank and one will be generated.`,
+        409,
+      );
     }
     projectKey ??= (await firstFreeProjectKey(body.name)) ?? undefined;
     if (!projectKey) return err("Could not generate a free project key. Enter one yourself.", 409);

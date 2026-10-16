@@ -74,7 +74,7 @@ function ProjectRow({ project }: { project: ProjectListItem }) {
             )
           }
         >
-          <SelectTrigger className="h-10 w-32" aria-label={`Priority of ${project.name}`}>
+          <SelectTrigger className="h-10 w-full min-w-36" aria-label={`Priority of ${project.name}`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
