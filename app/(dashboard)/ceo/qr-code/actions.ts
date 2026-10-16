@@ -9,6 +9,10 @@ import { eq, and } from "drizzle-orm";
 import { generateQRCodeWithLogo } from "@/lib/qr-code";
 import { uploadFile, deleteFile, getFileKeyFromUrl, getFileUrl, isStorageConfigured } from "@/lib/storage";
 import { appUrl } from "@/lib/app-url";
+import { canAccess, ROLES } from "@/lib/constants/roles";
+
+/** CEO, HR (and Admin, via canAccess) manage QR codes. */
+const QR_MANAGER_ROLES = [ROLES.CEO, ROLES.HR];
 import { existsSync } from "fs";
 import { resolvePublicPath } from "@/lib/constants/paths";
 import { auth } from "@/lib/auth";
@@ -32,13 +36,13 @@ export async function generateQRCode(formData: FormData) {
 
     const validatedData = generateSchema.parse(rawData);
 
-    if (session.user.role !== "CEO" && session.user.role !== "HR") {
+    if (!canAccess(session.user.role, QR_MANAGER_ROLES)) {
       const user = await db.query.users.findFirst({
         where: eq(users.id, session.user.id),
       });
 
-      if (!user || (user.role !== "CEO" && user.role !== "HR")) {
-        return { success: false, error: "Access Denied: Only CEO and HR can generate QR codes." };
+      if (!canAccess(user?.role, QR_MANAGER_ROLES)) {
+        return { success: false, error: "Access Denied: Only CEO, HR and Admin can generate QR codes." };
       }
     }
 
@@ -139,13 +143,13 @@ export async function deleteQRCode(id: number) {
       return { success: false, error: "QR code not found" };
     }
 
-    if (session.user.role !== "CEO" && session.user.role !== "HR") {
+    if (!canAccess(session.user.role, QR_MANAGER_ROLES)) {
       const user = await db.query.users.findFirst({
         where: eq(users.id, session.user.id),
       });
 
-      if (!user || (user.role !== "CEO" && user.role !== "HR")) {
-        return { success: false, error: "Access Denied: Only CEO and HR can delete QR codes." };
+      if (!canAccess(user?.role, QR_MANAGER_ROLES)) {
+        return { success: false, error: "Access Denied: Only CEO, HR and Admin can delete QR codes." };
       }
     }
 
@@ -200,12 +204,12 @@ export async function getQRCodes(orgId: string) {
       return [];
     }
 
-    if (session.user.role !== "CEO" && session.user.role !== "HR") {
+    if (!canAccess(session.user.role, QR_MANAGER_ROLES)) {
       const user = await db.query.users.findFirst({
         where: eq(users.id, session.user.id),
       });
 
-      if (!user || (user.role !== "CEO" && user.role !== "HR")) {
+      if (!canAccess(user?.role, QR_MANAGER_ROLES)) {
         return [];
       }
     }

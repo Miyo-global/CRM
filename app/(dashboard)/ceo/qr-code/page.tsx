@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useGetOrganizations } from "@/lib/hooks/auth-hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { generateQRCode, getQRCodes, deleteQRCode, getQRCodeImageUrl } from "./actions";
 import {
@@ -39,6 +37,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { DashboardGate } from "@/components/shared/dashboard-gate";
 
 // QR codes must stay ink-on-white in every theme for scannability (spec §5.4).
 // These are the only hex literals allowed in-app.
@@ -217,8 +216,17 @@ function QRCardSkeleton() {
 }
 
 export default function CEOQRCodePage() {
-  const { data: session } = useSession();
-  const router = useRouter();
+  // CEO, HR and Admin all manage QR codes (the server actions allow them too).
+  // The page used to require role === "CEO" and silently bounce everyone else
+  // to /dashboard, which made the feature unreachable (QA-0007).
+  return (
+    <DashboardGate allowedRoles={["CEO", "HR"]}>
+      <QRCodeManager />
+    </DashboardGate>
+  );
+}
+
+function QRCodeManager() {
   const qc = useQueryClient();
   const { data: organizations, isLoading: isOrgLoading } = useGetOrganizations();
   const [targetUrl, setTargetUrl] = useState("");
@@ -299,16 +307,6 @@ export default function CEOQRCodePage() {
       toast.error("Failed to download QR code");
     }
   }, []);
-
-  useEffect(() => {
-    if (session && (!session.user || session.user.role !== "CEO")) {
-      router.push("/dashboard");
-    }
-  }, [session, router]);
-
-  if (!session?.user || session.user.role !== "CEO") {
-    return null;
-  }
 
   if (isOrgLoading) {
     return (
