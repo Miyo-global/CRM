@@ -1,4 +1,5 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
+import { logger } from "@/lib/logger";
 import { db } from "@/lib/db";
 import {
   appraisalCategories,
@@ -61,7 +62,8 @@ export async function POST() {
         });
         seeded.push(`test appraisal #${appraisalId} for ${employee.user?.name ?? employee.userId}`);
       } catch (e) {
-        seeded.push(`appraisal seed skipped: ${e instanceof Error ? e.message : String(e)}`);
+        logger.error("performance seed: appraisal skipped", { error: e });
+        seeded.push("appraisal seed skipped (see server logs)");
       }
     }
 
