@@ -300,10 +300,14 @@ export default function OrgChartPage() {
       });
   }, [employees, deptMap]);
 
-  const deptMemberTotal = useMemo(
-    () => deptGroups.reduce((sum, g) => sum + g.members.length, 0),
-    [deptGroups],
+  // Active people, counted once. Summing the department groups counted
+  // deactivated accounts too, so the org chart said 16 members where the rest
+  // of HR said 15 (QA-0047).
+  const activeMemberTotal = useMemo(
+    () => employees.filter((e) => e.isActive !== false).length,
+    [employees],
   );
+  const inactiveMemberTotal = employees.length - activeMemberTotal;
 
   if (isLoading) {
     return (
@@ -316,7 +320,9 @@ export default function OrgChartPage() {
   return (
     <PageWrapper
       title="Organization"
-      subtitle={`${deptMemberTotal} members across ${deptGroups.length} departments`}
+      subtitle={`${activeMemberTotal} active ${activeMemberTotal === 1 ? "member" : "members"} across ${deptGroups.length} departments${
+        inactiveMemberTotal > 0 ? ` · ${inactiveMemberTotal} deactivated` : ""
+      }`}
     >
       {isError ? (
         <QueryErrorState title="Couldn't load the organization" error={error} onRetry={() => refetch()} />

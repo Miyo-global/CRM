@@ -519,7 +519,10 @@ export default function PayrollPage() {
 
         <StatsStrip
           items={[
-            { label: "Total Employees", value: filteredPayrolls.length, icon: Users },
+            // Payroll rows in view, not the roster — labelling it "Total
+            // Employees" made it read as a headcount that disagreed with HR
+            // (QA-0047).
+            { label: "Payslips in this run", value: filteredPayrolls.length, icon: Users },
             {
               label: "Total Gross",
               value: `${CURRENCY_SYMBOL}${totalGross.toLocaleString(DEFAULT_LOCALE)}`,
