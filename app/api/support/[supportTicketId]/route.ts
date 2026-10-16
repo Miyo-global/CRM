@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getSupportTicket, logSupportActivity } from "@/server/queries/support";
 import { db } from "@/lib/db";
 import { supportTickets, users } from "@/lib/db/schema";
@@ -36,10 +36,7 @@ export async function GET(
       if (!ticket) return err("Ticket not found", 404);
       return ok(ticket);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load ticket",
-        500
-      );
+      return serverError(error, { route: "support/[supportTicketId]", orgId: session.orgId }, "Failed to load ticket.");
     }
   });
 }
@@ -166,10 +163,7 @@ export async function PATCH(
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to update ticket",
-        500
-      );
+      return serverError(error, { route: "support/[supportTicketId]", orgId: session.orgId }, "Failed to update ticket.");
     }
   });
 }
