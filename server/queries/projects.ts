@@ -21,6 +21,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, desc, asc, sql, inArray, or, gte, lte, count, isNull } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
+import { computeHealth, isDoneStatus } from "@/lib/projects/project-health";
 import type {
   ProjectFilters,
   TicketFilters,
@@ -360,7 +361,7 @@ export async function getProjectAnalytics(orgId: string, projectId: number) {
   const todayString = getTodayString();
   const totalTickets = stateDistribution.reduce((s, r) => s + Number(r.count), 0);
   const doneTickets = stateDistribution
-    .filter((r) => r.status === "DONE")
+    .filter((r) => isDoneStatus(r.status ?? ""))
     .reduce((s, r) => s + Number(r.count), 0);
   const completionRate = totalTickets > 0 ? doneTickets / totalTickets : 0;
 
@@ -390,11 +391,20 @@ export async function getProjectAnalytics(orgId: string, projectId: number) {
     completionRate * 50 + onTimeRate * 30 + velocityScore * 20,
   );
 
-  const healthStatus: "EXCELLENT" | "GOOD" | "AT_RISK" | "CRITICAL" =
-    healthScore >= 80 ? "EXCELLENT"
-    : healthScore >= 60 ? "GOOD"
-    : healthScore >= 40 ? "AT_RISK"
-    : "CRITICAL";
+  // Status comes from the shared selector the overview uses, so the two pages
+  // cannot disagree — the overview said "Off track" while analytics said
+  // "At risk" for the same project (QA-0060). The score stays as its own
+  // metric.
+  const projectRow = await db.query.projects.findFirst({
+    where: and(eq(projects.id, projectId), eq(projects.orgId, orgId)),
+    columns: { status: true, endDate: true },
+  });
+  const healthStatus = computeHealth({
+    projectStatus: projectRow?.status ?? null,
+    endDate: projectRow?.endDate ? new Date(projectRow.endDate) : null,
+    total: totalTickets,
+    done: doneTickets,
+  }).status;
 
   return {
     stateDistribution,

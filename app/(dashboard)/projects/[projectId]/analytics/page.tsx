@@ -55,10 +55,17 @@ const PRIORITY_COLORS: Record<string, string> = {
   none: toneVar.neutral,
 };
 
+// The same three states and wording the overview uses (QA-0060).
+const HEALTH_LABEL: Record<string, string> = {
+  on_track: "On track",
+  at_risk: "At risk",
+  off_track: "Off track",
+};
+
 const HEALTH_TONE: Record<string, Tone> = {
-  EXCELLENT: "success",
-  GOOD: "info",
-  AT_RISK: "warning",
+  on_track: "success",
+  at_risk: "warning",
+  off_track: "danger",
 };
 
 type ChartRows = Record<string, unknown>[];
@@ -107,11 +114,13 @@ export default function AnalyticsPage({
 
   const priorityData = useMemo(() => {
     if (!analytics?.priorityBreakdown) return [];
-    return analytics.priorityBreakdown.map((row: { priority: string | null; count: number }) => {
+    return analytics.priorityBreakdown.map((row: { priority: string | null; count: number | string }) => {
       const priority = row.priority ?? "none";
       return {
-        name: priority.charAt(0).toUpperCase() + priority.slice(1),
-        value: row.count,
+        name: priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase(),
+        // A count arriving as a string drew no slices, leaving only the legend
+        // (QA-0060).
+        value: Number(row.count) || 0,
         fill: PRIORITY_COLORS[priority.toLowerCase()] ?? toneVar.neutral,
       };
     });
@@ -120,9 +129,9 @@ export default function AnalyticsPage({
   const volumeData = useMemo(() => {
     if (!analytics?.volumeOverTime) return [];
     return analytics.volumeOverTime.map(
-      (entry: { week: string | null; count: number }) => ({
+      (entry: { week: string | null; count: number | string }) => ({
         date: entry.week ?? "",
-        created: entry.count,
+        created: Number(entry.count) || 0,
       })
     );
   }, [analytics?.volumeOverTime]);
@@ -226,7 +235,12 @@ export default function AnalyticsPage({
   const healthItems: StatsStripItem[] =
     healthScore != null && healthBreakdown
       ? [
-          { label: "Project Health Score", value: healthScore, tone: healthTone, hint: healthStatus?.replace("_", " ") },
+          {
+            label: "Project Health Score",
+            value: healthScore,
+            tone: healthTone,
+            hint: HEALTH_LABEL[healthStatus ?? ""] ?? undefined,
+          },
           { label: "Completion Rate", value: `${healthBreakdown.completionPct}%`, hint: "50% weight" },
           { label: "On-Time Rate", value: `${healthBreakdown.onTimePct}%`, hint: "30% weight" },
           { label: "Velocity Score", value: `${healthBreakdown.velocityScore}%`, hint: "20% weight" },
