@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import type {
-  RecruitmentAnalyticsData,
   RetentionAnalyticsData,
   PerformanceAnalyticsData,
   ExecutiveKpisData,
@@ -25,35 +24,18 @@ import type {
 import { formatINRCompact } from "@/lib/format-utils";
 import { toneVar, type Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
+import { percentageSplit } from "@/lib/hr/percentage-split";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState as UiEmptyState } from "@/components/ui/empty-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import {
   Users as IcoUsers, TrendingDown as IcoTrendDown, UserPlus as IcoUserPlus, Timer as IcoTimer,
-  UserRound as IcoDiversity, Activity as IcoActivity, Briefcase as IcoBriefcase, UserMinus as IcoUserMinus,
+  UserRound as IcoDiversity, Activity as IcoActivity, UserMinus as IcoUserMinus,
   Target as IcoTarget, ClipboardList as IcoClipboard, CalendarDays as IcoCalendar, IndianRupee as IcoCoin,
-  TrendingUp as IcoTrendUp, Clock as IcoClock, ChevronDown, XCircle,
+  TrendingUp as IcoTrendUp, Clock as IcoClock,
 } from "lucide-react";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const STAGE_LABELS: Record<string, string> = {
-  NEW: "New",
-  SCREENING: "Screening",
-  INTERVIEW: "Interview",
-  OFFER: "Offer",
-  HIRED: "Hired",
-  REJECTED: "Rejected",
-};
-
-const STAGE_COLORS: Record<string, string> = {
-  NEW: "bg-chart-2",
-  SCREENING: "bg-chart-3",
-  INTERVIEW: "bg-chart-4",
-  OFFER: "bg-chart-5",
-  HIRED: "bg-chart-1",
-  REJECTED: "bg-danger-500",
-};
 
 const GENDER_COLOR: Record<string, string> = {
   MALE: "bg-chart-3",
@@ -74,10 +56,16 @@ function HBar({
   showPct?: boolean;
 }) {
   const max = maxValue ?? Math.max(...data.map((d) => d.value), 1);
+  // The bar width is a share of the largest bar; the percentage label is a
+  // share of the total, apportioned so the labels add up to 100 (QA-0015).
+  const shares = new Map(
+    percentageSplit(data.map((d) => ({ label: d.label, count: d.value }))).map((d) => [d.label, d.pct]),
+  );
   return (
     <div className="space-y-2">
       {data.map((item) => {
         const pct = Math.round((item.value / max) * 100);
+        const sharePct = shares.get(item.label) ?? 0;
         return (
           <div key={item.label} className="flex items-center gap-3">
             <span
@@ -95,7 +83,7 @@ function HBar({
             <div className="flex w-16 shrink-0 items-center justify-end gap-1.5">
               <span className="text-xs font-semibold tabular-nums">{item.value}</span>
               {showPct && (
-                <span className="text-3xs text-muted-foreground">({pct}%)</span>
+                <span className="text-3xs text-muted-foreground">({sharePct}%)</span>
               )}
             </div>
           </div>
@@ -305,73 +293,6 @@ function SectionCard({
   );
 }
 
-// ── Pipeline Funnel ───────────────────────────────────────────────────────────
-
-function PipelineFunnel({
-  stages,
-}: {
-  stages: { stage: string; count: number; avgDaysInStage?: number | null }[];
-}) {
-  const orderedKeys = ["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED"];
-  const stageData = orderedKeys.map(
-    (k) => stages.find((s) => s.stage === k) ?? { stage: k, count: 0, avgDaysInStage: null },
-  );
-  const rejected = stages.find((s) => s.stage === "REJECTED");
-  const max = Math.max(...stageData.map((s) => s.count), 1);
-
-  return (
-    <div className="space-y-1">
-      {stageData.map((s, i) => {
-        const next = stageData[i + 1];
-        const conversion =
-          next && s.count > 0 ? Math.round((next.count / s.count) * 100) : null;
-        const fillPct = Math.max(3, (s.count / max) * 100);
-        return (
-          <div key={s.stage}>
-            <div className="flex items-center gap-3">
-              <span className="w-24 shrink-0 truncate text-xs font-medium text-foreground">
-                {STAGE_LABELS[s.stage]}
-              </span>
-              <div className="h-7 flex-1 overflow-hidden rounded-md bg-muted">
-                <div className={cn("h-full rounded-md", STAGE_COLORS[s.stage])} style={{ width: `${fillPct}%` }} />
-              </div>
-              <span className="w-10 shrink-0 text-right text-sm font-semibold tabular-nums">{s.count}</span>
-              <span className="hidden w-16 shrink-0 text-right text-2xs tabular-nums text-muted-foreground sm:block">
-                {s.avgDaysInStage != null && s.avgDaysInStage > 0 ? `${s.avgDaysInStage}d avg` : ""}
-              </span>
-            </div>
-            {conversion != null && (
-              <div className="flex items-center gap-1 py-0.5 pl-27 text-2xs font-semibold tabular-nums">
-                <ChevronDown className="size-3 text-subtle-foreground" aria-hidden="true" />
-                <span
-                  className={
-                    conversion >= 60
-                      ? "text-success-strong"
-                      : conversion >= 30
-                        ? "text-warning-strong"
-                        : "text-danger-strong"
-                  }
-                >
-                  {conversion}% pass
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      })}
-      {rejected && rejected.count > 0 && (
-        <div className="mt-3 flex items-center gap-2 rounded-md bg-danger-soft px-3 py-2 text-xs text-danger-strong">
-          <XCircle className="size-3.5 shrink-0" aria-hidden="true" />
-          <span>
-            <strong className="tabular-nums">{rejected.count}</strong>{" "}
-            candidates rejected overall
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Filter Bar ────────────────────────────────────────────────────────────────
 
 export interface FilterValues {
@@ -468,87 +389,6 @@ export function ExecutiveKpiStrip({
 }
 
 // ── Recruitment Section ───────────────────────────────────────────────────────
-
-export function RecruitmentSection({
-  data,
-  isLoading,
-}: {
-  data?: RecruitmentAnalyticsData;
-  isLoading: boolean;
-}) {
-  return (
-    <SectionCard
-      icon={IcoBriefcase}
-      title="Recruitment analytics"
-      tone="info"
-    >
-      {isLoading ? (
-        <SectionSkeleton />
-      ) : !data ? (
-        <EmptyState message="No recruitment data for this period" />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Mini
-              label="Open Positions"
-              value={data.openPositions}
-              sub={`${data.totalOpenings} total openings`}
-              accent="blue"
-            />
-            <Mini label="Offers Released" value={data.offersReleased} accent="blue" />
-            <Mini
-              label="Offers Accepted"
-              value={data.offersAccepted}
-              sub={
-                data.offerAcceptanceRate != null
-                  ? `${data.offerAcceptanceRate}% acceptance`
-                  : undefined
-              }
-              accent="green"
-            />
-            <Mini
-              label="Avg Time to Hire"
-              value={
-                data.avgTimeToHireDays != null ? `${data.avgTimeToHireDays}d` : "—"
-              }
-              sub={`${data.hiredCount} hired`}
-              accent="amber"
-            />
-          </div>
-
-          <div>
-            <SubLabel>Recruitment Pipeline</SubLabel>
-            {data.pipelineByStage.length > 0 ? (
-              <PipelineFunnel stages={data.pipelineByStage} />
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                No candidates in pipeline
-              </p>
-            )}
-          </div>
-
-          <div>
-            <SubLabel>Source of Hire</SubLabel>
-            {data.sourceOfHire.length > 0 ? (
-              <HBar
-                data={data.sourceOfHire.map((s) => ({
-                  label: s.source,
-                  value: s.count,
-                  color: "bg-chart-3",
-                }))}
-                showPct
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No hires recorded
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </SectionCard>
-  );
-}
 
 // ── Retention Section ─────────────────────────────────────────────────────────
 

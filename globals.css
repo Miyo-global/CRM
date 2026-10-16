@@ -384,3 +384,17 @@
 
 /* Skeleton shimmer (§6.1) */
 @utility skeleton-shimmer { background-image: linear-gradient(90deg, transparent, color-mix(in oklab, var(--foreground) 6%, transparent), transparent); background-size: 200% 100%; background-repeat: no-repeat; animation: var(--animate-shimmer); }
+
+/* Print (QA-0015): the PDF buttons print the page, which otherwise came out in
+   the mobile layout with the sidebar and controls on it. Print light, drop the
+   app shell, and keep cards whole across page breaks. */
+@media print {
+  :root { color-scheme: light; }
+  body { background: #fff !important; color: #201e1f !important; }
+  aside, nav, [data-slot="sidebar"], [data-print="hide"],
+  [role="dialog"], [role="alertdialog"], [data-sonner-toaster] { display: none !important; }
+  main { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 100% !important; }
+  [data-slot="card"] { break-inside: avoid; box-shadow: none !important; border: 1px solid #e8e6e2 !important; }
+  a[href]::after { content: ""; }
+  @page { size: A4 landscape; margin: 12mm; }
+}

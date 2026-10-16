@@ -1,7 +1,8 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users } from "@/lib/db/schema";
-import { eq, and, sql, count } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { percentageSplit } from "@/lib/hr/percentage-split";
 
 export const dynamic = "force-dynamic";
 
@@ -53,9 +54,11 @@ export async function GET() {
 
     return ok({
       total,
-      gender: Object.entries(genderMap)
-        .filter(([, v]) => v > 0)
-        .map(([label, count]) => ({ label, count, pct: total > 0 ? Math.round((count / total) * 100) : 0 })),
+      gender: percentageSplit(
+        Object.entries(genderMap)
+          .filter(([, v]) => v > 0)
+          .map(([label, count]) => ({ label, count })),
+      ),
       ageBuckets: Object.entries(ageBuckets)
         .filter(([, v]) => v > 0)
         .map(([label, count]) => ({ label, count })),

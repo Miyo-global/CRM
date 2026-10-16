@@ -514,8 +514,15 @@ export async function getExecutiveKpis(filter: AnalyticsFilter): Promise<Executi
   }
 
   const retention = await getRetentionAnalytics(filter);
-  const recruitment = await getRecruitmentAnalytics(filter);
-  openPositions = recruitment.openPositions;
+  // The recruitment tables belong to the unbuilt ATS and may not exist yet, in
+  // which case the whole executive KPI strip 500'd (QA-0015). Open positions
+  // are simply 0 until the ATS ships.
+  try {
+    const recruitment = await getRecruitmentAnalytics(filter);
+    openPositions = recruitment.openPositions;
+  } catch (e) {
+    logger.error("getExecutiveKpis: recruitment block failed", { orgId, error: e });
+  }
 
   const hiringRate = headcount > 0 ? Number(((hires / headcount) * 100).toFixed(1)) : 0;
 

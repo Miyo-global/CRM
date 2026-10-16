@@ -59,15 +59,6 @@ export interface ExecutiveKpisData {
 
 const ANALYTICS_KEY = ["miyoglobal", "hr", "analytics"] as const;
 
-export function useRecruitmentAnalytics(filters: AnalyticsFilters) {
-  const params = toParams(filters);
-  return useQuery({
-    queryKey: [...ANALYTICS_KEY, "recruitment", params] as const,
-    queryFn: () => apiClient.get<RecruitmentAnalyticsData>("/hr/analytics/recruitment", params),
-    staleTime: 60_000,
-  });
-}
-
 export function useRetentionAnalytics(filters: AnalyticsFilters) {
   const params = toParams(filters);
   return useQuery({

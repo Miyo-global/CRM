@@ -1,16 +1,24 @@
 import { downloadXlsx, type SheetDefinition } from "./xlsx-utils";
 import type {
-  RecruitmentAnalyticsData,
   RetentionAnalyticsData,
   PerformanceAnalyticsData,
   ExecutiveKpisData,
+  WorkforceTrendsData,
+  AttendanceAnalyticsData,
+  LeaveAnalyticsData,
+  CompensationAnalyticsData,
+  DiversityData,
 } from "@/lib/api/hooks/hr/analytics-extended";
 
 export interface AnalyticsExportInput {
-  recruitment?: RecruitmentAnalyticsData;
   retention?: RetentionAnalyticsData;
   performance?: PerformanceAnalyticsData;
   executive?: ExecutiveKpisData;
+  workforceTrends?: WorkforceTrendsData;
+  attendance?: AttendanceAnalyticsData;
+  leave?: LeaveAnalyticsData;
+  compensation?: CompensationAnalyticsData;
+  diversity?: DiversityData;
   rangeLabel?: string;
 }
 
@@ -22,7 +30,16 @@ interface FlatRow {
 
 function buildRows(input: AnalyticsExportInput): FlatRow[] {
   const rows: FlatRow[] = [];
-  const { executive, recruitment, retention, performance } = input;
+  const {
+    executive,
+    retention,
+    performance,
+    workforceTrends,
+    attendance,
+    leave,
+    compensation,
+    diversity,
+  } = input;
 
   if (executive) {
     rows.push(
@@ -34,24 +51,6 @@ function buildRows(input: AnalyticsExportInput): FlatRow[] {
       { section: "Executive", metric: "Open Positions", value: executive.openPositions },
       { section: "Executive", metric: "Org Health Score", value: executive.orgHealthScore },
     );
-  }
-
-  if (recruitment) {
-    rows.push(
-      { section: "Recruitment", metric: "Open Positions", value: recruitment.openPositions },
-      { section: "Recruitment", metric: "Total Openings", value: recruitment.totalOpenings },
-      { section: "Recruitment", metric: "Offers Released", value: recruitment.offersReleased },
-      { section: "Recruitment", metric: "Offers Accepted", value: recruitment.offersAccepted },
-      { section: "Recruitment", metric: "Offer Acceptance Rate (%)", value: recruitment.offerAcceptanceRate ?? "N/A" },
-      { section: "Recruitment", metric: "Hired", value: recruitment.hiredCount },
-      { section: "Recruitment", metric: "Avg Time to Hire (days)", value: recruitment.avgTimeToHireDays ?? "N/A" },
-    );
-    for (const s of recruitment.pipelineByStage) {
-      rows.push({ section: "Recruitment Pipeline", metric: s.stage, value: s.count });
-    }
-    for (const s of recruitment.sourceOfHire) {
-      rows.push({ section: "Source of Hire", metric: s.source, value: s.count });
-    }
   }
 
   if (retention) {
@@ -91,6 +90,70 @@ function buildRows(input: AnalyticsExportInput): FlatRow[] {
     }
     for (const r of performance.ratingDistribution) {
       rows.push({ section: "Rating Distribution", metric: r.band, value: r.count });
+    }
+  }
+
+  // Every tab on the page is exported, not just the first four (QA-0015).
+  if (workforceTrends) {
+    rows.push({ section: "Workforce", metric: "Current headcount", value: workforceTrends.currentHeadcount });
+    for (const m of workforceTrends.monthly) {
+      rows.push({ section: "Workforce joiners", metric: m.month, value: m.joiners });
+      rows.push({ section: "Workforce exits", metric: m.month, value: m.exits });
+    }
+  }
+
+  if (diversity) {
+    rows.push({ section: "Diversity", metric: "Employees counted", value: diversity.total });
+    for (const g of diversity.gender) {
+      rows.push({ section: "Diversity gender", metric: g.label, value: `${g.count} (${g.pct}%)` });
+    }
+    for (const a of diversity.ageBuckets) {
+      rows.push({ section: "Diversity age", metric: a.label, value: a.count });
+    }
+    for (const t of diversity.tenureBuckets) {
+      rows.push({ section: "Diversity tenure", metric: t.label, value: t.count });
+    }
+  }
+
+  if (attendance) {
+    rows.push({
+      section: "Attendance",
+      metric: `Logs ${attendance.year}-${String(attendance.month).padStart(2, "0")}`,
+      value: attendance.totalAttendanceLogs,
+    });
+    for (const d of attendance.byDepartment) {
+      rows.push({ section: "Attendance by department", metric: d.department, value: d.count });
+    }
+    for (const d of attendance.daily) {
+      rows.push({ section: "Attendance daily", metric: d.date, value: d.count });
+    }
+  }
+
+  if (leave) {
+    for (const d of leave.byDepartment) {
+      rows.push({
+        section: "Leave by department",
+        metric: d.department,
+        value: `${d.total} total / ${d.approved} approved / ${d.pending} pending / ${d.rejected} rejected`,
+      });
+    }
+    for (const m of leave.monthlyTrend) {
+      rows.push({ section: "Leave approved by month", metric: m.month, value: m.count });
+    }
+  }
+
+  if (compensation) {
+    rows.push(
+      { section: "Compensation", metric: "Average salary", value: compensation.overall.avgSalary },
+      { section: "Compensation", metric: "Median salary", value: compensation.overall.medianSalary },
+      { section: "Compensation", metric: "Lowest salary", value: compensation.overall.minSalary },
+      { section: "Compensation", metric: "Highest salary", value: compensation.overall.maxSalary },
+    );
+    for (const d of compensation.byDepartment) {
+      rows.push({ section: "Compensation by department", metric: d.department, value: `${d.avgSalary} (${d.count})` });
+    }
+    for (const r of compensation.byRole) {
+      rows.push({ section: "Compensation by role", metric: r.role, value: `${r.avgSalary} (${r.count})` });
     }
   }
 

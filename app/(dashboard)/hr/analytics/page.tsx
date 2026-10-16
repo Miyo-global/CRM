@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { useHrAnalytics } from "@/lib/api/hooks/hr";
 import { useHrDepartments } from "@/lib/api/hooks/hr/employees";
 import {
-  useRecruitmentAnalytics,
   useRetentionAnalytics,
   usePerformanceAnalytics,
   useExecutiveKpis,
@@ -16,7 +15,6 @@ import {
 import {
   AnalyticsFilterBar,
   ExecutiveKpiStrip,
-  RecruitmentSection,
   RetentionSection,
   PerformanceSection,
   WorkforceTrendsSection,
@@ -34,7 +32,7 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   FileSpreadsheet as IcoSpreadsheet, FileText as IcoFileText, Printer as IcoPrinter, LayoutGrid as IcoGrid,
-  TrendingUp as IcoTrendUp, Briefcase as IcoBriefcase, CalendarDays as IcoCalendar, Clock as IcoClock,
+  TrendingUp as IcoTrendUp, CalendarDays as IcoCalendar, Clock as IcoClock,
   IndianRupee as IcoCoin, UserMinus as IcoUserMinus, ClipboardList as IcoClipboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,7 +68,6 @@ function OverviewHBar({ data }: { data: { label: string; value: number; color?: 
 const TAB_LIST = [
   { value: "overview", label: "Overview", Icon: IcoGrid },
   { value: "workforce", label: "Workforce", Icon: IcoTrendUp },
-  { value: "recruitment", label: "Recruitment", Icon: IcoBriefcase },
   { value: "attendance", label: "Attendance", Icon: IcoCalendar },
   { value: "leave", label: "Leave", Icon: IcoClock },
   { value: "compensation", label: "Compensation", Icon: IcoCoin },
@@ -84,15 +81,22 @@ function AnalyticsContent() {
 
   const { data: departments } = useHrDepartments();
   const { data: executive, isLoading: execLoading } = useExecutiveKpis(filters);
-  const { data: recruitment, isLoading: recruitLoading } = useRecruitmentAnalytics(filters);
   const { data: retention, isLoading: retentionLoading } = useRetentionAnalytics(filters);
   const { data: performance, isLoading: perfLoading } = usePerformanceAnalytics(filters);
   const { data: workforceTrends, isLoading: trendsLoading } = useWorkforceTrends(filters);
   const { data: diversity, isLoading: diversityLoading } = useDiversityAnalytics();
   const { data: compensation, isLoading: compensationLoading } = useCompensationAnalytics();
 
-  const filterYear = filters.from ? Number(filters.from.slice(0, 4)) : new Date().getFullYear();
-  const filterMonth = filters.from ? Number(filters.from.slice(5, 7)) : new Date().getMonth() + 1;
+  // Anchor the attendance month to today, clamped into the filter range: taking
+  // it from filters.from showed January for the default year range, so the tab
+  // read 0 logs while the overview card showed this month's (QA-0015).
+  const { year: filterYear, month: filterMonth } = useMemo(() => {
+    const today = new Date();
+    const from = filters.from ? new Date(`${filters.from}T00:00:00`) : null;
+    const to = filters.to ? new Date(`${filters.to}T00:00:00`) : null;
+    const anchor = to && today > to ? to : from && today < from ? from : today;
+    return { year: anchor.getFullYear(), month: anchor.getMonth() + 1 };
+  }, [filters.from, filters.to]);
   const { data: attendanceData, isLoading: attendanceLoading } = useAttendanceAnalytics(filterYear, filterMonth);
   const { data: leaveData, isLoading: leaveLoading } = useLeaveAnalytics(filterYear);
 
@@ -107,14 +111,14 @@ function AnalyticsContent() {
     <PageWrapper
       title="HR analytics"
       actions={
-        <>
+        <span data-print="hide" className="contents">
           <Button variant="outline" size="sm"
-            onClick={() => void downloadAnalyticsXlsx({ executive, recruitment, retention, performance, rangeLabel })}>
+            onClick={() => void downloadAnalyticsXlsx({ executive, retention, performance, workforceTrends, attendance: attendanceData, leave: leaveData, compensation, diversity, rangeLabel })}>
             <IcoSpreadsheet className="size-4" aria-hidden="true" />
             Excel
           </Button>
           <Button variant="outline" size="sm"
-            onClick={() => downloadAnalyticsCsv({ executive, recruitment, retention, performance, rangeLabel })}>
+            onClick={() => downloadAnalyticsCsv({ executive, retention, performance, workforceTrends, attendance: attendanceData, leave: leaveData, compensation, diversity, rangeLabel })}>
             <IcoFileText className="size-4" aria-hidden="true" />
             CSV
           </Button>
@@ -123,7 +127,7 @@ function AnalyticsContent() {
             <IcoPrinter className="size-4" aria-hidden="true" />
             PDF
           </Button>
-        </>
+        </span>
       }
       filters={
         <AnalyticsFilterBar
@@ -241,10 +245,6 @@ function AnalyticsContent() {
           <TabsContent value="workforce" className="space-y-4 mt-0">
             <WorkforceTrendsSection data={workforceTrends} isLoading={trendsLoading} />
             <DiversitySection data={diversity} isLoading={diversityLoading} />
-          </TabsContent>
-
-          <TabsContent value="recruitment" className="mt-0">
-            <RecruitmentSection data={recruitment} isLoading={recruitLoading} />
           </TabsContent>
 
           <TabsContent value="attendance" className="mt-0">
