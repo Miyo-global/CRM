@@ -15,7 +15,8 @@ import type {
   TicketFilters,
   CreateTicketInput,
   UpdateTicketInput,
-  MoveTicketInput,
+  RankTicketInput,
+  ProjectWithDetails,
   CreateLabelInput,
 } from "@/types/projects";
 
@@ -91,26 +92,56 @@ export function useCreateTicket(
   }, options));
 }
 
+type UpdateTicketResponse = { success: boolean; ticket?: Partial<Ticket> & { id: number; version: number } };
+
 export function useUpdateTicket(
   projectId: number,
-  options?: Omit<UseMutationOptions<{ success: boolean }, Error, UpdateTicketInput>, "mutationFn">
+  options?: Omit<UseMutationOptions<UpdateTicketResponse, Error, UpdateTicketInput>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, UpdateTicketInput>(mergeMutationOptions({
+  return useMutation<UpdateTicketResponse, Error, UpdateTicketInput>(mergeMutationOptions({
     mutationFn: ({ ticketId, ...data }) =>
-      apiClient.patch<{ success: boolean }>(
+      apiClient.patch<UpdateTicketResponse>(
         `/projects/${projectId}/tickets/${ticketId}`,
         data
       ),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.ticket(variables.ticketId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.tickets({ projectId }),
-      });
+    onSuccess: (data, variables) => {
+      const updated = data.ticket;
+      if (updated) {
+        queryClient.setQueryData<Ticket | null>(queryKeys.projects.ticket(variables.ticketId), (old) =>
+          old ? { ...old, ...updated } : old,
+        );
+        queryClient.setQueryData<ProjectWithDetails | null>(queryKeys.projects.detail(projectId), (old) =>
+          old ? { ...old, tickets: old.tickets?.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)) } : old,
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticketActivity(variables.ticketId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.tickets({ projectId }) });
+      if (variables.status !== undefined) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(projectId) });
+      }
     },
   }, options));
+}
+
+export function useRestoreTicket(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { ticketId: number }>({
+    mutationFn: ({ ticketId }) => apiClient.post(`/projects/${projectId}/tickets/${ticketId}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(projectId) });
+    },
+  });
+}
+
+export function useTicketByKey(projectId: number, ticketKey: string) {
+  return useQuery<{ id: number; ticketNumber: number; title: string }>({
+    queryKey: [...queryKeys.projects.all, "ticketByKey", projectId, ticketKey],
+    queryFn: () => apiClient.get(`/projects/${projectId}/tickets/key/${encodeURIComponent(ticketKey)}`),
+    enabled: projectId > 0 && ticketKey.length > 0,
+    retry: false,
+  });
 }
 
 export function useDeleteTicket(
@@ -123,28 +154,57 @@ export function useDeleteTicket(
       apiClient.delete<{ success: boolean }>(
         `/projects/${projectId}/tickets/${ticketId}`
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.tickets({ projectId }),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(projectId),
-      });
+    onSuccess: (_data, { ticketId }) => {
+      queryClient.setQueryData<ProjectWithDetails | null>(queryKeys.projects.detail(projectId), (old) =>
+        old ? { ...old, tickets: old.tickets?.filter((t) => t.id !== ticketId) } : old,
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.tickets({ projectId }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(projectId) });
     },
   }, options));
 }
 
-export function useMoveTicket(options?: Parameters<typeof useMutation>[0]) {
+type RankResponse = { ticket: { id: number; status: string; rank: string | null; version: number } };
+
+export function useRankTicket(projectId: number) {
   const queryClient = useQueryClient();
-  return useMutation(mergeMutationOptions({
-    mutationFn: ({ projectId, items }: MoveTicketInput) =>
-      apiClient.patch<{ success: boolean }>(`/projects/${projectId}/tickets/reorder`, { items }),
-    onSuccess: (_data: unknown, variables: MoveTicketInput) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(variables.projectId),
-      });
+  const detailKey = queryKeys.projects.detail(projectId);
+  return useMutation<RankResponse, Error, RankTicketInput & { optimisticRank: string }, { previous?: ProjectWithDetails | null }>({
+    mutationFn: ({ ticketId, status, beforeTicketId, afterTicketId }) =>
+      apiClient.patch<RankResponse>(`/projects/${projectId}/tickets/${ticketId}/rank`, {
+        status,
+        beforeTicketId,
+        afterTicketId,
+      }),
+    onMutate: async ({ ticketId, status, optimisticRank }) => {
+      await queryClient.cancelQueries({ queryKey: detailKey });
+      const previous = queryClient.getQueryData<ProjectWithDetails | null>(detailKey);
+      queryClient.setQueryData<ProjectWithDetails | null>(detailKey, (old) =>
+        old
+          ? { ...old, tickets: old.tickets?.map((t) => (t.id === ticketId ? { ...t, status, rank: optimisticRank } : t)) }
+          : old,
+      );
+      return { previous };
     },
-  }, options));
+    onError: (_error, _vars, context) => {
+      if (context?.previous !== undefined) queryClient.setQueryData(detailKey, context.previous);
+    },
+    onSuccess: ({ ticket }) => {
+      queryClient.setQueryData<ProjectWithDetails | null>(detailKey, (old) =>
+        old ? { ...old, tickets: old.tickets?.map((t) => (t.id === ticket.id ? { ...t, ...ticket } : t)) } : old,
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticket.id) });
+    },
+  });
+}
+
+export function useColumnCounts(projectId: number) {
+  return useQuery<Record<string, number>>({
+    queryKey: queryKeys.projects.columnCounts(projectId),
+    queryFn: () => apiClient.get<Record<string, number>>(`/projects/${projectId}/tickets/column-counts`),
+    enabled: !!projectId,
+  });
 }
 
 export function useCustomStates(
@@ -405,10 +465,6 @@ export function useSubtasks(
   });
 }
 
-export function useUpdateTicketOrder(options?: Parameters<typeof useMutation>[0]) {
-  return useMoveTicket(options);
-}
-
 export function useCreateOrgLabel(
   options?: Omit<UseMutationOptions<TicketLabel, Error, CreateLabelInput>, "mutationFn">
 ) {
@@ -528,4 +584,46 @@ export function useAddAttachment(
       });
     },
   }, options));
+}
+
+export function useToggleReaction(projectId: number, ticketId: number) {
+  const queryClient = useQueryClient();
+  const key = queryKeys.projects.ticket(ticketId);
+  return useMutation<unknown, Error, { commentId: number; emoji: string; userId: string; remove: boolean }, { previous?: Ticket | null }>({
+    mutationFn: ({ commentId, emoji, remove }) => {
+      const url = `/projects/${projectId}/tickets/${ticketId}/comments/${commentId}/reactions`;
+      return remove ? apiClient.delete(url, { params: { emoji } }) : apiClient.post(url, { emoji });
+    },
+    onMutate: async ({ commentId, emoji, userId, remove }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Ticket | null>(key);
+      queryClient.setQueryData<Ticket | null>(key, (old) =>
+        old
+          ? {
+              ...old,
+              comments: old.comments?.map((c) => {
+                if (c.id !== commentId) return c;
+                const rest = (c.reactions ?? []).filter((r) => !(r.emoji === emoji && r.userId === userId));
+                return { ...c, reactions: remove ? rest : [...rest, { emoji, userId }] };
+              }),
+            }
+          : old,
+      );
+      return { previous };
+    },
+    onError: (_e, _v, context) => {
+      if (context?.previous !== undefined) queryClient.setQueryData(key, context.previous);
+    },
+  });
+}
+
+export function useRestoreComment(projectId: number, ticketId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { commentId: number }>({
+    mutationFn: ({ commentId }) => apiClient.post(`/projects/${projectId}/tickets/${ticketId}/comments/${commentId}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticketId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticketActivity(ticketId) });
+    },
+  });
 }

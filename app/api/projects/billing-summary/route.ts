@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { timesheets, tickets, projects } from "@/lib/db/schema";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { eq, and, gte, lte, isNull, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
 export async function GET(req: NextRequest) {
@@ -16,6 +16,8 @@ export async function GET(req: NextRequest) {
     const conditions = [
       eq(timesheets.orgId, session.orgId!),
       eq(timesheets.isBillable, true),
+      isNull(tickets.deletedAt),
+      isNull(projects.deletedAt),
     ];
 
     if (!isAdminOrOwner(session.user.role)) {

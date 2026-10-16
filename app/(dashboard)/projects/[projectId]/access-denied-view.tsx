@@ -1,28 +1,23 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { IconChip } from "@/components/ui/icon-chip";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, FolderX } from "lucide-react";
 
-export function AccessDeniedView({ projectName }: { projectName: string }) {
+export function AccessDeniedView() {
   return (
-    <div className="flex min-h-[60vh] w-full items-center justify-center p-8">
+    <div className="flex min-h-[60vh] w-full flex-1 items-center justify-center p-8">
       <div className="flex max-w-md flex-col items-center text-center">
-        <IconChip icon={Lock} tone="warning" size="lg" className="mb-5" />
-        <h2 className="mb-2 font-display text-xl font-bold text-foreground">
-          You&apos;re not invited to this project
-        </h2>
-        <p className="mb-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{projectName}</span> is a private project.
-        </p>
+        <IconChip icon={FolderX} tone="neutral" size="lg" className="mb-5" />
+        <h1 className="mb-2 font-display text-xl font-bold text-foreground">
+          This project doesn&apos;t exist, or you don&apos;t have access
+        </h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          Ask the project manager or admin to add you as a member to get access.
+          Check the link, or ask the project manager to add you as a member.
         </p>
         <Button asChild variant="outline" className="gap-2">
           <Link href="/projects">
-            <ArrowLeft className="size-4" />
-            Back to Projects
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Back to projects
           </Link>
         </Button>
       </div>

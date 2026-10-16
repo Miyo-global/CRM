@@ -1,13 +1,20 @@
 "use client";
 
-import { Search, X, LayoutGrid, List } from "lucide-react";
+import { Search, X, LayoutGrid, List, Table2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { FilterChip } from "@/components/ui/filter-chip";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  PROJECT_PRIORITY_OPTIONS,
+  PROJECT_SORT_OPTIONS,
+  type ProjectGroupBy,
+} from "@/features/projects/project-list/project-options";
 
-type ViewMode = "grid" | "list";
+export type ViewMode = "grid" | "list" | "table";
+const ALL = "all";
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
@@ -24,6 +31,12 @@ interface ProjectFilterBarProps {
   onStatusChange: (value: StatusFilter) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  priority: string | null;
+  onPriorityChange: (value: string | null) => void;
+  sort: string;
+  onSortChange: (value: string) => void;
+  groupBy: ProjectGroupBy;
+  onGroupByChange: (value: ProjectGroupBy) => void;
 }
 
 /** ListToolbar layout (§6.3): search → status chips → spacer → view toggle. */
@@ -34,6 +47,12 @@ export function ProjectFilterBar({
   onStatusChange,
   viewMode,
   onViewModeChange,
+  priority,
+  onPriorityChange,
+  sort,
+  onSortChange,
+  groupBy,
+  onGroupByChange,
 }: ProjectFilterBarProps) {
   return (
     <div className="flex w-full flex-wrap items-center gap-2">
@@ -81,6 +100,42 @@ export function ProjectFilterBar({
         ))}
       </div>
 
+      <Select value={priority ?? ALL} onValueChange={(v) => onPriorityChange(v === ALL ? null : v)}>
+        <SelectTrigger className="h-10 w-36" aria-label="Filter by priority">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>Any priority</SelectItem>
+          {PROJECT_PRIORITY_OPTIONS.map((o) => (
+            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={sort} onValueChange={onSortChange}>
+        <SelectTrigger className="h-10 w-36" aria-label="Sort projects">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {PROJECT_SORT_OPTIONS.map((o) => (
+            <SelectItem key={o.value} value={o.value}>Sort: {o.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {viewMode === "table" && (
+        <Select value={groupBy} onValueChange={(v) => onGroupByChange(v as ProjectGroupBy)}>
+          <SelectTrigger className="hidden h-10 w-36 md:flex" aria-label="Group projects">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No grouping</SelectItem>
+            <SelectItem value="status">Group: status</SelectItem>
+            <SelectItem value="priority">Group: priority</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+
       <Tabs
         value={viewMode}
         onValueChange={(v) => onViewModeChange(v as ViewMode)}
@@ -92,6 +147,9 @@ export function ProjectFilterBar({
           </TabsTrigger>
           <TabsTrigger value="list" aria-label="List view" className="px-2">
             <List aria-hidden="true" />
+          </TabsTrigger>
+          <TabsTrigger value="table" aria-label="Table view" className="hidden px-2 md:inline-flex">
+            <Table2 aria-hidden="true" />
           </TabsTrigger>
         </TabsList>
       </Tabs>

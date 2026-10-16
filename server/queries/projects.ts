@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import {
   projects,
   tickets,
+  ticketComments,
   sprints,
   timesheets,
   projectMembers,
@@ -18,7 +19,7 @@ import {
   customStates,
   projectStatuses,
 } from "@/lib/db/schema";
-import { eq, and, desc, asc, sql, inArray, or, gte, lte, count } from "drizzle-orm";
+import { eq, and, desc, asc, sql, inArray, or, gte, lte, count, isNull } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 import type {
   ProjectFilters,
@@ -27,7 +28,7 @@ import type {
 } from "@/types/projects";
 
 export async function getProjects(orgId: string, filters?: ProjectFilters) {
-  const conditions = [eq(projects.orgId, orgId)];
+  const conditions = [eq(projects.orgId, orgId), isNull(projects.deletedAt)];
 
   if (filters?.search) {
     conditions.push(
@@ -54,7 +55,7 @@ export async function getProjects(orgId: string, filters?: ProjectFilters) {
 
 export async function getProject(orgId: string, id: number) {
   return db.query.projects.findFirst({
-    where: and(eq(projects.id, id), eq(projects.orgId, orgId)),
+    where: and(eq(projects.id, id), eq(projects.orgId, orgId), isNull(projects.deletedAt)),
     with: {
       statuses: {
         orderBy: [asc(projectStatuses.order)],
@@ -63,11 +64,12 @@ export async function getProject(orgId: string, id: number) {
         with: { user: true },
       },
       tickets: {
+        where: isNull(tickets.deletedAt),
         with: {
           assignee: true,
           reporter: true,
           assignees: { with: { user: true } },
-          comments: { with: { user: true } },
+          comments: { where: isNull(ticketComments.deletedAt), with: { user: true } },
           attachments: true,
           labels: { with: { label: true } },
         },
@@ -81,7 +83,7 @@ export async function getTickets(
   projectId?: number,
   filters?: TicketFilters
 ) {
-  const conditions = [eq(tickets.orgId, orgId)];
+  const conditions = [eq(tickets.orgId, orgId), isNull(tickets.deletedAt)];
 
   if (projectId) {
     conditions.push(eq(tickets.projectId, projectId));
@@ -127,14 +129,14 @@ export async function getTickets(
 
 export async function getTicket(orgId: string, id: number) {
   return db.query.tickets.findFirst({
-    where: and(eq(tickets.id, id), eq(tickets.orgId, orgId)),
+    where: and(eq(tickets.id, id), eq(tickets.orgId, orgId), isNull(tickets.deletedAt)),
     with: {
       project: true,
       sprint: true,
       assignee: true,
       reporter: true,
       assignees: { with: { user: true } },
-      comments: { with: { user: true }, orderBy: [desc(sql`created_at`)] },
+      comments: { where: isNull(ticketComments.deletedAt), with: { user: true }, orderBy: [desc(sql`created_at`)] },
       attachments: { with: { uploader: true } },
       labels: { with: { label: true } },
     },
@@ -149,7 +151,7 @@ export async function getSprints(orgId: string, projectId?: number) {
   return db.query.sprints.findMany({
     where: and(...conditions),
     with: {
-      tickets: { with: { assignee: true } },
+      tickets: { where: isNull(tickets.deletedAt), with: { assignee: true } },
     },
     orderBy: [desc(sprints.startDate)],
   });
@@ -159,7 +161,7 @@ export async function getSprint(orgId: string, id: number) {
   return db.query.sprints.findFirst({
     where: and(eq(sprints.id, id), eq(sprints.orgId, orgId)),
     with: {
-      tickets: { with: { assignee: true } },
+      tickets: { where: isNull(tickets.deletedAt), with: { assignee: true } },
     },
   });
 }
@@ -167,7 +169,7 @@ export async function getSprint(orgId: string, id: number) {
 export async function getSprintBurndown(sprintId: number, orgId: string) {
   const sprint = await db.query.sprints.findFirst({
     where: and(eq(sprints.id, sprintId), eq(sprints.orgId, orgId)),
-    with: { tickets: true },
+    with: { tickets: { where: isNull(tickets.deletedAt) } },
   });
 
   if (!sprint) return null;
@@ -180,7 +182,7 @@ export async function getSprintBurndown(sprintId: number, orgId: string) {
   const allTimeEntries = await db.query.timesheets.findMany({
     where: and(
       eq(timesheets.orgId, orgId),
-      sql`${timesheets.ticketId} IN (SELECT id FROM tickets WHERE sprint_id = ${sprintId})`
+      sql`${timesheets.ticketId} IN (SELECT id FROM tickets WHERE sprint_id = ${sprintId} AND deleted_at IS NULL)`
     ),
     with: { ticket: true },
   });
@@ -209,7 +211,7 @@ export async function getTimeEntries(orgId: string, filters?: TimeEntryFilters) 
   if (filters?.projectId) {
     conditions.push(
       sql`${timesheets.ticketId} IN (
-        SELECT id FROM tickets WHERE project_id = ${filters.projectId} AND org_id = ${orgId}
+        SELECT id FROM tickets WHERE project_id = ${filters.projectId} AND org_id = ${orgId} AND deleted_at IS NULL
       )`
     );
   }
@@ -285,7 +287,8 @@ export async function getProjectLabels(orgId: string) {
 export async function getProjectAnalytics(orgId: string, projectId: number) {
   const orgFilter = and(
     eq(tickets.projectId, projectId),
-    eq(tickets.orgId, orgId)
+    eq(tickets.orgId, orgId),
+    isNull(tickets.deletedAt)
   );
 
   const [stateDistribution, priorityBreakdown, assigneeCompletion] = await Promise.all([
@@ -330,7 +333,7 @@ export async function getProjectAnalytics(orgId: string, projectId: number) {
         completedPoints: sql<number>`COALESCE(SUM(CASE WHEN ${tickets.status} = 'DONE' THEN COALESCE(${tickets.storyPoints}, ${tickets.estimate}, 0) ELSE 0 END), 0)`,
       })
       .from(cycles)
-      .leftJoin(tickets, eq(tickets.cycleId, cycles.id))
+      .leftJoin(tickets, and(eq(tickets.cycleId, cycles.id), isNull(tickets.deletedAt)))
       .where(and(eq(cycles.projectId, projectId), eq(cycles.orgId, orgId)))
       .groupBy(cycles.id, cycles.name)
       .orderBy(cycles.startDate),
@@ -412,7 +415,8 @@ export async function getEpics(orgId: string, projectId: number) {
     where: and(
       eq(tickets.orgId, orgId),
       eq(tickets.projectId, projectId),
-      eq(tickets.type, "EPIC")
+      eq(tickets.type, "EPIC"),
+      isNull(tickets.deletedAt)
     ),
     with: { assignee: true },
     orderBy: [desc(tickets.createdAt)],

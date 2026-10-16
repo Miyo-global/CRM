@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { timesheets, tickets } from "@/lib/db/schema";
-import { eq, and, gte, lte, inArray, desc } from "drizzle-orm";
+import { eq, and, gte, lte, inArray, desc, isNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
 export async function GET(req: NextRequest) {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
           db
             .select({ id: tickets.id })
             .from(tickets)
-            .where(and(eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId!)))
+            .where(and(eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId!), isNull(tickets.deletedAt)))
         )
       );
     }

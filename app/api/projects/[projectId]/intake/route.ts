@@ -1,14 +1,17 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody, toNumber } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { intakeItems, projects } from "@/lib/db/schema";
+import { intakeItems } from "@/lib/db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
+
+const INTAKE_STATUSES = new Set(["pending", "accepted", "declined", "duplicate"]);
 
 const createIntakeSchema = z.object({
-  title: z.string().min(1).max(200),
+  title: z.string().trim().min(1).max(200),
   description: z.unknown().optional(),
   source: z.enum(["manual", "web_form", "email"]).default("manual"),
   submitterEmail: z.string().email().optional(),
@@ -18,18 +21,20 @@ type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const { projectId: rawProjectId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const { searchParams } = req.nextUrl;
-    const status = searchParams.get("status") ?? undefined;
-    const limit = toNumber(searchParams.get("limit")) ?? 50;
-    const offset = toNumber(searchParams.get("offset")) ?? 0;
+    const rawStatus = searchParams.get("status");
+    const status = rawStatus && INTAKE_STATUSES.has(rawStatus) ? rawStatus : undefined;
+    const limit = Math.min(100, Math.max(1, Math.floor(toNumber(searchParams.get("limit")) ?? 50)));
+    const offset = Math.max(0, Math.floor(toNumber(searchParams.get("offset")) ?? 0));
 
     const conditions = [
       eq(intakeItems.projectId, projectId),
-      eq(intakeItems.orgId, session.orgId!),
+      eq(intakeItems.orgId, session.orgId),
     ];
 
     if (status) {
@@ -60,15 +65,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
-
-    const project = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
-      columns: { id: true },
-    });
-    if (!project) return err("Project not found", 404);
+    const { projectId: rawProjectId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createIntakeSchema);
 
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .insert(intakeItems)
       .values({
         projectId,
-        orgId: session.orgId!,
+        orgId: session.orgId,
         title: body.title,
         description: body.description ?? null,
         source: body.source,

@@ -12,6 +12,7 @@ interface TicketTimeTrackerProps {
   ticketId: number;
   projectId: number;
   timeSpent: string | null;
+  readOnly?: boolean;
 }
 
 function formatElapsed(seconds: number): string {
@@ -22,7 +23,7 @@ function formatElapsed(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTimeTrackerProps) {
+export function TicketTimeTracker({ ticketId, projectId, timeSpent, readOnly = false }: TicketTimeTrackerProps) {
   const logTime = useLogTime();
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -117,6 +118,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
             <span className="normal-case tracking-normal text-foreground font-semibold tabular-nums">{totalSpent}h logged</span>
           )}
         </h4>
+        {!readOnly && (
         <Button
           variant="ghost"
           size="sm"
@@ -125,8 +127,10 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
         >
           <Plus className="h-3 w-3 mr-1" />Log
         </Button>
+        )}
       </div>
 
+      {!readOnly && (
       <div className="flex items-center gap-2 mb-2">
         <div className={cn(
           "flex flex-1 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 font-mono text-sm tabular-nums",
@@ -155,6 +159,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent }: TicketTime
           </>
         )}
       </div>
+      )}
 
       {(running || elapsed > 0) && (
         <Input

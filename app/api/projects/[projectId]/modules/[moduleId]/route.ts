@@ -4,9 +4,9 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { modules, tickets } from "@/lib/db/schema";
-import { eq, and, count, notInArray } from "drizzle-orm";
+import { eq, and, count, notInArray, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { canUserManageProjectModules } from "@/lib/projects/module-access";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const updateModuleSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -17,26 +17,18 @@ const updateModuleSchema = z.object({
   leadId: z.string().nullable().optional(),
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string; moduleId: string }> };
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id, moduleId } = await params;
-    const projectId = Number(id);
-    const mId = Number(moduleId);
-    if (!projectId || !mId) return err("Invalid id", 400);
-
-    const allowed = await canUserManageProjectModules({
-      orgId: session.orgId!,
-      projectId,
-      userId: session.user.id,
-      orgRole: session.user.role,
-    });
-    if (!allowed) {
-      return err("You do not have permission to update modules for this project.", 403);
-    }
+    const guard = await requireProjectAccess(session, id, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const mId = parseIdParam(moduleId);
+    if (mId === null) return err("Not found", 404);
 
     const body = await parseBody(req, updateModuleSchema);
 
@@ -65,19 +57,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id, moduleId } = await params;
-    const projectId = Number(id);
-    const mId = Number(moduleId);
-    if (!projectId || !mId) return err("Invalid id", 400);
-
-    const allowed = await canUserManageProjectModules({
-      orgId: session.orgId!,
-      projectId,
-      userId: session.user.id,
-      orgRole: session.user.role,
-    });
-    if (!allowed) {
-      return err("You do not have permission to delete modules for this project.", 403);
-    }
+    const guard = await requireProjectAccess(session, id, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const mId = parseIdParam(moduleId);
+    if (mId === null) return err("Not found", 404);
 
     const mod = await db.query.modules.findFirst({
       where: and(
@@ -100,6 +84,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
         and(
           eq(tickets.moduleId, mId),
           eq(tickets.projectId, projectId),
+          isNull(tickets.deletedAt),
           notInArray(tickets.status, [...terminalStatuses]),
         ),
       );
@@ -115,7 +100,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     await db
       .update(tickets)
       .set({ moduleId: null })
-      .where(eq(tickets.moduleId, mId));
+      .where(and(eq(tickets.moduleId, mId), eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId!)));
 
     await db
       .delete(modules)

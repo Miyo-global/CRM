@@ -262,6 +262,7 @@ export interface OrgFeatureFlags {
   aiEmailDraft: boolean;
   aiSmartNotifications: boolean;
   aiWeeklyRecap: boolean;
+  clientPortal: boolean;
 }
 
 export function useOrgFeatureFlags() {

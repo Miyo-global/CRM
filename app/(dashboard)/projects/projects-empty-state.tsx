@@ -10,9 +10,13 @@ interface ProjectsEmptyStateProps {
 export function ProjectsEmptyState({ onCreate }: ProjectsEmptyStateProps = {}) {
   return (
     <EmptyState
-      title="No projects found"
-      description="Create your first project to start organizing work."
-      action={onCreate ? { label: "New Project", onClick: onCreate } : undefined}
+      title={onCreate ? "No projects yet" : "You're not on any projects yet"}
+      description={
+        onCreate
+          ? "Create your first project to start organizing work."
+          : "When a project manager adds you to a project, it shows up here."
+      }
+      action={onCreate ? { label: "New project", onClick: onCreate } : undefined}
     />
   );
 }

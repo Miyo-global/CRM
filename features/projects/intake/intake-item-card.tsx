@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, Copy, X } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { intakeDescriptionText } from "@/lib/projects/intake-text";
 import type { Tone } from "@/lib/design/tones";
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -59,7 +60,7 @@ export function IntakeItemCard({ item, onAccept, onDecline, onDuplicate }: Intak
             </div>
             {item.description != null && (
               <p className="text-sm text-muted-foreground line-clamp-2">
-                {typeof item.description === "string" ? item.description : "No description available"}
+                {intakeDescriptionText(item.description) ?? "No details given"}
               </p>
             )}
             <p className="mt-1 truncate text-xs tabular-nums text-muted-foreground">

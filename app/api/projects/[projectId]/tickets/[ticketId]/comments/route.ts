@@ -1,119 +1,114 @@
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { ticketComments, tickets, projects, projectMembers, users } from "@/lib/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/role-guards";
+import { ticketComments, projects, users } from "@/lib/db/schema";
+import { eq, and, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { sendTicketCommentEmail } from "@/lib/email";
+import { requireTicket } from "@/lib/projects/require-ticket";
+import { recordTicketActivity } from "@/lib/projects/record-ticket-activity";
+import { syncCommentMentions } from "@/lib/projects/comment-effects";
+import { mentionsToPlainText } from "@/lib/projects/comment-mentions";
 
 type RouteParams = { params: Promise<{ projectId: string; ticketId: string }> };
 
 const commentImageSchema = z.object({
   url: z.string().url(),
-  key: z.string(),
-  fileName: z.string(),
-  mimeType: z.string().optional(),
-});
+  key: z.string().max(500),
+  fileName: z.string().max(300),
+  mimeType: z.string().max(100).optional(),
+}).strict();
 
 const commentSchema = z.object({
-  content: z.string().min(1),
+  content: z.string().trim().max(20000),
   images: z.array(commentImageSchema).max(10).optional(),
+  parentCommentId: z.number().int().positive().optional(),
+}).strict().refine((v) => v.content.length > 0 || (v.images?.length ?? 0) > 0, {
+  message: "Write a comment or attach a file",
+  path: ["content"],
 });
-
-async function checkProjectAccess(
-  session: { user: { id: string; role?: string | null }; orgId: string },
-  projectId: number
-) {
-  if (isAdminOrOwner(session.user.role)) return true;
-  const project = await db.query.projects.findFirst({
-    where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId)),
-    columns: { managerId: true },
-  });
-  if (!project) return false;
-  if (project.managerId === session.user.id) return true;
-  const membership = await db
-    .select({ id: projectMembers.id })
-    .from(projectMembers)
-    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, session.user.id)))
-    .limit(1);
-  return membership.length > 0;
-}
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: pid, ticketId: tid } = await params;
-    const projectId = Number(pid);
-    const ticketId = Number(tid);
-    if (!projectId || !ticketId) return err("Invalid project or ticket id", 400);
-
-    const hasAccess = await checkProjectAccess(
-      { user: session.user, orgId: session.orgId! },
-      projectId
-    );
-    if (!hasAccess) return err("You do not have access to this project", 403);
-
-    const ticket = await db.query.tickets.findFirst({
-      where: and(
-        eq(tickets.id, ticketId),
-        eq(tickets.orgId, session.orgId!),
-        eq(tickets.projectId, projectId)
-      ),
-      columns: { id: true, title: true, assigneeId: true, reporterId: true, sequenceId: true },
-    });
-    if (!ticket) return err("Ticket not found", 404);
-
-    const project = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
-      columns: { name: true, managerId: true },
-    });
+    const { projectId: rawProjectId, ticketId: rawTicketId } = await params;
+    const guard = await requireTicket(session, rawProjectId, rawTicketId, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId, ticket } = guard;
 
     const body = await parseBody(req, commentSchema);
+
+    if (body.parentCommentId) {
+      const parent = await db.query.ticketComments.findFirst({
+        where: and(
+          eq(ticketComments.id, body.parentCommentId),
+          eq(ticketComments.ticketId, ticket.id),
+          eq(ticketComments.orgId, session.orgId),
+          isNull(ticketComments.deletedAt),
+        ),
+        columns: { parentCommentId: true },
+      });
+      if (!parent) return err("The comment you replied to no longer exists", 400);
+      if (parent.parentCommentId) return err("Replies can only be one level deep", 400);
+    }
 
     const [comment] = await db
       .insert(ticketComments)
       .values({
-        orgId: session.orgId!,
-        ticketId,
+        orgId: session.orgId,
+        ticketId: ticket.id,
         userId: session.user.id,
         content: body.content,
         images: body.images ?? null,
+        parentCommentId: body.parentCommentId ?? null,
       })
       .returning();
 
-    const notifyUserIds = new Set<string>();
-    if (ticket.assigneeId && ticket.assigneeId !== session.user.id)
-      notifyUserIds.add(ticket.assigneeId);
-    if (ticket.reporterId && ticket.reporterId !== session.user.id)
-      notifyUserIds.add(ticket.reporterId);
-    if (project?.managerId && project.managerId !== session.user.id)
-      notifyUserIds.add(project.managerId);
+    const actorName = session.user.name ?? session.user.email ?? "A team member";
+    await recordTicketActivity(
+      { orgId: session.orgId, projectId, ticketId: ticket.id, actorId: session.user.id },
+      [{ action: "comment_added", field: null, fromValue: null, toValue: null }],
+    );
+    await syncCommentMentions(
+      { orgId: session.orgId, projectId, ticketId: ticket.id, ticketTitle: ticket.title, commentId: comment.id, actorId: session.user.id, actorName },
+      body.content,
+    );
 
-    if (notifyUserIds.size > 0) {
-      const notifyUsers = await db
-        .select({ id: users.id, name: users.name, email: users.email })
-        .from(users)
-        .where(inArray(users.id, Array.from(notifyUserIds)));
-
-      const commenter = session.user.name ?? session.user.email ?? "A team member";
-      const recipients = notifyUsers
-        .filter((u) => u.email)
-        .map((u) => ({ email: u.email!, name: u.name ?? u.email! }));
-
-      if (recipients.length > 0) {
-        sendTicketCommentEmail(
-          recipients,
-          commenter,
-          ticket.title,
-          project?.name ?? "Project",
-          projectId,
-          ticketId,
-          body.content,
-          ticket.sequenceId ?? undefined,
-        ).catch(() => {});
-      }
-    }
+    void emailWatchers(session.user.id, actorName, projectId, ticket, body.content).catch(() => {});
 
     return ok(comment, 201);
   });
+}
+
+async function emailWatchers(
+  actorId: string,
+  actorName: string,
+  projectId: number,
+  ticket: { id: number; title: string; assigneeId: string | null; reporterId: string | null },
+  content: string,
+) {
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.id, projectId),
+    columns: { name: true, managerId: true, key: true },
+  });
+  const notifyUserIds = new Set<string>();
+  for (const id of [ticket.assigneeId, ticket.reporterId, project?.managerId]) {
+    if (id && id !== actorId) notifyUserIds.add(id);
+  }
+  if (notifyUserIds.size === 0) return;
+
+  const recipients = (
+    await db.select({ name: users.name, email: users.email }).from(users).where(inArray(users.id, [...notifyUserIds]))
+  ).map((u) => ({ email: u.email, name: u.name ?? u.email }));
+  if (recipients.length === 0) return;
+
+  await sendTicketCommentEmail(
+    recipients,
+    actorName,
+    ticket.title,
+    project?.name ?? "Project",
+    projectId,
+    ticket.id,
+    mentionsToPlainText(content),
+    undefined,
+  );
 }

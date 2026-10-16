@@ -3,12 +3,12 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projects, projectMembers, timesheets, tickets } from "@/lib/db/schema";
 import { eq, and, sum } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const updateSchema = z.object({
   budget: z.number().min(0),
-});
+}).strict();
 
 type RouteContext = { params: Promise<{ projectId: string }> };
 
@@ -16,8 +16,9 @@ type RouteContext = { params: Promise<{ projectId: string }> };
 export async function GET(_req: NextRequest, ctx: RouteContext) {
   return withAuth(async (session) => {
     const { projectId: idStr } = await ctx.params;
-    const projectId = Number(idStr);
-    if (!Number.isFinite(projectId)) return err("Invalid project ID", 400);
+    const guard = await requireProjectAccess(session, idStr, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId)),
@@ -83,18 +84,9 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
   return withAuth(async (session) => {
     const { projectId: idStr } = await ctx.params;
-    const projectId = Number(idStr);
-    if (!Number.isFinite(projectId)) return err("Invalid project ID", 400);
-
-    const existing = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId)),
-      columns: { id: true, managerId: true },
-    });
-    if (!existing) return err("Project not found", 404);
-
-    if (!isAdminOrOwner(session.user.role) && existing.managerId !== session.user.id) {
-      return err("Only project managers or admins can update the budget.", 403);
-    }
+    const guard = await requireProjectAccess(session, idStr, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const input = await parseBody(req, updateSchema);
 

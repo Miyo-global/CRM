@@ -1,12 +1,12 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { modules, tickets } from "@/lib/db/schema";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { canUserManageProjectModules } from "@/lib/projects/module-access";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createModuleSchema = z.object({
   name: z.string().min(1).max(100),
@@ -17,21 +17,23 @@ const createModuleSchema = z.object({
   leadId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const moduleList = await db
       .select()
       .from(modules)
       .where(and(eq(modules.projectId, projectId), eq(modules.orgId, session.orgId!)))
-      .orderBy(modules.name);
+      .orderBy(modules.name)
+      .limit(100);
 
     if (moduleList.length === 0) return ok([]);
 
@@ -47,7 +49,11 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       })
       .from(tickets)
       .where(
-        sql`${tickets.moduleId} IN (${sql.join(moduleIds.map((mid) => sql`${mid}`), sql`, `)})`
+        and(
+          eq(tickets.projectId, projectId),
+          isNull(tickets.deletedAt),
+          sql`${tickets.moduleId} IN (${sql.join(moduleIds.map((mid) => sql`${mid}`), sql`, `)})`
+        )
       )
       .groupBy(tickets.moduleId);
 
@@ -74,18 +80,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
-
-    const allowed = await canUserManageProjectModules({
-      orgId: session.orgId!,
-      projectId,
-      userId: session.user.id,
-      orgRole: session.user.role,
-    });
-    if (!allowed) {
-      return err("You do not have permission to create modules for this project.", 403);
-    }
+    const guard = await requireProjectAccess(session, id, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createModuleSchema);
 

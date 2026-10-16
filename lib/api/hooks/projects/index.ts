@@ -6,3 +6,6 @@ export * from "./advanced";
 export * from "./watchers";
 export * from "./templates";
 export * from "./milestones";
+export * from "./activity";
+export * from "./cycle-detail";
+export * from "./portal";

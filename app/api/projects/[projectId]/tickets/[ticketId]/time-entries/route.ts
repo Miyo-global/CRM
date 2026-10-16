@@ -3,11 +3,11 @@
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { tickets, timesheets, projectMembers } from "@/lib/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { tickets, timesheets } from "@/lib/db/schema";
+import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 import { z } from "zod";
+import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const logTimeSchema = z.object({
   date: z
@@ -20,26 +20,31 @@ const logTimeSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().optional(),
   workLink: z.string().optional(),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string; ticketId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { ticketId } = await params;
-    const id = Number(ticketId);
-    if (!id) return err("Invalid ticket id", 400);
+    const { projectId: rawProjectId, ticketId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const id = parseIdParam(ticketId);
+    if (id === null) return err("Not found", 404);
 
     const ticket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, id), eq(tickets.orgId, session.orgId!)),
+      where: and(
+        eq(tickets.id, id),
+        eq(tickets.projectId, projectId),
+        eq(tickets.orgId, session.orgId!),
+        isNull(tickets.deletedAt)
+      ),
       columns: { id: true },
-      with: { project: { columns: { managerId: true } } },
     });
-    if (!ticket?.project) return err("Ticket not found", 404);
+    if (!ticket) return err("Ticket not found", 404);
 
-    const canSeeAll =
-      isAdminOrOwner(session.user.role) ||
-      ticket.project.managerId === session.user.id;
+    const canSeeAll = guard.role === "OWNER" || guard.role === "MANAGER";
 
     const entries = await db.query.timesheets.findMany({
       where: and(
@@ -49,6 +54,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       ),
       orderBy: [desc(timesheets.date)],
       with: { ticket: { with: { project: true } } },
+      limit: 100,
     });
 
     return ok(entries);
@@ -57,32 +63,24 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { ticketId } = await params;
-    const id = Number(ticketId);
-    if (!id) return err("Invalid ticket id", 400);
+    const { projectId: rawProjectId, ticketId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "contribute");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
+    const id = parseIdParam(ticketId);
+    if (id === null) return err("Not found", 404);
 
     const ticket = await db.query.tickets.findFirst({
-      where: and(eq(tickets.id, id), eq(tickets.orgId, session.orgId!)),
-      columns: { projectId: true },
-      with: { project: { columns: { managerId: true, id: true } } },
+      where: and(
+        eq(tickets.id, id),
+        eq(tickets.projectId, projectId),
+        eq(tickets.orgId, session.orgId!),
+        isNull(tickets.deletedAt)
+      ),
+      columns: { id: true },
     });
 
-    if (!ticket?.project) return err("Ticket not found", 404);
-
-    const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-    const isManager = ticket.project.managerId === session.user.id;
-
-    if (!isOwnerOrAdmin && !isManager) {
-      const membership = await db.query.projectMembers.findFirst({
-        where: and(
-          eq(projectMembers.projectId, ticket.project.id),
-          eq(projectMembers.userId, session.user.id)
-        ),
-      });
-      if (!membership) {
-        return err("You must be a project member to log time.", 403);
-      }
-    }
+    if (!ticket) return err("Ticket not found", 404);
 
     const body = await parseBody(req, logTimeSchema);
 

@@ -2,13 +2,20 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { isAdminOrOwner } from "@/lib/auth/role-guards";
 import { motion } from "framer-motion";
 import { useProjects } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { NewProjectDialog } from "./new-project-dialog";
+import { ProjectCreateWizard } from "@/features/projects/project-create/project-create-wizard";
 import { ProjectCard } from "./project-card";
 import { ProjectListRow } from "./project-list-row";
-import { ProjectFilterBar } from "./project-filter-bar";
+import { ProjectFilterBar, type ViewMode } from "./project-filter-bar";
+import { ProjectTable } from "@/features/projects/project-list/project-table";
+import { DeletedProjects } from "@/features/projects/project-list/deleted-projects";
+import { FilterChip } from "@/components/ui/filter-chip";
+import type { ProjectGroupBy } from "@/features/projects/project-list/project-options";
+import type { ProjectFilters } from "@/types/projects";
 import { ProjectPagination } from "./project-pagination";
 import { ProjectsEmptyState } from "./projects-empty-state";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
@@ -18,7 +25,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
-type ViewMode = "grid" | "list";
 
 export default function ProjectsPage() {
   const searchParams = useSearchParams();
@@ -26,11 +32,18 @@ export default function ProjectsPage() {
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
+  const { data: session } = useSession();
+  const canCreate = isAdminOrOwner(session?.user?.role);
+  const canRestore = session?.user?.role === "CEO";
+  const showDeleted = canRestore && searchParams.get("deleted") === "1";
 
   const search = searchParams.get("q") || "";
   const status = (searchParams.get("status") as StatusFilter) || "ALL";
   const page = Number(searchParams.get("page")) || 1;
   const viewMode = (searchParams.get("view") as ViewMode) || "grid";
+  const priority = searchParams.get("priority");
+  const sort = searchParams.get("sort") || "newest";
+  const groupBy = (searchParams.get("group") as ProjectGroupBy) || "none";
 
   const debouncedSearch = useDebouncedValue(search, 300);
   const apiSearch = debouncedSearch.length >= 3 || debouncedSearch.length === 0 ? debouncedSearch : "";
@@ -62,6 +75,18 @@ export default function ProjectsPage() {
     (value: ViewMode) => updateParams({ view: value === "grid" ? null : value }),
     [updateParams],
   );
+  const handlePriorityChange = useCallback(
+    (value: string | null) => updateParams({ priority: value, page: null }),
+    [updateParams],
+  );
+  const handleSortChange = useCallback(
+    (value: string) => updateParams({ sort: value === "newest" ? null : value, page: null }),
+    [updateParams],
+  );
+  const handleGroupByChange = useCallback(
+    (value: ProjectGroupBy) => updateParams({ group: value === "none" ? null : value }),
+    [updateParams],
+  );
   const setPage = useCallback(
     (p: number) => updateParams({ page: p === 1 ? null : String(p) }),
     [updateParams],
@@ -72,6 +97,9 @@ export default function ProjectsPage() {
     limit: 12,
     search: apiSearch || undefined,
     status,
+    priority: (priority as ProjectFilters["priority"]) || undefined,
+    sort: sort as ProjectFilters["sort"],
+    dir: sort === "newest" ? "desc" : "asc",
   });
 
   const projects = data?.data ?? [];
@@ -83,7 +111,7 @@ export default function ProjectsPage() {
     <PageWrapper
       title="Projects"
       badge={pagination?.total ? String(pagination.total) : undefined}
-      actions={<NewProjectDialog open={createOpen} onOpenChange={setCreateOpen} />}
+      actions={canCreate ? <ProjectCreateWizard open={createOpen} onOpenChange={setCreateOpen} /> : undefined}
       filters={
         <ProjectFilterBar
           search={search}
@@ -92,10 +120,25 @@ export default function ProjectsPage() {
           onStatusChange={handleStatusChange}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
+          priority={priority}
+          onPriorityChange={handlePriorityChange}
+          sort={sort}
+          onSortChange={handleSortChange}
+          groupBy={groupBy}
+          onGroupByChange={handleGroupByChange}
         />
       }
     >
-      {isLoading ? (
+      {canRestore && (
+        <div className="mb-4 flex justify-end">
+          <FilterChip active={showDeleted} onClick={() => updateParams({ deleted: showDeleted ? null : "1", page: null })}>
+            Deleted projects
+          </FilterChip>
+        </div>
+      )}
+      {showDeleted ? (
+        <DeletedProjects />
+      ) : isLoading ? (
         viewMode === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -147,17 +190,28 @@ export default function ProjectsPage() {
         )
       ) : isError ? (
         <QueryErrorState error={error} onRetry={() => refetch()} />
-      ) : projects.length === 0 && !debouncedSearch && status === "ALL" ? (
-        <ProjectsEmptyState onCreate={() => setCreateOpen(true)} />
+      ) : projects.length === 0 && !debouncedSearch && status === "ALL" && !priority ? (
+        <ProjectsEmptyState onCreate={canCreate ? () => setCreateOpen(true) : undefined} />
       ) : projects.length === 0 ? (
         <EmptyState
           title="No results for these filters"
           description="No projects match your filters."
           action={{
             label: "Clear filters",
-            onClick: () => updateParams({ q: null, status: null, page: null }),
+            onClick: () => updateParams({ q: null, status: null, priority: null, page: null }),
           }}
         />
+      ) : viewMode === "table" ? (
+        <>
+          <div className="hidden md:block">
+            <ProjectTable projects={projects} groupBy={groupBy} />
+          </div>
+          <div className="space-y-2 md:hidden" role="list" aria-label="Projects list">
+            {projects.map((project) => (
+              <ProjectListRow key={project.id} project={project} />
+            ))}
+          </div>
+        </>
       ) : viewMode === "grid" ? (
         <motion.div
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
@@ -190,7 +244,7 @@ export default function ProjectsPage() {
         </motion.div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
+      {!showDeleted && pagination && pagination.totalPages > 1 && (
         <ProjectPagination
           page={pagination.page}
           totalPages={pagination.totalPages}

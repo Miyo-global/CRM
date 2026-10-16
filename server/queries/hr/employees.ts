@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { departments, organizationMembers, users, leaveRequests, attendance } from "@/lib/db/schema";
 import { timesheets, projectMembers, projects, tickets, sprints } from "@/lib/db/schema/projects";
-import { eq, and, desc, gte, lte, ilike, or, count } from "drizzle-orm";
+import { eq, and, desc, gte, lte, ilike, or, count, isNull } from "drizzle-orm";
 
 function departmentFromId(
   departmentId: number | null | undefined,
@@ -357,7 +357,7 @@ export async function getEmployeeProjects(orgId: string, userId: string) {
     })
     .from(projectMembers)
     .innerJoin(projects, eq(projectMembers.projectId, projects.id))
-    .where(and(eq(projectMembers.userId, userId), eq(projects.orgId, orgId)));
+    .where(and(eq(projectMembers.userId, userId), eq(projects.orgId, orgId), isNull(projects.deletedAt)));
 
   return memberships;
 }
@@ -380,7 +380,7 @@ export async function getEmployeeTickets(orgId: string, userId: string) {
     .from(tickets)
     .leftJoin(projects, eq(tickets.projectId, projects.id))
     .leftJoin(sprints, eq(tickets.sprintId, sprints.id))
-    .where(and(eq(tickets.assigneeId, userId), eq(tickets.orgId, orgId)))
+    .where(and(eq(tickets.assigneeId, userId), eq(tickets.orgId, orgId), isNull(tickets.deletedAt)))
     .orderBy(desc(tickets.updatedAt))
     .limit(50);
 

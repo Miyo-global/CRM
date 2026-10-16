@@ -1,12 +1,12 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projects, tickets, ticketAssignees, users } from "@/lib/db/schema";
-import { eq, and, inArray, count, sql } from "drizzle-orm";
+import { eq, and, inArray, isNull, sql } from "drizzle-orm";
 
 export async function GET() {
   return withAuth(async (session) => {
     const activeProjects = await db.query.projects.findMany({
-      where: and(eq(projects.orgId, session.orgId), eq(projects.status, "ACTIVE")),
+      where: and(eq(projects.orgId, session.orgId), eq(projects.status, "ACTIVE"), isNull(projects.deletedAt)),
       columns: { id: true, name: true, key: true },
     });
 
@@ -26,6 +26,7 @@ export async function GET() {
           and(
             eq(tickets.orgId, session.orgId),
             inArray(tickets.projectId, projectIds),
+            isNull(tickets.deletedAt),
             sql`${tickets.status} NOT IN ('DONE', 'CANCELLED', 'CLOSED')`,
           ),
         ),
@@ -41,6 +42,7 @@ export async function GET() {
           and(
             eq(tickets.orgId, session.orgId),
             inArray(tickets.projectId, projectIds),
+            isNull(tickets.deletedAt),
             sql`${tickets.status} NOT IN ('DONE', 'CANCELLED', 'CLOSED')`,
           ),
         ),

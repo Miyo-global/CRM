@@ -41,9 +41,9 @@ async function coassignedTicketIdsForUser(userId: string): Promise<number[]> {
 function ticketsVisibleToAssignee(orgId: string, userId: string, coassignedIds: number[]) {
   const byPrimary = eq(tickets.assigneeId, userId);
   if (coassignedIds.length === 0) {
-    return and(eq(tickets.orgId, orgId), byPrimary);
+    return and(eq(tickets.orgId, orgId), isNull(tickets.deletedAt), byPrimary);
   }
-  return and(eq(tickets.orgId, orgId), or(byPrimary, inArray(tickets.id, coassignedIds)));
+  return and(eq(tickets.orgId, orgId), isNull(tickets.deletedAt), or(byPrimary, inArray(tickets.id, coassignedIds)));
 }
 
 export async function getDashboardStats(orgId: string, _userId: string) {
@@ -64,7 +64,7 @@ export async function getDashboardStats(orgId: string, _userId: string) {
       db
         .select({ count: count() })
         .from(projects)
-        .where(eq(projects.orgId, orgId)),
+        .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt))),
       db
         .select({ count: count() })
         .from(attendance)
@@ -87,7 +87,7 @@ export async function getRecentProjects(orgId: string, userId: string, role?: st
 
   if (isOwnerOrAdmin) {
     return db.query.projects.findMany({
-      where: eq(projects.orgId, orgId),
+      where: and(eq(projects.orgId, orgId), isNull(projects.deletedAt)),
       orderBy: [desc(projects.id)],
       limit: 5,
       with: {
@@ -114,6 +114,7 @@ export async function getRecentProjects(orgId: string, userId: string, role?: st
   return db.query.projects.findMany({
     where: and(
       eq(projects.orgId, orgId),
+      isNull(projects.deletedAt),
       or(
         eq(projects.managerId, userId),
         projectIds.length > 0 ? inArray(projects.id, projectIds) : undefined
@@ -188,7 +189,7 @@ export async function getActiveSprintSummary(orgId: string, userId: string, role
   let projectIds: number[];
   if (isOwnerOrAdmin) {
     const allProjects = await db.query.projects.findMany({
-      where: eq(projects.orgId, orgId),
+      where: and(eq(projects.orgId, orgId), isNull(projects.deletedAt)),
       columns: { id: true },
     });
     projectIds = allProjects.map((p) => p.id);
@@ -196,7 +197,8 @@ export async function getActiveSprintSummary(orgId: string, userId: string, role
     const memberOf = await db
       .select({ projectId: projectMembers.projectId })
       .from(projectMembers)
-      .where(eq(projectMembers.userId, userId));
+      .innerJoin(projects, eq(projects.id, projectMembers.projectId))
+      .where(and(eq(projectMembers.userId, userId), isNull(projects.deletedAt)));
     projectIds = memberOf.map((m) => m.projectId);
   }
 
@@ -213,6 +215,7 @@ export async function getActiveSprintSummary(orgId: string, userId: string, role
         columns: { id: true, name: true },
       },
       tickets: {
+        where: isNull(tickets.deletedAt),
         columns: { id: true, status: true, points: true },
       },
     },
@@ -284,6 +287,7 @@ export async function getRoleStats(orgId: string, userId: string): Promise<Recor
       .where(
         and(
           eq(projects.orgId, orgId),
+          isNull(projects.deletedAt),
           or(eq(projects.managerId, userId), eq(projectMembers.userId, userId)),
         ),
       ),
@@ -562,7 +566,7 @@ export async function getExecutiveDashboard(orgId: string) {
     db
       .select({ cnt: count() })
       .from(projects)
-      .where(and(eq(projects.orgId, orgId), eq(projects.status, "ACTIVE"))),
+      .where(and(eq(projects.orgId, orgId), eq(projects.status, "ACTIVE"), isNull(projects.deletedAt))),
     db.select({ cnt: count() }).from(leads).where(eq(leads.orgId, orgId)),
     db.select({ cnt: count() }).from(leads).where(and(eq(leads.orgId, orgId), eq(leads.status, "CONVERTED"))),
   ]);
@@ -616,7 +620,7 @@ export async function getManagerDashboard(orgId: string, userId: string) {
     db
       .select({ cnt: count() })
       .from(tickets)
-      .where(and(eq(tickets.orgId, orgId), or(eq(tickets.status, "TODO"), eq(tickets.status, "IN_PROGRESS")))),
+      .where(and(eq(tickets.orgId, orgId), isNull(tickets.deletedAt), or(eq(tickets.status, "TODO"), eq(tickets.status, "IN_PROGRESS")))),
   ]);
 
   const teamAttendanceToday = teamMembers.map((m) => {
@@ -644,7 +648,7 @@ export async function getRecentActivity(orgId: string, userId: string, role?: st
   let projectIds: number[];
   if (isOwnerOrAdmin) {
     const allProjects = await db.query.projects.findMany({
-      where: eq(projects.orgId, orgId),
+      where: and(eq(projects.orgId, orgId), isNull(projects.deletedAt)),
       columns: { id: true },
     });
     projectIds = allProjects.map((p) => p.id);
@@ -675,6 +679,7 @@ export async function getRecentActivity(orgId: string, userId: string, role?: st
     const ticketFilters = [
       eq(tickets.orgId, orgId),
       inArray(tickets.projectId, projectIds),
+      isNull(tickets.deletedAt),
     ];
 
     if (!isOwnerOrAdmin) {

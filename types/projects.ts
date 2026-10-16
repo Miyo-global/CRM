@@ -71,6 +71,7 @@ export interface ProjectStatusRecord {
   name: string;
   order: number;
   color: string | null;
+  wipLimit: number | null;
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
 }
@@ -92,10 +93,15 @@ export interface ProjectMember {
 }
 
 export interface ProjectWithDetails extends Project {
+  viewerRole?: ProjectRoleValue;
+  intakeToken?: string | null;
   statuses?: ProjectStatusRecord[];
   members?: ProjectMember[];
   tickets?: Ticket[];
 }
+
+export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type ProjectRoleValue = "OWNER" | "MANAGER" | "CONTRIBUTOR" | "VIEWER";
 
 export interface ProjectListItem {
   id: number;
@@ -103,6 +109,8 @@ export interface ProjectListItem {
   description: string | null;
   key: string;
   status: ProjectStatusValue | null;
+  priority: ProjectPriority | null;
+  archivedAt: string | Date | null;
   startDate: string | Date | null;
   endDate: string | Date | null;
   manager: {
@@ -168,6 +176,7 @@ export interface TicketComment {
   content: string;
   parentCommentId: number | null;
   images?: CommentImage[] | null;
+  reactions?: { emoji: string; userId: string }[];
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   user?: TicketUser;
@@ -247,6 +256,9 @@ export interface Ticket {
   cycleId: number | null;
   sequenceId: string | null;
   estimate: number | null;
+  version: number;
+  rank: string | null;
+  clientVisible?: boolean;
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   assignee?: TicketUser | null;
@@ -443,6 +455,8 @@ export interface CreateProjectInput {
   startDate?: Date | string;
   endDate?: Date | string;
   memberIds?: string[];
+  priority?: ProjectPriority;
+  templateId?: number;
   modules?: {
     sprints: boolean;
     epics: boolean;
@@ -456,6 +470,7 @@ export interface UpdateProjectInput {
   name?: string;
   description?: string;
   status?: ProjectStatusValue;
+  priority?: ProjectPriority | null;
   managerId?: string;
   clientId?: string;
   startDate?: Date | string | null;
@@ -496,6 +511,9 @@ export interface UpdateTicketInput {
   epicId?: number | null;
   points?: number | null;
   originalEstimate?: number | null;
+  dueDate?: string | null;
+  clientVisible?: boolean;
+  version?: number;
 }
 
 export interface UpdateTicketStatusInput {
@@ -503,9 +521,11 @@ export interface UpdateTicketStatusInput {
   status: string;
 }
 
-export interface MoveTicketInput {
-  projectId: number;
-  items: { id: number; status: string; order: number }[];
+export interface RankTicketInput {
+  ticketId: number;
+  status: string;
+  beforeTicketId?: number;
+  afterTicketId?: number;
 }
 
 export interface CreateSprintInput {
@@ -544,12 +564,6 @@ export interface UpdateTimeEntryInput {
 export interface CreateLabelInput {
   name: string;
   color?: string;
-}
-
-export interface AddProjectMemberInput {
-  projectId: number;
-  userId: string;
-  role?: string;
 }
 
 export interface CreateCycleInput {
@@ -641,6 +655,9 @@ export interface UpdateIntakeRequestInput {
   status?: IntakeStatus;
   declineReason?: string;
   linkedWorkItemId?: number;
+  priority?: TicketPriority;
+  assigneeId?: string;
+  ticketStatus?: string;
 }
 
 export interface CreateCustomStateInput {
@@ -657,6 +674,9 @@ export interface ProjectFilters {
   limit?: number;
   search?: string;
   status?: "ALL" | ProjectStatusValue;
+  priority?: ProjectPriority;
+  sort?: "newest" | "name" | "key" | "startDate" | "endDate";
+  dir?: "asc" | "desc";
 }
 
 export interface TicketFilters {

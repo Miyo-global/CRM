@@ -171,7 +171,7 @@ export function parseQuery<T>(req: NextRequest, schema: ZodSchema<T>): T {
 }
 
 export async function parseBody<T>(req: NextRequest, schema: ZodSchema<T>): Promise<T> {
-  const body = await req.json();
+  const body = await req.json().catch(() => undefined);
   return schema.parse(body);
 }
 

@@ -1,37 +1,26 @@
-
-
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import {
-  projects,
-  projectMembers,
-  projectStatuses,
-  tickets,
-  ticketAssignees,
-  ticketComments,
-  ticketAttachments,
-  ticketLabelMappings,
-  timesheets,
-  sprints,
-  users,
-} from "@/lib/db/schema";
-import { eq, and, desc, asc, inArray, ne } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { projects, projectMembers, projectStatuses, tickets, ticketComments, users } from "@/lib/db/schema";
+import { eq, and, asc, inArray, ne, isNull, desc } from "drizzle-orm";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendProjectAssignmentEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
+import { allOrgMembers } from "@/lib/projects/assignable-users";
+import { userColumns } from "@/lib/projects/ticket-columns";
 
 const updateProjectSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
+  name: z.string().trim().min(1).max(200).optional(),
+  description: z.string().max(5000).optional(),
   status: z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]).optional(),
-  managerId: z.string().optional(),
-  clientId: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).nullable().optional(),
+  managerId: z.string().max(200).optional(),
+  clientId: z.string().max(200).optional(),
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
-  memberIds: z.array(z.string()).optional(),
+  memberIds: z.array(z.string().max(200)).max(200).optional(),
   reassignments: z.record(z.string(), z.string()).optional(),
 });
 
@@ -39,46 +28,23 @@ type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
-
-    const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-
-    const projectCheck = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
-    });
-
-    if (!projectCheck) return err("Project not found", 404);
-
-    if (!isOwnerOrAdmin) {
-      const isManager = projectCheck.managerId === session.user.id;
-      if (!isManager) {
-        const memberOf = await db
-          .select({ projectId: projectMembers.projectId })
-          .from(projectMembers)
-          .where(
-            and(
-              eq(projectMembers.userId, session.user.id),
-              eq(projectMembers.projectId, projectId)
-            )
-          );
-        if (memberOf.length === 0) return err("Not found", 404);
-      }
-    }
+    const { projectId: rawProjectId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "view");
+    if (!guard.ok) return guard.response;
 
     const project = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
+      where: and(eq(projects.id, guard.projectId), eq(projects.orgId, session.orgId)),
       with: {
         statuses: { orderBy: [asc(projectStatuses.order)] },
-        members: { with: { user: true } },
+        members: { with: { user: { columns: userColumns } } },
+        manager: { columns: userColumns },
         tickets: {
+          where: isNull(tickets.deletedAt),
+          orderBy: [asc(tickets.rank), asc(tickets.order), desc(tickets.id)],
           with: {
-            assignee: true,
-            reporter: true,
-            assignees: { with: { user: true } },
-            comments: { with: { user: true } },
-            attachments: true,
+            assignee: { columns: userColumns },
+            reporter: { columns: userColumns },
+            assignees: { with: { user: { columns: userColumns } } },
             labels: { with: { label: true } },
           },
         },
@@ -86,36 +52,37 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
 
     if (!project) return err("Project not found", 404);
-
-    return ok(project);
+    const canManage = guard.role === "OWNER" || guard.role === "MANAGER";
+    return ok({ ...project, intakeToken: canManage ? project.intakeToken : null, viewerRole: guard.role });
   });
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
-
-    const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-    if (!isOwnerOrAdmin) {
-      const project = await db.query.projects.findFirst({
-        where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
-        columns: { managerId: true },
-      });
-      if (!project || project.managerId !== session.user.id) {
-        return err("Only project managers or admins can update project settings.", 403);
-      }
-    }
+    const { projectId: rawProjectId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, updateProjectSchema);
+
+    const people = [...(body.memberIds ?? []), ...Object.values(body.reassignments ?? {})];
+    if (body.managerId) people.push(body.managerId);
+    if (body.clientId) people.push(body.clientId);
+    if (!(await allOrgMembers(session.orgId, people))) {
+      return err("Everyone on the project must be a member of this organization", 400);
+    }
 
     await db
       .update(projects)
       .set({
         ...(body.name !== undefined && { name: body.name }),
         ...(body.description !== undefined && { description: body.description }),
-        ...(body.status !== undefined && { status: body.status }),
+        ...(body.status !== undefined && {
+          status: body.status,
+          archivedAt: body.status === "ARCHIVED" ? new Date() : null,
+        }),
+        ...(body.priority !== undefined && { priority: body.priority }),
         ...(body.managerId !== undefined && { managerId: body.managerId }),
         ...(body.clientId !== undefined && { clientId: body.clientId }),
         ...(body.startDate !== undefined && {
@@ -126,7 +93,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         }),
       })
       .where(
-        and(eq(projects.orgId, session.orgId!), eq(projects.id, projectId))
+        and(eq(projects.orgId, session.orgId), eq(projects.id, projectId))
       );
 
     if (body.memberIds !== undefined) {
@@ -138,20 +105,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
         const existing = new Set(existingMembers.map((m) => m.userId));
 
-        await tx.delete(projectMembers).where(eq(projectMembers.projectId, projectId));
-
-        if (body.memberIds!.length > 0) {
-          await tx.insert(projectMembers).values(
-            body.memberIds!.map((userId) => ({
-              projectId,
-              userId,
-              role: "CONTRIBUTOR",
-            }))
-          );
-        }
-
         const newMemberSet = new Set(body.memberIds!);
         const removedMembers = [...existing].filter((id) => !newMemberSet.has(id));
+        const addedMembers = [...newMemberSet].filter((id) => !existing.has(id));
+
+        if (removedMembers.length > 0) {
+          await tx
+            .delete(projectMembers)
+            .where(and(eq(projectMembers.projectId, projectId), inArray(projectMembers.userId, removedMembers)));
+        }
+        if (addedMembers.length > 0) {
+          await tx.insert(projectMembers).values(
+            addedMembers.map((userId) => ({ projectId, userId, role: "CONTRIBUTOR" }))
+          );
+        }
         if (removedMembers.length > 0 && body.reassignments) {
           const openTickets = await tx
             .select({ id: tickets.id, assigneeId: tickets.assigneeId })
@@ -193,9 +160,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       const newMemberIds = body.memberIds.filter((id) => !existingMemberIds.has(id));
       if (newMemberIds.length > 0) {
         const [currentUser, project, newMembers] = await Promise.all([
-          db.query.users.findFirst({ where: eq(users.id, session.user.id) }),
-          db.query.projects.findFirst({ where: eq(projects.id, projectId) }),
-          db.query.users.findMany({ where: inArray(users.id, newMemberIds) }),
+          db.query.users.findFirst({ where: eq(users.id, session.user.id), columns: { name: true, firstName: true } }),
+          db.query.projects.findFirst({ where: eq(projects.id, projectId), columns: { id: true, name: true, key: true } }),
+          db.query.users.findMany({ where: inArray(users.id, newMemberIds), columns: { email: true, name: true, firstName: true } }),
         ]);
         if (project) {
           for (const member of newMembers) {
@@ -233,44 +200,31 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
-    const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
-
-    if (session.user.role !== "CEO") {
-      return err("Only organization owners can delete projects", 403);
-    }
+    const { projectId: rawProjectId } = await params;
+    const guard = await requireProjectAccess(session, rawProjectId, "manage");
+    if (!guard.ok) return guard.response;
+    if (session.user.role !== "CEO") return err("Only organization owners can delete projects", 403);
+    const { projectId } = guard;
 
     const project = await db.query.projects.findFirst({
-      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId!)),
+      where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId)),
+      columns: { name: true },
     });
     if (!project) return err("Project not found", 404);
 
+    const deletedAt = new Date();
     await db.transaction(async (tx) => {
-      const projectTickets = await tx
-        .select({ id: tickets.id })
-        .from(tickets)
-        .where(eq(tickets.projectId, projectId));
-
-      const ticketIds = projectTickets.map((t) => t.id);
+      const live = and(eq(tickets.projectId, projectId), isNull(tickets.deletedAt));
+      const ticketRows = await tx.select({ id: tickets.id }).from(tickets).where(live);
+      const ticketIds = ticketRows.map((t) => t.id);
       if (ticketIds.length > 0) {
-        await tx.delete(ticketAssignees).where(inArray(ticketAssignees.ticketId, ticketIds));
-        await tx.delete(ticketComments).where(inArray(ticketComments.ticketId, ticketIds));
-        await tx.delete(ticketAttachments).where(inArray(ticketAttachments.ticketId, ticketIds));
-        await tx.delete(ticketLabelMappings).where(inArray(ticketLabelMappings.ticketId, ticketIds));
         await tx
-          .update(timesheets)
-          .set({ ticketId: null })
-          .where(and(inArray(timesheets.ticketId, ticketIds), eq(timesheets.status, "APPROVED")));
-        await tx
-          .delete(timesheets)
-          .where(and(inArray(timesheets.ticketId, ticketIds), ne(timesheets.status, "APPROVED")));
-        await tx.delete(tickets).where(inArray(tickets.id, ticketIds));
+          .update(ticketComments)
+          .set({ deletedAt })
+          .where(and(inArray(ticketComments.ticketId, ticketIds), isNull(ticketComments.deletedAt)));
+        await tx.update(tickets).set({ deletedAt }).where(and(live, inArray(tickets.id, ticketIds)));
       }
-      await tx.delete(sprints).where(eq(sprints.projectId, projectId));
-      await tx.delete(projectMembers).where(eq(projectMembers.projectId, projectId));
-      await tx.delete(projectStatuses).where(eq(projectStatuses.projectId, projectId));
-      await tx.delete(projects).where(eq(projects.id, projectId));
+      await tx.update(projects).set({ deletedAt }).where(eq(projects.id, projectId));
     });
 
     void createAuditLog({

@@ -18,7 +18,7 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "auth/validate-setup-token/route.ts": "token-verified setup",
   "health/route.ts": "health probe",
   "inngest/route.ts": "Inngest serve() verifies its signing key",
-  "public/intake/[projectId]/route.ts": "public project intake form",
+  "public/intake/[token]/route.ts": "public project intake form",
   "push/vapid-public-key/route.ts": "public VAPID key",
   "hr/integrations/biometric/route.ts": "x-api-key header",
   "webhooks/esign/route.ts": "HMAC signature",

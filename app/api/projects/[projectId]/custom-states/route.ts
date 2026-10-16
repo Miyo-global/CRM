@@ -1,11 +1,12 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { customStates } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createStateSchema = z.object({
   name: z.string().min(1).max(50),
@@ -13,15 +14,16 @@ const createStateSchema = z.object({
   group: z.enum(["backlog", "unstarted", "started", "completed", "cancelled"]),
   sequence: z.number().int().min(0),
   isDefault: z.boolean().default(false),
-});
+}).strict();
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "view");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const states = await db
       .select()
@@ -32,7 +34,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
           eq(customStates.orgId, session.orgId!)
         )
       )
-      .orderBy(customStates.sequence);
+      .orderBy(customStates.sequence)
+      .limit(100);
 
     return ok(states);
   });
@@ -41,8 +44,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   return withAuth(async (session) => {
     const { projectId: id } = await params;
-    const projectId = Number(id);
-    if (!projectId) return err("Invalid project id", 400);
+    const guard = await requireProjectAccess(session, id, "manage");
+    if (!guard.ok) return guard.response;
+    const { projectId } = guard;
 
     const body = await parseBody(req, createStateSchema);
 

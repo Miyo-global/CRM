@@ -912,7 +912,7 @@ export async function getEmployeeProjects(orgId: string, userId: string) {
     })
     .from(projectMembers)
     .innerJoin(projects, eq(projectMembers.projectId, projects.id))
-    .where(and(eq(projectMembers.userId, userId), eq(projects.orgId, orgId)));
+    .where(and(eq(projectMembers.userId, userId), eq(projects.orgId, orgId), isNull(projects.deletedAt)));
 
   return memberships;
 }
@@ -928,7 +928,7 @@ export async function getEmployeeTickets(orgId: string, userId: string) {
       ticketNumber: tickets.ticketNumber,
     })
     .from(tickets)
-    .where(and(eq(tickets.assigneeId, userId), eq(tickets.orgId, orgId)))
+    .where(and(eq(tickets.assigneeId, userId), eq(tickets.orgId, orgId), isNull(tickets.deletedAt)))
     .orderBy(desc(tickets.id))
     .limit(50);
 

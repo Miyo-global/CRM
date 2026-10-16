@@ -8,7 +8,7 @@ import {
   tickets,
   timesheets,
 } from "@/lib/db/schema";
-import { eq, and, sql, gte, lte, desc } from "drizzle-orm";
+import { eq, and, sql, gte, lte, desc, isNull } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 
 export interface AttendanceFilters {
@@ -99,7 +99,7 @@ export interface ProjectReportFilters {
 }
 
 export async function getProjectReport(orgId: string, filters?: ProjectReportFilters) {
-  const conditions = [eq(projects.orgId, orgId)];
+  const conditions = [eq(projects.orgId, orgId), isNull(projects.deletedAt)];
   if (filters?.projectId) {
     conditions.push(eq(projects.id, filters.projectId));
   }
@@ -108,6 +108,7 @@ export async function getProjectReport(orgId: string, filters?: ProjectReportFil
     where: and(...conditions),
     with: {
       tickets: {
+        where: isNull(tickets.deletedAt),
         with: {
           assignee: true,
         },
@@ -222,6 +223,7 @@ export async function getTeamPerformanceReport(orgId: string, filters: TeamPerfo
     where: and(
       eq(tickets.orgId, orgId),
       eq(tickets.status, "DONE"),
+      isNull(tickets.deletedAt),
       gte(tickets.updatedAt, startDate),
       lte(tickets.updatedAt, endDate)
     ),

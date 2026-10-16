@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 interface TicketRelationsProps {
   ticketId: number;
   projectId: number;
+  readOnly?: boolean;
 }
 
 const RELATION_LABELS: Record<WorkItemRelationType, { label: string; icon: React.ReactNode; color: string }> = {
@@ -51,7 +52,7 @@ const RELATION_LABELS: Record<WorkItemRelationType, { label: string; icon: React
   },
 };
 
-export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
+export function TicketRelations({ ticketId, projectId, readOnly = false }: TicketRelationsProps) {
   const { data: relations, isLoading } = useTicketRelations(ticketId, projectId);
   const { data: projectData } = useProject(projectId);
   const addRelation = useAddTicketRelation(ticketId, projectId);
@@ -97,6 +98,7 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
           <Link2 className="h-3.5 w-3.5" />
           Relations
         </h4>
+        {!readOnly && (
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
@@ -146,6 +148,7 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
             </Button>
           </PopoverContent>
         </Popover>
+        )}
       </div>
 
       {(relations ?? []).length === 0 ? (
@@ -177,6 +180,7 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
                           </Badge>
                         )}
                       </div>
+                      {!readOnly && (
                       <button
                         type="button"
                         onClick={() => removeRelation.mutate(t.id, {
@@ -187,6 +191,7 @@ export function TicketRelations({ ticketId, projectId }: TicketRelationsProps) {
                       >
                         <X className="h-3 w-3" />
                       </button>
+                      )}
                     </div>
                   );
                 })}

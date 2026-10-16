@@ -3,7 +3,7 @@ import { withAuth, ok, parseQuery } from "@/lib/api/helpers";
 import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
-import { eq, and, ilike } from "drizzle-orm";
+import { eq, and, ilike, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -39,7 +39,7 @@ async function executeSearch(orgId: string, q: string, limit?: number) {
 
     const ticketResults = await db.select({ id: tickets.id, title: tickets.title, status: tickets.status, projectId: tickets.projectId })
       .from(tickets)
-      .where(and(eq(tickets.orgId, orgId), ilike(tickets.title, pattern)))
+      .where(and(eq(tickets.orgId, orgId), ilike(tickets.title, pattern), isNull(tickets.deletedAt)))
       .limit(maxPer);
 
     const results: SearchResult[] = [
