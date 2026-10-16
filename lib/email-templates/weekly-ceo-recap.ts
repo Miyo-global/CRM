@@ -23,7 +23,7 @@ export function getWeeklyCeoRecapTemplate(data: WeeklyCeoRecapData): string {
     .map(
       (p, i) =>
         `<tr>
-          <td style="padding: 8px 12px; border-bottom: 1px solid ${BRAND.border};">${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid ${BRAND.border};">${i === 0 ? "" : i === 1 ? "" : i === 2 ? "" : `#${i + 1}`}</td>
           <td style="padding: 8px 12px; border-bottom: 1px solid ${BRAND.border};">${escapeHtml(p.name)}</td>
           <td style="padding: 8px 12px; border-bottom: 1px solid ${BRAND.border}; text-align: right; font-weight: bold;">${p.score} pts</td>
         </tr>`
@@ -44,7 +44,7 @@ export function getWeeklyCeoRecapTemplate(data: WeeklyCeoRecapData): string {
 <html>
 <head><meta charset="utf-8"><title>Weekly CEO Recap</title></head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: ${BRAND.ink}; max-width: 650px; margin: 0 auto; padding: 20px; background: ${BRAND.sunken};">
-  <div style="background: linear-gradient(135deg, ${BRAND.ink} 0%, ${BRAND.inkDeep} 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+  <div style="background: ${BRAND.white}; padding: 20px 24px; border-bottom: 2px solid ${BRAND.gold};">
     <h1 style="color: ${BRAND.gold}; margin: 0; font-size: 26px; font-family: Georgia, serif;">Miyo Global</h1>
     <p style="color: ${BRAND.infoSoft}; margin: 8px 0 0 0; font-size: 16px;">Weekly CEO Recap — ${escapeHtml(data.weekRange)}</p>
   </div>

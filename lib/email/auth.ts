@@ -16,7 +16,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Verify Your Email - Miyo Global",
+    subject: "Verify Your Email",
     html: getVerificationEmailTemplate(verificationUrl),
   });
 }
@@ -25,7 +25,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Reset Your Password - Miyo Global",
+    subject: "Reset Your Password",
     html: getPasswordResetEmailTemplate(resetUrl),
   });
 }
@@ -39,7 +39,7 @@ export async function sendInvitationEmail(
   const invitationUrl = `${baseUrl}/invitation/${token}`;
   await sendEmail({
     to: email,
-    subject: `Invitation to join ${organizationName} - Miyo Global`,
+    subject: `Invitation to join ${organizationName}`,
     html: getInvitationEmailTemplate(invitationUrl, organizationName, inviterName),
   });
 }
@@ -62,7 +62,7 @@ export async function sendPasswordChangeConfirmationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: "Password Changed Successfully - Miyo Global",
+    subject: "Password Changed Successfully",
     html: getPasswordChangeConfirmationEmailTemplate(userName),
   });
 }
@@ -75,7 +75,7 @@ export async function sendAccountDeactivationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: "Account Deactivated - Miyo Global",
+    subject: "Account Deactivated",
     html: getAccountDeactivationEmailTemplate(employeeName, deactivatedBy, reason),
   });
 }
@@ -83,7 +83,7 @@ export async function sendAccountDeactivationEmail(
 export async function sendAccountLockedEmail(email: string, name: string): Promise<void> {
   await sendEmail({
     to: email,
-    subject: "Account Locked - Miyo Global",
+    subject: "Account Locked",
     html: getAccountLockedEmailTemplate(name),
   });
 }
@@ -95,7 +95,7 @@ export async function sendNewDeviceLoginEmail(
 ): Promise<void> {
   await sendEmail({
     to: email,
-    subject: "New Device Sign-In Detected - Miyo Global",
+    subject: "New Device Sign-In Detected",
     html: getNewDeviceLoginEmailTemplate(name, deviceInfo),
   });
 }
@@ -107,7 +107,7 @@ export async function sendPasswordExpiryWarningEmail(
 ): Promise<void> {
   await sendEmail({
     to: email,
-    subject: `Your Password Expires in ${daysLeft} Days - Miyo Global`,
+    subject: `Your Password Expires in ${daysLeft} Days`,
     html: getPasswordExpiryWarningEmailTemplate(name, daysLeft),
   });
 }

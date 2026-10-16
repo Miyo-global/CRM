@@ -16,7 +16,7 @@ export function getLeaveRequestEmailTemplate(
   const sLeaveType = escapeHtml(leaveType);
   const sReason = escapeHtml(reason);
   const content = `
-    <h2 class="email-title">📅 New Leave Request</h2>
+    <h2 class="email-title">New Leave Request</h2>
     <p class="email-text">
       <strong>${sEmployee}</strong> has submitted a new leave request that requires your approval.
     </p>
@@ -37,7 +37,7 @@ export function getLeaveRequestEmailTemplate(
     </div>
 
     <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.ink}; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">💬 Reason:</p>
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">Reason:</p>
       <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.6;">${sReason}</p>
     </div>
 
@@ -55,7 +55,7 @@ export function getLeaveRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Leave Request: ${sEmployee} - Miyo Global`,
+    title: `Leave Request: ${sEmployee}`,
     preheader: `${sEmployee} requested ${sLeaveType} from ${startDate} to ${endDate}`,
     content,
   });
@@ -72,7 +72,7 @@ export function getWfhRequestEmailTemplate(
   const sApprover = escapeHtml(approverName);
   const sReason = escapeHtml(reason || "");
   const content = `
-    <h2 class="email-title">🏠 New Work From Home Request</h2>
+    <h2 class="email-title">New Work From Home Request</h2>
     <p class="email-text">
       Hi <strong>${sApprover}</strong>,
     </p>
@@ -110,7 +110,7 @@ export function getWfhRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `WFH Request: ${sEmployee} - Miyo Global`,
+    title: `WFH Request: ${sEmployee}`,
     preheader: `${sEmployee} requested WFH on ${wfhDate}`,
     content,
   });
@@ -132,7 +132,7 @@ export function getLeaveStatusUpdateEmailTemplate(
   const sRejection = rejectionReason ? escapeHtml(rejectionReason) : undefined;
 
   const content = `
-    <h2 class="email-title">${isApproved ? "✅ Leave Request Approved" : "❌ Leave Request Rejected"}</h2>
+    <h2 class="email-title">${isApproved ? "Leave Request Approved" : "Leave Request Rejected"}</h2>
     <p class="email-text">
       Your leave request for <strong>${sLeaveType}</strong> from <strong>${startDate} to ${endDate}</strong> has been <strong>${status.toLowerCase()}</strong> by ${sApprover}.
     </p>
@@ -154,7 +154,7 @@ export function getLeaveStatusUpdateEmailTemplate(
 
     ${!isApproved && sRejection ? `
     <div style="background: ${BRAND.dangerSoft}; border-left: 4px solid ${BRAND.danger}; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.danger}; font-size: 14px;">💬 Reason for Rejection:</p>
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.danger}; font-size: 14px;">Reason for Rejection:</p>
       <p style="margin: 0; color: ${BRAND.danger}; font-size: 14px; line-height: 1.6;">${sRejection}</p>
     </div>
     ` : ''}
@@ -167,7 +167,7 @@ export function getLeaveStatusUpdateEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Leave Request ${status}: ${sLeaveType} - Miyo Global`,
+    title: `Leave Request ${status}: ${sLeaveType}`,
     preheader: `Your leave request has been ${status.toLowerCase()}`,
     content,
   });
@@ -183,7 +183,7 @@ export function getLeaveCancellationEmailTemplate(
   const sEmployee = escapeHtml(employeeName);
   const sLeaveType = escapeHtml(leaveType);
   const content = `
-    <h2 class="email-title">🚫 Leave Request Cancelled</h2>
+    <h2 class="email-title">Leave Request Cancelled</h2>
     <p class="email-text">
       <strong>${sEmployee}</strong> has cancelled their previously submitted leave request.
     </p>
@@ -211,7 +211,7 @@ export function getLeaveCancellationEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Leave Cancelled: ${sEmployee} - Miyo Global`,
+    title: `Leave Cancelled: ${sEmployee}`,
     preheader: `${sEmployee} cancelled their ${sLeaveType} request`,
     content,
   });
@@ -264,7 +264,7 @@ export function getLeaveHrMissedEscalationEmailTemplate(
   const sOrg = escapeHtml(orgName);
   const count = rows.length;
   const content = `
-    <h2 class="email-title">⚠️ Missed Leave Request${count > 1 ? "s" : ""}</h2>
+    <h2 class="email-title">Missed Leave Request${count > 1 ? "s" : ""}</h2>
     <p class="email-text">Dear <strong>${sHr}</strong>,</p>
     <p class="email-text">
       The following leave request${count > 1 ? "s have" : " has"} been pending at
@@ -341,7 +341,7 @@ export function getResignationSubmittedEmailTemplate(
   const sReason = escapeHtml(reason);
 
   const content = `
-    <h2 class="email-title">📝 Resignation Submitted</h2>
+    <h2 class="email-title">Resignation Submitted</h2>
     <p class="email-text">
       Dear <strong>${sHr}</strong>,
     </p>
@@ -392,7 +392,7 @@ export function getResignationSubmittedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Resignation Submitted: ${sEmployee} - Miyo Global`,
+    title: `Resignation Submitted: ${sEmployee}`,
     preheader: `${sEmployee} has submitted a resignation. Last working date: ${lastWorkingDate}`,
     content,
   });
@@ -410,7 +410,7 @@ export function getResignationApprovedEmailTemplate(
   const sApprover = escapeHtml(approverName);
 
   const content = `
-    <h2 class="email-title">✅ Resignation Accepted</h2>
+    <h2 class="email-title">Resignation Accepted</h2>
     <p class="email-text">
       Dear <strong>${sEmployee}</strong>,
     </p>
@@ -460,7 +460,7 @@ export function getResignationApprovedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Resignation Accepted - Miyo Global`,
+    title: `Resignation Accepted`,
     preheader: `Your resignation has been accepted. Last working date: ${lastWorkingDate}`,
     content,
   });
@@ -537,7 +537,7 @@ export function getTerminationEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Employment Termination Notice - Miyo Global`,
+    title: `Employment Termination Notice`,
     preheader: `Your employment with Miyo Global has been terminated effective ${terminationDate}`,
     content,
   });
@@ -557,7 +557,7 @@ export function getDocumentExpiryReminderEmailTemplate(
   const sDocType = escapeHtml(documentType);
 
   const content = `
-    <h2 class="email-title">📋 Document Expiry Reminder</h2>
+    <h2 class="email-title">Document Expiry Reminder</h2>
     <p class="email-text">
       Hello <strong>${sEmployee}</strong>,
     </p>
@@ -730,7 +730,7 @@ export function getInterviewInviteEmail(params: {
       : `${params.durationMinutes}min`;
 
   const content = `
-    <h2 class="email-title">📅 Interview Scheduled${isCandidate ? "" : " — Action Required"}</h2>
+    <h2 class="email-title">Interview Scheduled${isCandidate ? "" : " — Action Required"}</h2>
     <p class="email-text">Dear ${sRecipient},</p>
     <p class="email-text">
       ${
@@ -896,7 +896,7 @@ export function getCelebrationEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `${heading} - Miyo Global`,
+    title: `${heading}`,
     preheader: heading,
     content,
   });

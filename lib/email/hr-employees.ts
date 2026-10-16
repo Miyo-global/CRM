@@ -20,7 +20,7 @@ export async function sendResignationSubmittedEmail(
   const reviewUrl = `${baseUrl}/hr/exit`;
   await sendEmail({
     to: hrEmail,
-    subject: `Resignation Submitted: ${employeeName} - Miyo Global`,
+    subject: `Resignation Submitted: ${employeeName}`,
     html: getResignationSubmittedEmailTemplate(
       hrName,
       employeeName,
@@ -45,7 +45,7 @@ export async function sendResignationApprovedEmail(
   const portalUrl = `${baseUrl}/hr/exit`;
   await sendEmail({
     to: employeeEmail,
-    subject: `Resignation Accepted - Miyo Global`,
+    subject: `Resignation Accepted`,
     html: getResignationApprovedEmailTemplate(
       employeeName,
       approverName,
@@ -69,7 +69,7 @@ export async function sendTerminationEmail(
   const hrContactEmail = "hr@miyoglobal.com";
   await sendEmail({
     to: employeeEmail,
-    subject: `Employment Termination Notice - Miyo Global`,
+    subject: `Employment Termination Notice`,
     html: getTerminationEmailTemplate(
       employeeName,
       employeeDesignation,

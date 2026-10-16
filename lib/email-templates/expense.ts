@@ -16,7 +16,7 @@ export function getExpenseSubmittedEmailTemplate(
   const sAmount = escapeHtml(amount);
   const sDescription = description ? escapeHtml(description) : "";
   const content = `
-    <h2 class="email-title">🧾 New Expense Claim</h2>
+    <h2 class="email-title">New Expense Claim</h2>
     <p class="email-text">
       Hello <strong>${sApprover}</strong>,
     </p>
@@ -75,7 +75,7 @@ export function getExpenseApprovedEmailTemplate(
   const sAmount = escapeHtml(amount);
   const sApprover = escapeHtml(approverName);
   const content = `
-    <h2 class="email-title">✅ Expense Claim Approved</h2>
+    <h2 class="email-title">Expense Claim Approved</h2>
     <p class="email-text">
       Hello <strong>${sEmployee}</strong>,
     </p>
@@ -128,7 +128,7 @@ export function getExpenseRejectedEmailTemplate(
   const sApprover = escapeHtml(approverName);
   const sReason = escapeHtml(reason);
   const content = `
-    <h2 class="email-title">❌ Expense Claim Rejected</h2>
+    <h2 class="email-title">Expense Claim Rejected</h2>
     <p class="email-text">
       Hello <strong>${sEmployee}</strong>,
     </p>
@@ -184,7 +184,7 @@ export function getExpensePaidEmailTemplate(
   const sAmount = escapeHtml(amount);
   const sRef = transactionRef ? escapeHtml(transactionRef) : undefined;
   const content = `
-    <h2 class="email-title">💰 Expense Reimbursed</h2>
+    <h2 class="email-title">Expense Reimbursed</h2>
     <p class="email-text">
       Hello <strong>${sEmployee}</strong>,
     </p>

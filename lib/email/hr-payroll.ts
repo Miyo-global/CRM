@@ -17,12 +17,12 @@ export async function sendPayslipGeneratedEmail(
       <title>Payslip Generated</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: ${BRAND.ink}; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, ${BRAND.ink} 0%, ${BRAND.inkDeep} 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+      <div style="background: ${BRAND.white}; padding: 20px 24px; border-bottom: 2px solid ${BRAND.gold};">
         <h1 style="color: white; margin: 0; font-size: 24px;">Miyo Global</h1>
       </div>
 
       <div style="background: ${BRAND.white}; padding: 30px; border: 1px solid ${BRAND.border}; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: ${BRAND.ink}; margin-top: 0;">Your Payslip is Ready! 📋</h2>
+        <h2 style="color: ${BRAND.ink}; margin-top: 0;">Your Payslip is Ready!</h2>
 
         <p>Dear <strong>${employeeName}</strong>,</p>
 

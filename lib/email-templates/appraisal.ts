@@ -10,7 +10,7 @@ export function getSelfReviewReminderEmail(
   const sName = escapeHtml(employeeName);
   const sCycle = escapeHtml(reviewCycle);
   const content = `
-    <h2 class="email-title">📝 Self-Review Reminder</h2>
+    <h2 class="email-title">Self-Review Reminder</h2>
     <p class="email-text">Hi <strong>${sName}</strong>,</p>
     <p class="email-text">
       Your self-review for <strong>${sCycle}</strong> is due on <strong>${dueDate}</strong>.
@@ -39,7 +39,7 @@ export function getManagerReviewReminderEmail(
   const sName = escapeHtml(managerName);
   const sCycle = escapeHtml(reviewCycle);
   const content = `
-    <h2 class="email-title">📋 Pending Reviews Reminder</h2>
+    <h2 class="email-title">Pending Reviews Reminder</h2>
     <p class="email-text">Hi <strong>${sName}</strong>,</p>
     <p class="email-text">
       You have <strong>${pendingCount} pending review${pendingCount > 1 ? "s" : ""}</strong> to complete for the <strong>${sCycle}</strong> performance cycle.
@@ -68,7 +68,7 @@ export function getReviewPublishedEmail(
   const sCycle = escapeHtml(reviewCycle);
   const sRating = escapeHtml(overallRating);
   const content = `
-    <h2 class="email-title">🎯 Your Performance Review is Ready</h2>
+    <h2 class="email-title">Your Performance Review is Ready</h2>
     <p class="email-text">Hi <strong>${sName}</strong>,</p>
     <p class="email-text">
       Your performance review for <strong>${sCycle}</strong> has been published.
@@ -103,7 +103,7 @@ export function getGoalSettingReminderEmail(
   const sName = escapeHtml(employeeName);
   const sQuarter = escapeHtml(quarter);
   const content = `
-    <h2 class="email-title">🎯 Set Your ${sQuarter} Goals</h2>
+    <h2 class="email-title">Set Your ${sQuarter} Goals</h2>
     <p class="email-text">Hi <strong>${sName}</strong>,</p>
     <p class="email-text">
       It's time to set your goals for <strong>${sQuarter}</strong>. Please submit your goals by <strong>${dueDate}</strong>.

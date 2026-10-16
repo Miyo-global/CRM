@@ -8,10 +8,10 @@ export function buildNotificationEmail(opts: {
   link?: string | null;
 }): { subject: string; html: string } {
   const safeLink = opts.link && opts.link.startsWith("/") ? opts.link : null;
-  const subject = `${opts.title} — Miyo Global`;
+  const subject = `${opts.title}`;
   const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-    <div style="background:linear-gradient(135deg,${BRAND.ink},${BRAND.inkDeep});padding:24px;text-align:center;border-radius:10px 10px 0 0;">
-      <h1 style="color:${BRAND.gold};margin:0;font-size:22px;">Miyo Global</h1>
+    <div style="background:${BRAND.white};padding:20px 24px;border-bottom:2px solid ${BRAND.gold};">
+      <h1 style="color:${BRAND.ink};margin:0;font-size:18px;">Miyo Global</h1>
     </div>
     <div style="background:${BRAND.white};padding:24px;border:1px solid ${BRAND.border};border-top:none;border-radius:0 0 10px 10px;">
       <h2 style="color:${BRAND.ink};margin-top:0;">${escapeHtml(opts.title)}</h2>

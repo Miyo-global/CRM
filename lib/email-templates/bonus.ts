@@ -17,7 +17,7 @@ export function getBonusPaidEmployeeEmailTemplate(params: {
   const sReason = params.reason?.trim() ? escapeHtml(params.reason.trim()) : null;
 
   const content = `
-    <h2 class="email-title">🎉 Bonus Marked as Paid</h2>
+    <h2 class="email-title">Bonus Marked as Paid</h2>
     <p class="email-text">
       Hello <strong>${sEmployee}</strong>,
     </p>

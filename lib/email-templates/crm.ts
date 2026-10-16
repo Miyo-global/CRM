@@ -10,7 +10,7 @@ export function getLeadWelcomeEmail(
   const sName = escapeHtml(leadName);
   const sOrg = escapeHtml(orgName);
   const content = `
-    <h2 class="email-title">👋 Thank You for Your Interest</h2>
+    <h2 class="email-title">Thank You for Your Interest</h2>
     <p class="email-text">Dear <strong>${sName}</strong>,</p>
     <p class="email-text">
       Thank you for reaching out to <strong>${sOrg}</strong>. We have received your inquiry and a member of our team will be in touch shortly.
@@ -37,7 +37,7 @@ export function getFollowUpReminderEmail(
   const sRep = escapeHtml(repName);
   const sLead = escapeHtml(leadName);
   const content = `
-    <h2 class="email-title">⏰ Follow-Up Reminder</h2>
+    <h2 class="email-title">Follow-Up Reminder</h2>
     <p class="email-text">Hi <strong>${sRep}</strong>,</p>
     <p class="email-text">
       You haven't contacted <strong>${sLead}</strong> in <strong>${daysSinceContact} days</strong>. A timely follow-up can significantly improve conversion rates.
@@ -64,7 +64,7 @@ export function getDealWonEmail(
   const sClosedBy = escapeHtml(closedBy);
   const sName = escapeHtml(teamMemberName);
   const content = `
-    <h2 class="email-title">🎉 Deal Won!</h2>
+    <h2 class="email-title">Deal Won!</h2>
     <p class="email-text">Hi <strong>${sName}</strong>,</p>
     <p class="email-text">
       Great news! <strong>${sClosedBy}</strong> just closed the deal <strong>${sDeal}</strong> worth <strong>${escapeHtml(dealValue)}</strong>.
@@ -89,7 +89,7 @@ export function getSlaBreachAlertEmail(
   const sRep = escapeHtml(repName);
   const sLead = escapeHtml(leadName);
   const content = `
-    <h2 class="email-title" style="color:${BRAND.danger};">⚠️ SLA Breach Alert</h2>
+    <h2 class="email-title" style="color:${BRAND.danger};">SLA Breach Alert</h2>
     <p class="email-text">Hi <strong>${sRep}</strong>,</p>
     <p class="email-text">
       Lead <strong>${sLead}</strong> has breached its SLA by <strong>${hoursOverdue} hour${hoursOverdue !== 1 ? "s" : ""}</strong>. Immediate action is required.
@@ -115,7 +115,7 @@ export function getClientOnboardingEmail(
   const sOrg = escapeHtml(orgName);
   const sContact = escapeHtml(contactName);
   const content = `
-    <h2 class="email-title">🚀 Welcome to ${sOrg}!</h2>
+    <h2 class="email-title">Welcome to ${sOrg}!</h2>
     <p class="email-text">Dear <strong>${sClient}</strong>,</p>
     <p class="email-text">
       We are excited to welcome you as a client of <strong>${sOrg}</strong>. Your dedicated point of contact is <strong>${sContact}</strong>.

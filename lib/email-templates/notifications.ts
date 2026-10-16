@@ -9,7 +9,7 @@ export function getWorkLogApprovedEmailTemplate(
   approverName: string
 ): string {
   const content = `
-    <h2 class="email-title">✅ Work Log Approved</h2>
+    <h2 class="email-title">Work Log Approved</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, your work log has been approved.
     </p>
@@ -37,7 +37,7 @@ export function getWorkLogRejectedEmailTemplate(
   reason?: string
 ): string {
   const content = `
-    <h2 class="email-title">❌ Work Log Rejected</h2>
+    <h2 class="email-title">Work Log Rejected</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, your work log has been rejected.
     </p>
@@ -72,7 +72,7 @@ export function getOnboardingWelcomeEmailTemplate(
   taskCount: number
 ): string {
   const content = `
-    <h2 class="email-title">🎉 Welcome to the Team!</h2>
+    <h2 class="email-title">Welcome to the Team!</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, welcome aboard! We're excited to have you join us.
     </p>
@@ -98,7 +98,7 @@ export function getOnboardingWelcomeEmailTemplate(
     </div>
     <div class="security-notice">
       <p class="security-text">
-        💡 If this is your first time logging in, you'll be prompted to change your temporary password.
+        If this is your first time logging in, you'll be prompted to change your temporary password.
       </p>
     </div>
   `;
@@ -113,7 +113,7 @@ export function getOnboardingTaskEmailTemplate(
 ): string {
   const roleLabel = taskRole === "IT" ? "IT Setup" : taskRole === "HR" ? "HR" : "Manager";
   const content = `
-    <h2 class="email-title">📋 Onboarding Tasks Assigned</h2>
+    <h2 class="email-title">Onboarding Tasks Assigned</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(recipientName)}</strong>, new onboarding tasks have been assigned to you.
     </p>
@@ -148,7 +148,7 @@ export function getTicketCreatedEmailTemplate(
 ): string {
   const priorityColor = priority === "URGENT" ? BRAND.danger : priority === "HIGH" ? BRAND.warning : priority === "MEDIUM" ? BRAND.warning : BRAND.success;
   const content = `
-    <h2 class="email-title">🎫 New Support Ticket Assigned</h2>
+    <h2 class="email-title">New Support Ticket Assigned</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(assigneeName)}</strong>, a new support ticket has been assigned to you.
     </p>
@@ -181,7 +181,7 @@ export function getTicketReplyEmailTemplate(
   messagePreview: string
 ): string {
   const content = `
-    <h2 class="email-title">💬 New Reply on Ticket #${ticketId}</h2>
+    <h2 class="email-title">New Reply on Ticket #${ticketId}</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(recipientName)}</strong>, there's a new reply on your support ticket.
     </p>
@@ -214,7 +214,7 @@ export function getTicketStatusEmailTemplate(
 ): string {
   const statusColor = newStatus === "RESOLVED" || newStatus === "CLOSED" ? BRAND.success : newStatus === "IN_PROGRESS" ? BRAND.info : BRAND.warning;
   const content = `
-    <h2 class="email-title">🔄 Ticket Status Updated</h2>
+    <h2 class="email-title">Ticket Status Updated</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(recipientName)}</strong>, the status of your support ticket has been updated.
     </p>
@@ -249,7 +249,7 @@ export function getTaskAssignedEmailTemplate(
   entityLabel?: string
 ): string {
   const content = `
-    <h2 class="email-title">📌 New Task Assigned</h2>
+    <h2 class="email-title">New Task Assigned</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(assigneeName)}</strong>, a new task has been assigned to you.
     </p>
@@ -296,7 +296,7 @@ export function getDealStageChangeEmailTemplate(
 ): string {
   const stageColor = newStage === "WON" ? BRAND.success : newStage === "LOST" ? BRAND.danger : BRAND.info;
   const content = `
-    <h2 class="email-title">${newStage === "WON" ? "🎉" : newStage === "LOST" ? "😞" : "📊"} Deal Stage Updated</h2>
+    <h2 class="email-title">${newStage === "WON" ? "" : newStage === "LOST" ? "" : ""} Deal Stage Updated</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(recipientName)}</strong>, a deal stage has been updated.
     </p>
@@ -336,7 +336,7 @@ export function getLeadAssignedEmailTemplate(
 ): string {
   const priorityColor = priority === "HOT" ? BRAND.danger : priority === "WARM" ? BRAND.warning : BRAND.success;
   const content = `
-    <h2 class="email-title">🎯 New Lead Assigned</h2>
+    <h2 class="email-title">New Lead Assigned</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(repName)}</strong>, a new lead has been assigned to you.
     </p>
@@ -373,7 +373,7 @@ export function getReviewAssignedEmailTemplate(
   periodEnd: string
 ): string {
   const content = `
-    <h2 class="email-title">📝 Performance Review Assigned</h2>
+    <h2 class="email-title">Performance Review Assigned</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, a performance review has been initiated for you.
     </p>
@@ -399,7 +399,7 @@ export function getOnboardingCompleteEmployeeEmailTemplate(
   employeeName: string
 ): string {
   const content = `
-    <h2 class="email-title">🎉 Onboarding Complete!</h2>
+    <h2 class="email-title">Onboarding Complete!</h2>
     <p class="email-text">
       Congratulations <strong>${escapeHtml(employeeName)}</strong>, you've completed all your onboarding tasks!
     </p>
@@ -419,7 +419,7 @@ export function getOnboardingCompleteHrEmailTemplate(
   employeeName: string
 ): string {
   const content = `
-    <h2 class="email-title">✅ Onboarding Complete</h2>
+    <h2 class="email-title">Onboarding Complete</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(hrName)}</strong>, <strong>${escapeHtml(employeeName)}</strong> has completed all onboarding tasks.
     </p>
@@ -440,7 +440,7 @@ export function getHelpdeskTicketEmailTemplate(
 ): string {
   const priorityColor = priority === "URGENT" ? BRAND.danger : priority === "HIGH" ? BRAND.warning : priority === "MEDIUM" ? BRAND.warning : BRAND.success;
   const content = `
-    <h2 class="email-title">🎫 New Helpdesk Ticket</h2>
+    <h2 class="email-title">New Helpdesk Ticket</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(recipientName)}</strong>, a new helpdesk ticket has been submitted.
     </p>
@@ -478,7 +478,7 @@ export function getAssetAssignedEmailTemplate(
   serialNumber: string | null
 ): string {
   const content = `
-    <h2 class="email-title">💻 Asset Assigned to You</h2>
+    <h2 class="email-title">Asset Assigned to You</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, a company asset has been assigned to you.
     </p>
@@ -518,7 +518,7 @@ export function getAssetAssignedHrNotificationTemplate(
   assignedAt: string
 ): string {
   const content = `
-    <h2 class="email-title">📦 Asset Assignment Notification</h2>
+    <h2 class="email-title">Asset Assignment Notification</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(hrName)}</strong>, an asset has been assigned to an employee.
     </p>
@@ -557,11 +557,11 @@ export function getAssetAssignedHrNotificationTemplate(
 }
 
 const RECOGNITION_CATEGORY_LABEL: Record<string, string> = {
-  KUDOS: "🙌 Kudos",
-  TEAMWORK: "🤝 Teamwork",
-  INNOVATION: "💡 Innovation",
-  LEADERSHIP: "🏆 Leadership",
-  ABOVE_AND_BEYOND: "⭐ Above & Beyond",
+  KUDOS: "Kudos",
+  TEAMWORK: "Teamwork",
+  INNOVATION: "Innovation",
+  LEADERSHIP: "Leadership",
+  ABOVE_AND_BEYOND: "Above & Beyond",
 };
 
 function avatarHtml(name: string, imageUrl: string | null): string {
@@ -569,7 +569,7 @@ function avatarHtml(name: string, imageUrl: string | null): string {
     return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" width="96" height="96" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid ${BRAND.border};display:block;margin:0 auto 12px;" />`;
   }
   const initials = name.split(" ").slice(0, 2).map((p) => p[0] ?? "").join("").toUpperCase() || "?";
-  return `<div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,${BRAND.ink},${BRAND.inkDeep});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px;font-weight:700;color:${BRAND.white};line-height:96px;text-align:center;">${escapeHtml(initials)}</div>`;
+  return `<div style="width:96px;height:96px;border-radius:50%;background:${BRAND.sunken};border:1px solid ${BRAND.border};display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px;font-weight:700;color:${BRAND.white};line-height:96px;text-align:center;">${escapeHtml(initials)}</div>`;
 }
 
 export function getRecognitionRecipientEmailTemplate(
@@ -585,7 +585,7 @@ export function getRecognitionRecipientEmailTemplate(
       ${avatarHtml(senderName, senderImageUrl)}
       <p style="margin:0;font-size:13px;color:${BRAND.inkMuted};">From <strong>${escapeHtml(senderName)}</strong></p>
     </div>
-    <h2 class="email-title" style="text-align:center;">You've been recognised! 🎉</h2>
+    <h2 class="email-title" style="text-align:center;">You've been recognised!</h2>
     <p class="email-text" style="text-align:center;">
       Hi <strong>${escapeHtml(recipientName)}</strong>, ${escapeHtml(senderName)} just gave you a recognition.
     </p>
@@ -614,7 +614,7 @@ export function getRecognitionShoutoutEmailTemplate(
       ${avatarHtml(recipientName, recipientImageUrl)}
       <p style="margin:0;font-size:20px;font-weight:700;color:${BRAND.ink};">${escapeHtml(recipientName)}</p>
     </div>
-    <h2 class="email-title" style="text-align:center;">Team Shoutout 🎉</h2>
+    <h2 class="email-title" style="text-align:center;">Team Shoutout</h2>
     <p class="email-text" style="text-align:center;">
       Hi <strong>${escapeHtml(viewerName)}</strong>, ${escapeHtml(senderName)} just recognised <strong>${escapeHtml(recipientName)}</strong>!
     </p>
@@ -635,7 +635,7 @@ export function getPayrollApprovedEmailTemplate(
   approverName: string
 ): string {
   const content = `
-    <h2 class="email-title">✅ Payroll Approved</h2>
+    <h2 class="email-title">Payroll Approved</h2>
     <p class="email-text">
       Hi <strong>${escapeHtml(employeeName)}</strong>, your payroll for <strong>${escapeHtml(month)}</strong> has been approved and is being processed.
     </p>

@@ -32,7 +32,7 @@ export function getVerificationEmailTemplate(verificationUrl: string): string {
   `;
 
   return getEmailTemplate({
-    title: 'Verify Your Email - Miyo Global',
+    title: 'Verify Your Email',
     preheader: 'Complete your registration by verifying your email address',
     content,
   });
@@ -69,7 +69,7 @@ export function getPasswordResetEmailTemplate(resetUrl: string): string {
   `;
 
   return getEmailTemplate({
-    title: 'Reset Your Password - Miyo Global',
+    title: 'Reset Your Password',
     preheader: 'Click to reset your password securely',
     content,
   });
@@ -79,7 +79,7 @@ export function getWelcomeEmailTemplate(name: string, email: string, setupUrl: s
   const sName = escapeHtml(name);
   const sEmail = escapeHtml(email);
   const content = `
-    <h2 class="email-title">Welcome to Miyo Global, ${sName}! 🚀</h2>
+    <h2 class="email-title">Welcome to Miyo Global, ${sName}!</h2>
     <p class="email-text">
       Your account has been successfully created. We're excited to have you on board!
     </p>
@@ -130,7 +130,7 @@ export function getWelcomeEmailTemplate(name: string, email: string, setupUrl: s
 export function getPasswordChangeConfirmationEmailTemplate(userName: string): string {
   const sUserName = escapeHtml(userName);
   const content = `
-    <h2 class="email-title">🔒 Password Changed Successfully</h2>
+    <h2 class="email-title">Password Changed Successfully</h2>
     <p class="email-text">
       Hi <strong>${sUserName}</strong>,
     </p>
@@ -161,7 +161,7 @@ export function getPasswordChangeConfirmationEmailTemplate(userName: string): st
   `;
 
   return getEmailTemplate({
-    title: 'Password Changed Successfully - Miyo Global',
+    title: 'Password Changed Successfully',
     preheader: 'Your password has been updated',
     content,
   });
@@ -176,7 +176,7 @@ export function getAccountDeactivationEmailTemplate(
   const sDeactivatedBy = escapeHtml(deactivatedBy);
   const sReason = reason ? escapeHtml(reason) : undefined;
   const content = `
-    <h2 class="email-title">👋 Account Deactivated</h2>
+    <h2 class="email-title">Account Deactivated</h2>
     <p class="email-text">
       Dear <strong>${sEmployee}</strong>,
     </p>
@@ -217,7 +217,7 @@ export function getAccountDeactivationEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: 'Account Deactivated - Miyo Global',
+    title: 'Account Deactivated',
     preheader: 'Your account has been deactivated',
     content,
   });
@@ -256,7 +256,7 @@ export function getAccountLockedEmailTemplate(name: string): string {
   `;
 
   return getEmailTemplate({
-    title: 'Account Locked - Miyo Global',
+    title: 'Account Locked',
     preheader: 'Your account has been temporarily locked',
     content,
   });
@@ -310,7 +310,7 @@ export function getNewDeviceLoginEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: 'New Device Sign-In - Miyo Global',
+    title: 'New Device Sign-In',
     preheader: 'A new device signed into your account',
     content,
   });
@@ -348,7 +348,7 @@ export function getPasswordExpiryWarningEmailTemplate(name: string, daysLeft: nu
   `;
 
   return getEmailTemplate({
-    title: 'Password Expiring Soon - Miyo Global',
+    title: 'Password Expiring Soon',
     preheader: `Your password expires in ${daysLeft} days`,
     content,
   });

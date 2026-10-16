@@ -119,7 +119,7 @@ export function getRecruitmentHrEmail(
   `;
 
   return {
-    subject: `${subject} — Miyo Global`,
+    subject: `${subject}`,
     html: getEmailTemplate({ title: heading, preheader, content }),
   };
 }
@@ -286,7 +286,7 @@ export function getApplicationConfirmationEmail(
   `;
 
   return {
-    subject: `Application received: ${params.jobTitle} — Miyo Global`,
+    subject: `Application received: ${params.jobTitle}`,
     html: getEmailTemplate({
       title: "Thank you for applying",
       preheader: `We've received your application for ${params.jobTitle}. We'll review it within 3 working days.`,

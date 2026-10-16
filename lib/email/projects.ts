@@ -19,7 +19,7 @@ export async function sendProjectAssignmentEmail(
   const projectUrl = `${baseUrl}/projects/${projectId}`;
   await sendEmail({
     to: email,
-    subject: `Added to Project: ${projectName} - Miyo Global`,
+    subject: `Added to Project: ${projectName}`,
     html: getProjectAssignmentEmailTemplate(memberName, projectName, projectKey, projectUrl, assignedBy),
   });
 }
@@ -40,7 +40,7 @@ export async function sendTicketAssignmentEmail(
   const subjectPrefix = issueKey ? `[${issueKey}] ` : "";
   await sendEmail({
     to: email,
-    subject: `${subjectPrefix}${ticketTitle} - Miyo Global`,
+    subject: `${subjectPrefix}${ticketTitle}`,
     html: getTicketAssignmentEmailTemplate(
       assigneeName,
       ticketTitle,
@@ -68,7 +68,7 @@ export async function sendTicketReviewRequestEmail(
   const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
   await sendEmail({
     to: email,
-    subject: `Review Requested: ${ticketTitle} - Miyo Global`,
+    subject: `Review Requested: ${ticketTitle}`,
     html: getTicketReviewRequestEmailTemplate(
       reviewerName,
       ticketTitle,
@@ -98,7 +98,7 @@ export async function sendTicketCommentEmail(
     recipients.map((r) =>
       sendEmail({
         to: r.email,
-        subject: `${keyPrefix}New comment on: ${ticketTitle} - Miyo Global`,
+        subject: `${keyPrefix}New comment on: ${ticketTitle}`,
         html: getTicketCommentEmailTemplate(
           r.name,
           commenterName,
@@ -126,7 +126,7 @@ export async function sendTicketChangesRequestedEmail(
   const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
   await sendEmail({
     to: email,
-    subject: `Changes Requested: ${ticketTitle} - Miyo Global`,
+    subject: `Changes Requested: ${ticketTitle}`,
     html: getTicketChangesRequestedEmailTemplate(
       assigneeName,
       ticketTitle,

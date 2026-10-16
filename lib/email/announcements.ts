@@ -12,7 +12,7 @@ export async function sendHolidayAnnouncementEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Holiday Tomorrow: ${holidayName} - Miyo Global`,
+    subject: `Holiday Tomorrow: ${holidayName}`,
     html: getHolidayAnnouncementEmailTemplate(holidayName, holidayDate, message),
   });
 }
@@ -25,7 +25,7 @@ export async function sendCompanyAnnouncementEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Announcement: ${subject} - Miyo Global`,
+    subject: `Announcement: ${subject}`,
     html: getCompanyAnnouncementEmailTemplate(subject, message, announcedBy),
   });
 }

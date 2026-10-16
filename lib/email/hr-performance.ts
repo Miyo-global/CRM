@@ -34,7 +34,7 @@ export async function sendReviewAssignedEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: "Performance Review Assigned — Miyo Global",
+    subject: "Performance Review Assigned",
     html: getReviewAssignedEmailTemplate(employeeName, reviewerName, periodStart, periodEnd),
   });
 }

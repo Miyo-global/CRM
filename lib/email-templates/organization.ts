@@ -5,7 +5,7 @@ export function getInvitationEmailTemplate(invitationUrl: string, organizationNa
   const safeOrgName = escapeHtml(organizationName);
   const safeInviterName = inviterName ? escapeHtml(inviterName) : undefined;
   const content = `
-    <h2 class="email-title">🎉 You're Invited!</h2>
+    <h2 class="email-title">You're Invited!</h2>
     <p class="email-text">
       ${safeInviterName ? `<strong>${safeInviterName}</strong> has invited you` : 'You have been invited'}
       to join <strong>${safeOrgName}</strong> on Miyo Global CRM.
@@ -39,7 +39,7 @@ export function getInvitationEmailTemplate(invitationUrl: string, organizationNa
   `;
 
   return getEmailTemplate({
-    title: `Invitation to join ${safeOrgName} - Miyo Global`,
+    title: `Invitation to join ${safeOrgName}`,
     preheader: `You've been invited to join ${safeOrgName}`,
     content,
   });
@@ -54,7 +54,7 @@ export function getHolidayAnnouncementEmailTemplate(
   const safeDate = escapeHtml(holidayDate);
   const safeMessage = message ? escapeHtml(message) : undefined;
   const content = `
-    <h2 class="email-title">🎉 Upcoming Holiday: ${safeName}</h2>
+    <h2 class="email-title">Upcoming Holiday: ${safeName}</h2>
     <p class="email-text">
       Dear Team,
     </p>
@@ -80,7 +80,7 @@ export function getHolidayAnnouncementEmailTemplate(
 
     ${safeMessage ? `
     <div style="background: ${BRAND.successSoft}; border-left: 4px solid ${BRAND.success}; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.success}; font-size: 14px;">💬 Message:</p>
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.success}; font-size: 14px;">Message:</p>
       <p style="margin: 0; color: ${BRAND.success}; font-size: 14px; line-height: 1.6;">${safeMessage}</p>
     </div>
     ` : ''}
@@ -92,12 +92,12 @@ export function getHolidayAnnouncementEmailTemplate(
     <div class="divider"></div>
 
     <p class="email-text">
-      Wishing you and your family a wonderful ${safeName}! 🎊
+      Wishing you and your family a wonderful ${safeName}!
     </p>
   `;
 
   return getEmailTemplate({
-    title: `Holiday Tomorrow: ${safeName} - Miyo Global`,
+    title: `Holiday Tomorrow: ${safeName}`,
     preheader: `Office closed tomorrow for ${safeName}`,
     content,
   });
@@ -112,7 +112,7 @@ export function getCompanyAnnouncementEmailTemplate(
   const safeMessage = escapeHtml(message);
   const safeAnnouncedBy = escapeHtml(announcedBy);
   const content = `
-    <h2 class="email-title">📢 Company Announcement</h2>
+    <h2 class="email-title">Company Announcement</h2>
     <p class="email-text">
       Dear Team,
     </p>
@@ -134,7 +134,7 @@ export function getCompanyAnnouncementEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Announcement: ${safeSubject} - Miyo Global`,
+    title: `Announcement: ${safeSubject}`,
     preheader: safeSubject,
     content,
   });

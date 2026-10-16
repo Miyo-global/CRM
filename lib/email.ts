@@ -64,7 +64,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Verify Your Email - Miyo Global",
+    subject: "Verify Your Email",
     html: getVerificationEmailTemplate(verificationUrl),
   });
 }
@@ -73,7 +73,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Reset Your Password - Miyo Global",
+    subject: "Reset Your Password",
     html: getPasswordResetEmailTemplate(resetUrl),
   });
 }
@@ -87,7 +87,7 @@ export async function sendInvitationEmail(
   const invitationUrl = `${baseUrl}/invitation/${token}`;
   await sendEmail({
     to: email,
-    subject: `Invitation to join ${organizationName} - Miyo Global`,
+    subject: `Invitation to join ${organizationName}`,
     html: getInvitationEmailTemplate(invitationUrl, organizationName, inviterName),
   });
 }
@@ -115,7 +115,7 @@ export async function sendProjectAssignmentEmail(
   const projectUrl = `${baseUrl}/projects/${projectId}`;
   await sendEmail({
     to: email,
-    subject: `Added to Project: ${projectName} - Miyo Global`,
+    subject: `Added to Project: ${projectName}`,
     html: getProjectAssignmentEmailTemplate(memberName, projectName, projectKey, projectUrl, assignedBy),
   });
 }
@@ -136,7 +136,7 @@ export async function sendTicketAssignmentEmail(
   const subjectPrefix = issueKey ? `[${issueKey}] ` : "";
   await sendEmail({
     to: email,
-    subject: `${subjectPrefix}${ticketTitle} - Miyo Global`,
+    subject: `${subjectPrefix}${ticketTitle}`,
     html: getTicketAssignmentEmailTemplate(
       assigneeName,
       ticketTitle,
@@ -164,7 +164,7 @@ export async function sendTicketReviewRequestEmail(
   const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
   await sendEmail({
     to: email,
-    subject: `Review Requested: ${ticketTitle} - Miyo Global`,
+    subject: `Review Requested: ${ticketTitle}`,
     html: getTicketReviewRequestEmailTemplate(
       reviewerName,
       ticketTitle,
@@ -190,7 +190,7 @@ export async function sendTicketChangesRequestedEmail(
   const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
   await sendEmail({
     to: email,
-    subject: `Changes Requested: ${ticketTitle} - Miyo Global`,
+    subject: `Changes Requested: ${ticketTitle}`,
     html: getTicketChangesRequestedEmailTemplate(
       assigneeName,
       ticketTitle,
@@ -220,7 +220,7 @@ export async function sendTicketCommentEmail(
     recipients.map((r) =>
       sendEmail({
         to: r.email,
-        subject: `${keyPrefix}New comment on: ${ticketTitle} - Miyo Global`,
+        subject: `${keyPrefix}New comment on: ${ticketTitle}`,
         html: getTicketCommentEmailTemplate(
           r.name,
           commenterName,
@@ -247,7 +247,7 @@ export async function sendLeaveRequestEmail(
   const leaveUrl = `${baseUrl}/hr/leaves`;
   await sendEmail({
     to: email,
-    subject: `Leave Request: ${employeeName} - Miyo Global`,
+    subject: `Leave Request: ${employeeName}`,
     html: getLeaveRequestEmailTemplate(
       approverName,
       employeeName,
@@ -272,7 +272,7 @@ export async function sendLeaveStatusUpdateEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Leave Request ${status}: ${leaveType} - Miyo Global`,
+    subject: `Leave Request ${status}: ${leaveType}`,
     html: getLeaveStatusUpdateEmailTemplate(
       employeeName,
       leaveType,
@@ -295,7 +295,7 @@ export async function sendLeaveCancellationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Leave Cancelled: ${employeeName} - Miyo Global`,
+    subject: `Leave Cancelled: ${employeeName}`,
     html: getLeaveCancellationEmailTemplate(
       approverName,
       employeeName,
@@ -312,7 +312,7 @@ export async function sendPasswordChangeConfirmationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: 'Password Changed Successfully - Miyo Global',
+    subject: 'Password Changed Successfully',
     html: getPasswordChangeConfirmationEmailTemplate(userName),
   });
 }
@@ -325,7 +325,7 @@ export async function sendAccountDeactivationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: 'Account Deactivated - Miyo Global',
+    subject: 'Account Deactivated',
     html: getAccountDeactivationEmailTemplate(employeeName, deactivatedBy, reason),
   });
 }
@@ -355,7 +355,7 @@ export async function sendHolidayAnnouncementEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Holiday Tomorrow: ${holidayName} - Miyo Global`,
+    subject: `Holiday Tomorrow: ${holidayName}`,
     html: getHolidayAnnouncementEmailTemplate(holidayName, holidayDate, message),
   });
 }
@@ -368,7 +368,7 @@ export async function sendCompanyAnnouncementEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Announcement: ${subject} - Miyo Global`,
+    subject: `Announcement: ${subject}`,
     html: getCompanyAnnouncementEmailTemplate(subject, message, announcedBy),
   });
 }
@@ -500,12 +500,12 @@ export async function sendPayslipGeneratedEmail(
       <title>Payslip Generated</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: ${BRAND.ink}; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, ${BRAND.ink} 0%, ${BRAND.inkDeep} 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+      <div style="background: ${BRAND.white}; padding: 20px 24px; border-bottom: 2px solid ${BRAND.gold};">
         <h1 style="color: white; margin: 0; font-size: 24px;">Miyo Global</h1>
       </div>
 
       <div style="background: ${BRAND.white}; padding: 30px; border: 1px solid ${BRAND.border}; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: ${BRAND.ink}; margin-top: 0;">Your Payslip is Ready! 📋</h2>
+        <h2 style="color: ${BRAND.ink}; margin-top: 0;">Your Payslip is Ready!</h2>
 
         <p>Dear <strong>${employeeName}</strong>,</p>
 
@@ -610,7 +610,7 @@ export async function sendResignationSubmittedEmail(
   const reviewUrl = `${baseUrl}/hr/exit`;
   await sendEmail({
     to: hrEmail,
-    subject: `Resignation Submitted: ${employeeName} - Miyo Global`,
+    subject: `Resignation Submitted: ${employeeName}`,
     html: getResignationSubmittedEmailTemplate(
       hrName,
       employeeName,
@@ -635,7 +635,7 @@ export async function sendResignationApprovedEmail(
   const portalUrl = `${baseUrl}/hr/exit`;
   await sendEmail({
     to: employeeEmail,
-    subject: `Resignation Accepted - Miyo Global`,
+    subject: `Resignation Accepted`,
     html: getResignationApprovedEmailTemplate(
       employeeName,
       approverName,
@@ -659,7 +659,7 @@ export async function sendTerminationEmail(
   const hrContactEmail = "hr@miyoglobal.com";
   await sendEmail({
     to: employeeEmail,
-    subject: `Employment Termination Notice - Miyo Global`,
+    subject: `Employment Termination Notice`,
     html: getTerminationEmailTemplate(
       employeeName,
       employeeDesignation,
@@ -675,7 +675,7 @@ export async function sendTerminationEmail(
 export async function sendAccountLockedEmail(email: string, name: string): Promise<void> {
   await sendEmail({
     to: email,
-    subject: "Account Locked - Miyo Global",
+    subject: "Account Locked",
     html: getAccountLockedEmailTemplate(name),
   });
 }
@@ -687,7 +687,7 @@ export async function sendNewDeviceLoginEmail(
 ): Promise<void> {
   await sendEmail({
     to: email,
-    subject: "New Device Sign-In Detected - Miyo Global",
+    subject: "New Device Sign-In Detected",
     html: getNewDeviceLoginEmailTemplate(name, deviceInfo),
   });
 }
@@ -699,7 +699,7 @@ export async function sendPasswordExpiryWarningEmail(
 ): Promise<void> {
   await sendEmail({
     to: email,
-    subject: `Your Password Expires in ${daysLeft} Days - Miyo Global`,
+    subject: `Your Password Expires in ${daysLeft} Days`,
     html: getPasswordExpiryWarningEmailTemplate(name, daysLeft),
   });
 }
@@ -861,7 +861,7 @@ export async function sendReviewAssignedEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: "Performance Review Assigned — Miyo Global",
+    subject: "Performance Review Assigned",
     html: getReviewAssignedEmailTemplate(employeeName, reviewerName, periodStart, periodEnd),
   });
 }
@@ -970,7 +970,7 @@ export async function sendRecognitionRecipientEmail(
 ) {
   await sendEmail({
     to: recipientEmail,
-    subject: `🎉 You've been recognised by ${senderName}!`,
+    subject: `You've been recognised by ${senderName}!`,
     html: getRecognitionRecipientEmailTemplate(recipientName, senderName, category, message, senderImageUrl),
   });
 }
@@ -986,7 +986,7 @@ export async function sendRecognitionShoutoutEmail(
 ) {
   await sendEmail({
     to: viewerEmail,
-    subject: `🎉 ${recipientName} just got recognised — Team Shoutout!`,
+    subject: `${recipientName} just got recognised — Team Shoutout!`,
     html: getRecognitionShoutoutEmailTemplate(viewerName, recipientName, recipientImageUrl, senderName, category, message),
   });
 }

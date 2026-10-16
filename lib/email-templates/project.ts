@@ -12,7 +12,7 @@ export function getProjectAssignmentEmailTemplate(
   const sKey = escapeHtml(projectKey);
   const sAssignedBy = assignedBy ? escapeHtml(assignedBy) : undefined;
   const content = `
-    <h2 class="email-title">📋 You've Been Added to a Project</h2>
+    <h2 class="email-title">You've Been Added to a Project</h2>
     <p class="email-text">
       ${sAssignedBy ? `<strong>${sAssignedBy}</strong> has added you` : 'You have been added'}
       to the project <strong>${sProject}</strong>.
@@ -54,7 +54,7 @@ export function getProjectAssignmentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Added to Project: ${sProject} - Miyo Global`,
+    title: `Added to Project: ${sProject}`,
     preheader: `You've been added to ${sProject}`,
     content,
   });
@@ -145,7 +145,7 @@ export function getTicketAssignmentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `${keyPrefix}${sTitle} - Miyo Global`,
+    title: `${keyPrefix}${sTitle}`,
     preheader: `${sCreatedBy} assigned ${keyPrefix}${sTitle} to you`,
     content,
   });
@@ -166,7 +166,7 @@ export function getTicketReviewRequestEmailTemplate(
   const sComment = comment ? escapeHtml(comment) : undefined;
 
   const content = `
-    <h2 class="email-title">👀 Ticket Ready for Your Review</h2>
+    <h2 class="email-title">Ticket Ready for Your Review</h2>
     <p class="email-text">
       <strong>${sCompletedBy}</strong> has completed their work and moved a ticket to
       <span style="display: inline-block; background: ${BRAND.warning}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN REVIEW</span>.
@@ -193,7 +193,7 @@ export function getTicketReviewRequestEmailTemplate(
 
     ${sComment ? `
     <div style="background: ${BRAND.sunken}; border-left: 4px solid ${BRAND.info}; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">💬 Latest Comment:</p>
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.ink}; font-size: 14px;">Latest Comment:</p>
       <p style="margin: 0; color: ${BRAND.inkMuted}; font-size: 14px; line-height: 1.6;">${sComment}</p>
     </div>
     ` : ''}
@@ -219,7 +219,7 @@ export function getTicketReviewRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Review Requested: ${sTitle} - Miyo Global`,
+    title: `Review Requested: ${sTitle}`,
     preheader: `${sCompletedBy} completed work on ${sTitle} and needs your review`,
     content,
   });
@@ -239,7 +239,7 @@ export function getTicketChangesRequestedEmailTemplate(
   const sComment = comment ? escapeHtml(comment) : undefined;
 
   const content = `
-    <h2 class="email-title">🔄 Changes Requested on Your Ticket</h2>
+    <h2 class="email-title">Changes Requested on Your Ticket</h2>
     <p class="email-text">
       <strong>${sReviewer}</strong> has reviewed your work and moved the ticket back to
       <span style="display: inline-block; background: ${BRAND.info}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;">IN PROGRESS</span>.
@@ -262,7 +262,7 @@ export function getTicketChangesRequestedEmailTemplate(
 
     ${sComment ? `
     <div style="background: ${BRAND.warningSoft}; border-left: 4px solid ${BRAND.warning}; padding: 16px; margin: 24px 0; border-radius: 4px;">
-      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.warning}; font-size: 14px;">💬 Review Feedback:</p>
+      <p style="margin: 0 0 8px 0; font-weight: 600; color: ${BRAND.warning}; font-size: 14px;">Review Feedback:</p>
       <p style="margin: 0; color: ${BRAND.warning}; font-size: 14px; line-height: 1.6;">${sComment}</p>
     </div>
     ` : ''}
@@ -288,7 +288,7 @@ export function getTicketChangesRequestedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Changes Requested: ${sTitle} - Miyo Global`,
+    title: `Changes Requested: ${sTitle}`,
     preheader: `${sReviewer} requested changes on ${sTitle}`,
     content,
   });
@@ -341,7 +341,7 @@ export function getTicketCommentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `${keyPrefix}New comment on: ${sTitle} - Miyo Global`,
+    title: `${keyPrefix}New comment on: ${sTitle}`,
     preheader: `${sCommenter} commented on ${keyPrefix}${sTitle}`,
     content,
   });

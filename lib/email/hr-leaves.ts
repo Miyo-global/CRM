@@ -20,7 +20,7 @@ export async function sendWfhRequestEmail(
   const reviewUrl = `${baseUrl}/hr/leaves`;
   await sendEmail({
     to: approverEmail,
-    subject: `WFH Request: ${employeeName} - Miyo Global`,
+    subject: `WFH Request: ${employeeName}`,
     html: getWfhRequestEmailTemplate(
       approverName,
       employeeName,
@@ -43,7 +43,7 @@ export async function sendLeaveRequestEmail(
   const leaveUrl = `${baseUrl}/hr/leaves`;
   await sendEmail({
     to: email,
-    subject: `Leave Request: ${employeeName} - Miyo Global`,
+    subject: `Leave Request: ${employeeName}`,
     html: getLeaveRequestEmailTemplate(
       approverName,
       employeeName,
@@ -68,7 +68,7 @@ export async function sendLeaveStatusUpdateEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Leave Request ${status}: ${leaveType} - Miyo Global`,
+    subject: `Leave Request ${status}: ${leaveType}`,
     html: getLeaveStatusUpdateEmailTemplate(
       employeeName,
       leaveType,
@@ -91,7 +91,7 @@ export async function sendLeaveCancellationEmail(
 ) {
   await sendEmail({
     to: email,
-    subject: `Leave Cancelled: ${employeeName} - Miyo Global`,
+    subject: `Leave Cancelled: ${employeeName}`,
     html: getLeaveCancellationEmailTemplate(
       approverName,
       employeeName,
