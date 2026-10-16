@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
+import { withAuth, ok, err, toNumber, serverError } from "@/lib/api/helpers";
 import { getSupportTickets, logSupportActivity } from "@/server/queries/support";
 import { db } from "@/lib/db";
 import { supportTickets, users, clients, organizationMembers } from "@/lib/db/schema";
@@ -67,10 +67,7 @@ export async function GET(req: NextRequest) {
       });
       return ok(data);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load support tickets",
-        500
-      );
+      return serverError(error, { route: "support", orgId: session.orgId }, "Failed to load support tickets.");
     }
   });
 }
@@ -164,10 +161,7 @@ export async function POST(req: NextRequest) {
 
       return ok(ticket, 201);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to create support ticket",
-        500
-      );
+      return serverError(error, { route: "support", orgId: session.orgId }, "Failed to create support ticket.");
     }
   });
 }
