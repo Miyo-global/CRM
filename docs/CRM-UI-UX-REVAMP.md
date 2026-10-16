@@ -1,20 +1,27 @@
-# Miyo Global CRM — Complete UI/UX Revamp Spec (for Claude Code)
+# Miyo Global CRM — Complete UI/UX Revamp Spec v2 (Streamline-style shell, Gold & Ink brand) — for Claude Code
 
 > **Who this is for:** Claude Code, running inside `/Users/tarunchintakunta/office/miyoglobal/crm` (repo `github.com/Miyo-global/CRM`).
 > **What to do:** Replace 100% of the current visual layer (tokens, colors, fonts, component styling, layouts, page compositions) with the new **Miyo "Gold & Ink"** design system derived from the logo, and improve UX end-to-end — **without changing any behavior, data, API, or business logic.**
+> **Layout reference:** Tarun's Streamline app (§2A). Modules sit in a **top-nav module switcher**, and the **sidebar shows only the current module's pages** (§7, Appendix A).
 > Work through §11 phase by phase and tick every checkbox. Do not skip phases. Do not stop until §12 acceptance criteria all pass.
 
 ---
 
 ## 0. TL;DR for Claude
 
-1. `git checkout main && git pull && git checkout -b feat/ui-revamp-gold-ink` — never commit to `main`.
-2. Rewrite `globals.css` from scratch using §3 (tokens) — delete every legacy class listed in §5.1.
-3. Swap fonts to Montserrat (display) + Plus Jakarta Sans (UI) + IBM Plex Mono via `next/font/google` (§3.4).
-4. Restyle every primitive in `components/ui/*` (§6), then the app shell (§7), then every route (§8 + Appendix A).
-5. Replace all hardcoded colors (902 hex literals, 3,262 raw Tailwind palette classes, 537 `gold` token usages, 1,318 arbitrary `text-[Npx]` sizes) with semantic tokens (§5).
-6. Enable real dark mode (it is currently force-disabled) and add a theme switcher (§9.6).
-7. After each phase: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`. Commit per phase. Open a PR to `main` at the end.
+1. **Repo state check first (§2 rule 11):** `git status`. If you see uncommitted or staged changes you did not make, **STOP and ask Tarun** to commit them. Never stash, discard, reset or checkout over them. Then `git checkout main && git pull && git checkout -b feat/ui-revamp-gold-ink`. Never commit to `main`.
+2. Rewrite `globals.css` from scratch using §3 (tokens). Delete every legacy class listed in §5.1.
+3. Swap fonts to Plus Jakarta Sans (UI), Montserrat (display/brand only) and IBM Plex Mono via `next/font/google` (§3.5).
+4. Restyle every primitive in `components/ui/*` (§6).
+5. Build the **Streamline-style shell** (§2A, §7):
+   - full-width global header with module tabs/switcher, search, Create, bell, user menu and org chip;
+   - a contextual per-module sidebar;
+   - mobile bottom nav and nav drawer;
+   - `lib/navigation/modules.ts`, layered on the unchanged `getNavGroupsForRole`.
+6. Restyle every route (§8 + Appendix A, which also gives each route's module and sidebar group).
+7. Replace all hardcoded colours (829 hex literals, 2,476 raw Tailwind palette classes, 303 `gold` token usages, 1,059 arbitrary `text-[Npx]` sizes on the current tree) with semantic tokens (§5).
+8. Enable real dark mode (it is currently force-disabled) and add a theme switcher (§9.7).
+9. After each phase: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`. Commit per phase. Open a PR to `main` at the end.
 
 ---
 
@@ -42,21 +49,25 @@
 
 ### 1.1 Blast radius (audit counts across `app components features hooks lib`, *.ts/*.tsx)
 
+Counts were re-run on the **current working tree** (11 Oct 2026, after the in-progress CRM/Billing deletion). The first audit, before the deletion, is shown in brackets.
+
 | Pattern | Files | Hits |
 |---|---:|---:|
-| Hex color literals `#abc` / `#aabbcc` | 86 | 902 |
-| `rgb()/rgba()/hsl()` literals | 15 | 47 |
+| Hex color literals `#abc` / `#aabbcc` | 76 [86] | 829 [902] |
+| `rgb()/rgba()/hsl()` literals | 10 [15] | 36 [47] |
 | Arbitrary hex classes `bg-[#…]`, `text-[#…]` … | 5 | 13 |
-| Inline `style={{…}}` | 74 | 163 |
-| Legacy `gold` token utilities (`text-gold`, `bg-gold/15`, …) | 140 | 537 |
-| Legacy custom classes (`shadow-noir`, `glow-gold`, `gold-gradient`, …) | 55 | 122 |
-| Raw Tailwind palette (`bg-emerald-500/10`, `text-red-700`, …) | 242 | 3,262 |
-| `bg-white/black`, `text-white/black` … | 84 | 280 |
-| `font-serif` / Playfair | 2 | 2 |
-| Arbitrary font sizes `text-[10px]` etc. | 255 | 1,318 |
-| `dark:` variants | 94 | 718 |
-| `rounded-[…]` / `shadow-[…]` / `z-[N]` arbitrary | 6 / 3 / 3 | 15 / 5 / 4 |
-| framer-motion / lucide / recharts / dnd imports | 52 / 393 / 9 / 11 | — |
+| Inline `style={{…}}` | 66 [74] | 151 [163] |
+| Legacy `gold` token utilities (`text-gold`, `bg-gold/15`, …) | 81 [140] | 303 [537] |
+| Legacy custom classes (`shadow-noir`, `glow-gold`, `gold-gradient`, …) | 42 [55] | 92 [122] |
+| Raw Tailwind palette (`bg-emerald-500/10`, `text-red-700`, …) | 187 [242] | 2,476 [3,262] |
+| `bg-white/black`, `text-white/black` … | 52 [84] | 205 [280] |
+| Arbitrary font sizes `text-[10px]` etc. | 207 [255] | 1,059 [1,318] |
+| `dark:` variants | 82 [94] | 643 [718] |
+| framer-motion / lucide / recharts / dnd importing files | 34 / 315 / 3 / 6 | — |
+| Pages / layouts / `loading.tsx` / `error.tsx` | 140 [172] / 5 / 86 / 88 | — |
+| `components/**/*.tsx` / `features/**/*.tsx` / `components/ui` entries | 169 / 134 / 52 | — |
+
+**Re-run the §5.6 greps yourself in Phase 0.** The numbers move as Tarun keeps refactoring. Hotspot lists below come from the first audit, so **skip any file that no longer exists** (e.g. everything under `features/crm/**`, `app/(dashboard)/crm/**`, `app/(dashboard)/billing/**`).
 
 Raw-palette families by frequency: amber 595, emerald 419, red 354, blue 317, green 248, purple 135, slate 103, orange 80, gray 77, yellow 57, violet 45, rose 34, pink 30, indigo 30, cyan 25, teal 21, sky 20, fuchsia 5, neutral 2.
 Arbitrary sizes: `text-[10px]` 695, `text-[11px]` 435, `text-[9px]` 90, `text-[8px]` 28, `text-[13px]` 24, `text-[12px]` 24, `text-[7px]` 8.
@@ -83,13 +94,49 @@ Legacy class frequency: `shadow-noir` 64, `shadow-soft` 16, `shadow-gold` 7, `no
 1. **Visual/UX layer only.** Do NOT change: business logic, data fetching/mutations (TanStack Query hooks in `lib/api/hooks/*`, `lib/hooks/*`), API routes (`app/api/**`), server actions, `server/**`, `middleware.ts`, auth (`lib/auth/**`, NextAuth config), RBAC (`lib/rbac/**`, role checks, `components/shared/dashboard-gate.tsx` logic), DB/Drizzle (`lib/db/**`, `drizzle/**`, `drizzle.config.ts`), Inngest functions' logic, env handling, `next.config.ts` security headers, Sentry config.
 2. Keep every prop signature and export name of shared components **backward compatible** (you may add optional props / variants). If you rename a file, leave a re-export.
 3. Keep all user-visible text/labels/URLs unless the spec explicitly says to change copy. Keep all `aria-*`, `data-testid`, `id`, and `name` attributes.
-4. Never commit to `main`. Branch: `feat/ui-revamp-gold-ink`. One commit per phase (`style(ui): phase N – …`). Open a PR to `main` titled **"UI/UX revamp: Gold & Ink design system"** with before/after screenshots of: signin, dashboard, CRM hub, leads board, deal detail, employees, payroll, project board, settings, careers.
+4. Never commit to `main`. Branch: `feat/ui-revamp-gold-ink`. One commit per phase (`style(ui): phase N – …`). Open a PR to `main` titled **"UI/UX revamp: Gold & Ink design system"** with before/after screenshots of: signin, dashboard, module switcher (desktop tabs + mobile sheet), HR sidebar, employees, payroll, recruitment pipeline, project workspace, admin settings, careers (plus CRM hub/leads board only if CRM still exists).
 5. After every phase run: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`. Zero new errors; fix before moving on. Do not disable lint rules or add `@ts-ignore` to get green.
 6. No new heavy dependencies. Allowed additions: none required. (`next/font` is built-in.) Do not remove existing deps.
 7. Don't edit `public/logo.svg`, `public/logo.png`, `public/logo-wordmark.png`, `app/icon.svg` (brand masters).
 8. Don't touch untracked local files: `scripts/generate-miyo-payslips.ts`, `.omc/`, `.env*`.
 9. Accessibility floor: WCAG 2.2 AA for all text and interactive states; never use gold-400 (`#D4AF37`) as a text color on light surfaces or put white text on it.
 10. Respect `prefers-reduced-motion` everywhere.
+11. **Never destroy other people's work.** The repo is actively being refactored. At audit time there were ~279 uncommitted/staged paths deleting the CRM and Billing modules. Before starting, and before every commit, run `git status`. If anything you did not change is modified, staged or deleted, **stop and ask Tarun** (ask him to commit or confirm). Never run `git stash`, `git checkout -- .`, `git reset --hard`, `git clean`, or restore deleted files. Never `git add -A`; stage only the files you changed.
+12. **Navigation is UI, permissions are not.** `getNavGroupsForRole()` in `components/layout/sidebar/sidebar-nav-items.ts`, `lib/auth/route-access.ts`, `middleware.ts` and `components/shared/dashboard-gate.tsx` keep deciding who sees what. The new module layer (§7.1) may only **regroup** the routes `getNavGroupsForRole(role)` returns; it never adds or hides routes. Labels, hrefs, icons and badges stay as they are.
+13. Streamline (`/Users/tarunchintakunta/Personal/streamline/streamlineos-frontend`) is **read-only reference**. Never edit it, never import from it, and add no packages to match it.
+
+---
+
+---
+
+## 2A. Reference app: Streamline (copy its shell and visual language)
+
+Tarun's own app **Streamline** (`/Users/tarunchintakunta/Personal/streamline/streamlineos-frontend/frontend`, read-only, never edit it) is the **layout and visual-language reference** for this revamp. Miyo keeps its own brand colours (§3) but copies Streamline's **structure, density, measurements and interaction patterns**. If Streamline is on the same machine, open the files below and mirror them. Re-implement in Miyo's codebase. Do not import from Streamline or copy-paste its business code.
+
+### 2A.1 Streamline files to study (read-only)
+| Concern | Streamline file (under `frontend/`) | What to take |
+|---|---|---|
+| Shell layout | `components/layout/dashboard-shell.tsx` | `h-dvh flex-col overflow-hidden`. A full-width header on top, then `flex min-h-0 flex-1` holding an `aside` (sidebar) and `main#dashboard-content` (the single scroller). The mobile nav is a bottom drawer. |
+| Global header | `components/layout/header/global-header.tsx` | `h-14 border-b border-sidebar-border bg-sidebar/95 backdrop-blur-xl shadow-sm z-40`, inner `px-4 gap-3`. Left side: brand → module switcher → collapse toggle → divider → workspace (org) switcher. Centre: search. Right side: action cluster. |
+| Module switcher | `components/layout/header/product-switcher-menu.tsx`, `product-grid.tsx`, `product-tile.tsx` | Trigger `h-8 px-2 gap-1.5 rounded-lg max-w-[10rem]` with a 20px accent icon square, a `text-xs` label and a rotating chevron. It opens on hover (175ms close delay) or click into a 440px popover with a "Modules" micro-label and a `grid-cols-2 gap-1` tile grid. Tiles: `rounded-lg p-2.5 gap-2.5`, 32px accent icon, label plus one-line description. The active tile gets an accent border (1.5px) and a check icon. On mobile the grid becomes a bottom drawer. |
+| Nav config | `components/layout/sidebar/sidebar-nav-types.ts`, `sidebar-products.ts` | `ProductKey` union, `PRODUCT_DEFINITIONS {key,label,href,icon}`, `PRODUCT_DESCRIPTIONS`, `MODULE_ACCENTS {text,bg,indicator,border}`, `getProductFromPathname()` (longest-prefix match plus an exceptions list). Each nav group carries `product`. Each route can carry `activePrefixes`, `inactivePrefixes` and `exact`. |
+| RBAC-filtered modules | `product-switcher-menu.tsx` (`visibleProducts`) | A module is listed only if the user can reach ≥1 of its routes. The module's link points at the **first accessible route**. |
+| Contextual sidebar | `components/layout/sidebar/sidebar-section.tsx`, `app-sidebar.tsx` | The sidebar shows **only the current module's groups**. Group header: `text-micro font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/65`, collapsible. Items: `py-1.5 gap-2.5 pr-2`, radius 6px, 13px/500. Active item: `bg-sidebar-accent` plus a left indicator `h-4 w-[3px] rounded-r-full` in the accent colour. Icons 16px (children 14px). Badges `h-[18px] rounded-full`. Collapsed mode: 32×32 centred icons with right-side tooltips. A module with a single group hides its group label. |
+| Mobile bottom nav | `components/layout/mobile-module-bottom-nav.tsx` | Up to **5** tabs (`MAX_MOBILE_MODULE_TABS = 5`) for the current module's top destinations, plus a "More" drawer. |
+| Tokens | `frontend/globals.css`, `themes.css` | Radius `0.625rem`. Cool-neutral canvas (`#f8fafc`). White sidebar and header in light mode. Visible borders (`#cbd5e1`). `sidebar-accent` = primary at 8%. Dark mode is zinc-black. Status tokens use a `surface / ink / rule` triplet. Module accent colours appear **only in identity moments** (icon squares, active indicator). |
+| UI kit | `frontend/UI-KIT.md` | `PageWrapper` header/filters/content with one scroller. Page title `text-base sm:text-lg font-semibold` (display variant for hubs). `PAGE_CHROME_X = px-4 sm:px-6 lg:px-8`. Cards `rounded-xl border-border/70 shadow-sm p-4`. Compact StatCard (~56px tall) in a single horizontally scrolling `StatCardGrid` row. DataTable: `h-10` sticky header `bg-muted border-b-2`, rows `hover:bg-muted`, a mobile card mode below `sm`. Overlay ladder: inline → popover → Dialog `sm:max-w-md` → Sheet → page. Sheets use `p-0` with sticky header and footer. Filter row: one non-wrapping row, search first. Controls `h-9`. One primary button per view. Segmented tabs. Motion 150ms (sheets 200ms). List keys `/` `j` `k` `Enter` `e` `c` `Esc`. |
+
+### 2A.2 Streamline → Miyo translation table
+| Streamline pattern | Miyo implementation |
+|---|---|
+| White header + white sidebar, neutral chrome, brand colour only for identity | Light theme: `--sidebar` = `#FFFFFF`, header uses the same surface. Canvas = ink-50 `#FBFAF6` (warm). Borders = ink-300 `#D5D4D0`. Gold appears only for the active indicator, the primary CTA, focus, the logo and the active module tab underline. Dark theme: sidebar and header `#0A0908`, canvas ink-950. |
+| `sidebar-accent` = primary 8% | `--sidebar-accent: color-mix(in oklab, var(--ink-900) 6%, transparent)` (light) / `color-mix(in oklab, #FFF 7%, transparent)` (dark). This is a neutral wash; never use gold for hover. |
+| Module accent per product (blue/violet/emerald…) | Use Miyo tone tokens (§5.3) and only for the 20/32px module icon chip in tabs, tiles and the sidebar header. **The active indicator is always gold-400** (brand). Accents: Home = `brand` (gold), HR = `teal`, Recruitment = `plum`, Projects & Time = `info`, Support = `warning`, CRM = `success`, Admin = `neutral`. |
+| Geist sans single family | Plus Jakarta Sans for all UI. Montserrat only for the brand wordmark, the hub "display" title variant, KPI values, auth and landing (§3.5). |
+| `text-micro` / dense 11px / label 13px | Miyo `text-3xs` (10px) / `text-2xs` (11px) / `text-sm` (13px). The scales line up 1:1. |
+| Square icon tiles (`rounded-md`) | Miyo keeps its **circle motif** (`rounded-full` icon chips) from the logo. This is the one deliberate visual departure. |
+| Ink CTA (`bg-primary` = slate-900) | Miyo primary stays **gold fill + ink text** (§3.3). Use `variant="secondary"` (ink fill, white text) wherever Streamline would use a second strong button. |
+| vaul `Drawer` (bottom) | Miyo has no vaul. Use the existing `components/ui/sheet.tsx` with `side="bottom"`, styled `h-[96dvh] rounded-t-xl bg-sidebar pb-[env(safe-area-inset-bottom)]`. **Add no dependency.** |
 
 ---
 
@@ -181,13 +228,13 @@ Keep shadcn's semantic **names** (components depend on them) but **every value i
 | `--neutral-soft` / `--neutral-strong` | ink-100 / ink-700 `#43423F` | `color-mix(in oklab, #FFFFFF 8%, transparent)` / ink-300 | Draft / inactive / unknown |
 | `--teal-soft` / `--teal-strong` | teal-50 `#EAFBF8` / teal-700 `#197269` | `color-mix(in oklab, #40B3A6 16%, transparent)` / teal-300 `#86D9CE` | Tags |
 | `--plum-soft` / `--plum-strong` | plum-50 `#F7F5FF` / plum-700 `#6A48BA` | `color-mix(in oklab, #A486FE 16%, transparent)` / plum-300 `#C9BDFF` | Tags |
-| `--sidebar` | ink-900 `#201E1F` | `#0A0908` | Sidebar is ink in BOTH modes (brand surface) |
-| `--sidebar-foreground` | ink-300 `#D5D4D0` | ink-300 | Nav labels |
-| `--sidebar-muted` | ink-400 `#A6A4A0` | ink-500 | Group labels |
-| `--sidebar-primary` / `-foreground` | gold-400 / ink-950 | gold-400 / ink-950 | Active indicator, logo chip |
-| `--sidebar-accent` / `-foreground` | `color-mix(in oklab, #FFFFFF 7%, transparent)` / `#FFFFFF` | same | Active/hover row |
-| `--sidebar-border` | `color-mix(in oklab, #FFFFFF 8%, transparent)` | same | |
-| `--sidebar-ring` | gold-400 | gold-400 | |
+| `--sidebar` | `#FFFFFF` | `#0A0908` | Header **and** sidebar surface (Streamline: white chrome in light, near-black in dark) |
+| `--sidebar-foreground` | ink-900 `#201E1F` | ink-100 `#F5F3EF` | Nav labels (rendered at /80 when inactive) |
+| `--sidebar-muted` | ink-600 `#5C5B57` | ink-400 `#A6A4A0` | Group labels, inactive icons |
+| `--sidebar-primary` / `-foreground` | gold-400 / ink-950 | gold-400 / ink-950 | Active indicator bar, active tab underline (via `--primary`), logo |
+| `--sidebar-accent` / `-foreground` | `color-mix(in oklab, #201E1F 6%, transparent)` / ink-900 | `color-mix(in oklab, #FFFFFF 7%, transparent)` / `#FFFFFF` | Active/hover row (neutral wash, never gold) |
+| `--sidebar-border` | ink-200 `#E8E6E2` | `color-mix(in oklab, #FFFFFF 9%, transparent)` | Header bottom border, sidebar right border |
+| `--sidebar-ring` | gold-600 | gold-400 | |
 | `--chart-1…8` | gold-500 `#BF9A15`, ink-700 `#43423F`, info-600 `#3E78F2`, teal-600 `#2B9287`, plum-600 `#8861E9`, warning-500 `#EC7C11`, success-600 `#25984A`, danger-500 `#FF6459` | gold-400, ink-300 `#D5D4D0`, info-400, teal-400 `#5FC7BA`, plum-400 `#B6A2FF`, warning-400, success-400, danger-400 `#FE8E82` | Categorical series in this order |
 | `--chart-grid` / `--chart-axis` | ink-200 / ink-500 | `color-mix(in oklab, #FFFFFF 8%, transparent)` / ink-400 | Recharts grid & ticks |
 | `--overlay` | `color-mix(in oklab, #100F0D 55%, transparent)` | `color-mix(in oklab, #000 70%, transparent)` | Dialog/Sheet scrim |
@@ -281,7 +328,7 @@ Mapping for the 1,318 arbitrary sizes: `text-[7px]|[8px]|[9px]` → `text-3xs` (
 
 ### 3.6 Spacing, layout, radius, elevation, motion, z-index
 
-- **Spacing:** Tailwind 4px base. Page gutter: `px-4 sm:px-6 xl:px-8`. Section gap `gap-6`, card inner `p-5`, dense card `p-4`. Max content width for reading pages: `max-w-5xl`; data pages full width.
+- **Spacing:** Tailwind 4px base. Page gutter (Streamline `PAGE_CHROME_X`): `px-4 sm:px-6 lg:px-8`. Section gap `gap-4 lg:gap-6`, card inner `p-4` (Streamline default), roomy hero card `p-5`. Cards `rounded-xl border border-border/70 shadow-xs`. Max content width for reading pages: `max-w-5xl`; data pages full width.
 - **Radius:** `--radius: 0.625rem` (10px). `--radius-xs 4px` (chips inside inputs), `--radius-sm 6px` (checkbox, small buttons), `--radius-md 8px` (inputs, buttons), `--radius-lg 10px` (cards, popovers), `--radius-xl 14px` (dialogs, sheets' inner panels, auth card), `--radius-2xl 20px` (landing/hero cards), `rounded-full` for avatars, status dots, pills, icon chips (**circle motif**).
 - **Elevation (new, replaces `shadow-soft/medium/noir/gold`, `glow-gold`):**
   - `--shadow-xs: 0 1px 2px 0 rgb(16 15 13 / 0.05)`
@@ -292,14 +339,14 @@ Mapping for the 1,318 arbitrary sizes: `text-[7px]|[8px]|[9px]` → `text-3xs` (
   - Dark mode: shadows at 2.5× alpha with `rgb(0 0 0 / …)`, plus cards rely on `--border` (1px) rather than shadow.
   - Expose as Tailwind `shadow-xs|sm|md|lg|focus` via `@theme` (`--shadow-*`).
 - **Motion:** `--ease-out: cubic-bezier(0.22, 1, 0.36, 1)`, `--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1)`; durations `--dur-fast 120ms` (hover/press), `--dur-base 180ms` (menus, tabs), `--dur-slow 260ms` (sheets, dialogs), `--dur-page 220ms` (page fade). Rewrite `lib/motion-variants.ts` values to these (keep export names `staggerContainer`, `fadeUp`, `fadeIn`, `slideInLeft`, …; reduce `y` offsets to 8px, stagger to 0.04s). Keep `MotionProvider` (`reducedMotion="user"`). CSS keyframes: keep names used in code (`animate-fade-up`, `animate-fade-in`, `animate-scale-in`, `animate-slide-in-right`, `animate-badge-pop`) but re-implement with new tokens; delete `gold-pulse`, `scan` unless grep shows usage (then rename to `pulse-soft`).
-- **Z-index scale** (`@theme` `--z-*` + utilities): `z-base 0`, `z-sticky 20` (sticky table headers, page headers), `z-sidebar 30`, `z-topbar 40`, `z-dropdown 50`, `z-overlay 60` (scrims), `z-modal 70` (dialog/sheet), `z-popover 80` (popover inside modal, combobox), `z-toast 90`, `z-skip-link 100`. Replace the 4 arbitrary `z-[N]` (`z-[100]` mobile sheet → `z-modal`, `z-[200]` skip link → `z-skip-link`) and Sonner's `z-index: 9999` → `var(--z-toast)`.
-- **Breakpoints:** Tailwind defaults (`sm 640`, `md 768`, `lg 1024`, `xl 1280`, `2xl 1536`). Sidebar becomes persistent at `lg` (matches `DESKTOP_SIDEBAR_MIN_WIDTH = 1024` in `components/layout/dashboard-shell.tsx`).
+- **Z-index scale** (`@theme` `--z-*` + utilities): `z-base 0`, `z-sticky 20` (sticky table headers, page headers), `z-sidebar 30`, `z-topbar 40` (global header), `z-dropdown 50`, `z-overlay 60` (scrims), `z-modal 70` (dialog/sheet), `z-popover 80` (popover inside modal, combobox), `z-toast 90`, `z-skip-link 100`. Replace the 4 arbitrary `z-[N]` (`z-[100]` mobile sheet → `z-modal`, `z-[200]` skip link → `z-skip-link`) and Sonner's `z-index: 9999` → `var(--z-toast)`.
+- **Breakpoints:** Tailwind defaults (`sm 640`, `md 768`, `lg 1024`, `xl 1280`, `2xl 1536`). Header is always visible. The contextual sidebar becomes persistent at `lg` (matches `DESKTOP_SIDEBAR_MIN_WIDTH = 1024` in `components/layout/dashboard-shell.tsx`).
 
 ### 3.7 Iconography & imagery
-- Keep **lucide-react** (no new icon lib). Global defaults: `strokeWidth={1.75}`, sizes `size-4` (inline, buttons, nav), `size-5` (topbar), `size-6` (empty states). Add a `components/ui/icon.tsx` wrapper only if needed for defaults; otherwise set via CSS `[data-slot=button] svg { stroke-width: 1.75 }`.
+- Keep **lucide-react** (no new icon lib). Global defaults: `strokeWidth={1.75}`, sizes `size-4` (inline, buttons, nav), `size-5` (header, bottom nav), `size-6` (empty states). Add a `components/ui/icon.tsx` wrapper only if needed for defaults; otherwise set via CSS `[data-slot=button] svg { stroke-width: 1.75 }`.
 - **Icon chips:** circular (`rounded-full size-9`) with tone-soft background + tone-strong icon. This is the logo circle motif — use for KPI cards, empty states, notification items, timeline nodes.
 - Illustrations (`components/illustrations/*.tsx`, `_shared.tsx` has 7 hex): recolor to tokens via `currentColor` + CSS vars: primary strokes `var(--ink-700)`, accents `var(--gold-400)`, fills `var(--ink-100)` (dark: `var(--ink-800)`). `public/illustrations/undraw-*.svg` contain undraw's default purple (`#6c63ff`-style) — either recolor the files' accent hex to `#D4AF37` (they are static assets, allowed) or stop using them in favor of the component illustrations. `auth-hero.svg`: recolor accents to gold/ink.
-- Logo usage: on ink surfaces (sidebar, auth right panel, landing hero, careers header) use `/logo.svg` (gold circle) at 28–32px + text "Miyo Global" in display 700 white with "CRM" in ink-400; on light surfaces same lockup in ink-900. Never apply gradients or `gold-text` to the brand name. Minimum clear space = 0.5× logo height.
+- Logo usage: in the global header (white/near-black chrome) use `/logo.svg` 32px plus "Miyo Global" `font-display font-bold text-foreground`. On ink surfaces (auth right panel, landing hero, careers header) use `/logo.svg` (gold circle) at 28–32px + text "Miyo Global" in display 700 white with "CRM" in ink-400; on light surfaces same lockup in ink-900. Never apply gradients or `gold-text` to the brand name. Minimum clear space = 0.5× logo height.
 
 ### 3.8 The new `globals.css` (write this file from scratch; delete everything that was there)
 
@@ -434,10 +481,10 @@ Move to `app/globals.css`? **No** — keep the path `globals.css` at repo root (
   --chart-1: var(--gold-500); --chart-2: var(--ink-700); --chart-3: var(--info-600); --chart-4: var(--teal-600);
   --chart-5: var(--plum-600); --chart-6: var(--warning-500); --chart-7: var(--success-600); --chart-8: var(--danger-500);
   --chart-grid: var(--ink-200); --chart-axis: var(--ink-500);
-  --sidebar: var(--ink-900); --sidebar-foreground: var(--ink-300); --sidebar-muted: var(--ink-400);
+  --sidebar: #FFFFFF; --sidebar-foreground: var(--ink-900); --sidebar-muted: var(--ink-600);
   --sidebar-primary: var(--gold-400); --sidebar-primary-foreground: var(--ink-950);
-  --sidebar-accent: color-mix(in oklab, #FFFFFF 7%, transparent); --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: color-mix(in oklab, #FFFFFF 8%, transparent); --sidebar-ring: var(--gold-400);
+  --sidebar-accent: color-mix(in oklab, var(--ink-900) 6%, transparent); --sidebar-accent-foreground: var(--ink-900);
+  --sidebar-border: var(--ink-200); --sidebar-ring: var(--gold-600);
   --overlay: color-mix(in oklab, var(--ink-950) 55%, transparent);
   --selection: color-mix(in oklab, var(--gold-400) 35%, transparent);
   --shadow-color: 16 15 13;
@@ -469,7 +516,9 @@ Move to `app/globals.css`? **No** — keep the path `globals.css` at repo root (
   --chart-1: var(--gold-400); --chart-2: var(--ink-300); --chart-3: var(--info-400); --chart-4: var(--teal-400);
   --chart-5: var(--plum-400); --chart-6: var(--warning-400); --chart-7: var(--success-400); --chart-8: var(--danger-400);
   --chart-grid: color-mix(in oklab, #FFFFFF 8%, transparent); --chart-axis: var(--ink-400);
-  --sidebar: #0A0908; --sidebar-foreground: var(--ink-300); --sidebar-muted: var(--ink-500);
+  --sidebar: #0A0908; --sidebar-foreground: var(--ink-100); --sidebar-muted: var(--ink-400);
+  --sidebar-accent: color-mix(in oklab, #FFFFFF 7%, transparent); --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: color-mix(in oklab, #FFFFFF 9%, transparent); --sidebar-ring: var(--gold-400);
   --overlay: color-mix(in oklab, #000 70%, transparent);
   --shadow-color: 0 0 0;
 }
@@ -684,8 +733,8 @@ Notes:
    - `<body className="font-sans h-full min-h-0 bg-background text-foreground antialiased">` — delete `selection:bg-gold/30 selection:text-gold noir-grain` (noir-grain was never defined).
    - Add `export const viewport = { themeColor: [{ media: "(prefers-color-scheme: light)", color: "#FBFAF6" }, { media: "(prefers-color-scheme: dark)", color: "#100F0D" }] }`.
    - Keep metadata/`resolveMetadataBase` untouched.
-2. New `components/layout/theme-toggle.tsx` (client): `useTheme()` from `next-themes`; 3-way segmented control (Sun / Moon / Monitor icons) with `aria-label`s; mounted-guard to avoid hydration mismatch. Place in `sidebar-user-menu.tsx` dropdown (as a submenu row) and in `features/settings/settings-preferences.tsx` (as 3 radio cards with mini previews).
-3. Dark-mode QA every page (§12). Because the sidebar is ink in both modes, it should look identical in both.
+2. New `components/layout/theme-toggle.tsx` (client): `useTheme()` from `next-themes`; 3-way segmented control (Sun / Moon / Monitor icons) with `aria-label`s; mounted-guard to avoid hydration mismatch. Place in the header user menu (`header/user-avatar-menu.tsx`) dropdown (as a submenu row) and in `features/settings/settings-preferences.tsx` (as 3 radio cards with mini previews).
+3. Dark-mode QA every page (§12). Header and sidebar share the `--sidebar` surface: white in light mode, `#0A0908` in dark (Streamline pattern). Check the gold active indicator, tab underline and module chips in both themes.
 
 ---
 
@@ -706,10 +755,10 @@ Notes:
 | `gradient-gold` / `gradient-brand` / `gradient-wizard` | `bg-primary` / `brand-mark-bg` / progress uses `bg-primary` |
 | `gradient-green` | `bg-success` |
 | `gradient-dark`, `noir-mesh`, `auth-bg` | `bg-background` (app) or `brand-mark-bg` (auth/landing hero) |
-| `glass` | `bg-background/85 backdrop-blur-md border-b border-border` (topbar only) |
+| `glass` | `bg-sidebar/95 backdrop-blur-xl border-b border-sidebar-border` (global header only) |
 | `press-scale` | `active:scale-[0.98] transition-transform duration-100` built into Button |
 | `filter-chip` / `.active` | `<FilterChip>` component (§6) |
-| `nav-item` | `<SidebarNavItem>` styles (§7.1) |
+| `nav-item` | `<SidebarNavItem>` styles (§7.4) |
 | `page-enter` | `animate-fade-up` |
 | `text-gold`, `text-gold/NN` | `text-brand-text` |
 | `bg-gold`, `bg-gold/10…/20` | `bg-primary` (solid) / `bg-brand-soft` (tints) |
@@ -830,7 +879,7 @@ General rules for every component: use only semantic tokens; focus = `focus-visi
 | `dropdown-menu.tsx` | Content as select content; items `h-8 rounded-sm px-2 gap-2 text-sm`, icons `text-muted-foreground size-4`; destructive items `text-destructive focus:bg-danger-soft`; shortcut hint `ml-auto text-2xs text-subtle-foreground font-mono`; separators `-mx-1 my-1 h-px bg-border`; labels `text-2xs uppercase tracking-wider text-subtle-foreground px-2 py-1.5`. |
 | `command.tsx` | Used by command palette & comboboxes: input row `h-12 border-b px-4 text-base`, groups headings like dropdown labels, items `h-9 rounded-md px-3 data-[selected=true]:bg-accent` (remove `bg-white/20 text-white` from `components/layout/command-palette.tsx` line ~57). |
 | `tabs.tsx` | Two styles via `variant`: **underline** (default for page-level tabs): list `border-b gap-6 h-10`, trigger `text-sm font-medium text-muted-foreground data-[state=active]:text-foreground` + 2px bottom bar `bg-primary` (animated with framer `layoutId` only if already using motion there; else CSS). **segmented** (view toggles): list `bg-muted rounded-md p-0.5 h-8`, trigger `rounded-sm px-3 data-[state=active]:bg-card data-[state=active]:shadow-xs`. |
-| `table.tsx` | Wrapper `rounded-lg border bg-card overflow-hidden`; `thead` `bg-surface-sunken sticky top-0 z-sticky`; `th` `h-9 px-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground text-left`; `td` `px-3 py-[var(--cell-py)] text-sm border-t border-border`; row hover `hover:bg-accent/60`; selected `data-[state=selected]:bg-brand-soft`; numeric cells `text-right tabular-nums`. Add `TableEmpty` helper row (colSpan, EmptyState compact). |
+| `table.tsx` | Wrapper `rounded-lg border bg-card overflow-hidden`; `thead` `bg-surface-sunken sticky top-0 z-sticky`; `th` `h-10 px-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground text-left bg-muted border-b-2 border-border` (Streamline DataTable); `td` `px-3 py-[var(--cell-py)] text-sm border-t border-border`; row hover `hover:bg-muted`; below `sm`, tables with a `mobileCard` renderer switch to stacked cards; selected `data-[state=selected]:bg-brand-soft`; numeric cells `text-right tabular-nums`. Add `TableEmpty` helper row (colSpan, EmptyState compact). |
 | `components/shared/data-table-pagination.tsx` | Left: "Showing 1–25 of 312" `text-xs text-muted-foreground`; right: rows-per-page select (sm) + icon-sm prev/next + page input. Sticky bottom inside table card `border-t px-3 h-11`. |
 | `avatar.tsx`, `avatar-stack.tsx`, `avatar-crop-dialog.tsx` | Avatar `rounded-full bg-ink-200 text-ink-700 font-semibold` fallback initials (text-3xs ≤20px, text-2xs 24–28, text-xs 32, text-sm 40, text-lg 64+); optional `ring` prop → `ring-2 ring-gold-400 ring-offset-2 ring-offset-background` (for managers/current user). Stack overlap `-space-x-2` with `ring-2 ring-card`; overflow "+N" chip neutral tone. Crop dialog uses Dialog lg; crop area bg `bg-ink-950`. |
 | `calendar.tsx` (react-day-picker v8) | Day cells `size-9 rounded-md text-sm`; today `font-semibold text-brand-text` + 4px gold dot below; selected `bg-primary text-primary-foreground`; range middle `bg-brand-soft rounded-none`; outside days `text-subtle-foreground`; nav buttons ghost icon-sm. Keep the classNames API (v8 `classNames` prop). |
@@ -841,7 +890,7 @@ General rules for every component: use only semantic tokens; focus = `focus-visi
 | `query-error-state.tsx`, `route-error-boundary.tsx` | Danger icon chip, title "Something went wrong", message, `Retry` (default) + `Copy error ID` (ghost, only if an id exists already). Keep test expectations in `query-error-state.test.tsx`. |
 | `min-length-hint.tsx` | `text-2xs text-subtle-foreground`, turns `text-success-strong` with `Check` icon when satisfied. Keep test behavior. |
 | `stat-card.tsx` | KPI card: label `text-2xs uppercase tracking-wider text-muted-foreground`; value `text-3xl font-display font-extrabold tabular-nums`; delta chip (success/danger tone with `TrendingUp/Down` icon); optional 36px circular icon chip top-right (tone prop); optional sparkline (recharts `Area`, `var(--chart-1)`, 32px tall). Remove the 2px top color bar (`absolute top-0 … h-[2px]`). |
-| `page-wrapper.tsx` | See §7.3 (page header). Keep all props (`title, subtitle, badge, actions, filters, stickyHeader, noInternalScroll, contentClassName`). Add optional `eyebrow?: ReactNode` and `breadcrumbs?: {label, href?}[]` props (render `<Breadcrumbs>`); default breadcrumbs derived from pathname + nav labels when not passed. |
+| `page-wrapper.tsx` | See §7.9 (page header). Keep all props (`title, subtitle, badge, actions, filters, stickyHeader, noInternalScroll, contentClassName`). Add optional `eyebrow?: ReactNode` and `breadcrumbs?: {label, href?}[]` props (render `<Breadcrumbs>`); default breadcrumbs derived from pathname + nav labels when not passed. |
 | `page-back-button.tsx` | Ghost `sm` button with `ArrowLeft`, label "Back"; keep `lib/navigation/resolve-back-href.ts` logic. |
 | `export-button.tsx` | Outline button with `Download` icon + dropdown (CSV/XLSX/PDF as existing). |
 | `scroll-area.tsx`, `separator.tsx` | Scrollbar thumb `bg-foreground/15 hover:bg-foreground/25 rounded-full w-2`; separator `bg-border`. |
@@ -877,43 +926,217 @@ General rules for every component: use only semantic tokens; focus = `focus-visi
 
 ---
 
-## 7. App shell redesign
+## 7. App shell redesign — Streamline-style top-nav modules + contextual sidebar
 
-### 7.1 Sidebar — `components/layout/app-sidebar.tsx`, `sidebar/sidebar-section.tsx`, `sidebar/sidebar-user-menu.tsx`, `notification-bell.tsx`
-- Surface: `bg-sidebar text-sidebar-foreground` (ink in both themes). Width expanded `16rem` (change `SIDEBAR_EXPANDED_W` from `17rem` → `16rem` in `dashboard-shell.tsx`), collapsed `4rem` (from `3.5rem`). Keep cookie logic.
-- **Header (h-14):** logo chip = `/logo.svg` 28px (it is already a gold circle — no extra ring/bg) + "Miyo Global" `font-display font-bold text-white text-sm` + "CRM" `text-sidebar-muted text-2xs`. Collapse button = ghost icon-sm `ChevronsLeft` (rotates when collapsed), tooltip "Collapse sidebar ( [ )".
-- **Org switcher** (if `organizations.length > 1`): row under header, `h-9 rounded-md bg-sidebar-accent px-2` with org initials avatar + name + `ChevronsUpDown`.
-- **Search trigger:** `h-9 rounded-md border border-sidebar-border bg-sidebar-accent/50` + `Search` icon + "Search…" + `⌘K` Kbd (opens command palette). Collapsed: icon button.
-- **Groups** (from `sidebar-nav-items.ts`, unchanged data): label row `h-7 px-3 text-2xs font-semibold uppercase tracking-[0.08em] text-sidebar-muted` with chevron to collapse (keep localStorage `sidebar-groups`). Group containing the active route auto-expands.
-- **Item:** `h-8 rounded-md px-2.5 gap-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-white`; icon `size-4 stroke-[1.75] text-sidebar-muted group-hover:text-white`. **Active:** `bg-sidebar-accent text-white` + icon `text-sidebar-primary` + 6px gold circle indicator at left edge (`before:absolute before:-left-2.5 before:size-1.5 before:rounded-full before:bg-sidebar-primary` — the logo circle motif) and `aria-current="page"`. Sub-items (`isSubItem`): `pl-9 h-7 text-sm text-sidebar-foreground/80`, connected by a 1px `bg-sidebar-border` vertical guide at `left-[18px]`. Badges (e.g. `badge: "leaves"`): `ml-auto h-5 min-w-5 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-3xs font-bold`.
-- **Collapsed mode:** icons centered 40px hit area, tooltip with label (side right), group labels become 1px dividers, active indicator becomes left 3px gold bar rounded.
-- **Footer:** notification bell (ghost icon with gold count dot) + theme toggle (icon) + user menu (`sidebar-user-menu.tsx`: avatar 28px with ring when active, name `text-sm text-white`, role `text-2xs text-sidebar-muted`; dropdown: Profile, Preferences, Theme ▸ (Light/Dark/System), Keyboard shortcuts (?), Sign out (destructive)).
-- Scroll area for nav with top/bottom fade masks (`mask-image: linear-gradient(...)`).
-- Delete `.sidebar-deco` dividers; use `border-sidebar-border`.
+**Before:** one long sidebar with 12–15 groups (Core, HR – People … HR – Compensation, Recruitment, CRM, CRM Settings, Finance, Projects & Time, System), with search, bell and user menu crammed into the sidebar footer.
+**After:** a full-width **global header** with a **module switcher**. The **sidebar shows only the current module's pages**, in sub-groups. Search, notifications, Create, the user menu and the org identity live in the header. This mirrors Streamline (§2A).
 
-### 7.2 Topbar (new) — inside `components/layout/dashboard-shell.tsx`
-Add a sticky topbar at the top of `#dashboard-content` for **all breakpoints**: `h-14 border-b border-border bg-background/85 backdrop-blur-md z-topbar px-4 sm:px-6 flex items-center gap-3`:
-- Mobile (<lg): menu button (opens existing Sheet with `AppSidebar`, now `side="left" w-[16rem] z-modal`), logo lockup, spacer, search icon (opens palette), bell.
-- Desktop: breadcrumbs (from `components/ui/breadcrumbs.tsx`, derived from pathname + nav labels via `getLongestMatchingNavPath`), spacer, global search button (`w-72`, "Search or jump to…", `⌘K`), "Create" split button (New lead / New deal / New ticket / Log time / Apply leave — **links/openers to existing routes/dialogs only, do not add new mutations**; show only items the role's nav already contains), bell, theme toggle.
-- Keep the skip link (restyle: `focus:z-skip-link focus:bg-primary focus:text-primary-foreground`).
-- `PageWrapper` header sits under topbar; with `stickyHeader` it sticks at `top-14`.
+### 7.0 Information architecture — the modules
 
-### 7.3 Page header — `components/ui/page-wrapper.tsx`
-`px-4 sm:px-6 xl:px-8 pt-6 pb-4`; eyebrow (optional) `text-2xs uppercase tracking-[0.08em] text-brand-text font-semibold`; h1 `text-2xl font-display font-bold`; badge = neutral pill; subtitle `text-sm text-muted-foreground mt-1 max-w-3xl`; actions right (wrap on mobile, primary last). Filters row below: `border-y border-border bg-background px-4 sm:px-6 py-2` horizontally scrollable with fade edges. Content padding `px-4 sm:px-6 xl:px-8 pb-10`.
+Modules appear in this order in the header. A module is shown only to roles that have ≥1 of its routes in `getNavGroupsForRole(role)` (see §7.1).
 
-### 7.4 Command palette — `components/layout/command-palette.tsx`
-Dialog `max-w-xl top-[15vh] rounded-xl shadow-lg p-0`. Input row with `Search` icon, placeholder "Search pages, people, deals…", `Esc` Kbd. Groups: **Recent** (last 5 visited routes from `localStorage` key `cmdk-recent` — UI-only), **Navigation** (existing nav groups, item shows group label right-aligned `text-2xs text-subtle-foreground`), **Actions** (theme toggle, toggle compact density, sign out — reuse existing handlers), plus any existing search results (keep data hooks unchanged). Item icons in 24px rounded-md `bg-muted` chips; selected item `bg-accent` with left 2px gold bar. Footer hint bar `h-9 border-t px-3 text-2xs text-muted-foreground`: `↑↓ navigate · ↵ open · esc close`. Keep `⌘K / Ctrl+K` binding (line ~92).
+| # | Key | Label (tab) | Icon (lucide) | Accent tone | Default href | Description (tile) | Sidebar groups (in order) |
+|---|---|---|---|---|---|---|---|
+| 1 | `home` | Home | `LayoutDashboard` | brand | `/dashboard` | Dashboard, calendar & inbox | **Overview** (Dashboard, Calendar, Notifications, Overdue tasks) · **Insights** (Reports, AI Hub) · **Admin tools** (System Health, Branches, QR Codes) |
+| 2 | `hr` | HR | `Users` | teal | `/hr` | Employees, time off, payroll & growth | **People** · **Operations** · **Lifecycle** · **Documents** · **Assets** · **Support** · **Growth** · **Compensation** (admins/HR). Non-admin roles get **My HR** (and the `Me` routes) instead |
+| 3 | `recruitment` | Recruitment | `BriefcaseBusiness` | plum | `/hr/recruitment` | Jobs, candidates & interviews | **Overview** (Recruitment Hub) · **Hiring** (Jobs, Candidates, Pipeline, Interviews) · **Setup** (Question Bank, Hiring Flows) |
+| 4 | `work` | Projects & Time | `FolderKanban` | info | `/projects` | Projects, sprints & timesheets | **Projects** (All Projects / My Projects, Templates, Resource Allocation) · **Time** (Timesheets, Team Timesheets, Work Logs). Inside `/projects/[projectId]/**` the sidebar is replaced by the **project workspace sidebar** (§7.6) |
+| 5 | `support` | Support | `LifeBuoy` | warning | `/support` | Tickets & support inbox | **Helpdesk** (All Tickets, Support Inbox). The label is hidden because it is a single group |
+| 6 | `crm` | CRM | `Handshake` | success | `/crm` | Leads, deals, accounts & billing | **Conditional** (see the warning below): **Overview** · **Leads** · **Deals** · **Accounts** · **Performance** · **Billing** · **CRM Settings** (collapsed by default) |
+| 7 | `admin` | Admin | `Settings2` | neutral | `/settings/organization` | Organization, access & configuration | **Workspace** (Organization, Branches, Members, Notifications) · **Access** (Roles & Permissions, Permission Matrix, Audit Log) · **HR configuration** (Job Roles, Job office locations, Payroll Schedule, Termination Reasons, Custom Fields, Email templates) · **Integrations & data** (Webhooks, AI Settings, Recruitment Integrations, Data Hub) |
+| — | `account` | *(no tab)* | `UserRound` | — | `/settings` | Personal settings | Profile, Security, Preferences. Reached from the user menu. While on `/settings` (catch-all personal page) no module tab is active and the sidebar shows the Account group |
 
-### 7.5 Project secondary nav — `components/layout/project-sidebar.tsx` + `app/(dashboard)/projects/[projectId]/layout.tsx`
-Convert to a horizontal **project header + tab bar** under the topbar on ≥lg (project avatar (colored circle using stored project color) + name + key mono + member stack + settings icon), tabs: Board, Backlog, Sprints, Cycles, Epics, Modules, Timeline, Views, Pages, Intake, Milestones, Budget, Analytics, My tickets, Settings (same hrefs; overflow into "More" dropdown). On <lg: a select dropdown. Keep existing `access-denied-view.tsx` logic.
+The 7 tabs are the hard maximum.
 
-### 7.6 CRM settings nav — `app/(dashboard)/crm/settings/layout.tsx`
-Left sub-nav (200px) on ≥md: Assignment rules, Email templates, Scoring rules, SLA — `h-8 rounded-md` items, active `bg-accent font-medium` + gold dot. <md: underline Tabs.
+> ⚠️ **CRM/Finance are being removed right now.** At audit time (11 Oct 2026, ~22:15 IST) the working tree had **uncommitted and staged** changes deleting all `/crm/**` and `/billing/**` routes, the CRM, CRM Settings and Finance nav groups, the CRM/deals/leads/quotes/targets/invoices APIs and `features/crm/**` (about 279 changed paths; 140 pages remain, down from 172). **Build the `crm` module only if `app/(dashboard)/crm` still exists on your branch.** If it doesn't, omit `crm` from `MODULES`. Billing never becomes a separate module: if `/billing` exists, it is the `Billing` group inside `crm`. Do not resurrect deleted files.
 
-### 7.7 Error/404/global — `app/not-found.tsx`, `app/(dashboard)/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, all 117 `error.tsx`
+**HR sidebar detail (admin/HR roles).** Keep the existing labels, icons and hrefs from `sidebar-nav-items.ts`. Only the group container changes: `HR – People` → group **People** of module `hr`, and so on for the other HR groups. The old `Core` group is split as follows:
+- Dashboard, Calendar and Notifications go to Home › Overview.
+- System Health, Branches and QR Codes go to Home › Admin tools.
+- AI Hub goes to Home › Insights.
+
+`System` moves to `admin`. `Reports` moves to Home › Insights. `Work Logs` moves from HR – Operations to Projects & Time › Time. `All Tickets` / `Support Inbox` move to Support, wherever they appear today (HR – Support for admins, the `Helpdesk` group for CUSTOMER_SUPPORT). `Helpdesk` (`/hr/helpdesk`) and `HR Analytics` stay in HR › Support.
+
+**Non-admin roles** (SALES, CUSTOMER_SUPPORT, DIGITAL_MARKETING, ENGINEERING/DESIGN/VIDEO_EDITOR, default):
+- `Core` → Home › Overview.
+- `My Work` → Projects & Time (My Projects → Projects, Work Logs → Time).
+- `My HR` → the HR module, whose sidebar then shows one group, **My HR**, with the label hidden. Its items are My Leaves, My Expenses, My Attendance, My Payslips, My Bonuses, My Assets, Career Ladders, Holidays, Exit and Helpdesk.
+- `Helpdesk` (CUSTOMER_SUPPORT only) → Support.
+
+These roles therefore see 3–4 tabs: Home, HR, Projects & Time, and Support for CUSTOMER_SUPPORT.
+
+The **complete route → module → group map for all 172 routes** (140 if CRM/Billing are gone) is in **Appendix A**. Every route belongs to exactly one module; that module's tab is active on that route. Hidden routes (pages with no nav entry, e.g. `/hr/employees/[employeeId]`, `/hr/surveys`) highlight the parent item named in Appendix A. **Do not add new nav entries for hidden routes.** RBAC/visibility for those pages is a business decision, so leave it unchanged.
+
+### 7.1 Navigation config — new `lib/navigation/modules.ts` (+ test)
+Pure TypeScript, no React. Shape (mirrors Streamline's `sidebar-products.ts`):
+```ts
+export type ModuleKey = "home" | "hr" | "recruitment" | "work" | "support" | "crm" | "admin";
+export interface ModuleDef { key: ModuleKey; label: string; description: string; icon: LucideIcon; tone: Tone; defaultHref: string; shortcut: string /* "1".."7" */; prefixes: string[] }
+export const MODULES: ModuleDef[];                       // order = header order (§7.0)
+export const MODULE_GROUPS: Record<ModuleKey, { label: string; defaultCollapsed?: boolean }[]>; // group order per module
+export const ROUTE_PLACEMENT: Record<string /* nav href path */, { module: ModuleKey; group: string }>;
+export const PATH_EXCEPTIONS: { prefix: string; module: ModuleKey | "account" }[]; // e.g. "/hr/recruitment"→recruitment, "/hr/work-logs"→work, "/settings" exact→account
+export function getModuleForPath(pathname: string): ModuleKey | "account" | null; // longest-prefix, exceptions first
+export function getModuleNav(role: string | undefined, key: ModuleKey): NavGroup[];   // regrouped routes for the sidebar
+export function getVisibleModules(role: string | undefined): (ModuleDef & { href: string })[]; // href = first accessible route
+```
+Rules:
+- **`getNavGroupsForRole(role)` stays the single source of truth for what a role may see.** Do not edit its role switch, routes, labels or badges. `getModuleNav` = take `getNavGroupsForRole(role)`, flatten the routes, look each one up in `ROUTE_PLACEMENT` by `navHrefPath(href)`, bucket it into `MODULE_GROUPS[key]` order, drop empty groups, and keep `isSubItem` / `isProjectsList` / `badge` on each route.
+- Keep the existing `NavRoute` and `NavGroup` types. Add one optional field: `NavGroup.module?: ModuleKey`. If a route is missing from `ROUTE_PLACEMENT`, fall back to `getModuleForPath(href)` and put it in that module's last group. In dev, log `console.warn` once.
+- Prefix table (longest wins):
+  - `/hr/recruitment` → recruitment
+  - `/hr/work-logs` → work
+  - `/hr` → hr
+  - `/projects`, `/timesheets` → work
+  - `/support` → support
+  - `/crm`, `/billing` → crm
+  - `/settings/` (with a sub-path) → admin; `/settings` exact → account
+  - `/dashboard`, `/calendar`, `/notifications`, `/tasks`, `/reports`, `/ai`, `/ceo`, `/onboarding` → home
+- New `lib/navigation/modules.test.ts` (Vitest, node env):
+  - (a) every href from `getNavGroupsForRole` for every role (`CEO`, `ADMIN`, `HR`, `SALES`, `CUSTOMER_SUPPORT`, `DIGITAL_MARKETING`, `ENGINEERING`, `DESIGN`, `VIDEO_EDITOR`, `undefined`) has a placement;
+  - (b) `getModuleForPath` returns the Appendix A module for a sample of ≥ 30 routes, including dynamic segments;
+  - (c) `getVisibleModules("SALES")` contains neither `admin` nor `recruitment`; `getVisibleModules("CEO")` contains `admin`;
+  - (d) the flattened `getModuleNav` output for each role has exactly the same href set as `getNavGroupsForRole(role)`. This proves RBAC is unchanged.
+  - The existing `components/layout/sidebar/sidebar-nav-items.test.ts` must stay green without edits.
+
+### 7.2 Shell layout — `components/layout/dashboard-shell.tsx`
+```
+<div class="flex h-dvh flex-col overflow-hidden bg-background">
+  <SkipLink/>                                  // focus:z-skip-link
+  <GlobalHeader/>                              // h-14, sticky by construction (not inside the scroller)
+  <div class="flex min-h-0 flex-1">
+    <aside class="hidden lg:flex shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-out"
+           style={{ width: collapsed ? "3.5rem" : "17rem" }}>  <ModuleSidebar/> </aside>
+    <main id="dashboard-content" class="min-w-0 flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+4rem)] lg:pb-0">{children}</main>
+  </div>
+  <MobileModuleBottomNav/>                      // lg:hidden fixed bottom
+</div>
+```
+- Keep the `sidebar-collapsed` cookie, `DESKTOP_SIDEBAR_MIN_WIDTH = 1024`, `handleToggleSidebar` and the `[` shortcut. Width tokens: expanded `17rem`, collapsed `3.5rem` (the same values as today and Streamline).
+- The **old sidebar header, search box, org row, bell and user menu are removed from `app-sidebar.tsx`**. `app-sidebar.tsx` becomes a thin wrapper that renders `<ModuleSidebar module={current} />`. Keep the export name so imports don't break. Keep its session/role resilience logic (`lastKnownRoleRef`, loading skeleton).
+- Replace `z-[100]` on the mobile Sheet with `z-modal`.
+
+### 7.3 Global header — new `components/layout/header/global-header.tsx`
+`<header class="relative z-topbar flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar/95 px-4 shadow-xs backdrop-blur-xl supports-[backdrop-filter]:bg-sidebar/85">`
+
+**Desktop, from left to right:**
+1. **Brand** (`header-brand.tsx`): `/logo.svg` 32px plus "Miyo Global" `text-sm font-display font-bold text-foreground`, linking to `/dashboard`. Below `xl`, show the logo only.
+2. **Sidebar collapse toggle**: `size-8 rounded-lg` ghost, `PanelLeftClose`/`PanelLeftOpen`, tooltip "Collapse sidebar  [". Shown at `lg` and up only.
+3. Divider: `h-4 w-px bg-sidebar-border`.
+4. **Org identity** (`org-chip.tsx`): org initials avatar (20px circle, `brand-soft`) plus `organizations?.[0]?.name` (`text-xs font-medium max-w-[10rem] truncate`).
+   - Today there is no org-switching logic; `app-sidebar.tsx` reads `organizations[0]`. Render a static chip.
+   - Only if a switch handler already exists elsewhere in the codebase, make it a dropdown (Streamline `WorkspaceSwitcher` style). **Do not add org-switching logic.**
+5. **Module navigation** (`module-nav.tsx`), `flex-1 min-w-0`, with three responsive modes:
+   - **`xl` and up: inline tabs** (`nav aria-label="Modules"`, `flex items-center gap-0.5`).
+     - Each tab is a `Link` styled `relative h-14 px-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground`, with a 20px circular tone chip (`toneSoft[tone]` + icon `size-3`).
+     - **Active tab:** `text-foreground font-semibold`, plus `after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary` (gold underline) and `aria-current="page"`.
+     - Keyboard focus: `focus-visible:ring-2 ring-ring rounded-md`.
+     - Hover prefetch is Next's default `Link` prefetch; no change needed.
+   - **`lg`–`xl`, and any time the tabs overflow** (measure with `ResizeObserver`): show the active tab plus as many tabs as fit, then a **"More ▾"** tab. "More" is a `DropdownMenu` listing the remaining modules in the tile style (icon chip + label + description).
+   - **Below `lg`: module switcher trigger** (Streamline `ProductSwitcherMenu`): `h-8 px-2 gap-1.5 rounded-lg max-w-[10rem]`, active module chip (20px) plus label `text-xs font-medium` plus `ChevronDown` (rotates 180° when open).
+     - It opens a bottom Sheet (`side="bottom" h-auto max-h-[80dvh] rounded-t-xl`).
+     - The Sheet has the "Modules" eyebrow (`text-3xs uppercase tracking-[0.08em] text-muted-foreground`) and a `grid grid-cols-2 gap-1` of **ModuleTile**s.
+   - **ModuleTile** (also used by "More" and in the switcher popover): `rounded-lg p-2.5 flex gap-2.5 items-start border border-transparent hover:bg-accent`.
+     - 32px circular tone chip, label `text-sm font-medium`, description `text-xs text-muted-foreground line-clamp-1`.
+     - Active tile: `bg-brand-soft border-primary/60` plus `CircleCheck` `size-3.5 text-brand-text`.
+     - Entrance stagger 0.02s per tile with framer-motion (respect reduced motion).
+   - Optional (keep it if it is cheap): at `lg` and up, the same switcher popover (440px, `grid-cols-2`) opens from a `LayoutGrid` icon button at the far left of the tabs, for users who prefer the grid. Hover opens it, closing after 175ms.
+6. **Right cluster** (`header-actions.tsx`): `flex items-center gap-1 rounded-xl border border-sidebar-border/70 bg-sidebar-accent/30 p-1`, containing:
+   - **Search** button: at `xl` and up `h-8 w-56 justify-start rounded-lg border border-input bg-background px-3 text-xs text-muted-foreground` with "Search…" and a `⌘K` `Kbd`; at `lg`–`xl` an icon button. It opens the existing `command-palette.tsx`: reuse its open state or dispatch the same ⌘K keydown, as Streamline does.
+   - **Create** (`Plus`, ghost `size-8`): a dropdown of shortcuts to *existing* routes/dialogs that the role's nav contains. Examples: Apply leave → `/hr/leaves`, Log time → `/timesheets`, New project → `/projects`, New job → `/hr/recruitment/jobs/new`, New ticket → `/support`. Links only; **no new mutations**.
+   - **Bell**: the existing `notification-bell.tsx`, moved here. The trigger becomes ghost `size-8` with a 6px gold dot / count badge `h-[18px]`. The popover keeps its data hooks.
+   - Divider `h-5 w-px`.
+   - **User menu**: the existing `sidebar-user-menu.tsx` logic moved to `header/user-avatar-menu.tsx`. Keep a re-export from the old path.
+     - Avatar 28px. The dropdown (`align="end" w-64`) has a header (name, email, role badge), then Profile & settings (`/settings`), Preferences, Theme ▸ (Light/Dark/System, `theme-toggle.tsx`), Keyboard shortcuts (`?`), Admin (only if the `admin` module is visible), separator, Sign out (destructive).
+     - Keep `isAdmin` and all handlers.
+
+**Mobile header (below `lg`):** brand (logo only) · module switcher trigger · spacer · Search icon · Bell · Avatar. Create moves into the nav drawer footer. The bottom nav (§7.5) is the main mobile navigation; its **More** tab opens the **nav drawer** (§7.5). No separate hamburger is needed.
+
+### 7.4 Contextual sidebar — new `components/layout/sidebar/module-sidebar.tsx` (+ restyle `sidebar-section.tsx`)
+- Data: `getModuleNav(role, currentModule)`.
+- **Header row (expanded):** `h-11 px-3 flex items-center gap-2 border-b border-sidebar-border/60`, with the module tone chip (24px circle) and the module label `text-sm font-semibold`. Collapsed: the chip only, centred, with a tooltip.
+- **Nav:** `ScrollArea` with `py-2 px-2.5` (collapsed `px-1`) and top/bottom fade masks.
+- **Group header** (button, collapsible, `aria-expanded`): `flex h-7 w-full items-center justify-between px-2 text-3xs font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/65 hover:text-sidebar-foreground` with a `ChevronDown size-3` that rotates.
+  - Persist collapse in localStorage. **Migrate the key `sidebar-groups` → `miyo:sidebar-groups:v2`**, keyed by `${module}:${group}`; read the old key once and ignore unknown entries.
+  - The group containing the active route is always expanded.
+  - If the module has one group, hide the header.
+- **Item** (`SidebarNavItem`): `group relative flex items-center gap-2.5 rounded-md py-1.5 pl-2.5 pr-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground`. Icon `size-4 stroke-[1.75] text-sidebar-foreground/60`. Sub-items (`isSubItem`) `pl-8` with icon `size-3.5`.
+  - **Active:** `bg-sidebar-accent text-sidebar-foreground font-semibold` plus the indicator `before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-4 before:w-[3px] before:rounded-r-full before:bg-sidebar-primary` (gold) plus icon `text-sidebar-foreground` plus `aria-current="page"`.
+  - Active matching uses the existing `getLongestMatchingNavPath` / `pathnameMatchesNavPath`. Hidden child routes highlight their Appendix-A parent through the same longest-prefix logic, which already works for nested paths.
+  - **Badges** (`badge: "leaves"`): `ml-auto h-[18px] min-w-[18px] rounded-full bg-warning px-1 text-3xs font-bold text-warning-foreground tabular-nums`. Keep the existing count hook.
+  - `isProjectsList` (inline project list under Projects): keep its behaviour. Restyle the rows as sub-items with a 8px project-colour dot.
+- **Collapsed (3.5rem):** items `mx-auto size-8 justify-center rounded-md`, `Tooltip side="right"`, groups separated by `mx-auto my-1.5 h-px w-5 bg-sidebar-border`. The active item uses the same `bg-sidebar-accent` with a 3px gold bar on the left edge of the rail.
+- **No footer.** Everything moved to the header. Optionally show a tiny `text-3xs text-muted-foreground` version string if one exists today.
+- **Account mode** (`/settings` exact): the sidebar shows the Account group (Profile, Security, Preferences; same anchors/tabs the page already uses).
+
+### 7.5 Mobile & tablet navigation
+- **Bottom nav** (new `components/layout/mobile-module-bottom-nav.tsx`, `lg:hidden`): `fixed inset-x-0 bottom-0 z-sticky h-16 border-t border-sidebar-border bg-sidebar/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] grid grid-cols-5`.
+  - Tabs = the first **4** routes of the current module's nav, in order (for HR admins: Employees, Attendance, Leaves, Payroll), plus **More**.
+  - Tab: icon `size-5` with label `text-3xs font-medium`. Active: `text-foreground` plus a 2px gold bar on top. Inactive: `text-muted-foreground`. Hit area at least 44px.
+  - **More** opens the **nav drawer**.
+- **Nav drawer** (`Sheet side="bottom"`, `h-[96dvh] rounded-t-xl bg-sidebar p-0`):
+  - sticky header: org chip, module switcher grid (2 columns, compact tiles) and a close button;
+  - below it, the full module sidebar (the same `ModuleSidebar` in expanded mode);
+  - footer: Create shortcuts.
+  - Selecting a route closes the drawer (keep the current `onNavigate` / `setMobileMenuOpen(false)` behaviour).
+- **Tablet (`md`–`lg`):** same as mobile. The sidebar becomes persistent at `lg` (1024px), matching `DESKTOP_SIDEBAR_MIN_WIDTH`.
+- Inside a project workspace on mobile, the bottom nav shows Board, Backlog, Sprints and Timeline, plus More (project tabs).
+
+### 7.6 Project workspace sidebar — `components/layout/project-sidebar.tsx` + `app/(dashboard)/projects/[projectId]/layout.tsx`
+This follows Streamline's per-product custom sidebar. On `/projects/[projectId]/**` the **module sidebar is swapped for the project sidebar**, rendered in the same `aside` slot. Do not show two sidebars side by side.
+- The top tab stays **Projects & Time**.
+- The project sidebar has:
+  - a "← All projects" link (`text-xs text-muted-foreground`);
+  - a project header: an 8px colour dot (stored project colour), the name `text-sm font-semibold` and the key `font-mono text-2xs`;
+  - groups with the same hrefs as today: **Work** (Board/overview, Backlog, My tickets, Intake), **Planning** (Sprints, Cycles, Epics, Modules, Milestones, Timeline), **Knowledge** (Views, Pages), **Insights** (Analytics, Budget), **Settings**.
+- Items use exactly the §7.4 styles.
+- Collapsed and mobile behaviour as in §7.4–7.5.
+- Keep the `access-denied-view.tsx` logic.
+- Implementation: `DashboardShell` accepts an optional `sidebarSlot` that is set via a small React context (`SidebarSlotProvider`) from the project layout. Streamline does the same for its build product.
+
+### 7.7 CRM settings nav — `app/(dashboard)/crm/settings/layout.tsx` (only if CRM still exists)
+The CRM Settings group lives in the CRM module sidebar (collapsed by default). Remove any duplicate in-page sub-nav, or reduce it to underline Tabs below `md`.
+
+### 7.8 Header and sidebar behaviour details
+- **Active state:** the module comes from `getModuleForPath(pathname)`; the sidebar item comes from `getLongestMatchingNavPath`. Both update on client navigation (`usePathname`). No flash on hard reload: compute both server-side where `DashboardShell` already has the pathname, or render the sidebar from `usePathname` on first client render. Avoid hydration mismatches.
+- **Remembered last page per module:**
+  - On every pathname change inside a module, write `localStorage["miyo:last-route:" + userId + ":" + module] = pathname + search` (`userId` from the session; skip if it's missing).
+  - Clicking a module tab, tile or bottom-nav item goes to the stored route if it is **still allowed** (its `getLongestMatchingNavPath` match is in `getModuleNav(role, module)`); otherwise it goes to the module's first accessible route.
+  - Clicking the **already-active** tab goes to the module's default href.
+  - ⌘/Ctrl-click or middle-click opens the default href in a new tab, because the `Link` `href` is the default and the stored route is applied in `onClick` with `router.push`.
+  - Clear these keys on sign-out (inside the existing sign-out handler, *before* calling it; UI-only).
+- **Keyboard shortcuts** (extend `components/layout/shortcuts-provider.tsx`; ignore them while typing):
+  - `⌥/Alt + 1…7`: switch to the Nth *visible* module (uses last-page memory).
+  - `g` then `h` / `p` / `r` / `w` / `s` / `a`: go to Home / HR (p = People) / Recruitment / Projects & Time / Support / Admin.
+  - `g d` Dashboard, `g c` Calendar, `g n` Notifications, `g e` Employees.
+  - `[` toggles the sidebar; `⌘/Ctrl K` opens search; `/` focuses the page search; `?` opens the shortcuts dialog.
+  - On the module tabs: `←/→` move focus and `Home`/`End` jump to the ends (roving `tabIndex`).
+  - Only modules and routes visible to the role respond.
+  - The shortcuts dialog lists the modules with their numbers.
+- **Command palette:** the Navigation group is now grouped **by module** (module chip + label) and shows only visible modules. Add a "Switch module" section (`Alt+N` hints).
+- **Breadcrumbs** move into the `PageWrapper` header (above the h1, `text-xs text-muted-foreground`, `Module › Group › Page › Record`). Show them only on detail/nested routes, not on top-level pages.
+- **Reduced motion:** the sidebar width transition, the tab underline (`transition-[left,width] 150ms`) and the tile stagger are disabled under `prefers-reduced-motion`.
+
+### 7.9 Page header — `components/ui/page-wrapper.tsx` (Streamline UI-KIT conventions)
+- One scroller per page: `main#dashboard-content` scrolls, and `PageWrapper` must not create a second one unless `noInternalScroll` is false *and* it needs a sticky filter row (keep existing prop behaviour).
+- Header zone `px-4 sm:px-6 lg:px-8 pt-5 pb-3`:
+  - optional breadcrumbs (detail/nested routes only), `text-xs text-muted-foreground`;
+  - h1 **`text-lg sm:text-xl font-semibold tracking-tight`** (Streamline default);
+  - `variant="display"` (hubs: `/dashboard`, `/hr`, `/hr/recruitment`, `/projects`, `/support`, `/crm`) uses `text-2xl font-display font-bold`;
+  - count badge = neutral pill;
+  - subtitle `text-sm text-muted-foreground max-w-3xl`;
+  - actions on the right, `h-9` controls, **one primary**, others outline/ghost; they wrap on mobile with the primary last.
+- **Filters zone** (`filters` prop): one **non-wrapping** row `flex items-center gap-2 overflow-x-auto px-4 sm:px-6 lg:px-8 py-2 border-y border-border bg-background`, with search first (`w-64`, `data-page-search`), then filter chips, then the view toggle and density on the right. With `stickyHeader` it sticks at `top-0` of the scroller, because the header sits outside the scroller.
+- **Content zone** `px-4 sm:px-6 lg:px-8 py-4 pb-10`.
+- **StatCardGrid** (new, in `stat-card.tsx`): a single horizontally scrolling row `flex gap-3 overflow-x-auto snap-x`. Each compact StatCard is `min-w-[12rem] h-14 rounded-xl border bg-card px-3 flex items-center gap-3`, with a 32px circular tone icon chip, label `text-2xs text-muted-foreground` and value `text-lg font-semibold tabular-nums`. The large KPI variant (§6.1) is only for `/dashboard` and the hubs.
+
+### 7.10 Command palette — `components/layout/command-palette.tsx`
+Dialog `max-w-xl top-[15vh] rounded-xl shadow-lg p-0`. Input row with `Search` icon, placeholder "Search pages, people, deals…", `Esc` Kbd. Groups: **Recent** (last 5 visited routes from `localStorage` key `cmdk-recent` — UI-only), **Navigation** (routes from `getModuleNav` for every visible module, grouped by module with the module chip; each item shows its sidebar group right-aligned `text-2xs text-subtle-foreground`), **Switch module** (visible modules with `Alt+N` hints), **Actions** (theme toggle, toggle compact density, sign out — reuse existing handlers), plus any existing search results (keep data hooks unchanged). Item icons in 24px rounded-md `bg-muted` chips; selected item `bg-accent` with left 2px gold bar. Footer hint bar `h-9 border-t px-3 text-2xs text-muted-foreground`: `↑↓ navigate · ↵ open · esc close`. Keep `⌘K / Ctrl+K` binding (line ~92).
+
+### 7.11 Error/404/global — `app/not-found.tsx`, `app/(dashboard)/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, all 117 `error.tsx`
 404: large "404" display 800 in `text-brand-text`, gold circle motif behind (decorative, `aria-hidden`), "Page not found", buttons "Go to dashboard" (primary) / "Go back" (ghost). Route `error.tsx` files all render `components/ui/route-error-boundary.tsx` — restyle that one component and ensure each `error.tsx` uses it (if any `error.tsx` has inline custom markup, switch it to `RouteErrorBoundary` keeping its `reset` wiring). `global-error.tsx` must include its own `<html><body>` with inline minimal styles using brand hex (no Tailwind available) — ink background, gold button.
 
-### 7.8 Loading — all 115 `loading.tsx`
+### 7.12 Loading — all 115 `loading.tsx`
 Each must render an archetype skeleton matching the new layout: `PageHeaderSkeleton` + one of `TableSkeleton` (toolbar + 8 rows), `BoardSkeleton` (`kanban-skeleton.tsx`, 4 columns × 3 cards), `DetailSkeleton` (header + 2-col), `DashboardSkeleton` (`dashboard-skeleton.tsx`, bento), `FormSkeleton`, `ChartGridSkeleton`. Put these in `components/ui/skeletons.tsx` (new) and use them in every `loading.tsx`. Add missing `loading.tsx` to routes flagged in Appendix A.
 
 ---
@@ -949,7 +1172,7 @@ Files: `features/crm/leads/leads-kanban.tsx`, `features/crm/leads/kanban-card.ts
 - Quick add (`kanban-quick-add.tsx`): ghost row "+ Add" expands into inline input card.
 
 ### 8.5 D · Detail / Record
-- Header block: back button + breadcrumbs (topbar) → identity row (64px avatar/icon chip, title `text-2xl font-display`, subtitle, status pill, key meta inline) → action bar (primary + secondary + overflow).
+- Header block: back button + breadcrumbs (in the page header, §7.9) → identity row (64px avatar/icon chip, title `text-2xl font-display`, subtitle, status pill, key meta inline) → action bar (primary + secondary + overflow).
 - Body `grid lg:grid-cols-[1fr_320px] gap-6`: main = underline Tabs (Overview / Activity / … existing tabs) with cards; right rail = property list cards (sticky `top-20`). <lg: rail moves above tabs as collapsible card.
 - Destructive actions in overflow menu → AlertDialog.
 
@@ -982,14 +1205,14 @@ Files: `features/crm/leads/leads-kanban.tsx`, `features/crm/leads/kanban-card.ts
 
 ## 9. UX improvements (cross-cutting)
 
-1. **Navigation:** breadcrumbs in topbar; active group auto-expand; sidebar search → palette; "Create" menu; project tab bar; consistent Back buttons on detail pages (`page-back-button.tsx`).
+1. **Navigation:** Streamline-style module tabs/switcher plus contextual sidebar (§7); last page remembered per module; search, Create, bell and user menu in the header; project workspace sidebar; breadcrumbs inside the page header on nested routes; consistent Back buttons on detail pages (`page-back-button.tsx`).
 2. **Keyboard shortcuts** (new `components/layout/shortcuts-provider.tsx`, mounted in `DashboardShell`; ignore when focus is in input/textarea/contenteditable; all UI-only):
-   - `⌘/Ctrl K` command palette (existing) · `/` focus page search input (elements with `data-page-search`) · `[` toggle sidebar (`handleToggleSidebar`) · `g d` dashboard · `g l` leads · `g p` deals (pipeline) · `g e` employees · `g j` projects · `g c` calendar · `g n` notifications · `g s` settings · `?` shortcuts dialog (Dialog md listing all, with `Kbd`) · `Esc` closes overlays (Radix default).
+   - `⌘/Ctrl K` command palette (existing) · `/` focus page search input (`data-page-search`) · `[` toggle sidebar (`handleToggleSidebar`) · **`Alt+1…7` switch module** · `g h/p/r/w/s/a` Home/HR/Recruitment/Projects & Time/Support/Admin · `g d` dashboard · `g e` employees · `g c` calendar · `g n` notifications · `?` shortcuts dialog (Dialog md listing all, with `Kbd`) · `Esc` closes overlays (Radix default). In lists (Streamline UI-KIT): `j/k` move row focus, `Enter` open, `e` edit, `c` create, but only where those actions already exist on the page.
    - Only navigate to routes present in the user's role nav (`getNavGroupsForRole`).
 3. **Feedback:** every mutation button shows `loading`; toasts for success/failure (existing calls keep working with restyled Sonner); destructive actions always via AlertDialog; optimistic UI unchanged.
 4. **Density:** default comfortable; Compact toggle (existing) now drives `--row-h/--cell-py/--card-p`.
 5. **Accessibility (WCAG 2.2 AA):** contrast per §3.4; focus visible everywhere (`focus-ring`); hit targets ≥ 32px desktop / 44px touch; icon-only buttons have `aria-label` + tooltip; status never by color alone (pill text/dot + label); `aria-current` on nav; `aria-live="polite"` for toasts (Sonner default) and async table updates; forms: `aria-describedby` errors (shadcn `Form` already) ; reduced motion honored; skip link; landmarks (`nav`, `main`, `aside`, `header`); headings hierarchical (one h1 per page = PageWrapper title). Charts: `role="img"` + `aria-label` summary, and a "View as table" toggle where a table equivalent already exists in the page data.
-6. **Responsive:** <sm: single column, tables become horizontally scrollable with sticky first column (or card list where the component already has a mobile variant); toolbars wrap, filters move into a "Filters" Sheet; Sheets become bottom sheets; topbar replaces sidebar <lg; boards scroll horizontally with snap (`snap-x snap-mandatory`, column `snap-start`). Test widths 375, 768, 1024, 1280, 1536.
+6. **Responsive:** <sm: single column, tables become horizontally scrollable with sticky first column (or card list where the component already has a mobile variant); toolbars wrap, filters move into a "Filters" Sheet; Sheets become bottom sheets; below `lg` the sidebar is replaced by the bottom nav plus the nav drawer (§7.5); boards scroll horizontally with snap (`snap-x snap-mandatory`, column `snap-start`). Test widths 375, 768, 1024, 1280, 1536.
 7. **Dark mode:** enabled (§4); verify every page; charts, calendar, TipTap, phone input, react-day-picker, Sonner, illustrations all themed.
 8. **Microcopy & numbers:** tabular nums; currency right-aligned; truncate with tooltip (`title`) for long names; relative dates with absolute tooltip.
 9. **Empty states:** contextual illustration + one-line explanation + primary action (only when the role can act).
@@ -998,7 +1221,7 @@ Files: `features/crm/leads/leads-kanban.tsx`, `features/crm/leads/kanban-card.ts
 
 ## 10. File plan (new / rewritten files)
 
-New: `styles/vendors/sonner.css`, `styles/vendors/react-big-calendar.css`, `styles/vendors/tiptap.css`, `styles/vendors/phone-input.css`, `lib/design/tones.ts`, `lib/design/brand-hex.ts`, `components/ui/filter-chip.tsx`, `components/ui/breadcrumbs.tsx`, `components/ui/kbd.tsx`, `components/ui/status-pill.tsx`, `components/ui/icon-chip.tsx`, `components/ui/skeletons.tsx`, `components/layout/theme-toggle.tsx`, `components/layout/topbar.tsx`, `components/layout/shortcuts-provider.tsx`, `components/layout/shortcuts-dialog.tsx`, `components/dashboard/widgets/widget-card.tsx`, missing `loading.tsx` files (Appendix A).
+New: `styles/vendors/sonner.css`, `styles/vendors/react-big-calendar.css`, `styles/vendors/tiptap.css`, `styles/vendors/phone-input.css`, `lib/design/tones.ts`, `lib/design/brand-hex.ts`, `components/ui/filter-chip.tsx`, `components/ui/breadcrumbs.tsx`, `components/ui/kbd.tsx`, `components/ui/status-pill.tsx`, `components/ui/icon-chip.tsx`, `components/ui/skeletons.tsx`, `components/layout/theme-toggle.tsx`, `lib/navigation/modules.ts`, `lib/navigation/modules.test.ts`, `lib/navigation/use-module-memory.ts` (last-page memory hook), `components/layout/header/{global-header,header-brand,org-chip,module-nav,module-switcher,module-tile,header-actions,user-avatar-menu}.tsx`, `components/layout/sidebar/{module-sidebar,sidebar-nav-item,sidebar-slot-context}.tsx`, `components/layout/mobile-module-bottom-nav.tsx`, `components/layout/shortcuts-provider.tsx`, `components/layout/shortcuts-dialog.tsx`, `components/dashboard/widgets/widget-card.tsx`, missing `loading.tsx` files (Appendix A).
 Rewritten: `globals.css`, `app/layout.tsx` (fonts/theme/body classes only), every file in `components/ui/`, `components/layout/*`, `lib/theme-constants.ts` (values only), `lib/motion-variants.ts` (values only), all color-map `.ts` files (values only).
 Touched for class swaps: every file listed by the §5.6 greps.
 
@@ -1007,7 +1230,8 @@ Touched for class swaps: every file listed by the §5.6 greps.
 ## 11. Phased execution (tick every box; commit after each phase)
 
 **Phase 0 — Setup**
-- [ ] `git status` clean except known untracked (`.omc/`, `scripts/generate-miyo-payslips.ts`); `git checkout -b feat/ui-revamp-gold-ink`
+- [ ] `git status` clean except known untracked (`.omc/`, `scripts/generate-miyo-payslips.ts`). **If anything else is modified, staged or deleted, STOP and ask Tarun to commit it first (rule 11). Never stash, reset or discard.** Then `git checkout -b feat/ui-revamp-gold-ink`
+- [ ] Note whether `app/(dashboard)/crm` and `app/(dashboard)/billing` exist. This decides whether the `crm` module is built (§7.0)
 - [ ] `pnpm install`; baseline `pnpm typecheck && pnpm lint && pnpm test && pnpm build` → record results in `docs/ui-revamp-baseline.md` (pre-existing failures are not yours, but don't add new ones)
 - [ ] Run the §5.6 greps and record baseline counts in the same file
 - [ ] `pnpm dev`, capture "before" screenshots of the 10 PR pages (light)
@@ -1031,11 +1255,16 @@ Touched for class swaps: every file listed by the §5.6 greps.
 - [ ] `pnpm test` (empty-state, query-error-state, min-length-hint tests green)
 
 **Phase 3 — App shell**
-- [ ] `dashboard-shell.tsx` (widths, topbar, mobile sheet z), `topbar.tsx`
-- [ ] `app-sidebar.tsx`, `sidebar-section.tsx`, `sidebar-user-menu.tsx`, `notification-bell.tsx`
-- [ ] `command-palette.tsx` (recent, actions, footer hints)
-- [ ] `project-sidebar.tsx` → project header/tabs; `projects/[projectId]/layout.tsx`
-- [ ] `crm/settings/layout.tsx` sub-nav
+- [ ] `lib/navigation/modules.ts` with `MODULES`, `MODULE_GROUPS`, `ROUTE_PLACEMENT` (from Appendix A) and the path exceptions; `getModuleForPath`, `getModuleNav`, `getVisibleModules`. Add only optional `module?` to `NavGroup`; no edits to `getNavGroupsForRole`
+- [ ] `lib/navigation/modules.test.ts` (§7.1 a–d) green; `sidebar-nav-items.test.ts` green and unedited
+- [ ] `dashboard-shell.tsx` → header-on-top layout (§7.2); `header/*` components (§7.3): brand, collapse toggle, org chip, module tabs (≥xl), overflow "More" (lg–xl), switcher sheet (<lg), right cluster (search, Create, bell, user menu)
+- [ ] `module-sidebar.tsx` + restyled `sidebar-section.tsx`/`sidebar-nav-item.tsx` (§7.4); `app-sidebar.tsx` reduced to a wrapper (export kept); localStorage group-state migration to `miyo:sidebar-groups:v2`
+- [ ] Move `notification-bell.tsx` and `sidebar-user-menu.tsx` into the header (re-export from old paths); remove the sidebar footer
+- [ ] `mobile-module-bottom-nav.tsx` + nav drawer (§7.5); remove the hamburger-only left Sheet (the drawer replaces it)
+- [ ] Last-page-per-module memory (§7.8) including the "still allowed" check and clearing on sign-out
+- [ ] `project-sidebar.tsx` rendered via the sidebar slot on `/projects/[projectId]/**` (§7.6)
+- [ ] `command-palette.tsx` (module-grouped navigation, switch-module section, recent, actions, footer hints)
+- [ ] CRM settings in the CRM sidebar (only if `/crm` still exists, §7.7)
 - [ ] shortcuts provider + dialog
 - [ ] not-found (2), `app/error.tsx`, `global-error.tsx`, route-error-boundary wiring in all 117 `error.tsx`
 - [ ] `sidebar-nav-items.test.ts` still green (data untouched)
@@ -1055,7 +1284,7 @@ Touched for class swaps: every file listed by the §5.6 greps.
 - [ ] `app/(auth)/layout.tsx`, `features/auth/auth-right-panel.tsx`, 9 auth pages + their loading/error
 - [ ] `features/landing/*`, `app/(public)/layout.tsx`, `features/careers/*`, 7 public pages
 
-**Phase 6 — Dashboard & CRM** (`/dashboard*`, `/crm*`, `/billing*`, `/ai`, `/ceo/qr-code`, `/reports`, `/notifications`, `/calendar`)
+**Phase 6 — Home module + CRM module if it still exists** (`/dashboard*`, `/ai`, `/ceo/qr-code`, `/reports`, `/notifications`, `/calendar`, `/tasks/overdue`, `/onboarding`; `/crm*`, `/billing*` only if present)
 - [ ] Dashboard widgets + WidgetCard
 - [ ] Leads (board, table, detail sheet, detail page, distribute, duplicates, smart-search, source-report)
 - [ ] Deals (board, table, side panel, detail, approvals, aging, win-loss)
@@ -1063,7 +1292,7 @@ Touched for class swaps: every file listed by the §5.6 greps.
 - [ ] Billing, invoices (list/new/detail), AI hub, QR, notifications, calendar
 - [ ] Add missing loading.tsx for this group
 
-**Phase 7 — HR & Recruitment** (`/hr*`, `/onboarding`)
+**Phase 7 — People (HR) & Recruitment modules** (`/hr*`)
 - [ ] Employees (directory, detail, skills-matrix, find-expert, terminated, org-chart, teams)
 - [ ] Attendance, leaves, payroll, my-payslips, bonuses, my-bonuses, incentives, loans, expenses, reimbursements, fnf
 - [ ] Documents (list, editors, templates, types, review, handbook), email templates, offer-letter templates
@@ -1073,7 +1302,7 @@ Touched for class swaps: every file listed by the §5.6 greps.
 - [ ] Recruitment hub, jobs (list/new/edit), candidates (list/detail), pipeline, interviews, question bank, hiring flows, diversity report, interviewer performance
 - [ ] Add missing loading.tsx for this group
 
-**Phase 8 — Projects, timesheets, support, settings**
+**Phase 8 — Projects & Time, Support, Admin and Account**
 - [ ] Projects list, templates, resource allocation, project workspace + 14 sub-routes
 - [ ] Timesheets (mine, team), tasks/overdue
 - [ ] Support (hub, inbox)
@@ -1095,23 +1324,29 @@ Touched for class swaps: every file listed by the §5.6 greps.
 
 ### 12.1 Definition of done
 1. Zero legacy tokens/classes/fonts/colors (all §5.6 greps at target).
-2. Every one of the 172 routes renders in the new shell with loading/empty/error/populated states styled; every route listed in Appendix A as missing `loading.tsx` now has one.
+2. Every existing route (172 at first audit, 140 after the CRM/Billing removal; Appendix A) renders in the new shell with the **correct module tab active and the correct sidebar item highlighted**, and with loading/empty/error/populated states styled; every route listed in Appendix A as missing `loading.tsx` now has one.
 3. Light and dark themes both complete; theme switcher works (sidebar menu, settings, command palette); preference persists (next-themes localStorage).
 4. All text/background pairs meet AA (spot-check with browser devtools contrast on: body text, muted text, links, badges of each tone, primary/secondary/destructive buttons, sidebar items, table header, chart axis labels) in both themes.
 5. Keyboard: every interactive element reachable and visibly focused; shortcuts from §9.2 work; palette ⌘K works; no focus traps outside modals.
-6. No behavior change: same API calls (check Network tab on leads/deals/payroll pages before vs after), same routes, same RBAC visibility, DnD moves still persist, forms submit the same payloads.
-7. CI (`pr-check.yml`: lint + build) green; `pnpm test` green; typecheck clean.
-8. Lighthouse (desktop, `/signin` and `/dashboard`): Accessibility ≥ 95; no CLS from font loading (next/font `display: swap` with size-adjust).
+6. **RBAC unchanged:** for every role, the set of hrefs reachable through header plus sidebar equals `getNavGroupsForRole(role)` (asserted by `modules.test.ts`). No module tab appears for a role that has no routes in it.
+7. No behavior change: same API calls (check Network tab on leads/deals/payroll pages before vs after), same routes, same RBAC visibility, DnD moves still persist, forms submit the same payloads.
+8. CI (`pr-check.yml`: lint + build) green; `pnpm test` green; typecheck clean.
+9. Lighthouse (desktop, `/signin` and `/dashboard`): Accessibility ≥ 95; no CLS from font loading (next/font `display: swap` with size-adjust).
 
 ### 12.2 Manual QA checklist (each in light + dark; 375px, 1024px, 1440px)
 - [ ] Sign in → dashboard (all widgets, clock-in)
-- [ ] Sidebar: collapse/expand (cookie persists), group collapse (localStorage), active item indicator, badges, collapsed tooltips, mobile sheet
-- [ ] Topbar: breadcrumbs correct on nested routes (e.g. `/crm/deals/[dealId]`, `/hr/recruitment/candidates/[candidateId]`, `/projects/[projectId]/sprints`)
+- [ ] Header: module tabs at 1440 (active underline), "More" overflow at 1100, switcher sheet at 375; Alt+1…7 and `g` shortcuts; arrow-key roving focus on tabs
+- [ ] Module visibility per role: sign in as CEO/ADMIN (all modules), HR, SALES (Home, HR, Projects & Time), CUSTOMER_SUPPORT (+ Support)
+- [ ] Last page per module: open `/hr/payroll`, go to Projects, click HR and land on `/hr/payroll`; click HR again and land on `/hr`; a route no longer allowed falls back to the default
+- [ ] Sidebar: only the current module's groups; collapse/expand (cookie persists), group collapse (v2 key), active indicator on hidden child routes (e.g. `/hr/employees/[employeeId]` highlights Employees), badges, collapsed tooltips
+- [ ] Mobile: bottom nav (4 tabs + More), nav drawer with switcher and sidebar, safe-area padding, closes on navigation
+- [ ] Project workspace sidebar replaces the module sidebar; "All projects" back link
+- [ ] Breadcrumbs correct on nested routes (e.g. `/hr/recruitment/candidates/[candidateId]`, `/projects/[projectId]/sprints`)
 - [ ] Command palette: open, search, navigate, actions, recent
-- [ ] Leads board: drag card between columns (persists), open detail sheet, table view, filters, export/import dialogs
-- [ ] Deals board: drag, stage-skip dialog, win/loss dialog, side panel, forecast widget
-- [ ] Deal & lead detail pages: tabs, timeline, quick actions, edit forms
-- [ ] CRM analytics/reports/win-loss/source-report charts (tooltips, legends, colors in dark)
+- [ ] *(if CRM exists)* Leads board: drag card between columns (persists), open detail sheet, table view, filters, export/import dialogs
+- [ ] *(if CRM exists)* Deals board: drag, stage-skip dialog, win/loss dialog, side panel, forecast widget
+- [ ] *(if CRM exists)* Deal & lead detail pages: tabs, timeline, quick actions, edit forms
+- [ ] *(if CRM exists)* CRM analytics/reports/win-loss/source-report charts (tooltips, legends, colors in dark)
 - [ ] Employees directory/detail, org chart, skills matrix heatmap
 - [ ] Attendance heatmap/calendar, leaves request sheet + approvals, payroll run + payslip sheet
 - [ ] Recruitment pipeline drag, candidate detail tabs, interview availability grid
@@ -1127,184 +1362,184 @@ Touched for class swaps: every file listed by the §5.6 greps.
 - [ ] Zoom 200% → no clipped content
 
 ---
-## Appendix A — Every route (172) with archetype, current loading/error coverage, and route-specific notes
+## Appendix A — Every route (172 at first audit; 140 after the in-progress CRM/Billing removal) → module › sidebar group, archetype, loading/error coverage and notes
 
-Legend: L/E = `loading.tsx` / `error.tsx` present today (✓/✗). Features = detected UI features in the page file. Routes without a specific note follow their archetype in §8 exactly. Files referenced in notes are the components that page composes.
+Legend: **Module › Group** is where the route lives in the new shell (§7.0). The module tab is active on that route, and the item sits in that sidebar group. "(highlights X)" marks a hidden route with no nav entry; the sidebar highlights item X through longest-prefix matching. Do not add nav entries for these. Rows marked ⚠️ were being deleted (uncommitted/staged) at audit time: style them only if they still exist on your branch. L/E = `loading.tsx` / `error.tsx` present at first audit (✓/✗). Routes without a specific note follow their archetype in §8 exactly. Files referenced in notes are the components that page composes.
 
-| Route | File | Archetype | L / E | Features | Redesign notes |
+| Route | Module › Sidebar group | File | Archetype | L / E | Redesign notes |
 |---|---|---|---|---|---|
-| `/` | `app/page.tsx` | M · Marketing | ✗ / ✓ | landing | Landing (`features/landing/landing-page.tsx`, `landing-shared.tsx`, `landing-footer.tsx`): ink-950 hero with wordmark, gold "MI" circle motif as large background mark at 6% opacity, H1 in display font 56/64, gold primary CTA "Sign in", ghost secondary. Remove every `bg-[#...]`/raw palette in landing files. |
-| `/account-deactivated` | `app/(auth)/account-deactivated/page.tsx` | A · Auth | ✗ / ✗ | — | Centered danger-soft status card, contact-admin text, sign-out button. |
-| `/forgot-password` | `app/(auth)/forgot-password/page.tsx` | A · Auth | ✓ / ✗ | form | Auth shell; single centered card form; see §8.1. |
-| `/invitation/[token]` | `app/(auth)/invitation/[token]/page.tsx` | A · Auth | ✓ / ✓ | form | Show org name + inviter avatar in a brand-subtle callout above the password form; error.tsx shows expired-invite state with illustration. |
-| `/mfa` | `app/(auth)/mfa/page.tsx` | A · Auth | ✗ / ✗ | form | 6-digit OTP: six 48×56 boxes, mono font, auto-advance, paste support (UI only), countdown text muted. |
-| `/reset-password` | `app/(auth)/reset-password/page.tsx` | A · Auth | ✗ / ✗ | form | Auth shell; single centered card form; see §8.1. |
-| `/setup-password` | `app/(auth)/setup-password/page.tsx` | A · Auth | ✗ / ✗ | form | Auth shell; single centered card form; see §8.1. |
-| `/signin` | `app/(auth)/signin/page.tsx` | A · Auth | ✓ / ✗ | form | Split layout from `app/(auth)/layout.tsx`. Left: form card max-w 400, title "Welcome back" display-xl, email+password (`components/auth/password-input.tsx`), primary full-width button, "Forgot password?" link in brand-text. Inline field errors, submit shows spinner inside button, disable while pending. Right: `features/auth/auth-right-panel.tsx` rebuilt as ink-950 panel with wordmark, 3 rotating value-props, subtle gold radial glow; no raw palette classes (it has 31 today). |
-| `/signup` | `app/(auth)/signup/page.tsx` | A · Auth | ✗ / ✗ | form | Same shell as /signin; multi-field form in 2 columns ≥sm; password strength via `components/auth/password-strength-indicator.tsx` restyled as 4 segmented bars (danger→warning→info→success tokens). |
-| `/verify-email` | `app/(auth)/verify-email/page.tsx` | A · Auth | ✓ / ✗ | form | Centered status card: icon in 56px gold-soft circle, title, body, resend button (ghost) with cooldown label. |
-| `/ai` | `app/(dashboard)/ai/page.tsx` | L · List/Workspace | ✗ / ✗ | form,tabs,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/billing` | `app/(dashboard)/billing/page.tsx` | H · Hub | ✓ / ✓ | table | Hub archetype §8.2. |
-| `/billing/invoices` | `app/(dashboard)/billing/invoices/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/billing/invoices/new` | `app/(dashboard)/billing/invoices/new/page.tsx` | F · Form/Editor | ✓ / ✓ | form | Form/Editor archetype §8.6. |
-| `/billing/invoices/[invoiceId]` | `app/(dashboard)/billing/invoices/[invoiceId]/page.tsx` | D · Detail | ✓ / ✓ | table,form,overlays | Detail/Record archetype §8.5. |
-| `/calendar` | `app/(dashboard)/calendar/page.tsx` | C · Calendar/Timeline | ✓ / ✓ | calendar | `features/calendar/*` + `.rbc-*` overrides rewritten in `styles/vendors/react-big-calendar.css` (see §6). Today cell gold-50, events tinted by tone, header toolbar uses new segmented control. |
-| `/ceo/qr-code` | `app/(dashboard)/ceo/qr-code/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | Generator form left, live QR preview card right; QR foreground stays ink-900 on white for scannability (do not theme the QR itself). |
-| `/crm` | `app/(dashboard)/crm/page.tsx` | H · Hub | ✓ / ✓ | charts | CRM Hub: KPI strip (pipeline value, open deals, win rate, new leads 7d) → `features/crm/shared/crm-pipeline-mini.tsx` as horizontal stage bar with stage tones → recent activity (`crm-recent-activity.tsx`) as timeline. Quick actions: New lead, New deal, Import CSV. |
-| `/crm/analytics` | `app/(dashboard)/crm/analytics/page.tsx` | R · Report | ✓ / ✓ | charts,table | Report archetype; 2-col chart grid using `analytics-chart-card.tsx` as the single chart shell; date range picker top-right; rep table (`rep-performance-table.tsx`) full width. All chart colors from `--chart-*` tokens (remove hex/rgb in `lead-volume-chart.tsx`, `pipeline-funnel-chart.tsx`, `deal-value-chart.tsx`, `features/crm/shared/constants.ts`). |
-| `/crm/clients` | `app/(dashboard)/crm/clients/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,overlays | List/Workspace archetype §8.3. |
-| `/crm/clients/[clientId]` | `app/(dashboard)/crm/clients/[clientId]/page.tsx` | D · Detail | ✓ / ✓ | form,overlays | Detail/Record archetype §8.5. |
-| `/crm/contacts` | `app/(dashboard)/crm/contacts/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/crm/deals` | `app/(dashboard)/crm/deals/page.tsx` | K · Board | ✓ / ✓ | kanban,table,overlays | Pipeline board (`kanban-column.tsx`, `deal-kanban-card.tsx`) with column header = stage name + count + summed value (tabular-nums); forecast widget (`deal-forecast-widget.tsx`) collapsible above board; filter bar (`kanban-filter-bar.tsx`); side panel (`deal-side-panel.tsx`) as Sheet; table view (`deal-table-view.tsx`). Win/loss + stage-skip dialogs restyled to new Dialog. |
-| `/crm/deals/[dealId]` | `app/(dashboard)/crm/deals/[dealId]/page.tsx` | D · Detail | ✓ / ✓ | form,overlays | Record page like lead detail: stage progress stepper across top (circles = brand motif; completed = gold fill, current = gold ring, future = ink-200), value + close date + probability KPIs, activity timeline, meetings card, edit form in Sheet. |
-| `/crm/deals/aging` | `app/(dashboard)/crm/deals/aging/page.tsx` | R · Report | ✓ / ✓ | table | Report archetype §8.8. |
-| `/crm/deals/approvals` | `app/(dashboard)/crm/deals/approvals/page.tsx` | L · List/Workspace | ✓ / ✓ | table,tabs,overlays | List/Workspace archetype §8.3. |
-| `/crm/deals/win-loss` | `app/(dashboard)/crm/deals/win-loss/page.tsx` | R · Report | ✓ / ✓ | charts | Report archetype §8.8. |
-| `/crm/leads` | `app/(dashboard)/crm/leads/page.tsx` | K · Board | ✓ / ✓ | kanban,table,form,overlays | Primary workspace. Toolbar (`leads-toolbar.tsx`): search (⌘/), saved views, filter chips, view toggle Board/Table (segmented control), density toggle, Export, Import, primary "New lead". Stats (`leads-stats-bar.tsx`) as compact inline metrics row (not big cards). Board (`leads-kanban.tsx`, `kanban-card.tsx`) + table (`lead-table-view.tsx`, `lead-table/*`). Lead detail opens in right Sheet (`lead-detail-sheet.tsx`) 560px. |
-| `/crm/leads/[leadId]` | `app/(dashboard)/crm/leads/[leadId]/page.tsx` | D · Detail | ✓ / ✓ | form | Record page: header (`detail/lead-detail-header.tsx`) with avatar initials circle, name, company, status pill, score ring, owner; action bar (`lead-quick-actions.tsx`). Two-column: main = tabs Activity/Details/Emails, timeline (`lead-activity-timeline.tsx`); right rail 320px = `lead-info-card.tsx` + `lead-sidebar.tsx` as stacked property lists. |
-| `/crm/leads/distribute` | `app/(dashboard)/crm/leads/distribute/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/crm/leads/duplicates` | `app/(dashboard)/crm/leads/duplicates/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/crm/leads/smart-search` | `app/(dashboard)/crm/leads/smart-search/page.tsx` | L · List/Workspace | ✓ / ✓ | table | List/Workspace archetype §8.3. |
-| `/crm/leads/source-report` | `app/(dashboard)/crm/leads/source-report/page.tsx` | R · Report | ✓ / ✓ | charts | Report archetype §8.8. |
-| `/crm/organizations` | `app/(dashboard)/crm/organizations/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/crm/organizations/[organizationId]` | `app/(dashboard)/crm/organizations/[organizationId]/page.tsx` | D · Detail | ✗ / ✗ | charts,tabs,overlays | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
-| `/crm/quotes` | `app/(dashboard)/crm/quotes/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/crm/quotes/[quoteId]` | `app/(dashboard)/crm/quotes/[quoteId]/page.tsx` | D · Detail | ✗ / ✗ | table,overlays | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
-| `/crm/reports` | `app/(dashboard)/crm/reports/page.tsx` | R · Report | ✓ / ✓ | charts | Report archetype §8.8. |
-| `/crm/settings/assignment-rules` | `app/(dashboard)/crm/settings/assignment-rules/page.tsx` | S · Settings | ✓ / ✓ | form,overlays | Settings archetype §8.7. |
-| `/crm/settings/email-templates` | `app/(dashboard)/crm/settings/email-templates/page.tsx` | S · Settings | ✓ / ✓ | form,overlays | Settings archetype §8.7. |
-| `/crm/settings/scoring-rules` | `app/(dashboard)/crm/settings/scoring-rules/page.tsx` | S · Settings | ✓ / ✓ | table,form,overlays | Settings archetype §8.7. |
-| `/crm/settings/sla` | `app/(dashboard)/crm/settings/sla/page.tsx` | S · Settings | ✓ / ✓ | table,form,overlays | Settings archetype §8.7. |
-| `/crm/targets` | `app/(dashboard)/crm/targets/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,overlays | List/Workspace archetype §8.3. |
-| `/crm/territories` | `app/(dashboard)/crm/territories/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/crm/web-forms` | `app/(dashboard)/crm/web-forms/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,form,overlays | List/Workspace archetype §8.3. |
-| `/dashboard` | `app/(dashboard)/dashboard/page.tsx` | H · Hub | ✓ / ✓ | widgets | Role-aware home. Row 1: greeting (display-lg) + date + `components/attendance/clock-in-widget.tsx` as a compact pill on the right. Row 2: 4 KPI `StatCard`s. Row 3: 12-col bento grid — My tasks (8) / Pending approvals (4); Team attendance (4) / Upcoming leaves (4) / Leave balance (4); Announcements, recent projects, sprint, activity. Every widget in `components/dashboard/widgets/*` and `features/dashboard/*` uses the new Card + WidgetHeader (title, count chip, "View all" link). Skeletons mirror final layout (`widget-skeleton.tsx`). |
-| `/dashboard/admin-health` | `app/(dashboard)/dashboard/admin-health/page.tsx` | H · Hub | ✗ / ✗ | — | Hub archetype §8.2. **Add `loading.tsx`** (archetype skeleton). |
-| `/dashboard/branches` | `app/(dashboard)/dashboard/branches/page.tsx` | L · List/Workspace | ✗ / ✗ | charts,table,tabs | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr` | `app/(dashboard)/hr/page.tsx` | H · Hub | ✓ / ✓ | hub | People hub: employee directory with search, department filter chips, Grid/Table toggle; employee cards show avatar with gold ring for managers, role, dept, status dot. |
-| `/hr/alumni` | `app/(dashboard)/hr/alumni/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/analytics` | `app/(dashboard)/hr/analytics/page.tsx` | R · Report | ✓ / ✓ | tabs | Report archetype §8.8. |
-| `/hr/assessments` | `app/(dashboard)/hr/assessments/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/asset-returns` | `app/(dashboard)/hr/asset-returns/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/hr/assets` | `app/(dashboard)/hr/assets/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/attendance` | `app/(dashboard)/hr/attendance/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | `attendance-content.tsx`: today summary strip, heatmap (`attendance-heatmap.tsx`) using gold scale 100→600 for intensity, calendar (`attendance-calendar.tsx`), team monitor table. |
-| `/hr/background-verification` | `app/(dashboard)/hr/background-verification/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/bonuses` | `app/(dashboard)/hr/bonuses/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,overlays | List/Workspace archetype §8.3. |
-| `/hr/career-evaluations` | `app/(dashboard)/hr/career-evaluations/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/career-ladders` | `app/(dashboard)/hr/career-ladders/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/hr/career-ladders/[id]` | `app/(dashboard)/hr/career-ladders/[id]/page.tsx` | D · Detail | ✗ / ✗ | form,overlays | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/career-profiles` | `app/(dashboard)/hr/career-profiles/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/career-promotions` | `app/(dashboard)/hr/career-promotions/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/certifications` | `app/(dashboard)/hr/certifications/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/compliance` | `app/(dashboard)/hr/compliance/page.tsx` | L · List/Workspace | ✓ / ✓ | — | List/Workspace archetype §8.3. |
-| `/hr/devices` | `app/(dashboard)/hr/devices/page.tsx` | W · Wrapper | ✗ / ✗ | wrapper | Thin wrapper/redirect: no visual work beyond confirming it renders inside the new shell. |
-| `/hr/document-review` | `app/(dashboard)/hr/document-review/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/hr/document-types` | `app/(dashboard)/hr/document-types/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,overlays | List/Workspace archetype §8.3. |
-| `/hr/documents` | `app/(dashboard)/hr/documents/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,overlays | List/Workspace archetype §8.3. |
-| `/hr/documents/editor/[documentId]` | `app/(dashboard)/hr/documents/editor/[documentId]/page.tsx` | F · Form/Editor | ✓ / ✗ | editor | Form/Editor archetype §8.6. |
-| `/hr/documents/editor/new` | `app/(dashboard)/hr/documents/editor/new/page.tsx` | F · Form/Editor | ✓ / ✗ | editor | Form/Editor archetype §8.6. |
-| `/hr/documents/templates` | `app/(dashboard)/hr/documents/templates/page.tsx` | L · List/Workspace | ✗ / ✗ | table,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/documents/templates/[templateId]/edit` | `app/(dashboard)/hr/documents/templates/[templateId]/edit/page.tsx` | F · Form/Editor | ✗ / ✗ | editor | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/documents/templates/new` | `app/(dashboard)/hr/documents/templates/new/page.tsx` | F · Form/Editor | ✗ / ✗ | editor | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/email-templates` | `app/(dashboard)/hr/email-templates/page.tsx` | L · List/Workspace | ✓ / ✓ | form,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/employees` | `app/(dashboard)/hr/employees/page.tsx` | L · List/Workspace | ✓ / ✓ | table | List/Workspace archetype §8.3. |
-| `/hr/employees/[employeeId]` | `app/(dashboard)/hr/employees/[employeeId]/page.tsx` | D · Detail | ✓ / ✓ | detail | Profile: cover band (ink-900 with subtle gold radial), 96px avatar overlapping band, name/role/status, tabs (Overview, Personal, Professional, Bank, Assets, Projects, Attendance, Tickets). Sections from `features/hr/employees/detail/*` become property-list cards. |
-| `/hr/employees/find-expert` | `app/(dashboard)/hr/employees/find-expert/page.tsx` | W · Wrapper | ✗ / ✗ | wrapper | Thin wrapper/redirect: no visual work beyond confirming it renders inside the new shell. |
-| `/hr/employees/skills-matrix` | `app/(dashboard)/hr/employees/skills-matrix/page.tsx` | L · List/Workspace | ✗ / ✗ | overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/employees/terminated` | `app/(dashboard)/hr/employees/terminated/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/enps` | `app/(dashboard)/hr/enps/page.tsx` | R · Report | ✓ / ✓ | charts,overlays | Report archetype §8.8. |
-| `/hr/exit` | `app/(dashboard)/hr/exit/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/hr/expenses` | `app/(dashboard)/hr/expenses/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/fnf` | `app/(dashboard)/hr/fnf/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/handbook` | `app/(dashboard)/hr/handbook/page.tsx` | L · List/Workspace | ✓ / ✓ | form,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/helpdesk` | `app/(dashboard)/hr/helpdesk/page.tsx` | L · List/Workspace | ✓ / ✓ | table,form,overlays | List/Workspace archetype §8.3. |
-| `/hr/holidays` | `app/(dashboard)/hr/holidays/page.tsx` | L · List/Workspace | ✗ / ✗ | form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/incentives` | `app/(dashboard)/hr/incentives/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/hr/learning-paths` | `app/(dashboard)/hr/learning-paths/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,overlays | List/Workspace archetype §8.3. |
-| `/hr/leaves` | `app/(dashboard)/hr/leaves/page.tsx` | W · Wrapper | ✓ / ✓ | wrapper | Thin wrapper → `app/(dashboard)/hr/leaves/leaves-wfh-content.tsx`, `leaves-tab-content.tsx`, `wfh-tab-content.tsx`, `leave-approvals.tsx`, `leaves-shared.tsx` (29 raw palette hits). Tabs Leaves/WFH/Approvals; balance cards; request Sheet. |
-| `/hr/loans` | `app/(dashboard)/hr/loans/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/my-assets` | `app/(dashboard)/hr/my-assets/page.tsx` | L · List/Workspace | ✗ / ✗ | — | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/my-bonuses` | `app/(dashboard)/hr/my-bonuses/page.tsx` | L · List/Workspace | ✓ / ✗ | — | List/Workspace archetype §8.3. |
-| `/hr/my-payslips` | `app/(dashboard)/hr/my-payslips/page.tsx` | L · List/Workspace | ✓ / ✓ | — | List/Workspace archetype §8.3. |
-| `/hr/offer-letter-templates` | `app/(dashboard)/hr/offer-letter-templates/page.tsx` | L · List/Workspace | ✗ / ✗ | form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/onboarding` | `app/(dashboard)/hr/onboarding/page.tsx` | L · List/Workspace | ✓ / ✓ | tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/onboarding/[userId]` | `app/(dashboard)/hr/onboarding/[userId]/page.tsx` | D · Detail | ✗ / ✗ | — | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/onboarding/my-tasks` | `app/(dashboard)/hr/onboarding/my-tasks/page.tsx` | L · List/Workspace | ✗ / ✓ | — | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/org-chart` | `app/(dashboard)/hr/org-chart/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,tabs | Tree on dotted-grid canvas (ink-200 dots), node cards 220px with avatar, name, title; zoom controls bottom-right; minimap optional (only if already present). |
-| `/hr/payroll` | `app/(dashboard)/hr/payroll/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | Run-centric: period selector, status stepper (Draft→Pending approval→Approved→Paid using status tones), totals KPI strip, table (`features/hr/payroll/payroll-table.tsx`) with sticky first column and right-aligned tabular amounts; payslip opens in Sheet. |
-| `/hr/performance` | `app/(dashboard)/hr/performance/page.tsx` | L · List/Workspace | ✓ / ✓ | form,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/recognition` | `app/(dashboard)/hr/recognition/page.tsx` | L · List/Workspace | ✓ / ✓ | table,tabs,overlays | List/Workspace archetype §8.3. |
-| `/hr/recruitment` | `app/(dashboard)/hr/recruitment/page.tsx` | H · Hub | ✓ / ✓ | kanban,charts | Hub archetype §8.2. |
-| `/hr/recruitment/candidates` | `app/(dashboard)/hr/recruitment/candidates/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/hr/recruitment/candidates/[candidateId]` | `app/(dashboard)/hr/recruitment/candidates/[candidateId]/page.tsx` | D · Detail | ✓ / ✗ | form,tabs,overlays | Detail/Record archetype §8.5. |
-| `/hr/recruitment/diversity-report` | `app/(dashboard)/hr/recruitment/diversity-report/page.tsx` | R · Report | ✗ / ✗ | charts | Report archetype §8.8. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/recruitment/hiring-flows` | `app/(dashboard)/hr/recruitment/hiring-flows/page.tsx` | L · List/Workspace | ✗ / ✗ | form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/recruitment/interviewer-performance` | `app/(dashboard)/hr/recruitment/interviewer-performance/page.tsx` | R · Report | ✗ / ✗ | table | Report archetype §8.8. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/recruitment/interviews` | `app/(dashboard)/hr/recruitment/interviews/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,table,form,overlays | List/Workspace archetype §8.3. |
-| `/hr/recruitment/jobs` | `app/(dashboard)/hr/recruitment/jobs/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/hr/recruitment/jobs/new` | `app/(dashboard)/hr/recruitment/jobs/new/page.tsx` | F · Form/Editor | ✗ / ✗ | form | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/recruitment/jobs/[jobId]/edit` | `app/(dashboard)/hr/recruitment/jobs/[jobId]/edit/page.tsx` | F · Form/Editor | ✗ / ✗ | form | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/recruitment/pipeline` | `app/(dashboard)/hr/recruitment/pipeline/page.tsx` | K · Board | ✓ / ✓ | kanban,form,overlays | Candidate board (`components/hr/recruitment/pipeline-kanban.tsx`, `features/hr/recruitment/kanban/*`). Cards show avatar, name, role, AI score chip, days in stage. |
-| `/hr/recruitment/question-bank` | `app/(dashboard)/hr/recruitment/question-bank/page.tsx` | L · List/Workspace | ✗ / ✗ | table,form,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/reimbursements` | `app/(dashboard)/hr/reimbursements/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/hr/skills` | `app/(dashboard)/hr/skills/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/surveys` | `app/(dashboard)/hr/surveys/page.tsx` | R · Report | ✓ / ✓ | charts,overlays | Report archetype §8.8. |
-| `/hr/team-events` | `app/(dashboard)/hr/team-events/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/teams/[teamId]` | `app/(dashboard)/hr/teams/[teamId]/page.tsx` | D · Detail | ✗ / ✗ | — | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
-| `/hr/termination` | `app/(dashboard)/hr/termination/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/hr/training` | `app/(dashboard)/hr/training/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/hr/work-logs` | `app/(dashboard)/hr/work-logs/page.tsx` | L · List/Workspace | ✓ / ✓ | form | List/Workspace archetype §8.3. |
-| `/notifications` | `app/(dashboard)/notifications/page.tsx` | L · List/Workspace | ✓ / ✓ | tabs | Inbox list: tabs All/Unread/Mentions, grouped by Today/Yesterday/Earlier, unread = 6px gold dot + bolder title; "Mark all read" ghost button. |
-| `/onboarding` | `app/(dashboard)/onboarding/page.tsx` | F · Form/Editor | ✓ / ✓ | form,tabs | Form/Editor archetype §8.6. |
-| `/projects` | `app/(dashboard)/projects/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/projects/resource-allocation` | `app/(dashboard)/projects/resource-allocation/page.tsx` | L · List/Workspace | ✗ / ✗ | — | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/projects/templates` | `app/(dashboard)/projects/templates/page.tsx` | L · List/Workspace | ✗ / ✗ | kanban,overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/projects/[projectId]` | `app/(dashboard)/projects/[projectId]/page.tsx` | K · Board | ✓ / ✓ | kanban,table,overlays | Project workspace with `components/layout/project-sidebar.tsx` as secondary nav. View switcher (`view-switcher.tsx`) as segmented control: Board/List/Table/Calendar/Gantt. Board = `kanban-board.tsx` + `kanban-ticket-card.tsx`; ticket dialog (`ticket-details/*`) becomes a large right Sheet (720px) with header, main description, right property rail. |
-| `/projects/[projectId]/analytics` | `app/(dashboard)/projects/[projectId]/analytics/page.tsx` | R · Report | ✓ / ✓ | charts | Report archetype §8.8. |
-| `/projects/[projectId]/backlog` | `app/(dashboard)/projects/[projectId]/backlog/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/budget` | `app/(dashboard)/projects/[projectId]/budget/page.tsx` | L · List/Workspace | ✗ / ✗ | form | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/projects/[projectId]/cycles` | `app/(dashboard)/projects/[projectId]/cycles/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/epics` | `app/(dashboard)/projects/[projectId]/epics/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/intake` | `app/(dashboard)/projects/[projectId]/intake/page.tsx` | L · List/Workspace | ✓ / ✓ | form,tabs,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/milestones` | `app/(dashboard)/projects/[projectId]/milestones/page.tsx` | L · List/Workspace | ✗ / ✗ | overlays | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/projects/[projectId]/modules` | `app/(dashboard)/projects/[projectId]/modules/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/my-tickets` | `app/(dashboard)/projects/[projectId]/my-tickets/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/pages` | `app/(dashboard)/projects/[projectId]/pages/page.tsx` | L · List/Workspace | ✓ / ✓ | form,overlays | List/Workspace archetype §8.3. |
-| `/projects/[projectId]/settings` | `app/(dashboard)/projects/[projectId]/settings/page.tsx` | S · Settings | ✓ / ✓ | form,overlays | Settings archetype §8.7. |
-| `/projects/[projectId]/sprints` | `app/(dashboard)/projects/[projectId]/sprints/page.tsx` | K · Board | ✓ / ✓ | kanban,charts,overlays | Board archetype §8.4. |
-| `/projects/[projectId]/timeline` | `app/(dashboard)/projects/[projectId]/timeline/page.tsx` | C · Calendar/Timeline | ✓ / ✓ | overlays | Calendar/Timeline archetype §8.9. |
-| `/projects/[projectId]/views` | `app/(dashboard)/projects/[projectId]/views/page.tsx` | K · Board | ✓ / ✓ | kanban,form,overlays | Board archetype §8.4. |
-| `/reports` | `app/(dashboard)/reports/page.tsx` | H · Hub | ✓ / ✓ | — | Hub archetype §8.2. |
-| `/settings/[[...rest]]` | `app/(dashboard)/settings/[[...rest]]/page.tsx` | S · Settings | ✓ / ✓ | profile/security/preferences | Personal settings: left sub-nav (Profile, Security, Preferences) + content max-w 720. Preferences (`features/settings/settings-preferences.tsx`) gains Theme (Light/Dark/System) radio cards and keeps the Compact toggle. |
-| `/settings/ai` | `app/(dashboard)/settings/ai/page.tsx` | S · Settings | ✗ / ✗ | charts | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/audit-log` | `app/(dashboard)/settings/audit-log/page.tsx` | S · Settings | ✓ / ✓ | table,overlays | Settings archetype §8.7. |
-| `/settings/branches` | `app/(dashboard)/settings/branches/page.tsx` | S · Settings | ✓ / ✓ | form,overlays | Settings archetype §8.7. |
-| `/settings/custom-fields` | `app/(dashboard)/settings/custom-fields/page.tsx` | S · Settings | ✓ / ✓ | form,tabs,overlays | Settings archetype §8.7. |
-| `/settings/data-hub` | `app/(dashboard)/settings/data-hub/page.tsx` | S · Settings | ✗ / ✓ | form | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/email-templates` | `app/(dashboard)/settings/email-templates/page.tsx` | S · Settings | ✗ / ✗ | tabs | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/integrations/recruitment` | `app/(dashboard)/settings/integrations/recruitment/page.tsx` | S · Settings | ✗ / ✗ | — | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/job-office-locations` | `app/(dashboard)/settings/job-office-locations/page.tsx` | S · Settings | ✗ / ✗ | form | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/job-roles` | `app/(dashboard)/settings/job-roles/page.tsx` | S · Settings | ✗ / ✗ | overlays | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/members` | `app/(dashboard)/settings/members/page.tsx` | S · Settings | ✓ / ✓ | table,form,tabs,overlays | Settings archetype §8.7. |
-| `/settings/notifications` | `app/(dashboard)/settings/notifications/page.tsx` | S · Settings | ✗ / ✓ | — | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/organization` | `app/(dashboard)/settings/organization/page.tsx` | S · Settings | ✓ / ✓ | form | Settings archetype §8.7. |
-| `/settings/payroll-schedule` | `app/(dashboard)/settings/payroll-schedule/page.tsx` | S · Settings | ✗ / ✓ | — | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/permissions` | `app/(dashboard)/settings/permissions/page.tsx` | S · Settings | ✗ / ✗ | — | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/roles` | `app/(dashboard)/settings/roles/page.tsx` | S · Settings | ✓ / ✓ | overlays | Settings archetype §8.7. |
-| `/settings/termination-reasons` | `app/(dashboard)/settings/termination-reasons/page.tsx` | S · Settings | ✗ / ✗ | form,overlays | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/settings/webhooks` | `app/(dashboard)/settings/webhooks/page.tsx` | S · Settings | ✗ / ✓ | overlays | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
-| `/support` | `app/(dashboard)/support/page.tsx` | H · Hub | ✓ / ✓ | charts | Hub archetype §8.2. |
-| `/support/inbox` | `app/(dashboard)/support/inbox/page.tsx` | L · List/Workspace | ✓ / ✓ | overlays | 3-pane mail-style: list (360px) / conversation / properties rail; collapses to stacked on <lg. |
-| `/tasks/overdue` | `app/(dashboard)/tasks/overdue/page.tsx` | L · List/Workspace | ✗ / ✗ | table | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
-| `/timesheets` | `app/(dashboard)/timesheets/page.tsx` | L · List/Workspace | ✓ / ✓ | table,overlays | Week grid table: sticky project column, 7 day columns, total column; today column header gold-50; log-time dialog restyled. |
-| `/timesheets/team` | `app/(dashboard)/timesheets/team/page.tsx` | L · List/Workspace | ✓ / ✓ | charts,table,overlays | List/Workspace archetype §8.3. |
-| `/careers` | `app/(public)/careers/page.tsx` | P · Public | ✗ / ✗ | — | Public careers: ink-950 header (`careers-header.tsx`) with wordmark, hero, job list (`careers-job-list.tsx`, `careers-job-card.tsx`) as cards with location/type chips, footer (`careers-footer.tsx`). Light content area. |
-| `/careers/[jobId]` | `app/(public)/careers/[jobId]/page.tsx` | P · Public | ✗ / ✗ | — | Public shell; see §8.10. |
-| `/careers/[jobId]/apply` | `app/(public)/careers/[jobId]/apply/page.tsx` | P · Public | ✗ / ✗ | form | Public shell; see §8.10. |
-| `/careers/[jobId]/[slug]` | `app/(public)/careers/[jobId]/[slug]/page.tsx` | P · Public | ✗ / ✗ | wrapper | Public shell; see §8.10. |
-| `/careers/[jobId]/[slug]/apply` | `app/(public)/careers/[jobId]/[slug]/apply/page.tsx` | P · Public | ✗ / ✗ | wrapper | Public shell; see §8.10. |
-| `/interview-booking/[token]` | `app/(public)/interview-booking/[token]/page.tsx` | P · Public | ✗ / ✗ | — | Slot picker: date strip + time chips (selected = gold-400 fill/ink text); confirm card. Remove arbitrary hex classes. |
-| `/offer-acceptance/[token]` | `app/(public)/offer-acceptance/[token]/page.tsx` | P · Public | ✗ / ✗ | form | Document-style page (max-w 760): letter preview card, accept/decline sticky footer bar. Remove `bg-[#...]` (file has arbitrary hex + 29 raw palette hits). |
+| `/` | — › Public (no app shell) | `app/page.tsx` | M · Marketing | ✗ / ✓ | Landing (`features/landing/landing-page.tsx`, `landing-shared.tsx`, `landing-footer.tsx`): ink-950 hero with wordmark, gold "MI" circle motif as large background mark at 6% opacity, H1 in display font 56/64, gold primary CTA "Sign in", ghost secondary. Remove every `bg-[#...]`/raw palette in landing files. |
+| `/account-deactivated` | — › Auth (no app shell) | `app/(auth)/account-deactivated/page.tsx` | A · Auth | ✗ / ✗ | Centered danger-soft status card, contact-admin text, sign-out button. |
+| `/forgot-password` | — › Auth (no app shell) | `app/(auth)/forgot-password/page.tsx` | A · Auth | ✓ / ✗ | Auth shell; single centered card form; see §8.1. |
+| `/invitation/[token]` | — › Auth (no app shell) | `app/(auth)/invitation/[token]/page.tsx` | A · Auth | ✓ / ✓ | Show org name + inviter avatar in a brand-subtle callout above the password form; error.tsx shows expired-invite state with illustration. |
+| `/mfa` | — › Auth (no app shell) | `app/(auth)/mfa/page.tsx` | A · Auth | ✗ / ✗ | 6-digit OTP: six 48×56 boxes, mono font, auto-advance, paste support (UI only), countdown text muted. |
+| `/reset-password` | — › Auth (no app shell) | `app/(auth)/reset-password/page.tsx` | A · Auth | ✗ / ✗ | Auth shell; single centered card form; see §8.1. |
+| `/setup-password` | — › Auth (no app shell) | `app/(auth)/setup-password/page.tsx` | A · Auth | ✗ / ✗ | Auth shell; single centered card form; see §8.1. |
+| `/signin` | — › Auth (no app shell) | `app/(auth)/signin/page.tsx` | A · Auth | ✓ / ✗ | Split layout from `app/(auth)/layout.tsx`. Left: form card max-w 400, title "Welcome back" display-xl, email+password (`components/auth/password-input.tsx`), primary full-width button, "Forgot password?" link in brand-text. Inline field errors, submit shows spinner inside button, disable while pending. Right: `features/auth/auth-right-panel.tsx` rebuilt as ink-950 panel with wordmark, 3 rotating value-props, subtle gold radial glow; no raw palette classes (it has 31 today). |
+| `/signup` | — › Auth (no app shell) | `app/(auth)/signup/page.tsx` | A · Auth | ✗ / ✗ | Same shell as /signin; multi-field form in 2 columns ≥sm; password strength via `components/auth/password-strength-indicator.tsx` restyled as 4 segmented bars (danger→warning→info→success tokens). |
+| `/verify-email` | — › Auth (no app shell) | `app/(auth)/verify-email/page.tsx` | A · Auth | ✓ / ✗ | Centered status card: icon in 56px gold-soft circle, title, body, resend button (ghost) with cooldown label. |
+| `/ai` | Home › Insights | `app/(dashboard)/ai/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/billing` | CRM ⚠️ › Billing — *deleted in working tree; build only if present* | `app/(dashboard)/billing/page.tsx` | H · Hub | ✓ / ✓ | Hub archetype §8.2. |
+| `/billing/invoices` | CRM ⚠️ › Billing — *deleted in working tree; build only if present* | `app/(dashboard)/billing/invoices/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/billing/invoices/new` | CRM ⚠️ › Billing (highlights **Invoices**) — *deleted in working tree; build only if present* | `app/(dashboard)/billing/invoices/new/page.tsx` | F · Form/Editor | ✓ / ✓ | Form/Editor archetype §8.6. |
+| `/billing/invoices/[invoiceId]` | CRM ⚠️ › Billing (highlights **Invoices**) — *deleted in working tree; build only if present* | `app/(dashboard)/billing/invoices/[invoiceId]/page.tsx` | D · Detail | ✓ / ✓ | Detail/Record archetype §8.5. |
+| `/calendar` | Home › Overview | `app/(dashboard)/calendar/page.tsx` | C · Calendar/Timeline | ✓ / ✓ | `features/calendar/*` + `.rbc-*` overrides rewritten in `styles/vendors/react-big-calendar.css` (see §6). Today cell gold-50, events tinted by tone, header toolbar uses new segmented control. |
+| `/ceo/qr-code` | Home › Admin tools | `app/(dashboard)/ceo/qr-code/page.tsx` | L · List/Workspace | ✓ / ✓ | Generator form left, live QR preview card right; QR foreground stays ink-900 on white for scannability (do not theme the QR itself). |
+| `/crm` | CRM ⚠️ › Overview — *deleted in working tree; build only if present* | `app/(dashboard)/crm/page.tsx` | H · Hub | ✓ / ✓ | CRM Hub: KPI strip (pipeline value, open deals, win rate, new leads 7d) → `features/crm/shared/crm-pipeline-mini.tsx` as horizontal stage bar with stage tones → recent activity (`crm-recent-activity.tsx`) as timeline. Quick actions: New lead, New deal, Import CSV. |
+| `/crm/analytics` | CRM ⚠️ › Overview — *deleted in working tree; build only if present* | `app/(dashboard)/crm/analytics/page.tsx` | R · Report | ✓ / ✓ | Report archetype; 2-col chart grid using `analytics-chart-card.tsx` as the single chart shell; date range picker top-right; rep table (`rep-performance-table.tsx`) full width. All chart colors from `--chart-*` tokens (remove hex/rgb in `lead-volume-chart.tsx`, `pipeline-funnel-chart.tsx`, `deal-value-chart.tsx`, `features/crm/shared/constants.ts`). |
+| `/crm/clients` | CRM ⚠️ › Accounts — *deleted in working tree; build only if present* | `app/(dashboard)/crm/clients/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/clients/[clientId]` | CRM ⚠️ › Accounts (highlights **Clients**) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/clients/[clientId]/page.tsx` | D · Detail | ✓ / ✓ | Detail/Record archetype §8.5. |
+| `/crm/contacts` | CRM ⚠️ › Accounts — *deleted in working tree; build only if present* | `app/(dashboard)/crm/contacts/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/deals` | CRM ⚠️ › Deals — *deleted in working tree; build only if present* | `app/(dashboard)/crm/deals/page.tsx` | K · Board | ✓ / ✓ | Pipeline board (`kanban-column.tsx`, `deal-kanban-card.tsx`) with column header = stage name + count + summed value (tabular-nums); forecast widget (`deal-forecast-widget.tsx`) collapsible above board; filter bar (`kanban-filter-bar.tsx`); side panel (`deal-side-panel.tsx`) as Sheet; table view (`deal-table-view.tsx`). Win/loss + stage-skip dialogs restyled to new Dialog. |
+| `/crm/deals/[dealId]` | CRM ⚠️ › Deals (highlights **Deals**) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/deals/[dealId]/page.tsx` | D · Detail | ✓ / ✓ | Record page like lead detail: stage progress stepper across top (circles = brand motif; completed = gold fill, current = gold ring, future = ink-200), value + close date + probability KPIs, activity timeline, meetings card, edit form in Sheet. |
+| `/crm/deals/aging` | CRM ⚠️ › Deals — *deleted in working tree; build only if present* | `app/(dashboard)/crm/deals/aging/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/crm/deals/approvals` | CRM ⚠️ › Deals — *deleted in working tree; build only if present* | `app/(dashboard)/crm/deals/approvals/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/deals/win-loss` | CRM ⚠️ › Deals — *deleted in working tree; build only if present* | `app/(dashboard)/crm/deals/win-loss/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/crm/leads` | CRM ⚠️ › Leads — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/page.tsx` | K · Board | ✓ / ✓ | Primary workspace. Toolbar (`leads-toolbar.tsx`): search (⌘/), saved views, filter chips, view toggle Board/Table (segmented control), density toggle, Export, Import, primary "New lead". Stats (`leads-stats-bar.tsx`) as compact inline metrics row (not big cards). Board (`leads-kanban.tsx`, `kanban-card.tsx`) + table (`lead-table-view.tsx`, `lead-table/*`). Lead detail opens in right Sheet (`lead-detail-sheet.tsx`) 560px. |
+| `/crm/leads/[leadId]` | CRM ⚠️ › Leads (highlights **Lead Pipeline**) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/[leadId]/page.tsx` | D · Detail | ✓ / ✓ | Record page: header (`detail/lead-detail-header.tsx`) with avatar initials circle, name, company, status pill, score ring, owner; action bar (`lead-quick-actions.tsx`). Two-column: main = tabs Activity/Details/Emails, timeline (`lead-activity-timeline.tsx`); right rail 320px = `lead-info-card.tsx` + `lead-sidebar.tsx` as stacked property lists. |
+| `/crm/leads/distribute` | CRM ⚠️ › Leads — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/distribute/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/leads/duplicates` | CRM ⚠️ › Leads — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/duplicates/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/leads/smart-search` | CRM ⚠️ › Leads — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/smart-search/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/leads/source-report` | CRM ⚠️ › Leads — *deleted in working tree; build only if present* | `app/(dashboard)/crm/leads/source-report/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/crm/organizations` | CRM ⚠️ › Accounts — *deleted in working tree; build only if present* | `app/(dashboard)/crm/organizations/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/organizations/[organizationId]` | CRM ⚠️ › Accounts (highlights **Organizations**) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/organizations/[organizationId]/page.tsx` | D · Detail | ✗ / ✗ | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
+| `/crm/quotes` | CRM ⚠️ › Deals — *deleted in working tree; build only if present* | `app/(dashboard)/crm/quotes/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/crm/quotes/[quoteId]` | CRM ⚠️ › Deals (highlights **Quotes**) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/quotes/[quoteId]/page.tsx` | D · Detail | ✗ / ✗ | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
+| `/crm/reports` | CRM ⚠️ › Overview — *deleted in working tree; build only if present* | `app/(dashboard)/crm/reports/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/crm/settings/assignment-rules` | CRM ⚠️ › CRM Settings (collapsed by default) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/settings/assignment-rules/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/crm/settings/email-templates` | CRM ⚠️ › CRM Settings (collapsed by default) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/settings/email-templates/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/crm/settings/scoring-rules` | CRM ⚠️ › CRM Settings (collapsed by default) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/settings/scoring-rules/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/crm/settings/sla` | CRM ⚠️ › CRM Settings (collapsed by default) — *deleted in working tree; build only if present* | `app/(dashboard)/crm/settings/sla/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/crm/targets` | CRM ⚠️ › Performance — *deleted in working tree; build only if present* | `app/(dashboard)/crm/targets/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/territories` | CRM ⚠️ › Accounts — *deleted in working tree; build only if present* | `app/(dashboard)/crm/territories/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/crm/web-forms` | CRM ⚠️ › Performance — *deleted in working tree; build only if present* | `app/(dashboard)/crm/web-forms/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/dashboard` | Home › Overview | `app/(dashboard)/dashboard/page.tsx` | H · Hub | ✓ / ✓ | Role-aware home. Row 1: greeting (display-lg) + date + `components/attendance/clock-in-widget.tsx` as a compact pill on the right. Row 2: 4 KPI `StatCard`s. Row 3: 12-col bento grid — My tasks (8) / Pending approvals (4); Team attendance (4) / Upcoming leaves (4) / Leave balance (4); Announcements, recent projects, sprint, activity. Every widget in `components/dashboard/widgets/*` and `features/dashboard/*` uses the new Card + WidgetHeader (title, count chip, "View all" link). Skeletons mirror final layout (`widget-skeleton.tsx`). |
+| `/dashboard/admin-health` | Home › Admin tools | `app/(dashboard)/dashboard/admin-health/page.tsx` | H · Hub | ✗ / ✗ | Hub archetype §8.2. **Add `loading.tsx`** (archetype skeleton). |
+| `/dashboard/branches` | Home › Admin tools | `app/(dashboard)/dashboard/branches/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr` | HR › People | `app/(dashboard)/hr/page.tsx` | H · Hub | ✓ / ✓ | People hub: employee directory with search, department filter chips, Grid/Table toggle; employee cards show avatar with gold ring for managers, role, dept, status dot. |
+| `/hr/alumni` | HR › People (highlights **Terminated**) | `app/(dashboard)/hr/alumni/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/analytics` | HR › Support | `app/(dashboard)/hr/analytics/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/hr/assessments` | HR › Growth (highlights **Performance**) | `app/(dashboard)/hr/assessments/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/asset-returns` | HR › Assets | `app/(dashboard)/hr/asset-returns/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/assets` | HR › Assets | `app/(dashboard)/hr/assets/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/attendance` | HR › Operations | `app/(dashboard)/hr/attendance/page.tsx` | L · List/Workspace | ✓ / ✓ | `attendance-content.tsx`: today summary strip, heatmap (`attendance-heatmap.tsx`) using gold scale 100→600 for intensity, calendar (`attendance-calendar.tsx`), team monitor table. |
+| `/hr/background-verification` | HR › Lifecycle (highlights **Onboarding**) | `app/(dashboard)/hr/background-verification/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/bonuses` | HR › Compensation | `app/(dashboard)/hr/bonuses/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/career-evaluations` | HR › Growth | `app/(dashboard)/hr/career-evaluations/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/career-ladders` | HR › Growth | `app/(dashboard)/hr/career-ladders/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/career-ladders/[id]` | HR › Growth (highlights **Career Ladders**) | `app/(dashboard)/hr/career-ladders/[id]/page.tsx` | D · Detail | ✗ / ✗ | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/career-profiles` | HR › Growth | `app/(dashboard)/hr/career-profiles/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/career-promotions` | HR › Growth | `app/(dashboard)/hr/career-promotions/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/certifications` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/certifications/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/compliance` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/compliance/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/devices` | HR › Assets (highlights **Assets**) | `app/(dashboard)/hr/devices/page.tsx` | W · Wrapper | ✗ / ✗ | Thin wrapper/redirect: no visual work beyond confirming it renders inside the new shell. |
+| `/hr/document-review` | HR › Documents | `app/(dashboard)/hr/document-review/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/document-types` | HR › Documents | `app/(dashboard)/hr/document-types/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/documents` | HR › Documents | `app/(dashboard)/hr/documents/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/documents/editor/[documentId]` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/documents/editor/[documentId]/page.tsx` | F · Form/Editor | ✓ / ✗ | Form/Editor archetype §8.6. |
+| `/hr/documents/editor/new` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/documents/editor/new/page.tsx` | F · Form/Editor | ✓ / ✗ | Form/Editor archetype §8.6. |
+| `/hr/documents/templates` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/documents/templates/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/documents/templates/[templateId]/edit` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/documents/templates/[templateId]/edit/page.tsx` | F · Form/Editor | ✗ / ✗ | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/documents/templates/new` | HR › Documents (highlights **Documents**) | `app/(dashboard)/hr/documents/templates/new/page.tsx` | F · Form/Editor | ✗ / ✗ | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/email-templates` | HR › Documents | `app/(dashboard)/hr/email-templates/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/employees` | HR › People | `app/(dashboard)/hr/employees/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/employees/[employeeId]` | HR › People (highlights **Employees**) | `app/(dashboard)/hr/employees/[employeeId]/page.tsx` | D · Detail | ✓ / ✓ | Profile: cover band (ink-900 with subtle gold radial), 96px avatar overlapping band, name/role/status, tabs (Overview, Personal, Professional, Bank, Assets, Projects, Attendance, Tickets). Sections from `features/hr/employees/detail/*` become property-list cards. |
+| `/hr/employees/find-expert` | HR › People | `app/(dashboard)/hr/employees/find-expert/page.tsx` | W · Wrapper | ✗ / ✗ | Thin wrapper/redirect: no visual work beyond confirming it renders inside the new shell. |
+| `/hr/employees/skills-matrix` | HR › People | `app/(dashboard)/hr/employees/skills-matrix/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/employees/terminated` | HR › People | `app/(dashboard)/hr/employees/terminated/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/enps` | HR › Engagement (hidden routes today) (highlights **Recognition**) | `app/(dashboard)/hr/enps/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/hr/exit` | HR › Lifecycle | `app/(dashboard)/hr/exit/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/expenses` | HR › Operations | `app/(dashboard)/hr/expenses/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/fnf` | HR › Operations (highlights **Expenses / Payroll**) | `app/(dashboard)/hr/fnf/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/handbook` | HR › Documents | `app/(dashboard)/hr/handbook/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/helpdesk` | HR › Support | `app/(dashboard)/hr/helpdesk/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/holidays` | HR › Operations | `app/(dashboard)/hr/holidays/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/incentives` | HR › Compensation | `app/(dashboard)/hr/incentives/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/learning-paths` | HR › Growth (highlights **Performance**) | `app/(dashboard)/hr/learning-paths/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/leaves` | HR › Operations | `app/(dashboard)/hr/leaves/page.tsx` | W · Wrapper | ✓ / ✓ | Thin wrapper → `app/(dashboard)/hr/leaves/leaves-wfh-content.tsx`, `leaves-tab-content.tsx`, `wfh-tab-content.tsx`, `leave-approvals.tsx`, `leaves-shared.tsx` (29 raw palette hits). Tabs Leaves/WFH/Approvals; balance cards; request Sheet. |
+| `/hr/loans` | HR › Operations (highlights **Expenses / Payroll**) | `app/(dashboard)/hr/loans/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/my-assets` | HR › Me | `app/(dashboard)/hr/my-assets/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/my-bonuses` | HR › Me | `app/(dashboard)/hr/my-bonuses/page.tsx` | L · List/Workspace | ✓ / ✗ | List/Workspace archetype §8.3. |
+| `/hr/my-payslips` | HR › Me | `app/(dashboard)/hr/my-payslips/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/offer-letter-templates` | HR › Documents | `app/(dashboard)/hr/offer-letter-templates/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/onboarding` | HR › Lifecycle | `app/(dashboard)/hr/onboarding/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/onboarding/[userId]` | HR › Lifecycle (highlights **Onboarding**) | `app/(dashboard)/hr/onboarding/[userId]/page.tsx` | D · Detail | ✗ / ✗ | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/onboarding/my-tasks` | HR › Lifecycle (highlights **Onboarding**) | `app/(dashboard)/hr/onboarding/my-tasks/page.tsx` | L · List/Workspace | ✗ / ✓ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/org-chart` | HR › People | `app/(dashboard)/hr/org-chart/page.tsx` | L · List/Workspace | ✓ / ✓ | Tree on dotted-grid canvas (ink-200 dots), node cards 220px with avatar, name, title; zoom controls bottom-right; minimap optional (only if already present). |
+| `/hr/payroll` | HR › Operations | `app/(dashboard)/hr/payroll/page.tsx` | L · List/Workspace | ✓ / ✓ | Run-centric: period selector, status stepper (Draft→Pending approval→Approved→Paid using status tones), totals KPI strip, table (`features/hr/payroll/payroll-table.tsx`) with sticky first column and right-aligned tabular amounts; payslip opens in Sheet. |
+| `/hr/performance` | HR › Growth | `app/(dashboard)/hr/performance/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/recognition` | HR › Growth | `app/(dashboard)/hr/recognition/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/recruitment` | Recruitment › Overview | `app/(dashboard)/hr/recruitment/page.tsx` | H · Hub | ✓ / ✓ | Hub archetype §8.2. |
+| `/hr/recruitment/candidates` | Recruitment › Hiring | `app/(dashboard)/hr/recruitment/candidates/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/recruitment/candidates/[candidateId]` | Recruitment › Hiring (highlights **Candidates**) | `app/(dashboard)/hr/recruitment/candidates/[candidateId]/page.tsx` | D · Detail | ✓ / ✗ | Detail/Record archetype §8.5. |
+| `/hr/recruitment/diversity-report` | Recruitment › Reports (hidden routes today) (highlights **Recruitment Hub**) | `app/(dashboard)/hr/recruitment/diversity-report/page.tsx` | R · Report | ✗ / ✗ | Report archetype §8.8. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/recruitment/hiring-flows` | Recruitment › Setup | `app/(dashboard)/hr/recruitment/hiring-flows/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/recruitment/interviewer-performance` | Recruitment › Reports (hidden routes today) (highlights **Recruitment Hub**) | `app/(dashboard)/hr/recruitment/interviewer-performance/page.tsx` | R · Report | ✗ / ✗ | Report archetype §8.8. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/recruitment/interviews` | Recruitment › Hiring | `app/(dashboard)/hr/recruitment/interviews/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/recruitment/jobs` | Recruitment › Hiring | `app/(dashboard)/hr/recruitment/jobs/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/recruitment/jobs/new` | Recruitment › Hiring (highlights **Jobs**) | `app/(dashboard)/hr/recruitment/jobs/new/page.tsx` | F · Form/Editor | ✗ / ✗ | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/recruitment/jobs/[jobId]/edit` | Recruitment › Hiring (highlights **Jobs**) | `app/(dashboard)/hr/recruitment/jobs/[jobId]/edit/page.tsx` | F · Form/Editor | ✗ / ✗ | Form/Editor archetype §8.6. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/recruitment/pipeline` | Recruitment › Hiring | `app/(dashboard)/hr/recruitment/pipeline/page.tsx` | K · Board | ✓ / ✓ | Candidate board (`components/hr/recruitment/pipeline-kanban.tsx`, `features/hr/recruitment/kanban/*`). Cards show avatar, name, role, AI score chip, days in stage. |
+| `/hr/recruitment/question-bank` | Recruitment › Setup | `app/(dashboard)/hr/recruitment/question-bank/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/reimbursements` | HR › Operations (highlights **Expenses / Payroll**) | `app/(dashboard)/hr/reimbursements/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/skills` | HR › Growth (highlights **Performance**) | `app/(dashboard)/hr/skills/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/surveys` | HR › Engagement (hidden routes today) (highlights **Recognition**) | `app/(dashboard)/hr/surveys/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/hr/team-events` | HR › Engagement (hidden routes today) (highlights **Recognition**) | `app/(dashboard)/hr/team-events/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/teams/[teamId]` | HR › People (highlights **Employees**) | `app/(dashboard)/hr/teams/[teamId]/page.tsx` | D · Detail | ✗ / ✗ | Detail/Record archetype §8.5. **Add `loading.tsx`** (archetype skeleton). |
+| `/hr/termination` | HR › Lifecycle | `app/(dashboard)/hr/termination/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/training` | HR › Growth (highlights **Performance**) | `app/(dashboard)/hr/training/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/hr/work-logs` | Projects & Time › Time | `app/(dashboard)/hr/work-logs/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/notifications` | Home › Overview | `app/(dashboard)/notifications/page.tsx` | L · List/Workspace | ✓ / ✓ | Inbox list: tabs All/Unread/Mentions, grouped by Today/Yesterday/Earlier, unread = 6px gold dot + bolder title; "Mark all read" ghost button. |
+| `/onboarding` | Home › (hidden — self onboarding, opened from dashboard prompt) (highlights **Dashboard**) | `app/(dashboard)/onboarding/page.tsx` | F · Form/Editor | ✓ / ✓ | Form/Editor archetype §8.6. |
+| `/projects` | Projects & Time › Projects | `app/(dashboard)/projects/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/resource-allocation` | Projects & Time › Projects | `app/(dashboard)/projects/resource-allocation/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/projects/templates` | Projects & Time › Projects | `app/(dashboard)/projects/templates/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/projects/[projectId]` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/page.tsx` | K · Board | ✓ / ✓ | Project workspace with `components/layout/project-sidebar.tsx` as secondary nav. View switcher (`view-switcher.tsx`) as segmented control: Board/List/Table/Calendar/Gantt. Board = `kanban-board.tsx` + `kanban-ticket-card.tsx`; ticket dialog (`ticket-details/*`) becomes a large right Sheet (720px) with header, main description, right property rail. |
+| `/projects/[projectId]/analytics` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/analytics/page.tsx` | R · Report | ✓ / ✓ | Report archetype §8.8. |
+| `/projects/[projectId]/backlog` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/backlog/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/budget` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/budget/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/projects/[projectId]/cycles` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/cycles/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/epics` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/epics/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/intake` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/intake/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/milestones` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/milestones/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/projects/[projectId]/modules` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/modules/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/my-tickets` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/my-tickets/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/pages` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/pages/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/projects/[projectId]/settings` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/settings/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/projects/[projectId]/sprints` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/sprints/page.tsx` | K · Board | ✓ / ✓ | Board archetype §8.4. |
+| `/projects/[projectId]/timeline` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/timeline/page.tsx` | C · Calendar/Timeline | ✓ / ✓ | Calendar/Timeline archetype §8.9. |
+| `/projects/[projectId]/views` | Projects & Time › Projects → project workspace sidebar (highlights **All Projects**) | `app/(dashboard)/projects/[projectId]/views/page.tsx` | K · Board | ✓ / ✓ | Board archetype §8.4. |
+| `/reports` | Home › Insights | `app/(dashboard)/reports/page.tsx` | H · Hub | ✓ / ✓ | Hub archetype §8.2. |
+| `/settings/[[...rest]]` | Account (no tab) › Account (no top-nav tab; opened from user menu) | `app/(dashboard)/settings/[[...rest]]/page.tsx` | S · Settings | ✓ / ✓ | Personal settings (Account mode, §7.4): the contextual sidebar shows Profile, Security, Preferences; content max-w 720. Preferences (`features/settings/settings-preferences.tsx`) gains Theme (Light/Dark/System) radio cards and keeps the Compact toggle. |
+| `/settings/ai` | Admin › Integrations & data | `app/(dashboard)/settings/ai/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/audit-log` | Admin › Access | `app/(dashboard)/settings/audit-log/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/branches` | Admin › Workspace | `app/(dashboard)/settings/branches/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/custom-fields` | Admin › HR configuration | `app/(dashboard)/settings/custom-fields/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/data-hub` | Admin › Integrations & data | `app/(dashboard)/settings/data-hub/page.tsx` | S · Settings | ✗ / ✓ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/email-templates` | Admin › HR configuration | `app/(dashboard)/settings/email-templates/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/integrations/recruitment` | Admin › Integrations & data | `app/(dashboard)/settings/integrations/recruitment/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/job-office-locations` | Admin › HR configuration | `app/(dashboard)/settings/job-office-locations/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/job-roles` | Admin › HR configuration | `app/(dashboard)/settings/job-roles/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/members` | Admin › Workspace | `app/(dashboard)/settings/members/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/notifications` | Admin › Workspace | `app/(dashboard)/settings/notifications/page.tsx` | S · Settings | ✗ / ✓ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/organization` | Admin › Workspace | `app/(dashboard)/settings/organization/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/payroll-schedule` | Admin › HR configuration | `app/(dashboard)/settings/payroll-schedule/page.tsx` | S · Settings | ✗ / ✓ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/permissions` | Admin › Access | `app/(dashboard)/settings/permissions/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/roles` | Admin › Access | `app/(dashboard)/settings/roles/page.tsx` | S · Settings | ✓ / ✓ | Settings archetype §8.7. |
+| `/settings/termination-reasons` | Admin › HR configuration | `app/(dashboard)/settings/termination-reasons/page.tsx` | S · Settings | ✗ / ✗ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/settings/webhooks` | Admin › Integrations & data | `app/(dashboard)/settings/webhooks/page.tsx` | S · Settings | ✗ / ✓ | Settings archetype §8.7. **Add `loading.tsx`** (archetype skeleton). |
+| `/support` | Support › Helpdesk | `app/(dashboard)/support/page.tsx` | H · Hub | ✓ / ✓ | Hub archetype §8.2. |
+| `/support/inbox` | Support › Helpdesk | `app/(dashboard)/support/inbox/page.tsx` | L · List/Workspace | ✓ / ✓ | 3-pane mail-style: list (360px) / conversation / properties rail; collapses to stacked on <lg. |
+| `/tasks/overdue` | Home › Overview | `app/(dashboard)/tasks/overdue/page.tsx` | L · List/Workspace | ✗ / ✗ | List/Workspace archetype §8.3. **Add `loading.tsx`** (archetype skeleton). |
+| `/timesheets` | Projects & Time › Time | `app/(dashboard)/timesheets/page.tsx` | L · List/Workspace | ✓ / ✓ | Week grid table: sticky project column, 7 day columns, total column; today column header gold-50; log-time dialog restyled. |
+| `/timesheets/team` | Projects & Time › Time | `app/(dashboard)/timesheets/team/page.tsx` | L · List/Workspace | ✓ / ✓ | List/Workspace archetype §8.3. |
+| `/careers` | — › Public (no app shell) | `app/(public)/careers/page.tsx` | P · Public | ✗ / ✗ | Public careers: ink-950 header (`careers-header.tsx`) with wordmark, hero, job list (`careers-job-list.tsx`, `careers-job-card.tsx`) as cards with location/type chips, footer (`careers-footer.tsx`). Light content area. |
+| `/careers/[jobId]` | — › Public (no app shell) | `app/(public)/careers/[jobId]/page.tsx` | P · Public | ✗ / ✗ | Public shell; see §8.10. |
+| `/careers/[jobId]/apply` | — › Public (no app shell) | `app/(public)/careers/[jobId]/apply/page.tsx` | P · Public | ✗ / ✗ | Public shell; see §8.10. |
+| `/careers/[jobId]/[slug]` | — › Public (no app shell) | `app/(public)/careers/[jobId]/[slug]/page.tsx` | P · Public | ✗ / ✗ | Public shell; see §8.10. |
+| `/careers/[jobId]/[slug]/apply` | — › Public (no app shell) | `app/(public)/careers/[jobId]/[slug]/apply/page.tsx` | P · Public | ✗ / ✗ | Public shell; see §8.10. |
+| `/interview-booking/[token]` | — › Public (no app shell) | `app/(public)/interview-booking/[token]/page.tsx` | P · Public | ✗ / ✗ | Slot picker: date strip + time chips (selected = gold-400 fill/ink text); confirm card. Remove arbitrary hex classes. |
+| `/offer-acceptance/[token]` | — › Public (no app shell) | `app/(public)/offer-acceptance/[token]/page.tsx` | P · Public | ✗ / ✗ | Document-style page (max-w 760): letter preview card, accept/decline sticky footer bar. Remove `bg-[#...]` (file has arbitrary hex + 29 raw palette hits). |
 
 **Route-local components** (restyle with their page): `app/(dashboard)/projects/{project-card,project-list-row,project-filter-bar,project-pagination,projects-empty-state,new-project-dialog}.tsx`, `app/(dashboard)/projects/[projectId]/access-denied-view.tsx`, `app/(dashboard)/hr/attendance/attendance-content.tsx`, `app/(dashboard)/hr/leaves/{leave-approvals,wfh-tab-content,leaves-tab-content,leaves-wfh-content,leaves-shared}.tsx`, `app/(dashboard)/hr/expenses/{create-expense-dialog,import-expense-sheet}.tsx`, `app/(dashboard)/hr/documents/upload-document-dialog.tsx`, `app/(dashboard)/hr/employees/[employeeId]/{edit-employee-form,employee-details-view}.tsx`, `app/(dashboard)/hr/termination/_components/termination-card.tsx`, `app/(dashboard)/hr/email-templates/_components/template-form.tsx`, `app/(dashboard)/hr/recruitment/candidates/[candidateId]/_components/{ai-score-card,interviews-tab,candidate-profile-card,applications-tab,candidate-sheets}.tsx`, `app/(dashboard)/settings/organization/_components/pay-policy-card.tsx`, `app/(dashboard)/settings/job-roles/_components/job-role-sheet.tsx`.
 
@@ -1317,9 +1552,9 @@ Legend: L/E = `loading.tsx` / `error.tsx` present today (✓/✗). Features = de
 | Miyo Gold (gold-400) | `#D4AF37` | Primary fill, active indicators, focus (dark), logo circle |
 | Gold text (gold-700) | `#796001` | Brand text/links on light |
 | Gold text (gold-300) | `#E2C56F` | Brand text/links on dark |
-| Miyo Ink (ink-900) | `#201E1F` | Text, sidebar, secondary button, text on gold |
+| Miyo Ink (ink-900) | `#201E1F` | Text, secondary (ink) button, text on gold, nav labels |
 | Ink canvas (ink-50) | `#FBFAF6` | Light app background |
 | Ink night (ink-950) | `#100F0D` | Dark app background |
 | Silver | `#D8D8D8` | Wordmark "YO", decorative on ink |
 
-*Generated 11 Oct 2026 from a read-only audit of `/Users/tarunchintakunta/office/miyoglobal/crm` (branch `main`, HEAD `c1104a9`).*
+*v2 generated 11 Oct 2026 from a read-only audit of `/Users/tarunchintakunta/office/miyoglobal/crm` (branch `main`, HEAD `5f11b3c` plus an uncommitted CRM/Billing removal) and of Streamline (`/Users/tarunchintakunta/Personal/streamline/streamlineos-frontend/frontend`).*

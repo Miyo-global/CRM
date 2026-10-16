@@ -1,0 +1,330 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1792146773858,
+  "projectRoot": "/Users/tarunchintakunta/office/miyoglobal/crm",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.3.8",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.0.16",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "4.1.5",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "pnpm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "pnpm build",
+    "testCommand": "pnpm test",
+    "lintCommand": "pnpm lint",
+    "devCommand": "pnpm dev",
+    "scripts": {
+      "lint": "eslint",
+      "typecheck": "tsc --noEmit",
+      "lint:dead-code": "node scripts/find-dead-code.mjs --check",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:coverage": "vitest run --coverage",
+      "dev": "next dev",
+      "start": "next start",
+      "build": "next build",
+      "db:push": "drizzle-kit push",
+      "db:studio": "drizzle-kit studio",
+      "db:migrate": "drizzle-kit migrate",
+      "db:apply-pending": "tsx --env-file=.env scripts/apply-pending-migrations.ts",
+      "db:migrate:deploy": "tsx scripts/apply-pending-migrations.ts --deploy",
+      "db:check-drift": "tsx scripts/check-schema-drift.ts",
+      "db:generate": "drizzle-kit generate",
+      "db:fix-orphaned": "tsx scripts/fix-orphaned-data.ts",
+      "backfill:converted-leads": "tsx --env-file=.env scripts/backfill-converted-leads.ts",
+      "seed:worklogs": "ALLOW_REMOTE_DB=1 npx tsx --env-file=.env scripts/seed-worklogs.ts",
+      "seed:demo": "npx tsx --env-file=.env scripts/seed-demo-accounts.ts",
+      "seed:career-ladders": "npx tsx --env-file=.env scripts/seed-career-ladders.ts",
+      "seed:hr-email-templates": "npx tsx --env-file=.env scripts/seed-hr-email-templates.ts",
+      "send:perf-notice-test": "npx tsx --env-file=.env scripts/send-performance-notice-test.ts",
+      "send:all-emails-test": "npx tsx --env-file=.env scripts/send-all-emails-test.ts",
+      "send:mail-test": "npx tsx --env-file=.env scripts/send-zeptomail-test.ts",
+      "gen:sample-payslip": "tsx scripts/generate-sample-payslip.ts"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "components",
+      "docs",
+      "lib",
+      "public",
+      "scripts"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 6,
+      "lastAccessed": 1792146773793,
+      "keyFiles": [
+        "error.tsx",
+        "global-error.tsx",
+        "icon.svg",
+        "layout.tsx",
+        "not-found.tsx"
+      ]
+    },
+    "components": {
+      "path": "components",
+      "purpose": "UI components",
+      "fileCount": 1,
+      "lastAccessed": 1792146773794,
+      "keyFiles": [
+        "theme-provider.tsx"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 4,
+      "lastAccessed": 1792146773819,
+      "keyFiles": [
+        "BACKLOG.md",
+        "CRM-UI-UX-REVAMP.md",
+        "MIYO-CRM-TODO.md",
+        "ui-revamp-baseline.md"
+      ]
+    },
+    "drizzle": {
+      "path": "drizzle",
+      "purpose": null,
+      "fileCount": 168,
+      "lastAccessed": 1792146773821,
+      "keyFiles": [
+        "0000_glamorous_amazoness.sql",
+        "0001_typical_mockingbird.sql",
+        "0002_flaky_captain_cross.sql",
+        "0003_add_overtime_and_auto_checkout.sql",
+        "0004_brief_nekra.sql"
+      ]
+    },
+    "features": {
+      "path": "features",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1792146773821,
+      "keyFiles": []
+    },
+    "graphify-out": {
+      "path": "graphify-out",
+      "purpose": null,
+      "fileCount": 7,
+      "lastAccessed": 1792146773822,
+      "keyFiles": [
+        "GRAPH_REPORT.md",
+        "graph.html",
+        "graph.json",
+        "manifest.json"
+      ]
+    },
+    "hooks": {
+      "path": "hooks",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1792146773823,
+      "keyFiles": [
+        "use-debounce.ts",
+        "use-expense-filters.ts",
+        "use-file-url.ts",
+        "use-mobile.ts",
+        "use-pagination-params.ts"
+      ]
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 47,
+      "lastAccessed": 1792146773823,
+      "keyFiles": [
+        "api-client.ts",
+        "app-url.ts",
+        "attendance-auto-checkout.ts",
+        "audit-log.ts",
+        "cache.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 6,
+      "lastAccessed": 1792146773824,
+      "keyFiles": [
+        "google-g.svg",
+        "logo-wordmark.png",
+        "logo.png",
+        "logo.svg",
+        "robots.txt"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 42,
+      "lastAccessed": 1792146773824,
+      "keyFiles": [
+        "_check-user-org.ts",
+        "_guard.test.ts",
+        "_guard.ts",
+        "add-job-posting-columns.ts",
+        "apply-pending-migrations.ts"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1792146773825,
+      "keyFiles": []
+    },
+    "styles": {
+      "path": "styles",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1792146773834,
+      "keyFiles": []
+    },
+    "types": {
+      "path": "types",
+      "purpose": "Type definitions",
+      "fileCount": 11,
+      "lastAccessed": 1792146773835,
+      "keyFiles": [
+        "crm.ts",
+        "dashboard.ts",
+        "hr.ts",
+        "invoice.ts",
+        "leads.ts"
+      ]
+    },
+    "app/api": {
+      "path": "app/api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1792146773837,
+      "keyFiles": []
+    },
+    "lib/api": {
+      "path": "lib/api",
+      "purpose": "API routes",
+      "fileCount": 4,
+      "lastAccessed": 1792146773856,
+      "keyFiles": [
+        "fetch-all-pages.test.ts",
+        "fetch-all-pages.ts",
+        "helpers.test.ts"
+      ]
+    },
+    "server/lib": {
+      "path": "server/lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1792146773857,
+      "keyFiles": [
+        "lead-triggers.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "app/api/hr/assets/export/email/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1792146979203,
+      "type": "file"
+    },
+    {
+      "path": "app/api/hr/employees/[employeeId]/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1792147136360,
+      "type": "file"
+    },
+    {
+      "path": "lib/auth/leave-approval.ts",
+      "accessCount": 2,
+      "lastAccessed": 1792147431923,
+      "type": "file"
+    },
+    {
+      "path": "lib/auth/role-assignment.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792147116081,
+      "type": "file"
+    },
+    {
+      "path": "app/api/hr/employees/onboard/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792147145186,
+      "type": "file"
+    },
+    {
+      "path": "app/(dashboard)/ai/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1792147249744,
+      "type": "file"
+    },
+    {
+      "path": "app/api/hr/leaves/team/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1792147548792,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

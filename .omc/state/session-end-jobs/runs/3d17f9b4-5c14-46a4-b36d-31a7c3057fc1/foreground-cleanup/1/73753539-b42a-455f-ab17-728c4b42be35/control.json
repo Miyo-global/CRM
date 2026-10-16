@@ -1,0 +1,13 @@
+{
+  "jobId": "3d17f9b4-5c14-46a4-b36d-31a7c3057fc1",
+  "action": "foreground-cleanup",
+  "attempt": 1,
+  "runnerNonce": "73753539-b42a-455f-ab17-728c4b42be35",
+  "ownerNonce": "c82a3d18-7d91-4ce6-bcab-c124364e13ec",
+  "runner": {
+    "pid": 86461,
+    "processStartIdentity": "1792128648000"
+  },
+  "deadlineAt": "2026-10-16T05:30:57.028Z",
+  "idempotencyKey": "70cd67655dcca1c95cb4d9a6eaf6f0ddaf0a77e1e13e4ab6dcc7379373eeaff4"
+}

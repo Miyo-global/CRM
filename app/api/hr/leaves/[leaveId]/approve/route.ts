@@ -46,7 +46,7 @@ export async function PUT(
     if (existing.status !== "PENDING") {
       return err(`Cannot approve a request with status: ${existing.status}.`, 400);
     }
-    const authCheck = await canApproveLeaveRequest(session, existing.userId);
+    const authCheck = await canApproveLeaveRequest(session, existing);
     if (!authCheck.allowed) {
       return err(authCheck.message, authCheck.status);
     }

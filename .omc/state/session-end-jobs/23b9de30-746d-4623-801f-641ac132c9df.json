@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "jobId": "04080391-6456-4bbb-a987-edd2e5f4257f",
+  "sessionId": "23b9de30-746d-4623-801f-641ac132c9df",
+  "scopeKey": "553f8710e5edd1de9fd8dc702367c6575eda23e84ad2425e0d7edf1115aa2d9d",
+  "revision": 54,
+  "createdAt": "2026-10-16T10:03:42.718Z",
+  "updatedAt": "2026-10-16T10:04:16.101Z",
+  "producerGraceExpiresAt": "2026-10-16T10:04:12.719Z",
+  "bestEffortDeadlineAt": "2026-10-16T10:05:03.719Z",
+  "producers": {
+    "core": {
+      "state": "sealed",
+      "intentKey": "9f2942d987bba4fc60bb4a5fcc6586ed65fd089009644ddf942ef94b76a27510",
+      "payloadDigest": "9f2942d987bba4fc60bb4a5fcc6586ed65fd089009644ddf942ef94b76a27510",
+      "sealedAt": "2026-10-16T10:04:13.980Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-10-16T10:03:42.738Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "bc97b16abc94b9e3c70736e18aaea90bd71a86eba697690c43e541f7cdb4ddd3",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-16T10:04:13.637Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "9f179ffd-a8d5-4acf-8775-a1db5a5ad0fe",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:13.959Z"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "e8d3a8222e591b1d889238ff559074fb3d1abdf93b7e5692a809491262e7278a",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "completedAt": "2026-10-16T10:03:42.738Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "aaf64ce6257320727cbcd544c2336a3ea31df5c0a608208abad5b515ffd70d10",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-16T10:04:14.048Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "c6057521-496c-4e82-b6f7-e5b044634eb0",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:14.309Z"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "86414698efa8b56c3bdcef4b5cd5c1f1510be6a77923a4b2e39b06f1f9521206",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-16T10:04:14.356Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "c34a7d89-791d-42bb-b719-baedbad7e1c0",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:14.682Z"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "ce6222aedc1f8564a5eb1e2b111960ea9f59d6eb00fc225fc8739d87a2bab869",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-16T10:04:14.725Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "3db341d4-b854-4b91-86ca-f5d779c5c746",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:15.010Z"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "3f121c98a310751d552f3c4e02bd6bd3f0812e17b603dca070318c773b47b5c8",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-16T10:04:15.074Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "9e7d2643-5681-4283-9358-437a9832ae15",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:15.333Z"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "041f197da128443f245332eed435d20e84350fbe6da3cb48d6308bb1915da303",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-16T10:04:15.381Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "c6a8d64a-d2bd-4b5e-af29-0edbaad38447",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:15.638Z"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "dc17e6038c0cdcb0626c86ad7cf3f2d1832cada486beb0312fa85935860c749f",
+      "payload": {
+        "transcriptPath": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+        "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+        "reason": "other",
+        "input": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "transcript_path": "/Users/tarunchintakunta/.claude/projects/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df.jsonl",
+          "cwd": "/Users/tarunchintakunta/office/miyoglobal/crm",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/23b9de30-746d-4623-801f-641ac132c9df/scratchpad",
+          "prompt_id": "92327041-13ff-4005-a640-f4826ed09c14",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "23b9de30-746d-4623-801f-641ac132c9df",
+          "ended_at": "2026-10-16T10:04:13.826Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-16T10:04:15.691Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "86bbf1b2-bb7c-4ad9-9e19-bbc1b0af8647",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-16T10:04:22.721Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-16T10:04:15.994Z"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "recoverableFailure": {
+    "reason": "actions-settled",
+    "releasedAt": "2026-10-16T10:04:16.052Z",
+    "ownerNonce": "7e7cf6df-150a-4a17-a63e-a4263e6746c8"
+  },
+  "completion": {
+    "completedAt": "2026-10-16T10:04:16.052Z",
+    "terminalDigest": "a49de7e7248f18fc02af9c77ea8e73adc74d51aa419ae8568f4025472c1bde8d",
+    "terminalRevision": 53
+  }
+}

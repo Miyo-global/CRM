@@ -1,10 +1,10 @@
 import "server-only";
 
 import { db } from "@/lib/db";
-import { organizationMembers } from "@/lib/db/schema";
+import { organizationMembers, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import type { AuthSession } from "@/lib/api/helpers";
-import { hasLeaveApproverRole } from "@/lib/auth/leave-approval-roles";
+import { canActOnLeave } from "@/lib/hr/leave-approvers";
 
 export { LEAVE_APPROVER_ROLES, hasLeaveApproverRole } from "@/lib/auth/leave-approval-roles";
 
@@ -24,11 +24,17 @@ export async function resolveLeaveApproverRole(
   return member?.role ?? sessionRole;
 }
 
+/**
+ * API-side counterpart of `canActOnLeave`: the UI showed Approve to the routed
+ * approver or the requester's manager while this check allowed only HR and
+ * leadership, so a routed manager was permanently blocked (QA-0004). Both now
+ * apply the same rule.
+ */
 export async function canApproveLeaveRequest(
   session: AuthSession,
-  requestUserId: string,
+  request: { userId: string; approverId?: string | null; status?: string | null },
 ): Promise<{ allowed: true } | { allowed: false; message: string; status: number }> {
-  if (requestUserId === session.user.id) {
+  if (request.userId === session.user.id) {
     return {
       allowed: false,
       message: "You cannot approve or reject your own leave request.",
@@ -37,10 +43,24 @@ export async function canApproveLeaveRequest(
   }
 
   const role = await resolveLeaveApproverRole(session);
-  if (!hasLeaveApproverRole(role)) {
+  const requester = await db.query.users.findFirst({
+    where: eq(users.id, request.userId),
+    columns: { id: true, role: true, reportingTo: true },
+  });
+
+  const allowed = canActOnLeave(
+    { id: session.user.id, role },
+    {
+      status: request.status ?? "PENDING",
+      approverId: request.approverId ?? null,
+      user: requester ?? { id: request.userId },
+    },
+  );
+
+  if (!allowed) {
     return {
       allowed: false,
-      message: "Only HR or leadership can approve leave requests.",
+      message: "You are not an approver for this leave request.",
       status: 403,
     };
   }

@@ -88,11 +88,26 @@ export async function GET(req: NextRequest) {
     const isAdmin =
       hasLeaveApproverRole(effectiveRole) || EXPENSE_ADMIN_ROLES.includes(effectiveRole);
 
-    if (!isAdmin && effectiveRole !== "MANAGER") {
-      return err("Only managers and admins can access team leave requests.", 403);
-    }
-
     const userId = session.user.id;
+
+    // There is no MANAGER role: a manager is whoever has direct reports or is
+    // the routed approver on a request (QA-0004). Gating on the role name
+    // locked every real manager out of its own team's requests.
+    if (!isAdmin) {
+      const [directReport, routedRequest] = await Promise.all([
+        db.query.users.findFirst({
+          where: eq(users.reportingTo, userId),
+          columns: { id: true },
+        }),
+        db.query.leaveRequests.findFirst({
+          where: and(eq(leaveRequests.orgId, orgId), eq(leaveRequests.approverId, userId)),
+          columns: { id: true },
+        }),
+      ]);
+      if (!directReport && !routedRequest) {
+        return err("Only managers and admins can access team leave requests.", 403);
+      }
+    }
 
     const baseConditions: SQL[] = isAdmin
       ? [eq(leaveRequests.orgId, orgId)]
