@@ -40,7 +40,10 @@ export function formatNumber(value: number, decimals?: number): string {
   return value.toLocaleString();
 }
 
-export function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number | null | undefined): string {
+  // A document stored without a size showed "0 KB", which reads as an empty
+  // file rather than an unknown one (QA-0046).
+  if (bytes == null || !Number.isFinite(bytes) || bytes <= 0) return "—";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

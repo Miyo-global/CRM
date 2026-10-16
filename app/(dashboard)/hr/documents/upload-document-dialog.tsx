@@ -14,9 +14,12 @@ import {
   formSchema, type DocumentFormData, DocumentFormFields,
 } from "@/features/hr/documents/document-form-fields";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { formatFileSize } from "@/lib/format-utils";
+import { DOCUMENT_UPLOAD_MAX_BYTES } from "@/lib/validations/files";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".gif", ".webp"];
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
+// Must stay in step with the storage route, which rejects anything larger.
+const MAX_FILE_BYTES = DOCUMENT_UPLOAD_MAX_BYTES;
 
 function isAllowedFile(file: File): boolean {
   const lower = file.name.toLowerCase();
@@ -57,6 +60,15 @@ export function UploadDocumentDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [fileErrors, setFileErrors] = useState<Record<number, string>>({});
+  /**
+   * Files the picker refused, kept separately from the accepted list.
+   *
+   * Rejections used to be written into fileErrors by their position in the
+   * combined selection, but a rejected file never joins `files`, so the index
+   * belonged to the next accepted file — an 11MB file was dropped in silence
+   * and the small file after it was shown as "exceeds 10MB" (QA-0046).
+   */
+  const [rejectedFiles, setRejectedFiles] = useState<{ name: string; message: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
   const [tagInput, setTagInput] = useState("");
@@ -127,17 +139,18 @@ export function UploadDocumentDialog({
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     const validFiles: File[] = [];
-    const newErrors: Record<number, string> = {};
-    const baseIndex = files.length;
+    const rejected: { name: string; message: string }[] = [];
 
-    selectedFiles.forEach((f, i) => {
-      const idx = baseIndex + i;
+    selectedFiles.forEach((f) => {
       if (!isAllowedFile(f)) {
-        newErrors[idx] = "File type not supported. Use PDF, DOC, XLS, or images.";
+        rejected.push({ name: f.name, message: "File type not supported. Use PDF, DOC, XLS, or images." });
         return;
       }
       if (f.size > MAX_FILE_BYTES) {
-        newErrors[idx] = "File exceeds 10MB limit.";
+        rejected.push({
+          name: f.name,
+          message: `${formatFileSize(f.size)} — over the 10MB limit.`,
+        });
         return;
       }
       validFiles.push(f);
@@ -146,11 +159,16 @@ export function UploadDocumentDialog({
     if (validFiles.length > 0) {
       setFiles((prev) => [...prev, ...validFiles]);
     }
-    if (Object.keys(newErrors).length > 0) {
-      setFileErrors((prev) => ({ ...prev, ...newErrors }));
+    setRejectedFiles(rejected);
+    if (rejected.length > 0) {
+      toast.error(
+        rejected.length === 1
+          ? `${rejected[0].name} was not added: ${rejected[0].message}`
+          : `${rejected.length} files were not added. See the list below.`,
+      );
     }
     e.target.value = "";
-  }, [files.length]);
+  }, []);
 
   const handleRemoveFileAtIndex = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const index = parseInt(e.currentTarget.dataset.index ?? "-1");
@@ -377,6 +395,15 @@ export function UploadDocumentDialog({
                   />
                 ))}
               </div>
+              {rejectedFiles.length > 0 && (
+                <ul className="space-y-1 text-xs text-danger-strong">
+                  {rejectedFiles.map((r) => (
+                    <li key={r.name}>
+                      {r.name}: {r.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
