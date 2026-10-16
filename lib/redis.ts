@@ -1,10 +1,13 @@
 /**
- * Process-local cache used for session markers, short TTLs, and rate helpers.
+ * Key store for session markers, short TTLs and rate helpers.
  *
- * Upstash Redis was removed — this is intentionally in-memory so the app does
- * not require UPSTASH_* credentials. Values do not survive process restarts
- * and are not shared across multiple serverless isolates.
+ * With UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN set, this is a
+ * shared Redis, which is what the MFA login marker, the TOTP replay guard,
+ * session revocation and rate limits need to work across serverless isolates
+ * (QA-0068). Without them it falls back to a process-local map, which is fine
+ * for a single instance and for tests but is not shared.
  */
+import { hasUpstashCredentials, upstash } from "./redis-upstash";
 
 type Entry = { value: unknown; expiresAt: number | null };
 
@@ -43,7 +46,7 @@ function matchKeys(pattern: string): string[] {
   return out;
 }
 
-export const redis = {
+const memory = {
   async get<T>(key: string): Promise<T | null> {
     return read<T>(key);
   },
@@ -93,6 +96,13 @@ export const redis = {
     return "PONG";
   },
 };
+
+export const redis = hasUpstashCredentials() ? upstash : memory;
+
+/** True when the store is shared across instances. */
+export function isSharedRedis(): boolean {
+  return hasUpstashCredentials();
+}
 
 export function isRedisEnabled(): boolean {
   return true;

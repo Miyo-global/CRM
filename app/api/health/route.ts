@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
-import { redisHealth, isRedisEnabled } from "@/lib/redis";
+import { redisHealth, isRedisEnabled, isSharedRedis } from "@/lib/redis";
 import { isEmailConfigured } from "@/lib/email/config";
 
 /**
@@ -52,7 +52,15 @@ export async function GET(req: NextRequest) {
   if (isRedisEnabled()) {
     const redisResult = await redisHealth();
     checks.redis = {
-      status: redisResult.status === "healthy" ? "ok" : "error",
+      // A process-local store is a warning, not an error: it works on one
+      // instance but cannot back MFA markers or revocation across several
+      // (QA-0068).
+      status:
+        redisResult.status !== "healthy"
+          ? "error"
+          : isSharedRedis()
+            ? "ok"
+            : "warning",
       latencyMs: redisResult.latencyMs,
     };
   } else {
