@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 
 export interface ProjectMilestone {
   id: number;
@@ -104,7 +105,12 @@ export function useUpdateProjectBudget(projectId: number) {
   return useMutation({
     mutationFn: (budget: number) =>
       apiClient.patch<{ id: number; budget: string }>(`/projects/${projectId}/budget`, { budget }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["miyoglobal", "projects", projectId, "budget"] }),
+    onSuccess: () => {
+      // The figure appears on the budget page and on the project itself, so
+      // both are refreshed rather than waiting for a reload (QA-0057).
+      qc.invalidateQueries({ queryKey: ["miyoglobal", "projects", projectId, "budget"] });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+    },
   });
 }
 

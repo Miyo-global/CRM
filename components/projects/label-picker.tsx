@@ -50,17 +50,22 @@ export function LabelPicker({ ticketId, projectId, currentLabels, readOnly = fal
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  // A label shows on the ticket, in the board and table rows, and in the
+  // activity feed, so all three are refreshed — a removed label's chip used to
+  // linger until a reload (QA-0057).
+  const refreshLabelViews = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticketId) });
+    queryClient.invalidateQueries({ queryKey: [...queryKeys.projects.all, "tickets"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticketActivity(ticketId) });
+  };
+
   const addLabel = useAddLabelToTicket({
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticketId) });
-    },
+    onSuccess: refreshLabelViews,
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const removeLabel = useRemoveLabelFromTicket({
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.ticket(ticketId) });
-    },
+    onSuccess: refreshLabelViews,
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
