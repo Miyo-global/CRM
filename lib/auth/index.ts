@@ -13,6 +13,7 @@ import { randomUUID } from "crypto";
 import { getDeviceId } from "../device-fingerprint";
 import { sendAccountLockedEmail, sendNewDeviceLoginEmail } from "../email";
 import { clearFailedAttempts, recordFailedAttempt } from "./failed-attempts";
+import { getTodayString } from "@/lib/date-utils";
 import { createAuditLog } from "../audit-log";
 
 interface UserSessionCache {
@@ -109,7 +110,7 @@ const credentialsProvider = Credentials({
           firstName: true, lastName: true, image: true, role: true,
           isActive: true, hasDashboardAccess: true, onboardingCompleted: true,
           isPasswordChangeRequired: true, loginAttempts: true, lockedUntil: true,
-          emailVerified: true,
+          emailVerified: true, joiningDate: true,
         },
       }).catch(async () => {
         return db.query.users.findFirst({
@@ -132,6 +133,18 @@ const credentialsProvider = Credentials({
       if (user.isActive === false) {
         logger.warn("Auth: login attempt on deactivated account", { userId: user.id, email: normalizedEmail });
         return null;
+      }
+
+      // No access before the first day: an account set up in advance should
+      // not carry a full session while the hire has not started (QA-0070).
+      const joiningDate = "joiningDate" in user ? user.joiningDate : null;
+      if (joiningDate && String(joiningDate).slice(0, 10) > getTodayString()) {
+        logger.warn("Auth: login attempt before joining date", {
+          userId: user.id,
+          email: normalizedEmail,
+          joiningDate,
+        });
+        throw new Error("BEFORE_JOINING_DATE");
       }
 
       if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
