@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { supportTickets, supportTicketMessages, users } from "@/lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -67,10 +67,7 @@ export async function GET(
 
       return ok(messages);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to load messages",
-        500
-      );
+      return serverError(error, { route: "support/[supportTicketId]/messages", orgId: session.orgId }, "Failed to load messages.");
     }
   });
 }
@@ -194,10 +191,7 @@ export async function POST(
 
       return ok(message, 201);
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to add message",
-        500
-      );
+      return serverError(error, { route: "support/[supportTicketId]/messages", orgId: session.orgId }, "Failed to add message.");
     }
   });
 }
