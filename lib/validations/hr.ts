@@ -571,20 +571,23 @@ export const createGoalInputSchema = z.object({
   title: z.string().min(1, "Goal title is required"),
   description: z.string().optional(),
   type: z.string().default("OKR"),
-  targetValue: z.number().positive().optional(),
-  currentValue: z.number().min(0).default(0),
+  targetValue: z.number().positive("Target must be greater than zero").optional(),
+  currentValue: z.number().min(0, "Current value cannot be negative").default(0),
   unit: z.string().optional(),
   startDate: z.date(),
   endDate: z.date(),
   parentGoalId: z.number().int().positive().optional(),
+}).refine((d) => d.endDate >= d.startDate, {
+  path: ["endDate"],
+  message: "End date must be on or after the start date",
 });
 
 export const updateGoalInputSchema = z.object({
   goalId: z.number().int().positive(),
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  targetValue: z.number().positive().optional(),
-  currentValue: z.number().min(0).optional(),
+  targetValue: z.number().positive("Target must be greater than zero").optional(),
+  currentValue: z.number().min(0, "Current value cannot be negative").optional(),
   status: z.enum(["IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
   progress: z.number().min(0).max(100).optional(),
 });
@@ -1032,7 +1035,15 @@ export const updatePerformanceReviewSchema = z.object({
 
 export const createOneOnOneSchema = z.object({
   employeeId: z.string().min(1, "Employee is required"),
-  scheduledAt: z.string().min(1, "Date/time is required"),
+  // A meeting cannot be scheduled in the past — an invite for it would be
+  // nonsense (QA-0045).
+  scheduledAt: z
+    .string()
+    .min(1, "Date/time is required")
+    .refine((v) => {
+      const at = new Date(v);
+      return !Number.isNaN(at.getTime()) && at.getTime() > Date.now() - 60_000;
+    }, "Pick a date and time in the future"),
   duration: z.number().int().min(15).max(180).optional().default(30),
   agenda: z.string().max(1000).optional(),
   meetingLink: z.string().url().optional().or(z.literal("")),

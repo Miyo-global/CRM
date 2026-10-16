@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getTodayString } from "@/lib/date-utils";
 
 // ─── Reusable strict field validators ────────────────────────────────────────
 
@@ -46,7 +47,9 @@ export const ASSET_MIN_PURCHASE_DATE_YMD = "2025-10-01";
 const dateYmdRules = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-  .refine((d) => d >= ASSET_MIN_PURCHASE_DATE_YMD, "Purchase date must be on or after 1 Oct 2025");
+  .refine((d) => d >= ASSET_MIN_PURCHASE_DATE_YMD, "Purchase date must be on or after 1 Oct 2025")
+  // An asset cannot have been bought in the future (QA-0045).
+  .refine((d) => d <= getTodayString(), "Purchase date cannot be in the future");
 
 const optionalDateYmd = z.union([z.literal(""), dateYmdRules]).optional();
 

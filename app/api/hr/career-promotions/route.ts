@@ -7,6 +7,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { getTodayString } from "@/lib/date-utils";
 
 const createSchema = z.object({
   employeeUserId: z.string().min(1),
@@ -78,6 +79,38 @@ export async function POST(req: NextRequest) {
       );
 
     if (pending.length > 0) return err("Employee already has a pending promotion recommendation", 409);
+
+    // The levels must exist on the chosen ladder — a recommendation to L20 on
+    // a ladder with four levels was accepted (QA-0045).
+    if (body.ladderId) {
+      const ladder = await db.query.careerLadders.findFirst({
+        where: and(eq(careerLadders.id, body.ladderId), eq(careerLadders.orgId, session.orgId)),
+        columns: { levels: true, title: true },
+      });
+      if (!ladder) return err("Career ladder not found.", 404);
+
+      const levels = (ladder.levels ?? []).map((l) => l.level);
+      if (levels.length === 0) {
+        return err(`"${ladder.title}" has no levels defined yet. Add levels to the ladder first.`, 400);
+      }
+      const highest = Math.max(...levels);
+      if (!levels.includes(body.toLevel)) {
+        return err(`"${ladder.title}" has levels up to L${highest}. Pick a level on this ladder.`, 400);
+      }
+      if (body.fromLevel != null && !levels.includes(body.fromLevel)) {
+        return err(`Current level L${body.fromLevel} does not exist on "${ladder.title}".`, 400);
+      }
+    }
+
+    // Effective date, when given, must be a real date and not in the past.
+    if (body.effectiveDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(body.effectiveDate)) {
+        return err("Effective date must be in YYYY-MM-DD format.", 400);
+      }
+      if (body.effectiveDate < getTodayString()) {
+        return err("Effective date cannot be in the past.", 400);
+      }
+    }
 
     const [rec] = await db
       .insert(careerPromotionRecommendations)
