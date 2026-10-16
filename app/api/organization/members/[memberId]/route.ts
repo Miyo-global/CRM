@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -56,10 +56,7 @@ export async function PATCH(
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to update member role",
-        500
-      );
+      return serverError(error, { route: "organization/members/[memberId]", orgId: session.orgId }, "Failed to update member role.");
     }
   });
 }
@@ -99,10 +96,7 @@ export async function DELETE(
 
       return ok({ success: true });
     } catch (error) {
-      return err(
-        error instanceof Error ? error.message : "Failed to remove member",
-        500
-      );
+      return serverError(error, { route: "organization/members/[memberId]", orgId: session.orgId }, "Failed to remove member.");
     }
   });
 }
