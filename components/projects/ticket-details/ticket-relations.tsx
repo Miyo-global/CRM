@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { Link2, X, Plus, ArrowRight, ArrowLeft, Copy, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ticketStatusLabel } from "@/components/projects/shared/status-badge";
 
 interface TicketRelationsProps {
   ticketId: number;
@@ -174,9 +175,11 @@ export function TicketRelations({ ticketId, projectId, readOnly = false }: Ticke
                           #{t.ticketNumber}
                         </span>
                         <span className="text-xs truncate">{t.title}</span>
+                        {/* The raw enum (IN_PROGRESS) used to show here
+                            (QA-D005). */}
                         {t.status && (
                           <Badge variant="outline" className="text-3xs h-4 px-1 shrink-0">
-                            {t.status}
+                            {ticketStatusLabel(t.status)}
                           </Badge>
                         )}
                       </div>

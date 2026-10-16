@@ -13,6 +13,7 @@ import { checkPermission } from "@/lib/rbac/middleware";
 import type { Session } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { z, type ZodSchema } from "zod";
+import { zodErrorMessage } from "./zod-message";
 
 export type AuthSession = Omit<Session, "orgId"> & {
   user: NonNullable<Session["user"]>;
@@ -59,7 +60,7 @@ export function serverError(
   message = GENERIC_ERROR,
 ): NextResponse<never> {
   if (error instanceof z.ZodError) {
-    return err(`Validation failed: ${error.issues.map((i) => i.message).join("; ")}`, 400);
+    return err(zodErrorMessage(error), 400);
   }
   const errorId = crypto.randomUUID().slice(0, 8);
   logger.error(`${ctx.route} failed`, { errorId, ...ctx, error: error instanceof Error ? { message: error.message, stack: error.stack } : error });
@@ -230,8 +231,8 @@ export async function withAuth<T>(
     return res;
   } catch (e) {
     if (e instanceof z.ZodError) {
-      const detail = e.issues.map((issue: { path: PropertyKey[]; message: string }) => `${String(issue.path.join?.(".") ?? "body")}: ${issue.message}`).join("; ");
-      return NextResponse.json({ error: `Validation failed: ${detail}` }, { status: 400 }) as NextResponse<T>;
+      // Plain words, not Zod's own "expected number, received NaN" (QA-D005).
+      return NextResponse.json({ error: zodErrorMessage(e) }, { status: 400 }) as NextResponse<T>;
     }
     throw e;
   }

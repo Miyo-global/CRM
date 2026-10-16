@@ -11,6 +11,7 @@ import { sendVerificationEmail } from "@/lib/email";
 import { hashToken } from "@/lib/secret-crypto";
 import { addDays } from "date-fns";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
+import { zodErrorMessage } from "@/lib/api/zod-message";
 
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -111,8 +112,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, requiresVerification: true, userId, orgId }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const detail = error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
-      return NextResponse.json({ error: `Validation failed: ${detail}` }, { status: 400 });
+      return NextResponse.json({ error: zodErrorMessage(error) }, { status: 400 });
     }
     throw error;
   }
