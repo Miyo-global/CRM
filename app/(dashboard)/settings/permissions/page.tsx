@@ -80,6 +80,15 @@ function PermissionsContent() {
           </p>
         </div>
 
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-surface-sunken p-3 text-sm text-muted-foreground">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <p>
+            Leave, employee, payroll and attendance actions are checked against these
+            permissions on every request. Other modules are still governed by the
+            coarse system role shown on each page.
+          </p>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           {SYSTEM_ROLES.map((r) => (
             <StatusPill key={r} tone={r === role ? "brand" : "neutral"} dot={r === role}>

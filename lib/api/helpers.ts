@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { permissionForRoute } from "@/lib/rbac/route-permissions";
+import { checkPermission } from "@/lib/rbac/middleware";
 import type { Session } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { z, type ZodSchema } from "zod";
@@ -86,8 +88,15 @@ export function userErrorOr500(
   return serverError(error, ctx, message);
 }
 
+/** A request shape the permission check needs (NextRequest satisfies it). */
+export interface PermissionCheckRequest {
+  method: string;
+  nextUrl: { pathname: string };
+}
+
 export async function withAuth<T>(
-  handler: (session: AuthSession) => Promise<NextResponse<T>>
+  handler: (session: AuthSession) => Promise<NextResponse<T>>,
+  req?: PermissionCheckRequest,
 ): Promise<NextResponse<T>> {
   // Server-Timing marks (MIYO-0009): auth, session-check, membership, handler.
   let mark = performance.now();
@@ -197,6 +206,22 @@ export async function withAuth<T>(
 
   lap("membership");
 
+  // Fine-grained permissions (QA-0027): a route listed in ROUTE_PERMISSIONS is
+  // enforced here, so editing a role's permissions actually changes what its
+  // API calls can do.
+  if (req) {
+    const permission = permissionForRoute(req.nextUrl.pathname, req.method);
+    if (permission) {
+      const allowed = await checkPermission(db, session.user.id, orgId, session.user.role, permission);
+      if (!allowed) {
+        return NextResponse.json(
+          { error: "You don't have permission for this action.", permission } as T,
+          { status: 403 },
+        );
+      }
+    }
+  }
+
   const authSession: AuthSession = Object.assign(session, { orgId, branchId }) as AuthSession;
   try {
     const res = await handler(authSession);
@@ -213,7 +238,8 @@ export async function withAuth<T>(
 }
 
 export async function withAdmin<T>(
-  handler: (session: AuthSession) => Promise<NextResponse<T>>
+  handler: (session: AuthSession) => Promise<NextResponse<T>>,
+  req?: PermissionCheckRequest,
 ): Promise<NextResponse<T>> {
   return withAuth(async (session) => {
     const role = session.user.role;
@@ -221,7 +247,7 @@ export async function withAdmin<T>(
       return NextResponse.json({ error: "Forbidden" } as T, { status: 403 });
     }
     return handler(session);
-  });
+  }, req);
 }
 
 export const HR_EMAIL_TEMPLATE_ROLES = new Set(["CEO", "HR", "ADMIN"]);
@@ -269,6 +295,7 @@ export function toBool(val: string | null | undefined): boolean | undefined {
 export function withRoles<T>(allowed: readonly string[]) {
   return function (
     handler: (session: AuthSession) => Promise<NextResponse<T>>,
+    req?: PermissionCheckRequest,
   ): Promise<NextResponse<T>> {
     return withAuth(async (session) => {
       const role = session.user.role as string | undefined;
@@ -276,6 +303,6 @@ export function withRoles<T>(allowed: readonly string[]) {
         return NextResponse.json({ error: "Forbidden" } as T, { status: 403 });
       }
       return handler(session);
-    });
+    }, req);
   };
 }

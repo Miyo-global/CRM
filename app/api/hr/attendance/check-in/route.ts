@@ -154,5 +154,5 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       return userErrorOr500(e, { route: "hr/attendance/check-in", orgId: session.orgId }, "Check-in failed.");
     }
-  });
+  }, req);
 }

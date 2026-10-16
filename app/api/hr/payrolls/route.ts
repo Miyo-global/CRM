@@ -91,5 +91,5 @@ export async function POST(req: NextRequest) {
     }
 
     return ok({ generated: result.generated });
-  });
+  }, req);
 }

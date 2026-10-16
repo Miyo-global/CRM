@@ -9,7 +9,7 @@ import { sendPayslipEmailForPayroll } from "@/lib/hr/send-payslip-email";
 import { logger } from "@/lib/logger";
 
 export async function PATCH(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ payrollId: string }> }
 ) {
   return withAdmin(async (session) => {
@@ -95,5 +95,5 @@ export async function PATCH(
       emailSent,
       ...(emailError ? { emailError } : {}),
     });
-  });
+  }, req);
 }

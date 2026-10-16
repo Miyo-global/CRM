@@ -318,5 +318,5 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       return userErrorOr500(e, { route: "hr/leaves", orgId: session.orgId }, "Request failed.");
     }
-  });
+  }, req);
 }

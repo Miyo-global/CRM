@@ -9,7 +9,7 @@ import { sendPayrollApprovedEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
 export async function PATCH(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ payrollId: string }> }
 ) {
   return withAdmin(async (session) => {
@@ -84,5 +84,5 @@ export async function PATCH(
     }
 
     return ok({ success: true });
-  });
+  }, req);
 }

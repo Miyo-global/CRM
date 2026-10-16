@@ -272,5 +272,5 @@ export async function POST(req: NextRequest) {
     }
 
     return ok({ success: true });
-  });
+  }, req);
 }

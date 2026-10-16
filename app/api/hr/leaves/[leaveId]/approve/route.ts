@@ -122,5 +122,5 @@ export async function PUT(
     );
 
     return ok({ success: true });
-  });
+  }, req);
 }

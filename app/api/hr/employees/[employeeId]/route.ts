@@ -273,5 +273,5 @@ export async function PATCH(
     }).catch(() => {});
 
     return ok({ success: true });
-  });
+  }, req);
 }
