@@ -75,3 +75,6 @@ next-env.d.ts
 
 # SEC-0013: agent session state is local, not repo content.
 .omc/
+
+# Local pnpm store created when node_modules had to be reinstalled outside the sandbox.
+.pnpm-store/
