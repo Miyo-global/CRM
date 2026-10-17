@@ -1,8 +1,8 @@
 
 
-import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3 } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3, UserPlus } from "lucide-react";
 
-import { AI_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
+import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 export interface NavRoute {
   label: string;
@@ -38,6 +38,15 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Notifications", icon: Bell, href: "/notifications" },
           ],
         },
+        // MIYO-0631: the ATS ships behind NEXT_PUBLIC_ATS_MODULE.
+        ...(ATS_MODULE_ENABLED
+          ? [
+              {
+                label: "Hiring",
+                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+              },
+            ]
+          : []),
         {
           label: "HR – People",
           routes: [
@@ -179,6 +188,15 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Notifications", icon: Bell, href: "/notifications" },
           ],
         },
+        // MIYO-0631: the ATS ships behind NEXT_PUBLIC_ATS_MODULE.
+        ...(ATS_MODULE_ENABLED
+          ? [
+              {
+                label: "Hiring",
+                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+              },
+            ]
+          : []),
         {
           label: "HR – People",
           routes: [
@@ -415,6 +433,40 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
+            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+          ],
+        },
+      ];
+
+    // MIYO-0628: a recruiter gets the hiring pipeline and their own HR pages.
+    case "RECRUITER":
+      return [
+        {
+          label: "Core",
+          routes: [
+            { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+            { label: "Calendar", icon: CalendarDays, href: "/calendar" },
+            { label: "Notifications", icon: Bell, href: "/notifications" },
+          ],
+        },
+        ...(ATS_MODULE_ENABLED
+          ? [
+              {
+                label: "Hiring",
+                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+              },
+            ]
+          : []),
+        {
+          label: "My HR",
+          defaultCollapsed: true,
+          routes: [
+            { label: "My Leaves", icon: CalendarCheck, href: "/hr/leaves" },
+            { label: "My Expenses", icon: Receipt, href: "/hr/expenses" },
+            { label: "My Attendance", icon: Clock, href: "/hr/attendance" },
+            { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips" },
+            { label: "My Documents", icon: FileText, href: "/hr/my-documents" },
+            { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },

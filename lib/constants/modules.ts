@@ -16,3 +16,10 @@ export const CRM_MODULE_ENABLED = process.env.NEXT_PUBLIC_CRM_MODULE === "on";
  * together with the server-side provider key to enable it.
  */
 export const AI_MODULE_ENABLED = process.env.NEXT_PUBLIC_AI_MODULE === "on";
+
+/**
+ * The ATS (job requisitions, careers site, candidate pipeline). It replaces
+ * the Recruitment module removed in October 2026 and ships off until a
+ * deployment asks for it: set NEXT_PUBLIC_ATS_MODULE=on.
+ */
+export const ATS_MODULE_ENABLED = process.env.NEXT_PUBLIC_ATS_MODULE === "on";
