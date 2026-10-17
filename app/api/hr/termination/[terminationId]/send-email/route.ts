@@ -59,8 +59,10 @@ export async function POST(
         companyName: org?.name ?? "MIYO GLOBAL",
       });
 
+      // MIYO-0158: the work inbox is about to close, so write to the
+      // personal address when we have one.
       await sendTerminationEmail(
-        employee.email,
+        employee.personalEmail?.trim() || employee.email,
         employee.name ?? "Employee",
         employee.designation ?? "N/A",
         effectiveDateFormatted,

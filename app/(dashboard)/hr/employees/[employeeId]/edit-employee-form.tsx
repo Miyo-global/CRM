@@ -36,6 +36,7 @@ export interface EmployeeData {
   department?: { id: number; name: string } | null;
   reportingTo: string | null;
   phone: string | null;
+  personalEmail?: string | null;
   gender: "MALE" | "FEMALE" | "OTHER" | null;
   joiningDate: string | Date | null;
   experienceYears: string | number | null;
@@ -89,6 +90,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         "",
       reportingTo: employee.reportingTo || "",
       phone: employee.phone || "",
+      personalEmail: employee.personalEmail || "",
       gender: employee.gender || "MALE",
       joiningDate: employee.joiningDate ? new Date(employee.joiningDate) : undefined,
       experienceYears:
@@ -125,6 +127,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
           departmentId: values.departmentId,
           reportingTo: values.reportingTo ? values.reportingTo : null,
           phone: values.phone?.trim() || undefined,
+          personalEmail: values.personalEmail?.trim() ?? "",
           gender: values.gender,
           joiningDate: values.joiningDate?.toISOString().slice(0, 10),
           experienceYears: values.experienceYears,

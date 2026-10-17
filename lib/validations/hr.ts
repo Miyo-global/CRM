@@ -766,6 +766,9 @@ export const editEmployeeFormSchema = z
         const digits = val.replace(/\D/g, "");
         return digits.length >= 10 && digits.length <= 15;
       }, "Phone number must contain 10 to 15 digits"),
+    // MIYO-0158: where deactivation and termination mail goes once the work
+    // inbox is closed.
+    personalEmail: z.union([z.literal(""), z.string().trim().email("Enter a valid email")]).optional(),
     gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
     joiningDate: z.coerce.date().optional(),
     experienceYears: editExperienceYearsSchema(),
@@ -810,6 +813,7 @@ export const updateEmployeeProfileBodySchema = z
     designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number").optional(),
     departmentId: z.number().int().positive().optional(),
     phone: optionalPhoneSchema("Phone number").optional(),
+    personalEmail: z.union([z.literal(""), z.string().trim().email()]).optional(),
     image: storedFileRefSchema.max(2048, "Image URL is too long").optional().or(z.literal("")),
     isActive: z.boolean().optional(),
     hasDashboardAccess: z.boolean().optional(),

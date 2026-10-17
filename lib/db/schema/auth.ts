@@ -68,6 +68,9 @@ export const users = pgTable("users", {
   departmentId: integer("department_id"),
   designation: text("designation"),
   phone: text("phone"),
+  // MIYO-0158: where to write once the work inbox is closed (deactivation,
+  // termination). Plain text like phone; it is a contact detail, not a secret.
+  personalEmail: text("personal_email"),
   whatsappNumber: text("whatsapp_number"),
   whatsappSameAsPhone: boolean("whatsapp_same_as_phone").default(true),
   monthlySalary: decimal("monthly_salary"),

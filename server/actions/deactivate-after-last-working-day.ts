@@ -34,6 +34,7 @@ export async function deactivateAfterLastWorkingDay(): Promise<{
       orgId: resignations.orgId,
       lastWorkingDate: resignations.lastWorkingDate,
       email: users.email,
+      personalEmail: users.personalEmail,
       firstName: users.firstName,
       name: users.name,
     })
@@ -83,11 +84,13 @@ export async function deactivateAfterLastWorkingDay(): Promise<{
   const orgName = new Map(orgRows.map((o) => [o.id, o.name]));
 
   for (const leaver of leavers) {
-    // The work address is all we hold; MIYO-0158 adds the personal one.
-    if (!leaver.email) continue;
+    // MIYO-0158: the work inbox is closing with the account, so prefer the
+    // personal address.
+    const to = leaver.personalEmail?.trim() || leaver.email;
+    if (!to) continue;
     try {
       await sendTemplateEmail("auth-account-deactivated", {
-        to: leaver.email,
+        to,
         vars: {
           first_name: leaver.firstName ?? leaver.name ?? "there",
           org_name: orgName.get(leaver.orgId) ?? "Miyo Global",

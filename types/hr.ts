@@ -460,6 +460,8 @@ export interface UpdateProfileInput {
   designation?: string;
   departmentId?: number;
   phone?: string;
+  /** Contact address for exit and deactivation mail (MIYO-0158). */
+  personalEmail?: string;
   image?: string;
   bio?: string;
   linkedinUrl?: string;

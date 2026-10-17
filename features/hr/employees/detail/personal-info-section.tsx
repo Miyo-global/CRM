@@ -2,7 +2,7 @@
 
 import { useFormContext } from "react-hook-form";
 import {
-  FormControl, FormField, FormItem, FormLabel, FormMessage,
+  FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -71,6 +71,30 @@ export function PersonalInfoSection() {
                   ref={field.ref}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* MIYO-0158: deactivation and termination mail goes here once the
+            work inbox is closed. */}
+        <FormField
+          control={control}
+          name="personalEmail"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Personal email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="name@gmail.com"
+                  autoComplete="off"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+              <FormDescription>
+                Used for exit and deactivation mail, after the work address stops working.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

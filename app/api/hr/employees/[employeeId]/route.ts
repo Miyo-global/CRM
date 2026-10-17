@@ -189,6 +189,8 @@ export async function PATCH(
     if (body.designation !== undefined && isOwnerOrAdmin) updateData.designation = body.designation;
     if (body.departmentId !== undefined && isOwnerOrAdmin) updateData.departmentId = body.departmentId;
     if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.personalEmail !== undefined)
+      updateData.personalEmail = body.personalEmail.trim() || null;
     if (body.image !== undefined) updateData.image = body.image;
     if (body.isActive !== undefined) updateData.isActive = body.isActive;
     if (body.hasDashboardAccess !== undefined) {
