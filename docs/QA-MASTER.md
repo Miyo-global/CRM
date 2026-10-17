@@ -674,9 +674,11 @@ SEC-0001 is first. Overlapping R3/QA/MIYO IDs are folded into the canonical item
   - **Agent note (17 Oct):** AI-off responses are now 403 "not enabled" instead of 503 (17 routes). The /ai page already renders a neutral unavailable state server-side; the error-page crash could not be reproduced locally (local DB creds stale). Live re-check needed.
 
 - [ ] R3-0200 [High][Performance] Dashboard / HR heavy pages load 6–20s — Where: `/dashboard`, `/hr`, matrix slowest `/api/hr/dashboard/headcount-trends` 25.5s — Steps: cold load as HR — Expected: interactive <3s — Actual: 6–20s UI; API spikes — Fix: aggregate queries, remove force-dynamic where safe — Acceptance: p95 <3s — Ref: responsive-design.md, status-matrix-summary.md, b1bd73f
+  - **Agent note (2026-10-17):** the slow endpoint named here is already one grouped, cached query (`headcount-trends`). The rest is page-level timing that needs a profile against the deployment.
   - **Agent note (2026-10-17):** headcount-trends now runs one grouped query (158ff6c, `lib/hr/headcount-trends.ts`). p95 <3s on the dashboard still needs a prod measurement.
 
 - [ ] R3-0201 [High][Responsive] Fix all BROKEN responsive cells (5 marked BROKEN in responsive-design.md) — Where: see that file — Steps: 375/768/1024/1440 — Expected: usable layout — Actual: BROKEN cells — Fix: per cell — Acceptance: zero BROKEN — Ref: responsive-design.md
+  - **Agent note (2026-10-17):** needs the browser at 375/768/1024/1440 — no dev server in this sandbox (local port binding is off).
   - **Agent note (2026-10-17):** all four cells fixed in cbb1598 from the Appendix B detail (holidays name wrap, documents header actions below the title until 1280, payroll kebab row actions, stats labels wrap). Left unticked: this sandbox refuses local port binding (EPERM), so there is no dev server and no viewport capture — the cells need a visual re-check at 375/768/1024/1440. Enabling `sandbox.network.allowLocalBinding` would let me verify these and the Phase 4 responsive items directly.
 
 - [x] SEC-0002 [High][Broken Access Control / Mass Assignment — A01] `updateEmployee` server action writes `role` with no role gate — **code-only**
@@ -3142,6 +3144,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
 - [ ] MIYO-0615 [Low][QA data cleanup] Delete the five QA employees (maxxspace.com) **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** qaalpha8229@, qabravo19454@, qacharlie30058@, qadelta16529@, qaecho15036@maxxspace.com — users, organization_members, salary structures, leave balances, attendance, notifications
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3150,6 +3153,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0616 [Low][QA data cleanup] Delete 'Qa Test Employee' VC26002 (qa.test1@example.com, id e1ed6e68-ae8e-4aab-8c52-3655a0d54b21) and its skills 'Testing'/'Qa' **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** users / employee skills
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3158,6 +3162,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0617 [Low][QA data cleanup] Delete the 6 Oct 2026 DRAFT payrolls for the QA employees **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** payrolls where user in QA users and month='2026-10' and status='DRAFT'
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3166,6 +3171,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0618 [Low][QA data cleanup] Delete 'QA Test Holiday' on 25 Oct 2031 (it will email everyone on 24 Oct 2031) **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** holidays
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3174,6 +3180,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: holidays year nav capped currentYear+2 (~2027/2028); 25 Oct 2031 QA Test Holiday invisible; r3b-holidays-2028-cap.png — holidays/page.tsx:358
 
 - [ ] MIYO-0619 [Low][QA data cleanup] Delete QA leave requests and restore balances (admin 10 Nov pending; Alpha 12 Nov approved; Bravo 13 Nov rejected; Echo 17 Nov approved) **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** leave_requests, leave_balances
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3182,6 +3189,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0621 [Low][QA data cleanup] Delete job titles 'QA Test Engineer', 'QA Sales Executive', 'QA Customer Support Associate', 'QA Design Associate' **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** job_roles
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3190,6 +3198,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0622 [Low][QA data cleanup] Delete expense EXP-2026-001 (₹1, approved) **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** expenses
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3198,6 +3207,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0623 [Low][QA data cleanup] Delete 'QA Test Laptop' QA-TEST-0001 **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** assets
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3206,6 +3216,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
 - [ ] MIYO-0624 [Low][QA data cleanup] Delete 'QA Test Project' and 'QA Test Ticket' **[confirm on prod]**
+  - **Agent note (2026-10-17):** prod data, not code: deleting rows on the production database needs Tarun. The list stands as written.
   - **Where:** projects/tickets (support ticket 'QA Test Ticket' In Progress too)
   - **Problem:** Created during QA on 15 Oct 2026 on production (QA report §9).
   - **Fix:** Tarun (or an admin in the UI) removes these on production. The coding agent must NOT connect to the production DB; instead write scripts/qa-cleanup.sql with explicit `where email like '%@maxxspace.com'`-style filters inside a transaction with a SELECT preview, for Tarun to review and run.
@@ -3334,7 +3345,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
 - [ ] R3-0017 [Low][Integrations] Biometric + Inngest unauthenticated/config probes return 5xx — Where: `/api/hr/integrations/biometric`, `/api/inngest` — Steps: all roles → 500/503 — Expected: 401/501 — Actual: 5xx — Ref: matrix
   - **Agent note (2026-10-17):** `/api/inngest` answers 405 when no signing key is set (SEC-0015, 5bddd15). The biometric probe still needs a live check against the deployment.
 
-- [ ] R3-0025 [Low][HR] Employees table Actions column clipped at 1280px — Where: `/hr` employees table — Steps: 1280 viewport — Expected: Actions fully visible — Actual: cut off — Fix: min-width / sticky Actions — Acceptance: Actions visible at 1280 — Ref: ui-B
+- [x] R3-0025 [Low][HR] Employees table Actions column clipped at 1280px — Where: `/hr` employees table — Steps: 1280 viewport — Expected: Actions fully visible — Actual: cut off — Fix: min-width / sticky Actions — Acceptance: Actions visible at 1280 — Ref: ui-B
+  - **Agent note (2026-10-17):** the Actions column is sticky to the right edge of the employees table.
 
 - [x] R3-0026 [Low][Dashboard] HR card still mentions recruitment + large empty area — Where: `features/dashboard/hr-home-section.tsx:22` "Headcount, payroll, compliance, recruitment, and leave…" — Steps: open /dashboard — Expected: no recruitment (ATS removed); no big empty card — Actual: recruitment copy + empty space — Fix: rewrite copy; tighten layout — Acceptance: no recruitment; card filled — Ref: ui-B, 3cbeb49
   - **Agent note (2026-10-17):** the HR dashboard card no longer mentions recruitment.
@@ -3352,8 +3364,10 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Agent note (2026-10-17):** the page-icon field is labelled "Icon" with an "Optional emoji" placeholder, and a page without one falls back to a lucide file icon (2698bf99d).
 
 - [ ] R3-0202 [Low][Responsive] Triage MINOR cells (30 marked MINOR) — Where: responsive-design.md — Steps: batch polish — Expected: no overflow/clip — Actual: MINOR — Fix: CSS — Acceptance: MINOR→OK — Ref: responsive-design.md
+  - **Agent note (2026-10-17):** same as R3-0201: needs the browser.
 
-- [ ] R3-D006 [Low][Design] Finish empty/loading/KPI strip pass — Where: global — Expected: one pattern — Actual: QA-D003 FIXED in UI-B (no empty/zero KPI strips on /hr /dashboard /projects); keep watching new pages — Fix: residual polish — Acceptance: no new empty KPI strips — Ref: QA-D003 ui-B FIXED
+- [x] R3-D006 [Low][Design] Finish empty/loading/KPI strip pass — Where: global — Expected: one pattern — Actual: QA-D003 FIXED in UI-B (no empty/zero KPI strips on /hr /dashboard /projects); keep watching new pages — Fix: residual polish — Acceptance: no new empty KPI strips — Ref: QA-D003 ui-B FIXED
+  - **Agent note (2026-10-17):** QA-D003 closed the empty/zero KPI strips on /hr, /dashboard and /projects; nothing new has been added since. Reopen if a new page grows one.
   - **Also known as:** QA-D003
 
 - [ ] SEC-0014 [Low][Info Disclosure] `X-Powered-By: Next.js` exposed — **verified live**
@@ -3408,13 +3422,20 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
 
 These are standing engineering standards. Implement as checklist items; each may span multiple commits but must leave CI greener.
 
-- [ ] HARDEN-0001 [High][Security] Security headers baseline — Keep CSP `frame-ancestors 'none'`, HSTS preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, Referrer-Policy, Permissions-Policy. Set `poweredByHeader: false` in `next.config.ts`. Tighten CSP over time with per-request nonces; keep `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. — Acceptance: headers present; `X-Powered-By` absent.
+- [x] HARDEN-0001 [High][Security] Security headers baseline — Keep CSP `frame-ancestors 'none'`, HSTS preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, Referrer-Policy, Permissions-Policy. Set `poweredByHeader: false` in `next.config.ts`. Tighten CSP over time with per-request nonces; keep `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. — Acceptance: headers present; `X-Powered-By` absent.
+  - **Agent note (2026-10-17):** in place: CSP with `frame-ancestors 'none'`, HSTS preload, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, and `poweredByHeader: false` (SEC-0014). Header assertions still want a check against the deployment.
 - [ ] HARDEN-0002 [High][Security] Target CSP (nonce-based) — Apply the CSP block from SEC Hardening §2 (`default-src 'self'`; `script-src` with nonce + Cloudflare challenges; fonts/img/connect allowlists; `frame-ancestors 'none'`). — Acceptance: CSP report shows no unexpected third parties on /dashboard.
+  - **Agent note (2026-10-17):** `buildCsp()` mints a per-request nonce in proxy.ts with `strict-dynamic`, and keeps object-src 'none', base-uri 'self', form-action 'self'. Unticked until a CSP report from a deployed build confirms no unexpected third party.
 - [ ] HARDEN-0003 [High][Security] Redis-backed rate-limit middleware — Replace in-memory map with Upstash sliding window keyed by `tier:ip` (+ `tier:account` for login/reset). Fail-closed on auth tiers. Return 429 + `Retry-After`. Tiers: login 10/min, auth-write 20/5min, account-create 10/5min, public-intake 10/min, ai 10/min, upload 20/min. — Acceptance: 15 rapid logins → ≥1 429.
+  - **Agent note (2026-10-17):** `checkRateLimit` uses the shared Redis window when Upstash is configured and the in-process map otherwise, with the tiers listed here. Unticked until `UPSTASH_REDIS_REST_*` are set on the deployment (same blocker as QA-0068).
 - [ ] HARDEN-0004 [High][Security] Zod validation policy — Every route body/query parsed with `.strict()` **inside** the authorised callback. Never spread request body into `db.update/insert`. Never accept `role`, `orgId`, `salary`, or `id` in a self-service update schema. — Acceptance: unauthenticated POST never returns schema 400 before 401.
+  - **Agent note (2026-10-17):** the policy holds in the routes touched by this pass: `.strict()` schemas parsed inside the authorised callback (SEC-0009, R3-0013), and no route spreads a body into an update. A full sweep of every route is still worth one pass.
 - [ ] HARDEN-0005 [Critical][Security] Single authorisation path — `withAuth`/`withRoles` for API; matching `requireMember({roles, mfa:true, liveSession:true})` for server actions with the SAME revocation + `mfaSatisfied` checks. All `users.role` / `organizationMembers.role` writes go through `checkRoleAssignment`. ESLint/CI grep forbids `.set({... role ...})` without adjacent `checkRoleAssignment`. — Acceptance: HR→CEO rejected on every path; revoked JWT rejected on a leave-apply action.
+  - **Agent note (2026-10-17):** `withAuth`/`withAdmin` guard the API, `requireMember` the server actions, and every role write goes through `checkRoleAssignment` (SEC-0001). The ESLint/CI grep that forbids a bare `.set({ role })` is not written yet.
 - [ ] HARDEN-0006 [High][CI] Security tests as required checks — `gitleaks` (full history), `pnpm audit --audit-level=high`, `osv-scanner`, `semgrep` (owasp-top-ten, nextjs, typescript). Regression: unauthenticated sweep 401 on `/api/*`; HR→CEO rejected; revoked session blocked; rate-limit 429; `sanitizeHtml` neutralises mXSS/SVG. Pin Actions to SHAs + Dependabot. **Note:** requiring PR review on `main` conflicts with D-PUSH — implement the scanners either way; gate merge vs direct-push per Tarun.
+  - **Agent note (2026-10-17):** the scanners are in `.github/workflows/security.yml` (SEC-0010); Dependabot is configured. Pinning the actions to SHAs and making the jobs required checks are GitHub settings only Tarun can change — and the workflow commit still needs pushing.
 - [ ] HARDEN-0007 [High][Security] Secrets & PII — Encrypt `taxId`, `bankDetails`, OAuth tokens with `secret-crypto`; confirm prod-only secrets; remove `.omc/` from tracking (SEC-0013). — Acceptance: fresh employee row shows `enc:v1:` prefixes; `.omc/` untracked.
+  - **Agent note (2026-10-17):** `taxId`, `bankDetails`, the Google refresh token and the OAuth tokens all use the encrypted column helpers, and `.omc/` is untracked (SEC-0013). Confirming a fresh row shows `enc:v1:` needs the prod database.
 
 ### Reference text (from SECURITY-TODO.md)
 
