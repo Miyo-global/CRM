@@ -40,6 +40,7 @@ import {
   Download,
   PartyPopper,
   Trophy,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/format-utils";
@@ -482,7 +483,7 @@ function LeaveAnalyticsWidget() {
                     />
                   </div>
                   <Badge variant="secondary" className="text-2xs tabular-nums shrink-0">
-                    {d.approved}✓ {d.pending}⋯
+                    {d.approved} approved, {d.pending} pending
                   </Badge>
                 </div>
               ))}
@@ -668,7 +669,11 @@ function AnniversaryFeedWidget() {
           <div className="space-y-1.5">
             {items.slice(0, 6).map((item) => (
               <div key={`${item.userId}-${item.type}`} className="flex items-center gap-2 text-sm">
-                <span className="text-base">{item.type === "BIRTHDAY" ? "🎂" : "🏆"}</span>
+                {item.type === "BIRTHDAY" ? (
+                  <Cake className="size-4 shrink-0 text-muted-foreground" aria-label="Birthday" />
+                ) : (
+                  <Award className="size-4 shrink-0 text-muted-foreground" aria-label="Work anniversary" />
+                )}
                 <div className="flex-1 min-w-0">
                   <span className="font-medium truncate">{item.name}</span>
                   {item.type === "WORK_ANNIVERSARY" && item.yearsCount && (

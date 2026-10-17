@@ -24,6 +24,7 @@ import {
   ChevronDown,
   Pin,
   PinOff,
+  FileText,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -140,7 +141,9 @@ function PageTreeItem({
         ) : (
           <span className="w-5 shrink-0" />
         )}
-        <span className="text-base shrink-0">{page.icon ?? "📄"}</span>
+        <span className="shrink-0 text-base">
+          {page.icon ?? <FileText className="size-4 text-muted-foreground" aria-hidden="true" />}
+        </span>
         <span className="flex-1 truncate text-sm" title={page.title}>{page.title}</span>
         <button
           onClick={handleTogglePin}
@@ -355,7 +358,7 @@ export default function PagesPage({
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <h2 className="flex min-w-0 items-center gap-2 font-display text-xl font-bold">
                     <span className="shrink-0 text-2xl">
-                      {selectedPage.icon ?? "📄"}
+                      {selectedPage.icon ?? <FileText className="size-5 text-muted-foreground" aria-hidden="true" />}
                     </span>
                     <span className="truncate">{selectedPage.title}</span>
                   </h2>

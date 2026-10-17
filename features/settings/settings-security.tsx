@@ -5,7 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ShieldCheck, Monitor, Smartphone, Trash2 } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Monitor, Smartphone, Trash2, Check, Circle } from "lucide-react";
 import { useChangePassword } from "@/lib/api/hooks/hr";
 import { useSessions, useRevokeSession, useRevokeAllSessions, useRevokeSessions } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
@@ -375,7 +375,12 @@ export function SettingsSecurity() {
                         r.test(next) ? "text-success-strong" : "text-muted-foreground"
                       )}
                     >
-                      {r.test(next) ? "✓" : "○"} {r.label}
+                      {r.test(next) ? (
+                        <Check className="mr-1 inline size-3" aria-hidden="true" />
+                      ) : (
+                        <Circle className="mr-1 inline size-3" aria-hidden="true" />
+                      )}
+                      {r.label}
                     </p>
                   ))}
                 </div>
