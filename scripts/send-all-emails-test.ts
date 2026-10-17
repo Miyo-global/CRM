@@ -78,7 +78,7 @@ const NEXT_WEEK = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "auth.verify", run: () => sendVerificationEmail(TO, "test-token-verify-123") },
   { name: "auth.passwordReset", run: () => sendPasswordResetEmail(TO, "test-token-reset-123") },
-  { name: "auth.invitation", run: () => sendInvitationEmail(TO, "test-token-invite-123", "Miyo Global", ACTOR) },
+  { name: "auth.invitation", run: () => sendInvitationEmail(TO, "test-token-invite-123", "Miyo Global", { inviterName: ACTOR, role: "HR" }) },
   { name: "auth.welcome", run: () => sendWelcomeEmail(TO, NAME, "https://crm.miyoglobal.com/onboarding") },
   { name: "auth.passwordChangeConfirm", run: () => sendPasswordChangeConfirmationEmail(TO, NAME) },
   { name: "auth.accountDeactivation", run: () => sendAccountDeactivationEmail(TO, NAME) },

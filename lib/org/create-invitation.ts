@@ -79,7 +79,10 @@ export async function createOrgInvitation(input: InviteInput): Promise<InviteRes
     projectRole: input.projectRole,
   });
 
-  await sendInvitationEmail(email, token, org?.name ?? "Unknown Organization").catch(() => undefined);
+  await sendInvitationEmail(email, token, org?.name ?? "Unknown Organization", {
+    role,
+    expiresOn: expiresAt,
+  }).catch(() => undefined);
 
   await createAuditLog({
     action: "org.member_invited",

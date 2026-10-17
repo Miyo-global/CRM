@@ -51,12 +51,10 @@ export async function POST(req: NextRequest) {
         ? `${inviter.firstName} ${inviter.lastName}`
         : inviter?.name ?? undefined;
 
-    await sendInvitationEmail(
-      invitation.email,
-      newToken,
-      org?.name ?? "Miyo Global",
-      inviterName
-    );
+    await sendInvitationEmail(invitation.email, newToken, org?.name ?? "Miyo Global", {
+      inviterName,
+      role: invitation.role,
+    });
 
     return ok({ success: true });
   });

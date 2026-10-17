@@ -10,6 +10,7 @@ export {
   sendNewDeviceLoginEmail,
   sendPasswordExpiryWarningEmail,
   sendAccountDeactivationEmail,
+  sendInvitationEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
@@ -20,7 +21,6 @@ import type { EmailOptions, EmailAttachment } from "./email/sender";
 import { appUrl } from "./app-url";
 import {
   getVerificationEmailTemplate,
-  getInvitationEmailTemplate,
   getProjectAssignmentEmailTemplate,
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
@@ -76,20 +76,6 @@ export async function sendVerificationEmail(email: string, token: string) {
     to: email,
     subject: "Verify Your Email",
     html: getVerificationEmailTemplate(verificationUrl),
-  });
-}
-
-export async function sendInvitationEmail(
-  email: string,
-  token: string,
-  organizationName: string,
-  inviterName?: string
-) {
-  const invitationUrl = `${baseUrl}/invitation/${token}`;
-  await sendEmail({
-    to: email,
-    subject: `Invitation to join ${organizationName}`,
-    html: getInvitationEmailTemplate(invitationUrl, organizationName, inviterName),
   });
 }
 

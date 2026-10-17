@@ -1,8 +1,8 @@
 import { sendEmail, sendTemplateEmail } from "./sender";
 import { baseUrl } from "./sender";
-import { formatIST } from "@/lib/date-utils";
+import { formatIST, formatDisplayDate } from "@/lib/date-utils";
+import { getRoleLabel } from "@/lib/rbac/roles";
 import {
-  getInvitationEmailTemplate,
   type WelcomeEmailDetails,
 } from "../email-templates";
 
@@ -29,17 +29,27 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   });
 }
 
+/** MIYO-0224: the hand-written auth-invitation template. */
 export async function sendInvitationEmail(
   email: string,
   token: string,
   organizationName: string,
-  inviterName?: string
+  details: { inviterName?: string; role?: string; expiresOn?: Date } = {},
 ) {
-  const invitationUrl = `${baseUrl}/invitation/${token}`;
-  await sendEmail({
+  const expiresOn = details.expiresOn ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await sendTemplateEmail("auth-invitation", {
     to: email,
-    subject: `Invitation to join ${organizationName}`,
-    html: getInvitationEmailTemplate(invitationUrl, organizationName, inviterName),
+    vars: {
+      invite_target: organizationName,
+      invite_url: `${baseUrl}/invitation/${token}`,
+      inviter_name: details.inviterName ?? `The ${organizationName} team`,
+      role: details.role ? getRoleLabel(details.role) : "a team member",
+      expires_on: formatDisplayDate(expiresOn, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    },
   });
 }
 
