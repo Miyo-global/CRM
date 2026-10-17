@@ -20,8 +20,10 @@ export interface RoutePermissionRule {
 
 export const ROUTE_PERMISSIONS: readonly RoutePermissionRule[] = [
   { pattern: "/api/hr/leaves", methods: ["POST"], permission: "hr:leaves:create" },
-  { pattern: "/api/hr/leaves/:id/approve", methods: ["PUT", "PATCH"], permission: "hr:leaves:approve" },
-  { pattern: "/api/hr/leaves/:id/reject", methods: ["PUT", "PATCH"], permission: "hr:leaves:approve" },
+  // Leave approve/reject are not mapped: who may act is the approver chain
+  // (canApproveLeaveRequest), which includes the requester's reporting
+  // manager. A role permission here 403'd those managers before the handler
+  // ran (MIYO-0084 / R3-0004).
   { pattern: "/api/hr/employees", methods: ["POST"], permission: "hr:employees:create" },
   { pattern: "/api/hr/employees/onboard", methods: ["POST"], permission: "hr:employees:create" },
   { pattern: "/api/hr/employees/:id", methods: ["PATCH", "PUT"], permission: "hr:employees:update" },

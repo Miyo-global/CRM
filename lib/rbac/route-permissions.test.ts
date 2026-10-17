@@ -11,7 +11,7 @@ describe("permissionForRoute", () => {
   });
 
   it("matches an id segment and prefers the longer pattern", () => {
-    expect(permissionForRoute("/api/hr/leaves/12/approve", "PUT")).toBe("hr:leaves:approve");
+    expect(permissionForRoute("/api/hr/payrolls/12/approve", "PUT")).toBe("hr:payroll:approve");
     expect(permissionForRoute("/api/hr/employees/abc-123", "DELETE")).toBe("hr:employees:delete");
     expect(permissionForRoute("/api/hr/employees/onboard", "POST")).toBe("hr:employees:create");
   });
@@ -22,6 +22,11 @@ describe("permissionForRoute", () => {
     for (const [path, method] of [["/api/hr/payrolls", "POST"], ["/api/hr/payrolls/7/approve", "PATCH"], ["/api/hr/payrolls/7/paid", "PATCH"]]) {
       expect(names.has(permissionForRoute(path, method)!)).toBe(true);
     }
+  });
+
+  it("leaves leave approval to the approver chain (MIYO-0084)", () => {
+    expect(permissionForRoute("/api/hr/leaves/12/approve", "PUT")).toBeNull();
+    expect(permissionForRoute("/api/hr/leaves/12/reject", "PATCH")).toBeNull();
   });
 
   it("leaves an unmapped route alone", () => {
