@@ -141,6 +141,8 @@ export const tickets = pgTable("tickets", {
   assigneeIdx: index("idx_tickets_assignee_id").on(t.assigneeId),
   sprintIdx: index("idx_tickets_sprint_id").on(t.sprintId),
   orgStatusIdx: index("idx_tickets_org_status").on(t.orgId, t.status),
+  // Board/list/overview: live tickets of one project in rank order (MIYO-0066).
+  projectRankLiveIdx: index("idx_tickets_project_rank_live").on(t.projectId, t.rank).where(sql`${t.deletedAt} is null`),
 }));
 
 export const projectStatuses = pgTable("project_statuses", {
