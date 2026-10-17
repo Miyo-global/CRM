@@ -104,7 +104,7 @@ export function PageWrapper({
       {stickyHeader ? (
         <div
           className={cn(
-            "sticky top-[var(--page-sticky-top,0px)] z-sticky shrink-0 bg-background/90 backdrop-blur-md",
+            "sticky top-[var(--page-sticky-top,0px)] z-sticky shrink-0 bg-background",
             !filters && "border-b border-border",
           )}
         >

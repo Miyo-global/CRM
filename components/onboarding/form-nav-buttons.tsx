@@ -17,7 +17,7 @@ export function FormNavButtons({
 }: FormNavButtonsProps) {
   return (
     <div
-      className={`sticky bottom-0 z-sticky -mx-5 mt-6 flex gap-2 border-t border-border bg-card/90 px-5 py-3 backdrop-blur ${
+      className={`sticky bottom-0 z-sticky -mx-5 mt-6 flex gap-2 border-t border-border bg-card px-5 py-3 ${
         onBack ? "justify-between" : "justify-end"
       }`}
     >

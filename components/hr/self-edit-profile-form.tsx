@@ -328,7 +328,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
       </Card>
 
       {hasPendingEdits && (
-        <div className="sticky bottom-0 z-sticky -mx-4 flex items-center justify-end gap-3 border-t border-border bg-background/90 px-4 py-3 backdrop-blur">
+        <div className="sticky bottom-0 z-sticky -mx-4 flex items-center justify-end gap-3 border-t border-border bg-background px-4 py-3">
           <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>
           <Button
             type="submit"

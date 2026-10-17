@@ -75,7 +75,7 @@ export function CompleteSprintSheet({
             <p className="text-sm text-muted-foreground">All tickets are done! Ready to complete this sprint.</p>
           )}
         </div>
-        <SheetFooter className="sticky bottom-0 bg-surface-raised/90 backdrop-blur">
+        <SheetFooter className="sticky bottom-0 bg-surface-raised">
           <Button variant="ghost" onClick={onCancel}>Cancel</Button>
           <Button onClick={handleConfirm} loading={isUpdating}>
             {isUpdating ? "Completing..." : "Complete Sprint"}

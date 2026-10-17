@@ -63,7 +63,7 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
   }, [navGroups]);
 
   return (
-    <header className="sticky top-0 z-topbar flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-topbar flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 sm:px-6">
       {/* Mobile / tablet */}
       <Button
         variant="ghost"

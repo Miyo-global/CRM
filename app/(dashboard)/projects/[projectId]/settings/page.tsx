@@ -241,7 +241,7 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                 />
               </div>
 
-              <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-3 rounded-b-lg border-t border-border bg-card/90 px-5 py-3 backdrop-blur">
+              <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-3 rounded-b-lg border-t border-border bg-card px-5 py-3">
                 {form.formState.isDirty && (
                   <span className="mr-auto text-xs text-warning-strong">Unsaved changes</span>
                 )}

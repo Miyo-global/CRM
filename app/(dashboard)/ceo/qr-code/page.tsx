@@ -169,7 +169,7 @@ function QRCard({
             <Button
               variant="outline"
               size="icon-sm"
-              className="rounded-full bg-background/90 backdrop-blur-sm"
+              className="rounded-full bg-background"
               aria-label="QR code options"
             >
               <MoreVertical />

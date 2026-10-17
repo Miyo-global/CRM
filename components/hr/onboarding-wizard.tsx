@@ -299,7 +299,7 @@ export function OnboardingWizard() {
             )}
           </div>
 
-          <div className="sticky bottom-0 flex items-center justify-between gap-2 rounded-b-lg border-t bg-background/90 px-5 py-3 backdrop-blur sm:px-6">
+          <div className="sticky bottom-0 flex items-center justify-between gap-2 rounded-b-lg border-t bg-background px-5 py-3 sm:px-6">
             <Button
               type="button"
               variant="ghost"

@@ -64,7 +64,7 @@ export function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-topbar w-full border-b border-sidebar-border bg-ink-950/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-topbar w-full border-b border-sidebar-border bg-ink-950">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Miyo Global" width={28} height={28} className="size-7 shrink-0" />

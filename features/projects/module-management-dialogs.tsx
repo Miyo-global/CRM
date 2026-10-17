@@ -335,7 +335,7 @@ export function ModuleEditSheet(props: {
               />
             </div>
           </div>
-          <SheetFooter className="sticky bottom-0 bg-surface-raised/90 backdrop-blur">
+          <SheetFooter className="sticky bottom-0 bg-surface-raised">
             <Button type="submit" loading={isPending}>
               {isPending ? "Saving…" : "Save changes"}
             </Button>
