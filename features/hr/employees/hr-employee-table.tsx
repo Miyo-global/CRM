@@ -162,7 +162,10 @@ function EmployeeTableBody({
                   <TableHead>Department</TableHead>
                   <TableHead>Joining Date</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {/* R3-0025: the row is wider than a 1280px viewport, so the
+                      actions stay pinned to the right edge instead of being
+                      scrolled out of reach. */}
+                  <TableHead className="sticky right-0 bg-card text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -236,7 +239,7 @@ function EmployeeTableBody({
                         </StatusPill>
                       </TableCell>
 
-                      <TableCell className="text-right">
+                      <TableCell className="sticky right-0 bg-card text-right">
                         {/* Always visible: hover-only icons read as an empty Actions column (A43). */}
                         <div className="flex items-center justify-end gap-1">
                           <Button

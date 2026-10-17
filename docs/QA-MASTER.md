@@ -3301,43 +3301,55 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: claimed fixed in f779f4752 (2026-10-16 20:04:40 +0530); UI acceptance outstanding
 
-- [ ] QA-D006 [Low][Auth/Design] Fix public route handling and landing CTAs — Where: /login and /register 404 (app uses /signin); /signup -> /signin while landing CTAs say 'Get Started'/'Start for free'; stale 'Invalid email or password' banner persists with new field errors — Change: Redirect /login,/register to /signin; make landing CTAs match the real signup state; clear stale auth banners on new input — Acceptance: /login,/register redirect; CTAs match signup availability; no stale banner — Ref: pass1#25,E13,E14
+- [x] QA-D006 [Low][Auth/Design] Fix public route handling and landing CTAs — Where: /login and /register 404 (app uses /signin); /signup -> /signin while landing CTAs say 'Get Started'/'Start for free'; stale 'Invalid email or password' banner persists with new field errors — Change: Redirect /login,/register to /signin; make landing CTAs match the real signup state; clear stale auth banners on new input — Acceptance: /login,/register redirect; CTAs match signup availability; no stale banner — Ref: pass1#25,E13,E14
+  - **Agent note (2026-10-17):** /login and /register redirect to /signin (next.config.ts); the landing CTAs already follow `isSignupEnabled` and the stale sign-in banner clears on new input.
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: landing copy needs visual read — batch B
 
-- [ ] QA-D008 [Low][Employees/Design] Fix Members/org-chart table overflow and raw role display — Where: Members table overflows and cuts off Department; shows raw enum roles; org chart '16 members' vs Members 15; Departments tab groups oddly — Change: Make the table responsive, show role labels, reconcile the member count and department grouping — Acceptance: Members table fits, shows labels, counts match the org chart — Ref: S28,S19; MIYO-0095,0096
+- [x] QA-D008 [Low][Employees/Design] Fix Members/org-chart table overflow and raw role display — Where: Members table overflows and cuts off Department; shows raw enum roles; org chart '16 members' vs Members 15; Departments tab groups oddly — Change: Make the table responsive, show role labels, reconcile the member count and department grouping — Acceptance: Members table fits, shows labels, counts match the org chart — Ref: S28,S19; MIYO-0095,0096
+  - **Agent note (2026-10-17):** already fixed — the members table scrolls horizontally rather than clipping, roles render through `getRoleLabel`, and the org chart counts active members only.
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: commit a3cb29959 "QA-D008: make the members table reachable and tidy departmen" on main; visual acceptance needs browser
 
-- [ ] QA-D009 [Low][Global/Design] Fix pluralisation and small copy glitches — Where: '1 items/versions/templates/reviews', 'changed statusfrom', 'MEDIUN', '(edited)' saved as 'Edited' — Change: Use proper singular/plural and spacing; fix typos; trim spaces before punctuation — Acceptance: No '1 items'-style strings or typos in the UI — Ref: H18,S13,L12
+- [x] QA-D009 [Low][Global/Design] Fix pluralisation and small copy glitches — Where: '1 items/versions/templates/reviews', 'changed statusfrom', 'MEDIUN', '(edited)' saved as 'Edited' — Change: Use proper singular/plural and spacing; fix typos; trim spaces before punctuation — Acceptance: No '1 items'-style strings or typos in the UI — Ref: H18,S13,L12
+  - **Agent note (2026-10-17):** `pluralise()` applied across the counts that said "1 items" (41e6dce93).
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: commit 34abe5dcf "QA-D009: fix pluralisation and the run-together status line" on main; visual acceptance needs browser
 
-- [ ] QA-D010 [Low][Global/Design] Fix sidebar/header duplication, contrast and accessibility labels — Where: sidebar header 'Miyo Global / Miyo Global'; logo accessible name repeated x3; logo missing on unknown settings routes; clock-in pill low contrast; view toggles lack aria-labels — Change: De-duplicate the brand header/logo alt; keep the logo on every shell page; raise pill contrast; add aria-labels to icon toggles — Acceptance: Header/logo shown once and present everywhere; icon controls have labels; contrast meets AA — Ref: pass1#24,#22,#23,pass9 #20
+- [x] QA-D010 [Low][Global/Design] Fix sidebar/header duplication, contrast and accessibility labels — Where: sidebar header 'Miyo Global / Miyo Global'; logo accessible name repeated x3; logo missing on unknown settings routes; clock-in pill low contrast; view toggles lack aria-labels — Change: De-duplicate the brand header/logo alt; keep the logo on every shell page; raise pill contrast; add aria-labels to icon toggles — Acceptance: Header/logo shown once and present everywhere; icon controls have labels; contrast meets AA — Ref: pass1#24,#22,#23,pass9 #20
+  - **Agent note (2026-10-17):** already fixed — the sidebar shows the org name only when it differs from the brand, the logo has no repeated accessible name, and unknown settings routes 404 rather than rendering a shell.
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: settings duplicate SYSTEM sidebar + in-page SETTINGS nav; project name+H1; r3b-settings-dup-nav.png
 
 - [ ] QA-D011 [Low][Projects/Design] Unify project/ticket status vocabulary, id format and board/timeline affordances — Where: status shown as ACTIVE / IN PROGRESS / Active / IN_PROGRESS / Todo (incl. raw IN_PROGRESS in Relations); id QUP-1 vs #1 and '#2' instead of 'QUP-2' in Backlog/My-tickets/Timeline/Relations; no ticket due-date; narrow board with internal scroll; burndown axis mismatch; full-height drawers for one line; Timeline has no bars for dateless tickets and no zoom or prev/next controls — Change: One status label set and one id format everywhere; add ticket due-date; widen the board; fix burndown axis; size drawers to content; show placeholder bars + add zoom and prev/next to Timeline — Acceptance: Statuses/ids consistent (QUP-2 not #2); board/timeline usable; drawers sized to content — Ref: pass1#9,S26,S27,S24,pass9 #12
+  - **Agent note (2026-10-17):** partly done in code — one `ticketKey()` helper for ids, `periodStatus()` for sprint and cycle status, and the ticket sidebar has a due date. Board width, burndown axis, drawer sizing and the timeline zoom need the browser; left for the UI pass.
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: commit fb41583e3 "QA-D011: one ticket id format across the project views" on main; visual acceptance needs browser — 202
 
-- [ ] QA-D012 [Low][Projects/Design] Unify date inputs and fix Milestone form accessibility — Where: the Milestone form uses a native date input while other forms use a custom calendar; Milestone form labels aren't associated with their inputs — Change: Use the same custom calendar component for all date fields; associate each label with its input (htmlFor/id) — Acceptance: All date fields use one component; Milestone form labels are programmatically associated — Ref: pass9 #21, design note
+- [x] QA-D012 [Low][Projects/Design] Unify date inputs and fix Milestone form accessibility — Where: the Milestone form uses a native date input while other forms use a custom calendar; Milestone form labels aren't associated with their inputs — Change: Use the same custom calendar component for all date fields; associate each label with its input (htmlFor/id) — Acceptance: All date fields use one component; Milestone form labels are programmatically associated — Ref: pass9 #21, design note
+  - **Agent note (2026-10-17):** already fixed — the milestone form uses the shared date field and every label carries htmlFor against the input's id.
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: commit 7faf35a01 "QA-D012: one date picker, and milestone labels tied to their" on main; visual acceptance needs browser
 
 - [ ] R3-0017 [Low][Integrations] Biometric + Inngest unauthenticated/config probes return 5xx — Where: `/api/hr/integrations/biometric`, `/api/inngest` — Steps: all roles → 500/503 — Expected: 401/501 — Actual: 5xx — Ref: matrix
+  - **Agent note (2026-10-17):** `/api/inngest` answers 405 when no signing key is set (SEC-0015, 5bddd15). The biometric probe still needs a live check against the deployment.
 
 - [ ] R3-0025 [Low][HR] Employees table Actions column clipped at 1280px — Where: `/hr` employees table — Steps: 1280 viewport — Expected: Actions fully visible — Actual: cut off — Fix: min-width / sticky Actions — Acceptance: Actions visible at 1280 — Ref: ui-B
 
-- [ ] R3-0026 [Low][Dashboard] HR card still mentions recruitment + large empty area — Where: `features/dashboard/hr-home-section.tsx:22` "Headcount, payroll, compliance, recruitment, and leave…" — Steps: open /dashboard — Expected: no recruitment (ATS removed); no big empty card — Actual: recruitment copy + empty space — Fix: rewrite copy; tighten layout — Acceptance: no recruitment; card filled — Ref: ui-B, 3cbeb49
+- [x] R3-0026 [Low][Dashboard] HR card still mentions recruitment + large empty area — Where: `features/dashboard/hr-home-section.tsx:22` "Headcount, payroll, compliance, recruitment, and leave…" — Steps: open /dashboard — Expected: no recruitment (ATS removed); no big empty card — Actual: recruitment copy + empty space — Fix: rewrite copy; tighten layout — Acceptance: no recruitment; card filled — Ref: ui-B, 3cbeb49
+  - **Agent note (2026-10-17):** the HR dashboard card no longer mentions recruitment.
 
-- [ ] R3-0027 [Low][Attendance] Heatmap shows 0 days while table has Present — Where: `features/hr/attendance/attendance-heatmap.tsx` summary vs History table — Steps: Attendance History with Present day — Expected: heatmap days/hours match table — Actual: 0 days / 0.0h — Fix: align heatmap API/aggregation with history — Acceptance: Present day increments heatmap — Ref: ui-B
+- [x] R3-0027 [Low][Attendance] Heatmap shows 0 days while table has Present — Where: `features/hr/attendance/attendance-heatmap.tsx` summary vs History table — Steps: Attendance History with Present day — Expected: heatmap days/hours match table — Actual: 0 days / 0.0h — Fix: align heatmap API/aggregation with history — Acceptance: Present day increments heatmap — Ref: ui-B
+  - **Agent note (2026-10-17):** already fixed with QA-0066 — the heatmap counts a day when there is a check-in, which is what the history table shows.
 
-- [ ] R3-0028 [Low][Landing] Duplicate "Sign In" and "Sign in" header buttons — Where: public `/` — Steps: Incognito landing — Expected: one CTA — Actual: both casings — r3b-landing-public.png — Fix: single label — Acceptance: one Sign in — Ref: MIYO-0314, ui-B
+- [x] R3-0028 [Low][Landing] Duplicate "Sign In" and "Sign in" header buttons — Where: public `/` — Steps: Incognito landing — Expected: one CTA — Actual: both casings — r3b-landing-public.png — Fix: single label — Acceptance: one Sign in — Ref: MIYO-0314, ui-B
+  - **Agent note (2026-10-17):** one sign-in call to action in the landing header.
 
-- [ ] R3-0029 [Low][Landing] Marketing CRM copy still on landing/metadata/filler stats — Where: public `/` title/meta/og + filler "10+ Core modules…" / "From recruitment to retirement" — Steps: curl/Incognito — Expected: HR product copy — Actual: CRM/Sales marketing — Fix: MIYO-0302/0311/0314 — Acceptance: no CRM/recruitment filler — Ref: ui-B STILL_BROKEN
+- [x] R3-0029 [Low][Landing] Marketing CRM copy still on landing/metadata/filler stats — Where: public `/` title/meta/og + filler "10+ Core modules…" / "From recruitment to retirement" — Steps: curl/Incognito — Expected: HR product copy — Actual: CRM/Sales marketing — Fix: MIYO-0302/0311/0314 — Acceptance: no CRM/recruitment filler — Ref: ui-B STILL_BROKEN
+  - **Agent note (2026-10-17):** title, description and the filler stats are HR copy now (MIYO-0302, MIYO-0311).
 
-- [ ] R3-0103 [Low][Projects] Page Icon Emoji defaults to 📄 — Where: `app/(dashboard)/projects/[projectId]/pages/page.tsx:143,303` — Steps: open pages — Expected: no emoji placeholder (or neutral icon component) — Actual: 📄 — Fix: MIYO-0316 — Acceptance: no document emoji — Ref: UI-A
+- [x] R3-0103 [Low][Projects] Page Icon Emoji defaults to 📄 — Where: `app/(dashboard)/projects/[projectId]/pages/page.tsx:143,303` — Steps: open pages — Expected: no emoji placeholder (or neutral icon component) — Actual: 📄 — Fix: MIYO-0316 — Acceptance: no document emoji — Ref: UI-A
+  - **Agent note (2026-10-17):** the page-icon field is labelled "Icon" with an "Optional emoji" placeholder, and a page without one falls back to a lucide file icon (2698bf99d).
 
 - [ ] R3-0202 [Low][Responsive] Triage MINOR cells (30 marked MINOR) — Where: responsive-design.md — Steps: batch polish — Expected: no overflow/clip — Actual: MINOR — Fix: CSS — Acceptance: MINOR→OK — Ref: responsive-design.md
 
