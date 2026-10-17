@@ -1,29 +1,43 @@
-import { sendEmail } from "./sender";
+import { sendEmail, sendTemplateEmail } from "./sender";
 import {
-  getWeeklyAttendanceReportTemplate,
   getMonthlyExpenseReportTemplate,
 } from "../email-templates";
 import type { MonthlyExpenseReportRow } from "../email-templates";
 import { generateMonthlyExpenseReportXlsx } from "../monthly-expense-report-xlsx";
 
+export interface WeeklyAttendanceTotals {
+  present: number;
+  late: number;
+  absent: number;
+  onLeave: number;
+}
+
+/**
+ * MIYO-0239: the hand-written attendance-weekly-report template.
+ *
+ * The old mail was a per-person table of hours; the template is the week's
+ * shape at a glance, which is what a weekly digest is for. One send to all
+ * recipients instead of a loop.
+ */
 export async function sendWeeklyAttendanceReportEmail(
   weekRange: string,
-  orgName: string,
-  rows: { name: string; totalHours: string; autoCheckoutDays: number; overtimeDays: number; daysPresent: number }[],
-  recipientEmails: string[]
+  totals: WeeklyAttendanceTotals,
+  recipientEmails: string[],
 ) {
   if (recipientEmails.length === 0) return;
 
-  const subject = `Weekly Attendance Report - ${weekRange}`;
-  const html = getWeeklyAttendanceReportTemplate(weekRange, orgName, rows);
-
-  for (const email of recipientEmails) {
-    await sendEmail({
-      to: email,
-      subject,
-      html,
-    });
-  }
+  const counted = totals.present + totals.late + totals.absent + totals.onLeave;
+  await sendTemplateEmail("attendance-weekly-report", {
+    to: recipientEmails,
+    category: "attendance",
+    vars: {
+      week_range: weekRange,
+      present_pct: counted === 0 ? 0 : Math.round(((totals.present + totals.late) / counted) * 100),
+      late_count: totals.late,
+      absent_count: totals.absent,
+      leave_count: totals.onLeave,
+    },
+  });
 }
 
 export async function sendMonthlyExpenseReportEmail(

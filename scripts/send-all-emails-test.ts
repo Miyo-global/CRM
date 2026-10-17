@@ -115,11 +115,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
 
   { name: "hr.weeklyAttendanceReport", run: () => sendWeeklyAttendanceReportEmail(
     "27 Apr – 03 May 2026",
-    "Miyo Global",
-    [
-      { name: "John Doe", totalHours: "42.5", autoCheckoutDays: 1, overtimeDays: 2, daysPresent: 5 },
-      { name: "Jane Smith", totalHours: "40.0", autoCheckoutDays: 0, overtimeDays: 0, daysPresent: 5 },
-    ],
+    { present: 38, late: 4, absent: 2, onLeave: 6 },
     [TO],
   ) },
   { name: "hr.monthlyExpenseReport", run: () => sendMonthlyExpenseReportEmail(

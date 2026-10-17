@@ -60,6 +60,17 @@ export async function generateAndSendWeeklyReport() {
       ),
     });
 
+    // MIYO-0239: the digest reports the week's shape, so count the statuses
+    // once rather than per person.
+    const totals = { present: 0, late: 0, absent: 0, onLeave: 0 };
+    for (const record of allRecords) {
+      const status = (record.status ?? "PRESENT").toUpperCase();
+      if (status === "LATE") totals.late++;
+      else if (status === "ABSENT") totals.absent++;
+      else if (status === "ON_LEAVE" || status === "LEAVE") totals.onLeave++;
+      else totals.present++;
+    }
+
     const recordsByUser = new Map<string, typeof allRecords>();
     for (const record of allRecords) {
       const existing = recordsByUser.get(record.userId) || [];
@@ -101,12 +112,7 @@ export async function generateAndSendWeeklyReport() {
     if (rows.length === 0) continue;
 
     try {
-      await sendWeeklyAttendanceReportEmail(
-        weekRange,
-        org.name,
-        rows,
-        recipientEmails
-      );
+      await sendWeeklyAttendanceReportEmail(weekRange, totals, recipientEmails);
       totalReportsSent++;
     } catch (error) {
       logger.error("Failed to send weekly report", { orgId: org.id, error });

@@ -16,6 +16,7 @@ export {
   sendMfaResetByAdminEmail,
 } from "./email/auth";
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
+export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export {
   sendOnboardingWelcomeEmail,
   sendOnboardingTaskEmail,
@@ -40,7 +41,6 @@ import {
   getExpenseRejectedEmailTemplate,
   getExpensePaidEmailTemplate,
   getDocumentExpiryReminderEmailTemplate,
-  getWeeklyAttendanceReportTemplate,
   getMonthlyExpenseReportTemplate,
   getResignationSubmittedEmailTemplate,
   getResignationApprovedEmailTemplate,
@@ -412,26 +412,6 @@ export async function sendDocumentExpiryReminderEmail(
       daysRemaining
     ),
   });
-}
-
-export async function sendWeeklyAttendanceReportEmail(
-  weekRange: string,
-  orgName: string,
-  rows: { name: string; totalHours: string; autoCheckoutDays: number; overtimeDays: number; daysPresent: number }[],
-  recipientEmails: string[]
-) {
-  if (recipientEmails.length === 0) return;
-
-  const subject = `Weekly Attendance Report - ${weekRange}`;
-  const html = getWeeklyAttendanceReportTemplate(weekRange, orgName, rows);
-
-  for (const email of recipientEmails) {
-    await sendEmail({
-      to: email,
-      subject,
-      html,
-    });
-  }
 }
 
 export async function sendMonthlyExpenseReportEmail(
