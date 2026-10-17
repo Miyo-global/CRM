@@ -180,10 +180,13 @@ export const atsActivity = pgTable(
   {
     id: serial("id").primaryKey(),
     orgId: text("org_id").references(() => organizations.id).notNull(),
-    candidateId: integer("candidate_id")
-      .references(() => candidates.id, { onDelete: "cascade" })
-      .notNull(),
+    // MIYO-0632: a requisition has history too, and it exists before any
+    // candidate does, so the candidate is optional on an activity row.
+    candidateId: integer("candidate_id").references(() => candidates.id, { onDelete: "cascade" }),
     applicationId: integer("application_id").references(() => candidateApplications.id, {
+      onDelete: "cascade",
+    }),
+    requisitionId: integer("requisition_id").references(() => atsRequisitions.id, {
       onDelete: "cascade",
     }),
     actorId: text("actor_id").references(() => users.id),
@@ -195,6 +198,7 @@ export const atsActivity = pgTable(
   (table) => [
     index("idx_ats_activity_candidate").on(table.candidateId, table.createdAt),
     index("idx_ats_activity_application").on(table.applicationId, table.createdAt),
+    index("idx_ats_activity_requisition").on(table.requisitionId, table.createdAt),
   ],
 );
 

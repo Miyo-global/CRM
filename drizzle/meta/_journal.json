@@ -771,6 +771,13 @@
       "when": 1792249811561,
       "tag": "0166_ats_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 167,
+      "version": "7",
+      "when": 1792257498540,
+      "tag": "0167_ats_activity_requisition",
+      "breakpoints": true
     }
   ]
 }
