@@ -1237,6 +1237,15 @@ export const jobPostings = pgTable("job_postings", {
   referralEnabled: boolean("referral_enabled").default(false),
   approvalRequired: boolean("approval_required").default(false),
 
+  // MIYO-0630: the ATS needs a public URL, a publish window and SEO fields.
+  slug: text("slug"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  closesAt: timestamp("closes_at", { withTimezone: true }),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  requisitionId: integer("ats_requisition_id"),
+  salaryVisible: boolean("salary_visible").default(false),
+
   applicationFields: jsonb("application_fields").$type<import("@/lib/hr/application-field-config").ApplicationFieldConfig>(),
   externalPostingIds: jsonb("external_posting_ids").$type<Record<string, string>>(),
   hiringFlowTemplateId: integer("hiring_flow_template_id"),
@@ -1246,6 +1255,7 @@ export const jobPostings = pgTable("job_postings", {
 }, (table) => [
   index("idx_job_postings_org").on(table.orgId),
   index("idx_job_postings_status").on(table.status),
+  uniqueIndex("uniq_job_postings_org_slug").on(table.orgId, table.slug),
 ]);
 
 export type HiringFlowRoundConfig = {
@@ -1383,6 +1393,8 @@ export const candidates = pgTable("candidates", {
   appliedTitle: text("applied_title"),
   appliedDepartment: text("applied_department"),
   skillEntries: jsonb("skill_entries").$type<{ name: string; skillType: string; proficiency?: string }[]>(),
+  // MIYO-0630: digits only, so "+91 98765 43210" and "9876543210" match.
+  phoneNormalized: text("phone_normalized"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
@@ -1401,6 +1413,11 @@ export const candidateApplications = pgTable("candidate_applications", {
   coverLetter: text("cover_letter"),
   notes: text("notes"),
   pipelineStage: text("pipeline_stage").default("APPLIED"),
+  // MIYO-0630: the ATS reads stageId; pipelineStage stays for the old rows.
+  stageId: integer("stage_id"),
+  rating: integer("rating"),
+  rejectedReasonId: integer("rejected_reason_id"),
+  source: text("source"),
   currentRoundIndex: integer("current_round_index"),
   stageHistory: jsonb("stage_history").$type<{ stage: string; changedAt: string; changedBy?: string; notes?: string }[]>().default([]),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -1427,6 +1444,11 @@ export const interviews = pgTable("interviews", {
   notes: text("notes"),
   recordingUrl: text("recording_url"),
   recordingPlatform: text("recording_platform"),
+  // MIYO-0630: a calendar invite that can be updated and cancelled.
+  icsUid: text("ics_uid"),
+  icsSequence: integer("ics_sequence").default(0),
+  meetingUrl: text("meeting_url"),
+  timezone: text("timezone").default("Asia/Kolkata"),
   panelInterviewerIds: jsonb("panel_interviewer_ids").$type<string[]>().default([]),
   remindersSent: jsonb("reminders_sent").$type<Record<string, boolean>>().notNull().default({}),
   calendarSyncToken: text("calendar_sync_token"),
@@ -2194,6 +2216,11 @@ export const candidateOffers = pgTable("candidate_offers", {
   respondedAt: timestamp("responded_at"),
   acceptanceToken: text("acceptance_token").unique(),
   acceptanceTokenExpiresAt: timestamp("acceptance_token_expires_at"),
+  // MIYO-0630: the ATS stores a hash, so a leaked database row cannot be
+  // used to accept an offer.
+  tokenHash: text("token_hash"),
+  declineReason: text("decline_reason"),
+  approvalStatus: text("approval_status").default("NOT_REQUIRED"),
   submittedForCeoAt: timestamp("submitted_for_ceo_at"),
   ceoReviewedBy: text("ceo_reviewed_by").references(() => users.id),
   ceoReviewedAt: timestamp("ceo_reviewed_at"),

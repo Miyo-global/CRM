@@ -764,6 +764,13 @@
       "when": 1792232429443,
       "tag": "0165_users_personal_email",
       "breakpoints": true
+    },
+    {
+      "idx": 166,
+      "version": "7",
+      "when": 1792249811561,
+      "tag": "0166_ats_schema",
+      "breakpoints": true
     }
   ]
 }
