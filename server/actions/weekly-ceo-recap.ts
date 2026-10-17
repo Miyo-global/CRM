@@ -3,16 +3,15 @@ import {
   organizations,
   organizationMembers,
   users,
-  leads,
-  leadActivities,
-  tickets,
+  attendance,
+  projects,
+  resignations,
   leaveRequests,
 } from "@/lib/db/schema";
-import { eq, and, gte, sql, count, isNull } from "drizzle-orm";
-import { sendEmail } from "@/lib/email";
-import { getWeeklyCeoRecapTemplate } from "@/lib/email-templates/weekly-ceo-recap";
-import type { WeeklyCeoRecapData } from "@/lib/email-templates/weekly-ceo-recap";
-import { generateRecapNarrative } from "@/lib/ai/weekly-recap-narrator";
+import { eq, and, gte, lte, sql, count } from "drizzle-orm";
+import { sendTemplateEmail } from "@/lib/email/sender";
+import { isPresentAttendanceStatus } from "@/lib/hr/attendance-summary";
+import { formatDateOnly } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { subDays } from "date-fns";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
@@ -69,94 +68,95 @@ export async function generateAndSendWeeklyCeoRecap() {
         continue;
       }
 
+      // MIYO-0288: the recap is an HR week in one screen. The lead and deal
+      // figures it used to carry belonged to the CRM module, which is gone.
+      const weekStartDate = formatDateOnly(weekStart);
+      const todayDate = formatDateOnly(now);
+
       const [
-        [employeeCount],
-        [newLeadCount],
-        [convertedCount],
-        [activityCount],
-        [openTicketCount],
-        [closedTicketCount],
-        [pendingLeaveCount],
-        pipelineRaw,
+        [headcount],
+        [joiners],
+        [leavers],
+        [openApprovals],
+        [leaveDays],
+        attendanceRows,
+        projectRows,
       ] = await Promise.all([
         db.select({ count: count() })
           .from(organizationMembers)
           .innerJoin(users, eq(users.id, organizationMembers.userId))
           .where(and(eq(organizationMembers.orgId, org.id), eq(users.isActive, true))),
         db.select({ count: count() })
-          .from(leads)
-          .where(and(eq(leads.orgId, org.id), gte(leads.createdAt, weekStart))),
+          .from(organizationMembers)
+          .innerJoin(users, eq(users.id, organizationMembers.userId))
+          .where(
+            and(
+              eq(organizationMembers.orgId, org.id),
+              gte(users.joiningDate, weekStartDate),
+              lte(users.joiningDate, todayDate),
+            ),
+          ),
         db.select({ count: count() })
-          .from(leads)
-          .where(and(eq(leads.orgId, org.id), eq(leads.status, "CONVERTED"), gte(leads.updatedAt, weekStart))),
-        db.select({ count: count() })
-          .from(leadActivities)
-          .innerJoin(leads, eq(leads.id, leadActivities.leadId))
-          .where(and(eq(leads.orgId, org.id), gte(leadActivities.createdAt, weekStart))),
-        db.select({ count: count() })
-          .from(tickets)
-          .where(and(eq(tickets.orgId, org.id), isNull(tickets.deletedAt), sql`${tickets.status} NOT IN ('DONE', 'CANCELLED')`)),
-        db.select({ count: count() })
-          .from(tickets)
-          .where(and(eq(tickets.orgId, org.id), isNull(tickets.deletedAt), eq(tickets.status, "DONE"), gte(tickets.updatedAt, weekStart))),
+          .from(resignations)
+          .where(
+            and(
+              eq(resignations.orgId, org.id),
+              gte(resignations.lastWorkingDate, weekStartDate),
+              lte(resignations.lastWorkingDate, todayDate),
+            ),
+          ),
         db.select({ count: count() })
           .from(leaveRequests)
           .where(and(eq(leaveRequests.orgId, org.id), eq(leaveRequests.status, "PENDING"))),
-        db.select({ status: leads.status, count: count() })
-          .from(leads)
-          .where(eq(leads.orgId, org.id))
-          .groupBy(leads.status),
+        db.select({ count: count() })
+          .from(leaveRequests)
+          .where(
+            and(
+              eq(leaveRequests.orgId, org.id),
+              eq(leaveRequests.status, "APPROVED"),
+              lte(leaveRequests.startDate, todayDate),
+              gte(leaveRequests.endDate, weekStartDate),
+            ),
+          ),
+        db.select({ status: attendance.status, count: count() })
+          .from(attendance)
+          .where(
+            and(
+              eq(attendance.orgId, org.id),
+              gte(attendance.date, weekStartDate),
+              lte(attendance.date, todayDate),
+            ),
+          )
+          .groupBy(attendance.status),
+        db.select({ status: projects.status, count: count() })
+          .from(projects)
+          .where(eq(projects.orgId, org.id))
+          .groupBy(projects.status),
       ]);
 
-      const leaderboardRaw = await db
-        .select({
-          userId: leads.assignedToId,
-          name: users.name,
-          converted: sql<number>`COUNT(CASE WHEN ${leads.status} = 'CONVERTED' THEN 1 END)`,
-        })
-        .from(leads)
-        .innerJoin(users, eq(users.id, leads.assignedToId))
-        .where(and(eq(leads.orgId, org.id), sql`${leads.assignedToId} IS NOT NULL`))
-        .groupBy(leads.assignedToId, users.name)
-        .orderBy(sql`COUNT(CASE WHEN ${leads.status} = 'CONVERTED' THEN 1 END) DESC`)
-        .limit(5);
+      const attendanceTotal = attendanceRows.reduce((sum, r) => sum + r.count, 0);
+      const presentCount = attendanceRows
+        .filter((r) => isPresentAttendanceStatus(r.status))
+        .reduce((sum, r) => sum + r.count, 0);
+      const projectsTotal = projectRows.reduce((sum, r) => sum + r.count, 0);
+      const projectsOnTrack = projectRows
+        .filter((r) => r.status === "ACTIVE")
+        .reduce((sum, r) => sum + r.count, 0);
 
-      const topPerformers = leaderboardRaw.map((r) => ({
-        name: r.name || "Unknown",
-        score: Number(r.converted) * 50,
-      }));
-
-      const recapData: WeeklyCeoRecapData = {
-        weekRange,
-        orgName: org.name,
-        totalEmployees: employeeCount?.count ?? 0,
-        newLeads: newLeadCount?.count ?? 0,
-        convertedLeads: convertedCount?.count ?? 0,
-        totalActivities: activityCount?.count ?? 0,
-        openTickets: openTicketCount?.count ?? 0,
-        closedTickets: closedTicketCount?.count ?? 0,
-        pendingLeaves: pendingLeaveCount?.count ?? 0,
-        topPerformers,
-        pipelineSummary: pipelineRaw.map((r) => ({ status: r.status, count: r.count })),
-      };
-
-      let aiNarrative = "";
-      try {
-        aiNarrative = await generateRecapNarrative(recapData);
-      } catch {
-        aiNarrative = "";
-      }
-
-      const html = getWeeklyCeoRecapTemplate({ ...recapData, aiNarrative });
-
-      for (const owner of owners) {
-        if (!owner.email) continue;
-        await sendEmail({
-          to: owner.email,
-          subject: `Weekly Recap — ${weekRange} | ${org.name}`,
-          html,
-        });
-      }
+      await sendTemplateEmail("weekly-ceo-recap", {
+        to: owners.map((o) => o.email).filter((e): e is string => Boolean(e)),
+        vars: {
+          week_range: weekRange,
+          headcount: headcount?.count ?? 0,
+          joiners: joiners?.count ?? 0,
+          leavers: leavers?.count ?? 0,
+          leave_days: leaveDays?.count ?? 0,
+          open_approvals: openApprovals?.count ?? 0,
+          present_pct: attendanceTotal === 0 ? 0 : Math.round((presentCount / attendanceTotal) * 100),
+          projects_total: projectsTotal,
+          projects_on_track: projectsOnTrack,
+        },
+      });
 
       results.push({ orgId: org.id, sent: true });
     } catch (error) {
