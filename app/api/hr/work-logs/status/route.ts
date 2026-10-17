@@ -60,11 +60,10 @@ export async function PATCH(req: NextRequest) {
         if (employee?.email) {
           await sendWorkLogStatusEmail(
             employee.email,
-            employee.name ?? "Employee",
             existing.date,
             body.status,
             session.user.name ?? "Admin",
-            body.rejectionReason
+            { hours: existing.hours, rejectionReason: body.rejectionReason },
           );
         }
       })().catch((error) => {

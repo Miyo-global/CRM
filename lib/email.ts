@@ -19,6 +19,7 @@ export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export { sendDocumentExpiryReminderEmail } from "./email/hr-documents";
+export { sendWorkLogStatusEmail } from "./email/hr-performance";
 export {
   sendReviewAssignedEmail,
   sendSelfReviewReminderEmail,
@@ -60,8 +61,6 @@ import {
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
   getMonthlyExpenseReportTemplate,
-  getWorkLogApprovedEmailTemplate,
-  getWorkLogRejectedEmailTemplate,
   getTicketCreatedEmailTemplate,
   getTicketReplyEmailTemplate,
   getTicketStatusEmailTemplate,
@@ -377,25 +376,6 @@ export async function sendMonthlyExpenseReportEmail(
 
 
 
-export async function sendWorkLogStatusEmail(
-  email: string,
-  employeeName: string,
-  date: string,
-  status: "APPROVED" | "REJECTED",
-  approverName: string,
-  rejectionReason?: string
-) {
-  const html =
-    status === "APPROVED"
-      ? getWorkLogApprovedEmailTemplate(employeeName, date, approverName)
-      : getWorkLogRejectedEmailTemplate(employeeName, date, approverName, rejectionReason);
-
-  await sendEmail({
-    to: email,
-    subject: `Work Log ${status === "APPROVED" ? "Approved" : "Rejected"} — ${date}`,
-    html,
-  });
-}
 
 
 export async function sendSupportTicketCreatedEmail(

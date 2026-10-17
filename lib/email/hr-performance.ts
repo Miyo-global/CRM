@@ -1,27 +1,33 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
+import { sendTemplateEmail } from "./sender";
 import { appUrl } from "@/lib/app-url";
-import {
-  getWorkLogApprovedEmailTemplate,
-  getWorkLogRejectedEmailTemplate,
-} from "../email-templates";
 
+/** MIYO-0275, MIYO-0276: the hand-written worklog-approved / -rejected templates. */
 export async function sendWorkLogStatusEmail(
   email: string,
-  employeeName: string,
-  date: string,
+  logDate: string,
   status: "APPROVED" | "REJECTED",
   approverName: string,
-  rejectionReason?: string
+  details: { hours?: string | null; rejectionReason?: string | null } = {},
 ) {
-  const html =
-    status === "APPROVED"
-      ? getWorkLogApprovedEmailTemplate(employeeName, date, approverName)
-      : getWorkLogRejectedEmailTemplate(employeeName, date, approverName, rejectionReason);
+  if (status === "APPROVED") {
+    await sendTemplateEmail("worklog-approved", {
+      to: email,
+      vars: {
+        log_date: logDate,
+        hours: details.hours ?? "not recorded",
+        approver_name: approverName,
+      },
+    });
+    return;
+  }
 
-  await sendEmail({
+  await sendTemplateEmail("worklog-rejected", {
     to: email,
-    subject: `Work Log ${status === "APPROVED" ? "Approved" : "Rejected"} — ${date}`,
-    html,
+    vars: {
+      log_date: logDate,
+      approver_name: approverName,
+      rejection_reason: details.rejectionReason?.trim() || "No reason was given.",
+    },
   });
 }
 
