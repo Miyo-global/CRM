@@ -123,6 +123,16 @@ export const initiateOnboarding = inngest.createFunction(
       return { tasksCreated: taskInserts.length };
     });
 
+    // MIYO-0157: the set-up-your-password mail already went out at hire. The
+    // onboarding welcome lands two days before the first day instead of
+    // alongside it; a joining date inside that window sends straight away.
+    if (joiningDate) {
+      const sendAt = new Date(new Date(joiningDate).getTime() - 2 * 24 * 60 * 60 * 1000);
+      if (sendAt.getTime() > Date.now()) {
+        await step.sleepUntil("wait-until-two-days-before-joining", sendAt);
+      }
+    }
+
     await step.run("send-welcome-onboarding-email", async () => {
       const employee = await db.query.users.findFirst({
         where: eq(users.id, userId),
