@@ -1,139 +1,139 @@
-import { sendEmail } from "./sender";
-import { baseUrl } from "./sender";
-import {
-  getProjectAssignmentEmailTemplate,
-  getTicketAssignmentEmailTemplate,
-  getTicketReviewRequestEmailTemplate,
-  getTicketChangesRequestedEmailTemplate,
-  getTicketCommentEmailTemplate,
-} from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 
+/** First 90 characters of a comment or note, for the preheader line. */
+function snippet(text: string): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  return flat.length > 90 ? `${flat.slice(0, 89)}…` : flat;
+}
+
+/** MIYO-0277: the hand-written project-added template. */
 export async function sendProjectAssignmentEmail(
   email: string,
-  memberName: string,
-  projectName: string,
-  projectKey: string,
-  projectId: number,
-  assignedBy?: string
+  project: {
+    name: string;
+    key: string;
+    id: number;
+    role: string;
+    addedBy: string;
+  },
 ) {
-  const projectUrl = `${baseUrl}/projects/${projectId}`;
-  await sendEmail({
+  await sendTemplateEmail("project-added", {
     to: email,
-    subject: `Added to Project: ${projectName}`,
-    html: getProjectAssignmentEmailTemplate(memberName, projectName, projectKey, projectUrl, assignedBy),
+    category: "tasks",
+    vars: {
+      project_name: project.name,
+      project_key: project.key,
+      project_id: project.id,
+      project_role: project.role,
+      added_by: project.addedBy,
+    },
   });
 }
 
+/** MIYO-0278: the hand-written ticket-assigned template. */
 export async function sendTicketAssignmentEmail(
   email: string,
-  assigneeName: string,
-  ticketTitle: string,
-  ticketType: string,
-  ticketPriority: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  createdBy: string,
-  issueKey?: string,
+  ticket: {
+    key: string;
+    title: string;
+    priority: string;
+    dueDate?: string | null;
+    projectName: string;
+    projectId: number;
+    assignedBy: string;
+  },
 ) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  const subjectPrefix = issueKey ? `[${issueKey}] ` : "";
-  await sendEmail({
+  await sendTemplateEmail("ticket-assigned", {
     to: email,
-    subject: `${subjectPrefix}${ticketTitle}`,
-    html: getTicketAssignmentEmailTemplate(
-      assigneeName,
-      ticketTitle,
-      ticketType,
-      ticketPriority,
-      projectName,
-      ticketUrl,
-      createdBy,
-      issueKey,
-    ),
+    category: "tasks",
+    vars: {
+      ticket_key: ticket.key,
+      ticket_title: ticket.title,
+      priority: ticket.priority.replace(/_/g, " ").toLowerCase(),
+      due_date: ticket.dueDate?.trim() || "not set",
+      project_name: ticket.projectName,
+      project_id: ticket.projectId,
+      assigned_by: ticket.assignedBy,
+    },
   });
 }
 
+/** MIYO-0279: the hand-written ticket-review-request template. */
 export async function sendTicketReviewRequestEmail(
   email: string,
-  reviewerName: string,
-  ticketTitle: string,
-  ticketType: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  completedBy: string,
-  comment?: string
+  ticket: {
+    key: string;
+    title: string;
+    projectName: string;
+    projectId: number;
+    requestedBy: string;
+  },
 ) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  await sendEmail({
+  await sendTemplateEmail("ticket-review-request", {
     to: email,
-    subject: `Review Requested: ${ticketTitle}`,
-    html: getTicketReviewRequestEmailTemplate(
-      reviewerName,
-      ticketTitle,
-      ticketType,
-      projectName,
-      ticketUrl,
-      completedBy,
-      comment
-    ),
+    category: "tasks",
+    vars: {
+      ticket_key: ticket.key,
+      ticket_title: ticket.title,
+      project_name: ticket.projectName,
+      project_id: ticket.projectId,
+      requested_by: ticket.requestedBy,
+    },
   });
 }
 
-export async function sendTicketCommentEmail(
-  recipients: { email: string; name: string }[],
-  commenterName: string,
-  ticketTitle: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  commentContent: string,
-  issueKey?: string,
-) {
-  if (!recipients.length) return;
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  const keyPrefix = issueKey ? `[${issueKey}] ` : "";
-  await Promise.all(
-    recipients.map((r) =>
-      sendEmail({
-        to: r.email,
-        subject: `${keyPrefix}New comment on: ${ticketTitle}`,
-        html: getTicketCommentEmailTemplate(
-          r.name,
-          commenterName,
-          ticketTitle,
-          projectName,
-          ticketUrl,
-          commentContent,
-          issueKey,
-        ),
-      }),
-    ),
-  );
-}
-
+/** MIYO-0280: the hand-written ticket-changes-requested template. */
 export async function sendTicketChangesRequestedEmail(
   email: string,
-  assigneeName: string,
-  ticketTitle: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  reviewerName: string,
-  comment?: string
+  ticket: {
+    key: string;
+    title: string;
+    projectId: number;
+    reviewerName: string;
+    note?: string | null;
+  },
 ) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  await sendEmail({
+  const note = ticket.note?.trim() || "No note was added.";
+  await sendTemplateEmail("ticket-changes-requested", {
     to: email,
-    subject: `Changes Requested: ${ticketTitle}`,
-    html: getTicketChangesRequestedEmailTemplate(
-      assigneeName,
-      ticketTitle,
-      projectName,
-      ticketUrl,
-      reviewerName,
-      comment
-    ),
+    category: "tasks",
+    vars: {
+      ticket_key: ticket.key,
+      ticket_title: ticket.title,
+      project_id: ticket.projectId,
+      reviewer_name: ticket.reviewerName,
+      note,
+      note_snippet: snippet(note),
+    },
+  });
+}
+
+/**
+ * MIYO-0281, MIYO-0282: the hand-written ticket-comment and ticket-mention
+ * templates. Someone named in a comment gets the mention version, everyone
+ * else following the ticket gets the comment one.
+ */
+export async function sendTicketCommentEmail(
+  recipients: string[],
+  comment: {
+    ticketKey: string;
+    projectId: number;
+    commentId: number;
+    authorName: string;
+    body: string;
+    mention?: boolean;
+  },
+) {
+  if (recipients.length === 0) return;
+  await sendTemplateEmail(comment.mention ? "ticket-mention" : "ticket-comment", {
+    to: recipients,
+    category: "tasks",
+    vars: {
+      ticket_key: comment.ticketKey,
+      project_id: comment.projectId,
+      comment_id: comment.commentId,
+      author_name: comment.authorName,
+      comment_snippet: snippet(comment.body),
+    },
   });
 }

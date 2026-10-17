@@ -73,7 +73,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       body.content,
     );
 
-    void emailWatchers(session.user.id, actorName, projectId, ticket, body.content).catch(() => {});
+    void emailWatchers(session.user.id, actorName, projectId, ticket, body.content, comment.id).catch(() => {});
 
     return ok(comment, 201);
   });
@@ -83,8 +83,15 @@ async function emailWatchers(
   actorId: string,
   actorName: string,
   projectId: number,
-  ticket: { id: number; title: string; assigneeId: string | null; reporterId: string | null },
+  ticket: {
+    id: number;
+    title: string;
+    ticketNumber?: number | null;
+    assigneeId: string | null;
+    reporterId: string | null;
+  },
   content: string,
+  commentId: number,
 ) {
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, projectId),
@@ -97,18 +104,17 @@ async function emailWatchers(
   if (notifyUserIds.size === 0) return;
 
   const recipients = (
-    await db.select({ name: users.name, email: users.email }).from(users).where(inArray(users.id, [...notifyUserIds]))
-  ).map((u) => ({ email: u.email, name: u.name ?? u.email }));
+    await db.select({ email: users.email }).from(users).where(inArray(users.id, [...notifyUserIds]))
+  )
+    .map((u) => u.email)
+    .filter((e): e is string => Boolean(e));
   if (recipients.length === 0) return;
 
-  await sendTicketCommentEmail(
-    recipients,
-    actorName,
-    ticket.title,
-    project?.name ?? "Project",
+  await sendTicketCommentEmail(recipients, {
+    ticketKey: project?.key ? `${project.key}-${ticket.ticketNumber}` : `#${ticket.id}`,
     projectId,
-    ticket.id,
-    mentionsToPlainText(content),
-    undefined,
-  );
+    commentId,
+    authorName: actorName,
+    body: mentionsToPlainText(content),
+  });
 }

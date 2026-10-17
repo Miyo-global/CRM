@@ -137,18 +137,15 @@ async function notifyNewTicket(
       db.query.projects.findFirst({ where: eq(projects.id, ctx.projectId), columns: { name: true, key: true } }),
     ]);
     if (assignee?.email && creator && project) {
-      await sendTicketAssignmentEmail(
-        assignee.email,
-        assignee.name || assignee.firstName || "Team Member",
-        input.title,
-        input.type,
-        input.priority ?? "MEDIUM",
-        project.name,
-        ctx.projectId,
-        ticket.id,
-        creator.name || creator.firstName || "Team Member",
-        project.key ? `${project.key}-${ticket.ticketNumber}` : undefined,
-      );
+      await sendTicketAssignmentEmail(assignee.email, {
+        key: project.key ? `${project.key}-${ticket.ticketNumber}` : `#${ticket.id}`,
+        title: input.title,
+        priority: input.priority ?? "MEDIUM",
+        dueDate: input.dueDate ?? null,
+        projectName: project.name,
+        projectId: ctx.projectId,
+        assignedBy: creator.name || creator.firstName || "Team Member",
+      });
     }
   }
 

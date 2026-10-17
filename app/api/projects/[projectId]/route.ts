@@ -170,14 +170,13 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
           for (const member of newMembers) {
             if (member.email) {
               try {
-                await sendProjectAssignmentEmail(
-                  member.email,
-                  member.name || member.firstName || "Team Member",
-                  project.name,
-                  project.key,
-                  project.id,
-                  currentUser?.name || currentUser?.firstName || undefined
-                );
+                await sendProjectAssignmentEmail(member.email, {
+                  name: project.name,
+                  key: project.key,
+                  id: project.id,
+                  role: "member",
+                  addedBy: currentUser?.name || currentUser?.firstName || "a project admin",
+                });
               } catch (emailError) {
                 logger.error("Failed to send project update email", { error: emailError });
               }

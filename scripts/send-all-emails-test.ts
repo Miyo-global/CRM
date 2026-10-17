@@ -86,10 +86,10 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "auth.newDeviceLogin", run: () => sendNewDeviceLoginEmail(TO, { userAgent: "Chrome 147 on macOS", ipAddress: "192.0.2.1" }) },
   { name: "auth.passwordExpiryWarning", run: () => sendPasswordExpiryWarningEmail(TO, "24 April 2026") },
 
-  { name: "projects.projectAssignment", run: () => sendProjectAssignmentEmail(TO, NAME, "Miyo Global CRM", "VAIV", 1, ACTOR) },
-  { name: "projects.ticketAssignment", run: () => sendTicketAssignmentEmail(TO, NAME, "Disable Standard Bonus Modules", "STORY", "MEDIUM", "Miyo Global CRM", 1, 123, ACTOR, "VAIV-123") },
-  { name: "projects.ticketReviewRequest", run: () => sendTicketReviewRequestEmail(TO, NAME, "Disable Standard Bonus Modules", "STORY", "Miyo Global CRM", 1, 123, ACTOR, "Ready for your review.") },
-  { name: "projects.ticketChangesRequested", run: () => sendTicketChangesRequestedEmail(TO, NAME, "Disable Standard Bonus Modules", "Miyo Global CRM", 1, 123, ACTOR, "Please add unit tests.") },
+  { name: "projects.projectAssignment", run: () => sendProjectAssignmentEmail(TO, { name: "Miyo Global CRM", key: "VAIV", id: 1, role: "member", addedBy: ACTOR }) },
+  { name: "projects.ticketAssignment", run: () => sendTicketAssignmentEmail(TO, { key: "VAIV-123", title: "Disable Standard Bonus Modules", priority: "MEDIUM", dueDate: NEXT_WEEK, projectName: "Miyo Global CRM", projectId: 1, assignedBy: ACTOR }) },
+  { name: "projects.ticketReviewRequest", run: () => sendTicketReviewRequestEmail(TO, { key: "VAIV-123", title: "Disable Standard Bonus Modules", projectName: "Miyo Global CRM", projectId: 1, requestedBy: ACTOR }) },
+  { name: "projects.ticketChangesRequested", run: () => sendTicketChangesRequestedEmail(TO, { key: "VAIV-123", title: "Disable Standard Bonus Modules", projectId: 1, reviewerName: ACTOR, note: "Please add unit tests." }) },
 
   { name: "hr.helpdeskTicket", run: () => sendHelpdeskTicketEmail(TO, NAME, "Cannot access payroll page", "Access", "HIGH", ACTOR) },
 

@@ -19,6 +19,13 @@ export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export { sendDocumentExpiryReminderEmail } from "./email/hr-documents";
+export {
+  sendProjectAssignmentEmail,
+  sendTicketAssignmentEmail,
+  sendTicketReviewRequestEmail,
+  sendTicketChangesRequestedEmail,
+  sendTicketCommentEmail,
+} from "./email/projects";
 export { sendWorkLogStatusEmail } from "./email/hr-performance";
 export {
   sendReviewAssignedEmail,
@@ -56,10 +63,6 @@ import type { EmailOptions, EmailAttachment } from "./email/sender";
 import { appUrl } from "./app-url";
 import {
   getVerificationEmailTemplate,
-  getProjectAssignmentEmailTemplate,
-  getTicketAssignmentEmailTemplate,
-  getTicketReviewRequestEmailTemplate,
-  getTicketChangesRequestedEmailTemplate,
   getMonthlyExpenseReportTemplate,
   getTicketCreatedEmailTemplate,
   getTicketReplyEmailTemplate,
@@ -94,136 +97,10 @@ export async function sendVerificationEmail(email: string, token: string) {
   });
 }
 
-export async function sendProjectAssignmentEmail(
-  email: string,
-  memberName: string,
-  projectName: string,
-  projectKey: string,
-  projectId: number,
-  assignedBy?: string
-) {
-  const projectUrl = `${baseUrl}/projects/${projectId}`;
-  await sendEmail({
-    to: email,
-    subject: `Added to Project: ${projectName}`,
-    html: getProjectAssignmentEmailTemplate(memberName, projectName, projectKey, projectUrl, assignedBy),
-  });
-}
 
-export async function sendTicketAssignmentEmail(
-  email: string,
-  assigneeName: string,
-  ticketTitle: string,
-  ticketType: string,
-  ticketPriority: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  createdBy: string,
-  issueKey?: string,
-) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  const subjectPrefix = issueKey ? `[${issueKey}] ` : "";
-  await sendEmail({
-    to: email,
-    subject: `${subjectPrefix}${ticketTitle}`,
-    html: getTicketAssignmentEmailTemplate(
-      assigneeName,
-      ticketTitle,
-      ticketType,
-      ticketPriority,
-      projectName,
-      ticketUrl,
-      createdBy,
-      issueKey,
-    ),
-  });
-}
 
-export async function sendTicketReviewRequestEmail(
-  email: string,
-  reviewerName: string,
-  ticketTitle: string,
-  ticketType: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  completedBy: string,
-  comment?: string
-) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  await sendEmail({
-    to: email,
-    subject: `Review Requested: ${ticketTitle}`,
-    html: getTicketReviewRequestEmailTemplate(
-      reviewerName,
-      ticketTitle,
-      ticketType,
-      projectName,
-      ticketUrl,
-      completedBy,
-      comment
-    ),
-  });
-}
 
-export async function sendTicketChangesRequestedEmail(
-  email: string,
-  assigneeName: string,
-  ticketTitle: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  reviewerName: string,
-  comment?: string
-) {
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  await sendEmail({
-    to: email,
-    subject: `Changes Requested: ${ticketTitle}`,
-    html: getTicketChangesRequestedEmailTemplate(
-      assigneeName,
-      ticketTitle,
-      projectName,
-      ticketUrl,
-      reviewerName,
-      comment
-    ),
-  });
-}
 
-export async function sendTicketCommentEmail(
-  recipients: { email: string; name: string }[],
-  commenterName: string,
-  ticketTitle: string,
-  projectName: string,
-  projectId: number,
-  ticketId: number,
-  commentContent: string,
-  issueKey?: string,
-) {
-  if (!recipients.length) return;
-  const ticketUrl = `${baseUrl}/projects/${projectId}?ticket=${ticketId}`;
-  const keyPrefix = issueKey ? `[${issueKey}] ` : "";
-  const { getTicketCommentEmailTemplate } = await import("./email-templates");
-  await Promise.all(
-    recipients.map((r) =>
-      sendEmail({
-        to: r.email,
-        subject: `${keyPrefix}New comment on: ${ticketTitle}`,
-        html: getTicketCommentEmailTemplate(
-          r.name,
-          commenterName,
-          ticketTitle,
-          projectName,
-          ticketUrl,
-          commentContent,
-          issueKey,
-        ),
-      }),
-    ),
-  );
-}
 
 /**
  * MIYO-0161: the leave-request-approver template. The subject no longer

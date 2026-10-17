@@ -304,14 +304,13 @@ export async function POST(req: NextRequest) {
       for (const member of addedMembers) {
         if (member.email) {
           try {
-            await sendProjectAssignmentEmail(
-              member.email,
-              member.name || member.firstName || "Team Member",
-              body.name,
-              projectKey,
-              project.id,
-              currentUser?.name || currentUser?.firstName || undefined
-            );
+            await sendProjectAssignmentEmail(member.email, {
+              name: body.name,
+              key: projectKey,
+              id: project.id,
+              role: "member",
+              addedBy: currentUser?.name || currentUser?.firstName || "a project admin",
+            });
           } catch (emailError) {
             logger.error("Failed to send project assignment email", { error: emailError });
           }

@@ -15,6 +15,16 @@ type TicketUpdateNotice = {
   status?: string;
 };
 
+/** "VAIV-128" when the project has a key, otherwise "#128". */
+function ticketKey(
+  ticket: { ticketNumber?: number | null; project?: { key?: string | null } | null },
+  id: number,
+): string {
+  return ticket.project?.key && ticket.ticketNumber
+    ? `${ticket.project.key}-${ticket.ticketNumber}`
+    : `#${id}`;
+}
+
 export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<void> {
   const id = input.ticketId;
   const newAssigneeNotifyIds = new Set<string>();
@@ -58,18 +68,14 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
           const issueKey = ticketData.project?.key && ticketData.ticketNumber
             ? `${ticketData.project.key}-${ticketData.ticketNumber}`
             : undefined;
-          await sendTicketAssignmentEmail(
-            assignee.email,
-            assignee.name ?? "Team Member",
-            ticketData.title ?? `#${id}`,
-            ticketData.type ?? "TASK",
-            ticketData.priority ?? "MEDIUM",
-            ticketData.project?.name ?? "Project",
-            ticketData.projectId,
-            id,
-            input.actorName ?? "Team Member",
-            issueKey,
-          );
+          await sendTicketAssignmentEmail(assignee.email, {
+            key: issueKey ?? `#${id}`,
+            title: ticketData.title ?? `#${id}`,
+            priority: ticketData.priority ?? "MEDIUM",
+            projectName: ticketData.project?.name ?? "Project",
+            projectId: ticketData.projectId,
+            assignedBy: input.actorName ?? "Team Member",
+          });
         }
       })().catch(() => {});
     }
@@ -79,8 +85,15 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
     void (async () => {
       const ticketData = await db.query.tickets.findFirst({
         where: eq(tickets.id, id),
-        columns: { title: true, projectId: true, type: true, assigneeId: true, reporterId: true },
-        with: { project: { columns: { name: true } } },
+        columns: {
+          title: true,
+          projectId: true,
+          type: true,
+          assigneeId: true,
+          reporterId: true,
+          ticketNumber: true,
+        },
+        with: { project: { columns: { name: true, key: true } } },
       });
       if (!ticketData || !ticketData.projectId) return;
 
@@ -90,16 +103,13 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
           columns: { email: true, name: true },
         });
         if (reviewer?.email) {
-          await sendTicketReviewRequestEmail(
-            reviewer.email,
-            reviewer.name ?? "Reviewer",
-            ticketData.title ?? `#${id}`,
-            ticketData.type ?? "TASK",
-            ticketData.project?.name ?? "Project",
-            ticketData.projectId!,
-            id,
-            input.actorName ?? "Team Member"
-          );
+          await sendTicketReviewRequestEmail(reviewer.email, {
+            key: ticketKey(ticketData, id),
+            title: ticketData.title ?? `#${id}`,
+            projectName: ticketData.project?.name ?? "Project",
+            projectId: ticketData.projectId!,
+            requestedBy: input.actorName ?? "Team Member",
+          });
         }
       }
 
@@ -109,15 +119,12 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
           columns: { email: true, name: true },
         });
         if (assignee?.email) {
-          await sendTicketChangesRequestedEmail(
-            assignee.email,
-            assignee.name ?? "Team Member",
-            ticketData.title ?? `#${id}`,
-            ticketData.project?.name ?? "Project",
-            ticketData.projectId!,
-            id,
-            input.actorName ?? "Reviewer"
-          );
+          await sendTicketChangesRequestedEmail(assignee.email, {
+            key: ticketKey(ticketData, id),
+            title: ticketData.title ?? `#${id}`,
+            projectId: ticketData.projectId!,
+            reviewerName: input.actorName ?? "Reviewer",
+          });
         }
       }
     })().catch(() => {});
