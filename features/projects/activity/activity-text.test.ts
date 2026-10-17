@@ -4,7 +4,14 @@ import { actorName, describeActivity } from "./activity-text";
 describe("describeActivity", () => {
   it("describes field changes with readable values", () => {
     expect(describeActivity({ action: "status_changed", field: "status", fromValue: "IN_PROGRESS", toValue: "DONE" }))
-      .toBe("changed status from in progress to DONE");
+      .toBe("changed status from in progress to done");
+  });
+
+  it("reads single-word enums as words too", () => {
+    expect(describeActivity({ action: "priority_changed", field: "priority", fromValue: "HIGH", toValue: "MEDIUM" }))
+      .toBe("changed priority from high to medium");
+    expect(describeActivity({ action: "status_changed", field: "status", fromValue: "DONE", toValue: "TODO" }))
+      .toBe("changed status from done to to do");
   });
 
   it("describes set and cleared values", () => {

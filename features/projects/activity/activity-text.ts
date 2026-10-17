@@ -26,9 +26,18 @@ const PLAIN: Record<string, string> = {
   parent_removed: "removed the parent ticket",
 };
 
+/** Enum values a plain lower-casing would read badly as. */
+const VALUE_LABELS: Record<string, string> = {
+  TODO: "to do",
+  QA: "QA",
+};
+
 function pretty(value: string | null) {
   if (!value) return "none";
-  return value.includes("_") && value === value.toUpperCase() ? value.replace(/_/g, " ").toLowerCase() : value;
+  if (VALUE_LABELS[value]) return VALUE_LABELS[value];
+  // SCREAMING_SNAKE is an enum coming straight off the column; anything else
+  // is text a person typed, so leave it alone.
+  return /^[A-Z][A-Z0-9_]*$/.test(value) ? value.replace(/_/g, " ").toLowerCase() : value;
 }
 
 export function actorName(actor: ActivityItem["actor"]): string {
