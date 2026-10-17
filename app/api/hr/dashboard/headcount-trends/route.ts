@@ -1,8 +1,9 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users } from "@/lib/db/schema";
-import { eq, and, lte, sql } from "drizzle-orm";
+import { eq, and, lte, isNotNull, sql } from "drizzle-orm";
 import { cached, CACHE_TTL } from "@/lib/hr-cache";
+import { trendMonths, cumulativeHeadcount } from "@/lib/hr/headcount-trends";
 
 export const dynamic = "force-dynamic";
 
@@ -13,39 +14,27 @@ export async function GET() {
     const data = await cached(
       `hr:dashboard:headcount-trends:${orgId}`,
       async () => {
-        const now = new Date();
+        const months = trendMonths();
 
-        const months: { label: string; start: string; end: string }[] = [];
-        for (let i = 11; i >= 0; i--) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const start = d.toISOString().slice(0, 10);
-          const end = new Date(d.getFullYear(), d.getMonth() + 1, 0)
-            .toISOString()
-            .slice(0, 10);
-          const label = d.toLocaleString("en-US", {
-            month: "short",
-            year: "2-digit",
-          });
-          months.push({ label, start, end });
-        }
+        // R3-0200: one grouped query instead of 12 per-month counts.
+        const joins = await db
+          .select({
+            joiningDate: users.joiningDate,
+            count: sql<number>`count(*)`,
+          })
+          .from(organizationMembers)
+          .innerJoin(users, eq(organizationMembers.userId, users.id))
+          .where(
+            and(
+              eq(organizationMembers.orgId, orgId),
+              isNotNull(users.joiningDate),
+              lte(users.joiningDate, months[months.length - 1].end),
+            ),
+          )
+          .groupBy(users.joiningDate)
+          .orderBy(users.joiningDate);
 
-        const results = await Promise.all(
-          months.map(async ({ label, end }) => {
-            const [row] = await db
-              .select({ count: sql<number>`count(*)` })
-              .from(organizationMembers)
-              .innerJoin(users, eq(organizationMembers.userId, users.id))
-              .where(
-                and(
-                  eq(organizationMembers.orgId, orgId),
-                  lte(users.joiningDate, end),
-                ),
-              );
-            return { month: label, count: Number(row?.count ?? 0) };
-          }),
-        );
-
-        return { trends: results };
+        return { trends: cumulativeHeadcount(months, joins) };
       },
       { ttlSeconds: CACHE_TTL.LONG },
     );
