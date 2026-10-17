@@ -16,6 +16,10 @@ export interface ProjectMilestone {
   createdBy: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  /** Release progress from the tickets assigned to it (MIYO-0114). */
+  ticketCount?: number;
+  doneCount?: number;
+  percentDone?: number;
 }
 
 export interface CreateMilestoneInput {

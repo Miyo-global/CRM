@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { tickets, ticketAssignees, ticketComments, workItemRelations } from "@/lib/db/schema";
+import { tickets, ticketAssignees, ticketComments, workItemRelations, projectMilestones } from "@/lib/db/schema";
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
@@ -20,6 +20,8 @@ const updateTicketSchema = z.object({
   assigneeIds: z.array(z.string().max(200)).max(50).optional(),
   sprintId: z.number().int().positive().nullable().optional(),
   epicId: z.number().int().positive().nullable().optional(),
+  // MIYO-0114: the release this ticket ships in.
+  milestoneId: z.number().int().positive().nullable().optional(),
   points: z.number().int().min(0).max(1000).nullable().optional(),
   originalEstimate: z.number().min(0).nullable().optional(),
   dueDate: z.string().date().nullable().optional(),
@@ -100,6 +102,19 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return err("Assignee must be a member of this organization", 400);
     }
 
+    // MIYO-0114: a ticket can only ship in a release of its own project.
+    if (body.milestoneId) {
+      const milestone = await db.query.projectMilestones.findFirst({
+        where: and(
+          eq(projectMilestones.id, body.milestoneId),
+          eq(projectMilestones.projectId, projectId),
+          eq(projectMilestones.orgId, session.orgId),
+        ),
+        columns: { id: true },
+      });
+      if (!milestone) return err("Release not found in this project", 400);
+    }
+
     const updateFields: Partial<typeof tickets.$inferInsert> = { updatedAt: new Date() };
     if (body.title !== undefined) updateFields.title = body.title;
     if (body.description !== undefined) updateFields.description = body.description;
@@ -109,6 +124,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (nextAssignee !== undefined) updateFields.assigneeId = nextAssignee;
     if (body.sprintId !== undefined) updateFields.sprintId = body.sprintId;
     if (body.epicId !== undefined) updateFields.epicId = body.epicId;
+    if (body.milestoneId !== undefined) updateFields.milestoneId = body.milestoneId;
     if (body.points !== undefined) updateFields.points = body.points;
     if (body.originalEstimate !== undefined) updateFields.originalEstimate = body.originalEstimate?.toString() ?? null;
     if (body.dueDate !== undefined) updateFields.dueDate = body.dueDate;

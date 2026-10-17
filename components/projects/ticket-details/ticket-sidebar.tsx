@@ -32,6 +32,7 @@ import {
   AlertCircle,
   Zap,
   Target,
+  Flag,
   ChevronsUpDown,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -49,6 +50,7 @@ interface TicketSidebarProps {
     dueDate?: string | null;
     sprintId?: number | null;
     epicId?: number | null;
+    milestoneId?: number | null;
     timeSpent?: string | null;
     originalEstimate?: string | null;
     link?: string | null;
@@ -83,6 +85,8 @@ interface TicketSidebarProps {
   members: ProjectMember[];
   sprints: Array<{ id: number; name: string; status?: string | null }>;
   epics?: Array<{ id: number; title: string }>;
+  /** Releases of this project, for the "ships in" row (MIYO-0114). */
+  milestones?: Array<{ id: number; name: string }>;
   statuses?: Array<{ name: string; id: number }>;
   onAutoSave: (field: Record<string, unknown>) => void;
   readOnly?: boolean;
@@ -118,6 +122,7 @@ export function TicketSidebar({
   members,
   sprints,
   epics = [],
+  milestones = [],
   statuses,
   onAutoSave,
   readOnly = false,
@@ -334,6 +339,28 @@ export function TicketSidebar({
               {epics.map((epic) => (
                 <SelectItem key={epic.id} value={String(epic.id)}>
                   {epic.title || `Epic #${epic.id}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PropertyRow>
+
+        {/* MIYO-0114: the release this ticket ships in. */}
+        <PropertyRow label="Release" icon={<Flag className="h-3 w-3 shrink-0" />}>
+          <Select
+            value={ticket.milestoneId?.toString() || "none"}
+            onValueChange={(v) =>
+              onAutoSave({ milestoneId: v === "none" ? null : parseInt(v) })
+            }
+          >
+            <SelectTrigger className={fieldClass}>
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {(milestones ?? []).map((m) => (
+                <SelectItem key={m.id} value={String(m.id)}>
+                  {m.name}
                 </SelectItem>
               ))}
             </SelectContent>

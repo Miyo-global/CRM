@@ -14,7 +14,7 @@ import {
   useSprints,
   useSubtasks,
 } from "@/lib/hooks/trpc-hooks";
-import { useEpics } from "@/lib/api/hooks/projects";
+import { useEpics, useProjectMilestones } from "@/lib/api/hooks/projects";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
@@ -75,6 +75,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
   const { data: sprints } = useSprints(projectId);
   const { data: subtasks } = useSubtasks(ticketId, projectId);
   const { data: epicsList = [] } = useEpics(projectId);
+  const { data: milestones = [] } = useProjectMilestones(projectId);
   const members = useTicketMembers(projectData);
   const canEdit = projectData?.viewerRole !== "VIEWER";
   const portalOn = !!useOrgFeatureFlags().data?.clientPortal;
@@ -217,6 +218,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
                 members={members}
                 sprints={sprints || []}
                 epics={epicOptions}
+                milestones={milestones.map((m) => ({ id: m.id, name: m.name }))}
                 statuses={statuses}
                 onAutoSave={(fields) => send(fields)}
                 readOnly={!canEdit}

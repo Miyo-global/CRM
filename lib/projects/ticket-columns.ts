@@ -22,6 +22,7 @@ export const ticketResponseColumns = {
   sprintId: true,
   epicId: true,
   cycleId: true,
+  milestoneId: true,
   points: true,
   dueDate: true,
   startDate: true,

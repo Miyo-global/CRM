@@ -125,6 +125,9 @@ export const tickets = pgTable("tickets", {
   stateId: integer("state_id"),
   moduleId: integer("module_id"),
   cycleId: integer("cycle_id"),
+  // MIYO-0114: the release ("fix version") this ticket ships in. Releases are
+  // the existing project milestones rather than a second table.
+  milestoneId: integer("milestone_id"),
   sequenceId: text("sequence_id"),
   estimate: integer("estimate"),
   completionPercentage: integer("completion_percentage").default(0),
@@ -437,9 +440,10 @@ export const projectClientGrantsRelations = relations(projectClientGrants, ({ on
   user: one(users, { fields: [projectClientGrants.userId], references: [users.id] }),
 }));
 
-export const projectMilestonesRelations = relations(projectMilestones, ({ one }) => ({
+export const projectMilestonesRelations = relations(projectMilestones, ({ one, many }) => ({
   project: one(projects, { fields: [projectMilestones.projectId], references: [projects.id] }),
   creator: one(users, { fields: [projectMilestones.createdBy], references: [users.id] }),
+  tickets: many(tickets),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -473,6 +477,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   state: one(customStates, { fields: [tickets.stateId], references: [customStates.id] }),
   module: one(modules, { fields: [tickets.moduleId], references: [modules.id] }),
   cycle: one(cycles, { fields: [tickets.cycleId], references: [cycles.id] }),
+  milestone: one(projectMilestones, { fields: [tickets.milestoneId], references: [projectMilestones.id] }),
   comments: many(ticketComments),
   attachments: many(ticketAttachments),
   labels: many(ticketLabelMappings),

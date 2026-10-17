@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
@@ -205,6 +206,18 @@ function MilestoneCard({
                 <StatusPill tone={cfg.tone} dot>{cfg.label}</StatusPill>
               </div>
             </div>
+            {/* MIYO-0114: how much of the release is done. */}
+            {(milestone.ticketCount ?? 0) > 0 && (
+              <div className="mt-2 space-y-1">
+                <Progress
+                  value={milestone.percentDone ?? 0}
+                  aria-label={`${milestone.doneCount} of ${milestone.ticketCount} tickets done`}
+                />
+                <p className="text-2xs tabular-nums text-muted-foreground">
+                  {milestone.doneCount}/{milestone.ticketCount} tickets done · {milestone.percentDone}%
+                </p>
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
                 <CalendarCheck2 className="size-3.5" aria-hidden="true" />

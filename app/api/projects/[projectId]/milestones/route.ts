@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { projectMilestones } from "@/lib/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { projectMilestones, tickets } from "@/lib/db/schema";
+import { eq, and, asc, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
@@ -31,7 +31,34 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
       limit: 100,
     });
 
-    return ok(milestones);
+    // MIYO-0114: how far each release is, from the tickets assigned to it.
+    const ids = milestones.map((m) => m.id);
+    const counts = ids.length
+      ? await db
+          .select({
+            milestoneId: tickets.milestoneId,
+            total: sql<number>`count(*)`,
+            done: sql<number>`count(*) filter (where ${tickets.status} = 'DONE')`,
+          })
+          .from(tickets)
+          .where(and(inArray(tickets.milestoneId, ids), isNull(tickets.deletedAt)))
+          .groupBy(tickets.milestoneId)
+      : [];
+    const byMilestone = new Map(counts.map((c) => [c.milestoneId, c]));
+
+    return ok(
+      milestones.map((m) => {
+        const c = byMilestone.get(m.id);
+        const total = Number(c?.total ?? 0);
+        const done = Number(c?.done ?? 0);
+        return {
+          ...m,
+          ticketCount: total,
+          doneCount: done,
+          percentDone: total === 0 ? 0 : Math.round((done / total) * 100),
+        };
+      }),
+    );
   });
 }
 
