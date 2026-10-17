@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { LandingPage } from "@/features/landing/landing-page";
 
 export const metadata: Metadata = {
-  title: "Miyo Global CRM — HR, Projects & Sales Platform",
+  title: "Miyo Global — HR and project management",
   description:
-    "Streamline HR, project management, and CRM operations with Miyo Global's all-in-one enterprise platform.",
+    "Payroll, attendance, leave and onboarding alongside project tracking, in one internal workspace.",
 };
 
 export default async function HomePage() {

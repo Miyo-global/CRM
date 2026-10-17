@@ -74,11 +74,11 @@ export const features = [
   },
   {
     icon: TrendingUp,
-    title: "CRM & Sales",
+    title: "Performance",
     description:
-      "Lead conversion tracking, deal pipeline, customer relationships and sales forecasting in one place.",
+      "Appraisal cycles, goals, reviews and improvement plans, with the history behind each decision.",
     tone: "success" as Tone,
-    tags: ["Leads", "Deals", "Pipeline", "Targets"],
+    tags: ["Appraisals", "Goals", "Reviews", "PIP"],
   },
   {
     icon: Calendar,
@@ -90,26 +90,27 @@ export const features = [
   },
   {
     icon: MessageSquare,
-    title: "Real-time Chat",
+    title: "Support desk",
     description:
-      "Secure team messaging with DMs, group channels, file attachments, and mentions. Powered by Ably.",
+      "Internal tickets with assignment, replies and status, so a question to HR or IT does not sit in an inbox.",
     tone: "neutral" as Tone,
-    tags: ["DMs", "Channels", "Files"],
+    tags: ["Tickets", "Replies", "Status"],
   },
   {
     icon: BarChart3,
     title: "Analytics & Reports",
     description:
-      "Role-based dashboards, audit logs, and deep analytics across HR, CRM, and project performance.",
+      "Role-based dashboards, audit logs and reports across attendance, payroll and project delivery.",
     tone: "teal" as Tone,
     tags: ["Dashboards", "Reports", "Audit"],
   },
 ];
 
+// MIYO-0311: figures a reader can check, not "360°" and "Real-time".
 export const stats = [
-  { value: "10+", label: "Core modules" },
-  { value: "360°", label: "Employee view" },
-  { value: "Real-time", label: "Collaboration" },
-  { value: "Secure", label: "End-to-end" },
+  { value: "Payroll", label: "Monthly, with payslips" },
+  { value: "Attendance", label: "Daily, with leave" },
+  { value: "Projects", label: "Sprints and tickets" },
+  { value: "MFA", label: "On every account" },
 ];
 

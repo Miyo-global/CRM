@@ -32,20 +32,20 @@ const whyPoints = [
   {
     icon: Zap,
     title: "Real-time everything",
-    desc: "Live chat, instant notifications, and WebSocket-powered updates.",
+    desc: "Notifications as decisions happen, and dashboards that reflect them straight away.",
   },
   {
     icon: Target,
     title: "Role-based access",
-    desc: "CEO, HR, Sales, Engineering — each role sees exactly what they need.",
+    desc: "CEO, HR, managers and engineers each see what their role needs, and nothing else.",
   },
 ];
 
 const dashboardPreview = [
   { label: "Employees present today", value: "47 / 52", pct: 90, color: "bg-success-500" },
   { label: "Active sprint progress", value: "18 / 24 tasks", pct: 75, color: "bg-info-500" },
-  { label: "Pipeline conversion", value: "32%", pct: 32, color: "bg-gold-400" },
-  { label: "Pending invoices", value: "₹4.2L", pct: 60, color: "bg-plum-500" },
+  { label: "Leave requests waiting", value: "3 pending", pct: 25, color: "bg-gold-400" },
+  { label: "Onboarding tasks done", value: "9 / 12", pct: 75, color: "bg-plum-500" },
 ];
 
 export function LandingPage() {
@@ -118,7 +118,7 @@ export function LandingPage() {
                 <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-accent px-4 py-1.5">
                   <span className="size-1.5 rounded-full bg-gold-400" />
                   <span className="text-2xs font-semibold uppercase tracking-widest text-gold-300">
-                    Enterprise Platform v2.0
+                    Internal workspace
                   </span>
                 </div>
               </motion.div>
@@ -127,17 +127,17 @@ export function LandingPage() {
                 variants={fadeUp}
                 className="mb-6 font-display text-4xl font-extrabold tracking-tight text-sidebar-accent-foreground sm:text-5xl"
               >
-                One platform for <span className="text-gold-400">HR</span>, Projects,
+                One place for <span className="text-gold-400">HR</span>
                 <br className="hidden sm:block" />
-                {" "}and Sales
+                {" "}and projects
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
                 className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-sidebar-foreground sm:text-lg"
               >
-                Streamline your enterprise with an all-in-one internal operating system.
-                Manage your team, track projects, and grow revenue — from one unified workspace.
+                Payroll, attendance, leave and onboarding next to the sprints and tickets
+                the work actually happens in.
               </motion.p>
 
               <motion.div
