@@ -8,6 +8,7 @@ import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 import { createHolidaySchema } from "@/lib/validations/holidays";
 import { sendHolidayReminderIfDue } from "@/server/actions/holiday-actions";
+import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -25,6 +26,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await parseBody(req, createHolidaySchema);
+    const dup = await rejectDuplicateSubmit("holiday", session.user.id, body);
+    if (dup) return dup;
     const holidayDate = formatDateOnly(body.date);
 
     const duplicate = await db.query.holidays.findFirst({

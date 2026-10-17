@@ -8,6 +8,7 @@ import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import type { NextRequest } from "next/server";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
 
 const MAX_LOAN_AMOUNT = 10_000_000;
 
@@ -38,6 +39,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     const body = createSchema.parse(await req.json());
+    const dup = await rejectDuplicateSubmit("loan", session.user.id, body);
+    if (dup) return dup;
     const emiAmount = body.totalEmis ? Math.ceil((body.amount / body.totalEmis) * 100) / 100 : body.amount;
 
     const [loan] = await db.insert(salaryLoans).values({

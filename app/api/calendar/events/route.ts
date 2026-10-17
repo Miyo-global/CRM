@@ -9,6 +9,7 @@ import { sendCalendarEventAttendeeEmails } from "@/lib/calendar-event-notificati
 import { z } from "zod";
 import { calendarEventTitleSchema } from "@/lib/validations/calendar-event-zod";
 import { getCalendarEventRangeError } from "@/lib/validations/calendar-event";
+import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
 
 const getSchema = z.object({
   start: z.string(),
@@ -100,6 +101,8 @@ export async function POST(req: NextRequest) {
       return err(msg, 400);
     }
     const input = parsed.data;
+    const dup = await rejectDuplicateSubmit("calendar-event", session.user.id, input);
+    if (dup) return dup;
 
     const startDate = new Date(input.startDate);
     const endDate = new Date(input.endDate);
