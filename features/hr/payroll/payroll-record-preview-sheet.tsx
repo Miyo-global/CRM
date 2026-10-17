@@ -1,5 +1,7 @@
 "use client";
 
+import { formatIST } from "@/lib/date-utils";
+
 import {
   Card,
   CardContent,
@@ -27,11 +29,10 @@ function n(v: string | null | undefined): number {
   return Math.round(parseFloat(String(v ?? "0")) || 0);
 }
 
+/** Payroll audit times in IST whatever the viewer's timezone (MIYO-0073). */
 function dt(v: Date | string | null | undefined): string {
-  if (!v) return "";
-  const parsed = v instanceof Date ? v : new Date(v);
-  if (Number.isNaN(parsed.getTime())) return "";
-  return format(parsed, "dd MMM yyyy, hh:mm a");
+  const out = formatIST(v);
+  return out ? `${out} IST` : "";
 }
 
 function actorName(
