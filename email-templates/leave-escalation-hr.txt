@@ -1,0 +1,19 @@
+Subject: {{count}} leave requests waiting more than 2 days
+Preheader: Oldest from {{oldest_employee}} since {{oldest_date}}.
+
+Leave requests waiting for a decision
+
+These requests have been pending for more than 2 days:
+
+{{employee_1}}: {{dates_1}} · pending since {{since_1}}
+…:              …
+
+Open approvals: {{app_url}}/hr/leaves?tab=approvals
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

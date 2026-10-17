@@ -1,0 +1,19 @@
+Subject: Reminder: interview tomorrow at {{interview_time}} IST
+Preheader: {{job_title}} · {{interview_mode}}
+
+See you tomorrow, {{first_name}}
+
+Date:         {{interview_date}}
+Time:         {{interview_time}} IST
+Where / link: {{location_or_link}}
+
+Join or view details: {{booking_url}}
+
+Thanks,
+{{recruiter_name}}, {{org_name}}
+
+--
+You are receiving this because you applied for a role at {{org_name}}.
+We keep your data as described in our privacy notice: {{privacy_url}}.
+To withdraw or delete your application, use {{withdraw_url}}.
+{{org_name}} · {{org_address}}

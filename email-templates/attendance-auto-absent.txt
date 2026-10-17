@@ -1,0 +1,20 @@
+Subject: No check-in recorded for {{date}}
+Preheader: Marked as {{marked_as}}. Fix it if you were working.
+
+No check-in recorded for {{date}}
+
+We did not find a check-in for you on {{date}}, so the day was marked as
+{{marked_as}}.
+
+If you were working or on approved leave, raise a regularisation request
+today.
+
+Open attendance: {{app_url}}/hr/attendance
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

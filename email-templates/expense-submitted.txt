@@ -1,0 +1,20 @@
+Subject: Expense claim: {{employee_name}}, ₹{{amount}}
+Preheader: {{category}} · {{expense_date}}
+
+{{employee_name}} submitted an expense claim
+
+Amount:      ₹{{amount}}
+Category:    {{category}}
+Date:        {{expense_date}}
+Description: {{description}}
+Receipt:     {{receipt_status}}
+
+Review claim: {{app_url}}/hr/expenses?claim={{expense_id}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

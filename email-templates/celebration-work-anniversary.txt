@@ -1,0 +1,15 @@
+Subject: {{years}} years at {{org_name}}
+Preheader: Thank you for {{years}} years with us.
+
+Happy work anniversary, {{first_name}}
+
+Today marks {{years}} {{years_word}} since you joined {{org_name}} on
+{{joining_date}}. Thank you for everything you do.
+
+Thanks,
+Your team at {{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

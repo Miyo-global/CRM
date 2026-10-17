@@ -1,0 +1,20 @@
+Subject: Resignation: {{employee_name}}
+Preheader: Requested last day {{last_working_day}}.
+
+{{employee_name}} submitted a resignation
+
+Employee:           {{employee_name}} ({{employee_code}})
+Department:         {{department}}
+Requested last day: {{last_working_day}}
+Notice period:      {{notice_days}} days
+Reason:             {{reason}}
+
+Review resignation: {{app_url}}/hr/exit?resignation={{resignation_id}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

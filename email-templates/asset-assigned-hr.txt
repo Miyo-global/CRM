@@ -1,0 +1,18 @@
+Subject: Asset assigned: {{asset_tag}} to {{employee_name}}
+Preheader: {{asset_name}}
+
+Asset assigned to {{employee_name}}
+
+Asset:       {{asset_name}} ({{asset_tag}})
+Assigned by: {{assigned_by}}
+Date:        {{assigned_on}}
+
+Open assets: {{app_url}}/hr/assets
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

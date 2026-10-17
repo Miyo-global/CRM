@@ -1,0 +1,24 @@
+Subject: Your first day at {{org_name}}: {{joining_date}}
+Preheader: What to expect on day one and the tasks waiting for you.
+
+See you on {{joining_date}}, {{first_name}}
+
+Here is what you need for your first day.
+
+Start time:       {{start_time}} IST
+Location:         {{office_location}}
+Reporting to:     {{manager_name}}
+Onboarding tasks: {{task_count}} tasks
+
+Open onboarding tasks: {{app_url}}/hr/onboarding/my-tasks
+
+Please upload your ID, PAN and bank details before day one so payroll
+can be set up.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

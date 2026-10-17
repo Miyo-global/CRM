@@ -1,0 +1,19 @@
+Subject: Two-step verification was turned off
+Preheader: Your account no longer asks for a code at sign-in.
+
+Two-step verification was turned off
+
+Two-step verification was turned off for {{email}} on {{changed_at}}
+IST.
+
+Turn it back on: {{app_url}}/settings?tab=security
+
+Not you? Reset your password and contact {{support_email}}.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

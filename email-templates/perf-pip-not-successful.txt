@@ -1,0 +1,17 @@
+Subject: Outcome of your improvement plan
+Preheader: Please read the next steps.
+
+Outcome of your improvement plan
+
+The goals of your improvement plan were not met. HR will contact you
+about the next steps.
+
+Read details: {{pip_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

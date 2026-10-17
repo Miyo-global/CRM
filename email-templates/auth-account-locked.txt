@@ -1,0 +1,19 @@
+Subject: Your account is temporarily locked
+Preheader: Too many failed sign-in attempts. It unlocks at {{unlock_at}} IST.
+
+Your account is temporarily locked
+
+We locked {{email}} after {{attempts}} failed sign-in attempts. It
+unlocks automatically at {{unlock_at}} IST.
+
+Reset your password: {{app_url}}/forgot-password
+
+If these attempts were not you, reset your password now.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

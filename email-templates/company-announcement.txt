@@ -1,0 +1,16 @@
+Subject: {{announcement_title}}
+Preheader: {{announcement_summary}}
+
+{{announcement_title}}
+
+{{announcement_body}}
+
+Read in the app: {{announcement_url}}
+
+Thanks,
+{{author_name}}, {{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

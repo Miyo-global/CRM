@@ -1,0 +1,18 @@
+Subject: Your {{export_name}} export is ready
+Preheader: {{row_count}} rows · attached as {{file_type}}
+
+Your export is ready
+
+The {{export_name}} export you requested on {{requested_at}} IST is
+attached ({{row_count}} rows).
+
+This file contains employee data. Do not forward it outside
+{{org_name}}.
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,18 @@
+Subject: {{inviter_name}} invited you to {{org_name}}
+Preheader: Accept the invitation to join {{invite_target}}.
+
+You have been invited to {{invite_target}}
+
+{{inviter_name}} invited you to join {{invite_target}} as {{role}}.
+
+Accept invitation: {{invite_url}}
+
+This invitation expires on {{expires_on}}.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

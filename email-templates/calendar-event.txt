@@ -1,0 +1,21 @@
+Subject: {{event_action}}: {{event_title}}, {{event_date}}
+Preheader: {{event_time}} IST · {{location}}
+
+{{event_title}}
+
+{{event_action_sentence}}
+
+Date:      {{event_date}}
+Time:      {{event_time}} IST
+Where:     {{location}}
+Organiser: {{organizer_name}}
+
+Open calendar: {{app_url}}/calendar
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,23 @@
+Subject: New sign-in to your account
+Preheader: {{device}} · {{location}} · {{signed_in_at}} IST
+
+New sign-in to your account
+
+We noticed a sign-in from a device we have not seen before.
+
+Device:               {{device}}
+Approximate location: {{location}}
+IP address:           {{ip_address}}
+Time:                 {{signed_in_at}} IST
+
+If this was you, you can ignore this email.
+
+Review active sessions: {{app_url}}/settings?tab=security
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

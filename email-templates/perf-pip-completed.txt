@@ -1,0 +1,15 @@
+Subject: Your improvement plan is complete
+Preheader: Well done.
+
+Your improvement plan is complete
+
+You met the goals of your improvement plan. Thank you for the effort
+over the last {{duration_days}} days.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

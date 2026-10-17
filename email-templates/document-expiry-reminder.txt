@@ -1,0 +1,18 @@
+Subject: {{document_name}} expires on {{expiry_date}}
+Preheader: Upload a renewed copy before it expires.
+
+A document is about to expire
+
+Document:   {{document_name}}
+Expires on: {{expiry_date}}
+Days left:  {{days_left}}
+
+Upload renewed copy: {{app_url}}/hr/my-documents
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

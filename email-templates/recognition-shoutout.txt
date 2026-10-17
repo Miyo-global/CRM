@@ -1,0 +1,16 @@
+Subject: Shout-out for {{recipient_name}}
+Preheader: From {{giver_name}}: "{{message_snippet}}"
+
+A shout-out for {{recipient_name}}
+
+{{giver_name}} wrote: “{{message}}”
+
+View recognition wall: {{app_url}}/hr/recognition
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

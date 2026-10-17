@@ -1,0 +1,20 @@
+Subject: {{pending_count}} onboarding tasks still open
+Preheader: Oldest is due {{oldest_due_date}}.
+
+Onboarding tasks still open
+
+These onboarding tasks assigned to you are not done yet:
+
+{{task_1_title}}: {{task_1_due}}
+{{task_2_title}}: {{task_2_due}}
+…:                …
+
+Open my tasks: {{app_url}}/hr/onboarding
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,18 @@
+Subject: {{employee_name}} finished onboarding
+Preheader: All {{task_count}} tasks are complete.
+
+{{employee_name}} finished onboarding
+
+Employee:   {{employee_name}} ({{employee_code}})
+Department: {{department}}
+Completed:  {{completed_on}}
+
+View employee: {{app_url}}/hr/employees/{{employee_id}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

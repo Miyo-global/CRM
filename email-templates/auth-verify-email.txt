@@ -1,0 +1,19 @@
+Subject: Confirm your email address
+Preheader: One click to confirm your email for {{org_name}}.
+
+Confirm your email address
+
+Please confirm that {{email}} belongs to you.
+
+Confirm email: {{verify_url}}
+
+The link expires in 24 hours. If you did not create an account, you can
+ignore this email.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

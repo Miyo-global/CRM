@@ -1,0 +1,20 @@
+Subject: New application: {{candidate_name}} for {{job_title}}
+Preheader: {{experience_years}} yrs · {{current_company}} · source {{source}}
+
+New application for {{job_title}}
+
+Candidate:          {{candidate_name}}
+Experience:         {{experience_years}} years
+Current company:    {{current_company}}
+Source:             {{source}}
+Possible duplicate: {{duplicate_hint}}
+
+Open application: {{candidate_url}}
+
+Thanks,
+{{org_name}} Talent Team
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,27 @@
+Subject: Interview for {{job_title}}: {{interview_date}}
+Preheader: {{interview_time}} IST · {{interview_mode}} · {{duration}} minutes
+
+Your interview for {{job_title}}
+
+Hi {{first_name}}, we would like to invite you to an interview.
+
+Round:        {{round_name}}
+Date:         {{interview_date}}
+Time:         {{interview_time}} IST
+Duration:     {{duration}} minutes
+Format:       {{interview_mode}}
+Where / link: {{location_or_link}}
+Interviewers: {{interviewer_names}}
+
+Confirm or reschedule: {{booking_url}}
+
+A calendar invite (.ics) is attached. Please keep a government ID handy.
+
+Thanks,
+{{recruiter_name}}, {{org_name}}
+
+--
+You are receiving this because you applied for a role at {{org_name}}.
+We keep your data as described in our privacy notice: {{privacy_url}}.
+To withdraw or delete your application, use {{withdraw_url}}.
+{{org_name}} · {{org_address}}

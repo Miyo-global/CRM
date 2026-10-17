@@ -1,0 +1,19 @@
+Subject: Your bonus of ₹{{amount}} has been paid
+Preheader: {{bonus_type}} · paid on {{paid_on}}
+
+Your bonus has been paid
+
+Type:    {{bonus_type}}
+Amount:  ₹{{amount}}
+Paid on: {{paid_on}}
+Note:    {{note}}
+
+View my bonuses: {{app_url}}/hr/my-bonuses
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

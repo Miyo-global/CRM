@@ -1,0 +1,27 @@
+Subject: Your offer from {{org_name}}: {{job_title}}
+Preheader: Please review and respond by {{respond_by}}.
+
+We would like you to join us, {{first_name}}
+
+We are pleased to offer you the role of {{job_title}} at {{org_name}}.
+Your offer letter is attached.
+
+Role:         {{job_title}}
+Department:   {{department}}
+Monthly CTC:  ₹{{monthly_ctc}}
+Joining date: {{joining_date}}
+Location:     {{job_location}}
+Respond by:   {{respond_by}}
+
+Review and respond: {{offer_url}}
+
+This offer is confidential and valid until {{respond_by}}.
+
+Thanks,
+{{signatory_name}}, {{org_name}}
+
+--
+You are receiving this because you applied for a role at {{org_name}}.
+We keep your data as described in our privacy notice: {{privacy_url}}.
+To withdraw or delete your application, use {{withdraw_url}}.
+{{org_name}} · {{org_address}}

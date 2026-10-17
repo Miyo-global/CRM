@@ -1,0 +1,18 @@
+Subject: Holiday work request {{decision}}: {{date}}
+Preheader: {{compensation}}
+
+Your holiday work request was {{decision}}
+
+Day:          {{date}}
+Compensation: {{compensation}}
+Note:         {{note}}
+
+Open attendance: {{app_url}}/hr/attendance
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

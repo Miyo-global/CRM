@@ -1,0 +1,19 @@
+Subject: Two-step verification is on
+Preheader: Your account now asks for a code at sign-in.
+
+Two-step verification is on
+
+Two-step verification was turned on for {{email}} on {{changed_at}} IST.
+Keep your backup codes somewhere safe.
+
+Manage security: {{app_url}}/settings?tab=security
+
+Not you? Contact {{support_email}} immediately.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

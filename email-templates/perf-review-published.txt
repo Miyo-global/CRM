@@ -1,0 +1,17 @@
+Subject: Your {{cycle_name}} review is ready
+Preheader: Shared by {{manager_name}}.
+
+Your review is ready
+
+{{manager_name}} has shared your {{cycle_name}} review. Read it and
+acknowledge it in the app.
+
+Read review: {{review_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

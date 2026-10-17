@@ -1,0 +1,17 @@
+Subject: Self-review due {{due_date}}
+Preheader: {{cycle_name}}
+
+Your self-review is due {{due_date}}
+
+Please submit your {{cycle_name}} self-review by {{due_date}}. It takes
+about 15 minutes.
+
+Write self-review: {{review_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

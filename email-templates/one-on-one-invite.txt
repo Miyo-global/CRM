@@ -1,0 +1,21 @@
+Subject: 1:1 with {{organizer_name}}: {{meeting_date}}
+Preheader: {{meeting_time}} IST · {{location}}
+
+1:1 with {{organizer_name}}
+
+Date:   {{meeting_date}}
+Time:   {{meeting_time}} IST
+Where:  {{location}}
+Agenda: {{agenda}}
+
+Join meeting: {{meeting_url}}
+
+A calendar invite (.ics) is attached.
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

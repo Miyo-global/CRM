@@ -1,0 +1,20 @@
+Subject: Leave request: {{employee_name}}, {{date_range}}
+Preheader: {{leave_type}} · {{day_count}} days · waiting for your approval
+
+{{employee_name}} requested leave
+
+Type:                   {{leave_type}}
+Dates:                  {{date_range}}
+Days:                   {{day_count}}
+Balance after approval: {{balance_after}}
+Reason:                 {{reason}}
+
+Review request: {{app_url}}/hr/leaves?tab=approvals&request={{leave_id}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

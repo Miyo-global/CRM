@@ -1,0 +1,18 @@
+Subject: HR helpdesk #{{ticket_id}}: {{ticket_subject}}
+Preheader: {{event_summary}}
+
+{{event_summary}}
+
+Subject:  {{ticket_subject}}
+Category: {{category}}
+Status:   {{status}}
+
+Open request: {{app_url}}/hr/helpdesk?ticket={{ticket_id}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,15 @@
+Subject: Payroll for {{month_label}} approved
+Preheader: Payment is scheduled for {{pay_date}}.
+
+Your {{month_label}} payroll is approved
+
+Your salary for {{month_label}} has been approved and is scheduled to be
+paid on {{pay_date}}. You will get your payslip when it is paid.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,17 @@
+Subject: Review to complete: {{employee_name}}
+Preheader: Due {{due_date}}.
+
+You have a review to complete
+
+Please complete the {{cycle_name}} review for {{employee_name}} by
+{{due_date}}.
+
+Start review: {{review_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

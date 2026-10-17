@@ -1,0 +1,18 @@
+Subject: Re: #{{ticket_id}} {{ticket_subject}}
+Preheader: {{reply_snippet}}
+
+New reply on ticket #{{ticket_id}}
+
+{{author_name}} wrote:
+
+“{{reply_snippet}}”
+
+View conversation: {{app_url}}/support?ticket={{ticket_id}}
+
+Thanks,
+{{org_name}} Support
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

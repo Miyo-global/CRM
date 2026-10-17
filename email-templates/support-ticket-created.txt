@@ -1,0 +1,18 @@
+Subject: Support ticket #{{ticket_id}}: {{ticket_subject}}
+Preheader: {{priority}} · from {{requester_name}}
+
+New support ticket assigned to you
+
+Subject:  {{ticket_subject}}
+From:     {{requester_name}}
+Priority: {{priority}}
+
+Open ticket: {{app_url}}/support?ticket={{ticket_id}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

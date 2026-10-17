@@ -1,0 +1,27 @@
+Subject: Your payslip for {{month_label}}
+Preheader: Net pay ₹{{net_pay}} · PDF attached
+
+Your payslip for {{month_label}}
+
+Your salary for {{month_label}} has been paid. The full payslip is
+attached as a PDF.
+
+Gross earnings:                  ₹{{gross}}
+Loss of pay ({{lop_days}} days): −₹{{lop_amount}}
+Professional tax:                −₹{{pt}}
+Other deductions:                −₹{{other_deductions}}
+Net pay:                         ₹{{net_pay}}
+Paid on:                         {{paid_on}}
+
+View in My Payslips: {{app_url}}/hr/my-payslips
+
+The PDF is password-protected with your PAN in capitals. Questions about
+this payslip? Reply to {{hr_email}} within 7 days.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

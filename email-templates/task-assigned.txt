@@ -1,0 +1,18 @@
+Subject: Task assigned: {{task_title}}
+Preheader: Due {{due_date}} · from {{assigned_by}}
+
+A task was assigned to you
+
+Task:        {{task_title}}
+Due:         {{due_date}}
+Assigned by: {{assigned_by}}
+
+Open task: {{task_url}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

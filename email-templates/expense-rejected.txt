@@ -1,0 +1,19 @@
+Subject: Expense not approved: ₹{{amount}}
+Preheader: {{approver_name}} added a note.
+
+Your expense claim was not approved
+
+Amount:      ₹{{amount}}
+Category:    {{category}}
+Reviewed by: {{approver_name}}
+Note:        {{rejection_reason}}
+
+View claim: {{app_url}}/hr/expenses
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

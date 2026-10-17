@@ -1,0 +1,18 @@
+Subject: Work log approved: {{log_date}}
+Preheader: {{hours}} hours approved by {{approver_name}}.
+
+Your work log was approved
+
+Date:        {{log_date}}
+Hours:       {{hours}}
+Approved by: {{approver_name}}
+
+Open work logs: {{app_url}}/hr/work-logs
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

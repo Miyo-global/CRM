@@ -1,0 +1,17 @@
+Subject: Onboarding complete
+Preheader: All your onboarding tasks are done.
+
+Your onboarding is complete
+
+Thanks, {{first_name}}. Every onboarding task is done and HR has been
+told.
+
+Go to dashboard: {{app_url}}/dashboard
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,18 @@
+Subject: Your {{org_name}} account has been deactivated
+Preheader: You can no longer sign in. Contact HR with any questions.
+
+Your account has been deactivated
+
+Hi {{first_name}}, your {{org_name}} account was deactivated on
+{{deactivated_on}}. You can no longer sign in.
+
+Your payslips and documents up to your last working day stay on record.
+If you need copies, or think this is a mistake, write to {{hr_email}}.
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

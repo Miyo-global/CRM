@@ -1,0 +1,19 @@
+Subject: Expenses for {{month_label}}: ₹{{total}}
+Preheader: {{claim_count}} claims · {{pending_count}} pending
+
+Expenses for {{month_label}}
+
+Total claimed: ₹{{total}}
+Approved:      ₹{{approved_total}}
+Pending:       {{pending_count}} claims
+Top category:  {{top_category}}
+
+Open expenses: {{app_url}}/hr/expenses
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

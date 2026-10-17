@@ -1,0 +1,18 @@
+Subject: You were added to {{project_name}}
+Preheader: Role: {{project_role}} · added by {{added_by}}
+
+You were added to {{project_name}}
+
+Project:   {{project_key}} · {{project_name}}
+Your role: {{project_role}}
+Added by:  {{added_by}}
+
+Open project: {{app_url}}/projects/{{project_id}}/overview
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

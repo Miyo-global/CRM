@@ -1,0 +1,19 @@
+Subject: Attendance, week of {{week_range}}
+Preheader: {{present_pct}}% present · {{late_count}} late arrivals · {{absent_count}} absences
+
+Attendance for {{week_range}}
+
+Average present: {{present_pct}}%
+Late arrivals:   {{late_count}}
+Absences:        {{absent_count}}
+On leave:        {{leave_count}}
+
+Open attendance report: {{app_url}}/hr/attendance
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

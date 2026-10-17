@@ -1,0 +1,17 @@
+Subject: Feedback needed: {{candidate_name}} for {{job_title}}
+Preheader: Interview on {{interview_date}} · scorecard pending
+
+Please submit your scorecard
+
+You interviewed {{candidate_name}} for {{job_title}} on
+{{interview_date}}. Please submit your scorecard so the team can decide.
+
+Open scorecard: {{scorecard_url}}
+
+Thanks,
+{{org_name}} Talent Team
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

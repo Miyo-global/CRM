@@ -1,0 +1,16 @@
+Subject: Leave cancelled: {{employee_name}}, {{date_range}}
+Preheader: No action needed.
+
+{{employee_name}} cancelled a leave request
+
+Type:          {{leave_type}}
+Dates:         {{date_range}}
+Status before: {{previous_status}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,18 @@
+Subject: [{{ticket_key}}] Changes requested
+Preheader: {{reviewer_name}}: {{note_snippet}}
+
+Changes requested on {{ticket_key}}
+
+Title:    {{ticket_title}}
+Reviewer: {{reviewer_name}}
+Note:     {{note}}
+
+Open ticket: {{app_url}}/projects/{{project_id}}/tickets/{{ticket_key}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

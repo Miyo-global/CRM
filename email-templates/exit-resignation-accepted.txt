@@ -1,0 +1,20 @@
+Subject: Your resignation has been accepted
+Preheader: Last working day: {{last_working_day}}.
+
+Your resignation has been accepted
+
+Last working day:          {{last_working_day}}
+Full and final settlement: {{fnf_date}}
+
+HR will share the exit checklist (asset return, handover, documents).
+Your account stays active until the end of your last working day.
+
+Open exit checklist: {{app_url}}/hr/exit
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,20 @@
+Subject: Leave approved: {{date_range}}
+Preheader: {{leave_type}} approved by {{approver_name}}.
+
+Your leave is approved
+
+Type:                             {{leave_type}}
+Dates:                            {{date_range}}
+Days:                             {{day_count}}
+Approved by:                      {{approver_name}}
+Remaining {{leave_type}} balance: {{balance_after}}
+
+View my leave: {{app_url}}/hr/leaves
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

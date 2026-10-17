@@ -1,0 +1,17 @@
+Subject: Appraisal step for you: {{stage_label}}
+Preheader: {{employee_name}} · due {{due_date}}
+
+Appraisal step: {{stage_label}}
+
+The {{stage_label}} step of {{employee_name}}'s appraisal is with you.
+Please complete it by {{due_date}}.
+
+Open appraisal: {{appraisal_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

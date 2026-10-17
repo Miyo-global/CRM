@@ -1,0 +1,22 @@
+Subject: We received your application for {{job_title}}
+Preheader: Thanks, {{first_name}}. Here is what happens next.
+
+Thanks for applying, {{first_name}}
+
+We received your application for {{job_title}} ({{job_location}}) on
+{{applied_on}}.
+
+Our team reviews every application. If your profile matches, we will
+contact you within {{review_days}} working days to set up a first
+conversation.
+
+View job posting: {{job_url}}
+
+Thanks,
+{{org_name}} Talent Team
+
+--
+You are receiving this because you applied for a role at {{org_name}}.
+We keep your data as described in our privacy notice: {{privacy_url}}.
+To withdraw or delete your application, use {{withdraw_url}}.
+{{org_name}} · {{org_address}}

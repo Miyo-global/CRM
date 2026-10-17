@@ -1,0 +1,19 @@
+Subject: Offer {{decision}}: {{candidate_name}}, {{job_title}}
+Preheader: {{decision_note}}
+
+{{candidate_name}} {{decision}} the offer
+
+Role:         {{job_title}}
+Decision:     {{decision}}
+Joining date: {{joining_date}}
+Note:         {{decision_note}}
+
+Open candidate: {{candidate_url}}
+
+Thanks,
+{{org_name}} Talent Team
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,19 @@
+Subject: Asset assigned to you: {{asset_name}}
+Preheader: {{asset_tag}} · please confirm receipt
+
+An asset has been assigned to you
+
+Asset:         {{asset_name}}
+Tag:           {{asset_tag}}
+Serial number: {{serial_number}}
+Assigned on:   {{assigned_on}}
+
+Confirm receipt: {{app_url}}/hr/my-assets
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

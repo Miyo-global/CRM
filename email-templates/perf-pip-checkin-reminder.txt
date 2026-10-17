@@ -1,0 +1,17 @@
+Subject: PIP check-in on {{due_date}}
+Preheader: {{employee_name}}
+
+PIP check-in coming up
+
+The next check-in for {{employee_name}}'s plan is on {{due_date}}. Add
+your notes before the meeting.
+
+Open PIP: {{pip_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,19 @@
+Subject: Bonus paid: {{employee_name}}, ₹{{amount}}
+Preheader: {{bonus_type}}
+
+Bonus paid to {{employee_name}}
+
+Type:        {{bonus_type}}
+Amount:      ₹{{amount}}
+Paid on:     {{paid_on}}
+Approved by: {{approver_name}}
+
+Open bonuses: {{app_url}}/hr/bonuses
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

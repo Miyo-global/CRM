@@ -1,0 +1,18 @@
+Subject: Work log needs changes: {{log_date}}
+Preheader: {{approver_name}} added a note.
+
+Your work log needs changes
+
+Date:        {{log_date}}
+Reviewed by: {{approver_name}}
+Note:        {{rejection_reason}}
+
+Edit work log: {{app_url}}/hr/work-logs
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

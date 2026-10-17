@@ -1,0 +1,17 @@
+Subject: Appraisal finalised: {{employee_name}}
+Preheader: Final rating {{rating}}.
+
+Appraisal finalised
+
+{{employee_name}}'s {{cycle_name}} appraisal is final. Rating:
+{{rating}}. Effective date of any revision: {{effective_date}}.
+
+View appraisal: {{appraisal_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

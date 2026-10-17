@@ -1,0 +1,22 @@
+Subject: Your application for {{job_title}}
+Preheader: An update on your application at {{org_name}}.
+
+Thank you for your interest, {{first_name}}
+
+Thank you for applying for {{job_title}} and for the time you spent with
+us.
+
+After careful review we have decided not to move forward with your
+application for this role.
+
+We would like to keep your profile in our talent pool for future roles.
+If you prefer we delete it, use the link below.
+
+Thanks,
+{{org_name}} Talent Team
+
+--
+You are receiving this because you applied for a role at {{org_name}}.
+We keep your data as described in our privacy notice: {{privacy_url}}.
+To withdraw or delete your application, use {{withdraw_url}}.
+{{org_name}} · {{org_address}}

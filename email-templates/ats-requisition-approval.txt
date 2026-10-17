@@ -1,0 +1,20 @@
+Subject: Approve hiring: {{job_title}} ({{openings}})
+Preheader: Requested by {{requester_name}} · budget ₹{{budget_range}}
+
+{{requester_name}} requested to hire
+
+Role:       {{job_title}}
+Department: {{department}}
+Openings:   {{openings}}
+Budget:     ₹{{budget_range}} per month
+Reason:     {{reason}}
+
+Review requisition: {{requisition_url}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

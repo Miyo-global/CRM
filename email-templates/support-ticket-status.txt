@@ -1,0 +1,17 @@
+Subject: Ticket #{{ticket_id}} is now {{status}}
+Preheader: {{ticket_subject}}
+
+Ticket #{{ticket_id}} is now {{status}}
+
+Subject:    {{ticket_subject}}
+Updated by: {{updated_by}}
+
+View ticket: {{app_url}}/support?ticket={{ticket_id}}
+
+Thanks,
+{{org_name}} Support
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

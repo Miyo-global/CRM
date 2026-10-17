@@ -1,0 +1,18 @@
+Subject: Expense reimbursed: ₹{{amount}}
+Preheader: Paid on {{paid_on}}.
+
+Your expense has been reimbursed
+
+Amount:    ₹{{amount}}
+Paid on:   {{paid_on}}
+Reference: {{payment_reference}}
+
+View claim: {{app_url}}/hr/expenses
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

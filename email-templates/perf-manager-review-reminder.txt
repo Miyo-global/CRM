@@ -1,0 +1,17 @@
+Subject: {{pending_count}} reviews waiting for you
+Preheader: {{cycle_name}} · due {{due_date}}
+
+{{pending_count}} reviews waiting for you
+
+You have {{pending_count}} {{cycle_name}} reviews to finish by
+{{due_date}}.
+
+Open reviews: {{app_url}}/hr/performance
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

@@ -1,0 +1,17 @@
+Subject: Set your goals for {{quarter}}
+Preheader: Due {{due_date}}.
+
+Set your goals for {{quarter}}
+
+Please add your goals for {{quarter}} by {{due_date}} and share them
+with {{manager_name}}.
+
+Set goals: {{app_url}}/hr/performance?tab=goals
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

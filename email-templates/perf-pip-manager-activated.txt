@@ -1,0 +1,17 @@
+Subject: PIP active: {{employee_name}}
+Preheader: Check-ins start {{first_checkin}}.
+
+PIP is now active
+
+{{employee_name}} acknowledged the plan. The first check-in is on
+{{first_checkin}}.
+
+Open PIP: {{pip_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

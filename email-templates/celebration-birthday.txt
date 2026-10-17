@@ -1,0 +1,15 @@
+Subject: Happy birthday, {{first_name}}
+Preheader: Wishing you a great year ahead from everyone at {{org_name}}.
+
+Happy birthday, {{first_name}}
+
+Everyone at {{org_name}} wishes you a happy birthday and a great year
+ahead.
+
+Thanks,
+Your team at {{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

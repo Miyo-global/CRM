@@ -1,0 +1,19 @@
+Subject: [{{ticket_key}}] {{ticket_title}}
+Preheader: Assigned to you by {{assigned_by}} · {{priority}} · due {{due_date}}
+
+{{ticket_key}} was assigned to you
+
+Title:    {{ticket_title}}
+Project:  {{project_name}}
+Priority: {{priority}}
+Due:      {{due_date}}
+
+Open ticket: {{app_url}}/projects/{{project_id}}/tickets/{{ticket_key}}
+
+Thanks,
+{{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

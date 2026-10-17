@@ -1,0 +1,19 @@
+Subject: Expense approved: ₹{{amount}}
+Preheader: It will be reimbursed with {{reimbursement_cycle}}.
+
+Your expense claim is approved
+
+Amount:        ₹{{amount}}
+Category:      {{category}}
+Approved by:   {{approver_name}}
+Reimbursement: {{reimbursement_cycle}}
+
+View claim: {{app_url}}/hr/expenses
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

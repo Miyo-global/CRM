@@ -1,0 +1,22 @@
+Subject: Notice of termination of employment
+Preheader: Please read the attached letter.
+
+Notice of termination of employment
+
+Dear {{employee_name}},
+
+Your employment with {{org_name}} ends on {{effective_date}}. The
+termination letter is attached and sets out the reasons and the next
+steps.
+
+Effective date:   {{effective_date}}
+Final settlement: {{fnf_date}}
+HR contact:       {{hr_contact_name}}, {{hr_email}}
+
+Thanks,
+{{hr_signatory}}, {{org_name}}
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}

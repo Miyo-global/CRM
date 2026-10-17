@@ -1,0 +1,18 @@
+Subject: Performance improvement plan
+Preheader: Starts {{start_date}} · {{duration_days}} days
+
+Your performance improvement plan
+
+A performance improvement plan has been set up for you from
+{{start_date}} to {{end_date}}. It lists the goals, the support you will
+get and the check-in dates.
+
+Read the plan: {{pip_url}}
+
+Thanks,
+{{org_name}} HR
+
+--
+You are receiving this because you have an account at {{org_name}}.
+Questions? Write to {{support_email}}.
+{{org_name}} · {{org_address}}
