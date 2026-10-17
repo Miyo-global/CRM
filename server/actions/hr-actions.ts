@@ -3,7 +3,8 @@
 import { db } from "@/lib/db";
 import { users, organizationMembers, departments, branches } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+// Server actions check revocation, deactivation and MFA too (SEC-0007).
+import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
 import { sendAccountDeactivationEmail } from "@/lib/email";
 import { ROLES, ADMIN_ROLES, EXPENSE_ADMIN_ROLES } from "@/lib/constants/roles";

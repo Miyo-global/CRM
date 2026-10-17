@@ -15,7 +15,7 @@ import { canAccess, ROLES } from "@/lib/constants/roles";
 const QR_MANAGER_ROLES = [ROLES.CEO, ROLES.HR];
 import { existsSync } from "fs";
 import { resolvePublicPath } from "@/lib/constants/paths";
-import { auth } from "@/lib/auth";
+import { liveAuth as auth } from "@/lib/auth/live-session";
 
 const generateSchema = z.object({
   targetUrl: z.string().url().max(2048),

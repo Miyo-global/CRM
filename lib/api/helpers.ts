@@ -3,7 +3,8 @@
 import { auth } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { db } from "@/lib/db";
-import { organizationMembers, userSessions } from "@/lib/db/schema";
+import { organizationMembers } from "@/lib/db/schema";
+import { sessionRevocationState } from "@/lib/auth/live-session";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -44,7 +45,6 @@ export function err(message: string, status = 400): NextResponse<never> {
   return NextResponse.json({ error: message }, { status }) as NextResponse<never>;
 }
 
-const SESSION_CHECK_TTL = 60;
 
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
 
@@ -121,21 +121,16 @@ export async function withAuth<T>(
   let orgId: string | null | undefined = session.orgId;
   let branchId: number | null = (session as { branchId?: number | null }).branchId ?? null;
 
-  const sessionId = (session as { sessionId?: string }).sessionId;
-
   if (session.user.isActive === false) {
     return NextResponse.json({ error: "Account deactivated" } as T, { status: 403 });
   }
 
-  if (redis && sessionId) {
-    try {
-      const revoked = await redis.get<boolean>(`revoked:session:${sessionId}`);
-      if (revoked) {
-        return NextResponse.json({ error: "Session revoked" } as T, { status: 401 });
-      }
-    } catch (e) {
-      logger.error("withAuth: redis revocation check failed; falling back to Postgres", { sessionId, error: e });
-    }
+  const revocation = await sessionRevocationState(session);
+  if (revocation === "revoked") {
+    return NextResponse.json({ error: "Session revoked" } as T, { status: 401 });
+  }
+  if (revocation === "unavailable") {
+    return NextResponse.json({ error: "Session verification unavailable" } as T, { status: 503 });
   }
 
   if (redis) {
@@ -158,31 +153,6 @@ export async function withAuth<T>(
 
     } catch (e) {
       logger.error("withAuth: session cache read failed (continuing with JWT/Postgres data)", { userId: session.user.id, error: e });
-    }
-  }
-
-  // MIYO-0011 (approved by Tarun): a passed revocation check is cached per
-  // session for SESSION_CHECK_TTL, so parallel dashboard widget calls do not
-  // each query userSessions. Same-instance revocations apply at once via
-  // `revoked:session:*`; other instances may lag up to SESSION_CHECK_TTL.
-  // ponytail: per-instance cache; move to a shared store if instances multiply.
-  const sessionOkKey = sessionId ? `session:ok:${sessionId}:${session.user.id}` : null;
-  const sessionRecentlyChecked =
-    !!redis && !!sessionOkKey && (await redis.get<boolean>(sessionOkKey).catch(() => null)) === true;
-
-  if (sessionId && !sessionRecentlyChecked) {
-    try {
-      const sessionRow = await db.query.userSessions.findFirst({
-        where: eq(userSessions.id, sessionId),
-        columns: { isRevoked: true, userId: true },
-      });
-      if (sessionRow?.isRevoked || (sessionRow && sessionRow.userId !== session.user.id)) {
-        return NextResponse.json({ error: "Session revoked" } as T, { status: 401 });
-      }
-      if (redis && sessionOkKey) await redis.set(sessionOkKey, true, { ex: SESSION_CHECK_TTL });
-    } catch (e) {
-      logger.error("withAuth: Postgres revocation check failed; denying (fail closed)", { userId: session.user.id, sessionId, error: e });
-      return NextResponse.json({ error: "Session verification unavailable" } as T, { status: 503 });
     }
   }
 

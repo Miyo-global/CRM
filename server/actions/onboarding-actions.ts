@@ -6,7 +6,8 @@ import { users, documents, onboardingSteps, organizationMembers, leaveTypes, lea
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { uploadFile, isStorageConfigured } from "@/lib/storage";
-import { auth } from "@/lib/auth";
+// Server actions check revocation, deactivation and MFA too (SEC-0007).
+import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
 import { formatDateOnly } from "@/lib/date-utils";
 import { invalidateHrDashboardCache } from "@/lib/hr-cache";

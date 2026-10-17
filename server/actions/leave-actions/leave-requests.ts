@@ -10,7 +10,8 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, desc, inArray, lte, gte } from "drizzle-orm";
 import { countPendingLeaveApprovals } from "@/lib/hr/leave-approvals-server";
-import { auth } from "@/lib/auth";
+// Server actions check revocation, deactivation and MFA too (SEC-0007).
+import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
 import { sendLeaveStatusUpdateEmail } from "@/lib/email";

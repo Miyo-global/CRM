@@ -9,7 +9,8 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, inArray } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+// Server actions check revocation, deactivation and MFA too (SEC-0007).
+import { liveAuth as auth } from "@/lib/auth/live-session";
 import { logger } from "@/lib/logger";
 import {
   DEFAULT_LEAVE_TYPES,
