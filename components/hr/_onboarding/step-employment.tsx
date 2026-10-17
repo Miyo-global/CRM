@@ -135,11 +135,6 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
             <FormDescription className="text-xs">
               {EMPLOYMENT_FIELD_COPY.department.description}
             </FormDescription>
-            {isJoiningDateInPast && (
-              <p className="text-xs text-muted-foreground">
-                Joining date is in the past — attendance and payroll will start from this date.
-              </p>
-            )}
             <FormMessage />
           </FormItem>
         )}
@@ -271,6 +266,12 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
                 />
               </PopoverContent>
             </Popover>
+            {isJoiningDateInPast && (
+              <p className="text-xs text-warning-strong">
+                Joining date is in the past. Attendance and payroll start from this date, and
+                payroll for the months already gone is not generated automatically.
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}
