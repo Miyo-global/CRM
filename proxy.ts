@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { canAccessRoute } from "@/lib/auth/route-access";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
+import { buildCsp } from "@/lib/security/csp";
 
 function isLoopbackHostname(hostname: string): boolean {
   const h = hostname.toLowerCase();
@@ -304,7 +305,18 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // MIYO-0132: one nonce per HTML request. Next reads it back out of the
+  // request's CSP header and stamps its own scripts with it, so script-src
+  // no longer needs 'unsafe-inline'.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp(process.env.NODE_ENV, nonce);
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Content-Security-Policy", csp);
+  return response;
 }
 
 export const config = {

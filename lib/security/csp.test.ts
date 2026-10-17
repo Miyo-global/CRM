@@ -41,3 +41,22 @@ describe("buildCsp", () => {
     expect(directive(buildCsp("development"), "script-src")).toContain("'unsafe-eval'");
   });
 });
+
+describe("buildCsp with a nonce (MIYO-0132)", () => {
+  it("drops unsafe-inline from script-src and uses strict-dynamic", () => {
+    const scriptSrc = directive(buildCsp("production", "abc123"), "script-src");
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
+    expect(scriptSrc).toContain("'nonce-abc123'");
+    expect(scriptSrc).toContain("'strict-dynamic'");
+  });
+
+  it("still allows the Turnstile script", () => {
+    expect(directive(buildCsp("production", "abc123"), "script-src")).toContain(
+      "https://challenges.cloudflare.com",
+    );
+  });
+
+  it("keeps unsafe-inline for styles, which are not nonced", () => {
+    expect(directive(buildCsp("production", "abc123"), "style-src")).toContain("'unsafe-inline'");
+  });
+});

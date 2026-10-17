@@ -98,12 +98,12 @@ const nextConfig: NextConfig = {
     return [
       { source: "/(.*)", headers: commonHeaders },
       {
-        // All page routes: strict no-framing
+        // All page routes: strict no-framing. The CSP for pages is set in
+        // proxy.ts, which can mint a per-request nonce; setting it here too
+        // would send two policies and the browser would enforce both
+        // (MIYO-0132).
         source: "/:path((?!api/).*)",
-        headers: [
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "Content-Security-Policy", value: fullCsp },
-        ],
+        headers: [{ key: "X-Frame-Options", value: "DENY" }],
       },
       {
         // All API routes except the download proxy: strict no-framing
