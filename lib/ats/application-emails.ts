@@ -3,7 +3,8 @@ import "server-only";
 import { appUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import { atsEmailLog } from "@/lib/db/schema";
-import { sendTemplateEmail } from "@/lib/email/sender";
+import { sendEmail, sendTemplateEmail } from "@/lib/email/sender";
+import { renderAtsEmail } from "./email-overrides";
 import { formatIST } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 
@@ -38,20 +39,25 @@ export async function sendApplicationEmails(params: ApplicationEmailParams) {
   const { candidate, job, teamEmails } = params;
   const jobUrl = job.slug ? `${appUrl}/careers/${job.slug}` : `${appUrl}/careers`;
 
-  await sendTemplateEmail("ats-application-received", {
-    to: candidate.email,
-    category: "hr",
-    vars: {
-      first_name: candidate.firstName,
-      job_title: job.title,
-      job_location: job.location ?? "not stated",
-      job_url: jobUrl,
-      applied_on: `${formatIST(new Date(), { day: "numeric", month: "long", year: "numeric" })} IST`,
-      review_days: "7",
-      privacy_url: `${appUrl}/privacy`,
-      withdraw_url: `${appUrl}/careers`,
-    },
+  const rendered = await renderAtsEmail(params.orgId ?? "", "ats-application-received", {
+    first_name: candidate.firstName,
+    job_title: job.title,
+    job_location: job.location ?? "not stated",
+    job_url: jobUrl,
+    applied_on: `${formatIST(new Date(), { day: "numeric", month: "long", year: "numeric" })} IST`,
+    review_days: "7",
+    privacy_url: `${appUrl}/privacy`,
+    withdraw_url: `${appUrl}/careers`,
   });
+
+  await sendEmail({
+    to: candidate.email,
+    subject: rendered.subject,
+    html: rendered.html,
+    text: rendered.text,
+    category: "hr",
+  });
+
   await logSent(params.orgId, candidate.id, "ats-application-received", candidate.email, "sent");
 
   if (teamEmails.length === 0) return;

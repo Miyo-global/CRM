@@ -3,7 +3,8 @@ import "server-only";
 import { appUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import { atsEmailLog } from "@/lib/db/schema";
-import { sendTemplateEmail } from "@/lib/email/sender";
+import { sendEmail } from "@/lib/email/sender";
+import { renderAtsEmail } from "./email-overrides";
 import { EMAIL_CATALOG, type EmailTemplateId } from "@/lib/email-templates/catalog.generated";
 import { logger } from "@/lib/logger";
 
@@ -27,14 +28,19 @@ export async function sendStageEmail(
     return false;
   }
 
-  await sendTemplateEmail(templateId as EmailTemplateId, {
+  // MIYO-0673: the org's own wording when it has set one.
+  const rendered = await renderAtsEmail(orgId, templateId as EmailTemplateId, {
+    first_name: candidate.firstName,
+    job_title: jobTitle,
+    careers_url: `${appUrl}/careers`,
+  });
+
+  await sendEmail({
     to: candidate.email,
+    subject: rendered.subject,
+    html: rendered.html,
+    text: rendered.text,
     category: "hr",
-    vars: {
-      first_name: candidate.firstName,
-      job_title: jobTitle,
-      careers_url: `${appUrl}/careers`,
-    },
   });
 
   await db

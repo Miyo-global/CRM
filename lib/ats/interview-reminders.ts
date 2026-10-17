@@ -5,6 +5,7 @@ import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { appUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import {
+  atsEmailLog,
   candidates,
   interviewScorecards,
   interviews,
@@ -24,6 +25,19 @@ type ReminderKind = "candidate24h" | "interviewer1h" | "feedback" | "feedbackNud
 
 function alreadySent(row: { remindersSent: Record<string, boolean> }, kind: ReminderKind) {
   return row.remindersSent?.[kind] === true;
+}
+
+/** The candidate's Emails tab should show the reminders too (MIYO-0668). */
+async function logCandidateMail(
+  orgId: string,
+  candidateId: number,
+  templateId: string,
+  toEmail: string,
+) {
+  await db
+    .insert(atsEmailLog)
+    .values({ orgId, candidateId, templateId, toEmail, status: "sent" })
+    .catch((error) => logger.error("ATS email log failed", { templateId, error }));
 }
 
 async function markSent(interviewId: number, kind: ReminderKind) {
@@ -99,6 +113,12 @@ export async function runInterviewReminders(now = new Date()) {
           category: "hr",
           vars: { ...shared, first_name: row.candidateFirstName },
         });
+        await logCandidateMail(
+          row.orgId,
+          row.candidateId,
+          "ats-interview-reminder",
+          row.candidateEmail,
+        );
         await markSent(row.id, "candidate24h");
         sent += 1;
       }

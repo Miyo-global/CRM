@@ -785,6 +785,13 @@
       "when": 1792262308465,
       "tag": "0168_offer_letter_template",
       "breakpoints": true
+    },
+    {
+      "idx": 169,
+      "version": "7",
+      "when": 1792263173332,
+      "tag": "0169_ats_email_templates",
+      "breakpoints": true
     }
   ]
 }

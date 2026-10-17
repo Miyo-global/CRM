@@ -254,6 +254,27 @@ export const atsEmailLog = pgTable(
   ],
 );
 
+/**
+ * MIYO-0673: an org's own wording for one of the ats-* templates. Only the
+ * subject and the body are theirs; the frame around them stays the same, so
+ * a badly edited template cannot break the layout.
+ */
+export const atsEmailTemplates = pgTable(
+  "ats_email_templates",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id").references(() => organizations.id).notNull(),
+    /** A template id from the generated catalogue, e.g. ats-application-rejected. */
+    templateId: text("template_id").notNull(),
+    subject: text("subject"),
+    /** Markdown; rendered into the shared frame when the mail is sent. */
+    body: text("body"),
+    updatedBy: text("updated_by").references(() => users.id),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [uniqueIndex("uniq_ats_email_template_org").on(table.orgId, table.templateId)],
+);
+
 export const atsRequisitionsRelations = relations(atsRequisitions, ({ one }) => ({
   organization: one(organizations, {
     fields: [atsRequisitions.orgId],
