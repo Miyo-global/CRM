@@ -26,9 +26,9 @@ export const ROUTE_PERMISSIONS: readonly RoutePermissionRule[] = [
   { pattern: "/api/hr/employees/onboard", methods: ["POST"], permission: "hr:employees:create" },
   { pattern: "/api/hr/employees/:id", methods: ["PATCH", "PUT"], permission: "hr:employees:update" },
   { pattern: "/api/hr/employees/:id", methods: ["DELETE"], permission: "hr:employees:delete" },
-  { pattern: "/api/hr/payrolls", methods: ["POST"], permission: "hr:payroll:manage" },
-  { pattern: "/api/hr/payrolls/:id/approve", methods: ["PATCH", "PUT"], permission: "hr:payroll:manage" },
-  { pattern: "/api/hr/payrolls/:id/paid", methods: ["PATCH", "PUT"], permission: "hr:payroll:manage" },
+  { pattern: "/api/hr/payrolls", methods: ["POST"], permission: "hr:payroll:generate" },
+  { pattern: "/api/hr/payrolls/:id/approve", methods: ["PATCH", "PUT"], permission: "hr:payroll:approve" },
+  { pattern: "/api/hr/payrolls/:id/paid", methods: ["PATCH", "PUT"], permission: "hr:payroll:approve" },
   { pattern: "/api/hr/attendance/check-in", methods: ["POST"], permission: "self:attendance" },
   { pattern: "/api/hr/attendance/check-out", methods: ["POST"], permission: "self:attendance" },
 ];

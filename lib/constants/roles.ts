@@ -119,6 +119,17 @@ export function isPayrollApprover(role: string | undefined | null): boolean {
 }
 
 /**
+ * Who gives the final sign-off on a resignation (R3-0002). CEO-only left an
+ * org with no CEO user unable to finish any exit; Admin carries the same
+ * authority. Nobody signs off their own exit.
+ */
+export const EXIT_FINAL_APPROVER_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
+
+export function isExitFinalApprover(role: string | undefined | null): boolean {
+  return !!role && EXIT_FINAL_APPROVER_ROLES.includes(role);
+}
+
+/**
  * Roles whose attendance is not enforced: they are never auto-marked absent
  * and never listed in the HR absentee digest (QA-0042).
  */

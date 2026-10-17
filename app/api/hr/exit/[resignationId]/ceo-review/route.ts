@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { inngest } from "@/lib/inngest/client";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { isExitFinalApprover } from "@/lib/constants/roles";
 
 const ceoReviewSchema = z.object({
   decision: z.enum(["approve", "reject"]),
@@ -16,7 +17,7 @@ export async function PATCH(
   { params }: { params: Promise<{ resignationId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (session.user.role !== "CEO") return err("Only CEO can perform CEO review.", 403);
+    if (!isExitFinalApprover(session.user.role)) return err("Only the CEO or an Admin can give the final sign-off.", 403);
 
     const { resignationId: id } = await params;
     const resignationId = Number(id);
@@ -30,6 +31,7 @@ export async function PATCH(
       where: and(eq(resignations.id, resignationId), eq(resignations.orgId, session.orgId)),
     });
     if (!record) return err("Resignation not found.", 404);
+    if (record.userId === session.user.id) return err("You cannot sign off your own resignation.", 403);
     if (record.status !== "HR_APPROVED") return err("Resignation must be HR-approved first.", 400);
 
     const approved = body.decision === "approve";

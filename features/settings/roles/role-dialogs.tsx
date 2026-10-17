@@ -31,7 +31,7 @@ const ROLE_TEMPLATES: Array<{ label: string; name: string; slug: string; permiss
     permissions: [
       "hr:employees:view", "hr:employees:create", "hr:employees:update",
       "hr:leaves:view", "hr:leaves:manage", "hr:attendance:view", "hr:attendance:manage",
-      "hr:payroll:view", "hr:payroll:manage", "settings:rbac:view",
+      "hr:payroll:view", "hr:payroll:generate", "hr:payroll:approve", "settings:rbac:view",
     ],
   },
   {
@@ -50,7 +50,7 @@ const ROLE_TEMPLATES: Array<{ label: string; name: string; slug: string; permiss
     name: "Finance Manager",
     slug: "FINANCE_MANAGER",
     permissions: [
-      "hr:payroll:view", "hr:payroll:manage",
+      "hr:payroll:view", "hr:payroll:generate", "hr:payroll:approve",
       "hr:expenses:view", "hr:expenses:manage",
       "hr:salary:view", "reports:view",
     ],

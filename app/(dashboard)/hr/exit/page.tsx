@@ -36,7 +36,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useSession } from "next-auth/react";
-import { isCEO as checkIsCEO } from "@/lib/constants/roles";
+import { isCEO as checkIsCEO, isExitFinalApprover } from "@/lib/constants/roles";
 import { downloadResignationLetterTemplate } from "@/lib/hr/resignation-letter-template";
 import { ResignationCard } from "@/features/hr/exit/resignation-card";
 import { RESIGNATION_REASONS } from "@/lib/constants/hr-separation";
@@ -323,7 +323,7 @@ export default function ExitManagementPage() {
               isExpanded={expandedIds.has(r.id)}
               isAdmin={isAdmin}
               isHR={isHR}
-              isCEO={isCEO}
+              isCEO={isExitFinalApprover(role)}
               userId={userId}
               onToggleExpand={toggleExpand}
               onHrApprove={setHrApproveId}
