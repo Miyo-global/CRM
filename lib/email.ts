@@ -7,6 +7,7 @@ export {
   sendWelcomeEmail,
   sendPasswordChangeConfirmationEmail,
   sendAccountLockedEmail,
+  sendNewDeviceLoginEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
@@ -24,7 +25,6 @@ import {
   getTicketChangesRequestedEmailTemplate,
   getLeaveCancellationEmailTemplate,
   getAccountDeactivationEmailTemplate,
-  getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
@@ -580,18 +580,6 @@ export async function sendTerminationEmail(
       hrContactEmail
     ),
     attachments,
-  });
-}
-
-export async function sendNewDeviceLoginEmail(
-  email: string,
-  name: string,
-  deviceInfo: { userAgent: string; ipAddress: string; time: string }
-): Promise<void> {
-  await sendEmail({
-    to: email,
-    subject: "New Device Sign-In Detected",
-    html: getNewDeviceLoginEmailTemplate(name, deviceInfo),
   });
 }
 

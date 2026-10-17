@@ -5,7 +5,6 @@ import {
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
   getAccountDeactivationEmailTemplate,
-  getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
 } from "../email-templates";
 
@@ -111,15 +110,21 @@ export async function sendAccountLockedEmail(
   });
 }
 
+/** MIYO-0221: the hand-written auth-new-device-login template. */
 export async function sendNewDeviceLoginEmail(
   email: string,
-  name: string,
-  deviceInfo: { userAgent: string; ipAddress: string; time: string }
+  deviceInfo: { userAgent: string; ipAddress: string; signedInAt?: Date; location?: string },
 ): Promise<void> {
-  await sendEmail({
+  await sendTemplateEmail("auth-new-device-login", {
     to: email,
-    subject: "New Device Sign-In Detected",
-    html: getNewDeviceLoginEmailTemplate(name, deviceInfo),
+    vars: {
+      device: deviceInfo.userAgent,
+      ip_address: deviceInfo.ipAddress,
+      // The app does not geolocate a sign-in, and guessing from the address
+      // would put a wrong city in a security mail.
+      location: deviceInfo.location ?? "not recorded",
+      signed_in_at: `${formatIST(deviceInfo.signedInAt ?? new Date())} IST`,
+    },
   });
 }
 

@@ -83,7 +83,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "auth.passwordChangeConfirm", run: () => sendPasswordChangeConfirmationEmail(TO, NAME) },
   { name: "auth.accountDeactivation", run: () => sendAccountDeactivationEmail(TO, NAME, ACTOR, "Test deactivation reason") },
   { name: "auth.accountLocked", run: () => sendAccountLockedEmail(TO, 5, new Date(Date.now() + 15 * 60 * 1000)) },
-  { name: "auth.newDeviceLogin", run: () => sendNewDeviceLoginEmail(TO, NAME, { userAgent: "Chrome 147 on macOS", ipAddress: "192.0.2.1", time: new Date().toISOString() }) },
+  { name: "auth.newDeviceLogin", run: () => sendNewDeviceLoginEmail(TO, { userAgent: "Chrome 147 on macOS", ipAddress: "192.0.2.1" }) },
   { name: "auth.passwordExpiryWarning", run: () => sendPasswordExpiryWarningEmail(TO, NAME, 7) },
 
   { name: "projects.projectAssignment", run: () => sendProjectAssignmentEmail(TO, NAME, "Miyo Global CRM", "VAIV", 1, ACTOR) },

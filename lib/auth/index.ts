@@ -326,11 +326,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const isNewDevice = !knownDeviceIds.includes(deviceId);
           if (isNewDevice && knownDeviceIds.length > 0 && user.email) {
-            sendNewDeviceLoginEmail(user.email, user.name ?? user.email, {
-              userAgent,
-              ipAddress,
-              time: new Date().toISOString(),
-            }).catch(() => {});
+            sendNewDeviceLoginEmail(user.email, { userAgent, ipAddress }).catch(() => {});
           }
         }
       }
