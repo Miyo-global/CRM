@@ -10,6 +10,7 @@ export async function sendHolidayAnnouncementEmail(
 ) {
   await sendTemplateEmail("holiday-reminder", {
     to: email,
+    category: "hr",
     vars: {
       holiday_name: holidayName,
       holiday_date: holidayDate,

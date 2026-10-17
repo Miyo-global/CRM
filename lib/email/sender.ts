@@ -125,6 +125,19 @@ async function dispatch(email: NormalizedEmail): Promise<{ requestId?: string }>
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
   const email = normalize(options);
+
+  if (options.category) {
+    const { filterByEmailPreference } = await import("./preferences");
+    const wanted = await filterByEmailPreference(email.to, options.category);
+    if (wanted.length === 0) {
+      logger.info("EMAIL_SKIPPED: every recipient switched this category off", {
+        category: options.category,
+        subject: email.subject,
+      });
+      return;
+    }
+    email.to = wanted;
+  }
   const provider = getEmailProvider();
 
   if (!isEmailConfigured()) {

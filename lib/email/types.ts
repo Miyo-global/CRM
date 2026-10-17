@@ -17,6 +17,13 @@ export interface EmailOptions {
   cc?: string | string[];
   bcc?: string | string[];
   replyTo?: string;
+  /**
+   * MIYO-0210: set on mail that is a notification rather than a transaction.
+   * Recipients who switched this category (or email entirely) off on
+   * /settings/notifications are dropped before sending. Leave it unset for
+   * anything the person must receive: a password reset, an offer, a payslip.
+   */
+  category?: import("./preference-rules").EmailCategory;
 }
 
 /** An `EmailOptions` after defaults, trimming and de-duplication have been

@@ -100,6 +100,7 @@ export async function handleLateArrivalAfterCheckIn(params: {
     const cutoffMinute = String(cutoff % 60).padStart(2, "0");
     await sendTemplateEmail("attendance-late-arrival", {
       to: userEmail.trim(),
+      category: "attendance",
       vars: {
         date: format(parseISO(date), "dd MMM yyyy"),
         check_in_time: formatISTTime(checkIn),

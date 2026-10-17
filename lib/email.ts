@@ -238,6 +238,7 @@ export async function sendLeaveRequestEmail(
 ) {
   await sendTemplateEmail("leave-request-approver", {
     to: email,
+    category: "leaves",
     vars: {
       employee_name: employeeName,
       approver_name: approverName,
@@ -272,6 +273,7 @@ export async function sendLeaveStatusUpdateEmail(
   if (status === "APPROVED") {
     await sendTemplateEmail("leave-approved", {
       to: email,
+      category: "leaves",
       vars: {
         approver_name: approverName,
         leave_type: leaveType,
@@ -285,6 +287,7 @@ export async function sendLeaveStatusUpdateEmail(
 
   await sendTemplateEmail("leave-rejected", {
     to: email,
+    category: "leaves",
     vars: {
       approver_name: approverName,
       leave_type: leaveType,
@@ -356,6 +359,7 @@ export async function sendCelebrationEmail(
   if (kind === "birthday") {
     await sendTemplateEmail("celebration-birthday", {
       to: email,
+      category: "hr",
       vars: { first_name: firstName },
     });
     return;
@@ -364,6 +368,7 @@ export async function sendCelebrationEmail(
   const years = yearsCompleted ?? 1;
   await sendTemplateEmail("celebration-work-anniversary", {
     to: email,
+    category: "hr",
     vars: {
       first_name: firstName,
       years,

@@ -168,6 +168,7 @@ export async function markAbsentEmployeesAsLeave() {
           // rather than the generic notification wrapper.
           await sendTemplateEmail("attendance-auto-absent", {
             to: m.email,
+            category: "attendance",
             vars: { date: today, marked_as: "absent, counted as leave" },
           });
         }
