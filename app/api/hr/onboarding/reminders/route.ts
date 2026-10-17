@@ -3,10 +3,10 @@ import { withAdmin, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { onboardingTasks, users, notifications } from "@/lib/db/schema";
 import { eq, and, ne, sql, count } from "drizzle-orm";
-import { sendEmail } from "@/lib/email";
+import { sendTemplateEmail } from "@/lib/email/sender";
+import { formatDateOnly } from "@/lib/date-utils";
 import { createAuditLog } from "@/lib/audit-log";
 import { logger } from "@/lib/logger";
-import { BRAND } from "@/lib/design/brand-hex";
 
 export async function POST(_req: NextRequest) {
   return withAdmin(async (session) => {
@@ -17,6 +17,8 @@ export async function POST(_req: NextRequest) {
         userEmail: users.email,
         totalTasks: count(),
         pendingTasks: sql<number>`COUNT(CASE WHEN ${onboardingTasks.status} != 'COMPLETED' THEN 1 END)`,
+        // MIYO-0154: the template leads with the oldest open due date.
+        oldestDue: sql<Date | null>`MIN(CASE WHEN ${onboardingTasks.status} != 'COMPLETED' THEN ${onboardingTasks.dueDate} END)`,
       })
       .from(onboardingTasks)
       .innerJoin(users, eq(onboardingTasks.userId, users.id))
@@ -44,24 +46,12 @@ export async function POST(_req: NextRequest) {
 
       if (user.userEmail) {
         try {
-          await sendEmail({
+          await sendTemplateEmail("onboarding-reminder", {
             to: user.userEmail,
-            subject: "Onboarding Reminder — Pending Tasks",
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: ${BRAND.ink};">Onboarding Reminder</h2>
-                <p>Hi ${user.userName || "there"},</p>
-                <p>You have <strong>${user.pendingTasks}</strong> pending onboarding task(s) out of <strong>${user.totalTasks}</strong> total.</p>
-                <p>Please log in and complete your remaining tasks to finish your onboarding process.</p>
-                <a href="${process.env.NEXTAUTH_URL || ""}/hr/onboarding/my-tasks"
-                   style="display: inline-block; padding: 10px 24px; background: ${BRAND.gold}; color: ${BRAND.ink}; text-decoration: none; border-radius: 6px; margin-top: 10px;">
-                  Complete Tasks
-                </a>
-                <p style="color: ${BRAND.inkMuted}; margin-top: 20px; font-size: 12px;">
-                  This is an automated reminder from your HR team.
-                </p>
-              </div>
-            `,
+            vars: {
+              pending_count: Number(user.pendingTasks),
+              oldest_due_date: user.oldestDue ? formatDateOnly(user.oldestDue) : "soon",
+            },
           });
           sentCount++;
         } catch (e) {

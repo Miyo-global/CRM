@@ -4,11 +4,10 @@ import { format } from "date-fns";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { notifications, users } from "@/lib/db/schema";
-import { sendEmail } from "@/lib/email";
+import { sendTemplateEmail } from "@/lib/email/sender";
 import { isEmailConfigured } from "@/lib/email/config";
 import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
-import { BRAND } from "@/lib/design/brand-hex";
 
 export interface CalendarEventNotifyResult {
   attendeeCount: number;
@@ -24,14 +23,6 @@ function formatRange(start: Date, end: Date, allDay: boolean) {
     return `${format(start, "MMM d, yyyy")} (all day)`;
   }
   return `${format(start, "MMM d, yyyy h:mm a")} – ${format(end, "h:mm a")}`;
-}
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function truncate(s: string, max: number) {
@@ -83,21 +74,16 @@ export async function sendCalendarEventAttendeeEmails(params: {
 
   const organizer = creator?.name?.trim() || creator?.email || "Someone";
   const when = formatRange(params.startDate, params.endDate, params.allDay);
-  const calendarUrl = `${appUrl.replace(/\/$/, "")}/calendar`;
   const subject =
     params.variant === "updated"
       ? `Calendar update: ${params.title}`
       : `Invitation: ${params.title}`;
 
-  const verb = params.variant === "updated" ? "updated an event" : "invited you to";
-  const descBlock =
-    params.description?.trim() ?
-      `<p><strong>Details:</strong> ${escapeHtml(truncate(params.description.trim(), 400))}</p>`
-      : "";
-  const locBlock =
-    params.location?.trim() ?
-      `<p><strong>Location:</strong> ${escapeHtml(params.location.trim())}</p>`
-      : "";
+  const action = params.variant === "updated" ? "Updated" : "Invitation";
+  const actionSentence =
+    params.variant === "updated"
+      ? `${organizer} updated this event.`
+      : `${organizer} invited you to this event.`;
 
   if (!mailerConfigured) {
     logger.warn("CALENDAR_INVITE_EMAIL_SKIPPED: mail provider not configured", {
@@ -106,30 +92,25 @@ export async function sendCalendarEventAttendeeEmails(params: {
     });
   }
 
-  const htmlBody = (recipientName: string) => `
-    <p>Hi ${escapeHtml(recipientName)},</p>
-    <p><strong>${escapeHtml(organizer)}</strong> ${verb} <strong>${escapeHtml(params.title)}</strong>.</p>
-    <p><strong>When:</strong> ${escapeHtml(when)}</p>
-    ${locBlock}
-    ${descBlock}
-    <p style="margin-top:20px">
-      <a href="${escapeHtml(calendarUrl)}" style="display:inline-block;background:${BRAND.ink};color:${BRAND.white};padding:10px 18px;text-decoration:none;border-radius:6px;font-weight:600">
-        Open calendar
-      </a>
-    </p>
-    <p style="margin-top:16px;color:${BRAND.inkMuted};font-size:12px">This message was sent from your organization&apos;s CRM calendar.</p>
-  `;
-
   const emailOutcomes = await Promise.all(
     attendees.map(async (u) => {
       if (!u.email) return "no_address" as const;
       if (!mailerConfigured) return "skipped_mailer" as const;
-      const displayName = u.name?.trim() || u.email || "there";
       try {
-        await sendEmail({
+        // MIYO-0154: the calendar-event template, rather than hand-built HTML.
+        await sendTemplateEmail("calendar-event", {
           to: u.email,
-          subject,
-          html: htmlBody(displayName),
+          vars: {
+            event_title: params.title,
+            event_action: action,
+            event_action_sentence: actionSentence,
+            event_date: params.allDay
+              ? `${format(params.startDate, "MMM d, yyyy")} (all day)`
+              : format(params.startDate, "MMM d, yyyy"),
+            event_time: params.allDay ? "All day" : when,
+            location: params.location?.trim() || "Not given",
+            organizer_name: organizer,
+          },
         });
         return "sent" as const;
       } catch (err) {
@@ -149,6 +130,7 @@ export async function sendCalendarEventAttendeeEmails(params: {
 
   const inAppTitle =
     params.variant === "updated" ? "Calendar event updated" : "New calendar invitation";
+  const verb = params.variant === "updated" ? "updated an event" : "invited you to";
   const inAppMessage = `${organizer} ${verb} "${truncate(params.title, 120)}" · ${when}`;
 
   let inAppNotifications = 0;

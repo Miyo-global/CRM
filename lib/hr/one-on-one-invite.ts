@@ -1,6 +1,6 @@
-import { sendEmail } from "@/lib/email/sender";
+import { sendTemplateEmail } from "@/lib/email/sender";
+import { formatIST, formatISTTime } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
-import { BRAND } from "@/lib/design/brand-hex";
 
 export interface AdditionalAttendee {
   name: string;
@@ -72,44 +72,25 @@ export function buildOneOnOneIcs(p: OneOnOneInviteParams): string {
 
 export async function sendOneOnOneInvite(p: OneOnOneInviteParams): Promise<void> {
   const ics = buildOneOnOneIcs(p);
-  const when = p.start.toLocaleString("en-US", {
-    dateStyle: "full",
-    timeStyle: "short",
-  });
-  const linkRow = p.meetingLink
-    ? `<p style="margin:8px 0"><strong>Join:</strong> <a href="${p.meetingLink}">${p.meetingLink}</a></p>`
-    : "";
-  const agendaRow = p.agenda
-    ? `<p style="margin:8px 0"><strong>Agenda:</strong> ${p.agenda}</p>`
-    : "";
 
   const extraAttendees = (p.additionalAttendees ?? []).filter((a) => a.email);
-  const participantsRow =
-    extraAttendees.length > 0
-      ? `<p style="margin:8px 0"><strong>Participants:</strong> ${[p.organizerName, p.attendeeName, ...extraAttendees.map((a) => a.name || a.email)].join(", ")}</p>`
-      : "";
-
   const ccList = Array.from(
     new Set([p.organizerEmail, ...extraAttendees.map((a) => a.email)].filter(Boolean))
   );
 
-  const html = `
-    <div style="font-family:system-ui,sans-serif;font-size:14px;color:${BRAND.ink}">
-      <p>Hi ${p.attendeeName},</p>
-      <p>${p.organizerName} has scheduled a 1-on-1 with you.</p>
-      <p style="margin:8px 0"><strong>When:</strong> ${when} · ${p.durationMinutes} min</p>
-      ${linkRow}
-      ${agendaRow}
-      ${participantsRow}
-      <p style="margin-top:12px;color:${BRAND.inkMuted}">A calendar invite (.ics) is attached — open it to add this to Google Calendar, Outlook, or Apple Calendar.</p>
-    </div>`;
-
   try {
-    await sendEmail({
+    // MIYO-0154: the one-on-one-invite template, rather than hand-built HTML.
+    await sendTemplateEmail("one-on-one-invite", {
       to: p.attendeeEmail,
       cc: ccList,
-      subject: `1-on-1 scheduled with ${p.organizerName}`,
-      html,
+      vars: {
+        organizer_name: p.organizerName,
+        meeting_date: formatIST(p.start, { hour: undefined, minute: undefined }),
+        meeting_time: `${formatISTTime(p.start)} (${p.durationMinutes} min)`,
+        location: p.meetingLink ? "Online" : "1-on-1",
+        meeting_url: p.meetingLink ?? "",
+        agenda: p.agenda ?? "None given",
+      },
       attachments: [
         {
           filename: "invite.ics",
