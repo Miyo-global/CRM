@@ -30,7 +30,17 @@ const isNeonHost = /\.neon\.tech/i.test(connectionString);
 const isDev = process.env.NODE_ENV === "development";
 const isServerless = process.env.VERCEL === "1";
 
-const max = isServerless ? 15 : isDev ? 5 : 75;
+// MIYO-0107: each serverless instance keeps its own pool, so 15 per instance
+// exhausted the database connection limit under load. A serverless function
+// handles one request at a time, so a handful of connections is plenty; the
+// pooled (PgBouncer / Neon -pooler) host does the real multiplexing.
+const max = isServerless ? 3 : isDev ? 5 : 75;
+
+if (isServerless && isNeonHost && !/-pooler\./i.test(connectionString)) {
+  console.warn(
+    "[db] DATABASE_URL points at a direct Neon host. Use the -pooler host on serverless (MIYO-0107).",
+  );
+}
 
 function createPostgresClient() {
   return postgres(connectionString, {
