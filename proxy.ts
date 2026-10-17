@@ -73,7 +73,7 @@ const BOT_BLOCKED_PREFIXES = [
   "/api/expenses/",
 ];
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
 
   const tier = resolveTier(pathname);
