@@ -10,8 +10,8 @@ import { format } from "date-fns";
 import { getTodayString } from "@/lib/date-utils";
 import { validateExpenseExportDateRange, formatExpenseSubmitterLabel } from "@/lib/validations/expense";
 import { users, organizationMembers, organizations } from "@/lib/db/schema";
-import { sendEmail } from "@/lib/email/sender";
-import { getMonthlyExpenseReportTemplate, type MonthlyExpenseReportRow } from "@/lib/email-templates";
+import { sendDataExportEmail } from "@/lib/hr/send-export-email";
+import { type MonthlyExpenseReportRow } from "@/lib/email-templates";
 import { generateMonthlyExpenseReportXlsx } from "@/lib/monthly-expense-report-xlsx";
 import { formatCurrencyFull } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
@@ -23,14 +23,6 @@ export interface ExpenseExportMailInput {
   bcc?: string[];
   subject?: string;
   message?: string;
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 export interface ExportFilters {
@@ -713,16 +705,6 @@ export async function emailExpenseReport(
       rejectedCount: expenseList.filter((e) => e.status === "REJECTED").length,
     };
 
-    const subject = (mail.subject?.trim() || `Expense report – ${periodLabel}`).slice(0, 200);
-    const messageHtml = mail.message?.trim()
-      ? `<p>${escapeHtml(mail.message.trim()).replace(/\n/g, "<br/>")}</p>`
-      : "";
-    const reportHtml = getMonthlyExpenseReportTemplate(
-      periodLabel,
-      org?.name || "Miyo Global",
-      rows,
-      summary,
-    );
     const xlsxBuffer = await generateMonthlyExpenseReportXlsx(
       periodLabel,
       org?.name || "Miyo Global",
@@ -732,10 +714,17 @@ export async function emailExpenseReport(
     const safePeriod = periodLabel.replace(/\s+/g, "-");
     const xlsxFilename = `expense-report-${safePeriod}.xlsx`;
 
-    await sendEmail({
+    // MIYO-0154: the branded export template, with the workbook attached;
+    // the body used to repeat the whole table in hand-built HTML.
+    await sendDataExportEmail({
       to: mail.to,
-      subject,
-      html: `${messageHtml}${reportHtml}`,
+      ...(mail.cc?.length ? { cc: mail.cc } : {}),
+      ...(mail.bcc?.length ? { bcc: mail.bcc } : {}),
+      exportName: `expense report for ${periodLabel}`,
+      rowCount: summary.totalCount,
+      fileType: "XLSX",
+      message: mail.message,
+      subject: mail.subject || `Expense report – ${periodLabel}`,
       attachments: [
         {
           filename: xlsxFilename,
@@ -743,8 +732,6 @@ export async function emailExpenseReport(
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         },
       ],
-      ...(mail.cc?.length ? { cc: mail.cc } : {}),
-      ...(mail.bcc?.length ? { bcc: mail.bcc } : {}),
     });
 
     return { success: true };

@@ -9,16 +9,8 @@ import {
 } from "@/lib/hr/recognition-export-filters";
 import { buildRecognitionCsvBuffer } from "@/lib/hr/recognition-export-rows";
 import { getRecognitionExportRows } from "@/server/queries/hr/recognition-export";
-import { sendEmail } from "@/lib/email/sender";
-import { BRAND } from "@/lib/design/brand-hex";
+import { sendDataExportEmail } from "@/lib/hr/send-export-email";
 
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
@@ -46,21 +38,15 @@ export async function POST(req: NextRequest) {
     const buffer = buildRecognitionCsvBuffer(rows);
     const rowCount = rows.length;
 
-    const defaultSubject = `Recognition history – ${scopeLabel}`;
-    const subject = (customSubject?.trim() || defaultSubject).slice(0, 200);
-    const messageHtml = message?.trim()
-      ? `<p>${escapeHtml(message.trim()).replace(/\n/g, "<br/>")}</p>`
-      : `<p>Please find attached the recognition history for <strong>${escapeHtml(scopeLabel)}</strong>.</p>`;
-    const summaryHtml = `<p style="color:${BRAND.inkMuted};font-size:13px">Records: ${rowCount}</p>`;
-
-    await sendEmail({
+    await sendDataExportEmail({
       to,
-      subject,
-      html: `
-        ${messageHtml}
-        ${summaryHtml}
-        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Recognition.</p>
-      `,
+      ...(cc?.length ? { cc } : {}),
+      ...(bcc?.length ? { bcc } : {}),
+      exportName: `recognition history for ${scopeLabel}`,
+      rowCount,
+      fileType: "CSV",
+      message,
+      subject: customSubject || `Recognition history – ${scopeLabel}`,
       attachments: [
         {
           filename: recognitionExportFilename(),
@@ -68,8 +54,6 @@ export async function POST(req: NextRequest) {
           type: "text/csv",
         },
       ],
-      ...(cc?.length ? { cc } : {}),
-      ...(bcc?.length ? { bcc } : {}),
     });
 
     return ok({

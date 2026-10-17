@@ -6,6 +6,8 @@ Your export is ready
 The {{export_name}} export you requested on {{requested_at}} IST is
 attached ({{row_count}} rows).
 
+{{message}}
+
 This file contains employee data. Do not forward it outside
 {{org_name}}.
 

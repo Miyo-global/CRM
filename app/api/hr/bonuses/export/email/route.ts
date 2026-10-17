@@ -6,17 +6,8 @@ import { bonusExportEmailSchema } from "@/lib/hr/bonus-export-email";
 import { buildBonusScopeLabel } from "@/lib/hr/bonus-filters";
 import { buildBonusCsvBuffer } from "@/lib/hr/bonus-export";
 import { getBonusExportRows } from "@/server/queries/hr/bonuses-export";
-import { sendEmail } from "@/lib/email/sender";
+import { sendDataExportEmail } from "@/lib/hr/send-export-email";
 import { format } from "date-fns";
-import { BRAND } from "@/lib/design/brand-hex";
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 export async function POST(req: NextRequest) {
   return withRoles(BONUS_MANAGE_ROLES)(async (session) => {
@@ -40,20 +31,15 @@ export async function POST(req: NextRequest) {
     });
 
     const buffer = buildBonusCsvBuffer(rows);
-    const defaultSubject = `Bonus report – ${scopeLabel}`;
-    const subject = (customSubject?.trim() || defaultSubject).slice(0, 200);
-    const messageHtml = message?.trim()
-      ? `<p>${escapeHtml(message.trim()).replace(/\n/g, "<br/>")}</p>`
-      : `<p>Please find attached the bonus report for <strong>${escapeHtml(scopeLabel)}</strong>.</p>`;
-
-    await sendEmail({
+    await sendDataExportEmail({
       to,
-      subject,
-      html: `
-        ${messageHtml}
-        <p style="color:${BRAND.inkMuted};font-size:13px">Records: ${rows.length}</p>
-        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Bonuses.</p>
-      `,
+      ...(cc?.length ? { cc } : {}),
+      ...(bcc?.length ? { bcc } : {}),
+      exportName: `bonus report for ${scopeLabel}`,
+      rowCount: rows.length,
+      fileType: "CSV",
+      message,
+      subject: customSubject || `Bonus report – ${scopeLabel}`,
       attachments: [
         {
           filename: `bonuses-${format(new Date(), "yyyy-MM-dd")}.csv`,
@@ -61,8 +47,6 @@ export async function POST(req: NextRequest) {
           type: "text/csv",
         },
       ],
-      ...(cc?.length ? { cc } : {}),
-      ...(bcc?.length ? { bcc } : {}),
     });
 
     return ok({ success: true, sentTo: to.length, records: rows.length });

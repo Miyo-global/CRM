@@ -3,9 +3,8 @@ import { withAuth, err, ok, parseBody } from "@/lib/api/helpers";
 import { getDocumentsForExport } from "@/server/queries/hr";
 import { documentExportEmailSchema, formatDocumentExportLabel } from "@/lib/hr/documents-export-filters";
 import { buildDocumentsZipBuffer } from "@/lib/hr/build-documents-zip";
-import { sendEmail } from "@/lib/email/sender";
+import { sendDataExportEmail } from "@/lib/hr/send-export-email";
 import { ZodError } from "zod";
-import { BRAND } from "@/lib/design/brand-hex";
 import { getTodayString } from "@/lib/date-utils";
 
 function canSendDocumentPackEmail(role: string | null | undefined): boolean {
@@ -44,28 +43,21 @@ export async function POST(req: NextRequest) {
     const docs = await getDocumentsForExport(session.orgId, session.user.id, isDocumentsAdmin, filterOnly);
     const { buffer, included, skipped } = await buildDocumentsZipBuffer(docs, { maxFiles: 100 });
     const label = formatDocumentExportLabel(filterOnly);
-    const defaultSubject = `Document report – ${label}`;
-    const subject = (body.subject?.trim() || defaultSubject).slice(0, 200);
-    const messageHtml = body.message?.trim()
-      ? `<p>${escapeHtml(body.message.trim()).replace(/\n/g, "<br/>")}</p>`
-      : `<p>Please find attached a ZIP export of documents matching: <strong>${escapeHtml(label)}</strong>.</p>`;
-    const summary = `<p style="color:${BRAND.inkMuted};font-size:13px">Files included: ${included}${
-      skipped ? ` · Skipped (unreadable): ${skipped}` : ""
-    }</p>`;
-
     const cc = body.cc?.length ? [...new Set(body.cc.map((e) => e.toLowerCase()))] : [];
     const bcc = body.bcc?.length ? [...new Set(body.bcc.map((e) => e.toLowerCase()))] : [];
     const dateStamp = getTodayString();
     const filename = `documents-export-${dateStamp}.zip`;
 
-    await sendEmail({
+    await sendDataExportEmail({
       to: emails,
-      subject,
-      html: `
-        ${messageHtml}
-        ${summary}
-        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Documents.</p>
-      `,
+      ...(cc.length ? { cc } : {}),
+      ...(bcc.length ? { bcc } : {}),
+      exportName: `documents matching ${label}`,
+      // Files, not rows, and the skipped ones are worth saying out loud.
+      rowCount: included,
+      fileType: skipped ? `ZIP (${skipped} unreadable file(s) skipped)` : "ZIP",
+      message: body.message,
+      subject: body.subject || `Document report – ${label}`,
       attachments: [
         {
           filename,
@@ -73,8 +65,6 @@ export async function POST(req: NextRequest) {
           type: "application/zip",
         },
       ],
-      ...(cc.length ? { cc } : {}),
-      ...(bcc.length ? { bcc } : {}),
     });
 
     return ok({
@@ -84,12 +74,4 @@ export async function POST(req: NextRequest) {
       skipped,
     });
   });
-}
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }

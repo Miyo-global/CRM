@@ -13,16 +13,7 @@ import {
   getOrganizationName,
 } from "@/server/queries/hr/attendance-export";
 import { buildAttendanceXlsxBuffer } from "@/lib/hr/build-attendance-xlsx";
-import { sendEmail } from "@/lib/email/sender";
-import { BRAND } from "@/lib/design/brand-hex";
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import { sendDataExportEmail } from "@/lib/hr/send-export-email";
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
@@ -62,25 +53,17 @@ export async function POST(req: NextRequest) {
       rangeLabel,
     });
 
-    const defaultSubject = `Attendance report – ${scopeLabel} (${rangeLabel})`;
-    const subject = (body.subject?.trim() || defaultSubject).slice(0, 200);
-    const messageHtml = body.message?.trim()
-      ? `<p>${escapeHtml(body.message.trim()).replace(/\n/g, "<br/>")}</p>`
-      : `<p>Please find attached the attendance report for <strong>${escapeHtml(scopeLabel)}</strong>.</p>`;
-    const summaryHtml = `<p style="color:${BRAND.inkMuted};font-size:13px">Period: ${escapeHtml(
-      rangeLabel,
-    )} · Records: ${rowCount}</p>`;
-
     const filename = attendanceExportFilename(filters.startDate, filters.endDate);
 
-    await sendEmail({
+    await sendDataExportEmail({
       to,
-      subject,
-      html: `
-        ${messageHtml}
-        ${summaryHtml}
-        <p style="margin-top:16px;font-size:12px;color:${BRAND.inkSubtle}">Sent from Miyo Global HR Attendance.</p>
-      `,
+      ...(cc.length ? { cc } : {}),
+      ...(bcc.length ? { bcc } : {}),
+      exportName: `attendance report for ${scopeLabel} (${rangeLabel})`,
+      rowCount,
+      fileType: "XLSX",
+      message: body.message,
+      subject: body.subject || `Attendance report – ${scopeLabel} (${rangeLabel})`,
       attachments: [
         {
           filename,
@@ -88,8 +71,6 @@ export async function POST(req: NextRequest) {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         },
       ],
-      ...(cc.length ? { cc } : {}),
-      ...(bcc.length ? { bcc } : {}),
     });
 
     return ok({
