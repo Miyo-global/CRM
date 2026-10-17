@@ -2,7 +2,7 @@
 import { getErrorMessage } from "@/lib/get-error-message";
 
 import { useState, useTransition, useCallback, useMemo } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter, usePathname, notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,7 @@ import {
   sanitizeIncentiveRateInput,
 } from "@/lib/validations/incentive-rate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 const BLOCKED_RATE_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
@@ -62,6 +63,11 @@ const STATUS_TONES: Record<string, Tone> = {
 };
 
 export default function IncentivesPage() {
+  // MIYO-0151: an incentive is raised against a CRM client account, so with
+  // the CRM module off there is nothing to raise one from and no way to
+  // create one here. The nav already hides this; typing the URL now 404s too.
+  if (!CRM_MODULE_ENABLED) notFound();
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
