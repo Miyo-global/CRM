@@ -1,36 +1,48 @@
-import { sendEmail } from "./sender";
+import { sendEmail, sendTemplateEmail } from "./sender";
+import { COMPANY_OFFICE_LOCATION, WORK_START_TIME } from "@/lib/constants/company";
+import { appUrl } from "@/lib/app-url";
 import {
-  getOnboardingWelcomeEmailTemplate,
-  getOnboardingTaskEmailTemplate,
   getOnboardingCompleteEmployeeEmailTemplate,
   getOnboardingCompleteHrEmailTemplate,
 } from "../email-templates";
 
+/** MIYO-0228: the hand-written onboarding-welcome template. */
 export async function sendOnboardingWelcomeEmail(
   email: string,
   employeeName: string,
-  designation: string,
   joiningDate: string,
-  taskCount: number
+  taskCount: number,
+  managerName?: string | null,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("onboarding-welcome", {
     to: email,
-    subject: "Welcome to Miyo Global — Your Onboarding Starts Now!",
-    html: getOnboardingWelcomeEmailTemplate(employeeName, designation, joiningDate, taskCount),
+    vars: {
+      first_name: employeeName.trim().split(/\s+/)[0] || employeeName,
+      joining_date: joiningDate,
+      task_count: taskCount,
+      manager_name: managerName?.trim() || "your manager",
+      office_location: COMPANY_OFFICE_LOCATION || "to be confirmed by your manager",
+      start_time: WORK_START_TIME || "to be confirmed by your manager",
+    },
   });
 }
 
+/** MIYO-0229: the hand-written onboarding-tasks-assigned template. */
 export async function sendOnboardingTaskEmail(
   email: string,
-  recipientName: string,
   employeeName: string,
-  taskRole: string,
-  taskCount: number
+  taskTitle: string,
+  details: { joiningDate?: string; dueDate?: string; taskUrl?: string } = {},
 ) {
-  await sendEmail({
+  await sendTemplateEmail("onboarding-tasks-assigned", {
     to: email,
-    subject: `Onboarding Tasks Assigned: ${employeeName}`,
-    html: getOnboardingTaskEmailTemplate(recipientName, employeeName, taskRole, taskCount),
+    vars: {
+      employee_name: employeeName,
+      task_title: taskTitle,
+      joining_date: details.joiningDate ?? "not set",
+      due_date: details.dueDate ?? "as soon as possible",
+      task_url: details.taskUrl ?? `${appUrl}/hr/onboarding`,
+    },
   });
 }
 

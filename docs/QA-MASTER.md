@@ -1502,7 +1502,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
 
 ### Low
 
-- [ ] MIYO-0208 [Low][Leave] Approve has no confirmation and takes ~5 s to update
+- [x] MIYO-0208 [Low][Leave] Approve has no confirmation and takes ~5 s to update
+  - **Agent note (2026-10-17):** the cache update is already optimistic (`optimisticLeaveDecision`), so the row moves at once, and A33 added a confirm dialog instead of an undo toast — approving pays out leave, so it asks first. No undo needed.
   - **Where:** app/(dashboard)/hr/leaves approvals list
   - **Problem:** QA 4.4.
   - **Fix:** Optimistic update with undo toast (no blocking dialog).
@@ -1510,7 +1511,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0209 [Low][Attendance] 'Check In' quick action shown while clocked in **[confirm on prod]**
+- [x] MIYO-0209 [Low][Attendance] 'Check In' quick action shown while clocked in **[confirm on prod]**
+  - **Agent note (2026-10-17):** the live quick actions already hide "Check in" when clocked in (A39); the stale widget that did not was unused and is deleted (9fd3c22c1).
   - **Where:** components/dashboard/widgets/quick-actions-widget.tsx (also flagged unreachable by dead-code)
   - **Problem:** QA 📷 02.
   - **Fix:** Hide or switch to 'Check out' based on status.
@@ -1518,7 +1520,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** ui-B: Admin Not clocked in; Check In enabled / Out disabled OK; clocked-in state not tested
 
-- [ ] MIYO-0210 [Low][Jobs & cron] Notification preferences are not checked by senders
+- [x] MIYO-0210 [Low][Jobs & cron] Notification preferences are not checked by senders
+  - **Agent note (2026-10-17):** `sendEmail` takes a `category` and drops recipients who switched it off; leave, celebration, holiday and attendance mail is tagged (889824dab).
   - **Where:** lib/email/*, notification_preferences, /settings/notifications
   - **Problem:** Design doc §11.1: no sender checks preferences.
   - **Fix:** Add shouldSend(userId, category, channel) in lib/email/sender.ts and use it for non-transactional mails.
@@ -1526,7 +1529,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0212 [Low][Onboarding] Warn when the joining date is in the past
+- [x] MIYO-0212 [Low][Onboarding] Warn when the joining date is in the past
+  - **Agent note (2026-10-17):** warning moved under the joining-date field and now mentions that earlier months are not paid automatically.
   - **Where:** components/hr/_onboarding/step-employment.tsx
   - **Problem:** QA 4.1: allowed silently.
   - **Fix:** Show an inline warning 'Joining date is in the past; payroll for earlier months is not generated automatically'.
@@ -1534,7 +1538,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0216 [Low][Employees & settings] AI settings show cost as '$0.00'
+- [x] MIYO-0216 [Low][Employees & settings] AI settings show cost as '$0.00'
+  - **Agent note (2026-10-17):** zero now reads "USD 0.00" like the other branches (1159ca10b).
   - **Where:** app/(dashboard)/settings/ai/page.tsx:61
   - **Problem:** Dollar sign in an INR app.
   - **Fix:** Format with the org currency (₹) or show tokens only.
@@ -1542,7 +1547,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0218 [Low][Email templates] Replace email template `auth-verify-email`
+- [x] MIYO-0218 [Low][Email templates] Replace email template `auth-verify-email`
+  - **Agent note (2026-10-17):** renders `auth-verify-email`; the preview page and test-send route are now catalogue-driven (d0462c369). Inbox check still outstanding.
   - **Where:** Current: getVerificationEmailTemplate. New: email-templates/auth-verify-email.html + .txt. Trigger: POST /api/auth/signup, /api/auth/resend-verification. To: the user.
   - **Problem:** 'Thank you for signing up!' marketing tone; Yellow 'Security Notice' banner for a routine message; Public sign-up may not be wanted for an internal HR app (see the Security section)
   - **Fix:** Implement with renderEmail('auth-verify-email', vars). Subject: "Confirm your email address". Preheader: "One click to confirm your email for {{org_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1550,7 +1556,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0219 [Low][Email templates] Replace email template `auth-password-changed`
+- [x] MIYO-0219 [Low][Email templates] Replace email template `auth-password-changed`
+  - **Agent note (2026-10-17):** renders `auth-password-changed`, one sender instead of two. Inbox check outstanding.
   - **Where:** Current: getPasswordChangeConfirmationEmailTemplate. New: email-templates/auth-password-changed.html + .txt. Trigger: password reset / change. To: the user.
   - **Problem:** Emoji heading ('🔒'); Generic 'security tips' list including 'Enable two-factor authentication if available' — MFA exists, link to it; No time or device of the change
   - **Fix:** Implement with renderEmail('auth-password-changed', vars). Subject: "Your password was changed". Preheader: "If this was not you, reset your password now.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1558,7 +1565,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0220 [Low][Email templates] Replace email template `auth-account-locked`
+- [x] MIYO-0220 [Low][Email templates] Replace email template `auth-account-locked`
+  - **Agent note (2026-10-17):** renders `auth-account-locked` with the real unlock time and attempt count (de7fe4d6f). Inbox check outstanding.
   - **Where:** Current: getAccountLockedEmailTemplate. New: email-templates/auth-account-locked.html + .txt. Trigger: 5th failed sign-in. To: the user.
   - **Problem:** '15 minutes' hard-coded in copy; Two competing actions (reset button + support link)
   - **Fix:** Implement with renderEmail('auth-account-locked', vars). Subject: "Your account is temporarily locked". Preheader: "Too many failed sign-in attempts. It unlocks at {{unlock_at}} IST.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1566,7 +1574,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0221 [Low][Email templates] Replace email template `auth-new-device-login`
+- [x] MIYO-0221 [Low][Email templates] Replace email template `auth-new-device-login`
+  - **Agent note (2026-10-17):** renders `auth-new-device-login`; location says "not recorded" since the app does not geolocate. Inbox check outstanding.
   - **Where:** Current: getNewDeviceLoginEmailTemplate. New: email-templates/auth-new-device-login.html + .txt. Trigger: sign-in from an unknown device. To: the user.
   - **Problem:** Raw user-agent string shown to the user; Time not labelled IST
   - **Fix:** Implement with renderEmail('auth-new-device-login', vars). Subject: "New sign-in to your account". Preheader: "{{device}} · {{location}} · {{signed_in_at}} IST". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1574,7 +1583,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0222 [Low][Email templates] Replace email template `auth-password-expiry`
+- [x] MIYO-0222 [Low][Email templates] Replace email template `auth-password-expiry`
+  - **Agent note (2026-10-17):** renders `auth-password-expiry` with the expiry date rather than a day count (16357afe6). Inbox check outstanding.
   - **Where:** Current: getPasswordExpiryWarningEmailTemplate (no production caller). New: email-templates/auth-password-expiry.html + .txt. Trigger: daily job when organizations.passwordExpiryDays is set (to be wired). To: the user.
   - **Problem:** Sender has no production caller (dead)
   - **Fix:** Implement with renderEmail('auth-password-expiry', vars). Subject: "Your password expires on {{expires_on}}". Preheader: "Change it before {{expires_on}} to avoid being locked out.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1582,7 +1592,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0223 [Low][Email templates] Replace email template `auth-account-deactivated`
+- [x] MIYO-0223 [Low][Email templates] Replace email template `auth-account-deactivated`
+  - **Agent note (2026-10-17):** renders `auth-account-deactivated`; the administrator name and free-text reason are no longer mailed to the leaver. Inbox check outstanding.
   - **Where:** Current: getAccountDeactivationEmailTemplate. New: email-templates/auth-account-deactivated.html + .txt. Trigger: HR deactivates a user / last working day. To: the user (personal email if available).
   - **Problem:** Emoji heading ('👋'); Lists 'The CRM dashboard and all projects' (CRM wording); Says who deactivated (exposes an HR person's name unnecessarily); Sent to the work address that is being deactivated — should go to the personal email
   - **Fix:** Implement with renderEmail('auth-account-deactivated', vars). Subject: "Your {{org_name}} account has been deactivated". Preheader: "You can no longer sign in. Contact HR with any questions.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1590,7 +1601,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0224 [Low][Email templates] Replace email template `auth-invitation`
+- [x] MIYO-0224 [Low][Email templates] Replace email template `auth-invitation`
+  - **Agent note (2026-10-17):** renders `auth-invitation` with the role and the real expiry date (3867e9e2e). Inbox check outstanding.
   - **Where:** Current: getInvitationEmailTemplate (lib/email-templates/organization.ts). New: email-templates/auth-invitation.html + .txt. Trigger: settings/members invite, project invite (invitations table). To: the invitee.
   - **Problem:** Emoji heading ('🎉 You're Invited!'); Same copy for org and project invites; project name/role not shown
   - **Fix:** Implement with renderEmail('auth-invitation', vars). Subject: "{{inviter_name}} invited you to {{org_name}}". Preheader: "Accept the invitation to join {{invite_target}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1598,7 +1610,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0225 [Low][Email templates] Replace email template `auth-mfa-enabled`
+- [x] MIYO-0225 [Low][Email templates] Replace email template `auth-mfa-enabled`
+  - **Agent note (2026-10-17):** new sender wired into `/api/auth/mfa/verify` (958ad71a2). Inbox check outstanding.
   - **Where:** Current: NEW (no email today; app/api/auth/mfa/verify). New: email-templates/auth-mfa-enabled.html + .txt. Trigger: MFA turned on. To: the user.
   - **Problem:** Missing: MFA enable/disable/admin reset send no email at all
   - **Fix:** Implement with renderEmail('auth-mfa-enabled', vars). Subject: "Two-step verification is on". Preheader: "Your account now asks for a code at sign-in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1606,7 +1619,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0226 [Low][Email templates] Replace email template `auth-mfa-disabled`
+- [x] MIYO-0226 [Low][Email templates] Replace email template `auth-mfa-disabled`
+  - **Agent note (2026-10-17):** new sender wired into `/api/auth/mfa/disable` (958ad71a2). Inbox check outstanding.
   - **Where:** Current: NEW (app/api/auth/mfa/disable). New: email-templates/auth-mfa-disabled.html + .txt. Trigger: MFA turned off by the user. To: the user.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('auth-mfa-disabled', vars). Subject: "Two-step verification was turned off". Preheader: "Your account no longer asks for a code at sign-in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1614,7 +1628,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0227 [Low][Email templates] Replace email template `auth-mfa-reset-by-admin`
+- [x] MIYO-0227 [Low][Email templates] Replace email template `auth-mfa-reset-by-admin`
+  - **Agent note (2026-10-17):** replaces the generic notification body in `/api/auth/mfa/reset` (958ad71a2). Inbox check outstanding.
   - **Where:** Current: NEW (app/api/auth/mfa/reset). New: email-templates/auth-mfa-reset-by-admin.html + .txt. Trigger: Admin resets a user's MFA. To: the user.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('auth-mfa-reset-by-admin', vars). Subject: "Your two-step verification was reset". Preheader: "Set it up again the next time you sign in.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.

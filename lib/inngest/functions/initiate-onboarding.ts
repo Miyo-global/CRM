@@ -62,6 +62,11 @@ const DEFAULT_TASKS: {
   },
 ];
 
+/** "3 HR tasks" / "1 HR task", for the task-assigned mail's subject line. */
+function taskSummary(count: number, role: string): string {
+  return `${count} ${role} task${count === 1 ? "" : "s"}`;
+}
+
 export const initiateOnboarding = inngest.createFunction(
   {
     id: "initiate-onboarding",
@@ -136,7 +141,7 @@ export const initiateOnboarding = inngest.createFunction(
     await step.run("send-welcome-onboarding-email", async () => {
       const employee = await db.query.users.findFirst({
         where: eq(users.id, userId),
-        columns: { name: true, email: true, designation: true },
+        columns: { name: true, email: true, designation: true, reportingTo: true },
       });
 
       if (!employee?.email) return { skipped: true };
@@ -148,12 +153,19 @@ export const initiateOnboarding = inngest.createFunction(
 
       const dateStr = joiningDate ? format(new Date(joiningDate), "dd MMM yyyy") : "Today";
 
+      const manager = employee.reportingTo
+        ? await db.query.users.findFirst({
+            where: eq(users.id, employee.reportingTo),
+            columns: { name: true },
+          })
+        : null;
+
       await sendOnboardingWelcomeEmail(
         employee.email,
         employee.name ?? "Team Member",
-        employee.designation ?? "Team Member",
         dateStr,
-        taskCount.length
+        taskCount.length,
+        manager?.name,
       );
 
       return { sent: true };
@@ -202,7 +214,9 @@ export const initiateOnboarding = inngest.createFunction(
           });
           if (hrUser?.email) {
             emailPromises.push(
-              sendOnboardingTaskEmail(hrUser.email, hrUser.name ?? "HR", employeeName, "HR", hrTaskCount)
+              sendOnboardingTaskEmail(hrUser.email, employeeName, taskSummary(hrTaskCount, "HR"), {
+                joiningDate: joiningDate ? format(new Date(joiningDate), "dd MMM yyyy") : undefined,
+              })
             );
           }
         }
@@ -232,7 +246,9 @@ export const initiateOnboarding = inngest.createFunction(
           });
           if (itUser?.email) {
             emailPromises.push(
-              sendOnboardingTaskEmail(itUser.email, itUser.name ?? "IT", employeeName, "IT", itTaskCount)
+              sendOnboardingTaskEmail(itUser.email, employeeName, taskSummary(itTaskCount, "IT"), {
+                joiningDate: joiningDate ? format(new Date(joiningDate), "dd MMM yyyy") : undefined,
+              })
             );
           }
         }
@@ -255,7 +271,9 @@ export const initiateOnboarding = inngest.createFunction(
         });
         if (manager?.email) {
           emailPromises.push(
-            sendOnboardingTaskEmail(manager.email, manager.name ?? "Manager", employeeName, "MANAGER", managerTaskCount)
+            sendOnboardingTaskEmail(manager.email, employeeName, taskSummary(managerTaskCount, "manager"), {
+              joiningDate: joiningDate ? format(new Date(joiningDate), "dd MMM yyyy") : undefined,
+            })
           );
         }
       }

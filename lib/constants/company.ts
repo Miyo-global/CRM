@@ -29,6 +29,16 @@ export const COMPANY_PHONE = process.env.NEXT_PUBLIC_COMPANY_PHONE || "";
 export const COMPANY_ADDRESS = process.env.NEXT_PUBLIC_COMPANY_ADDRESS || "";
 
 /**
+ * Where a new hire reports on day one, and when. MIYO-0228: the welcome mail
+ * states both, and a wrong address or time on someone's first morning is
+ * worse than none — so an unset value reads as "your manager will confirm".
+ */
+export const COMPANY_OFFICE_LOCATION =
+  process.env.NEXT_PUBLIC_COMPANY_OFFICE_LOCATION || COMPANY_ADDRESS || "";
+
+export const WORK_START_TIME = process.env.NEXT_PUBLIC_WORK_START_TIME || "";
+
+/**
  * Centralised company contact/URL constants.
  *
  * These use `||`, not `??`, deliberately. Hosting platforms commonly define an

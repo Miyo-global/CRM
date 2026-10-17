@@ -15,6 +15,7 @@ export {
   sendMfaDisabledEmail,
   sendMfaResetByAdminEmail,
 } from "./email/auth";
+export { sendOnboardingWelcomeEmail, sendOnboardingTaskEmail } from "./email/onboarding";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
   sendHolidayAnnouncementEmail,
@@ -41,8 +42,6 @@ import {
   getTerminationEmailTemplate,
   getWorkLogApprovedEmailTemplate,
   getWorkLogRejectedEmailTemplate,
-  getOnboardingWelcomeEmailTemplate,
-  getOnboardingTaskEmailTemplate,
   getOnboardingCompleteEmployeeEmailTemplate,
   getOnboardingCompleteHrEmailTemplate,
   getTicketCreatedEmailTemplate,
@@ -576,35 +575,6 @@ export async function sendWorkLogStatusEmail(
     to: email,
     subject: `Work Log ${status === "APPROVED" ? "Approved" : "Rejected"} — ${date}`,
     html,
-  });
-}
-
-
-export async function sendOnboardingWelcomeEmail(
-  email: string,
-  employeeName: string,
-  designation: string,
-  joiningDate: string,
-  taskCount: number
-) {
-  await sendEmail({
-    to: email,
-    subject: "Welcome to Miyo Global — Your Onboarding Starts Now!",
-    html: getOnboardingWelcomeEmailTemplate(employeeName, designation, joiningDate, taskCount),
-  });
-}
-
-export async function sendOnboardingTaskEmail(
-  email: string,
-  recipientName: string,
-  employeeName: string,
-  taskRole: string,
-  taskCount: number
-) {
-  await sendEmail({
-    to: email,
-    subject: `Onboarding Tasks Assigned: ${employeeName}`,
-    html: getOnboardingTaskEmailTemplate(recipientName, employeeName, taskRole, taskCount),
   });
 }
 

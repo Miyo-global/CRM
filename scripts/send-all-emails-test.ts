@@ -143,8 +143,8 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "support.ticketReply", run: () => sendSupportTicketReplyEmail(TO, NAME, "Cannot login on mobile", 42, ACTOR, "Have you tried clearing your cache and reinstalling the app?") },
   { name: "support.ticketStatus", run: () => sendSupportTicketStatusEmail(TO, NAME, "Cannot login on mobile", 42, "RESOLVED", ACTOR) },
 
-  { name: "onboarding.welcome", run: () => sendOnboardingWelcomeEmail(TO, NAME, "Senior Engineer", TODAY, 8) },
-  { name: "onboarding.task", run: () => sendOnboardingTaskEmail(TO, NAME, "John Doe", "IT", 3) },
+  { name: "onboarding.welcome", run: () => sendOnboardingWelcomeEmail(TO, NAME, TODAY, 8, ACTOR) },
+  { name: "onboarding.task", run: () => sendOnboardingTaskEmail(TO, "John Doe", "3 IT tasks", { joiningDate: TODAY }) },
   { name: "onboarding.completeEmployee", run: () => sendOnboardingCompleteEmployeeEmail(TO, NAME) },
   { name: "onboarding.completeHr", run: () => sendOnboardingCompleteHrEmail(TO, NAME, "John Doe") },
 
