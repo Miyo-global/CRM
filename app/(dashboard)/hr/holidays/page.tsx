@@ -310,7 +310,10 @@ export default function HolidaysPage() {
     })),
   }], [sortedHolidays, viewYear]);
 
-  if (isLoading) {
+  // MIYO-0331: the skeleton is for the first load only. Once a year's
+  // holidays are on screen, saving one re-fetches underneath them instead of
+  // blanking the page.
+  if (isLoading && !rawHolidays) {
     return (
       <PageWrapper title="Holidays">
         <div className="space-y-6">
