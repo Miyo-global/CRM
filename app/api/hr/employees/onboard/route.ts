@@ -181,7 +181,10 @@ export async function POST(req: NextRequest) {
           userId: u.id,
           basicSalary: basicSalary.toString(),
           hraPercentage: "50",
-          allowances: specialAllowance.toString(),
+          // MIYO-0124: the 50/25/25 split puts the third part in
+          // specialAllowance; it was landing in the generic allowances column.
+          specialAllowance: specialAllowance.toString(),
+          allowances: "0",
           deductions: "0",
           effectiveFrom: formatDateOnly(body.joiningDate),
           isActive: true,
