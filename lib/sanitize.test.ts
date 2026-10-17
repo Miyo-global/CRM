@@ -49,3 +49,24 @@ describe("sanitizeHtml", () => {
     expect(sanitizeHtml(html)).toBe(html);
   });
 });
+
+// SEC-0011
+describe("image and class hardening", () => {
+  it("drops a remote image, keeping its alt text", () => {
+    const out = sanitizeHtml('<img src="http://evil.example/x.png" alt="logo">');
+    expect(out).not.toContain("evil.example");
+    expect(out).toContain("logo");
+  });
+
+  it("keeps a relative image", () => {
+    expect(sanitizeHtml('<img src="/uploads/logo.png">')).toContain('src="/uploads/logo.png"');
+  });
+
+  it("strips class attributes", () => {
+    expect(sanitizeHtml('<p class="opacity-0">hi</p>')).toBe("<p>hi</p>");
+  });
+
+  it("neutralises a url() background", () => {
+    expect(sanitizeHtml('<p style="background:url(http://evil.example/b)">hi</p>')).not.toContain("evil.example");
+  });
+});

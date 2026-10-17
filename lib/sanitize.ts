@@ -1,5 +1,23 @@
 import sanitizeHtmlLib from "sanitize-html";
 
+/**
+ * SEC-0011: an <img> may point at our own storage or a relative path, never
+ * at a third-party host. A remote image in a stored document is a beacon:
+ * it reports to its owner every time somebody opens the document.
+ */
+function isAllowedImageSrc(src: string): boolean {
+  const trimmed = src.trim();
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return true;
+
+  const assetBase = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+  if (!assetBase) return false;
+  try {
+    return new URL(trimmed).origin === new URL(assetBase).origin;
+  } catch {
+    return false;
+  }
+}
+
 const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
   allowedTags: sanitizeHtmlLib.defaults.allowedTags.concat([
     "img",
@@ -11,7 +29,10 @@ const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
     "s",
   ]),
   allowedAttributes: {
-    "*": ["style", "class", "align", "dir", "title"],
+    // SEC-0011: no "class". Stored HTML has no business naming the app's
+    // own stylesheet classes, and it was the one attribute here with no
+    // value whitelist behind it.
+    "*": ["style", "align", "dir", "title"],
     a: ["href", "name", "target", "rel"],
     img: ["src", "alt", "width", "height"],
     td: ["colspan", "rowspan", "width", "height", "valign", "bgcolor"],
@@ -23,6 +44,10 @@ const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
   transformTags: {
     // Force safe rel on all anchors so target="_blank" links can't reverse-tabnab.
     a: sanitizeHtmlLib.simpleTransform("a", { rel: "noopener noreferrer nofollow" }, true),
+    img: (tagName, attribs) =>
+      isAllowedImageSrc(attribs.src ?? "")
+        ? { tagName, attribs }
+        : { tagName: "span", attribs: {}, text: attribs.alt ?? "" },
   },
   allowedStyles: {
     "*": {
