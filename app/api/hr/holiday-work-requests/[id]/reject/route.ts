@@ -4,6 +4,9 @@ import { holidayWorkRequests } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createNotification } from "@/server/actions/create-notification";
+import { sendHolidayWorkDecisionEmail } from "@/lib/email/hr-attendance";
+import { users } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 
@@ -54,6 +57,20 @@ export async function PATCH(
       message: `Your request to work on ${request.requestDate} was rejected. Reason: ${body.rejectionReason}`,
       link: "/hr/attendance",
     }).catch(() => {});
+
+    // MIYO-0241: tell them by email too, not only in the app.
+    void (async () => {
+      const employee = await db.query.users.findFirst({
+        where: eq(users.id, request.userId),
+        columns: { email: true },
+      });
+      if (!employee?.email) return;
+      await sendHolidayWorkDecisionEmail(employee.email, "rejected", {
+        date: request.requestDate,
+        compensation: request.compensationPreference.replace(/_/g, " ").toLowerCase(),
+        note: body.rejectionReason,
+      });
+    })().catch((error) => logger.error("Holiday work rejection email failed", { error }));
 
     return ok(updated);
   });
