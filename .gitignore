@@ -72,3 +72,6 @@ next-env.d.ts
 .claude/commands/
 .claude/agents/
 .claude/helpers/
+
+# SEC-0013: agent session state is local, not repo content.
+.omc/

@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"S=/private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/0dde2811-3a11-42b4-a65d-cbcf9c00d83d/scratchpad; cd $S/wt && git checkout -q -f --detach $(git -C /Users/tarunchinta...",
-  "error": "Exit code 2\nrc=0\nUsing 'postgres' driver for database querying\n[⣷] Pulling schema from database...\nError: getaddrinfo ENOTFOUND ep-late-hat-aysnmd9k.c-5.us-east-2.aws.neon.tech\n  errno: -3008,\n  syscall: 'getaddrinfo',\n  hostname: 'ep-late-hat-aysnmd9k.c-5.us-east-2.aws.neon.tech'\npsql: error: could not translate host name \"ep-late-hat-aysnmd9k.c-5.us-east-2.aws.neon.tech\" to address: nodename nor servname provided, or not known",
-  "timestamp": "2026-10-11T15:51:39.852Z",
-  "retry_count": 1
-}

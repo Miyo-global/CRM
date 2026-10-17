@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"grep -rn \\\"htmlToText\\\\|text:\\\" lib/email/providers/zeptomail.ts | head; echo ===; grep -n \\\"export async function sendEmail\\\\|from \\\\\\\"./sender\\\\\\\"\\\\|from \\\\\\\"@/lib/email/sender\\\\\\\"\\\" lib...",
-  "error": "Exit code 1\n(eval):1: == not found",
-  "timestamp": "2026-10-16T11:11:23.166Z",
-  "retry_count": 1
-}

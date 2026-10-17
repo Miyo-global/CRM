@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cat > /private/tmp/claude-501/-Users-tarunchintakunta-office-miyoglobal-crm/5e11a952-9d8d-435c-9f20-399692f564c2/scratchpad/greps.sh <<'EOF'\\n#!/bin/bash\\nD=\\\"app components features hooks...",
-  "error": "Exit code 1\n1 hex:      698\n2 rgb:       41\n3 arb-color:       10\n4 palette:     1544\n5 legacy:      546\n6 fonts:       11\n7 arb-size:     1341\n8 bw:      217\n9 dark:      718  files-outside-ui:       86\n10 oldhex:      140\n      53\nalert-dialog.tsx\navatar-crop-dialog.tsx\navatar-stack.tsx\navatar.tsx\nbadge.tsx\nbutton.tsx\ncalendar.tsx\ncard.tsx\ncheckbox.tsx\ncommand.tsx\nconfirm-dialog.tsx\ndashboard-skeleton.tsx\ndate-picker.tsx\ndate-range-picker.tsx\ndialog.tsx\ndropdown-menu.tsx\nempty-state.test.tsx\ne...",
-  "timestamp": "2026-10-11T16:38:46.470Z",
-  "retry_count": 1
-}

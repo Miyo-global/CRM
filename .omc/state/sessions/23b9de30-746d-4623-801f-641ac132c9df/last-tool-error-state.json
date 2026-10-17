@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"sed -i '' 's|    return NextResponse.json(result) as NextResponse;|    return NextResponse.json(result);|' app/api/storage/upload/route.ts && ls .prettierrc* prettier.config.* 2>/dev/null;...",
-  "error": "Exit code 1\n(eval):1: no matches found: .prettierrc*\ntc=0\n(eval):1: no matches found: app/api/storage/**/*.test.ts",
-  "timestamp": "2026-10-16T07:54:07.188Z",
-  "retry_count": 2
-}

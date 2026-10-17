@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"grep -n \\\"Tabs\\\\|TabsTrigger\\\\|nav\\\\|section\\\" \\\"app/(dashboard)/settings/page.tsx\\\" | head -20 && wc -l \\\"app/(dashboard)/settings/page.tsx\\\"\",\"description\":\"Inspect settings page\"}",
-  "error": "Exit code 1\nugrep: warning: app/(dashboard)/settings/page.tsx: No such file or directory\nwc: app/(dashboard)/settings/page.tsx: open: No such file or directory",
-  "timestamp": "2026-10-15T09:28:56.929Z",
-  "retry_count": 1
-}
