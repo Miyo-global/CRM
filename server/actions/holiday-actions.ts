@@ -36,13 +36,19 @@ export async function addHoliday(data: {
   }
 
   try {
-    await db.insert(holidays).values({
-      orgId: member.orgId,
-      name: capitalizeWords(data.name),
-      date: formatDateOnly(data.date),
-      message: data.message,
-      notificationSent: false,
-    });
+    const [created] = await db
+      .insert(holidays)
+      .values({
+        orgId: member.orgId,
+        name: capitalizeWords(data.name),
+        date: formatDateOnly(data.date),
+        message: data.message,
+        notificationSent: false,
+      })
+      .returning({ id: holidays.id });
+
+    // MIYO-0146: a holiday added after the day's run still gets its reminder.
+    void sendHolidayReminderIfDue(created.id).catch(() => {});
 
     revalidatePath("/settings");
     return { success: true };
@@ -192,7 +198,15 @@ export async function bulkAddHolidays(holidayList: Array<{
       notificationSent: false,
     }));
 
-    await db.insert(holidays).values(holidayRecords);
+    const created = await db
+      .insert(holidays)
+      .values(holidayRecords)
+      .returning({ id: holidays.id });
+
+    // MIYO-0146: same for an import that lands after the day's run.
+    for (const row of created) {
+      void sendHolidayReminderIfDue(row.id).catch(() => {});
+    }
 
     revalidatePath("/settings");
     return { success: true, count: holidayList.length };
