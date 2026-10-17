@@ -4,7 +4,6 @@ import { formatIST } from "@/lib/date-utils";
 import {
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
-  getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
@@ -68,15 +67,19 @@ export async function sendWelcomeEmail(
   });
 }
 
+/** MIYO-0219: the hand-written auth-password-changed template. */
 export async function sendPasswordChangeConfirmationEmail(
   email: string,
   userName: string,
   changedAt: string = `${formatIST(new Date())} IST`,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("auth-password-changed", {
     to: email,
-    subject: "Your password was changed",
-    html: getPasswordChangeConfirmationEmailTemplate(userName, changedAt),
+    vars: {
+      first_name: userName.trim().split(/\s+/)[0] || userName,
+      email,
+      changed_at: changedAt,
+    },
   });
 }
 

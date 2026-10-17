@@ -2,7 +2,11 @@ import { sendEmail, sendTemplateEmail } from "./email/sender";
 // MIYO-0159 / MIYO-0160: these two now render the hand-written templates and
 // live in lib/email/auth.ts; this module re-exports them so its callers get
 // the same mail.
-export { sendPasswordResetEmail, sendWelcomeEmail } from "./email/auth";
+export {
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+  sendPasswordChangeConfirmationEmail,
+} from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
   sendHolidayAnnouncementEmail,
@@ -18,7 +22,6 @@ import {
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
   getLeaveCancellationEmailTemplate,
-  getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
@@ -315,17 +318,6 @@ export async function sendLeaveCancellationEmail(
       startDate,
       endDate
     ),
-  });
-}
-
-export async function sendPasswordChangeConfirmationEmail(
-  email: string,
-  userName: string
-) {
-  await sendEmail({
-    to: email,
-    subject: 'Password Changed Successfully',
-    html: getPasswordChangeConfirmationEmailTemplate(userName),
   });
 }
 
