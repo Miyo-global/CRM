@@ -54,7 +54,7 @@ export function getProjectAssignmentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Added to Project: ${sProject}`,
+    title: `Added to Project: ${projectName}`,
     preheader: `You've been added to ${sProject}`,
     content,
   });
@@ -145,7 +145,7 @@ export function getTicketAssignmentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `${keyPrefix}${sTitle}`,
+    title: `${keyPrefix}${ticketTitle}`,
     preheader: `${sCreatedBy} assigned ${keyPrefix}${sTitle} to you`,
     content,
   });
@@ -219,7 +219,7 @@ export function getTicketReviewRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Review Requested: ${sTitle}`,
+    title: `Review Requested: ${ticketTitle}`,
     preheader: `${sCompletedBy} completed work on ${sTitle} and needs your review`,
     content,
   });
@@ -288,7 +288,7 @@ export function getTicketChangesRequestedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Changes Requested: ${sTitle}`,
+    title: `Changes Requested: ${ticketTitle}`,
     preheader: `${sReviewer} requested changes on ${sTitle}`,
     content,
   });
@@ -341,7 +341,7 @@ export function getTicketCommentEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `${keyPrefix}New comment on: ${sTitle}`,
+    title: `${keyPrefix}New comment on: ${ticketTitle}`,
     preheader: `${sCommenter} commented on ${keyPrefix}${sTitle}`,
     content,
   });

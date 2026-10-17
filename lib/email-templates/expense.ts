@@ -58,7 +58,7 @@ export function getExpenseSubmittedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `New Expense Claim from ${sEmployee}`,
+    title: `New Expense Claim from ${employeeName}`,
     preheader: `${sEmployee} submitted a ${CURRENCY_SYMBOL}${sAmount} expense claim`,
     content,
   });
@@ -109,7 +109,7 @@ export function getExpenseApprovedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Claim Approved - ${CURRENCY_SYMBOL}${sAmount}`,
+    title: `Expense Claim Approved - ${CURRENCY_SYMBOL}${amount}`,
     preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense claim has been approved`,
     content,
   });
@@ -167,7 +167,7 @@ export function getExpenseRejectedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${sAmount}`,
+    title: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${amount}`,
     preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense claim has been rejected`,
     content,
   });
@@ -224,7 +224,7 @@ export function getExpensePaidEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Expense Reimbursed - ${CURRENCY_SYMBOL}${sAmount}`,
+    title: `Expense Reimbursed - ${CURRENCY_SYMBOL}${amount}`,
     preheader: `Your ${CURRENCY_SYMBOL}${sAmount} expense has been reimbursed`,
     content,
   });

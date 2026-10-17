@@ -56,7 +56,7 @@ export function getLeaveRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Leave Request: ${sEmployee}`,
+    title: `Leave Request: ${employeeName}`,
     preheader: `${sEmployee} requested ${sLeaveType} from ${startDate} to ${endDate}`,
     content,
   });
@@ -111,7 +111,7 @@ export function getWfhRequestEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `WFH Request: ${sEmployee}`,
+    title: `WFH Request: ${employeeName}`,
     preheader: `${sEmployee} requested WFH on ${wfhDate}`,
     content,
   });
@@ -234,7 +234,7 @@ export function getLeaveCancellationEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Leave Cancelled: ${sEmployee}`,
+    title: `Leave Cancelled: ${employeeName}`,
     preheader: `${sEmployee} cancelled their ${sLeaveType} request`,
     content,
   });
@@ -415,7 +415,7 @@ export function getResignationSubmittedEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Resignation Submitted: ${sEmployee}`,
+    title: `Resignation Submitted: ${employeeName}`,
     preheader: `${sEmployee} has submitted a resignation. Last working date: ${lastWorkingDate}`,
     content,
   });
@@ -618,7 +618,7 @@ export function getDocumentExpiryReminderEmailTemplate(
   `;
 
   return getEmailTemplate({
-    title: `Document Expiring Soon: ${sDocName}`,
+    title: `Document Expiring Soon: ${documentName}`,
     preheader: `Your ${sDocType} expires in ${daysRemaining} days`,
     content,
   });
@@ -714,7 +714,7 @@ export function getPayslipEmailTemplate(params: {
     <p class="email-text">Best regards,<br/><strong>${sOrg} — HR Team</strong></p>
   `;
 
-  const subject = `Your Payslip for ${sMonth} is Ready — ${sOrg}`;
+  const subject = `Your payslip for ${params.month}`;
 
   return {
     subject,

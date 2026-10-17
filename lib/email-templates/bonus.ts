@@ -55,7 +55,7 @@ export function getBonusPaidEmployeeEmailTemplate(params: {
   `;
 
   return getEmailTemplate({
-    title: `Bonus Paid — ${CURRENCY_SYMBOL}${sAmount}`,
+    title: `Bonus Paid — ${CURRENCY_SYMBOL}${params.amount}`,
     preheader: `Your ${sType} bonus of ${CURRENCY_SYMBOL}${sAmount} has been marked as paid`,
     content,
   });
@@ -112,7 +112,7 @@ export function getBonusPaidStakeholderEmailTemplate(params: {
   `;
 
   return getEmailTemplate({
-    title: `Bonus paid for ${sEmployee}`,
+    title: `Bonus paid for ${params.employeeName}`,
     preheader: `${sMarkedBy} marked a ${CURRENCY_SYMBOL}${sAmount} ${sType} bonus as paid for ${sEmployee}`,
     content,
   });
