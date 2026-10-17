@@ -10,10 +10,10 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const createCycleSchema = z
   .object({
-    name: z.string().min(1).max(100),
+    name: z.string({ error: "Give the cycle a name" }).min(1, "Give the cycle a name").max(100),
     description: z.string().optional(),
-    startDate: z.string(),
-    endDate: z.string(),
+    startDate: z.string({ error: "Pick a start date" }).min(1, "Pick a start date"),
+    endDate: z.string({ error: "Pick an end date" }).min(1, "Pick an end date"),
   })
   .strict()
   .refine((d) => new Date(d.endDate) > new Date(d.startDate), {
