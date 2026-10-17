@@ -1,28 +1,34 @@
 import { describe, expect, it } from "vitest";
-import {
-  getWelcomeEmailTemplate,
-  getPasswordChangeConfirmationEmailTemplate,
-} from "./auth";
+import { getPasswordChangeConfirmationEmailTemplate } from "./auth";
+import { renderEmail } from "./render";
 
+// MIYO-0159: the set-up mail is the auth-welcome-set-password template now.
 describe("account set-up email", () => {
-  const html = getWelcomeEmailTemplate("Qa Alpha", "qa@example.com", "https://crm/setup?token=x", {
-    designation: "Software Engineer",
-    joiningDate: "20 Oct 2026",
-    managerName: "Qa Manager",
-    linkExpiresAt: "23 Oct 2026, 2:30 pm IST",
+  const mail = renderEmail("auth-welcome-set-password", {
+    first_name: "Qa",
+    email: "qa@example.com",
+    setup_url: "https://crm/setup?token=x",
+    joining_date: "20 Oct 2026",
+    manager_name: "Qa Manager",
+    link_expires_at: "23 Oct 2026, 2:30 pm IST",
   });
 
   it("names the first day, the manager and the real expiry", () => {
-    expect(html).toMatch(/First day:/);
-    expect(html).toMatch(/20 Oct 2026/);
-    expect(html).toMatch(/Reporting to:/);
-    expect(html).toMatch(/Qa Manager/);
-    expect(html).toMatch(/23 Oct 2026, 2:30 pm IST/);
-    expect(html).not.toMatch(/expires in 7 days/);
+    expect(mail.html).toMatch(/20 Oct 2026/);
+    expect(mail.html).toMatch(/Qa Manager/);
+    expect(mail.html).toMatch(/23 Oct 2026, 2:30 pm IST/);
+    expect(mail.html).not.toMatch(/expires in 7 days/);
   });
 
-  it("drops the filler copy", () => {
-    expect(html).not.toMatch(/excited to have you on board/i);
+  it("leaves no placeholder unfilled and keeps the link", () => {
+    expect(mail.html).not.toMatch(/\{\{/);
+    expect(mail.text).not.toMatch(/\{\{/);
+    expect(mail.html).toContain("https://crm/setup?token=x");
+  });
+
+  it("drops the filler copy and the emoji", () => {
+    expect(mail.html).not.toMatch(/excited to have you on board/i);
+    expect(mail.html).not.toMatch(/\u{1F680}/u);
   });
 });
 

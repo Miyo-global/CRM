@@ -23,8 +23,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   getVerificationEmailTemplate,
-  getPasswordResetEmailTemplate,
-  getWelcomeEmailTemplate,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,
@@ -130,28 +128,6 @@ const TEMPLATE_REGISTRY: EmailTemplateConfig[] = [
     generate: () => ({
       subject: "Verify Your Email Address - Miyo Global",
       html: getVerificationEmailTemplate(`${BASE_URL}/verify-email?token=abc123`),
-    }),
-  },
-  {
-    id: "auth.password_reset",
-    category: "Auth",
-    name: "Password Reset",
-    generate: () => ({
-      subject: "Reset Your Password - Miyo Global",
-      html: getPasswordResetEmailTemplate(`${BASE_URL}/reset-password?token=abc123`),
-    }),
-  },
-  {
-    id: "auth.welcome",
-    category: "Auth",
-    name: "Welcome / Account Created",
-    generate: () => ({
-      subject: "Welcome to Miyo Global — Set Up Your Account",
-      html: getWelcomeEmailTemplate(
-        "Priya Sharma",
-        "priya@example.com",
-        `${BASE_URL}/setup-password?token=sample-token`
-      ),
     }),
   },
   {

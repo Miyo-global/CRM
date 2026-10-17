@@ -3,8 +3,6 @@ export type { EmailTemplateProps } from "./base";
 
 export {
   getVerificationEmailTemplate,
-  getPasswordResetEmailTemplate,
-  getWelcomeEmailTemplate,
   type WelcomeEmailDetails,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,

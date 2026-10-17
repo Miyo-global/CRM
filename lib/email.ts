@@ -1,11 +1,13 @@
 import { sendEmail } from "./email/sender";
+// MIYO-0159 / MIYO-0160: these two now render the hand-written templates and
+// live in lib/email/auth.ts; this module re-exports them so its callers get
+// the same mail.
+export { sendPasswordResetEmail, sendWelcomeEmail } from "./email/auth";
 import type { EmailOptions, EmailAttachment } from "./email/sender";
 import { appUrl } from "./app-url";
 import {
   getVerificationEmailTemplate,
-  getPasswordResetEmailTemplate,
   getInvitationEmailTemplate,
-  getWelcomeEmailTemplate,
   type WelcomeEmailDetails,
   getProjectAssignmentEmailTemplate,
   getTicketAssignmentEmailTemplate,
@@ -71,15 +73,6 @@ export async function sendVerificationEmail(email: string, token: string) {
   });
 }
 
-export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = `${baseUrl}/reset-password?token=${token}`;
-  await sendEmail({
-    to: email,
-    subject: "Reset Your Password",
-    html: getPasswordResetEmailTemplate(resetUrl),
-  });
-}
-
 export async function sendInvitationEmail(
   email: string,
   token: string,
@@ -91,19 +84,6 @@ export async function sendInvitationEmail(
     to: email,
     subject: `Invitation to join ${organizationName}`,
     html: getInvitationEmailTemplate(invitationUrl, organizationName, inviterName),
-  });
-}
-
-export async function sendWelcomeEmail(
-  email: string,
-  name: string,
-  setupUrl: string,
-  details: WelcomeEmailDetails = {},
-) {
-  await sendEmail({
-    to: email,
-    subject: "Set up your Miyo Global account",
-    html: getWelcomeEmailTemplate(name, email, setupUrl, details),
   });
 }
 

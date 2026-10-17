@@ -1,11 +1,9 @@
-import { sendEmail } from "./sender";
+import { sendEmail, sendTemplateEmail } from "./sender";
 import { baseUrl } from "./sender";
 import { formatIST } from "@/lib/date-utils";
 import {
   getVerificationEmailTemplate,
-  getPasswordResetEmailTemplate,
   getInvitationEmailTemplate,
-  getWelcomeEmailTemplate,
   type WelcomeEmailDetails,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
@@ -23,12 +21,15 @@ export async function sendVerificationEmail(email: string, token: string) {
   });
 }
 
+/** MIYO-0160: the hand-written auth-password-reset template. */
 export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = `${baseUrl}/reset-password?token=${token}`;
-  await sendEmail({
+  await sendTemplateEmail("auth-password-reset", {
     to: email,
-    subject: "Reset Your Password",
-    html: getPasswordResetEmailTemplate(resetUrl),
+    vars: {
+      email,
+      reset_url: `${baseUrl}/reset-password?token=${token}`,
+      requested_at: `${formatIST(new Date())} IST`,
+    },
   });
 }
 
@@ -46,16 +47,23 @@ export async function sendInvitationEmail(
   });
 }
 
+/** MIYO-0159: the hand-written auth-welcome-set-password template. */
 export async function sendWelcomeEmail(
   email: string,
   name: string,
   setupUrl: string,
   details: WelcomeEmailDetails = {},
 ) {
-  await sendEmail({
+  await sendTemplateEmail("auth-welcome-set-password", {
     to: email,
-    subject: "Set up your Miyo Global account",
-    html: getWelcomeEmailTemplate(name, email, setupUrl, details),
+    vars: {
+      first_name: name.trim().split(/\s+/)[0] || name,
+      email,
+      setup_url: setupUrl,
+      joining_date: details.joiningDate ?? "your first day",
+      manager_name: details.managerName ?? "your manager",
+      link_expires_at: details.linkExpiresAt ?? "in 7 days",
+    },
   });
 }
 

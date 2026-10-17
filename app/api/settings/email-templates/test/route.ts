@@ -7,8 +7,6 @@ import { z } from "zod";
 
 import {
   getVerificationEmailTemplate,
-  getPasswordResetEmailTemplate,
-  getWelcomeEmailTemplate,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
   getAccountLockedEmailTemplate,
@@ -74,15 +72,6 @@ const TEMPLATE_MAP: Record<string, TemplateEntry> = {
   "auth.verify": {
     subject: "Verify Your Email Address - Miyo Global",
     generateHtml: () => getVerificationEmailTemplate(`${BASE_URL}/verify-email?token=test-token`),
-  },
-  "auth.password_reset": {
-    subject: "Reset Your Password - Miyo Global",
-    generateHtml: () => getPasswordResetEmailTemplate(`${BASE_URL}/reset-password?token=test-token`),
-  },
-  "auth.welcome": {
-    subject: "Welcome to Miyo Global — Set Up Your Account",
-    generateHtml: () =>
-      getWelcomeEmailTemplate("Test User", "test@example.com", `${BASE_URL}/setup-password?token=test-token`),
   },
   "auth.password_changed": {
     subject: "Password Changed Successfully - Miyo Global",

@@ -38,43 +38,6 @@ export function getVerificationEmailTemplate(verificationUrl: string): string {
   });
 }
 
-export function getPasswordResetEmailTemplate(resetUrl: string): string {
-  const content = `
-    <h2 class="email-title">Reset Your Password</h2>
-    <p class="email-text">
-      We received a request to reset your password. Click the button below to create a new password.
-    </p>
-
-    <div style="text-align: center;">
-      <a href="${resetUrl}" class="email-button">
-        Reset Password
-      </a>
-    </div>
-
-    <p class="email-text" style="font-size: 14px; color: ${BRAND.inkMuted}; margin-top: 24px;">
-      If the button doesn't work, you can copy and paste this link into your browser:
-    </p>
-    <p class="email-text" style="word-break: break-all; font-size: 13px; color: ${BRAND.ink};">
-      ${resetUrl}
-    </p>
-
-    <div class="divider"></div>
-
-    <div class="security-notice">
-      <p class="security-text">
-        <strong>Security Notice:</strong> This link will expire in 1 hour.
-        If you didn't request a password reset, please ignore this email or contact support if you have concerns.
-      </p>
-    </div>
-  `;
-
-  return getEmailTemplate({
-    title: 'Reset Your Password',
-    preheader: 'Click to reset your password securely',
-    content,
-  });
-}
-
 export interface WelcomeEmailDetails {
   /** Date the employee starts, as a display string. */
   joiningDate?: string | null;
@@ -91,70 +54,6 @@ export interface WelcomeEmailDetails {
  * The old copy was generic ("excited to have you on board"), showed an empty
  * credential box, said "expires in 7 days" with no date, and left out the
  * joining date and manager the new hire actually needs (QA-0041).
- */
-export function getWelcomeEmailTemplate(
-  name: string,
-  email: string,
-  setupUrl: string,
-  details: WelcomeEmailDetails = {},
-): string {
-  const sName = escapeHtml(name);
-  const sEmail = escapeHtml(email);
-  const rows: string[] = [
-    `<div class="credential-item"><span class="credential-label">Sign in with:</span> <span class="credential-value">${sEmail}</span></div>`,
-  ];
-  if (details.designation) {
-    rows.push(
-      `<div class="credential-item"><span class="credential-label">Role:</span> <span class="credential-value">${escapeHtml(details.designation)}</span></div>`,
-    );
-  }
-  if (details.joiningDate) {
-    rows.push(
-      `<div class="credential-item"><span class="credential-label">First day:</span> <span class="credential-value">${escapeHtml(details.joiningDate)}</span></div>`,
-    );
-  }
-  if (details.managerName) {
-    rows.push(
-      `<div class="credential-item"><span class="credential-label">Reporting to:</span> <span class="credential-value">${escapeHtml(details.managerName)}</span></div>`,
-    );
-  }
-
-  const content = `
-    <h2 class="email-title">Set up your Miyo Global account</h2>
-    <p class="email-text">
-      ${sName}, your account is ready. Set a password to sign in.
-    </p>
-
-    <p class="email-text">
-      <a href="${setupUrl}" class="email-button">Set your password</a>
-    </p>
-
-    <div class="credential-box">
-      ${rows.join("\n      ")}
-    </div>
-
-    <p class="email-text" style="font-size:14px">
-      ${
-        details.linkExpiresAt
-          ? `This link works until ${escapeHtml(details.linkExpiresAt)}.`
-          : "This link is single-use and expires."
-      }
-      If you were not expecting it, tell HR.
-    </p>
-  `;
-
-  return getEmailTemplate({
-    title: "Set up your Miyo Global account",
-    preheader: `${sName}, set a password to sign in`,
-    content,
-  });
-}
-
-/**
- * Password-change confirmation.
- *
- * It greeted "Hi Qa Alpha ," with a stray space, carried a four-point security
- * essay, named no time, and offered no way to act (QA-0041).
  */
 export function getPasswordChangeConfirmationEmailTemplate(
   userName: string,
