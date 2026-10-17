@@ -240,6 +240,11 @@ export async function POST(req: NextRequest) {
             startStr,
             endStr,
             reasonText,
+            {
+              dayCount: check.requestedDays,
+              balanceAfter: check.balanceAfter,
+              leaveId: typeof inserted === "number" ? inserted : undefined,
+            },
           );
         }
 

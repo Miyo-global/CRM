@@ -1,4 +1,4 @@
-import { sendEmail } from "./email/sender";
+import { sendEmail, sendTemplateEmail } from "./email/sender";
 // MIYO-0159 / MIYO-0160: these two now render the hand-written templates and
 // live in lib/email/auth.ts; this module re-exports them so its callers get
 // the same mail.
@@ -8,13 +8,10 @@ import { appUrl } from "./app-url";
 import {
   getVerificationEmailTemplate,
   getInvitationEmailTemplate,
-  type WelcomeEmailDetails,
   getProjectAssignmentEmailTemplate,
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
-  getLeaveRequestEmailTemplate,
-  getLeaveStatusUpdateEmailTemplate,
   getLeaveCancellationEmailTemplate,
   getPasswordChangeConfirmationEmailTemplate,
   getAccountDeactivationEmailTemplate,
@@ -23,7 +20,6 @@ import {
   getPasswordExpiryWarningEmailTemplate,
   getCelebrationEmailTemplate,
   getHolidayAnnouncementEmailTemplate,
-  getCompanyAnnouncementEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
   getExpenseRejectedEmailTemplate,
@@ -53,7 +49,6 @@ import {
   getPayrollApprovedEmailTemplate,
   getRecognitionRecipientEmailTemplate,
   getRecognitionShoutoutEmailTemplate,
-  leaveStatusSubject,
 } from "./email-templates";
 import type { MonthlyExpenseReportRow } from "./email-templates";
 import { generateMonthlyExpenseReportXlsx } from "./monthly-expense-report-xlsx";
@@ -61,6 +56,11 @@ import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 import { BRAND } from "@/lib/design/brand-hex";
 
 export type { EmailOptions, EmailAttachment };
+
+/** "20 Apr 2026" for one day, "20–22 Apr 2026" for a range. */
+function dateRangeLabel(startDate: string, endDate: string): string {
+  return startDate === endDate ? startDate : `${startDate} – ${endDate}`;
+}
 
 const baseUrl = appUrl;
 
@@ -218,6 +218,11 @@ export async function sendTicketCommentEmail(
   );
 }
 
+/**
+ * MIYO-0161: the leave-request-approver template. The subject no longer
+ * carries the org-name suffix, and the mail states the day count and the
+ * balance the approval would leave.
+ */
 export async function sendLeaveRequestEmail(
   email: string,
   approverName: string,
@@ -225,24 +230,28 @@ export async function sendLeaveRequestEmail(
   leaveType: string,
   startDate: string,
   endDate: string,
-  reason: string
+  reason: string,
+  extra: { dayCount?: number; balanceAfter?: number | null; leaveId?: number } = {},
 ) {
-  const leaveUrl = `${baseUrl}/hr/leaves`;
-  await sendEmail({
+  await sendTemplateEmail("leave-request-approver", {
     to: email,
-    subject: `Leave Request: ${employeeName}`,
-    html: getLeaveRequestEmailTemplate(
-      approverName,
-      employeeName,
-      leaveType,
-      startDate,
-      endDate,
-      reason,
-      leaveUrl
-    ),
+    vars: {
+      employee_name: employeeName,
+      approver_name: approverName,
+      leave_type: leaveType,
+      date_range: dateRangeLabel(startDate, endDate),
+      day_count: extra.dayCount ?? "",
+      balance_after: extra.balanceAfter ?? "Not applicable",
+      reason: reason || "None given",
+      leave_id: extra.leaveId ?? "",
+    },
   });
 }
 
+/**
+ * MIYO-0162 / MIYO-0163: one template per outcome, leave-approved and
+ * leave-rejected, instead of one body with emoji branches.
+ */
 export async function sendLeaveStatusUpdateEmail(
   email: string,
   employeeName: string,
@@ -253,20 +262,32 @@ export async function sendLeaveStatusUpdateEmail(
   approverName: string,
   rejectionReason?: string,
   balanceAfter?: number | null,
+  dayCount?: number,
 ) {
-  await sendEmail({
+  const dateRange = dateRangeLabel(startDate, endDate);
+
+  if (status === "APPROVED") {
+    await sendTemplateEmail("leave-approved", {
+      to: email,
+      vars: {
+        approver_name: approverName,
+        leave_type: leaveType,
+        date_range: dateRange,
+        day_count: dayCount ?? "",
+        balance_after: balanceAfter ?? "Not applicable",
+      },
+    });
+    return;
+  }
+
+  await sendTemplateEmail("leave-rejected", {
     to: email,
-    subject: leaveStatusSubject(status, startDate, endDate),
-    html: getLeaveStatusUpdateEmailTemplate(
-      employeeName,
-      leaveType,
-      startDate,
-      endDate,
-      status,
-      approverName,
-      rejectionReason,
-      balanceAfter,
-    ),
+    vars: {
+      approver_name: approverName,
+      leave_type: leaveType,
+      date_range: dateRange,
+      rejection_reason: rejectionReason?.trim() || "No note was added.",
+    },
   });
 }
 
