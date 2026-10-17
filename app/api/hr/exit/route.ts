@@ -110,16 +110,15 @@ export async function POST(req: NextRequest) {
     after(async () => {
     for (const admin of adminMembers) {
       if (admin.user?.email && admin.user.email !== submittingUser?.email) {
-        await sendResignationSubmittedEmail(
-          admin.user.email,
-          admin.user.name ?? "HR",
-          submittingUser?.name ?? "Employee",
-          submittingUser?.designation ?? "N/A",
-          submissionDate,
-          lastWorkingDate,
-          body.noticePeriodDays,
-          body.reason
-        ).catch(() => undefined);
+        await sendResignationSubmittedEmail(admin.user.email, {
+          employeeName: submittingUser?.name ?? "Employee",
+          employeeCode: submittingUser?.employeeId,
+          department: submittingUser?.designation,
+          lastWorkingDay: lastWorkingDate,
+          noticePeriodDays: body.noticePeriodDays,
+          reason: body.reason,
+          resignationId: resignation.id,
+        }).catch(() => undefined);
       }
     }
     });

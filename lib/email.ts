@@ -18,7 +18,13 @@ export {
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
-export { sendRecognitionRecipientEmail, sendRecognitionShoutoutEmail } from "./email/hr-employees";
+export {
+  sendRecognitionRecipientEmail,
+  sendRecognitionShoutoutEmail,
+  sendResignationSubmittedEmail,
+  sendResignationApprovedEmail,
+  sendTerminationEmail,
+} from "./email/hr-employees";
 export {
   sendExpenseSubmittedEmail,
   sendExpenseApprovedEmail,
@@ -46,9 +52,6 @@ import {
   getTicketChangesRequestedEmailTemplate,
   getDocumentExpiryReminderEmailTemplate,
   getMonthlyExpenseReportTemplate,
-  getResignationSubmittedEmailTemplate,
-  getResignationApprovedEmailTemplate,
-  getTerminationEmailTemplate,
   getWorkLogApprovedEmailTemplate,
   getWorkLogRejectedEmailTemplate,
   getTicketCreatedEmailTemplate,
@@ -384,80 +387,8 @@ export async function sendMonthlyExpenseReportEmail(
   }
 }
 
-export async function sendResignationSubmittedEmail(
-  hrEmail: string,
-  hrName: string,
-  employeeName: string,
-  employeeDesignation: string,
-  submissionDate: string,
-  lastWorkingDate: string,
-  noticePeriodDays: number,
-  reason: string
-) {
-  const reviewUrl = `${baseUrl}/hr/exit`;
-  await sendEmail({
-    to: hrEmail,
-    subject: `Resignation Submitted: ${employeeName}`,
-    html: getResignationSubmittedEmailTemplate(
-      hrName,
-      employeeName,
-      employeeDesignation,
-      submissionDate,
-      lastWorkingDate,
-      noticePeriodDays,
-      reason,
-      reviewUrl
-    ),
-  });
-}
 
-export async function sendResignationApprovedEmail(
-  employeeEmail: string,
-  employeeName: string,
-  approverName: string,
-  lastWorkingDate: string,
-  noticePeriodDays: number,
-  submissionDate: string
-) {
-  const portalUrl = `${baseUrl}/hr/exit`;
-  await sendEmail({
-    to: employeeEmail,
-    subject: `Resignation Accepted`,
-    html: getResignationApprovedEmailTemplate(
-      employeeName,
-      approverName,
-      lastWorkingDate,
-      noticePeriodDays,
-      submissionDate,
-      portalUrl
-    ),
-  });
-}
 
-export async function sendTerminationEmail(
-  employeeEmail: string,
-  employeeName: string,
-  employeeDesignation: string,
-  terminationDate: string,
-  terminatedBy: string,
-  reason: string,
-  attachments?: EmailAttachment[]
-) {
-  const hrContactEmail = "hr@miyoglobal.com";
-  await sendEmail({
-    to: employeeEmail,
-    subject: `Employment Termination Notice`,
-    html: getTerminationEmailTemplate(
-      employeeName,
-      employeeDesignation,
-      terminationDate,
-      terminatedBy,
-      reason,
-      hrContactEmail
-    ),
-    attachments,
-  });
-}
 
 export async function sendWorkLogStatusEmail(
   email: string,

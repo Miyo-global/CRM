@@ -1,83 +1,85 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
+import { sendTemplateEmail } from "./sender";
 import type { EmailAttachment } from "./sender";
-import { baseUrl } from "./sender";
-import {
-  getResignationSubmittedEmailTemplate,
-  getResignationApprovedEmailTemplate,
-  getTerminationEmailTemplate,
-} from "../email-templates";
+import { HR_EMAIL } from "@/lib/constants/company";
 
+/**
+ * MIYO-0256: company policy settles the full and final by the end of the
+ * month someone leaves in, which is what the termination letter says too.
+ */
+function endOfMonthLabel(date: Date): string {
+  const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return last.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+}
+
+/** MIYO-0254: the hand-written exit-resignation-submitted template. */
 export async function sendResignationSubmittedEmail(
-  hrEmail: string,
-  hrName: string,
-  employeeName: string,
-  employeeDesignation: string,
-  submissionDate: string,
-  lastWorkingDate: string,
-  noticePeriodDays: number,
-  reason: string
+  hrEmail: string | string[],
+  resignation: {
+    employeeName: string;
+    employeeCode?: string | null;
+    department?: string | null;
+    lastWorkingDay: string;
+    noticePeriodDays: number;
+    reason: string;
+    resignationId: number | string;
+  },
 ) {
-  const reviewUrl = `${baseUrl}/hr/exit`;
-  await sendEmail({
+  await sendTemplateEmail("exit-resignation-submitted", {
     to: hrEmail,
-    subject: `Resignation Submitted: ${employeeName}`,
-    html: getResignationSubmittedEmailTemplate(
-      hrName,
-      employeeName,
-      employeeDesignation,
-      submissionDate,
-      lastWorkingDate,
-      noticePeriodDays,
-      reason,
-      reviewUrl
-    ),
+    category: "hr",
+    vars: {
+      employee_name: resignation.employeeName,
+      employee_code: resignation.employeeCode ?? "not set",
+      department: resignation.department ?? "not set",
+      last_working_day: resignation.lastWorkingDay,
+      notice_days: resignation.noticePeriodDays,
+      reason: resignation.reason?.trim() || "none given",
+      resignation_id: resignation.resignationId,
+    },
   });
 }
 
+/** MIYO-0255: the hand-written exit-resignation-accepted template. */
 export async function sendResignationApprovedEmail(
   employeeEmail: string,
-  employeeName: string,
-  approverName: string,
-  lastWorkingDate: string,
-  noticePeriodDays: number,
-  submissionDate: string
+  lastWorkingDay: Date,
 ) {
-  const portalUrl = `${baseUrl}/hr/exit`;
-  await sendEmail({
+  await sendTemplateEmail("exit-resignation-accepted", {
     to: employeeEmail,
-    subject: `Resignation Accepted`,
-    html: getResignationApprovedEmailTemplate(
-      employeeName,
-      approverName,
-      lastWorkingDate,
-      noticePeriodDays,
-      submissionDate,
-      portalUrl
-    ),
+    category: "hr",
+    vars: {
+      last_working_day: lastWorkingDay.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+      fnf_date: endOfMonthLabel(lastWorkingDay),
+    },
   });
 }
 
+/** MIYO-0256: the hand-written exit-termination-notice template. */
 export async function sendTerminationEmail(
   employeeEmail: string,
   employeeName: string,
-  employeeDesignation: string,
-  terminationDate: string,
-  terminatedBy: string,
-  reason: string,
-  attachments?: EmailAttachment[]
+  effectiveDate: Date,
+  hrSignatory: string,
+  attachments?: EmailAttachment[],
 ) {
-  const hrContactEmail = "hr@miyoglobal.com";
-  await sendEmail({
+  await sendTemplateEmail("exit-termination-notice", {
     to: employeeEmail,
-    subject: `Employment Termination Notice`,
-    html: getTerminationEmailTemplate(
-      employeeName,
-      employeeDesignation,
-      terminationDate,
-      terminatedBy,
-      reason,
-      hrContactEmail
-    ),
+    vars: {
+      employee_name: employeeName,
+      effective_date: effectiveDate.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+      fnf_date: endOfMonthLabel(effectiveDate),
+      hr_signatory: hrSignatory,
+      hr_contact_name: hrSignatory,
+      hr_email: HR_EMAIL,
+    },
     attachments,
   });
 }

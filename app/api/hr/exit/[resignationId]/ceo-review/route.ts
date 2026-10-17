@@ -58,16 +58,10 @@ export async function PATCH(
       });
       if (employee?.email) {
         const to = employee.email;
-        after(() =>
-          sendResignationApprovedEmail(
-            to,
-            employee.name ?? "Employee",
-            session.user.name ?? "Admin",
-            format(record.lastWorkingDate ? new Date(record.lastWorkingDate) : new Date(), "dd MMM yyyy"),
-            record.noticePeriodDays ?? 30,
-            format(record.createdAt ?? new Date(), "dd MMM yyyy"),
-          ).catch(() => undefined),
-        );
+        const lastWorkingDay = record.lastWorkingDate
+          ? new Date(record.lastWorkingDate)
+          : new Date();
+        after(() => sendResignationApprovedEmail(to, lastWorkingDay).catch(() => undefined));
       }
     }
 

@@ -101,9 +101,9 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "announce.holiday", run: () => sendHolidayAnnouncementEmail(TO, "Diwali", "08 Nov 2026", "Office will remain closed on this day.") },
   { name: "announce.bulkHoliday", run: () => sendBulkHolidayAnnouncement([TO], "Christmas Day", "25 Dec 2026", "Wishing the team happy holidays.") },
 
-  { name: "hr.resignationSubmitted", run: () => sendResignationSubmittedEmail(TO, NAME, "John Doe", "Senior Engineer", TODAY, NEXT_WEEK, 30, "Personal reasons") },
-  { name: "hr.resignationApproved", run: () => sendResignationApprovedEmail(TO, NAME, ACTOR, NEXT_WEEK, 30, TODAY) },
-  { name: "hr.termination", run: () => sendTerminationEmail(TO, NAME, "Senior Engineer", TODAY, ACTOR, "Performance concerns") },
+  { name: "hr.resignationSubmitted", run: () => sendResignationSubmittedEmail(TO, { employeeName: "John Doe", employeeCode: "MG-014", department: "Engineering", lastWorkingDay: NEXT_WEEK, noticePeriodDays: 30, reason: "Relocating", resignationId: 12 }) },
+  { name: "hr.resignationApproved", run: () => sendResignationApprovedEmail(TO, new Date()) },
+  { name: "hr.termination", run: () => sendTerminationEmail(TO, NAME, new Date(), ACTOR) },
 
   { name: "hr.workLogStatusApproved", run: () => sendWorkLogStatusEmail(TO, NAME, TODAY, "APPROVED", ACTOR) },
   { name: "hr.workLogStatusRejected", run: () => sendWorkLogStatusEmail(TO, NAME, TODAY, "REJECTED", ACTOR, "Insufficient detail in entries") },

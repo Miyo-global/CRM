@@ -108,14 +108,7 @@ export async function PATCH(
         const lwd = existing.lastWorkingDate ? new Date(existing.lastWorkingDate) : new Date();
         const sub = existing.createdAt ?? new Date();
         const to = employee.email;
-        after(() => sendResignationApprovedEmail(
-          to,
-          employee.name ?? "Employee",
-          session.user.name ?? "CEO",
-          format(lwd, "dd MMM yyyy"),
-          existing.noticePeriodDays ?? 30,
-          format(sub, "dd MMM yyyy")
-        ).catch(() => undefined));
+        after(() => sendResignationApprovedEmail(to, lwd).catch(() => undefined));
       }
 
       return ok({ success: true });

@@ -64,10 +64,8 @@ export async function POST(
       await sendTerminationEmail(
         employee.personalEmail?.trim() || employee.email,
         employee.name ?? "Employee",
-        employee.designation ?? "N/A",
-        effectiveDateFormatted,
+        existing.effectiveDate ? new Date(existing.effectiveDate) : new Date(),
         session.user.name ?? "HR",
-        existing.reasons?.join(", ") ?? "",
         [
           {
             filename: `Termination-Letter-${(employee.name ?? "Employee").replace(/\s+/g, "-")}.pdf`,
