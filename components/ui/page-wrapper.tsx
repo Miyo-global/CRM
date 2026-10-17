@@ -54,7 +54,9 @@ export function PageWrapper({
       {crumbs.length > 0 && (
         <Breadcrumbs items={crumbs} className={cn("mb-2", breadcrumbs === undefined && "lg:hidden")} />
       )}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      {/* R3-0201: actions sat beside the title from 1024 and overlapped it
+          (/hr/documents has five). They now share the row from 1280. */}
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0 flex-1">
           {eyebrow && (
             <p className="mb-1 text-2xs font-semibold uppercase tracking-[0.08em] text-brand-text">
@@ -75,7 +77,7 @@ export function PageWrapper({
         </div>
 
         {actions && (
-          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end [&>div]:flex-wrap [&>div]:max-w-full">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 xl:shrink-0 xl:justify-end [&>div]:flex-wrap [&>div]:max-w-full">
             {actions}
           </div>
         )}

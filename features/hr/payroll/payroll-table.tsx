@@ -37,7 +37,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Check, CreditCard, Download, Eye, Mail, RefreshCw, Trash2 } from "lucide-react";
+import { Check, CreditCard, Download, Eye, Mail, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -254,42 +260,12 @@ export function PayrollTable({
                             {payroll.status}
                           </StatusPill>
                         </TableCell>
+                        {/* R3-0201: up to four buttons used to stack into a
+                            120px-tall column and run off-screen at 375. Only
+                            the action the row is waiting on stays visible; the
+                            rest moved into the kebab. */}
                         <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex flex-wrap justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1"
-                              onClick={() => onPreview(payroll)}
-                            >
-                              <Eye className="size-3.5 shrink-0" aria-hidden />
-                              Preview
-                            </Button>
-                            {payroll.status === "DRAFT" && onRecalculate && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1"
-                                onClick={() => onRecalculate(payroll.id)}
-                                disabled={isRecalculatePending}
-                                title="Re-run the current payroll rules for this draft"
-                              >
-                                <RefreshCw className="size-3.5 shrink-0" aria-hidden />
-                                Recalculate
-                              </Button>
-                            )}
-                            {payroll.status === "DRAFT" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1 text-destructive hover:bg-danger-soft hover:text-destructive"
-                                onClick={() => setDeleteTarget(payroll)}
-                                disabled={isDeletePending}
-                              >
-                                <Trash2 className="size-3.5 shrink-0" aria-hidden />
-                                Delete
-                              </Button>
-                            )}
+                          <div className="flex items-center justify-end gap-2">
                             {payroll.status === "DRAFT" &&
                               (isPayrollApprover(currentUserRole) && payroll.userId !== currentUserId ? (
                                 <Button
@@ -332,19 +308,51 @@ export function PayrollTable({
                                 Download
                               </Button>
                             )}
-                            {payroll.status === "PAID" && onResendEmail && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1"
-                                onClick={() => onResendEmail(payroll.id)}
-                                disabled={isResendPending}
-                                title="Resend the payslip email to this employee"
-                              >
-                                <Mail className="size-3.5 shrink-0" aria-hidden />
-                                Resend
-                              </Button>
-                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label={`More actions for ${payroll.user?.firstName ?? ""} ${payroll.user?.lastName ?? ""}`.trim()}
+                                >
+                                  <MoreHorizontal className="size-4" aria-hidden />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => onPreview(payroll)}>
+                                  <Eye className="mr-2 size-4" aria-hidden />
+                                  Preview
+                                </DropdownMenuItem>
+                                {payroll.status === "DRAFT" && onRecalculate && (
+                                  <DropdownMenuItem
+                                    onClick={() => onRecalculate(payroll.id)}
+                                    disabled={isRecalculatePending}
+                                  >
+                                    <RefreshCw className="mr-2 size-4" aria-hidden />
+                                    Recalculate
+                                  </DropdownMenuItem>
+                                )}
+                                {payroll.status === "PAID" && onResendEmail && (
+                                  <DropdownMenuItem
+                                    onClick={() => onResendEmail(payroll.id)}
+                                    disabled={isResendPending}
+                                  >
+                                    <Mail className="mr-2 size-4" aria-hidden />
+                                    Resend payslip email
+                                  </DropdownMenuItem>
+                                )}
+                                {payroll.status === "DRAFT" && (
+                                  <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={() => setDeleteTarget(payroll)}
+                                    disabled={isDeletePending}
+                                  >
+                                    <Trash2 className="mr-2 size-4" aria-hidden />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -100,18 +100,20 @@ const HolidayRow = memo(function HolidayRow({
           <TypeIcon className="size-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* R3-0201: a long unbroken name used to run over the badges and
+              the row actions at 375 and 768. */}
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className={cn(
-              "text-sm font-medium",
+              "min-w-0 break-words text-sm font-medium",
               isPast && !isToday ? "text-muted-foreground" : "text-foreground",
             )}>
               {holiday.name}
             </span>
             {isToday && (
-              <Badge>Today</Badge>
+              <Badge className="shrink-0">Today</Badge>
             )}
             {holiday.isHalfDay && (
-              <Badge variant="outline">Half Day</Badge>
+              <Badge variant="outline" className="shrink-0">Half Day</Badge>
             )}
           </div>
           <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">

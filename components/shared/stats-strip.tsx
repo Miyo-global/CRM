@@ -50,7 +50,7 @@ function StatsStrip({ items, className, emptyLabel = "Nothing to report yet." }:
         <div key={label} className="min-w-36 flex-1 px-4 py-3">
           <div className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
             {Icon && <Icon className={cn("size-3.5", tone && toneText[tone])} aria-hidden="true" />}
-            <span className="truncate">{label}</span>
+            <span className="min-w-0 break-words">{label}</span>
           </div>
           <div className={cn("mt-1 font-display text-xl font-semibold tabular-nums", tone && toneText[tone])}>
             {value}
