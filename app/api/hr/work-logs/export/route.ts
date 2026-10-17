@@ -6,6 +6,7 @@ import { users } from "@/lib/db/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createAuditLog } from "@/lib/audit-log";
+import { getTodayString } from "@/lib/date-utils";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="work-logs-${new Date().toISOString().split("T")[0]}.csv"`,
+        "Content-Disposition": `attachment; filename="work-logs-${getTodayString()}.csv"`,
       },
     });
   });

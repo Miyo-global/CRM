@@ -5,7 +5,7 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { ADMIN_ROLES } from "@/lib/constants/roles";
 import { buildTablePdf, type TablePdfColumn } from "@/lib/export/table-pdf";
 import { buildXlsxBuffer } from "@/lib/export/xlsx-utils";
-import { formatCalendarDate } from "@/lib/date-utils";
+import { formatCalendarDate, getTodayString } from "@/lib/date-utils";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -221,7 +221,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ repo
         return err("Unknown report.", 404);
     }
 
-    const stamp = new Date().toISOString().slice(0, 10);
+    const stamp = getTodayString();
     const filename = `${reportId}-${stamp}.${format}`;
 
     if (format === "xlsx") {

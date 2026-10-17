@@ -3,6 +3,7 @@ import { withAuth, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users, departments, departmentMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getTodayString } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export async function GET(_req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="hr-report-${new Date().toISOString().slice(0, 10)}.csv"`,
+        "Content-Disposition": `attachment; filename="hr-report-${getTodayString()}.csv"`,
       },
     });
   });

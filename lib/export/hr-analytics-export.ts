@@ -9,6 +9,7 @@ import type {
   CompensationAnalyticsData,
   DiversityData,
 } from "@/lib/api/hooks/hr/analytics-extended";
+import { getTodayString } from "@/lib/date-utils";
 
 export interface AnalyticsExportInput {
   retention?: RetentionAnalyticsData;
@@ -182,7 +183,7 @@ export async function downloadAnalyticsXlsx(input: AnalyticsExportInput): Promis
       rows: rows as unknown as Array<Record<string, unknown>>,
     },
   ];
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = getTodayString();
   await downloadXlsx(`hr-analytics-${stamp}.xlsx`, sheets);
 }
 
@@ -195,7 +196,7 @@ export function downloadAnalyticsCsv(input: AnalyticsExportInput): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `hr-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `hr-analytics-${getTodayString()}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }

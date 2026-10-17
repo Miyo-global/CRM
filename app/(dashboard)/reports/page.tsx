@@ -9,6 +9,7 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Users, CalendarDays, Clock, IndianRupee, Download, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { getTodayString } from "@/lib/date-utils";
 
 interface ReportDefinition {
   id: string;
@@ -80,7 +81,7 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${report.id}-${new Date().toISOString().slice(0, 10)}.${format}`;
+      link.download = `${report.id}-${getTodayString()}.${format}`;
       link.click();
       URL.revokeObjectURL(url);
       toast.success(`${report.title} downloaded`);

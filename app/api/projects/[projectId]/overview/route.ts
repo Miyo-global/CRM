@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { projects, tickets, ticketActivity } from "@/lib/db/schema";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { computeHealth, isDoneStatus, isNotStartedStatus } from "@/lib/projects/project-health";
+import { getTodayString } from "@/lib/date-utils";
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
@@ -19,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
     const live = and(eq(tickets.projectId, projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
     const open = and(live, notInArray(tickets.status, DONE_STATUSES));
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayString();
     const weekAgo = new Date(Date.now() - 7 * 86400000);
     const ticketCols = { id: tickets.id, title: tickets.title, ticketNumber: tickets.ticketNumber, status: tickets.status, dueDate: tickets.dueDate, priority: tickets.priority };
 

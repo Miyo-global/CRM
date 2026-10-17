@@ -75,6 +75,7 @@ import {
   type PipManagementDecision,
   type PipDocType,
 } from "@/lib/validations/hr-pip";
+import { getTodayString } from "@/lib/date-utils";
 
 function isHrRepEligible(e: Employee): boolean {
   const dept = (e.department?.name ?? "").toLowerCase();
@@ -843,7 +844,7 @@ function PipDetailBody({
   const [showMidpointForm, setShowMidpointForm] = useState(false);
   const [showOutcomeForm, setShowOutcomeForm] = useState(false);
 
-  const [ciDate, setCiDate] = useState(new Date().toISOString().split("T")[0]!);
+  const [ciDate, setCiDate] = useState(getTodayString());
   const [ciType, setCiType] = useState<"WEEKLY" | "BI_WEEKLY" | "MONTHLY">("WEEKLY");
   const [ciStatus, setCiStatus] = useState<"ON_TRACK" | "AT_RISK" | "NOT_MEETING">("ON_TRACK");
   const [ciManagerSummary, setCiManagerSummary] = useState("");

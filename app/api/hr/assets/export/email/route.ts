@@ -14,6 +14,7 @@ import { logger } from "@/lib/logger";
 import { BRAND } from "@/lib/design/brand-hex";
 import { ADMIN_ROLES } from "@/lib/constants/roles";
 import { createAuditLog } from "@/lib/audit-log";
+import { getTodayString } from "@/lib/date-utils";
 
 function escapeHtml(s: string): string {
   return s
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     const rows = await getAssetExportRows(session.orgId, status);
     const orgName = org?.name ?? "Organization";
     const scopeLabel = assetsStatusLabel(status);
-    const dateStr = new Date().toISOString().slice(0, 10);
+    const dateStr = getTodayString();
     const filename =
       format === "csv"
         ? `assets-export-${dateStr}${status ? `-${status}` : ""}.csv`

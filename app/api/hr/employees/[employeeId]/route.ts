@@ -15,6 +15,7 @@ import { toDirectoryEntry } from "@/lib/hr/directory-view";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
+import { getTodayString } from "@/lib/date-utils";
 
 export async function GET(
   _req: NextRequest,
@@ -262,7 +263,7 @@ export async function PATCH(
         data: {
           userId: targetUserId,
           orgId: session.orgId,
-          joiningDate: activatedUser?.joiningDate ?? new Date().toISOString().split("T")[0],
+          joiningDate: activatedUser?.joiningDate ?? getTodayString(),
         },
       });
     }

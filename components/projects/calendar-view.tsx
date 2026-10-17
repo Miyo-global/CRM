@@ -12,6 +12,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toneBorder, toneSoft, type Tone } from "@/lib/design/tones";
+import { getTodayString } from "@/lib/date-utils";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -65,7 +66,7 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayString();
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 

@@ -38,6 +38,7 @@ import { HrEmployeeListToolbar } from "@/features/hr/employees/hr-employee-list-
 import { HrEmployeePagination, HrEmployeeTable } from "@/features/hr/employees/hr-employee-table";
 import { EmployeeDirectoryCard } from "@/features/hr/employees/employee-directory-card";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
+import { getTodayString } from "@/lib/date-utils";
 
 const MIN_SEARCH_LENGTH = 3;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -220,7 +221,7 @@ export default function HRDashboardPage() {
             <Link href="/hr/employees/terminated">Terminated</Link>
           </Button>
           <ExportButton
-            filename={`employees-${new Date().toISOString().slice(0, 10)}.xlsx`}
+            filename={`employees-${getTodayString()}.xlsx`}
             sheets={employeeExportSheets}
           />
           <Button size="sm" asChild>

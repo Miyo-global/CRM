@@ -14,6 +14,7 @@ import { ArrowLeft, Download } from "lucide-react";
 import { TerminatedEmployeeTable } from "@/features/hr/employees/terminated-employee-table";
 import { ROLE_LABELS } from "@/features/hr/employees/hr-types";
 import { toast } from "sonner";
+import { getTodayString } from "@/lib/date-utils";
 
 export default function TerminatedEmployeesPage() {
   const { data, isLoading, isError, error, refetch } = useTerminatedEmployees();
@@ -53,7 +54,7 @@ export default function TerminatedEmployeesPage() {
         ? format(new Date(employee.terminatedAt), "yyyy-MM-dd")
         : "",
     }));
-    await downloadXlsx(`terminated-employees-${new Date().toISOString().slice(0, 10)}.xlsx`, [
+    await downloadXlsx(`terminated-employees-${getTodayString()}.xlsx`, [
       {
         name: "Terminated",
         columns: [

@@ -24,6 +24,7 @@ import {
   useExportMailPeople,
   useExportMailRecipients,
 } from "@/components/hr/export-mail-form";
+import { getTodayString } from "@/lib/date-utils";
 
 function DownloadIcon({ className }: { className?: string }) {
   return (
@@ -58,7 +59,7 @@ function firstOfMonth(): string {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return getTodayString();
 }
 
 export function AttendanceExportSheet() {

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Timer, Play, Square, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getTodayString } from "@/lib/date-utils";
 
 interface TicketTimeTrackerProps {
   ticketId: number;
@@ -63,7 +64,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent, readOnly = f
       {
         projectId,
         ticketId,
-        date: new Date().toISOString().slice(0, 10),
+        date: getTodayString(),
         hours: Math.round(hours * 100) / 100,
         description: description || undefined,
       },
@@ -90,7 +91,7 @@ export function TicketTimeTracker({ ticketId, projectId, timeSpent, readOnly = f
       {
         projectId,
         ticketId,
-        date: new Date().toISOString().slice(0, 10),
+        date: getTodayString(),
         hours: h,
         description: description || undefined,
       },

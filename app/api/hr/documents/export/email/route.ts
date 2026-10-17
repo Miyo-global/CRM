@@ -6,6 +6,7 @@ import { buildDocumentsZipBuffer } from "@/lib/hr/build-documents-zip";
 import { sendEmail } from "@/lib/email/sender";
 import { ZodError } from "zod";
 import { BRAND } from "@/lib/design/brand-hex";
+import { getTodayString } from "@/lib/date-utils";
 
 function canSendDocumentPackEmail(role: string | null | undefined): boolean {
   return role === "CEO" || role === "HR" || role === "ADMIN";
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const cc = body.cc?.length ? [...new Set(body.cc.map((e) => e.toLowerCase()))] : [];
     const bcc = body.bcc?.length ? [...new Set(body.bcc.map((e) => e.toLowerCase()))] : [];
-    const dateStamp = new Date().toISOString().slice(0, 10);
+    const dateStamp = getTodayString();
     const filename = `documents-export-${dateStamp}.zip`;
 
     await sendEmail({

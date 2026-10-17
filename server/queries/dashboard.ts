@@ -591,7 +591,7 @@ export async function getExecutiveDashboard(orgId: string) {
 }
 
 export async function getManagerDashboard(orgId: string, userId: string) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayString();
 
   const [teamMembers, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
     db

@@ -11,6 +11,7 @@ import {
   IMPORT_MAX_FILE_SIZE_BYTES,
   validateFileTypeAndSize,
 } from "@/lib/files/expense-file-validation";
+import { getTodayString } from "@/lib/date-utils";
 
 const MAX_ROWS = 10_000;
 
@@ -236,7 +237,7 @@ export async function POST(req: Request) {
         descriptionValue.toLowerCase().slice(0, 500),
       ].join("|");
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
 
     const existingRows = await db
       .select({

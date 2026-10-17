@@ -11,7 +11,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { format, isToday, isYesterday } from "date-fns";
+import { format } from "date-fns";
+import { formatDateOnly, getTodayString, parseDbTimestamp } from "@/lib/date-utils";
 import {
   useNotifications,
   useUnreadNotificationCount,
@@ -42,11 +43,13 @@ const TYPE_CONFIG: Record<NotificationType, { icon: typeof Info; tone: Tone; lab
   ERROR: { icon: XCircle, tone: "danger", label: "Error" },
 };
 
+/** Today/Yesterday by the IST calendar, not the browser's (R3-0019). */
 function dayGroup(date: Date | string | null): string {
   if (!date) return "Earlier";
-  const d = new Date(date);
-  if (isToday(d)) return "Today";
-  if (isYesterday(d)) return "Yesterday";
+  const day = formatDateOnly(parseDbTimestamp(date));
+  const today = getTodayString();
+  if (day === today) return "Today";
+  if (day === formatDateOnly(new Date(Date.now() - 86_400_000))) return "Yesterday";
   return "Earlier";
 }
 

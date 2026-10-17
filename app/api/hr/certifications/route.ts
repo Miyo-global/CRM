@@ -6,6 +6,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { dateOnlyOptionalSchema } from "@/lib/validations/date";
+import { getTodayString } from "@/lib/date-utils";
 
 const createSchema = z.object({
   userId: z.string().min(1).optional(),
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
       conditions.push(lte(certifications.expiryDate, thirtyDaysFromNow.toISOString().split("T")[0]));
-      conditions.push(gte(certifications.expiryDate, new Date().toISOString().split("T")[0]));
+      conditions.push(gte(certifications.expiryDate, getTodayString()));
     }
 
     const data = await db.query.certifications.findMany({

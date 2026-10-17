@@ -15,6 +15,7 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
+import { getTodayString } from "@/lib/date-utils";
 
 interface ImportEntity {
   id: string;
@@ -140,7 +141,7 @@ function DataHubContent() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = named ?? `${entity.id}-export-${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = named ?? `${entity.id}-export-${getTodayString()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`${entity.label} export downloaded`);

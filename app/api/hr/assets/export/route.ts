@@ -6,6 +6,7 @@ import {
 } from "@/server/queries/hr/assets-export";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getTodayString } from "@/lib/date-utils";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
 
     const rows = await getAssetExportRows(session.orgId, filter);
     const body = buildAssetsCsvString(rows);
-    const filename = `assets-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `assets-export-${getTodayString()}.csv`;
 
     return new NextResponse(body, {
       status: 200,

@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import { format, isPast, isToday, differenceInDays } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
+import { getTodayString } from "@/lib/date-utils";
 
 const STATUS_CONFIG: Record<ProjectMilestone["status"], { label: string; tone: Tone; color: string }> = {
   PENDING: { label: "Pending", tone: "neutral", color: "text-muted-foreground" },
@@ -81,7 +82,7 @@ function MilestoneDialog({
   const update = useUpdateMilestone(projectId);
   const isPending = create.isPending || update.isPending;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayString();
 
   function handleSave() {
     if (!name.trim() || !targetDate) {

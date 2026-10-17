@@ -3,6 +3,7 @@ import { withAuth, err, parseBody } from "@/lib/api/helpers";
 import { getDocumentsForExport } from "@/server/queries/hr";
 import { documentExportFiltersSchema } from "@/lib/hr/documents-export-filters";
 import { buildDocumentsZipBuffer } from "@/lib/hr/build-documents-zip";
+import { getTodayString } from "@/lib/date-utils";
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     const docs = await getDocumentsForExport(session.orgId, session.user.id, isDocumentsAdmin, filters);
     const { buffer, included, skipped } = await buildDocumentsZipBuffer(docs, { maxFiles: 100 });
 
-    const label = new Date().toISOString().slice(0, 10);
+    const label = getTodayString();
     const filename = `documents-export-${label}.zip`;
 
     return new NextResponse(Buffer.from(buffer), {

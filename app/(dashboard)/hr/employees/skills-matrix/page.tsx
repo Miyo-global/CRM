@@ -34,6 +34,7 @@ import {
   certStatusLabel,
   formatCertDate,
 } from "@/features/hr/skills/cert-status";
+import { getTodayString } from "@/lib/date-utils";
 
 type ViewMode = "matrix" | "expert";
 
@@ -347,7 +348,7 @@ export default function SkillsMatrixPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
-            filename={`skills-matrix-${new Date().toISOString().slice(0, 10)}.xlsx`}
+            filename={`skills-matrix-${getTodayString()}.xlsx`}
             sheets={matrixExportSheets}
           />
           <Button asChild size="sm">

@@ -1,3 +1,4 @@
+import { getTodayString } from "@/lib/date-utils";
 /**
  * Status of a dated period (a sprint or a cycle), derived from its dates.
  *
@@ -18,7 +19,7 @@ export function periodStatus(input: {
   today?: string;
 }): PeriodStatus {
   const stored = (input.storedStatus ?? "").toUpperCase();
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? getTodayString();
   const start = ymd(input.startDate);
   const end = ymd(input.endDate);
 

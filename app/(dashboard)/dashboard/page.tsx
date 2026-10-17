@@ -31,11 +31,11 @@ import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { getGreeting, getFirstName } from "@/lib/format-utils";
 import { isoDateInTimezone } from "@/lib/constants/locale";
+import { formatIST } from "@/lib/date-utils";
 import { QuickActions, getQuickActionsForRole } from "@/features/dashboard/quick-actions";
 import { SprintCard } from "@/features/dashboard/sprint-card";
 import { TeamCard } from "@/features/dashboard/team-card";
@@ -132,7 +132,11 @@ export default function DashboardPage() {
   }, [todayActivities]);
 
   const greeting = useMemo(() => getGreeting(), []);
-  const todayFormatted = useMemo(() => format(new Date(), "EEEE, MMMM do, yyyy"), []);
+  // The IST calendar day, whatever the browser's timezone (R3-0019).
+  const todayFormatted = useMemo(
+    () => formatIST(new Date(), { weekday: "long", hour: undefined, minute: undefined, hour12: undefined }),
+    [],
+  );
 
   const handleGoToDashboard = useCallback(() => router.push("/dashboard"), [router]);
   const handleGoToProjects = useCallback(() => router.push("/projects"), [router]);

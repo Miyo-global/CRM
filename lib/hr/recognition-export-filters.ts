@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getTodayString } from "@/lib/date-utils";
 
 const dateRe = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -87,5 +88,5 @@ export function buildRecognitionScopeLabel(filters: RecognitionExportFilters): s
 }
 
 export function recognitionExportFilename(): string {
-  return `recognition-history-${new Date().toISOString().slice(0, 10)}.csv`;
+  return `recognition-history-${getTodayString()}.csv`;
 }

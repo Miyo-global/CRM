@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import {
   getCertStatus, certStatusLabel, formatCertDate, type CertStatus,
 } from "@/features/hr/skills/cert-status";
+import { getTodayString } from "@/lib/date-utils";
 
 const CERT_TONE: Record<CertStatus, Tone> = {
   expired: "danger",
@@ -351,7 +352,7 @@ export default function SkillsPage() {
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <ExportButton
-            filename={`skills-${new Date().toISOString().slice(0, 10)}.xlsx`}
+            filename={`skills-${getTodayString()}.xlsx`}
             sheets={skillExportSheets}
           />
           <Button size="sm" onClick={() => setSheetOpen(true)}>

@@ -58,6 +58,7 @@ import {
 } from "@/lib/hr/email-template-validation";
 import { TemplateFormFields, TemplateFieldInput } from "./_components/template-form";
 import { plural } from "@/lib/format-utils";
+import { getTodayString } from "@/lib/date-utils";
 
 interface EmailTemplate {
   id: number;
@@ -85,7 +86,7 @@ const SAMPLE_PREVIEW_VARS: Record<string, string> = {
   joiningDate: "2024-06-01",
   phone: "+91 98765 43210",
   date: new Date().toLocaleDateString(undefined, { dateStyle: "long" }),
-  today: new Date().toISOString().slice(0, 10),
+  today: getTodayString(),
   candidateName: "Rahul Verma",
   candidateEmail: "rahul@example.com",
   candidateFirstName: "Rahul",

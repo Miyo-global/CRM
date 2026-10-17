@@ -27,6 +27,7 @@ import {
   useExportMailPeople,
   useExportMailRecipients,
 } from "@/components/hr/export-mail-form";
+import { getTodayString } from "@/lib/date-utils";
 
 export interface DocumentExportSheetProps {
   isDocumentsAdmin: boolean;
@@ -187,7 +188,7 @@ export function DocumentExportSheet({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `documents-export-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `documents-export-${getTodayString()}.zip`;
       document.body.appendChild(a);
       a.click();
       a.remove();
