@@ -65,13 +65,24 @@ export default function ProjectBoardPage({ params }: PageProps) {
     [router, searchParams]
   );
 
+  // MIYO-0110: opening a card navigates to the ticket's own URL, which is
+  // intercepted into the side pane. Reloading that URL gives the full page,
+  // and Back closes the pane. Older `?ticket=<id>` links still open the
+  // dialog below.
   const handleTicketSelect = useCallback(
     (id: number) => {
+      const ticket = data?.tickets?.find((t) => t.id === id);
+      if (data?.key && ticket?.ticketNumber) {
+        router.push(`/projects/${projectId}/tickets/${data.key}-${ticket.ticketNumber}`, {
+          scroll: false,
+        });
+        return;
+      }
       const params = new URLSearchParams(searchParams.toString());
       params.set("ticket", String(id));
       router.replace(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [data, projectId, router, searchParams]
   );
 
   const handleTicketClose = useCallback(

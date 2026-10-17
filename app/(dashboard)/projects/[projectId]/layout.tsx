@@ -35,9 +35,12 @@ async function loadProject(rawId: string) {
 
 export default async function ProjectLayout({
   children,
+  panel,
   params,
 }: {
   children: React.ReactNode;
+  /** Ticket routes intercepted into a side pane (MIYO-0110). */
+  panel: React.ReactNode;
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
@@ -50,6 +53,7 @@ export default async function ProjectLayout({
     <div className="flex h-full w-full flex-col">
       <ProjectSidebar projectId={projectId} projectName={project.name} projectKey={project.key} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">{children}</div>
+      {panel}
     </div>
   );
 }
