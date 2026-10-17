@@ -6,6 +6,9 @@ import { inngest } from "@/lib/inngest/client";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { isExitFinalApprover } from "@/lib/constants/roles";
+import { after } from "next/server";
+import { format } from "date-fns";
+import { sendResignationApprovedEmail } from "@/lib/email";
 
 const ceoReviewSchema = z.object({
   decision: z.enum(["approve", "reject"]),
@@ -45,6 +48,28 @@ export async function PATCH(
         updatedAt: new Date(),
       })
       .where(eq(resignations.id, resignationId));
+
+    // The employee hears about the final decision by email too, not only
+    // through Inngest's in-app notice (R3-0009).
+    if (approved) {
+      const employee = await db.query.users.findFirst({
+        where: eq(users.id, record.userId),
+        columns: { email: true, name: true },
+      });
+      if (employee?.email) {
+        const to = employee.email;
+        after(() =>
+          sendResignationApprovedEmail(
+            to,
+            employee.name ?? "Employee",
+            session.user.name ?? "Admin",
+            format(record.lastWorkingDate ? new Date(record.lastWorkingDate) : new Date(), "dd MMM yyyy"),
+            record.noticePeriodDays ?? 30,
+            format(record.createdAt ?? new Date(), "dd MMM yyyy"),
+          ).catch(() => undefined),
+        );
+      }
+    }
 
     void inngest.send({
       name: "hr/resignation.ceo_approved",
