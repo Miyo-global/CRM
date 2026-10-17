@@ -4,7 +4,6 @@ import { formatIST } from "@/lib/date-utils";
 import {
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
-  getAccountDeactivationEmailTemplate,
 } from "../email-templates";
 
 /** MIYO-0218: the hand-written auth-verify-email template. */
@@ -80,16 +79,18 @@ export async function sendPasswordChangeConfirmationEmail(
   });
 }
 
+/** MIYO-0223: the hand-written auth-account-deactivated template. */
 export async function sendAccountDeactivationEmail(
   email: string,
   employeeName: string,
-  deactivatedBy: string,
-  reason?: string
+  deactivatedOn: string = formatIST(new Date()).split(",")[0],
 ) {
-  await sendEmail({
+  await sendTemplateEmail("auth-account-deactivated", {
     to: email,
-    subject: "Account Deactivated",
-    html: getAccountDeactivationEmailTemplate(employeeName, deactivatedBy, reason),
+    vars: {
+      first_name: employeeName.trim().split(/\s+/)[0] || employeeName,
+      deactivated_on: deactivatedOn,
+    },
   });
 }
 

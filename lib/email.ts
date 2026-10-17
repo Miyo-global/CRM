@@ -9,6 +9,7 @@ export {
   sendAccountLockedEmail,
   sendNewDeviceLoginEmail,
   sendPasswordExpiryWarningEmail,
+  sendAccountDeactivationEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
@@ -25,7 +26,6 @@ import {
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
   getLeaveCancellationEmailTemplate,
-  getAccountDeactivationEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
   getExpenseRejectedEmailTemplate,
@@ -318,19 +318,6 @@ export async function sendLeaveCancellationEmail(
       startDate,
       endDate
     ),
-  });
-}
-
-export async function sendAccountDeactivationEmail(
-  email: string,
-  employeeName: string,
-  deactivatedBy: string,
-  reason?: string
-) {
-  await sendEmail({
-    to: email,
-    subject: 'Account Deactivated',
-    html: getAccountDeactivationEmailTemplate(employeeName, deactivatedBy, reason),
   });
 }
 

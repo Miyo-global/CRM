@@ -201,11 +201,7 @@ export async function deleteEmployee(userId: string) {
         .set({ isActive: false })
         .where(eq(users.id, userId));
       if (employee?.email) {
-        await sendAccountDeactivationEmail(
-          employee.email,
-          employee.name || "Employee",
-          session.user.name || "Administrator"
-        );
+        await sendAccountDeactivationEmail(employee.email, employee.name || "Employee");
       }
 
       revalidatePath("/hr/employees");

@@ -81,7 +81,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "auth.invitation", run: () => sendInvitationEmail(TO, "test-token-invite-123", "Miyo Global", ACTOR) },
   { name: "auth.welcome", run: () => sendWelcomeEmail(TO, NAME, "https://crm.miyoglobal.com/onboarding") },
   { name: "auth.passwordChangeConfirm", run: () => sendPasswordChangeConfirmationEmail(TO, NAME) },
-  { name: "auth.accountDeactivation", run: () => sendAccountDeactivationEmail(TO, NAME, ACTOR, "Test deactivation reason") },
+  { name: "auth.accountDeactivation", run: () => sendAccountDeactivationEmail(TO, NAME) },
   { name: "auth.accountLocked", run: () => sendAccountLockedEmail(TO, 5, new Date(Date.now() + 15 * 60 * 1000)) },
   { name: "auth.newDeviceLogin", run: () => sendNewDeviceLoginEmail(TO, { userAgent: "Chrome 147 on macOS", ipAddress: "192.0.2.1" }) },
   { name: "auth.passwordExpiryWarning", run: () => sendPasswordExpiryWarningEmail(TO, "24 April 2026") },
