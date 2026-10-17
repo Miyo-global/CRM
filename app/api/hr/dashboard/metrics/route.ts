@@ -1,5 +1,6 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
+import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 import {
   organizationMembers,
   users,
@@ -23,15 +24,14 @@ export async function GET() {
     const data = await cached(
       `hr:dashboard:metrics:${orgId}`,
       async () => {
+        // MIYO-0137: these bound queries on calendar days, so they follow the
+        // IST day, not the server's UTC day.
         const now = new Date();
-        const todayStr = now.toISOString().slice(0, 10);
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const monthStart = new Date(year, month, 1).toISOString().slice(0, 10);
-        const monthEnd = new Date(year, month + 1, 0).toISOString().slice(0, 10);
-        const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .slice(0, 10);
+        const todayStr = getTodayString();
+        const [year, month] = todayStr.split("-").map(Number);
+        const monthStart = `${todayStr.slice(0, 7)}-01`;
+        const monthEnd = formatDateOnly(new Date(Date.UTC(year, month, 0)));
+        const next7Days = formatDateOnly(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000));
 
         const [
           totalResult,

@@ -1,5 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
+import { formatDateOnly } from "@/lib/date-utils";
 import { documents } from "@/lib/db/schema";
 import { eq, and, count, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
@@ -29,7 +30,7 @@ export async function GET() {
         and(
           baseWhere,
           sql`${documents.expiryDate} IS NOT NULL`,
-          sql`${documents.expiryDate} <= ${addDays(new Date(), 30).toISOString().slice(0, 10)}`,
+          sql`${documents.expiryDate} <= ${formatDateOnly(addDays(new Date(), 30))}`,
           sql`${documents.expiryDate} >= CURRENT_DATE`,
         ),
       ),

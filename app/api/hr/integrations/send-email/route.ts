@@ -1,5 +1,6 @@
 import { withAuth, ok, err, HR_EMAIL_TEMPLATE_ROLES } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
+import { formatDateOnly } from "@/lib/date-utils";
 import { emailTemplates, candidates, departments } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
@@ -96,7 +97,7 @@ function buildEmployeeAutoVars(
     joiningDate: employee.joiningDate ? String(employee.joiningDate) : "",
     phone: employee.phone ?? "",
     date: today.toLocaleDateString(undefined, { dateStyle: "long" }),
-    today: today.toISOString().slice(0, 10),
+    today: formatDateOnly(today),
   });
 }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateOnly, getTodayString } from "@/lib/date-utils";
+
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,10 +56,10 @@ function LeaveCalendarWidget() {
   const now = new Date();
   const { data, isLoading } = useHrLeaveCalendar(now.getMonth() + 1, now.getFullYear());
 
-  const today = now.toISOString().slice(0, 10);
-  const next7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+  // MIYO-0137: the week window follows the IST day, not the viewer's browser
+  // timezone.
+  const today = getTodayString();
+  const next7 = formatDateOnly(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000));
 
   const thisWeekLeaves = (data ?? []).filter(
     (l) => l.status === "APPROVED" && l.startDate <= next7 && l.endDate >= today,
