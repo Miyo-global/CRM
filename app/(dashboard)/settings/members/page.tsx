@@ -499,7 +499,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
           </div>
         </div>
       </TableCell>
-      <TableCell className="px-5 text-sm text-muted-foreground">{member.email}</TableCell>
+      <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
       <TableCell className="px-5">
         <StatusPill tone={ROLE_TONES[member.role] ?? "neutral"}>{getRoleLabel(member.role)}</StatusPill>
       </TableCell>
@@ -569,7 +569,7 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{inv.email}</p>
-        <StatusPill tone={ROLE_TONES[inv.role] ?? "neutral"} className="mt-1">{inv.role}</StatusPill>
+        <StatusPill tone={ROLE_TONES[inv.role] ?? "neutral"} className="mt-1">{getRoleLabel(inv.role)}</StatusPill>
       </div>
       <div className="flex gap-1.5">
         <Button
