@@ -19,7 +19,7 @@ export function HrHomeSection() {
       <div className={SPAN.third}>
         <WidgetCard title="HR Dashboard" icon={LayoutDashboard} className="border-primary/40" contentClassName="flex flex-col justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            Headcount, payroll, compliance, recruitment, and leave analytics live on the HR dashboard.
+            Headcount, payroll, compliance and leave analytics live on the HR dashboard.
           </p>
           <Button asChild size="sm" className="w-fit">
             <Link href="/hr">

@@ -73,10 +73,14 @@ export function LandingPage() {
             ))}
           </nav>
 
+          {/* R3-0028: one call to action in the header. With self-signup off
+              both buttons read "Sign in", one beside the other. */}
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline-inverse" size="sm" className="border-transparent">
-              <Link href="/signin">Sign In</Link>
-            </Button>
+            {signupEnabled && (
+              <Button asChild variant="outline-inverse" size="sm" className="border-transparent">
+                <Link href="/signin">Sign in</Link>
+              </Button>
+            )}
             <Button asChild size="sm">
               <Link href={signupEnabled ? "/signup" : "/signin"}>
                 {signupEnabled ? "Get started" : "Sign in"}

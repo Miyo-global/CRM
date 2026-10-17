@@ -1426,7 +1426,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** STILL OPEN at 914259e; related path touched in QA wave (.omc/state/session-end-jobs/runs/44d2f547-5129-4363-b53e-a3e14d1
 
-- [ ] MIYO-0179 [Medium][Design/UI] Icon chip in every card header and list row (85 files use IconChip)
+- [x] MIYO-0179 [Medium][Design/UI] Icon chip in every card header and list row (85 files use IconChip)
+  - **Agent note (2026-10-17):** done — IconChip and all 83 call sites removed, the component deleted (cf23dc132).
   - **Agent note (2026-10-17):** tracker for the 63 per-page items MIYO-0337–0399. The chip itself is already an untinted muted glyph (B7, components/ui/icon-chip.tsx); ticks when the per-page items are done.
   - **Where:** components/ui/icon-chip.tsx and the 85 importing files (rg -l IconChip)
   - **Problem:** Icon overload makes pages look generated (QA 📷 02).
@@ -2384,7 +2385,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0337 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0337 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/account-deactivated/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2392,7 +2394,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0338 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0338 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/forgot-password/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2400,7 +2403,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0339 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0339 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/invitation/[token]/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2408,7 +2412,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0340 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0340 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/mfa/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2416,7 +2421,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0341 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0341 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/setup-password/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2424,7 +2430,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0342 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0342 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(auth)/verify-email/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2432,7 +2439,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0343 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0343 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/ai/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2440,7 +2448,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0344 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0344 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/ceo/qr-code/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2448,7 +2457,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0345 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0345 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/dashboard/admin-health/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2456,7 +2466,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0346 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0346 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/assessments/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2464,7 +2475,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0347 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0347 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/asset-returns/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2472,7 +2484,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0348 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0348 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/assets/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2480,7 +2493,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0349 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0349 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/background-verification/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2488,7 +2502,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0350 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0350 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/career-profiles/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2496,7 +2511,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0351 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0351 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/certifications/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2504,7 +2520,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0352 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0352 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/compliance/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2512,7 +2529,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0353 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0353 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/documents/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2520,7 +2538,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0354 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0354 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/documents/templates/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2528,7 +2547,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0355 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0355 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/email-templates/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2536,7 +2556,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0356 [Low][Design/UI] Remove decorative IconChip from employee-details-view
+- [x] MIYO-0356 [Low][Design/UI] Remove decorative IconChip from employee-details-view
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/employees/[employeeId]/employee-details-view.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2544,7 +2565,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0357 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0357 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/fnf/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2552,7 +2574,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0358 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0358 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/handbook/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2560,7 +2583,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0359 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0359 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/incentives/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2568,7 +2592,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0360 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0360 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/learning-paths/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2576,7 +2601,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0361 [Low][Design/UI] Remove decorative IconChip from leave-approvals
+- [x] MIYO-0361 [Low][Design/UI] Remove decorative IconChip from leave-approvals
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/leaves/leave-approvals.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2584,7 +2610,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0362 [Low][Design/UI] Remove decorative IconChip from leaves-shared
+- [x] MIYO-0362 [Low][Design/UI] Remove decorative IconChip from leaves-shared
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/leaves/leaves-shared.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2592,7 +2619,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0363 [Low][Design/UI] Remove decorative IconChip from leaves-wfh-content
+- [x] MIYO-0363 [Low][Design/UI] Remove decorative IconChip from leaves-wfh-content
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/leaves/leaves-wfh-content.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2600,7 +2628,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0364 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0364 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/loans/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2608,7 +2637,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0365 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0365 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/offer-letter-templates/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2616,7 +2646,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0366 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0366 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/onboarding/my-tasks/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2624,7 +2655,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0367 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0367 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/onboarding/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2632,7 +2664,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0368 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0368 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/payroll/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2640,7 +2673,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0369 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0369 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/recognition/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2648,7 +2682,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0370 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0370 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/reimbursements/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2656,7 +2691,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0371 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0371 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/team-events/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2664,7 +2700,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0372 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0372 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/hr/training/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2672,7 +2709,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0373 [Low][Design/UI] Remove decorative IconChip from access-denied-view
+- [x] MIYO-0373 [Low][Design/UI] Remove decorative IconChip from access-denied-view
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/projects/[projectId]/access-denied-view.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2680,7 +2718,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0374 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0374 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/projects/[projectId]/epics/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2688,7 +2727,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0375 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0375 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/projects/[projectId]/settings/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2696,7 +2736,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0376 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0376 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/projects/[projectId]/sprints/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2704,7 +2745,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0377 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0377 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/projects/[projectId]/views/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2712,7 +2754,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0378 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0378 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/reports/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2720,7 +2763,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0379 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0379 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/settings/ai/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2728,7 +2772,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0380 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0380 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/settings/audit-log/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2736,7 +2781,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0381 [Low][Design/UI] Remove decorative IconChip from page
+- [x] MIYO-0381 [Low][Design/UI] Remove decorative IconChip from page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(dashboard)/settings/job-roles/page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2744,7 +2790,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0382 [Low][Design/UI] Remove decorative IconChip from token-page-shell
+- [x] MIYO-0382 [Low][Design/UI] Remove decorative IconChip from token-page-shell
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** app/(public)/_components/token-page-shell.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2752,7 +2799,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0383 [Low][Design/UI] Remove decorative IconChip from not-activated-page
+- [x] MIYO-0383 [Low][Design/UI] Remove decorative IconChip from not-activated-page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/auth/not-activated-page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2760,7 +2808,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0384 [Low][Design/UI] Remove decorative IconChip from activity-feed
+- [x] MIYO-0384 [Low][Design/UI] Remove decorative IconChip from activity-feed
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/charts/activity-feed.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2768,7 +2817,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0385 [Low][Design/UI] Remove decorative IconChip from executive-kpi-widget
+- [x] MIYO-0385 [Low][Design/UI] Remove decorative IconChip from executive-kpi-widget
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/dashboard/widgets/executive-kpi-widget.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2776,7 +2826,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0386 [Low][Design/UI] Remove decorative IconChip from pending-approvals-widget
+- [x] MIYO-0386 [Low][Design/UI] Remove decorative IconChip from pending-approvals-widget
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/dashboard/widgets/pending-approvals-widget.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2784,7 +2835,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0387 [Low][Design/UI] Remove decorative IconChip from quick-actions-widget
+- [x] MIYO-0387 [Low][Design/UI] Remove decorative IconChip from quick-actions-widget
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/dashboard/widgets/quick-actions-widget.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2792,7 +2844,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0388 [Low][Design/UI] Remove decorative IconChip from widget-card
+- [x] MIYO-0388 [Low][Design/UI] Remove decorative IconChip from widget-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/dashboard/widgets/widget-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2800,7 +2853,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0389 [Low][Design/UI] Remove decorative IconChip from expense-export-dialog
+- [x] MIYO-0389 [Low][Design/UI] Remove decorative IconChip from expense-export-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/expenses/expense-export/expense-export-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2808,7 +2862,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0390 [Low][Design/UI] Remove decorative IconChip from employee-projects-list
+- [x] MIYO-0390 [Low][Design/UI] Remove decorative IconChip from employee-projects-list
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/hr/employee-projects-list.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2816,7 +2871,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0391 [Low][Design/UI] Remove decorative IconChip from burndown-chart
+- [x] MIYO-0391 [Low][Design/UI] Remove decorative IconChip from burndown-chart
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/burndown-chart.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2824,7 +2880,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0392 [Low][Design/UI] Remove decorative IconChip from create-epic-dialog
+- [x] MIYO-0392 [Low][Design/UI] Remove decorative IconChip from create-epic-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/create-epic-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2832,7 +2889,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0393 [Low][Design/UI] Remove decorative IconChip from create-sprint-dialog
+- [x] MIYO-0393 [Low][Design/UI] Remove decorative IconChip from create-sprint-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/create-sprint-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2840,7 +2898,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0394 [Low][Design/UI] Remove decorative IconChip from edit-epic-dialog
+- [x] MIYO-0394 [Low][Design/UI] Remove decorative IconChip from edit-epic-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/edit-epic-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2848,7 +2907,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0395 [Low][Design/UI] Remove decorative IconChip from edit-sprint-dialog
+- [x] MIYO-0395 [Low][Design/UI] Remove decorative IconChip from edit-sprint-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/edit-sprint-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2856,7 +2916,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0396 [Low][Design/UI] Remove decorative IconChip from ticket-detail-body
+- [x] MIYO-0396 [Low][Design/UI] Remove decorative IconChip from ticket-detail-body
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/ticket-details/ticket-detail-body.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2864,7 +2925,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0397 [Low][Design/UI] Remove decorative IconChip from velocity-chart
+- [x] MIYO-0397 [Low][Design/UI] Remove decorative IconChip from velocity-chart
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/projects/velocity-chart.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2872,7 +2934,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0398 [Low][Design/UI] Remove decorative IconChip from mfa-settings
+- [x] MIYO-0398 [Low][Design/UI] Remove decorative IconChip from mfa-settings
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/settings/mfa-settings.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2880,7 +2943,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0399 [Low][Design/UI] Remove decorative IconChip from detail-header
+- [x] MIYO-0399 [Low][Design/UI] Remove decorative IconChip from detail-header
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/shared/detail-header.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2888,7 +2952,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0400 [Low][Design/UI] Remove decorative IconChip from timeline
+- [x] MIYO-0400 [Low][Design/UI] Remove decorative IconChip from timeline
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/shared/timeline.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2896,7 +2961,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0401 [Low][Design/UI] Remove decorative IconChip from time-entry-detail-sheet
+- [x] MIYO-0401 [Low][Design/UI] Remove decorative IconChip from time-entry-detail-sheet
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/timesheets/time-entry-detail-sheet.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2904,7 +2970,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0402 [Low][Design/UI] Remove decorative IconChip from confirm-dialog
+- [x] MIYO-0402 [Low][Design/UI] Remove decorative IconChip from confirm-dialog
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** components/ui/confirm-dialog.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2912,7 +2979,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0403 [Low][Design/UI] Remove decorative IconChip from hr-widgets
+- [x] MIYO-0403 [Low][Design/UI] Remove decorative IconChip from hr-widgets
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/dashboard/hr-widgets.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2920,7 +2988,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0404 [Low][Design/UI] Remove decorative IconChip from my-issues-card
+- [x] MIYO-0404 [Low][Design/UI] Remove decorative IconChip from my-issues-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/dashboard/my-issues-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2928,7 +2997,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0405 [Low][Design/UI] Remove decorative IconChip from public-documents-card
+- [x] MIYO-0405 [Low][Design/UI] Remove decorative IconChip from public-documents-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/dashboard/public-documents-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2936,7 +3006,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0406 [Low][Design/UI] Remove decorative IconChip from recent-activity-card
+- [x] MIYO-0406 [Low][Design/UI] Remove decorative IconChip from recent-activity-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/dashboard/recent-activity-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2944,7 +3015,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0407 [Low][Design/UI] Remove decorative IconChip from recent-projects-card
+- [x] MIYO-0407 [Low][Design/UI] Remove decorative IconChip from recent-projects-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/dashboard/recent-projects-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2952,7 +3024,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0408 [Low][Design/UI] Remove decorative IconChip from analytics-sections
+- [x] MIYO-0408 [Low][Design/UI] Remove decorative IconChip from analytics-sections
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/analytics/analytics-sections.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2960,7 +3033,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0409 [Low][Design/UI] Remove decorative IconChip from my-assigned-assets-view
+- [x] MIYO-0409 [Low][Design/UI] Remove decorative IconChip from my-assigned-assets-view
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/assets/my-assigned-assets-view.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2968,7 +3042,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0410 [Low][Design/UI] Remove decorative IconChip from attendance-calendar
+- [x] MIYO-0410 [Low][Design/UI] Remove decorative IconChip from attendance-calendar
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/attendance/attendance-calendar.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2976,7 +3051,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0411 [Low][Design/UI] Remove decorative IconChip from attendance-heatmap
+- [x] MIYO-0411 [Low][Design/UI] Remove decorative IconChip from attendance-heatmap
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/attendance/attendance-heatmap.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2984,7 +3060,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0412 [Low][Design/UI] Remove decorative IconChip from check-in-button
+- [x] MIYO-0412 [Low][Design/UI] Remove decorative IconChip from check-in-button
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/attendance/check-in-button.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -2992,7 +3069,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0413 [Low][Design/UI] Remove decorative IconChip from manage-holidays-card
+- [x] MIYO-0413 [Low][Design/UI] Remove decorative IconChip from manage-holidays-card
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/attendance/manage-holidays-card.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3000,7 +3078,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0414 [Low][Design/UI] Remove decorative IconChip from progress-timeline
+- [x] MIYO-0414 [Low][Design/UI] Remove decorative IconChip from progress-timeline
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/exit/progress-timeline.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3008,7 +3087,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0415 [Low][Design/UI] Remove decorative IconChip from ticket-detail-sheet
+- [x] MIYO-0415 [Low][Design/UI] Remove decorative IconChip from ticket-detail-sheet
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/helpdesk/ticket-detail-sheet.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3016,7 +3096,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0416 [Low][Design/UI] Remove decorative IconChip from ai-generate-review-button
+- [x] MIYO-0416 [Low][Design/UI] Remove decorative IconChip from ai-generate-review-button
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/hr/performance/ai-generate-review-button.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3024,7 +3105,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0417 [Low][Design/UI] Remove decorative IconChip from landing-page
+- [x] MIYO-0417 [Low][Design/UI] Remove decorative IconChip from landing-page
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/landing/landing-page.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3032,7 +3114,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0418 [Low][Design/UI] Remove decorative IconChip from complete-sprint-sheet
+- [x] MIYO-0418 [Low][Design/UI] Remove decorative IconChip from complete-sprint-sheet
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/projects/sprints/complete-sprint-sheet.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3040,7 +3123,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0419 [Low][Design/UI] Remove decorative IconChip from sprint-planning-panel
+- [x] MIYO-0419 [Low][Design/UI] Remove decorative IconChip from sprint-planning-panel
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/projects/sprints/sprint-planning-panel.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3048,7 +3132,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: IconChip still imported on auth/mfa and landing
 
-- [ ] MIYO-0420 [Low][Design/UI] Remove decorative IconChip from settings-security
+- [x] MIYO-0420 [Low][Design/UI] Remove decorative IconChip from settings-security
+  - **Agent note (2026-10-17):** IconChip removed from this file in the sweep (cf23dc132).
   - **Where:** features/settings/settings-security.tsx
   - **Problem:** Coloured icon chips in card headers/rows (icon overload, looks generated).
   - **Fix:** Delete IconChip usages that sit next to a heading or in list rows; keep at most one plain 16 px muted icon where it aids scanning.
@@ -3128,78 +3213,90 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] QA-0066 [Low][Attendance] Attendance views misreport: heatmap streak on all-absent days, future dates show Absent, calendar doesn't mark holidays/approved leave; dashboard Present 7 vs Team monitor 0 — Where: attendance heatmap/calendar/dashboard — Steps: '5d longest streak' on all-absent days; future dates everyone Absent; calendar doesn't mark future holidays/approved leave; Dashboard Present 7 vs Team monitor 0 — Expected vs actual: Accurate streaks/future/holiday/leave marking and consistent counts vs actual: the above — Fix: Fix streak logic, don't mark future as absent, mark holidays/leave, reconcile counts — Acceptance: Heatmap/calendar/dashboard figures are accurate and consistent — Ref: L11,L17
+- [x] QA-0066 [Low][Attendance] Attendance views misreport: heatmap streak on all-absent days, future dates show Absent, calendar doesn't mark holidays/approved leave; dashboard Present 7 vs Team monitor 0 — Where: attendance heatmap/calendar/dashboard — Steps: '5d longest streak' on all-absent days; future dates everyone Absent; calendar doesn't mark future holidays/approved leave; Dashboard Present 7 vs Team monitor 0 — Expected vs actual: Accurate streaks/future/holiday/leave marking and consistent counts vs actual: the above — Fix: Fix streak logic, don't mark future as absent, mark holidays/leave, reconcile counts — Acceptance: Heatmap/calendar/dashboard figures are accurate and consistent — Ref: L11,L17
+  - **Agent note (2026-10-17):** already fixed — the heatmap counts a day only when someone checked in, the calendar marks holidays and approved leave and leaves future days unmarked, and the dashboard's Present Today counts rows with a check-in, which is what the team monitor counts.
   - **Agent note (2026-10-17):** fixed in code at 298c14b (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Auth**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 298c14b19 "QA-0066: report attendance accurately across the t" (2026-10-16 19:45:31 +0530); not re-prob
 
-- [ ] QA-0067 [Low][Auth] Password policy inconsistency (client 12 vs server 8) and common specials (# _ - space) rejected with a generic error — Where: setup-password page PASSWORD_ZOD_SCHEMA min 12; server /api/auth/reset-password + accept-invitation inline regex min 8, charset [A-Za-z0-9@$!%*?&] — Steps: Footer says '8+ characters' while client enforces 12; QaUser#2026Pw / _ / - / space -> 400 'Invalid request body' (same as a bad token) — Expected vs actual: One policy, clear messaging, common specials allowed vs actual: mismatch + opaque rejects — Fix: Align server to 12; widen the allowed special set; return a distinct 'password does not meet requirements' message — Acceptance: Specials accepted; client and server agree; helper text matches — Ref: QA-A14,QA-A15; MIYO-0093
+- [x] QA-0067 [Low][Auth] Password policy inconsistency (client 12 vs server 8) and common specials (# _ - space) rejected with a generic error — Where: setup-password page PASSWORD_ZOD_SCHEMA min 12; server /api/auth/reset-password + accept-invitation inline regex min 8, charset [A-Za-z0-9@$!%*?&] — Steps: Footer says '8+ characters' while client enforces 12; QaUser#2026Pw / _ / - / space -> 400 'Invalid request body' (same as a bad token) — Expected vs actual: One policy, clear messaging, common specials allowed vs actual: mismatch + opaque rejects — Fix: Align server to 12; widen the allowed special set; return a distinct 'password does not meet requirements' message — Acceptance: Specials accepted; client and server agree; helper text matches — Ref: QA-A14,QA-A15; MIYO-0093
+  - **Agent note (2026-10-17):** already fixed in MIYO-0093 — one `PASSWORD_ZOD_SCHEMA` (8–128, upper/lower/digit/any non-alphanumeric, spaces allowed) used by every form and route, and the reset route returns the specific password message instead of the token one.
   - **Agent note (2026-10-17):** fixed in code at 0d176b7 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 0d176b7d8 "QA-0067: one password policy, with common special " (2026-10-16 19:48:34 +0530); not re-prob
 
 - [ ] QA-0068 [Low][Auth] In-process Redis makes MFA/revocation/rate-limit unreliable on multi-instance — Where: lib/redis.ts (in-process Map) — Steps: MFA login-verify marker, TOTP replay guard, session-revocation flags and rate limits are per-isolate -> MFA login can loop and replay protection/logout-everywhere are unreliable on Vercel — Expected vs actual: A shared KV backs these vs actual: per-instance state — Fix: Use Upstash/real Redis for the marker, replay guard, revocation flags and rate limits — Acceptance: MFA/rate-limit/revocation behave consistently across instances — Ref: QA-A16; MIYO-0062
+  - **Agent note (2026-10-17):** code is ready: `lib/redis.ts` uses Upstash when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set and falls back to a process-local map otherwise. Unticked until those are set on the deployment.
   - **Agent note (2026-10-17):** fixed in code at 56d32a9 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Employees**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 56d32a9aa "QA-0068: back the session markers with a shared Re" (2026-10-16 19:49:59 +0530); not re-prob
 
-- [ ] QA-0069 [Low][Employees] Send Invite with an empty email does nothing and gives no feedback — Where: Members -> Send Invite (/settings members/invitations) — Steps: Members -> Send Invite with an empty email does nothing and gives no feedback. — Expected vs actual: Inline 'email required' validation vs a silent no-op — Fix: Validate the email field and show an error; disable submit when empty — Acceptance: An empty-email invite shows a required-field error — Ref: pass9 #23; Screenshot: screens/p9-settings-members-invitations.png; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0069 [Low][Employees] Send Invite with an empty email does nothing and gives no feedback — Where: Members -> Send Invite (/settings members/invitations) — Steps: Members -> Send Invite with an empty email does nothing and gives no feedback. — Expected vs actual: Inline 'email required' validation vs a silent no-op — Fix: Validate the email field and show an error; disable submit when empty — Acceptance: An empty-email invite shows a required-field error — Ref: pass9 #23; Screenshot: screens/p9-settings-members-invitations.png; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — the invite form validates an empty and a malformed address inline.
   - **Agent note (2026-10-17):** fixed in code at c634d98 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **HR**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in c634d98fa "QA-0069: validate the invite email instead of doin" (2026-10-16 19:51:22 +0530); not re-prob
 
-- [ ] QA-0070 [Low][HR] Future-dated joiner can sign in before the joining date — Where: lib/auth (no pre-joining block); confirmed live — Steps: SALES (joins 20 Oct) logs in and gets a full session on 16 Oct — Expected vs actual: Confirm whether pre-joining login should be blocked vs actual: full access before start — Fix: Decide policy; if blocked, reject login before joiningDate — Acceptance: Pre-joining login blocked (if that is the decision) — Ref: QA-A17
+- [x] QA-0070 [Low][HR] Future-dated joiner can sign in before the joining date — Where: lib/auth (no pre-joining block); confirmed live — Steps: SALES (joins 20 Oct) logs in and gets a full session on 16 Oct — Expected vs actual: Confirm whether pre-joining login should be blocked vs actual: full access before start — Fix: Decide policy; if blocked, reject login before joiningDate — Acceptance: Pre-joining login blocked (if that is the decision) — Ref: QA-A17
+  - **Agent note (2026-10-17):** already fixed — `lib/auth` rejects a sign-in before the joining date.
   - **Agent note (2026-10-17):** fixed in code at dbd3b81 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Leave**
   - **Retest status:** PARTIAL
   - **Remaining:** pre-join login blocked but error=Configuration
 
-- [ ] QA-0071 [Low][Leave] Backdated leave accepted; UL on a declared holiday accepted; reject allowed with no reason; no cancel-after-approval — Where: app/api/hr/leaves/route.ts POST; [leaveId]/reject (reason optional); [leaveId]/cancel — Steps: CL for 13 Oct (past) -> 200; UL for 20 Oct holiday -> 200; reject UL with empty body -> 200; cancel approved leave -> 400 (by design) — Expected vs actual: Reject/flag past-dated and holiday-only leave; require a rejection reason vs actual: all accepted silently — Fix: Validate startDate>=today (HR override aside); reject leave that falls entirely on holidays; make reject reason required — Acceptance: Backdated/holiday-only leave rejected; reject requires a reason — Ref: QA-P6-07,QA-P6-08,QA-P6-09
+- [x] QA-0071 [Low][Leave] Backdated leave accepted; UL on a declared holiday accepted; reject allowed with no reason; no cancel-after-approval — Where: app/api/hr/leaves/route.ts POST; [leaveId]/reject (reason optional); [leaveId]/cancel — Steps: CL for 13 Oct (past) -> 200; UL for 20 Oct holiday -> 200; reject UL with empty body -> 200; cancel approved leave -> 400 (by design) — Expected vs actual: Reject/flag past-dated and holiday-only leave; require a rejection reason vs actual: all accepted silently — Fix: Validate startDate>=today (HR override aside); reject leave that falls entirely on holidays; make reject reason required — Acceptance: Backdated/holiday-only leave rejected; reject requires a reason — Ref: QA-P6-07,QA-P6-08,QA-P6-09
+  - **Agent note (2026-10-17):** already fixed — leave cannot start in the past, a range that is only Sundays or holidays is refused, and a rejection requires a reason.
   - **Agent note (2026-10-17):** fixed in code at fd47018 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Onboarding**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in fd4701859 "QA-0071: reject backdated leave and require a reje" (2026-10-16 19:53:48 +0530); not re-prob
 
-- [ ] QA-0072 [Low][Onboarding] Onboarding tasks are not sorted by due date — Where: /hr/onboarding/[userId] — Steps: The onboarding task list is unordered rather than by due date. — Expected vs actual: Tasks ordered by due date vs arbitrary order — Fix: Sort tasks by due date (then title) — Acceptance: Onboarding tasks render in due-date order — Ref: pass9 #19; Screenshot: screens/p9-onboarding.png; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0072 [Low][Onboarding] Onboarding tasks are not sorted by due date — Where: /hr/onboarding/[userId] — Steps: The onboarding task list is unordered rather than by due date. — Expected vs actual: Tasks ordered by due date vs arbitrary order — Fix: Sort tasks by due date (then title) — Acceptance: Onboarding tasks render in due-date order — Ref: pass9 #19; Screenshot: screens/p9-onboarding.png; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — `/api/onboarding/[userId]` orders by due date (nulls last), then title.
   - **Agent note (2026-10-17):** fixed in code at 4582230 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Payroll**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 4582230ce "QA-0072: order onboarding tasks by due date" (2026-10-16 19:54:36 +0530); not re-probed live
 
-- [ ] QA-0073 [Low][Payroll] Salary-structure 'allowances' excluded from payroll CTC; duplicate payslip emails; payslip download serves HTML not PDF — Where: lib/hr/salary-effective-dates.ts resolvePayrollMonthlyCtc (max(basic+hra+special, user.monthlySalary)); mark-paid + email-payslip both send; [payrollId]/download returns text/html — Steps: Editing a structure's allowances didn't move payroll CTC (stayed 11000); 10k inbox got two 'Your Payslip' mails; /download is text/html (emailed attachment IS a real PDF) — Expected vs actual: Allowances counted (or documented as excluded); one payslip mail; download is a PDF vs actual: the above — Fix: Clarify CTC composition; dedupe the payslip mail; serve application/pdf on download — Acceptance: CTC reflects allowances per policy; one payslip mail; download returns a PDF — Ref: QA-P7-05,QA-P7-07,QA-P7-08
+- [x] QA-0073 [Low][Payroll] Salary-structure 'allowances' excluded from payroll CTC; duplicate payslip emails; payslip download serves HTML not PDF — Where: lib/hr/salary-effective-dates.ts resolvePayrollMonthlyCtc (max(basic+hra+special, user.monthlySalary)); mark-paid + email-payslip both send; [payrollId]/download returns text/html — Steps: Editing a structure's allowances didn't move payroll CTC (stayed 11000); 10k inbox got two 'Your Payslip' mails; /download is text/html (emailed attachment IS a real PDF) — Expected vs actual: Allowances counted (or documented as excluded); one payslip mail; download is a PDF vs actual: the above — Fix: Clarify CTC composition; dedupe the payslip mail; serve application/pdf on download — Acceptance: CTC reflects allowances per policy; one payslip mail; download returns a PDF — Ref: QA-P7-05,QA-P7-07,QA-P7-08
+  - **Agent note (2026-10-17):** already fixed — allowances are in `componentsFromStructureRow`'s CTC, the payslip mail is sent once unless forced, and the download route serves application/pdf.
   - **Agent note (2026-10-17):** fixed in code at 5150778 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Projects**
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 515077859 "QA-0073: count allowances in payroll CTC, send one" (2026-10-16 19:57:26 +0530); not re-prob
 
-- [ ] QA-0074 [Low][Projects] Sprint shows Completed with a future end date and 0/0 tickets; velocity label truncated — Where: /projects/[projectId]/sprints ('QA Sprint 1', ends Oct 30) — Steps: The sprint shows Completed though it ends Oct 30 and has 0/0 tickets; the velocity label is truncated. — Expected vs actual: Status reflects the dates (Active/Upcoming) vs a wrong Completed; label not clipped — Fix: Derive sprint status from its dates; widen/wrap the velocity label — Acceptance: A sprint ending in the future is not Completed; the label is fully visible — Ref: pass9 #15; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0074 [Low][Projects] Sprint shows Completed with a future end date and 0/0 tickets; velocity label truncated — Where: /projects/[projectId]/sprints ('QA Sprint 1', ends Oct 30) — Steps: The sprint shows Completed though it ends Oct 30 and has 0/0 tickets; the velocity label is truncated. — Expected vs actual: Status reflects the dates (Active/Upcoming) vs a wrong Completed; label not clipped — Fix: Derive sprint status from its dates; widen/wrap the velocity label — Acceptance: A sprint ending in the future is not Completed; the label is fully visible — Ref: pass9 #15; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — the sprint card derives its status from the dates through the shared `periodStatus` helper.
   - **Agent note (2026-10-17):** fixed in code at 6942803 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 93f56b0a2 "QA-0074: derive sprint status from its dates" (2026-10-16 19:59:28 +0530); not re-probed liv
 
-- [ ] QA-0075 [Low][Projects] Cycle status wrong: shows Upcoming after start has passed; a draft offers 'Complete cycle' — Where: /projects/[projectId]/cycles/[cycleId] ('QA Cycle') — Steps: A cycle whose start date has passed shows 'Upcoming'; a draft cycle offers 'Complete cycle'. — Expected vs actual: Status reflects the dates and actions match the state vs a wrong label and an invalid action — Fix: Derive cycle status from its dates; gate 'Complete cycle' to active cycles — Acceptance: A started cycle shows Active; draft cycles don't offer Complete — Ref: pass9 #16; Screenshot: screens/p9-cycle-detail.png; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0075 [Low][Projects] Cycle status wrong: shows Upcoming after start has passed; a draft offers 'Complete cycle' — Where: /projects/[projectId]/cycles/[cycleId] ('QA Cycle') — Steps: A cycle whose start date has passed shows 'Upcoming'; a draft cycle offers 'Complete cycle'. — Expected vs actual: Status reflects the dates and actions match the state vs a wrong label and an invalid action — Fix: Derive cycle status from its dates; gate 'Complete cycle' to active cycles — Acceptance: A started cycle shows Active; draft cycles don't offer Complete — Ref: pass9 #16; Screenshot: screens/p9-cycle-detail.png; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — the cycles page groups by `periodStatus`, so a started cycle is Active.
   - **Agent note (2026-10-17):** fixed in code at 6942803 (after the 914259e retest baseline). Unticked: acceptance needs a live check.
   - **Retest status:** PARTIAL
   - **Remaining:** claimed fixed in 6942803ce "QA-0075: show cycle status from its dates and gate" (2026-10-16 20:00:22 +0530); not re-prob
 
-- [ ] QA-0077 [Low][Projects] Pinned pages appear twice in the Pages list — Where: /projects/[projectId]/pages — Steps: A pinned page shows both in the pinned section and again in the main list. — Expected vs actual: A pinned page shows once (or clearly flagged) vs duplicated — Fix: Exclude pinned pages from the main list (or de-dupe) — Acceptance: A pinned page appears once — Ref: pass9 #22; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0077 [Low][Projects] Pinned pages appear twice in the Pages list — Where: /projects/[projectId]/pages — Steps: A pinned page shows both in the pinned section and again in the main list. — Expected vs actual: A pinned page shows once (or clearly flagged) vs duplicated — Fix: Exclude pinned pages from the main list (or de-dupe) — Acceptance: A pinned page appears once — Ref: pass9 #22; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — pinned pages sort to the top of the one list; there is no separate pinned section to duplicate them.
   - **Agent note (2026-10-17):** fixed in code at 24aa61c (after the 914259e retest baseline). Unticked: acceptance needs a live check.
 
 **Settings**
   - **Retest status:** PARTIAL
   - **Remaining:** ui-B: /projects/3/pages lists QA3 Page once; no pin to confirm
 
-- [ ] QA-0078 [Low][Settings] Unknown settings routes render a fake breadcrumb instead of 404 — Where: /settings/[[...rest]] (e.g. /settings/xyz, /settings/teams) — Steps: Visiting /settings/xyz shows a fake 'Settings > Xyz' breadcrumb (and the sidebar logo is missing) instead of a 404. — Expected vs actual: An unknown settings path 404s vs a fabricated breadcrumb page — Fix: 404 unknown settings sub-routes (logo fix -> design QA-D008) — Acceptance: /settings/xyz returns a 404/not-found page — Ref: pass9 #20; Found 16 Oct 15:46 IST @914259e
+- [x] QA-0078 [Low][Settings] Unknown settings routes render a fake breadcrumb instead of 404 — Where: /settings/[[...rest]] (e.g. /settings/xyz, /settings/teams) — Steps: Visiting /settings/xyz shows a fake 'Settings > Xyz' breadcrumb (and the sidebar logo is missing) instead of a 404. — Expected vs actual: An unknown settings path 404s vs a fabricated breadcrumb page — Fix: 404 unknown settings sub-routes (logo fix -> design QA-D008) — Acceptance: /settings/xyz returns a 404/not-found page — Ref: pass9 #20; Found 16 Oct 15:46 IST @914259e
+  - **Agent note (2026-10-17):** already fixed — `/settings/[[...rest]]` calls `notFound()` for any unknown sub-route.
   - **Agent note (2026-10-17):** fixed in code at 26b667a (after the 914259e retest baseline). Unticked: acceptance needs a live check.
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: claimed fixed in f779f4752 (2026-10-16 20:04:40 +0530); UI acceptance outstanding

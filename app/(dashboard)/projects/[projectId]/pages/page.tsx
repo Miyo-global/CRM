@@ -300,10 +300,10 @@ export default function PagesPage({
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="page-icon">Icon Emoji</Label>
+                <Label htmlFor="page-icon">Icon</Label>
                 <Input
                   id="page-icon"
-                  placeholder="📄"
+                  placeholder="Optional emoji"
                   maxLength={4}
                   {...form.register("icon")}
                 />
