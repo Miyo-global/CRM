@@ -5,6 +5,7 @@ import { resignations, exitChecklists, users, fnfSettlements } from "@/lib/db/sc
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendResignationApprovedEmail } from "@/lib/email";
+import { after } from "next/server";
 import { format } from "date-fns";
 import type { NextRequest } from "next/server";
 
@@ -106,14 +107,15 @@ export async function PATCH(
       if (employee?.email) {
         const lwd = existing.lastWorkingDate ? new Date(existing.lastWorkingDate) : new Date();
         const sub = existing.createdAt ?? new Date();
-        sendResignationApprovedEmail(
-          employee.email,
+        const to = employee.email;
+        after(() => sendResignationApprovedEmail(
+          to,
           employee.name ?? "Employee",
           session.user.name ?? "CEO",
           format(lwd, "dd MMM yyyy"),
           existing.noticePeriodDays ?? 30,
           format(sub, "dd MMM yyyy")
-        ).catch(() => undefined);
+        ).catch(() => undefined));
       }
 
       return ok({ success: true });

@@ -6,6 +6,7 @@ import { resignations, organizationMembers, users } from "@/lib/db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { sendResignationSubmittedEmail } from "@/lib/email";
+import { after } from "next/server";
 import { inngest } from "@/lib/inngest/client";
 import { format } from "date-fns";
 import type { NextRequest } from "next/server";
@@ -104,9 +105,12 @@ export async function POST(req: NextRequest) {
     const submissionDate = format(new Date(), "dd MMM yyyy");
     const lastWorkingDate = format(new Date(body.lastWorkingDate), "dd MMM yyyy");
 
+    // after(): an un-awaited send can be cut off once the response is sent
+    // on serverless (R3-0009).
+    after(async () => {
     for (const admin of adminMembers) {
       if (admin.user?.email && admin.user.email !== submittingUser?.email) {
-        sendResignationSubmittedEmail(
+        await sendResignationSubmittedEmail(
           admin.user.email,
           admin.user.name ?? "HR",
           submittingUser?.name ?? "Employee",
@@ -118,6 +122,7 @@ export async function POST(req: NextRequest) {
         ).catch(() => undefined);
       }
     }
+    });
 
     void inngest.send({
       name: "hr/resignation.submitted",
