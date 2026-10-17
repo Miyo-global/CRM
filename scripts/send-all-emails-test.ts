@@ -111,7 +111,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
 
   { name: "hr.payrollApproved", run: () => sendPayrollApprovedEmail(TO, "April 2026", "30 April 2026") },
 
-  { name: "hr.assetAssigned", run: () => sendAssetAssignedEmail(TO, NAME, "MacBook Pro 16\"", "Laptop", "MBP-2026-001") },
+  { name: "hr.assetAssigned", run: () => sendAssetAssignedEmail(TO, { name: "MacBook Pro 16", tag: "ASSET-14", serialNumber: "MBP-2026-001", assignedOn: TODAY }) },
 
   { name: "hr.weeklyAttendanceReport", run: () => sendWeeklyAttendanceReportEmail(
     "27 Apr – 03 May 2026",

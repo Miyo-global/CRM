@@ -188,7 +188,8 @@ export async function PATCH(
           assigneeUserId: assigneeAfter,
           assignerName: assigner?.name ?? session.user.name ?? "Admin",
           assetName: body.name ?? existing?.name ?? "Asset",
-          assetType: body.type ?? existing?.type ?? "Equipment",
+          // Assets have no separate tag column, so the id is the tag.
+          assetTag: `ASSET-${assetId}`,
           serialNumber: body.serialNumber ?? existing?.serialNumber ?? null,
         });
       })().catch(() => {});

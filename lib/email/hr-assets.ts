@@ -5,49 +5,46 @@ import { organizationMembers, users } from "@/lib/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { RECRUITMENT_HR_ROLES } from "@/lib/constants/roles";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
-import { sendEmail } from "./sender";
-import {
-  getAssetAssignedEmailTemplate,
-  getAssetAssignedHrNotificationTemplate,
-} from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
+/** MIYO-0272: the hand-written asset-assigned-employee template. */
 export async function sendAssetAssignedEmail(
   email: string,
-  employeeName: string,
-  assetName: string,
-  assetType: string,
-  serialNumber: string | null,
+  asset: { name: string; tag: string; serialNumber: string | null; assignedOn: string },
 ) {
-  await sendEmail({
+  await sendTemplateEmail("asset-assigned-employee", {
     to: email,
-    subject: `Asset Assigned: ${assetName}`,
-    html: getAssetAssignedEmailTemplate(employeeName, assetName, assetType, serialNumber),
+    vars: {
+      asset_name: asset.name,
+      asset_tag: asset.tag,
+      serial_number: asset.serialNumber?.trim() || "not recorded",
+      assigned_on: asset.assignedOn,
+    },
   });
 }
 
+/** MIYO-0273: the hand-written asset-assigned-hr template. */
 export async function sendAssetAssignedHrEmail(
-  hrEmail: string,
-  hrName: string,
-  assignerName: string,
-  employeeName: string,
-  assetName: string,
-  assetType: string,
-  serialNumber: string | null,
-  assignedAt: string,
+  hrEmail: string | string[],
+  asset: {
+    name: string;
+    tag: string;
+    employeeName: string;
+    assignedBy: string;
+    assignedOn: string;
+  },
 ) {
-  await sendEmail({
+  await sendTemplateEmail("asset-assigned-hr", {
     to: hrEmail,
-    subject: `Asset Assigned: ${assetName} → ${employeeName}`,
-    html: getAssetAssignedHrNotificationTemplate(
-      hrName,
-      assignerName,
-      employeeName,
-      assetName,
-      assetType,
-      serialNumber,
-      assignedAt,
-    ),
+    category: "hr",
+    vars: {
+      asset_name: asset.name,
+      asset_tag: asset.tag,
+      employee_name: asset.employeeName,
+      assigned_by: asset.assignedBy,
+      assigned_on: asset.assignedOn,
+    },
   });
 }
 
@@ -90,7 +87,7 @@ export async function notifyAssetAssignment(params: {
   assigneeUserId: string;
   assignerName: string;
   assetName: string;
-  assetType: string;
+  assetTag: string;
   serialNumber: string | null;
 }): Promise<void> {
   const assignedAt = new Date().toLocaleString(DEFAULT_LOCALE, {
@@ -110,28 +107,23 @@ export async function notifyAssetAssignment(params: {
   const employeeName = employee?.name?.trim() || "Employee";
 
   if (employee?.email?.trim()) {
-    await sendAssetAssignedEmail(
-      employee.email.trim(),
-      employeeName,
-      params.assetName,
-      params.assetType,
-      params.serialNumber,
-    );
+    await sendAssetAssignedEmail(employee.email.trim(), {
+      name: params.assetName,
+      tag: params.assetTag,
+      serialNumber: params.serialNumber,
+      assignedOn: assignedAt,
+    });
   }
 
   const hrRecipients = await getAssetAssignmentHrRecipients(params.orgId);
-  await Promise.all(
-    hrRecipients.map((hr) =>
-      sendAssetAssignedHrEmail(
-        hr.email,
-        hr.name,
-        params.assignerName,
-        employeeName,
-        params.assetName,
-        params.assetType,
-        params.serialNumber,
-        assignedAt,
-      ),
-    ),
+  await sendAssetAssignedHrEmail(
+    hrRecipients.map((hr) => hr.email),
+    {
+      name: params.assetName,
+      tag: params.assetTag,
+      employeeName,
+      assignedBy: params.assignerName,
+      assignedOn: assignedAt,
+    },
   );
 }
