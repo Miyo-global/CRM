@@ -3,7 +3,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
 import { toast } from "sonner";
-import ExcelJS from "exceljs";
 import { useSession } from "next-auth/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,13 +24,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Filter, Download } from "lucide-react";
+import { Filter } from "lucide-react";
 import { useCancelLeave, useApproveLeaveDedicated, useRejectLeaveDedicated, useRevertLeave } from "@/lib/api/hooks/hr";
 import { cn } from "@/lib/utils";
 
 import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared";
 import { LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
+import { ExportButton } from "@/components/ui/export-button";
 
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
@@ -170,52 +170,34 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
     });
   }, [cancelMutation]);
 
-  const handleExportExcel = useCallback(async () => {
-    if (filteredRequests.length === 0) {
-      toast.error(hasActiveFilters ? "No matching leave requests to export" : "No leave requests to export");
-      return;
-    }
-    try {
-      const workbook = new ExcelJS.Workbook();
-      const ws = workbook.addWorksheet("Leave Requests");
-      ws.columns = [
-        { header: "Type", width: 15 },
-        { header: "From", width: 14 },
-        { header: "To", width: 14 },
-        { header: "Priority", width: 10 },
-        { header: "Status", width: 12 },
-        { header: "Reason", width: 30 },
-        { header: "Requested On", width: 14 },
-      ];
-      ws.getRow(1).font = { bold: true };
-      for (const req of filteredRequests) {
-        ws.addRow([
-          req.leaveType?.name || "-",
-          req.startDate,
-          req.endDate,
-          req.priority || "Medium",
-          req.status,
-          req.reason || "-",
-          req.createdAt ? format(new Date(req.createdAt), "yyyy-MM-dd") : "-",
-        ]);
-      }
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `leave-requests-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success("Leave requests exported!");
-    } catch {
-      toast.error("Failed to export");
-    }
-  }, [filteredRequests, hasActiveFilters]);
+  // R3-D005: one export control, the same one the rest of the product uses,
+  // so the file is named for what it holds and both formats are offered.
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: "Leave Requests",
+        columns: [
+          { header: "Type", key: "type", width: 15 },
+          { header: "From", key: "from", width: 14 },
+          { header: "To", key: "to", width: 14 },
+          { header: "Priority", key: "priority", width: 10 },
+          { header: "Status", key: "status", width: 12 },
+          { header: "Reason", key: "reason", width: 30 },
+          { header: "Requested On", key: "requestedOn", width: 14 },
+        ],
+        rows: filteredRequests.map((req) => ({
+          type: req.leaveType?.name ?? "-",
+          from: req.startDate,
+          to: req.endDate,
+          priority: req.priority ?? "Medium",
+          status: req.status,
+          reason: req.reason ?? "-",
+          requestedOn: req.createdAt ? format(new Date(req.createdAt), "yyyy-MM-dd") : "-",
+        })),
+      },
+    ],
+    [filteredRequests],
+  );
 
   return (
     <div className="space-y-4">
@@ -337,16 +319,10 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
                   ) : null}
                 </PopoverContent>
               </Popover>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleExportExcel}
-                aria-label="Export to Excel"
-              >
-                <Download className="size-4" aria-hidden="true" />
-                Export
-              </Button>
+              <ExportButton
+                filename={`leave-requests-${format(new Date(), "yyyy-MM-dd")}`}
+                sheets={exportSheets}
+              />
             </div>
           </div>
         </CardHeader>
