@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarCheck, Contact2, Handshake, LifeBuoy, Menu, Plus, Search, Timer, ChevronDown } from "lucide-react";
+import { CalendarCheck, LifeBuoy, Menu, Plus, Search, Timer, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Breadcrumbs, useAutoBreadcrumbs } from "@/components/ui/breadcrumbs";
@@ -33,8 +33,8 @@ import { openCommandPalette } from "./shortcuts-provider";
  * is the plain page path used to decide whether the role's menu has it.
  */
 const CREATE_ITEMS = [
-  { label: "New lead", navHref: "/crm/leads", href: "/crm/leads?new=1", icon: Contact2 },
-  { label: "New deal", navHref: "/crm/deals", href: "/crm/deals?new=1", icon: Handshake },
+  // MIYO-0173: the lead and deal entries pointed at /crm/leads and
+  // /crm/deals, which were removed with the CRM module and 404.
   { label: "New support ticket", navHref: "/support", href: "/support/inbox?new=1", icon: LifeBuoy },
   { label: "Log time", navHref: "/timesheets", href: "/timesheets?new=1", icon: Timer },
   { label: "Apply for leave", navHref: "/hr/leaves", href: "/hr/leaves?apply=leave", icon: CalendarCheck },
