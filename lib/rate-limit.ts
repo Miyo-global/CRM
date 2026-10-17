@@ -50,6 +50,14 @@ export const RATE_LIMIT_TIERS: Record<string, RateLimitTier> = {
     progressive: true,
     maxBlockMs: 10 * 60_000,
   },
+  // MIYO-0640: the public apply endpoint. Five an hour per IP and per
+  // email address, doubling the block on each further breach.
+  "ats-apply": {
+    maxRequests: 5,
+    windowMs: 60 * 60_000,
+    progressive: true,
+    maxBlockMs: 6 * 60 * 60_000,
+  },
   "api-default": {
     maxRequests: 100,
     windowMs: 60_000,
