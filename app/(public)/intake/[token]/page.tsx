@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { publicIntakeSchema, type PublicIntakeValues } from "./public-intake-schema";
+import { TurnstileWidget } from "@/components/security/turnstile-widget";
 
 type Load = { state: "loading" } | { state: "closed" } | { state: "open"; projectName: string } | { state: "sent"; projectName: string };
 
@@ -18,6 +19,8 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
   const { token } = use(params);
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // MIYO-0130: null until Turnstile hands over a token (or it is not configured).
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const form = useForm<PublicIntakeValues>({ resolver: zodResolver(publicIntakeSchema), defaultValues: { title: "", description: "", submitterEmail: "" } });
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
         title: values.title,
         description: values.description || undefined,
         submitterEmail: values.submitterEmail || undefined,
+        turnstileToken: turnstileToken ?? undefined,
       });
       setLoad((prev) => ({ state: "sent", projectName: prev.state === "open" ? prev.projectName : "" }));
     } catch (error) {
@@ -127,6 +131,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
               </FormItem>
             )}
           />
+          <TurnstileWidget onToken={setTurnstileToken} />
           {submitError && (
             <p role="alert" className="text-sm text-destructive">{submitError}</p>
           )}

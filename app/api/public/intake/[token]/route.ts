@@ -4,6 +4,7 @@ import { intakeItems, projects } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimitRedis } from "@/lib/rate-limit-redis";
+import { verifyTurnstile } from "@/lib/security/turnstile";
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -17,6 +18,8 @@ const intakeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().max(5000).optional(),
   submitterEmail: z.string().trim().email().optional(),
+  // MIYO-0130: Cloudflare Turnstile response from the form.
+  turnstileToken: z.string().max(4000).optional(),
 }).strict();
 
 function sanitizeText(text: string): string {
@@ -58,6 +61,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path.join(".") || undefined;
     return NextResponse.json({ error: "Validation failed", field }, { status: 400 });
+  }
+
+  // MIYO-0130: anyone with the link can post here, so the form carries a
+  // Turnstile token.
+  const bot = await verifyTurnstile(parsed.data.turnstileToken, getClientIp(request));
+  if (!bot.ok) {
+    return NextResponse.json(
+      { error: "We couldn't confirm you are human. Reload the page and try again." },
+      { status: 400 },
+    );
   }
 
   const description = parsed.data.description ? sanitizeText(parsed.data.description) : undefined;
