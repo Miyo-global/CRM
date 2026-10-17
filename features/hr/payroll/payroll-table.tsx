@@ -323,6 +323,14 @@ export function PayrollTable({
                                   <Eye className="mr-2 size-4" aria-hidden />
                                   Preview
                                 </DropdownMenuItem>
+                                {/* MIYO-0126: HR reviews the payslip before it
+                                    is paid; the PDF carries the status. */}
+                                {payroll.status !== "PAID" && onDownload && (
+                                  <DropdownMenuItem onClick={() => onDownload(payroll.id)}>
+                                    <Download className="mr-2 size-4" aria-hidden />
+                                    Download {payroll.status === "DRAFT" ? "draft" : "approved"} PDF
+                                  </DropdownMenuItem>
+                                )}
                                 {payroll.status === "DRAFT" && onRecalculate && (
                                   <DropdownMenuItem
                                     onClick={() => onRecalculate(payroll.id)}
