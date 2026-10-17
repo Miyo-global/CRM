@@ -1,43 +1,55 @@
-import { sendEmail } from "./sender";
-import { baseUrl } from "./sender";
-import {
-  getBonusPaidEmployeeEmailTemplate,
-  getBonusPaidStakeholderEmailTemplate,
-} from "../email-templates/bonus";
+import { sendTemplateEmail } from "./sender";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
+import { formatIST } from "@/lib/date-utils";
 
+function money(amount: string | number): string {
+  const n = typeof amount === "number" ? amount : Number(amount || 0);
+  return `${CURRENCY_SYMBOL}${n.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+interface BonusMailParams {
+  employeeName: string;
+  amount: string;
+  typeLabel: string;
+  reason?: string | null;
+  markedByName: string;
+  paidOn?: Date;
+}
+
+/** MIYO-0252: the hand-written bonus-paid-employee template. */
 export async function sendBonusPaidEmployeeEmail(
   employeeEmail: string,
-  params: {
-    employeeName: string;
-    amount: string;
-    typeLabel: string;
-    reason?: string | null;
-    markedByName: string;
-  },
+  params: BonusMailParams,
 ) {
-  const bonusesUrl = `${baseUrl}/hr/my-bonuses`;
-  await sendEmail({
+  await sendTemplateEmail("bonus-paid-employee", {
     to: employeeEmail,
-    subject: `Your Bonus Has Been Paid — ${CURRENCY_SYMBOL}${params.amount}`,
-    html: getBonusPaidEmployeeEmailTemplate({ ...params, bonusesUrl }),
+    category: "payroll",
+    vars: {
+      amount: money(params.amount),
+      bonus_type: params.typeLabel,
+      paid_on: `${formatIST(params.paidOn ?? new Date())} IST`,
+      note: params.reason?.trim() || "none",
+    },
   });
 }
 
+/** MIYO-0253: the hand-written bonus-paid-stakeholder template. */
 export async function sendBonusPaidStakeholderEmail(
-  recipientEmail: string,
-  params: {
-    employeeName: string;
-    amount: string;
-    typeLabel: string;
-    reason?: string | null;
-    markedByName: string;
-  },
+  recipientEmail: string | string[],
+  params: BonusMailParams,
 ) {
-  const bonusesUrl = `${baseUrl}/hr/bonuses`;
-  await sendEmail({
+  await sendTemplateEmail("bonus-paid-stakeholder", {
     to: recipientEmail,
-    subject: `Bonus Paid — ${params.employeeName} (${CURRENCY_SYMBOL}${params.amount})`,
-    html: getBonusPaidStakeholderEmailTemplate({ ...params, bonusesUrl }),
+    category: "payroll",
+    vars: {
+      employee_name: params.employeeName,
+      amount: money(params.amount),
+      bonus_type: params.typeLabel,
+      approver_name: params.markedByName,
+      paid_on: `${formatIST(params.paidOn ?? new Date())} IST`,
+    },
   });
 }
