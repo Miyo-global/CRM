@@ -2,7 +2,7 @@ import { getTodayString } from "@/lib/date-utils";
 import { withAuth, ok, err, parseBody, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
-import { eq, and, lte, gte, desc, notInArray } from "drizzle-orm";
+import { eq, and, lte, gte, desc, notInArray, sql } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
@@ -144,6 +144,10 @@ export async function POST(req: NextRequest) {
       });
 
       const inserted = await db.transaction(async (tx) => {
+        // Serialise applies per person: two quick submits both passed the
+        // overlap check before either inserted, creating two requests and two
+        // approver emails (QA-0010 / R3-0008).
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`leave-apply:${session.user.id}`}))`);
         const overlapping = await tx.query.leaveRequests.findFirst({
           where: and(
             eq(leaveRequests.userId, session.user.id),
@@ -192,7 +196,7 @@ export async function POST(req: NextRequest) {
       if (!inserted) {
         return err(
           "You already have a leave request for overlapping dates.",
-          400
+          409
         );
       }
 
