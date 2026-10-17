@@ -311,7 +311,7 @@ export function CommandPalette() {
                     <Search className="size-5 text-muted-foreground" />
                   </div>
                   <p className="text-sm font-medium text-foreground">No results for &ldquo;{query}&rdquo;</p>
-                  <p className="text-xs text-muted-foreground">Try a page name, lead, deal, or contact</p>
+                  <p className="text-xs text-muted-foreground">Try a page name, a person, a project, or a ticket</p>
                 </div>
               </CommandEmpty>
             )}
