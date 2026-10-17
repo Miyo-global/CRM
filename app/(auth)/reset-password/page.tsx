@@ -150,7 +150,7 @@ function ResetPasswordContent() {
                   <FormControl>
                     <PasswordInput
                       autoComplete="new-password"
-                      placeholder="At least 12 characters"
+                      placeholder="At least 8 characters"
                       className="h-10"
                       {...field}
                     />

@@ -6,7 +6,7 @@ export function getPasswordStrength(password: string) {
     lowercase: /[a-z]/.test(password),
     uppercase: /[A-Z]/.test(password),
     number: /\d/.test(password),
-    special: /[@$!%*?&]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
   };
   const passed = Object.values(checks).filter(Boolean).length;
   let level: "weak" | "fair" | "good" | "strong" = "weak";
@@ -19,12 +19,12 @@ export function getPasswordStrength(password: string) {
 
 export type PasswordStrength = ReturnType<typeof getPasswordStrength>;
 
-export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+export { PASSWORD_REGEX } from "@/lib/utils/password-validation";
 
 export const PASSWORD_REQUIREMENTS = [
   { key: "length" as const, label: "8+ characters" },
   { key: "uppercase" as const, label: "Uppercase" },
   { key: "lowercase" as const, label: "Lowercase" },
   { key: "number" as const, label: "Number" },
-  { key: "special" as const, label: "Special char" },
+  { key: "special" as const, label: "One symbol" },
 ] as const;

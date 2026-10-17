@@ -1,7 +1,12 @@
 import { z } from "zod";
 
+/**
+ * The one password policy (MIYO-0093): every form and API imports this.
+ * 8–128 characters with upper, lower, a digit and any non-alphanumeric
+ * character; there is no symbol whitelist.
+ */
 export const PASSWORD_RULES = {
-  minLength: 12,
+  minLength: 8,
   maxLength: 128,
   requireUppercase: true,
   requireLowercase: true,
@@ -11,6 +16,9 @@ export const PASSWORD_RULES = {
   // common choices in a passphrase (QA-0067).
   specialChars: "!@#$%^&*()_+-=[]{};:'\",.<>/?\\|`~ and spaces",
 } as const;
+
+/** Same rule as validatePasswordStrength, for zod .regex() in forms. */
+export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,128}$/;
 
 export function validatePasswordStrength(password: string): {
   valid: boolean;

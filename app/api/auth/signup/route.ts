@@ -12,18 +12,13 @@ import { hashToken } from "@/lib/secret-crypto";
 import { addDays } from "date-fns";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { zodErrorMessage } from "@/lib/api/zod-message";
+import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Valid email required"),
-  password: z
-    .string()
-    .min(12, "Minimum 12 characters")
-    .regex(/[A-Z]/, "Must include an uppercase letter")
-    .regex(/[a-z]/, "Must include a lowercase letter")
-    .regex(/[0-9]/, "Must include a number")
-    .regex(/[^A-Za-z0-9]/, "Must include a special character"),
+  password: PASSWORD_ZOD_SCHEMA,
   companyName: z.string().min(1, "Company name is required"),
   phone: z.string().optional(),
   plan: z.enum(["STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),

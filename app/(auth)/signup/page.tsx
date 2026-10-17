@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getPasswordStrength } from "@/lib/password-utils";
+import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
 import { cn } from "@/lib/utils";
 
@@ -63,13 +64,7 @@ const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email"),
-  password: z
-    .string()
-    .min(8, "Minimum 8 characters")
-    .regex(/[A-Z]/, "Must include an uppercase letter")
-    .regex(/[a-z]/, "Must include a lowercase letter")
-    .regex(/[0-9]/, "Must include a number")
-    .regex(/[^A-Za-z0-9]/, "Must include a special character"),
+  password: PASSWORD_ZOD_SCHEMA,
   companyName: z.string().min(1, "Company name is required"),
   phone: optionalPhoneSchema,
 });

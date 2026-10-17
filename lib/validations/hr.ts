@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { z } from "zod";
+import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 import {
   PERF_NAME_ALLOWED,
   PERF_NAME_ALLOWED_HINT,
@@ -449,14 +450,7 @@ export const updateProfileInputSchema = z.object({
 
 export const changePasswordInputSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z
-    .string()
-    .min(8)
-    .max(128, "Password must be at most 128 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must contain uppercase, lowercase, number, and special character"
-    ),
+  newPassword: PASSWORD_ZOD_SCHEMA,
 });
 
 const monthStringSchema = z.string()

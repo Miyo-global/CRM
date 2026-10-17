@@ -9,21 +9,16 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
 import { ROLES, ADMIN_ROLES } from "@/lib/constants/roles";
+import { PASSWORD_RULES, validatePasswordStrength } from "@/lib/utils/password-validation";
 
 export async function resetPassword(password: string) {
   const ctx = await requireAuth();
   if ("error" in ctx) return ctx;
   const session = ctx.session;
 
-  if (!password || password.length < 8) {
-    return { error: "Password must be at least 8 characters" };
-  }
-  if (password.length > 15) {
-    return { error: "Password must be at most 15 characters" };
-  }
-  const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  if (!PASSWORD_REGEX.test(password)) {
-    return { error: "Password must contain uppercase, lowercase, a number, and a special character (@$!%*?&)" };
+  const strength = validatePasswordStrength(password ?? "");
+  if (!strength.valid || (password ?? "").length > PASSWORD_RULES.maxLength) {
+    return { error: strength.missing[0] ?? `Password must be at most ${PASSWORD_RULES.maxLength} characters` };
   }
 
   try {
