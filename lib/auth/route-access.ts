@@ -6,7 +6,6 @@ const EVERYONE: string[] = [...SYSTEM_ROLES];
 /** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
 const HR_TEAM: string[] = ["CEO", "HR"];
 /** MIYO-0628: the ATS. Per-job scoping is applied inside, in lib/ats/access.ts. */
-const ATS_TEAM: string[] = ["CEO", "HR", "RECRUITER"];
 
 /**
  * Pages under /settings the people team manages (shown in the HR menu).
@@ -43,7 +42,10 @@ export const ADMIN_SETTINGS_PAGES = [
 ] as const;
 
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
-  "/ats": ATS_TEAM,
+  // MIYO-0645: /ats is not gated by role here. A hiring manager or an
+  // interviewer is an ordinary employee who holds a seat on one job, and
+  // the middleware cannot read ats_job_members. Each ATS page and route
+  // checks the seat itself through lib/ats/access.ts.
   "/hr": HR_TEAM,
   "/hr/onboarding": HR_TEAM,
   // New hires open their own checklist (linked from the onboarding-welcome email).

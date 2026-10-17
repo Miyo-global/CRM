@@ -18,6 +18,7 @@ import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/ats/turnstile";
 import { normalisePhone } from "@/lib/ats/phone";
+import { findDuplicates } from "@/lib/ats/duplicates";
 import { jobIsOpen } from "@/lib/ats/careers";
 import { sendApplicationEmails } from "@/lib/ats/application-emails";
 import {
@@ -133,12 +134,25 @@ export async function POST(req: NextRequest) {
     }
 
     const upload = await uploadFile(buffer, "resumes", resume.name, resume.type, job.orgId);
-    const resumeText = await extractResumeText(buffer, resume.type).catch(() => "");
-
-    // One candidate row per email in the org; a second application reuses it.
-    const existing = await db.query.candidates.findFirst({
-      where: and(eq(candidates.orgId, job.orgId), eq(candidates.email, fields.email)),
+    // MIYO-0642: the text feeds the candidates.search tsvector. Extraction
+    // failing must never cost someone their application.
+    const resumeText = await extractResumeText(buffer, resume.type).catch((error) => {
+      logger.error("Resume text extraction failed", { fileName: resume.name, error });
+      return "";
     });
+
+    // MIYO-0644: one candidate row per person. An email match is the same
+    // person; a phone or LinkedIn match is only flagged for the recruiter.
+    const matches = await findDuplicates(job.orgId, {
+      email: fields.email,
+      phone: fields.phone,
+      linkedinUrl: fields.linkedinUrl || null,
+    });
+    const emailMatch = matches.find((m) => m.matchedOn === "email");
+    const existing = emailMatch
+      ? await db.query.candidates.findFirst({ where: eq(candidates.id, emailMatch.id) })
+      : undefined;
+    const softMatch = emailMatch ? undefined : matches[0];
 
     const candidateValues = {
       firstName: fields.firstName,
@@ -162,7 +176,12 @@ export async function POST(req: NextRequest) {
       : (
           await db
             .insert(candidates)
-            .values({ ...candidateValues, orgId: job.orgId, email: fields.email })
+            .values({
+              ...candidateValues,
+              orgId: job.orgId,
+              email: fields.email,
+              duplicateOfId: softMatch?.id ?? null,
+            })
             .returning()
         )[0];
 
@@ -229,7 +248,7 @@ export async function POST(req: NextRequest) {
         },
         job: { id: job.id, title: job.title, slug: job.slug, location: job.location },
         teamEmails: team.map((t) => t.email),
-        isRepeatCandidate: Boolean(existing),
+        isRepeatCandidate: Boolean(existing || softMatch),
         orgId: job.orgId,
       });
     } catch (error) {

@@ -6,8 +6,7 @@ import { requireAuth } from "@/lib/auth/require-auth";
 import { db } from "@/lib/db";
 import { candidateApplications, interviews, jobPostings } from "@/lib/db/schema";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
-import { isAtsRole } from "@/lib/constants/roles";
-import { visibleJobIds } from "@/lib/ats/access";
+import { atsPageAccess } from "@/lib/ats/page-access";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -27,9 +26,8 @@ export default async function AtsOverviewPage() {
   const authed = await requireAuth();
   if ("error" in authed) notFound();
   const { userId, orgId, member } = authed;
-  if (!isAtsRole(member.role)) notFound();
-
-  const jobIds = await visibleJobIds({ userId, orgId, role: member.role });
+  const { allowed, jobIds } = await atsPageAccess({ userId, orgId, role: member.role });
+  if (!allowed) notFound();
   // An empty list means "on no hiring team"; null means "every job".
   if (jobIds?.length === 0) {
     return (
