@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, memo } from "react";
-import { User } from "lucide-react";
+import { ListChecks, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn, resolveImageUrl } from "@/lib/utils";
@@ -103,6 +103,17 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
           </div>
         )}
         <PriorityBadge priority={ticket.priority} />
+
+        {/* MIYO-0111: checklist progress, e.g. 2/5. */}
+        {(ticket.checklistTotal ?? 0) > 0 && (
+          <span
+            className="inline-flex shrink-0 items-center gap-1 text-2xs tabular-nums text-muted-foreground"
+            title={`${ticket.checklistDone ?? 0} of ${ticket.checklistTotal} checklist items done`}
+          >
+            <ListChecks className="size-3" aria-hidden="true" />
+            {ticket.checklistDone ?? 0}/{ticket.checklistTotal}
+          </span>
+        )}
 
         {labels.length > 0 && (
           <div className="flex min-w-0 items-center gap-1">

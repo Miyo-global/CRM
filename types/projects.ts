@@ -268,6 +268,7 @@ export interface Ticket {
   attachments?: TicketAttachment[];
   labels?: TicketLabelMapping[];
   watchers?: TicketWatcher[];
+  checklistItems?: { id: number; isDone: boolean }[];
   project?: { id: number; name: string; key: string } | null;
   sprint?: { id: number; name: string } | null;
 }

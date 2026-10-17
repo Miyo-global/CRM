@@ -627,3 +627,51 @@ export function useRestoreComment(projectId: number, ticketId: number) {
     },
   });
 }
+
+// MIYO-0111: ticket checklist.
+
+export interface TicketChecklistItem {
+  id: number;
+  title: string;
+  isDone: boolean;
+  position: number;
+}
+
+function checklistKey(ticketId: number) {
+  return [...queryKeys.projects.ticket(ticketId), "checklist"] as const;
+}
+
+export function useTicketChecklist(ticketId: number, projectId: number) {
+  return useQuery({
+    queryKey: checklistKey(ticketId),
+    queryFn: () =>
+      apiClient.get<TicketChecklistItem[]>(`/projects/${projectId}/tickets/${ticketId}/checklist`),
+    enabled: !!ticketId && !!projectId,
+  });
+}
+
+/** Add, edit, tick or reorder; every call refreshes the list and the card count. */
+export function useChecklistMutations(ticketId: number, projectId: number) {
+  const queryClient = useQueryClient();
+  const base = `/projects/${projectId}/tickets/${ticketId}/checklist`;
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: checklistKey(ticketId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+  };
+
+  const add = useMutation({
+    mutationFn: (title: string) => apiClient.post<TicketChecklistItem>(base, { title }),
+    onSuccess: invalidate,
+  });
+  const update = useMutation({
+    mutationFn: (item: { id: number; title?: string; isDone?: boolean; position?: number }) =>
+      apiClient.patch<TicketChecklistItem>(base, item),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    mutationFn: (id: number) => apiClient.delete<{ success: boolean }>(`${base}?itemId=${id}`),
+    onSuccess: invalidate,
+  });
+
+  return { add, update, remove };
+}

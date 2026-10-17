@@ -118,6 +118,8 @@ export default function ProjectBoardPage({ params }: PageProps) {
       createdAt: t.createdAt ?? null,
       updatedAt: t.updatedAt ?? null,
       sequenceId: t.sequenceId ?? null,
+      checklistTotal: t.checklistItems?.length ?? 0,
+      checklistDone: t.checklistItems?.filter((c) => c.isDone).length ?? 0,
       assignee: t.assignee
         ? {
             id: t.assignee.id,

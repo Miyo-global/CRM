@@ -42,6 +42,9 @@ export interface KanbanTicket {
     };
   }[];
   project?: { id: number; name: string; key: string } | null;
+  /** Checklist progress shown on the card (MIYO-0111). */
+  checklistDone?: number;
+  checklistTotal?: number;
 }
 
 export interface KanbanColumn {

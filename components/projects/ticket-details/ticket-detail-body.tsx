@@ -25,6 +25,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { isTicketConflict } from "@/lib/projects/is-ticket-conflict";
 import { TicketHeader } from "./ticket-header";
 import { TicketSidebar } from "./ticket-sidebar";
+import { TicketChecklist } from "./ticket-checklist";
 import { TicketSubtasks } from "./ticket-subtasks";
 import { TicketRelations } from "./ticket-relations";
 import { TicketTimeTracker } from "./ticket-time-tracker";
@@ -257,6 +258,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
             </section>
 
             <TicketAttachments attachments={ticket.attachments ?? []} />
+            <TicketChecklist ticketId={ticketId} projectId={projectId} readOnly={!canEdit} />
             <TicketSubtasks ticketId={ticketId} projectId={projectId} subtasks={subtasks || []} readOnly={!canEdit} />
             <TicketRelations ticketId={ticketId} projectId={projectId} readOnly={!canEdit} />
             <ActivityFeed

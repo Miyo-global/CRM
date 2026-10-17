@@ -46,6 +46,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
             reporter: { columns: userColumns },
             assignees: { with: { user: { columns: userColumns } } },
             labels: { with: { label: true } },
+            // MIYO-0111: just enough for the "2/5" on the card.
+            checklistItems: { columns: { id: true, isDone: true } },
           },
         },
       },

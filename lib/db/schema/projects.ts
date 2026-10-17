@@ -218,6 +218,27 @@ export const ticketCommentReactions = pgTable("ticket_comment_reactions", {
   uniqueIndex("uniq_ticket_comment_reactions_comment_user_emoji").on(table.commentId, table.userId, table.emoji),
 ]);
 
+/**
+ * MIYO-0111: a flat checklist per ticket. Streamline grouped items under named
+ * checklists; one list per ticket covers "add, tick, reorder, 2/5 on the card"
+ * without a second table, and a group column can be added later.
+ */
+export const ticketChecklistItems = pgTable("ticket_checklist_items", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  ticketId: integer("ticket_id").references(() => tickets.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  isDone: boolean("is_done").default(false).notNull(),
+  position: integer("position").default(0).notNull(),
+  completedAt: timestamp("completed_at"),
+  completedBy: text("completed_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_ticket_checklist_items_ticket").on(table.ticketId, table.position),
+]);
+
 export const ticketActivity = pgTable("ticket_activity", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
@@ -459,6 +480,11 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   watchers: many(ticketWatchers),
   relations: many(workItemRelations),
   activity: many(ticketActivity),
+  checklistItems: many(ticketChecklistItems),
+}));
+
+export const ticketChecklistItemsRelations = relations(ticketChecklistItems, ({ one }) => ({
+  ticket: one(tickets, { fields: [ticketChecklistItems.ticketId], references: [tickets.id] }),
 }));
 
 export const ticketAssigneesRelations = relations(ticketAssignees, ({ one }) => ({
