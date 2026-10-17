@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button, buttonVariants } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,17 +51,6 @@ import { getRoleLabel } from "@/lib/rbac/roles";
 
 /** Every system role, labelled (A12, A13). */
 const ALL_ROLES = ROLE_OPTIONS;
-
-const ROLE_TONES: Record<string, Tone> = {
-  CEO: "brand",
-  HR: "info",
-  SALES: "success",
-  CUSTOMER_SUPPORT: "plum",
-  ENGINEERING: "info",
-  DESIGN: "plum",
-  VIDEO_EDITOR: "warning",
-  DIGITAL_MARKETING: "teal",
-};
 
 const countPill = "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-soft px-1.5 text-2xs font-semibold tabular-nums text-neutral-strong";
 
@@ -501,7 +489,7 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
       </TableCell>
       <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
       <TableCell className="px-5">
-        <StatusPill tone={ROLE_TONES[member.role] ?? "neutral"}>{getRoleLabel(member.role)}</StatusPill>
+        <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
       </TableCell>
       <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
@@ -569,7 +557,7 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{inv.email}</p>
-        <StatusPill tone={ROLE_TONES[inv.role] ?? "neutral"} className="mt-1">{getRoleLabel(inv.role)}</StatusPill>
+        <StatusPill tone="neutral" className="mt-1">{getRoleLabel(inv.role)}</StatusPill>
       </div>
       <div className="flex gap-1.5">
         <Button
