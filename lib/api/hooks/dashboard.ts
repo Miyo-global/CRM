@@ -65,6 +65,28 @@ interface ScheduledActivity {
   subject: string | null;
 }
 
+export interface DashboardSummary {
+  stats: DashboardStats;
+  roleStats: Record<string, number> | null;
+  activeSprint: SprintSummary | null;
+  recentProjects: RecentProject[] | null;
+  recentActivity: RecentActivity[] | null;
+  todayActivities: ScheduledActivity[] | null;
+  /** Parts that failed server-side and came back null. */
+  failed: string[];
+}
+
+/** Above-the-fold dashboard data in one request (MIYO-0063). */
+export const useDashboardSummary = (
+  options?: Omit<UseQueryOptions<DashboardSummary, Error>, "queryKey" | "queryFn">
+) =>
+  useQuery<DashboardSummary, Error>({
+    queryKey: [...queryKeys.dashboard.all, "summary"] as const,
+    queryFn: () => apiClient.get<DashboardSummary>("/dashboard/summary"),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+
 export const useTodayActivities = (
   options?: Omit<UseQueryOptions<ScheduledActivity[], Error>, "queryKey" | "queryFn">
 ) => {

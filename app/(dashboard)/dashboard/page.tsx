@@ -4,14 +4,9 @@ import { useMemo, useCallback, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  useDashboardStats,
-  useRecentProjects,
+  useDashboardSummary,
   useTeamAvailability,
-  useActiveSprintSummary,
-  useRecentActivity,
   useBirthdays,
-  useRoleStats,
-  useTodayActivities,
 } from "@/lib/api/hooks/dashboard";
 import { useMyIssues } from "@/lib/api/hooks/dashboard";
 import {
@@ -49,9 +44,7 @@ import { RecentProjectsCard } from "@/features/dashboard/recent-projects-card";
 import { RecentActivityCard } from "@/features/dashboard/recent-activity-card";
 import { MyTasksWidget } from "@/components/dashboard/widgets/my-tasks-widget";
 import { LeaveBalanceWidget as LeaveBalanceWidgetNew } from "@/components/dashboard/widgets/leave-balance-widget";
-import { TeamAttendanceWidget as TeamAttendanceWidgetNew } from "@/components/dashboard/widgets/team-attendance-widget";
 import { UpcomingLeavesWidget } from "@/components/dashboard/widgets/upcoming-leaves-widget";
-import { PendingApprovalsWidget as PendingApprovalsWidgetNew } from "@/components/dashboard/widgets/pending-approvals-widget";
 import { AnnouncementsWidget } from "@/components/dashboard/widgets/announcements-widget";
 import { WidgetSkeleton } from "@/components/dashboard/widgets/widget-skeleton";
 import { CeoAdminSection } from "@/features/dashboard/ceo-admin-section";
@@ -69,20 +62,30 @@ export default function DashboardPage() {
   const isAdmin = isCeo || isHrAdmin;
   const isEmployee = !isAdmin;
 
-  const { data: stats, isLoading, error, refetch } = useDashboardStats({
+  // One request for the above-the-fold data instead of six (MIYO-0063).
+  const { data: summary, isLoading, error, refetch } = useDashboardSummary({
     retry: 2,
     retryDelay: 1000,
   });
+  const stats = summary?.stats;
+  const recentProjects = summary?.recentProjects ?? undefined;
+  const recentActivity = summary?.recentActivity ?? undefined;
+  const sprintSummary = summary?.activeSprint;
+  const roleStats = summary?.roleStats ?? undefined;
+  const todayActivities = summary?.todayActivities ?? undefined;
+  const projectsLoading = isLoading;
+  const activityLoading = isLoading;
+  const sprintLoading = isLoading;
+  const projectsError = summary?.failed.includes("recentProjects") ? new Error("Could not load recent projects.") : null;
+  const activityError = summary?.failed.includes("recentActivity") ? new Error("Could not load recent activity.") : null;
+  const refetchProjects = refetch;
 
-  const { data: recentProjects, isLoading: projectsLoading, error: projectsError, refetch: refetchProjects } = useRecentProjects();
-  const { data: teamAvailability, isLoading: teamLoading } = useTeamAvailability();
-  const { data: recentActivity, isLoading: activityLoading, error: activityError } = useRecentActivity();
+  // Team availability is only shown to admins; employees skip the request.
+  const { data: teamAvailability, isLoading: teamLoading } = useTeamAvailability({ enabled: isAdmin });
 
   const { data: myIssuesData, isLoading: ticketsLoading, error: ticketsError, refetch: refetchMyIssues } = useMyIssues(
     currentUserId ?? "",
   );
-
-  const { data: sprintSummary, isLoading: sprintLoading } = useActiveSprintSummary();
 
   // Greet the person celebrating on their own dashboard (A34).
   const { data: celebrations } = useBirthdays();
@@ -94,8 +97,6 @@ export default function DashboardPage() {
     [celebrations, currentUserId],
   );
 
-  const { data: roleStats } = useRoleStats();
-  const { data: todayActivities } = useTodayActivities();
 
   const prevUnreadRef = useRef<number | null>(null);
   const { data: unreadData } = useUnreadNotificationCount({
