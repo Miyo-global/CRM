@@ -3,7 +3,6 @@
 import { useState, memo, useCallback, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { formatDisplayDate, fromISODateString, getTodayString } from "@/lib/date-utils";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,17 +16,7 @@ import {
   useUpdateHoliday,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
-import {
-  Loader2,
-  Plus,
-  Trash2,
-  PartyPopper,
-  Pencil,
-  Check,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { createHolidaySchema, HOLIDAY_MESSAGE_MAX } from "@/lib/validations/holidays";
 import { sanitizeSimpleName } from "@/lib/validations/text-rules";
 import {
@@ -355,7 +344,6 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
       <Card className="gap-0 overflow-hidden">
         <CardHeader className="pb-3 pt-5">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <IconChip icon={PartyPopper} />
             Company Holidays
           </CardTitle>
         </CardHeader>

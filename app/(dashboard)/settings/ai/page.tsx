@@ -3,7 +3,6 @@
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -119,7 +118,6 @@ export default function AiSettingsPage() {
                 htmlFor={`ai-flag-${key}`}
                 title={label}
                 description={description}
-                icon={<IconChip icon={icon} tone="neutral" />}
                 control={
                   <Switch
                     id={`ai-flag-${key}`}

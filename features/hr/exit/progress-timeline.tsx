@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Check, Circle, Clock, X } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 
 const PROGRESS_STEPS = [
@@ -56,12 +55,6 @@ export function ProgressTimeline({ id }: { id: number }) {
             className="relative flex items-center gap-3"
             aria-current={isCurrent ? "step" : undefined}
           >
-            <IconChip
-              icon={node.icon}
-              tone={node.tone}
-              size="sm"
-              className={cn("relative ring-4 ring-surface-sunken", isCurrent && "ring-gold-300")}
-            />
             <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 text-sm">
               <span
                 className={cn(

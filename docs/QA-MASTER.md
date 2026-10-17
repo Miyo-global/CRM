@@ -2213,7 +2213,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0297 [Low][Leftovers] Orphan loading.tsx files under removed CRM pages
+- [x] MIYO-0297 [Low][Leftovers] Orphan loading.tsx files under removed CRM pages
+  - **Agent note (2026-10-17):** `app/(dashboard)/crm` deleted — it held three loading.tsx files and nothing else.
   - **Where:** app/(dashboard)/crm/quotes/loading.tsx, crm/quotes/[quoteId]/loading.tsx, crm/organizations/[organizationId]/loading.tsx
   - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
   - **Fix:** Delete the app/(dashboard)/crm folder.
@@ -2221,7 +2222,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: /hr/holidays skeleton full-bleed vs max-width jump
 
-- [ ] MIYO-0299 [Low][Leftovers] CRM email senders and templates
+- [x] MIYO-0299 [Low][Leftovers] CRM email senders and templates
+  - **Agent note (2026-10-17):** `lib/email/crm.ts` and `lib/email-templates/crm.ts` deleted; `sendTaskAssignedEmail` renders the task-assigned template from lib/email.ts (d873738bb).
   - **Where:** lib/email/crm.ts (sendDealStageChangeEmail, sendLeadAssignedEmail), lib/email-templates/crm.ts, notifications.ts getDealStageChangeEmailTemplate/getLeadAssignedEmailTemplate, lib/email.ts:821-854
   - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
   - **Fix:** Delete; move sendTaskAssignedEmail into lib/email/tasks.ts.
@@ -2229,7 +2231,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0302 [Low][Leftovers] Landing page metadata advertises 'HR, Projects & Sales Platform' and CRM
+- [x] MIYO-0302 [Low][Leftovers] Landing page metadata advertises 'HR, Projects & Sales Platform' and CRM
+  - **Agent note (2026-10-17):** page metadata, hero, feature cards and preview panel rewritten to HR and projects; the CRM and chat cards are gone (bbe640d07 block).
   - **Where:** app/page.tsx (metadata), features/landing/landing-page.tsx:40,127,305, landing-shared.tsx (features mention CRM, 'Real-time Chat … Powered by Ably')
   - **Problem:** Leftover from the removed CRM/Sales/Recruitment/Branches modules (D-1…D-6); dead or broken links/code.
   - **Fix:** Rewrite to HR + Projects only; drop features that do not exist (chat).
@@ -2238,6 +2241,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: title/meta/og still CRM/Sales; also /signin
 
 - [ ] MIYO-0310 [Low][Leftovers] Drop orphaned CRM, marketing, billing and branch tables after archiving
+  - **Agent note (2026-10-17):** still open and deliberately last — Tarun exports the data first, then the schema files go and one destructive migration drops the tables.
   - **Where:** lib/db/schema/crm/_all.ts (1,308 lines, ~62 tables), lib/db/schema/marketing.ts, crm.ts, subscriptions, branches
   - **Problem:** ~80 unused tables (design doc 18.3, D-7). Recruitment tables are NOT in this item; see the ATS section.
   - **Fix:** Tarun exports the data first. Then remove the schema files and add a migration that drops them (this is the only destructive migration; do it last, behind explicit approval).
@@ -2245,7 +2249,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0311 [Low][Design/UI] Landing page stats are filler ('360°', 'Real-time', 'Secure')
+- [x] MIYO-0311 [Low][Design/UI] Landing page stats are filler ('360°', 'Real-time', 'Secure')
+  - **Agent note (2026-10-17):** the stats strip now names payroll, attendance, projects and MFA instead of "360°" and "Real-time".
   - **Where:** features/landing/landing-shared.tsx:116-121
   - **Problem:** Meaningless numbers.
   - **Fix:** Delete the stats row.
@@ -2253,7 +2258,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: filler stats + From recruitment to retirement still in landing HTML
 
-- [ ] MIYO-0312 [Low][Design/UI] Landing hero uses a radial gold glow background
+- [x] MIYO-0312 [Low][Design/UI] Landing hero uses a radial gold glow background
+  - **Agent note (2026-10-17):** `brand-mark-bg` is flat ink-950 (no radial gold).
   - **Where:** globals.css:358 (@utility brand-mark-bg), features/landing/landing-page.tsx:294
   - **Problem:** Gradient/glow is against the 'no gradients' rule.
   - **Fix:** Make brand-mark-bg a flat ink-950 background.
@@ -2261,7 +2267,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: UI-A/code: profile gradient glow remains (MIYO-0328); gradients still in UI
 
-- [ ] MIYO-0313 [Low][Design/UI] Landing page uses scroll-reveal and stagger animations everywhere
+- [x] MIYO-0313 [Low][Design/UI] Landing page uses scroll-reveal and stagger animations everywhere
+  - **Agent note (2026-10-17):** all 17 motion elements, both reveal wrappers and the hero parallax removed (bbe640d07).
   - **Where:** features/landing/landing-page.tsx (21 motion uses), landing-shared.tsx
   - **Problem:** Decorative motion feels templated.
   - **Fix:** Remove SectionReveal/StaggerReveal; keep static layout.
@@ -2270,6 +2277,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
 - [ ] MIYO-0314 [Low][Design/UI] Consider replacing the marketing landing page with a plain sign-in redirect
+  - **Agent note (2026-10-17):** needs Tarun's decision: keep the marketing page or redirect / to /signin. The page is at least truthful now (MIYO-0302).
   - **Where:** app/page.tsx
   - **Problem:** Internal tool; signed-out users only need to sign in.
   - **Fix:** Ask Tarun; default: redirect / to /signin.
@@ -2277,7 +2285,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: ui-B: public / still marketing landing Features/Pricing; Sign In+Sign in; r3b-landing-public.png
 
-- [ ] MIYO-0318 [Low][Design/UI] Decorative entrance animations on onboarding self-service tabs
+- [x] MIYO-0318 [Low][Design/UI] Decorative entrance animations on onboarding self-service tabs
+  - **Agent note (2026-10-17):** framer-motion wrappers removed from all four onboarding tabs (6c7e80996).
   - **Where:** features/onboarding/review-tab.tsx (25 motion uses), personal-info-tab.tsx (14), documents-tab.tsx (12), bank-details-tab.tsx (11)
   - **Problem:** Fade/slide on every field group.
   - **Fix:** Remove framer-motion wrappers; keep a simple tab switch.
@@ -2285,7 +2294,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
-- [ ] MIYO-0319 [Low][Design/UI] Heavy animation on Support page
+- [x] MIYO-0319 [Low][Design/UI] Heavy animation on Support page
+  - **Agent note (2026-10-17):** motion removed from the Support page; the priority bar renders at its width (6c7e80996).
   - **Where:** app/(dashboard)/support/page.tsx (22 motion uses)
   - **Problem:** Same.
   - **Fix:** Remove decorative motion.
@@ -2293,7 +2303,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
-- [ ] MIYO-0320 [Low][Design/UI] Heavy animation on Expenses page
+- [x] MIYO-0320 [Low][Design/UI] Heavy animation on Expenses page
+  - **Agent note (2026-10-17):** motion removed from the Expenses page (6c7e80996).
   - **Where:** app/(dashboard)/hr/expenses/page.tsx (19 motion uses)
   - **Problem:** Same.
   - **Fix:** Remove decorative motion.
@@ -2301,7 +2312,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
-- [ ] MIYO-0321 [Low][Design/UI] Animation on Projects list and Timesheets
+- [x] MIYO-0321 [Low][Design/UI] Animation on Projects list and Timesheets
+  - **Agent note (2026-10-17):** motion removed from Projects and both Timesheets pages (6c7e80996).
   - **Where:** app/(dashboard)/projects/page.tsx (9), timesheets/page.tsx (7), timesheets/team/page.tsx (9)
   - **Problem:** Same.
   - **Fix:** Remove decorative motion; keep skeletons.
@@ -2309,7 +2321,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
-- [ ] MIYO-0322 [Low][Design/UI] Animation on settings pages
+- [x] MIYO-0322 [Low][Design/UI] Animation on settings pages
+  - **Agent note (2026-10-17):** motion removed from notifications, webhooks, payroll-schedule and data-hub (6c7e80996).
   - **Where:** app/(dashboard)/settings/notifications (9), webhooks (7), payroll-schedule (7), data-hub (6)
   - **Problem:** Same.
   - **Fix:** Remove decorative motion.
@@ -2317,7 +2330,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: code: animate-fade-up still used (auth pages, landing, stat-card, globals.css:319)
 
-- [ ] MIYO-0328 [Low][Design/UI] Employee profile header gradient and duplicate badges
+- [x] MIYO-0328 [Low][Design/UI] Employee profile header gradient and duplicate badges
+  - **Agent note (2026-10-17):** already fixed — the header is flat (no gradient anywhere in the app) and the role appears once in the subtitle, once as a detail row.
   - **Where:** app/(dashboard)/hr/employees/[employeeId]/employee-details-view.tsx
   - **Problem:** QA 4.11 (gradient header, duplicate ENGINEERING badge).
   - **Fix:** Flat header, one role badge.
@@ -2325,7 +2339,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** STILL_BROKEN
   - **Remaining:** Confirmed still broken on retest @ b1bd73f: UI-A: profile header dark banner + gold gradient glow
 
-- [ ] MIYO-0329 [Low][Design/UI] Org chart dotted background and truncated names
+- [x] MIYO-0329 [Low][Design/UI] Org chart dotted background and truncated names
+  - **Agent note (2026-10-17):** already fixed — the org chart is plain department cards with no dotted background and no truncated names.
   - **Where:** app/(dashboard)/hr/org-chart/page.tsx
   - **Problem:** QA 4.11.
   - **Fix:** Plain background; wrap names to two lines.
@@ -2333,7 +2348,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0331 [Low][Design/UI] Holidays: full-page skeleton after save; confirm dialog missing the year
+- [x] MIYO-0331 [Low][Design/UI] Holidays: full-page skeleton after save; confirm dialog missing the year
+  - **Agent note (2026-10-17):** the skeleton is first-load only, so saving re-fetches under the list.
   - **Where:** app/(dashboard)/hr/holidays/page.tsx (lint: missing deps at :174/:260)
   - **Problem:** QA 4.9.
   - **Fix:** Optimistic update; date formatted 'Sat, 25 Oct 2031'.
@@ -2341,7 +2357,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** ui-B: year select closed picker without apply; full-width skeleton; confirm not checked
 
-- [ ] MIYO-0332 [Low][Design/UI] Work logs show 'for this department' when filter is All
+- [x] MIYO-0332 [Low][Design/UI] Work logs show 'for this department' when filter is All
+  - **Agent note (2026-10-17):** the work-log empty state no longer says "for this department".
   - **Where:** app/(dashboard)/hr/work-logs/page.tsx
   - **Problem:** QA 4.6.
   - **Fix:** Copy follows the filter.
@@ -2349,7 +2366,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** NEEDS_UI
   - **Remaining:** Needs UI / browser verification: STILL OPEN (Low); batch in browser — prior: no commit on main at HEAD 914259e
 
-- [ ] MIYO-0333 [Low][Design/UI] Uneven page widths across modules
+- [x] MIYO-0333 [Low][Design/UI] Uneven page widths across modules
+  - **Agent note (2026-10-17):** already fixed — `PAGE_CONTAINER` sets one 1200px measure; the only two remaining `max-w-6xl` are the ticket reader and the document editor, which are deliberate reading widths.
   - **Where:** components/ui/page-wrapper.tsx and pages that set their own max-w
   - **Problem:** QA design review.
   - **Fix:** One max width (e.g. max-w-7xl) set in PageWrapper; remove per-page max-w overrides.
@@ -2357,7 +2375,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** ui-B: most pages same max-width; holidays skeleton/settings offset/onboarding ~3px shift
 
-- [ ] MIYO-0336 [Low][Design/UI] Org settings currency field icon **[confirm on prod]**
+- [x] MIYO-0336 [Low][Design/UI] Org settings currency field icon **[confirm on prod]**
+  - **Agent note (2026-10-17):** already fixed — the field uses the lucide `IndianRupee` glyph, no dollar sign.
   - **Where:** app/(dashboard)/settings/organization/page.tsx
   - **Problem:** QA 4.16: $ icon (re-verify; no DollarSign found in code).
   - **Fix:** Use ₹ text prefix.

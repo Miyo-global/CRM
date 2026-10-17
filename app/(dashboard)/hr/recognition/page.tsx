@@ -20,11 +20,10 @@ import { toast } from "sonner";
 import { format, formatDistanceToNow, subDays } from "date-fns";
 import { resolveImageUrl } from "@/lib/utils";
 import { SearchableMultiSelect } from "@/components/ui/searchable-multi-select";
-import { Heart, Plus, Award, Users, Lightbulb, Zap, Trophy, Sparkles, TrendingUp, History, ArrowUpRight, ArrowDownLeft, Download, X, Mail, AlertTriangle } from "lucide-react";
+import { Heart, Plus, Award, Users, Lightbulb, Zap, Sparkles, TrendingUp, History, ArrowUpRight, ArrowDownLeft, Download, X, Mail, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { ListToolbar } from "@/components/shared/list-toolbar";
 import { toneBar, toneSoft, toneText, type Tone } from "@/lib/design/tones";
@@ -494,7 +493,6 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="p-5">
                       <div className="mb-3 flex items-center gap-2">
-                        <IconChip icon={Trophy} tone="brand" size="sm" />
                         <p className="text-sm font-semibold">Top Recognized</p>
                       </div>
                       {stats.topRecognized.length === 0 ? (
@@ -523,7 +521,6 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="p-5">
                       <div className="mb-3 flex items-center gap-2">
-                        <IconChip icon={Sparkles} tone="plum" size="sm" />
                         <p className="text-sm font-semibold">By Category</p>
                       </div>
                       <div className="space-y-2.5">
@@ -562,7 +559,6 @@ export default function RecognitionPage() {
 
                 <div className="lg:col-span-2">
                   <div className="mb-3 flex items-center gap-2">
-                    <IconChip icon={Heart} tone="plum" size="sm" />
                     <p className="text-sm font-semibold">Recent Recognition</p>
                   </div>
                   <div className="space-y-3">

@@ -25,14 +25,10 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import {
-  Plus, FileText, Trash2, Eye, Pencil, MoreHorizontal,
-  Upload, Link2, BookOpen, CheckCircle2, Info,
-} from "lucide-react";
+import { Plus, Trash2, Eye, Pencil, MoreHorizontal, Upload, Link2, CheckCircle2, Info } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { handbookVersionSchema } from "@/lib/validations/handbook";
 import { cn } from "@/lib/utils";
@@ -442,7 +438,6 @@ function HandbookAdminContent() {
           {versions.map((v) => (
             <Card key={v.id}>
               <CardContent className="flex items-center gap-3 p-4">
-                <IconChip icon={FileText} tone="neutral" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="max-w-48 truncate text-sm font-semibold sm:max-w-none" title={v.title}>{v.title}</p>
@@ -598,7 +593,6 @@ function HandbookEmployeeView() {
           {published.map((v) => (
             <Card key={v.id}>
               <CardContent className="p-4 flex items-center gap-3">
-                <IconChip icon={BookOpen} tone="brand" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="truncate text-sm font-semibold" title={v.title}>{v.title}</p>

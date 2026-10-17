@@ -9,7 +9,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, PartyPopper, Calendar, MapPin, Users, UserPlus } from "lucide-react";
+import { Plus, Calendar, MapPin, Users, UserPlus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
@@ -109,7 +108,6 @@ export default function TeamEventsPage() {
             <Card key={ev.id} className="h-full">
               <CardContent className="flex h-full flex-col gap-3 p-5">
                 <div className="flex items-start gap-3">
-                  <IconChip icon={PartyPopper} tone="plum" />
                   <div className="min-w-0 flex-1">
                     <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{ev.title}</h3>
                     {ev.description && <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{ev.description}</p>}

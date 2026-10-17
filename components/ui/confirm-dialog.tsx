@@ -1,7 +1,5 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +11,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
-import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
@@ -41,11 +38,6 @@ export function ConfirmDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <div className="flex items-start gap-4">
-          <IconChip
-            icon={AlertTriangle}
-            tone={destructive ? "danger" : "warning"}
-            className="size-10"
-          />
           <AlertDialogHeader className="min-w-0 pt-1.5 text-left sm:text-left">
             <AlertDialogTitle className="text-lg">{title}</AlertDialogTitle>
             <AlertDialogDescription>{description}</AlertDialogDescription>

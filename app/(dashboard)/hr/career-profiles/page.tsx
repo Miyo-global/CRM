@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { Plus, UserCheck } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -254,7 +253,6 @@ export default function CareerProfilesPage() {
               <TableRow key={p.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <IconChip icon={UserCheck} tone="neutral" size="sm" />
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium">{p.employeeName ?? p.userId}</span>
                       {p.employeeEmail && (

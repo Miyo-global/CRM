@@ -20,28 +20,7 @@ import {
 } from "@/lib/api/hooks/hr/dashboard";
 import { useHrLeaveAnalytics } from "@/lib/api/hooks/hr/leaves-expenses";
 import { useAnniversaryFeed } from "@/lib/api/hooks/hr";
-import {
-  Users,
-  UserCheck,
-  CalendarOff,
-  ClipboardList,
-  Briefcase,
-  UserPlus,
-  Cake,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  Timer,
-  PieChart,
-  BarChart3,
-  ShieldCheck,
-  Download,
-  PartyPopper,
-  Trophy,
-  Award,
-} from "lucide-react";
+import { Users, UserCheck, CalendarOff, ClipboardList, Briefcase, UserPlus, Cake, CheckCircle2, Clock, TrendingUp, TrendingDown, Wallet, Timer, PieChart, BarChart3, ShieldCheck, Download, PartyPopper, Award } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";

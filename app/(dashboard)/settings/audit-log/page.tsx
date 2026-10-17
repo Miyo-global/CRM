@@ -4,10 +4,9 @@ import { useState, useCallback, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Shield, ChevronLeft, ChevronRight, Activity, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -132,7 +131,6 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
       <SheetContent size="sm" className="flex flex-col gap-0 p-0 w-full">
         <SheetHeader className="border-b border-border shrink-0">
           <SheetTitle className="flex items-center gap-2">
-            <IconChip icon={Activity} tone="neutral" size="sm" />
             Event Details
           </SheetTitle>
         </SheetHeader>

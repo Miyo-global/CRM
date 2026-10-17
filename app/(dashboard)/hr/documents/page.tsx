@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -363,7 +362,6 @@ function RichDocumentsSection() {
               className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-border-strong hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <IconChip icon={FileText} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{doc.title}</p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2">

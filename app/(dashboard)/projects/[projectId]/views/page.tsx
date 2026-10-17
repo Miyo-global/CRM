@@ -11,7 +11,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -111,10 +110,6 @@ const ViewCard = memo(function ViewCard({
       onClick={handleNavigate}
     >
         <div className="flex min-w-0 items-center gap-3">
-          <IconChip
-            icon={layoutIconComponents[view.layoutType] ?? layoutIconComponents.board}
-            tone="neutral"
-          />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium" title={view.name}>{view.name}</p>
             <p className="text-xs text-muted-foreground">

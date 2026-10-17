@@ -4,7 +4,6 @@ import { memo } from "react";
 import { ListTodo } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
@@ -70,14 +69,6 @@ export const MyIssuesCard = memo(function MyIssuesCard({ tickets, isLoading, err
                 <li key={ticket.id}>
                   <WidgetListRow
                     href={project?.id ? `/projects/${project.id}` : "/projects"}
-                    leading={
-                      <IconChip
-                        icon={TypeIcon}
-                        tone={type ? typeTones[type] : "neutral"}
-                        size="sm"
-                        className="size-8"
-                      />
-                    }
                     title={
                       <>
                         {project?.key && ticket.ticketNumber != null && (

@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
-import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import type { LucideIcon } from "lucide-react";
+import type { Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 
 /** Minimal centered layout for public token pages: logo lockup on top, one Card. */
@@ -42,14 +43,13 @@ export function TokenState({
   title,
   children,
 }: {
-  icon: IconChipProps["icon"];
-  tone: IconChipProps["tone"];
+  icon: LucideIcon;
+  tone: Tone;
   title?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 py-6 text-center">
-      <IconChip icon={icon} tone={tone} size="lg" className="mb-1" />
       {title && <h2 className="font-display text-lg font-bold text-foreground">{title}</h2>}
       {children}
     </div>

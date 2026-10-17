@@ -14,11 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
-import { Plus, GraduationCap, BookOpen, Clock, BarChart3 } from "lucide-react";
+import { Plus, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 
 interface LearningPath {
@@ -106,7 +105,6 @@ export default function LearningPathsPage() {
             <Card key={lp.id}>
               <CardContent className="flex h-full flex-col gap-3 p-5">
                 <div className="flex items-start justify-between gap-2">
-                  <IconChip icon={GraduationCap} tone="brand" />
                   {lp.level && <Badge variant="outline" className="text-2xs">{lp.level}</Badge>}
                 </div>
                 <div className="space-y-1">

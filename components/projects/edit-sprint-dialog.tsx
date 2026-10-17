@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Pencil, Calendar, Target } from "lucide-react";
+import { Pencil, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { IconChip } from "@/components/ui/icon-chip";
 import {
   Form,
   FormControl,
@@ -112,7 +111,6 @@ export function EditSprintDialog({ sprint, projectId, trigger }: EditSprintDialo
       <DialogContent size="md" className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5 text-lg">
-            <IconChip icon={Calendar} tone="brand" size="sm" />
             Edit Sprint
           </DialogTitle>
         </DialogHeader>

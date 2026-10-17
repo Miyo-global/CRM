@@ -8,7 +8,6 @@ import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
@@ -40,7 +39,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2, Download, Laptop, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, CheckCircle2, Download, Eye, Pencil, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { AssetReturnDetailSheet, assetReturnStatusTone } from "@/features/hr/assets/asset-return-detail-sheet";
 import { EmployeeAssignedAssetsPanel } from "@/features/hr/assets/employee-assigned-assets-panel";
@@ -612,7 +611,6 @@ export default function AssetReturnsPage() {
                 <TableRow key={ar.id}>
                   <TableCell>
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <IconChip icon={Laptop} tone="neutral" size="sm" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium" title={ar.assetName}>{ar.assetName}</p>
                         {ar.assetType && <p className="text-xs text-muted-foreground">{ar.assetType}</p>}

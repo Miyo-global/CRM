@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import { CircleAlert } from "lucide-react";
 
@@ -76,7 +75,6 @@ export default function MfaChallengePage() {
 
   return (
     <div className="w-full max-w-[400px]">
-      <IconChip icon={ShieldCheck} tone="brand" size="lg" className="mb-5" />
       <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
         Two-factor authentication
       </h1>

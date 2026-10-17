@@ -11,9 +11,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Activity, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAttendanceHeatmap } from "@/lib/api/hooks/hr";
-import { IconChip } from "@/components/ui/icon-chip";
 
 const MONTH_LABELS = [
   "Jan",
@@ -97,7 +96,6 @@ export function AttendanceHeatmap({ userId }: { userId: string }) {
       <CardHeader className="pb-3 pt-5">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <IconChip icon={Activity} />
             Attendance Heatmap
           </CardTitle>
           <div className="flex items-center gap-0.5">

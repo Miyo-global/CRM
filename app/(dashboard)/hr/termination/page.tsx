@@ -5,20 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import {
-  Plus,
-  CheckCircle2,
-  XCircle,
-  Mail,
-  AlertTriangle,
-  Calendar,
-  User,
-  BadgeIndianRupee,
-  Check,
-  Paperclip,
-  FileText,
-  Settings,
-} from "lucide-react";
+import { Plus, CheckCircle2, XCircle, Paperclip, FileText, Settings } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
@@ -69,9 +56,6 @@ import {
   type StatusFilter,
 } from "./_lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
-
-
-
 
 export default function TerminationPage() {
   const { data: session } = useSession();
@@ -194,7 +178,6 @@ export default function TerminationPage() {
     }
     return counts;
   }, [terminations]);
-
 
   const resetCreateForm = useCallback(() => {
     setSelectedUserId("");
@@ -369,7 +352,6 @@ export default function TerminationPage() {
       onError: (e) => toast.error(getErrorMessage(e)),
     });
   }, [completeId, completeTermination]);
-
 
   if (isLoading) {
     return (

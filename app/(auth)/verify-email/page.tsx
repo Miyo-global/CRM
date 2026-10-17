@@ -6,9 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useVerifyEmail, useResendVerificationEmail } from "@/lib/hooks/auth-hooks";
-import { CheckCircle2, Mail, Loader2, ArrowLeft, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, RefreshCw, AlertCircle } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { IconChip } from "@/components/ui/icon-chip";
 
 function VerifyEmailForm() {
   const router = useRouter();
@@ -80,7 +79,6 @@ function VerifyEmailForm() {
   if (isVerified) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={CheckCircle2} tone="success" size="lg" className="mb-5" />
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Email Verified!</h1>
         <p className="mt-2 text-base text-muted-foreground">Your email has been successfully verified</p>
 
@@ -97,7 +95,6 @@ function VerifyEmailForm() {
   if (verifyEmail.isPending) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={Loader2} tone="brand" size="lg" className="mb-5 [&_svg]:animate-spin" />
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Verifying Email</h1>
         <p className="mt-2 text-base text-muted-foreground">Please wait while we verify your email address</p>
         <p role="status" className="mt-6 animate-pulse text-sm text-subtle-foreground">This will only take a moment...</p>
@@ -107,7 +104,6 @@ function VerifyEmailForm() {
 
   return (
     <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-      <IconChip icon={Mail} tone="brand" size="lg" className="mb-5" />
       <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Check your email</h1>
       <p className="mt-2 text-base text-muted-foreground">
         We&apos;ve sent a verification link to your address. Please click the link to verify your account and get started.

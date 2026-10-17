@@ -10,7 +10,6 @@ import {
 } from "@/lib/api/hooks/projects";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Input } from "@/components/ui/input";
@@ -36,7 +35,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { updateProjectSettingsInputSchema } from "@/lib/validations/project";
 import { z } from "zod";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Settings, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -160,7 +159,6 @@ export default function ProjectSettingsPage({ params }: PageProps) {
       <div className="w-full max-w-4xl space-y-6 pb-8">
         <Card>
           <div className="flex items-start gap-3 border-b border-border px-5 py-4">
-            <IconChip icon={Settings} tone="neutral" size="sm" />
             <div className="min-w-0">
               <h2 className="text-lg font-semibold leading-tight">General</h2>
               {!canEdit && (

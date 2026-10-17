@@ -7,27 +7,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Settings,
-  ClipboardCheck,
-  Upload,
-  FileText,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  RefreshCw,
-  ExternalLink,
-  UserPlus,
-  Users,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowLeft, Upload, FileText, CheckCircle2, Clock, AlertCircle, RefreshCw, ExternalLink, UserPlus, TrendingUp } from "lucide-react";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
@@ -62,7 +47,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
 interface DocumentType {
   id: number;
   name: string;
@@ -87,7 +71,6 @@ interface OnboardingDoc {
   remarks: string | null;
   version: number | null;
 }
-
 
 function useMyOnboardingDocs() {
   return useQuery<OnboardingDoc[]>({
@@ -120,14 +103,13 @@ function useSubmitOnboardingDoc() {
   });
 }
 
-
 function docStatusIcon(status: OnboardingDoc["status"]) {
   const icons = {
-    "APPROVED": <IconChip icon={CheckCircle2} tone="success" size="sm" />,
-    "SUBMITTED": <IconChip icon={Clock} tone="warning" size="sm" />,
-    "REJECTED": <IconChip icon={AlertCircle} tone="danger" size="sm" />,
-    "RE_UPLOAD_REQUESTED": <IconChip icon={RefreshCw} tone="warning" size="sm" />,
-    default: <IconChip icon={FileText} tone="neutral" size="sm" />,
+    APPROVED: <CheckCircle2 className="size-4 text-muted-foreground" aria-hidden="true" />,
+    SUBMITTED: <Clock className="size-4 text-muted-foreground" aria-hidden="true" />,
+    REJECTED: <AlertCircle className="size-4 text-muted-foreground" aria-hidden="true" />,
+    RE_UPLOAD_REQUESTED: <RefreshCw className="size-4 text-muted-foreground" aria-hidden="true" />,
+    default: <FileText className="size-4 text-muted-foreground" aria-hidden="true" />,
   };
   return icons[status as keyof typeof icons] || icons.default;
 }
@@ -156,7 +138,6 @@ function docStatusLabel(status: OnboardingDoc["status"]): string {
 function canUpload(status: OnboardingDoc["status"] | undefined): boolean {
   return !status || status === "PENDING" || status === "RE_UPLOAD_REQUESTED" || status === "REJECTED";
 }
-
 
 interface UploadSheetProps {
   open: boolean;
@@ -251,7 +232,6 @@ function UploadSheet({
     </HrSheet>
   );
 }
-
 
 function EmployeeDocumentsTab() {
   const { data: session } = useSession();
@@ -352,7 +332,6 @@ function EmployeeDocumentsTab() {
   return (
     <>
       <div className="mb-3 flex items-center gap-3 rounded-lg border bg-surface-sunken/40 px-4 py-3">
-        <IconChip icon={CheckCircle2} tone="success" size="sm" />
         <p className="text-sm">
           <span className="font-semibold tabular-nums">{approvedCount}</span> of{" "}
           <span className="font-semibold tabular-nums">{requiredChecklist.length || checklist.length}</span>{" "}
@@ -438,7 +417,6 @@ function EmployeeDocumentsTab() {
     </>
   );
 }
-
 
 function InitiateSheet({
   open,
@@ -634,7 +612,6 @@ function HrWorkflowTab() {
   );
 }
 
-
 function HrDocumentsTab() {
   return (
     <div className="space-y-3">
@@ -644,7 +621,6 @@ function HrDocumentsTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card>
           <CardContent className="flex items-start gap-3 p-5">
-            <IconChip icon={Settings} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Configure Document Types</p>
               <p className="mt-0.5 mb-3 text-xs text-muted-foreground">
@@ -661,7 +637,6 @@ function HrDocumentsTab() {
 
         <Card>
           <CardContent className="flex items-start gap-3 p-5">
-            <IconChip icon={ClipboardCheck} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Review Documents</p>
               <p className="mt-0.5 mb-3 text-xs text-muted-foreground">
@@ -679,7 +654,6 @@ function HrDocumentsTab() {
     </div>
   );
 }
-
 
 export default function OnboardingPage() {
   const { data: session, status } = useSession();

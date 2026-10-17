@@ -10,7 +10,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,13 +18,7 @@ import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import {
-  FileCheck,
-  Clock,
-  XCircle,
-  CheckCircle2,
-  FileText,
-} from "lucide-react";
+import { FileCheck, Clock, XCircle, CheckCircle2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 function ackTone(status: string | null): Tone {
@@ -96,7 +89,6 @@ export default function CompliancePage() {
               <Card key={ack.id}>
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <IconChip icon={FileText} tone="warning" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">
                         {ack.document?.name ?? "Document"}
@@ -161,7 +153,6 @@ export default function CompliancePage() {
                   <TableRow key={ack.id}>
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <IconChip icon={FileText} tone="neutral" size="sm" />
                         <span className="truncate font-medium text-foreground">
                           {ack.document?.name ?? "Document"}
                         </span>

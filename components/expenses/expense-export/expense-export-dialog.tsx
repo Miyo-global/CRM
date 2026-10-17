@@ -30,7 +30,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -456,7 +455,6 @@ export function ExpenseExportDialog({
         <SheetContent size="md" className="overflow-y-auto p-6">
           <SheetHeader className="mb-6">
             <SheetTitle className="flex items-center gap-2 font-display text-xl font-bold">
-              <IconChip icon={Download} size="sm" />
               Export Expenses
             </SheetTitle>
             <SheetDescription>

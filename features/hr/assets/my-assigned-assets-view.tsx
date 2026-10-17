@@ -3,7 +3,6 @@
 import { Laptop, MapPin, Package } from "lucide-react";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -54,7 +53,6 @@ export function MyAssignedAssetsView() {
           <Card key={asset.id}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <IconChip icon={Icon} tone="brand" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">

@@ -2,14 +2,13 @@
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
-import { Users, AlertTriangle, Clock, Wallet, CalendarDays } from "lucide-react";
+import { Users, Clock, Wallet, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
@@ -104,7 +103,6 @@ export default function AdminHealthDashboardPage() {
             <Card interactive className="h-full gap-0 p-5">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
-                <IconChip icon={kpi.icon} tone={kpi.tone} />
               </div>
               <p className="mt-1 font-display text-3xl font-extrabold leading-none tabular-nums text-foreground">
                 {kpi.value}

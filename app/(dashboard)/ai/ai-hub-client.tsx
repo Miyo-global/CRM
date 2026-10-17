@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Tone } from "@/lib/design/tones";
@@ -20,11 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  Brain, Mail, TrendingUp, Target, MessageSquare,
-  FileText, Users, ShieldCheck, Zap, AlertTriangle, ClipboardList,
-  type LucideIcon,
-} from "lucide-react";
+import { Brain, Mail, TrendingUp, Target, MessageSquare, FileText, ShieldCheck, Zap, AlertTriangle, ClipboardList, type LucideIcon } from "lucide-react";
 import {
   useAIScoreLead, useGenerateEmail, usePredictDeal, useNextBestAction,
   useObjectionHandler, useGenerateSubjectLines, useSentimentAnalysis,
@@ -122,7 +117,6 @@ export function AIHubClient() {
               }}
             >
               <div className="flex items-center gap-3">
-                <IconChip icon={feature.icon} tone={feature.tone} />
                 <div className="min-w-0">
                   <h2 className="truncate font-sans text-sm font-semibold tracking-normal text-foreground">{feature.title}</h2>
                   <StatusPill tone="neutral" className="mt-1 capitalize">{feature.category}</StatusPill>
@@ -140,7 +134,6 @@ export function AIHubClient() {
             <>
               <SheetHeader className="shrink-0 border-b border-border px-6 py-4 pr-12">
                 <SheetTitle className="flex items-center gap-3 text-lg">
-                  <IconChip icon={activeFeature.icon} tone={activeFeature.tone} size="sm" />
                   {activeFeature.title}
                 </SheetTitle>
               </SheetHeader>

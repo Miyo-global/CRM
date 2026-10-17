@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { IconChip } from "@/components/ui/icon-chip";
-import { ArrowLeft, FolderX } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export function AccessDeniedView() {
   return (
     <div className="flex min-h-[60vh] w-full flex-1 items-center justify-center p-8">
       <div className="flex max-w-md flex-col items-center text-center">
-        <IconChip icon={FolderX} tone="neutral" size="lg" className="mb-5" />
         <h1 className="mb-2 font-display text-xl font-bold text-foreground">
           This project doesn&apos;t exist, or you don&apos;t have access
         </h1>

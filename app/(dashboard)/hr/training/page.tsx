@@ -28,7 +28,6 @@ import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -149,7 +148,6 @@ export default function TrainingPage() {
                 <CardContent className="flex h-full flex-col gap-3 p-5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <IconChip icon={BookOpen} tone="brand" />
                       <StatusPill tone={statusTone(program.status)} dot>{program.status}</StatusPill>
                     </div>
                     {isAdmin && (

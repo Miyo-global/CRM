@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { useManagerDashboard } from "@/lib/api/hooks/dashboard";
-import { Bell, CalendarCheck, Receipt, CheckCircle2 } from "lucide-react";
+import { Bell, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export function PendingApprovalsWidget() {
@@ -37,7 +36,6 @@ export function PendingApprovalsWidget() {
           >
             <WidgetListRow
               className="hover:bg-accent"
-              leading={<IconChip icon={CalendarCheck} tone="info" size="sm" />}
               title="Leave Requests"
               trailing={
                 data.pendingLeaveApprovals > 0 && (
@@ -53,7 +51,6 @@ export function PendingApprovalsWidget() {
           >
             <WidgetListRow
               className="hover:bg-accent"
-              leading={<IconChip icon={Receipt} tone="plum" size="sm" />}
               title="Expense Reports"
               trailing={
                 data.pendingExpenseApprovals > 0 && (

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -117,7 +116,6 @@ export default function ReportsPage() {
           {REPORTS.map((report) => (
             <Card key={report.id} className="col-span-12 gap-4 p-5 md:col-span-6">
               <div className="flex items-start gap-3">
-                <IconChip icon={report.icon} tone="neutral" />
                 <div className="min-w-0">
                   <h2 className="font-sans text-base font-semibold tracking-normal text-foreground">
                     {report.title}

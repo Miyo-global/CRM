@@ -3,15 +3,7 @@
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { format, formatDistanceToNow } from "date-fns";
-import {
-  Ticket,
-  Paperclip,
-  ExternalLink,
-  Send,
-  Lock,
-  ArrowRight,
-  UserPlus,
-} from "lucide-react";
+import { Paperclip, ExternalLink, Send, Lock, UserPlus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -23,7 +15,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { PropertyList } from "@/components/shared/property-list";
 import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
@@ -121,7 +112,6 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
   const to = comment.metadata?.to ?? null;
   return (
     <div className="flex items-center gap-2 py-1.5 text-xs text-muted-foreground">
-      <IconChip icon={ArrowRight} tone="neutral" size="sm" />
       <span className="flex flex-wrap items-center gap-1.5">
         <span className="font-medium text-foreground">{comment.authorName ?? "Someone"}</span>
         {/* JSX drops the newline, so this read "changed statusfrom"
@@ -280,7 +270,6 @@ export function TicketDetailSheet({
       <SheetContent size="md" className="flex flex-col gap-0 p-0">
         <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5 pr-12">
           <div className="flex items-start gap-3">
-            <IconChip icon={Ticket} tone={statusTone(ticket.status)} />
             <div className="min-w-0 flex-1">
               <SheetTitle className="font-display text-lg leading-snug">{ticket.title}</SheetTitle>
               <SheetDescription className="mt-1 text-xs tabular-nums">

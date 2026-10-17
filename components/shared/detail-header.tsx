@@ -2,13 +2,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
-import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import type { LucideIcon } from "lucide-react";
 
 interface DetailHeaderProps {
   back?: React.ReactNode;
   /** 64px avatar node; takes precedence over `icon`. */
   avatar?: React.ReactNode;
-  icon?: IconChipProps["icon"];
+  icon?: LucideIcon;
   iconTone?: Tone;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -35,7 +35,7 @@ function DetailHeader({
     <header className={cn("space-y-4", className)}>
       {back}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        {avatar ?? (icon && <IconChip icon={icon} tone={iconTone} size="lg" className="size-16" />)}
+        {avatar ?? (icon ? React.createElement(icon, { className: "size-8 shrink-0 text-muted-foreground", "aria-hidden": true }) : null)}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="min-w-0 break-words font-display text-2xl">{title}</h1>

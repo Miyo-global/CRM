@@ -1,8 +1,6 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IconChip } from "@/components/ui/icon-chip";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter,
 } from "@/components/ui/sheet";
@@ -49,7 +47,6 @@ export function CompleteSprintSheet({
       <SheetContent size="md" className="gap-0 p-0">
         <SheetHeader className="border-b border-border pl-6">
           <SheetTitle className="flex items-center gap-2">
-            <IconChip icon={AlertTriangle} tone="warning" size="sm" />
             <span className="min-w-0 truncate">Complete Sprint: {sprint?.name}</span>
           </SheetTitle>
         </SheetHeader>

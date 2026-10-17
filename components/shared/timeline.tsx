@@ -1,14 +1,13 @@
 import * as React from "react";
 import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns";
-import { Circle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
-import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import type { LucideIcon } from "lucide-react";
 
 interface TimelineItem {
   id: string;
-  icon?: IconChipProps["icon"];
+  icon?: LucideIcon;
   tone?: Tone;
   actor?: React.ReactNode;
   title: React.ReactNode;
@@ -57,7 +56,6 @@ function Timeline({ items, groupByDay = true, emptyLabel = "No activity yet", cl
           <ol className="relative mt-2 space-y-4 before:absolute before:top-3.5 before:bottom-3.5 before:left-3.5 before:w-px before:-translate-x-1/2 before:bg-border">
             {group.items.map((item) => (
               <li key={item.id} className="relative flex gap-3">
-                <IconChip icon={item.icon ?? Circle} tone={item.tone ?? "neutral"} size="sm" className="relative ring-4 ring-card" />
                 <div className="min-w-0 flex-1 pt-1 text-sm">
                   <p className="text-foreground">
                     {item.actor && <span className="font-semibold">{item.actor} </span>}

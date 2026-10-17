@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import {
   Sheet,
   SheetContent,
@@ -16,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Shield, ShieldCheck, ShieldOff, Copy, Check } from "lucide-react";
+import { Shield, ShieldOff, Copy, Check } from "lucide-react";
 import { useMfaStatus, useMfaSetup, useMfaVerify, useMfaDisable } from "@/lib/api/hooks/mfa";
 import { toast } from "sonner";
 
@@ -101,7 +100,6 @@ export function MfaSettings() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-start gap-3">
-            <IconChip icon={isEnabled ? ShieldCheck : Shield} tone={isEnabled ? "success" : "neutral"} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="text-sm font-semibold">Two-Factor Authentication</CardTitle>

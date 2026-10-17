@@ -16,7 +16,6 @@ import { PasswordStrengthIndicator } from "@/components/auth/password-strength-i
 import { PasswordInput } from "@/components/auth/password-input";
 import Link from "next/link";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { IconChip } from "@/components/ui/icon-chip";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +98,6 @@ function SetupPasswordContent() {
   if (!token) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
         <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Invalid Link</h1>
         <p className="mb-6 text-base text-muted-foreground">
           This setup link is invalid. Please contact your HR administrator.
@@ -123,7 +121,6 @@ function SetupPasswordContent() {
   if (tokenError || !tokenInfo) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
         <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Link Expired</h1>
         <p className="mb-6 text-base text-muted-foreground">
           This setup link has expired or is no longer valid. Please contact your HR administrator to get a new link.

@@ -8,7 +8,6 @@ import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Tone } from "@/lib/design/tones";
@@ -20,7 +19,7 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, IndianRupee, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatINRWhole } from "@/lib/format-utils";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -133,7 +132,6 @@ function FnfContent() {
                 <TableRow key={f.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <span className="text-sm font-medium">{f.employeeName ?? "Employee"}</span>
                     </div>
                   </TableCell>

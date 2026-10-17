@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
@@ -718,7 +717,6 @@ export default function HrAssetsPage() {
                       <TableRow key={a.id}>
                         <TableCell>
                           <div className="flex min-w-0 items-center gap-2.5">
-                            <IconChip icon={a.type?.toLowerCase().includes("laptop") ? Laptop : Package} tone="neutral" size="sm" />
                             <span className="truncate text-sm font-medium" title={a.name ?? undefined}>{a.name}</span>
                           </div>
                         </TableCell>

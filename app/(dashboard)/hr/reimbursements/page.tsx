@@ -9,7 +9,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Tone } from "@/lib/design/tones";
@@ -135,7 +134,6 @@ export default function ReimbursementsPage() {
                 <TableRow key={r.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={IndianRupee} size="sm" tone="neutral" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.category}</p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>

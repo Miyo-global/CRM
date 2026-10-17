@@ -1,15 +1,13 @@
 "use client";
 
-import { ShieldOff, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IconChip } from "@/components/ui/icon-chip";
 import { signOut } from "next-auth/react";
 
 export function NotActivatedPage() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-background px-6">
       <div className="flex max-w-md flex-col items-center text-center">
-        <IconChip icon={ShieldOff} tone="warning" size="lg" className="mb-5" />
 
         <h1 className="mb-3 font-display text-2xl font-bold tracking-tight text-foreground">
           Portal Access Restricted

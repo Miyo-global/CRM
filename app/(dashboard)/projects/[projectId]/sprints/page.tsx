@@ -7,8 +7,7 @@ import {
 import { CreateSprintDialog } from "@/components/projects/create-sprint-dialog";
 import { BurndownChart } from "@/components/projects/burndown-chart";
 import { VelocityChart } from "@/components/projects/velocity-chart";
-import { Play, Calendar, CheckCircle2 } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
+
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -165,7 +164,6 @@ export default function SprintsPage({ params }: PageProps) {
         {activeSprints.length > 0 && (
           <section className="space-y-4">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <IconChip icon={Play} tone="info" size="sm" />
               Active Sprints
             </h2>
             <div className="grid gap-4">
@@ -188,7 +186,6 @@ export default function SprintsPage({ params }: PageProps) {
         {plannedSprints.length > 0 && (
           <section className="space-y-4">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <IconChip icon={Calendar} tone="neutral" size="sm" />
               Planned Sprints
             </h2>
             <div className="grid gap-4 xl:grid-cols-2">
@@ -211,7 +208,6 @@ export default function SprintsPage({ params }: PageProps) {
         {completedSprints.length > 0 && (
           <section className="space-y-4">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <IconChip icon={CheckCircle2} tone="success" size="sm" />
               Completed Sprints
             </h2>
             <div className="grid gap-4 xl:grid-cols-2">

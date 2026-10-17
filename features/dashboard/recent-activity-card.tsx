@@ -2,7 +2,6 @@
 
 import { memo } from "react";
 import { Activity } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
@@ -71,9 +70,6 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
                 <li key={item.id}>
                   <WidgetListRow
                     href={item.projectId ? `/projects/${item.projectId}` : "/projects"}
-                    leading={
-                      <IconChip icon={TypeIcon} tone={type ? typeTones[type] : "neutral"} size="sm" className="size-8" />
-                    }
                     title={
                       <>
                         {item.projectKey && item.ticketNumber != null && (

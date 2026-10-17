@@ -12,27 +12,13 @@ import { EditEpicDialog } from "@/components/projects/edit-epic-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { toneBar, toneDot, type Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Layers,
-  ChevronDown,
-  ChevronRight,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  BookOpen,
-  Wrench,
-  Pencil,
-  Trash2,
-  Plus,
-  Link2,
-} from "lucide-react";
+import { Layers, ChevronDown, ChevronRight, CheckCircle2, Loader2, BookOpen, Wrench, Pencil, Trash2, Plus, Link2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { getColorSafe, priorityColors } from "@/lib/theme-constants";
@@ -171,7 +157,6 @@ export default function EpicsPage({ params }: PageProps) {
       {stories.filter(s => !s.epicId).length > 0 && (
         <section className="space-y-3">
           <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-            <IconChip icon={AlertCircle} tone="warning" size="sm" />
             Stories without Epic
           </h2>
           <Card>

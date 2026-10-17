@@ -39,7 +39,6 @@ import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { resolveImageUrl } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { PropertyList } from "@/components/shared/property-list";
 import type { Tone } from "@/lib/design/tones";
 
@@ -356,7 +355,6 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
       )}
       <td className="py-3.5 px-3">
         <div className="flex items-center gap-2.5">
-          <IconChip icon={Icon} tone={leaveStatusTone(status)} size="sm" className="size-8" />
           <span className="text-sm font-medium text-foreground">{typeName.replace(" Leave", "")}<br /><span className="font-normal text-muted-foreground">Leave</span></span>
         </div>
       </td>
@@ -517,7 +515,6 @@ export function LeaveRequestDetailsSheet({
           )}
 
           <div className="flex items-center gap-3">
-            <IconChip icon={Icon} tone={leaveStatusTone(status)} />
             <div>
               <p className="font-semibold text-foreground">{typeName}</p>
               <div className="mt-1">

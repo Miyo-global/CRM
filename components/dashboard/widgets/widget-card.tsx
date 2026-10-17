@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { IconChip, type IconChipProps } from "@/components/ui/icon-chip";
+import type { LucideIcon } from "lucide-react";
 
 interface WidgetCardProps {
   title: string;
-  icon?: IconChipProps["icon"];
+  icon?: LucideIcon;
   tone?: Tone;
   count?: number;
   viewAllHref?: string;
@@ -37,7 +37,7 @@ function WidgetCard({
   return (
     <Card className={cn("h-full", className)}>
       <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-        {icon && <IconChip icon={icon} tone={tone} size="sm" className="size-8" />}
+        {icon ? React.createElement(icon, { className: "size-4 shrink-0 text-muted-foreground", "aria-hidden": true }) : null}
         <h3 className="min-w-0 truncate font-sans text-sm font-semibold tracking-normal">{title}</h3>
         {count !== undefined && (
           <Badge variant="secondary" className="tabular-nums">

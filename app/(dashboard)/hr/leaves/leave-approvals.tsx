@@ -23,9 +23,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Home, CheckCircle2, XCircle, CalendarDays, Search } from "lucide-react";
+import { CheckCircle2, XCircle, Search } from "lucide-react";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constants";
 
@@ -474,7 +473,6 @@ export function LeaveApprovalsContent({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <IconChip icon={CalendarDays} size="sm" />
               Leave Requests
               {allIncomingLeaveRequests.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{allIncomingLeaveRequests.length}</Badge>
@@ -554,7 +552,6 @@ export function LeaveApprovalsContent({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <IconChip icon={Home} size="sm" tone="info" />
               Pending WFH Requests
               {pendingWfhRequests && pendingWfhRequests.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{pendingWfhRequests.length}</Badge>

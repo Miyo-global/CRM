@@ -8,7 +8,6 @@ import * as z from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
@@ -91,7 +90,6 @@ export default function InvitationPage() {
   if (invitationError) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={X} tone="danger" size="lg" className="mb-5" />
         <p className="text-base text-muted-foreground">
           {invitationError instanceof Error ? invitationError.message : "This invitation is invalid or has expired."}
         </p>
@@ -121,7 +119,6 @@ export default function InvitationPage() {
       </div>
 
       <div className="mb-6 flex items-center gap-3 rounded-lg bg-brand-soft p-3">
-        <IconChip icon={Mail} tone="brand" className="bg-card" />
         <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
           <div className="min-w-0">
             <p className="text-2xs font-semibold uppercase tracking-wider text-brand-soft-foreground">Organization</p>

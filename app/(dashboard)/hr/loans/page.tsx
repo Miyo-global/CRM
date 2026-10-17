@@ -11,7 +11,6 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Tone } from "@/lib/design/tones";
@@ -22,7 +21,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2, XCircle, IndianRupee, Banknote } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -135,7 +134,6 @@ export default function LoansPage() {
                 <TableRow key={loan.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <IconChip icon={Banknote} size="sm" tone="neutral" />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{loan.user?.name ?? "—"}</p>
                         {loan.reason && (

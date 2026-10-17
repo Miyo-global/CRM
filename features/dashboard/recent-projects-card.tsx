@@ -4,7 +4,6 @@ import { memo } from "react";
 import { Folder } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
@@ -55,7 +54,6 @@ export const RecentProjectsCard = memo(function RecentProjectsCard({ projects, i
               <li key={project.id}>
                 <WidgetListRow
                   href={`/projects/${project.id}`}
-                  leading={<IconChip icon={Folder} size="sm" className="size-8" />}
                   title={project.name}
                   meta={<span className="font-mono">{project.key}</span>}
                   trailing={

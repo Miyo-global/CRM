@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { CalendarClock } from "lucide-react";
+
 import { useSession } from "next-auth/react";
 import {
   Card,
@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/card";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatsStrip } from "@/components/shared/stats-strip";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { PayrollRunStepper } from "@/features/hr/payroll/payroll-run-stepper";
@@ -143,7 +142,6 @@ export default function PayrollPage() {
     () => pickSalaryStructureForPayrollMonth(salaryStructureList, selectedMonth),
     [salaryStructureList, selectedMonth]
   );
-
 
   const generateWithPeriodMutation = useGeneratePayslipWithPeriod();
   const approvePayrollMutation = useApprovePayroll();
@@ -494,7 +492,6 @@ export default function PayrollPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <IconChip icon={CalendarClock} tone={payrollSchedule?.isEnabled ? "success" : "neutral"} />
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Automatic payroll</p>

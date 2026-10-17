@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban } from "lucide-react";
 import Link from "next/link";
@@ -54,7 +53,6 @@ export function EmployeeProjectsList({ projects }: { projects: ProjectItem[] }) 
                             <CardContent className="p-4 flex flex-col h-full">
 
                                 <div className="flex items-start gap-3 mb-3">
-                                    <IconChip icon={FolderKanban} />
                                     <div className="min-w-0 flex-1">
                                         <h4 className="font-semibold text-sm text-foreground group-hover:text-brand-text transition-colors truncate">
                                             {item.name}

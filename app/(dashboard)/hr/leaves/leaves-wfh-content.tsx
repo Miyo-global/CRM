@@ -17,10 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import {Plus, Users, Home} from "lucide-react";
+import { Plus, Home } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
@@ -104,7 +103,6 @@ export function LeavesWfhContent() {
     return byType;
   }, [myLeaveRequests, holidayDates]);
 
-
   if (contextLoading || myLoading) {
     return (
       <PageWrapper title="Leaves">
@@ -153,7 +151,6 @@ export function LeavesWfhContent() {
             <Card className="gap-0">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                  <IconChip icon={Users} tone="warning" size="sm" />
                   Who&apos;s Out This Week
                   <Badge variant="secondary" className="ml-1 tabular-nums">
                     {approvedLeavesThisWeek.length}

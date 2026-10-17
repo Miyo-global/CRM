@@ -25,7 +25,6 @@ import { formatINRCompact } from "@/lib/format-utils";
 import { toneVar, type Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 import { percentageSplit } from "@/lib/hr/percentage-split";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState as UiEmptyState } from "@/components/ui/empty-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import {
@@ -283,7 +282,6 @@ function SectionCard({
     <Card>
       <CardHeader className="border-b px-5 py-4">
         <div className="flex items-center gap-3">
-          <IconChip icon={Icon} tone={tone} size="sm" />
           <CardTitle className="font-sans text-sm font-semibold">{title}</CardTitle>
           {badge && <div className="ml-auto">{badge}</div>}
         </div>

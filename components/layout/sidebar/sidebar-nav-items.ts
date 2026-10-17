@@ -1,20 +1,6 @@
 
 
-import {
-  LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays,
-  Receipt, FileText, Timer, QrCode, IndianRupee, Handshake,
-  Contact2, Trophy, BarChart3, UserCheck, Network, ClipboardList,
-  Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, UserSearch,
-  TrendingUp, BookOpen, Heart, UserMinus, Target, Megaphone, Mail, Package,
-  Share2, Video, Globe,
-
-  Bell, GraduationCap, ClipboardCheck, PackageMinus, Gift, Award,
-  MailOpen, Smile, FileCheck, Coins, Map, MapPin, RefreshCcw, Zap,
-  ListChecks, PartyPopper, History, BarChart2, LifeBuoy, Inbox,
-  Building2, UserCog, SlidersHorizontal, UserX,
-  Activity, FlaskConical, Sparkles, Brain, Copy, Search, ShieldAlert, Sliders,
-  FormInput, CalendarRange, FileSearch, LayoutTemplate, Grid3X3,
-} from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3 } from "lucide-react";
 
 import { AI_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
@@ -33,7 +19,6 @@ export interface NavGroup {
 
   defaultCollapsed?: boolean;
 }
-
 
 export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
   if (!role) return [];

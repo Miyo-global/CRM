@@ -37,20 +37,9 @@ import { toast } from "sonner";
 import { useHrEmployees } from "@/lib/api/hooks/hr/employees";
 import type { Employee } from "@/types/hr";
 import type { CustomFieldDefinition } from "@/lib/api/hooks/crm";
-import {
-  Plus,
-  Mail,
-  Trash2,
-  Copy,
-  Pencil,
-  Eye,
-  Send,
-  Search,
-  Loader2,
-} from "lucide-react";
+import { Plus, Trash2, Copy, Pencil, Eye, Send, Search, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { IconChip } from "@/components/ui/icon-chip";
 import { HR_EMAIL_EMPLOYEE_AUTO_MERGE_KEY_SET } from "@/lib/hr/hr-email-auto-merge-keys";
 import {
   validateTemplateForm,
@@ -555,7 +544,6 @@ function EmailTemplatesContent() {
             >
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <IconChip icon={Mail} tone="brand" size="sm" />
                   <div className="flex flex-wrap gap-0.5 justify-end" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"

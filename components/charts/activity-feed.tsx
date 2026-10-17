@@ -11,7 +11,6 @@ import {
   Ticket,
   type LucideIcon,
 } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 
 type ActivityType = "deal_won" | "meeting" | "proposal" | "call" | "email" | "ticket" | "escalation";
@@ -54,7 +53,6 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
             {i < items.length - 1 && (
               <span className="absolute top-7 bottom-0 left-3.5 w-px -translate-x-1/2 bg-border" aria-hidden="true" />
             )}
-            <IconChip icon={config.icon} tone={config.tone} size="sm" className="relative ring-4 ring-card" />
 
             <div className="min-w-0 flex-1 pt-1">
               <p className="text-sm leading-snug text-foreground">{item.message}</p>

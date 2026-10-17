@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSprintBurndown } from "@/lib/api/hooks/projects";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { TrendingDown } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 
 interface BurndownChartProps {
   sprintId: number;
@@ -51,7 +49,6 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
     <Card>
       <CardHeader className="space-y-3">
         <div className="flex items-center gap-2">
-          <IconChip icon={TrendingDown} size="sm" />
           <CardTitle className="text-base">Burndown Chart</CardTitle>
           <span className="ml-auto text-xs tabular-nums text-muted-foreground">{totalPoints} total points</span>
         </div>

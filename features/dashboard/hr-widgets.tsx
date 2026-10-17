@@ -2,17 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { LeaveBalanceRow } from "@/components/dashboard/widgets/leave-balance-widget";
 import { resolveImageUrl } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
 import { format } from "date-fns";
-import {
-  CalendarOff, CalendarClock, CalendarHeart, TreePalm,
-  Clock, Cake, Award, AlertCircle, Users, UserCheck, UserX,
-} from "lucide-react";
+import { CalendarOff, CalendarClock, TreePalm, Clock, Cake, Award, AlertCircle, Users, UserCheck, UserX } from "lucide-react";
 import {
   useLeavesToday, useUpcomingLeaves, useUpcomingHolidays,
   useMyLeaveBalance, usePendingRequests, useBirthdays,
@@ -109,7 +105,6 @@ export function UpcomingHolidaysWidget() {
           {data.slice(0, MAX_ROWS).map((h: UpcomingHoliday) => (
             <li key={h.id}>
               <WidgetListRow
-                leading={<IconChip icon={CalendarHeart} tone="success" size="sm" className="size-8" />}
                 title={h.name}
                 meta={<span className="tabular-nums">{format(new Date(h.date), "EEEE, MMM d")}</span>}
               />
@@ -232,7 +227,6 @@ export function TeamAttendanceWidget() {
               { label: "Total", value: data.total, icon: Users, tone: "neutral" as const },
             ].map((s) => (
               <div key={s.label} className="flex flex-col items-center gap-1 rounded-md bg-surface-sunken/40 py-2">
-                <IconChip icon={s.icon} tone={s.tone} size="sm" />
                 <dt className="order-last text-2xs text-muted-foreground">{s.label}</dt>
                 <dd className="font-display text-lg font-bold tabular-nums">{s.value}</dd>
               </div>

@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useState } from "react";
 import { FileText, Download, Eye } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
 import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
@@ -110,7 +109,6 @@ export const PublicDocumentsCard = memo(function PublicDocumentsCard({
                   }
                 }}
               >
-                <IconChip icon={FileText} tone="info" size="sm" className="size-8" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground" title={doc.name}>
                     {doc.name}

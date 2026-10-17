@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AlertCircle } from "lucide-react";
+
 import { toast } from "sonner";
 import { isExpenseAdmin } from "@/lib/auth/role-guards";
 import {
@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
 import { Textarea } from "@/components/ui/textarea";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { isTicketConflict } from "@/lib/projects/is-ticket-conflict";
@@ -275,7 +274,6 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
         </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
-          <IconChip icon={AlertCircle} tone="neutral" className="size-12" />
           <p className="font-medium text-foreground">This ticket doesn&apos;t exist, or you don&apos;t have access</p>
           <p className="text-sm text-muted-foreground">{ticketError ? getErrorMessage(ticketError) : "It may have been archived."}</p>
         </div>

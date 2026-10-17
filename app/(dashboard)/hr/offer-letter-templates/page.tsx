@@ -20,7 +20,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -53,7 +52,7 @@ import {
   isValidVariableKey,
   resolveCustomVariableToSystemField,
 } from "@/lib/hr/offer-letter-tokens";
-import { Plus, FileText, Trash2, Pencil, Star, StarOff, ChevronDown, Settings2, FileSignature } from "lucide-react";
+import { Plus, FileText, Trash2, Pencil, Star, StarOff, ChevronDown, Settings2 } from "lucide-react";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_TOKEN_LEGEND, HR_LETTER_DEFAULT_BODIES } from "@/lib/hr/hr-letter-tokens";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { plural } from "@/lib/format-utils";
@@ -775,7 +774,6 @@ function OfferLetterTemplatesContent() {
               <CardContent className="space-y-2 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <IconChip icon={FileSignature} tone="brand" size="sm" />
                     {t.isDefault && (
                       <Star className="size-3.5 shrink-0 fill-current text-warning-strong" aria-hidden="true" />
                     )}

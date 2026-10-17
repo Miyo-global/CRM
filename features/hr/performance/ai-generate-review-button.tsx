@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { IconChip } from "@/components/ui/icon-chip";
 import { useAIGenerateReview } from "@/lib/api/hooks/ai";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
@@ -67,7 +66,6 @@ ${result.ratings.map((r) => `- ${r.category}: ${r.score}/5 — ${r.comment}`).jo
       <SheetContent size="lg" className="flex w-full flex-col gap-0 p-0">
         <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5 pr-12">
           <SheetTitle className="flex items-center gap-2.5 font-display text-lg">
-            <IconChip icon={Sparkles} tone="brand" size="sm" />
             AI Performance Review Draft
           </SheetTitle>
           <SheetDescription className="text-xs tabular-nums">

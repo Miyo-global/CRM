@@ -11,7 +11,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Tone } from "@/lib/design/tones";
@@ -28,7 +27,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, ShieldCheck, CheckCircle2, XCircle, BarChart2 } from "lucide-react";
+import { Plus, CheckCircle2, XCircle } from "lucide-react";
 import type { Employee } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -120,7 +119,6 @@ function BGVContent() {
                   <TableRow key={bgv.id}>
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <IconChip icon={ShieldCheck} tone={statusTone(bgv.status)} size="sm" />
                         <span className="truncate font-medium text-foreground">{bgv.user?.name ?? "Employee"}</span>
                       </div>
                     </TableCell>

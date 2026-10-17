@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconChip } from "@/components/ui/icon-chip";
 import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { useExecutiveDashboard } from "@/lib/api/hooks/dashboard";
-import { Users, Briefcase, BarChart2 } from "lucide-react";
+import { Users, BarChart2 } from "lucide-react";
 import type { Tone } from "@/lib/design/tones";
 
 interface Kpi {
@@ -20,7 +19,6 @@ interface Kpi {
 function KpiTile({ label, value, icon, tone, href, className = "" }: Kpi & { className?: string }) {
   const body = (
     <>
-      <IconChip icon={icon} tone={tone} size="sm" />
       <span className="min-w-0">
         <span className="block truncate text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
@@ -41,7 +39,6 @@ function KpiTile({ label, value, icon, tone, href, className = "" }: Kpi & { cla
 
 export function ExecutiveKpiWidget() {
   const { data, isLoading, error, refetch } = useExecutiveDashboard();
-
 
   const kpis: Kpi[] = data
     ? [

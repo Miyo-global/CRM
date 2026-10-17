@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHrMonthlyAttendance, useHrWfhRequests, useHrHolidaysForCalendar } from "@/lib/api/hooks/hr";
-import { CalendarDays } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
+
 import { WEEKDAY_LABELS, CalendarDay, statusConfig } from "./attendance-utils";
 import { useHrMyLeaves } from "@/lib/api/hooks/hr/leaves-expenses";
 
@@ -125,7 +124,6 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
       <CardHeader className="border-b border-border bg-card pb-3 pt-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <IconChip icon={CalendarDays} />
             Attendance Calendar
           </CardTitle>
           <div className="flex shrink-0 flex-wrap items-stretch gap-2 sm:justify-end">

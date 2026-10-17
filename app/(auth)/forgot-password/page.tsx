@@ -10,8 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useForgotPassword } from "@/lib/hooks/auth-hooks";
-import { ArrowLeft, CheckCircle2, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
+import { ArrowLeft, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 
 const forgotPasswordSchema = z.object({
@@ -86,7 +85,6 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="flex w-full max-w-[400px] flex-col items-center text-center">
-        <IconChip icon={CheckCircle2} tone="success" size="lg" />
         <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-foreground">
           Check Your Email
         </h1>

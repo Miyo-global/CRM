@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, ThumbsUp, BarChart3, Users, Calendar } from "lucide-react";
+import { Plus, BarChart3, Users, Calendar } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";

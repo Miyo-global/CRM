@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { IconChip } from "@/components/ui/icon-chip";
 import { features, stats } from "./landing-shared";
 import { LandingFooter } from "./landing-footer";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
@@ -171,7 +170,6 @@ export function LandingPage() {
                   key={feature.title}
                   className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-xs transition-[border-color,box-shadow] duration-100 hover:border-border-strong hover:shadow-md"
                 >
-                  <IconChip icon={feature.icon} tone={feature.tone} />
                   <div>
                     <h3 className="mb-1.5 font-display text-lg font-semibold">{feature.title}</h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
@@ -202,7 +200,6 @@ export function LandingPage() {
                 <div className="space-y-4">
                   {whyPoints.map((item) => (
                     <div key={item.title} className="flex gap-4">
-                      <IconChip icon={item.icon} className="mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold">{item.title}</p>
                         <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>

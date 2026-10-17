@@ -13,8 +13,7 @@ import {
   useHrToggleBreak,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
-import { Clock, Coffee, LogIn, LogOut, Play, Pause } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
+import { Coffee, LogIn, LogOut, Play, Pause } from "lucide-react";
 import { formatDuration, formatTimerSegment } from "./attendance-utils";
 import { OvertimeWorklogSheet } from "./overtime-worklog-sheet";
 
@@ -177,7 +176,6 @@ export const TimerCard = memo(function TimerCard() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <IconChip icon={Clock} />
           Time Tracker
           <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <span

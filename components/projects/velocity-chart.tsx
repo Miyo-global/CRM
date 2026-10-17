@@ -1,8 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
-import { IconChip } from "@/components/ui/icon-chip";
 
 interface Sprint {
   id: number;
@@ -30,7 +28,6 @@ export function VelocityChart({ sprints }: VelocityChartProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <IconChip icon={TrendingUp} size="sm" />
             <CardTitle className="text-base">Velocity</CardTitle>
           </div>
         </CardHeader>
@@ -61,7 +58,6 @@ export function VelocityChart({ sprints }: VelocityChartProps) {
     <Card>
       <CardHeader className="space-y-3">
         <div className="flex items-center gap-2">
-          <IconChip icon={TrendingUp} size="sm" />
           <CardTitle className="text-base">Velocity</CardTitle>
           <span className="ml-auto text-sm text-muted-foreground">
             Avg: <span className="font-semibold tabular-nums text-foreground">{avgVelocity} pts</span>

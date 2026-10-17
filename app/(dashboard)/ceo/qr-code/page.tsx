@@ -32,7 +32,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
@@ -348,7 +347,6 @@ function QRCodeManager() {
         <div className={cn("grid gap-4", typedCodes[0] && "lg:grid-cols-[1fr_320px]")}>
           <Card className="gap-4 p-5">
             <div className="flex items-center gap-3">
-              <IconChip icon={QrCodeIcon} />
               <div>
                 <h2 className="font-sans text-sm font-semibold tracking-normal">Generate New QR Code</h2>
                 <p className="text-xs text-muted-foreground">Enter the destination URL to create a tracked QR code</p>

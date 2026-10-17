@@ -6,7 +6,6 @@ import { useCertifications, useCreateCertification, type Certification } from "@
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
-import { Plus, Award, Calendar, ExternalLink, AlertTriangle } from "lucide-react";
+import { Plus, Calendar, ExternalLink, AlertTriangle } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 
 export default function CertificationsPage() {
@@ -82,7 +81,6 @@ export default function CertificationsPage() {
               <Card key={cert.id}>
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
-                    <IconChip icon={Award} tone="brand" />
                     {expired && <StatusPill tone="danger" dot>Expired</StatusPill>}
                     {expiring && <StatusPill tone="warning"><AlertTriangle aria-hidden="true" />Expiring</StatusPill>}
                   </div>

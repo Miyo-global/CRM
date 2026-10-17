@@ -4,13 +4,12 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Briefcase, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useHrDepartments } from "@/lib/api/hooks/hr";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -147,7 +146,6 @@ export default function JobRolesSettingsPage() {
           {groups.map((group) => (
             <Card key={group.key} className="overflow-hidden">
               <div className="flex items-start gap-3 border-b border-border px-5 py-4">
-                <IconChip icon={Briefcase} tone="brand" size="sm" className="mt-0.5" />
                 <div className="min-w-0">
                   <h2 className="flex items-center gap-2 text-sm font-semibold">
                     {group.label}

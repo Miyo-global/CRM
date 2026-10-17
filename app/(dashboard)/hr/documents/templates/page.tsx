@@ -25,7 +25,6 @@ import { StatsStrip } from "@/components/shared/stats-strip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -307,7 +306,6 @@ export default function DocumentTemplatesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <IconChip icon={TypeIcon} tone={cfg.tone} size="sm" />
                               <span className="font-medium text-sm truncate" title={template.title}>{template.title}</span>
                             </div>
                           </TableCell>

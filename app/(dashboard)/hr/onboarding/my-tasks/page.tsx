@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { CheckCircle2, PartyPopper } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IconChip } from "@/components/ui/icon-chip";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { OnboardingProgressRing } from "@/components/hr/onboarding-progress-ring";
 import { OnboardingTaskCard } from "@/components/hr/onboarding-task-card";
@@ -22,11 +21,9 @@ import {
 } from "@/lib/api/hooks/hr/onboarding";
 import { getErrorMessage } from "@/lib/get-error-message";
 
-
 function AllDoneBanner() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-success-soft px-6 py-8 text-center">
-      <IconChip icon={PartyPopper} tone="success" size="lg" className="bg-card" />
       <div>
         <p className="font-display text-lg font-bold text-success-strong">
           You have completed all onboarding tasks!
@@ -39,7 +36,6 @@ function AllDoneBanner() {
     </div>
   );
 }
-
 
 export default function MyOnboardingTasksPage() {
   const { data: session } = useSession();

@@ -15,9 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, ExternalLink, Image as ImageIcon } from "lucide-react";
+import { Check, X, ExternalLink } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { PropertyList } from "@/components/shared/property-list";
 import type { Tone } from "@/lib/design/tones";
 import { toast } from "sonner";
@@ -203,7 +202,6 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-2 p-6 text-center">
-                        <IconChip icon={ImageIcon} tone="neutral" />
                         <p className="text-sm text-muted-foreground">
                           {imageError ? "Unable to load image" : "Document attachment"}
                         </p>

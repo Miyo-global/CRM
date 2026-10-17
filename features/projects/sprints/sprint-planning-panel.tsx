@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, type ReactNode } from "react";
-import { ArrowRightLeft } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconChip } from "@/components/ui/icon-chip";
 import { KanbanCanvas, KanbanEmptyDrop, kanbanCardClass } from "@/components/shared/kanban";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
@@ -65,7 +64,6 @@ export function SprintPlanningPanel({ sprint, backlogTickets, onDragEnd, onDone 
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 border-b border-border py-3">
         <CardTitle className="flex min-w-0 items-center gap-2 text-base">
-          <IconChip icon={ArrowRightLeft} tone="brand" size="sm" />
           <span className="truncate">Planning: {sprint.name}</span>
         </CardTitle>
         <Button variant="outline" size="sm" onClick={handleDone}>

@@ -5,14 +5,13 @@ import { formatDistanceToNow } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ShieldCheck, Monitor, Smartphone, Trash2, Check, Circle } from "lucide-react";
+import { Eye, EyeOff, Monitor, Smartphone, Trash2, Check, Circle } from "lucide-react";
 import { useChangePassword } from "@/lib/api/hooks/hr";
 import { useSessions, useRevokeSession, useRevokeAllSessions, useRevokeSessions } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PASSWORD_RULES } from "@/lib/utils/password-validation";
 
@@ -199,7 +198,6 @@ function SessionsSection() {
     <div className="rounded-lg border border-border bg-card p-5 space-y-4 shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
-          <IconChip icon={Monitor} tone="neutral" />
           <div>
             <p className="text-sm font-semibold text-foreground">Active sessions</p>
             <p className="text-xs text-muted-foreground">Manage where you are signed in.</p>
@@ -323,7 +321,6 @@ export function SettingsSecurity() {
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-card p-5 space-y-5 shadow-xs">
         <div className="flex items-center gap-3">
-          <IconChip icon={ShieldCheck} tone="neutral" />
           <div>
             <p className="text-sm font-semibold text-foreground">Change password</p>
             <p className="text-xs text-muted-foreground">Use a unique, strong password.</p>

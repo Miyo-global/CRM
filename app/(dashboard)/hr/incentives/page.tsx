@@ -22,15 +22,11 @@ import {
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { StatusPill } from "@/components/ui/status-pill";
-import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import type { Tone } from "@/lib/design/tones";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  IndianRupee, CheckCircle2, XCircle, Clock, Settings,
-  TrendingUp, Users, Percent, History, ArrowRight,
-} from "lucide-react";
+import { IndianRupee, CheckCircle2, XCircle, Clock, Settings, TrendingUp, Users, History, ArrowRight } from "lucide-react";
 import {
   useHrIncentiveStats,
   useHrIncentives,
@@ -234,7 +230,6 @@ export default function IncentivesPage() {
         {currentConfig && (
           <Card className="border-primary/40 bg-brand-soft">
             <CardContent className="flex items-center gap-3 p-4">
-              <IconChip icon={Percent} className="bg-card" />
               <div>
                 <p className="text-sm font-medium">Current Incentive Rate: <span className="text-brand-text font-bold">{currentConfig.incentiveRate}%</span></p>
                 <p className="text-xs tabular-nums text-muted-foreground">Effective from {new Date(currentConfig.effectiveFrom).toLocaleDateString(DEFAULT_LOCALE)}</p>
