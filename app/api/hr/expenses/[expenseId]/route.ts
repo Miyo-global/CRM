@@ -8,6 +8,14 @@ import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendExpenseApprovedEmail, sendExpenseRejectedEmail, sendExpensePaidEmail } from "@/lib/email";
 import { updateExpenseDetailsSchema } from "@/lib/validations/expense";
+import { formatIST } from "@/lib/date-utils";
+
+/**
+ * MIYO-0248: when an approved claim is paid out. Stated in the approval mail
+ * so nobody has to ask; a deployment that pays on another cycle sets this.
+ */
+const REIMBURSEMENT_CYCLE =
+  process.env.NEXT_PUBLIC_REIMBURSEMENT_CYCLE || "with the next monthly payroll";
 
 const updateStatusSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED", "PAID"]),
@@ -142,7 +150,7 @@ export async function PATCH(
     try {
       const expenseRow = await db.query.expenses.findFirst({
         where: eq(expenses.id, expenseId),
-        columns: { userId: true, category: true, amount: true },
+        columns: { userId: true, category: true, amount: true, transactionRef: true },
       });
 
       if (expenseRow?.userId) {
@@ -156,13 +164,30 @@ export async function PATCH(
           const amount = expenseRow.amount ?? "0";
           const category = expenseRow.category ?? "Expense";
 
-          if (body.status === "APPROVED") 
-            await sendExpenseApprovedEmail(employee.email, employee.name ?? "Employee", category, amount, approverName);
-           else if (body.status === "REJECTED") 
-            await sendExpenseRejectedEmail(employee.email, employee.name ?? "Employee", category, amount, approverName, body.rejectionReason ?? "No reason provided");
-          else if (body.status === "PAID") 
-            await sendExpensePaidEmail(employee.email, employee.name ?? "Employee", category, amount);
-          
+          if (body.status === "APPROVED") {
+            await sendExpenseApprovedEmail(
+              employee.email,
+              category,
+              amount,
+              approverName,
+              REIMBURSEMENT_CYCLE,
+            );
+          } else if (body.status === "REJECTED") {
+            await sendExpenseRejectedEmail(
+              employee.email,
+              category,
+              amount,
+              approverName,
+              body.rejectionReason ?? "",
+            );
+          } else if (body.status === "PAID") {
+            await sendExpensePaidEmail(
+              employee.email,
+              amount,
+              `${formatIST(new Date())} IST`,
+              expenseRow.transactionRef,
+            );
+          }
         }
       }
     } catch {  }

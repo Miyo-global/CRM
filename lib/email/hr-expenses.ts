@@ -1,75 +1,96 @@
-import { sendEmail } from "./sender";
-import { baseUrl } from "./sender";
-import {
-  getExpenseSubmittedEmailTemplate,
-  getExpenseApprovedEmailTemplate,
-  getExpenseRejectedEmailTemplate,
-  getExpensePaidEmailTemplate,
-} from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 
+function money(amount: string | number): string {
+  const n = typeof amount === "number" ? amount : Number(amount || 0);
+  return `${CURRENCY_SYMBOL}${n.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/** MIYO-0247: the hand-written expense-submitted template. */
 export async function sendExpenseSubmittedEmail(
-  approverEmail: string,
-  approverName: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  description: string
-) {
-  const expenseLink = `${baseUrl}/hr/expenses`;
-  await sendEmail({
+  approverEmail: string | string[],
+  claim: {
+    employeeName: string;
+    category: string;
+    amount: string | number;
+    description?: string | null;
+    expenseDate: string;
+    expenseId: number | string;
+    hasReceipt: boolean;
+  },
+): Promise<void> {
+  await sendTemplateEmail("expense-submitted", {
     to: approverEmail,
-    subject: `New Expense Claim from ${employeeName}`,
-    html: getExpenseSubmittedEmailTemplate(
-      approverName,
-      employeeName,
-      category,
-      amount,
-      description,
-      expenseLink
-    ),
+    category: "expenses",
+    vars: {
+      employee_name: claim.employeeName,
+      category: claim.category,
+      amount: money(claim.amount),
+      description: claim.description?.trim() || "none given",
+      expense_date: claim.expenseDate,
+      expense_id: claim.expenseId,
+      receipt_status: claim.hasReceipt ? "attached" : "not attached",
+    },
   });
 }
 
+/** MIYO-0248: the hand-written expense-approved template. */
 export async function sendExpenseApprovedEmail(
   employeeEmail: string,
-  employeeName: string,
   category: string,
-  amount: string,
-  approverName: string
-) {
-  await sendEmail({
+  amount: string | number,
+  approverName: string,
+  reimbursementCycle: string,
+): Promise<void> {
+  await sendTemplateEmail("expense-approved", {
     to: employeeEmail,
-    subject: `Expense Claim Approved - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpenseApprovedEmailTemplate(employeeName, category, amount, approverName),
+    category: "expenses",
+    vars: {
+      category,
+      amount: money(amount),
+      approver_name: approverName,
+      reimbursement_cycle: reimbursementCycle,
+    },
   });
 }
 
+/** MIYO-0249: the hand-written expense-rejected template. */
 export async function sendExpenseRejectedEmail(
   employeeEmail: string,
-  employeeName: string,
   category: string,
-  amount: string,
+  amount: string | number,
   approverName: string,
-  reason: string
-) {
-  await sendEmail({
+  reason: string,
+): Promise<void> {
+  await sendTemplateEmail("expense-rejected", {
     to: employeeEmail,
-    subject: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpenseRejectedEmailTemplate(employeeName, category, amount, approverName, reason),
+    category: "expenses",
+    vars: {
+      category,
+      amount: money(amount),
+      approver_name: approverName,
+      rejection_reason: reason?.trim() || "No reason was given.",
+    },
   });
 }
 
+/** MIYO-0250: the hand-written expense-paid template. */
 export async function sendExpensePaidEmail(
   employeeEmail: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  transactionRef?: string
-) {
-  await sendEmail({
+  amount: string | number,
+  paidOn: string,
+  paymentReference?: string | null,
+): Promise<void> {
+  await sendTemplateEmail("expense-paid", {
     to: employeeEmail,
-    subject: `Expense Reimbursed - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpensePaidEmailTemplate(employeeName, category, amount, transactionRef),
+    category: "expenses",
+    vars: {
+      amount: money(amount),
+      paid_on: paidOn,
+      payment_reference: paymentReference?.trim() || "not recorded",
+    },
   });
 }

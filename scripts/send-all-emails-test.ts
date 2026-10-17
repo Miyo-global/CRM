@@ -93,10 +93,10 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
 
   { name: "hr.helpdeskTicket", run: () => sendHelpdeskTicketEmail(TO, NAME, "Cannot access payroll page", "Access", "HIGH", ACTOR) },
 
-  { name: "hr.expenseSubmitted", run: () => sendExpenseSubmittedEmail(TO, NAME, "John Doe", "Travel", "1500.00", "Cab to client meeting") },
-  { name: "hr.expenseApproved", run: () => sendExpenseApprovedEmail(TO, NAME, "Travel", "1500.00", ACTOR) },
-  { name: "hr.expenseRejected", run: () => sendExpenseRejectedEmail(TO, NAME, "Travel", "1500.00", ACTOR, "Receipt missing") },
-  { name: "hr.expensePaid", run: () => sendExpensePaidEmail(TO, NAME, "Travel", "1500.00", "TXN-987654") },
+  { name: "hr.expenseSubmitted", run: () => sendExpenseSubmittedEmail(TO, { employeeName: "John Doe", category: "Travel", amount: "1500.00", description: "Cab to client meeting", expenseDate: TODAY, expenseId: 42, hasReceipt: true }) },
+  { name: "hr.expenseApproved", run: () => sendExpenseApprovedEmail(TO, "Travel", "1500.00", ACTOR, "with the next monthly payroll") },
+  { name: "hr.expenseRejected", run: () => sendExpenseRejectedEmail(TO, "Travel", "1500.00", ACTOR, "Receipt missing") },
+  { name: "hr.expensePaid", run: () => sendExpensePaidEmail(TO, "1500.00", TODAY, "TXN-987654") },
 
   { name: "announce.holiday", run: () => sendHolidayAnnouncementEmail(TO, "Diwali", "08 Nov 2026", "Office will remain closed on this day.") },
   { name: "announce.bulkHoliday", run: () => sendBulkHolidayAnnouncement([TO], "Christmas Day", "25 Dec 2026", "Wishing the team happy holidays.") },

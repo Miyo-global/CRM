@@ -20,6 +20,12 @@ export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export { sendRecognitionRecipientEmail, sendRecognitionShoutoutEmail } from "./email/hr-employees";
 export {
+  sendExpenseSubmittedEmail,
+  sendExpenseApprovedEmail,
+  sendExpenseRejectedEmail,
+  sendExpensePaidEmail,
+} from "./email/hr-expenses";
+export {
   sendOnboardingWelcomeEmail,
   sendOnboardingTaskEmail,
   sendOnboardingCompleteEmployeeEmail,
@@ -38,10 +44,6 @@ import {
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
-  getExpenseSubmittedEmailTemplate,
-  getExpenseApprovedEmailTemplate,
-  getExpenseRejectedEmailTemplate,
-  getExpensePaidEmailTemplate,
   getDocumentExpiryReminderEmailTemplate,
   getMonthlyExpenseReportTemplate,
   getResignationSubmittedEmailTemplate,
@@ -326,71 +328,9 @@ export async function sendCelebrationEmail(
   });
 }
 
-export async function sendExpenseSubmittedEmail(
-  approverEmail: string,
-  approverName: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  description: string
-) {
-  const expenseLink = `${baseUrl}/hr/expenses`;
-  await sendEmail({
-    to: approverEmail,
-    subject: `New Expense Claim from ${employeeName}`,
-    html: getExpenseSubmittedEmailTemplate(
-      approverName,
-      employeeName,
-      category,
-      amount,
-      description,
-      expenseLink
-    ),
-  });
-}
 
-export async function sendExpenseApprovedEmail(
-  employeeEmail: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  approverName: string
-) {
-  await sendEmail({
-    to: employeeEmail,
-    subject: `Expense Claim Approved - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpenseApprovedEmailTemplate(employeeName, category, amount, approverName),
-  });
-}
 
-export async function sendExpenseRejectedEmail(
-  employeeEmail: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  approverName: string,
-  reason: string
-) {
-  await sendEmail({
-    to: employeeEmail,
-    subject: `Expense Claim Rejected - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpenseRejectedEmailTemplate(employeeName, category, amount, approverName, reason),
-  });
-}
 
-export async function sendExpensePaidEmail(
-  employeeEmail: string,
-  employeeName: string,
-  category: string,
-  amount: string,
-  transactionRef?: string
-) {
-  await sendEmail({
-    to: employeeEmail,
-    subject: `Expense Reimbursed - ${CURRENCY_SYMBOL}${amount}`,
-    html: getExpensePaidEmailTemplate(employeeName, category, amount, transactionRef),
-  });
-}
 
 export async function sendDocumentExpiryReminderEmail(
   email: string,

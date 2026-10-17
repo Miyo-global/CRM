@@ -130,14 +130,15 @@ export async function POST(req: NextRequest) {
           recipients
             .filter((r) => r.email)
             .map((r) =>
-              sendExpenseSubmittedEmail(
-                r.email!,
-                r.name ?? "HR",
-                session.user.name ?? "Employee",
-                body.category,
-                body.amount.toString(),
-                body.description ?? ""
-              )
+              sendExpenseSubmittedEmail(r.email!, {
+                employeeName: session.user.name ?? "Employee",
+                category: body.category,
+                amount: body.amount,
+                description: body.description,
+                expenseDate: formatDateOnly(body.expenseDate),
+                expenseId: expense.id,
+                hasReceipt: Boolean(body.receiptUrl),
+              })
             )
         );
       }
