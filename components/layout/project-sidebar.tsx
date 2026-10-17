@@ -18,6 +18,7 @@ import {
   BarChart3,
   Inbox,
   User,
+  Users,
   Diamond,
   IndianRupee,
   Gauge,
@@ -67,6 +68,7 @@ function navItems(baseUrl: string): NavItem[] {
     { label: "Milestones", icon: Diamond, href: `${baseUrl}/milestones` },
     { label: "Budget", icon: IndianRupee, href: `${baseUrl}/budget` },
     { label: "Reports", icon: BarChart3, href: `${baseUrl}/analytics` },
+    { label: "Workload", icon: Users, href: `${baseUrl}/workload` },
     { label: "My Tickets", icon: User, href: `${baseUrl}/my-tickets` },
     { label: "Settings", icon: Settings, href: `${baseUrl}/settings` },
   ];
