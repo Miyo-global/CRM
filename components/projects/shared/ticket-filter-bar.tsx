@@ -24,7 +24,7 @@ const pillTrigger = (active: boolean) =>
       : "text-muted-foreground hover:bg-accent hover:text-foreground"
   );
 
-const STATUSES = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"] as const;
+const DEFAULT_STATUSES = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
 const PRIORITIES: TicketPriority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 const TYPES: TicketType[] = ["TASK", "BUG", "STORY", "EPIC", "SUBTASK"];
 
@@ -39,6 +39,8 @@ interface TicketFilterBarProps {
   showTypeFilter?: boolean;
   showSprintFilter?: boolean;
   showAssigneeFilter?: boolean;
+  /** The project's own columns (project_statuses names), so filters match the board (MIYO-0070). */
+  statuses?: string[];
   className?: string;
 }
 
@@ -48,7 +50,9 @@ export function TicketFilterBar({
   showTypeFilter = true,
   showSprintFilter = true,
   showAssigneeFilter = true,
+  statuses,
 }: TicketFilterBarProps) {
+  const statusOptions = statuses && statuses.length > 0 ? statuses : DEFAULT_STATUSES;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -117,7 +121,7 @@ export function TicketFilterBar({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="ALL">All Status</SelectItem>
-          {STATUSES.map((s) => (
+          {statusOptions.map((s) => (
             <SelectItem key={s} value={s}>
               {s.replace(/_/g, " ")}
             </SelectItem>

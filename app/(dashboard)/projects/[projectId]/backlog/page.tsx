@@ -291,7 +291,7 @@ export default function BacklogPage({ params }: PageProps) {
       title="Backlog"
       subtitle={`${tickets.length} ticket${tickets.length !== 1 ? "s" : ""}`}
       actions={<CreateTicketDialog projectId={projectId} />}
-      filters={<TicketFilterBar members={members} showSprintFilter={false} />}
+      filters={<TicketFilterBar members={members} showSprintFilter={false} statuses={statuses?.map((s) => s.name)} />}
       contentClassName={selectedIds.size > 0 ? "pb-24" : undefined}
     >
       {tickets.length === 0 ? (

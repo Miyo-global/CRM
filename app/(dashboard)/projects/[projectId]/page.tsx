@@ -213,6 +213,7 @@ export default function ProjectBoardPage({ params }: PageProps) {
           <TicketFilterBar
             members={members}
             showSprintFilter={false}
+            statuses={statuses?.map((s) => s.name)}
           />
           <div aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-border sm:block" />
           <div className="ml-auto flex shrink-0 items-center gap-2">
