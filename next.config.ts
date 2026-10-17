@@ -31,6 +31,8 @@ function shouldSendStrictTransportSecurity(): boolean {
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
+  // SEC-0014: no X-Powered-By: Next.js on every response.
+  poweredByHeader: false,
   // MIYO-0012: Streamline "Build" was ported into /projects; keep old links working.
   async redirects() {
     return [

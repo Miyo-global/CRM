@@ -127,9 +127,9 @@
       "ajv": ">=8.17.1",
       "@eslint/eslintrc>ajv": "^6.12.6",
       "eslint>ajv": "^6.12.6",
-      "dompurify": ">=3.4.11",
+      "dompurify": ">=3.4.16",
       "markdown-it": ">=14.2.0",
-      "js-yaml": ">=4.2.0",
+      "js-yaml": ">=4.3.2",
       "@babel/core": ">=7.29.6",
       "@opentelemetry/core": ">=2.8.0",
       "picomatch": ">=4.0.4",
@@ -154,7 +154,20 @@
       "prosemirror-view": ">=1.42.3",
       "source-map-js": ">=1.2.2",
       "browserslist": ">=4.28.7",
-      "@opentelemetry/propagator-jaeger": ">=2.9.0"
+      "@opentelemetry/propagator-jaeger": ">=2.9.0",
+      "fflate": ">=0.8.3",
+      "@vitest/mocker": ">=4.1.11",
+      "baseline-browser-mapping": ">=2.11.0",
+      "@humanfs/node": ">=0.16.8",
+      "moment": ">=2.31.0",
+      "@opentelemetry/instrumentation-cassandra-driver": ">=0.66.0",
+      "@opentelemetry/instrumentation-knex": ">=0.65.0",
+      "@opentelemetry/instrumentation-mongoose": ">=0.67.0",
+      "@opentelemetry/instrumentation-mysql": ">=0.67.0",
+      "@opentelemetry/instrumentation-mysql2": ">=0.67.0",
+      "@opentelemetry/instrumentation-oracledb": ">=0.46.0",
+      "@opentelemetry/instrumentation-pg": ">=0.73.0",
+      "@opentelemetry/instrumentation-tedious": ">=0.40.0"
     }
   },
   "devDependencies": {

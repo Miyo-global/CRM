@@ -39,3 +39,20 @@ describe("secret-crypto", () => {
     expect(hashToken("reset-token-xyz")).not.toBe(a);
   });
 });
+
+// SEC-0017
+describe("auth tag length", () => {
+  beforeAll(() => {
+    process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-0123456789abcdef";
+  });
+
+  it("rejects a truncated authentication tag", () => {
+    const prefix = "enc:v1:";
+    const enc = encryptSecret("JBSWY3DPEHPK3PXP");
+    const [ivB64, tagB64, ctB64] = enc.slice(prefix.length).split(":");
+    const shortTag = Buffer.from(tagB64, "base64").subarray(0, 12).toString("base64");
+    expect(() => decryptSecret(`${prefix}${ivB64}:${shortTag}:${ctB64}`)).toThrow(
+      "Malformed encrypted secret",
+    );
+  });
+});

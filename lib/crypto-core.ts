@@ -22,6 +22,9 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+/** GCM authentication tag length, in bytes. */
+const AUTH_TAG_BYTES = 16;
+
 export function encryptSecret(plain: string): string {
   const key = getKey();
   const iv = randomBytes(12);
@@ -44,8 +47,16 @@ export function decryptSecret(value: string): string {
     throw new Error("Malformed encrypted secret");
   }
   const [ivB64, tagB64, ctB64] = parts;
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivB64, "base64"));
-  decipher.setAuthTag(Buffer.from(tagB64, "base64"));
+  // SEC-0017: a GCM tag is 16 bytes. Say so, and reject a truncated one
+  // rather than letting setAuthTag accept it.
+  const tag = Buffer.from(tagB64, "base64");
+  if (tag.length !== AUTH_TAG_BYTES) {
+    throw new Error("Malformed encrypted secret");
+  }
+  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivB64, "base64"), {
+    authTagLength: AUTH_TAG_BYTES,
+  });
+  decipher.setAuthTag(tag);
   const plaintext = Buffer.concat([
     decipher.update(Buffer.from(ctB64, "base64")),
     decipher.final(),
