@@ -2,7 +2,6 @@ import { sendEmail, sendTemplateEmail } from "./sender";
 import { baseUrl } from "./sender";
 import { formatIST } from "@/lib/date-utils";
 import {
-  getVerificationEmailTemplate,
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
   getPasswordChangeConfirmationEmailTemplate,
@@ -12,12 +11,14 @@ import {
   getPasswordExpiryWarningEmailTemplate,
 } from "../email-templates";
 
+/** MIYO-0218: the hand-written auth-verify-email template. */
 export async function sendVerificationEmail(email: string, token: string) {
-  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
-  await sendEmail({
+  await sendTemplateEmail("auth-verify-email", {
     to: email,
-    subject: "Verify Your Email",
-    html: getVerificationEmailTemplate(verificationUrl),
+    vars: {
+      email,
+      verify_url: `${baseUrl}/verify-email?token=${token}`,
+    },
   });
 }
 

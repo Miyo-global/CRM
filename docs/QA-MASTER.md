@@ -1462,32 +1462,42 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** STILL OPEN at 914259e; related path touched in QA wave (app/api/projects/[projectId]/pages/route.ts); live acceptance ou
 
-- [ ] R3-0100 [Medium][Projects] New Cycle empty dates show raw Zod errors — Where: project cycles UI — Steps: open New Cycle, leave dates empty, submit — Expected: plain words — Actual: "Invalid input: expected string, received undefined" — Fix: client+server messages like ticket points — Acceptance: friendly validation — Ref: QA-D005, UI-A, b1bd73f
+- [x] R3-0100 [Medium][Projects] New Cycle empty dates show raw Zod errors — Where: project cycles UI — Steps: open New Cycle, leave dates empty, submit — Expected: plain words — Actual: "Invalid input: expected string, received undefined" — Fix: client+server messages like ticket points — Acceptance: friendly validation — Ref: QA-D005, UI-A, b1bd73f
+  - **Agent note (2026-10-17):** the form already said "Pick a start date"; the API schema now carries the same messages instead of Zod's own wording (a378da378).
   - **Also known as:** QA-D005
 
-- [ ] R3-0101 [Medium][Global/Design] Command palette still advertises lead/deal/contact — Where: `components/layout/command-palette.tsx:314` — Steps: open palette, type deal — Expected: HR-relevant hint only — Actual: "Try a page name, lead, deal, or contact"; deal → No results — Fix: remove CRM leftovers — Acceptance: hint matches search — Ref: QA-D004, UI-A
+- [x] R3-0101 [Medium][Global/Design] Command palette still advertises lead/deal/contact — Where: `components/layout/command-palette.tsx:314` — Steps: open palette, type deal — Expected: HR-relevant hint only — Actual: "Try a page name, lead, deal, or contact"; deal → No results — Fix: remove CRM leftovers — Acceptance: hint matches search — Ref: QA-D004, UI-A
+  - **Agent note (2026-10-17):** empty-state hint now names pages, people, projects and tickets (ee10fe309).
   - **Also known as:** QA-D004
 
-- [ ] R3-0102 [Medium][Global/Design] Raw enums and mixed name casing in activity/UI — Where: project activity / roles — Steps: view activity — Expected: plain labels — Actual: MEDIUM, TODO, ENGINEERING; Qa Alpha vs QA Manager — Fix: QA-D001 labels — Acceptance: human labels only — Ref: QA-D001, UI-A
+- [x] R3-0102 [Medium][Global/Design] Raw enums and mixed name casing in activity/UI — Where: project activity / roles — Steps: view activity — Expected: plain labels — Actual: MEDIUM, TODO, ENGINEERING; Qa Alpha vs QA Manager — Fix: QA-D001 labels — Acceptance: human labels only — Ref: QA-D001, UI-A
+  - **Agent note (2026-10-17):** `pretty()` lower-cases any SCREAMING_SNAKE value, not just ones with an underscore; TODO reads "to do" (2369d8a93). Mixed person-name casing is seeded data, not code.
   - **Also known as:** QA-D001
 
-- [ ] R3-0104 [Medium][Employees] Profile header still uses dark banner + gold gradient glow — Where: employee profile — Steps: open profile — Expected: flat clean header — Actual: gradient glow — Fix: remove glow — Acceptance: flat — Ref: MIYO-0328, UI-A
+- [x] R3-0104 [Medium][Employees] Profile header still uses dark banner + gold gradient glow — Where: employee profile — Steps: open profile — Expected: flat clean header — Actual: gradient glow — Fix: remove glow — Acceptance: flat — Ref: MIYO-0328, UI-A
+  - **Agent note (2026-10-17):** already fixed — no gradient or glow left anywhere in app/, components/ or features/ (the only `linearGradient` is the area-chart fill).
 
 - [ ] R3-0105 [Medium][Leave] Leave policies page has no create UI and ~15s load — Where: `/hr/leaves/policies` — Steps: open as HR — Expected: create+edit; fast — Actual: edit/save only; ~15s — Fix: create + perf — Acceptance: create works; p95 <3s — Ref: QA-0051, UI-A
+  - **Agent note (2026-10-17):** perf half done — `ensureLeaveTypes` no longer re-reads the types on every load (28526a6d6). Create UI is still blocked on MIYO-0136: the three type names are referenced by every balance row, so adding a fourth needs Tarun's decision first.
 
-- [ ] R3-D001 [Medium][Design] Remove remaining `animate-fade-up` / stagger / scroll-reveal — Where: globals.css:319, auth pages, landing, stat-card — Steps: grep — Expected: no entrance choreography — Actual: still present — Fix: delete classes — Acceptance: grep clean — Ref: MIYO-0323
+- [x] R3-D001 [Medium][Design] Remove remaining `animate-fade-up` / stagger / scroll-reveal — Where: globals.css:319, auth pages, landing, stat-card — Steps: grep — Expected: no entrance choreography — Actual: still present — Fix: delete classes — Acceptance: grep clean — Ref: MIYO-0323
+  - **Agent note (2026-10-17):** `animate-fade-up` gone from the pages and the shared framer variants are identical in both states, so nothing animates itself in (e08c1661d). The class stays in globals.css for the sheet's open animation.
   - **Also known as:** MIYO-0323
 
-- [ ] R3-D002 [Medium][Design] Remove `backdrop-blur` glass headers — Where: topbar.tsx:66, page-wrapper.tsx:105, landing — Expected: solid bg — Actual: blur — Fix: solid — Acceptance: grep clean — Ref: MIYO-0324
+- [x] R3-D002 [Medium][Design] Remove `backdrop-blur` glass headers — Where: topbar.tsx:66, page-wrapper.tsx:105, landing — Expected: solid bg — Actual: blur — Fix: solid — Acceptance: grep clean — Ref: MIYO-0324
+  - **Agent note (2026-10-17):** topbar, page header, landing header and every sticky form footer are solid now (271f3e14b). Dialog and sheet overlays keep the blur — that is the scrim.
   - **Also known as:** MIYO-0324
 
-- [ ] R3-D003 [Medium][Design] Replace Sparkles/Bot AI chrome with plain labels — Where: ai-hub-client.tsx, ai/page.tsx — Expected: no sparkle icon as primary — Actual: Sparkles — Fix: remove — Acceptance: grep clean — Ref: MIYO-0325
+- [x] R3-D003 [Medium][Design] Replace Sparkles/Bot AI chrome with plain labels — Where: ai-hub-client.tsx, ai/page.tsx — Expected: no sparkle icon as primary — Actual: Sparkles — Fix: remove — Acceptance: grep clean — Ref: MIYO-0325
+  - **Agent note (2026-10-17):** Sparkles gone from `ai/page.tsx` and `ai-hub-client.tsx` (dba672432).
   - **Also known as:** MIYO-0325
 
-- [ ] R3-D004 [Medium][Design] Remove emoji literals (🎂 🏆 📄 ✓ ○) from product UI — Where: hr-dashboard-overview.tsx:669, pages/page.tsx, settings-security.tsx:378 — Expected: icons/components or plain text — Actual: emoji — Fix: replace — Acceptance: grep clean — Ref: MIYO-0315/0316/0317
+- [x] R3-D004 [Medium][Design] Remove emoji literals (🎂 🏆 📄 ✓ ○) from product UI — Where: hr-dashboard-overview.tsx:669, pages/page.tsx, settings-security.tsx:378 — Expected: icons/components or plain text — Actual: emoji — Fix: replace — Acceptance: grep clean — Ref: MIYO-0315/0316/0317
+  - **Agent note (2026-10-17):** cake/trophy, ✓/⋯ badge, ✓/○ password rules and the 📄 fallback replaced with lucide icons or words (2698bf99d). Comment reactions and user-picked page icons left alone.
   - **Also known as:** MIYO-0315, MIYO-0316, MIYO-0317
 
-- [ ] R3-D005 [Medium][Design] One export pattern + honest filenames — Where: Analytics /reports / Recognition — Expected: one control — Actual: mixed — Fix: QA-D002 — Acceptance: consistent — Ref: QA-D002 UI-A PARTIAL
+- [x] R3-D005 [Medium][Design] One export pattern + honest filenames — Where: Analytics /reports / Recognition — Expected: one control — Actual: mixed — Fix: QA-D002 — Acceptance: consistent — Ref: QA-D002 UI-A PARTIAL
+  - **Agent note (2026-10-17):** leaves tab moved onto the shared ExportButton (7d9d329a0). Recognition keeps its export sheet on purpose (filters plus email); /reports downloads server-rendered files.
   - **Also known as:** QA-D002
 
 ### Low
