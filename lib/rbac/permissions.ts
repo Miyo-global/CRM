@@ -344,6 +344,31 @@ const EMPLOYEE_SELF_SERVICE = [
   "hr:expenses:create",
 ];
 
+/**
+ * MIYO-0628: the ATS. A recruiter works the hiring pipeline and nothing else
+ * in HR; per-job scoping on top of these lives in lib/ats/access.ts.
+ */
+const ATS_PERMISSIONS: Permission[] = [
+  { name: "ats:jobs:view", resource: "ats:jobs", action: "view", description: "View job postings and requisitions" },
+  { name: "ats:jobs:manage", resource: "ats:jobs", action: "manage", description: "Create, edit, publish and close jobs" },
+  { name: "ats:requisitions:approve", resource: "ats:requisitions", action: "approve", description: "Approve or reject a hiring requisition" },
+  { name: "ats:candidates:view", resource: "ats:candidates", action: "view", description: "View candidates and applications" },
+  { name: "ats:candidates:manage", resource: "ats:candidates", action: "manage", description: "Add, edit, move and reject candidates" },
+  { name: "ats:candidates:erase", resource: "ats:candidates", action: "erase", description: "Erase or export a candidate's data on request" },
+  { name: "ats:interviews:view", resource: "ats:interviews", action: "view", description: "View interviews and scorecards" },
+  { name: "ats:interviews:manage", resource: "ats:interviews", action: "manage", description: "Schedule interviews and submit scorecards" },
+  { name: "ats:offers:view", resource: "ats:offers", action: "view", description: "View offers" },
+  { name: "ats:offers:manage", resource: "ats:offers", action: "manage", description: "Draft, send and withdraw offers" },
+  { name: "ats:settings:manage", resource: "ats:settings", action: "manage", description: "Stages, refuse reasons, templates and retention" },
+];
+
+PERMISSIONS.push(...ATS_PERMISSIONS);
+
+/** Everything a recruiter does day to day. */
+export const ATS_RECRUITER_PERMISSIONS: string[] = ATS_PERMISSIONS.map((p) => p.name).filter(
+  (name) => name !== "ats:candidates:erase" && name !== "ats:settings:manage",
+);
+
 export const SYSTEM_ROLES = [
   "CEO",
   "HR",
@@ -354,6 +379,7 @@ export const SYSTEM_ROLES = [
   "DESIGN",
   "VIDEO_EDITOR",
   "DIGITAL_MARKETING",
+  "RECRUITER",
 ] as const;
 
 export type SystemRole = (typeof SYSTEM_ROLES)[number];
@@ -364,8 +390,15 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   ADMIN: PERMISSIONS.map((p) => p.name),
 
+  RECRUITER: [
+    ...EMPLOYEE_SELF_SERVICE,
+    ...ATS_RECRUITER_PERMISSIONS,
+    "hr:employees:view",
+  ],
+
   HR: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...ATS_PERMISSIONS.map((p) => p.name),
     "hr:employees:view",
     "hr:employees:create",
     "hr:employees:update",

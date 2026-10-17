@@ -13,6 +13,7 @@ export const ROLE_LABELS: Record<SystemRole, string> = {
   DESIGN: "Design",
   VIDEO_EDITOR: "Video Editor",
   DIGITAL_MARKETING: "Digital Marketing",
+  RECRUITER: "Recruiter",
 };
 
 export const ADMIN_ROLES: readonly string[] = ["CEO", "HR", "ADMIN"] as const;

@@ -31,6 +31,7 @@ function authJsSessionCookieName(req: NextRequest): string {
 }
 
 const PROTECTED_ROUTES = [
+  "/ats",
   "/dashboard",
   "/projects",
   "/hr",

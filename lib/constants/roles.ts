@@ -9,6 +9,8 @@ export const ROLES = {
   CUSTOMER_SUPPORT: "CUSTOMER_SUPPORT",
   VIDEO_EDITOR: "VIDEO_EDITOR",
   DIGITAL_MARKETING: "DIGITAL_MARKETING",
+  /** MIYO-0628: works the hiring pipeline; no other HR access. */
+  RECRUITER: "RECRUITER",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -23,6 +25,18 @@ export const RECRUITMENT_HR_ROLES: readonly string[] = [
   ROLES.HR,
   ROLES.ADMIN,
 ];
+
+/** Roles that may open the ATS at all; per-job scoping is layered on top. */
+export const ATS_ROLES: readonly string[] = [
+  ROLES.CEO,
+  ROLES.HR,
+  ROLES.ADMIN,
+  ROLES.RECRUITER,
+];
+
+export function isAtsRole(role: string | undefined | null): boolean {
+  return !!role && ATS_ROLES.includes(role);
+}
 
 export function isRecruitmentHr(role: string | undefined | null): boolean {
   return !!role && RECRUITMENT_HR_ROLES.includes(role);

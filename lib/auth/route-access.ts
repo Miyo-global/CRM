@@ -5,6 +5,8 @@ import { SYSTEM_ROLES } from "@/lib/rbac/roles";
 const EVERYONE: string[] = [...SYSTEM_ROLES];
 /** Routes limited to the people team. CEO and ADMIN pass every route anyway. */
 const HR_TEAM: string[] = ["CEO", "HR"];
+/** MIYO-0628: the ATS. Per-job scoping is applied inside, in lib/ats/access.ts. */
+const ATS_TEAM: string[] = ["CEO", "HR", "RECRUITER"];
 
 /**
  * Pages under /settings the people team manages (shown in the HR menu).
@@ -41,6 +43,7 @@ export const ADMIN_SETTINGS_PAGES = [
 ] as const;
 
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
+  "/ats": ATS_TEAM,
   "/hr": HR_TEAM,
   "/hr/onboarding": HR_TEAM,
   // New hires open their own checklist (linked from the onboarding-welcome email).
