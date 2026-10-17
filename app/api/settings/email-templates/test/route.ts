@@ -1,6 +1,8 @@
 import { type NextRequest } from "next/server";
 import { withAdmin, ok, err } from "@/lib/api/helpers";
 import { sendEmail } from "@/lib/email";
+import { renderEmail } from "@/lib/email-templates/render";
+import { isEmailTemplateId, sampleVarsFor } from "@/lib/email-templates/sample-vars";
 import { z } from "zod";
 
 import {
@@ -406,6 +408,14 @@ export async function POST(req: NextRequest) {
   return withAdmin(async (session) => {
     if (body.testEmail.toLowerCase() !== (session.user.email ?? "").toLowerCase()) {
       return err("Test emails can only be sent to your own account email.", 403);
+    }
+
+    // MIYO-0155: a file template renders exactly as production does, rather
+    // than from a subject line copied into this file.
+    if (isEmailTemplateId(body.templateId)) {
+      const { subject, html, text } = renderEmail(body.templateId, sampleVarsFor(body.templateId));
+      await sendEmail({ to: body.testEmail, subject: `[TEST] ${subject}`, html, text });
+      return ok({ sent: true, to: body.testEmail, templateId: body.templateId });
     }
 
     const entry = TEMPLATE_MAP[body.templateId];

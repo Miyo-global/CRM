@@ -77,6 +77,40 @@ import {
   getCompanyAnnouncementEmailTemplate,
 } from "@/lib/email-templates/organization";
 import { CRM_BASE_URL } from "@/lib/constants/company";
+import { EMAIL_CATALOG, type EmailTemplateId } from "@/lib/email-templates/catalog.generated";
+import { renderEmail } from "@/lib/email-templates/render";
+import { sampleVarsFor } from "@/lib/email-templates/sample-vars";
+
+/** Category shown for each template-id prefix. */
+const TEMPLATE_CATEGORY_LABEL: Record<string, string> = {
+  asset: "Assets",
+  ats: "Hiring",
+  attendance: "Attendance",
+  auth: "Auth",
+  bonus: "Payroll",
+  calendar: "Calendar",
+  celebration: "Celebrations",
+  company: "Organization",
+  data: "Exports",
+  document: "Documents",
+  exit: "Exit",
+  expense: "Expenses",
+  helpdesk: "Support",
+  holiday: "Holidays",
+  leave: "Leave",
+  onboarding: "Onboarding",
+  one: "Meetings",
+  payroll: "Payroll",
+  perf: "Performance",
+  project: "Projects",
+  recognition: "Recognition",
+  support: "Support",
+  task: "Tasks",
+  ticket: "Projects",
+  weekly: "Reports",
+  wfh: "Leave",
+  worklog: "Work logs",
+};
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface EmailTemplateConfig {
@@ -586,7 +620,26 @@ const TEMPLATE_REGISTRY: EmailTemplateConfig[] = [
   },
 ];
 
-const CATEGORIES = Array.from(new Set(TEMPLATE_REGISTRY.map((t) => t.category)));
+/**
+ * MIYO-0155: the 91 hand-written templates, listed from the catalog so this
+ * page shows, and tests, exactly what production sends. The entries above
+ * are the older generated ones that have no file template yet.
+ */
+const CATALOG_TEMPLATES: EmailTemplateConfig[] = (
+  Object.keys(EMAIL_CATALOG) as EmailTemplateId[]
+).map((id) => ({
+  id,
+  category: TEMPLATE_CATEGORY_LABEL[id.split("-")[0]] ?? "Other",
+  name: id,
+  generate: () => {
+    const { subject, html } = renderEmail(id, sampleVarsFor(id));
+    return { subject, html };
+  },
+}));
+
+const ALL_TEMPLATES: EmailTemplateConfig[] = [...CATALOG_TEMPLATES, ...TEMPLATE_REGISTRY];
+
+const CATEGORIES = Array.from(new Set(ALL_TEMPLATES.map((t) => t.category)));
 
 export default function EmailTemplatesPage() {
   return (
@@ -603,21 +656,21 @@ function EmailTemplatesContent() {
   const [sending, setSending] = useState(false);
 
   const categoryTemplates = useMemo(
-    () => TEMPLATE_REGISTRY.filter((t) => t.category === activeCategory),
+    () => ALL_TEMPLATES.filter((t) => t.category === activeCategory),
     [activeCategory]
   );
 
   const handleCategoryChange = useCallback(
     (cat: string) => {
       setActiveCategory(cat);
-      const first = TEMPLATE_REGISTRY.find((t) => t.category === cat);
+      const first = ALL_TEMPLATES.find((t) => t.category === cat);
       setSelectedId(first?.id ?? "");
     },
     []
   );
 
   const selectedTemplate = useMemo(
-    () => TEMPLATE_REGISTRY.find((t) => t.id === selectedId) ?? categoryTemplates[0] ?? null,
+    () => ALL_TEMPLATES.find((t) => t.id === selectedId) ?? categoryTemplates[0] ?? null,
     [selectedId, categoryTemplates]
   );
 
