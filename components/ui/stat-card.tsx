@@ -5,7 +5,6 @@ import { cn } from "../../lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import type { Tone } from "@/lib/design/tones";
 
 interface StatCardProps {
   label: string;
@@ -24,10 +23,6 @@ interface StatCardProps {
   href?: string;
   className?: string;
   index?: number;
-
-  /** Legacy colour props, accepted and ignored: tiles are ink on white (B7). */
-  color?: "gold" | "blue" | "green" | "red" | "purple";
-  tone?: Tone;
   /** Optional mini trend line (32px tall) under the value. */
   sparkline?: number[];
 }

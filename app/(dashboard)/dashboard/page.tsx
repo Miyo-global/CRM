@@ -303,7 +303,6 @@ export default function DashboardPage() {
               label={stat.label}
               value={stat.value}
               icon={stat.icon}
-              tone={stat.tone}
               href={stat.href}
               index={i}
             />

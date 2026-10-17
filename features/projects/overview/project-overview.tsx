@@ -46,14 +46,13 @@ export function ProjectOverview({ projectId }: { projectId: number }) {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-5">
         <StatCard label="Open" value={counts.open} icon={CircleDot} index={0} />
         <StatCard label="In progress" value={counts.inProgress} icon={Clock} index={1} />
-        <StatCard label="Overdue" value={counts.overdue} icon={AlertTriangle} tone={counts.overdue > 0 ? "danger" : undefined} index={2} />
+        <StatCard label="Overdue" value={counts.overdue} icon={AlertTriangle} index={2} />
         <StatCard label="Done this week" value={counts.doneThisWeek} icon={CheckCircle2} index={3} />
         <StatCard
           label="Health"
           value={HEALTH_LABEL[health.status]}
           valueTooltip={`${health.donePct}% of tickets done`}
           icon={HeartPulse}
-          tone={HEALTH_TONE[health.status]}
           index={4}
           className="col-span-2 md:col-span-1"
         />

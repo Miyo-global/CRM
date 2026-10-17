@@ -701,7 +701,6 @@ export function HrDashboardOverview() {
           label="Total Employees"
           value={isLoading ? "" : (metrics?.totalEmployees ?? 0)}
           icon={Users}
-          color="blue"
           index={0}
           href="/hr"
         />
@@ -709,14 +708,12 @@ export function HrDashboardOverview() {
           label="Active"
           value={isLoading ? "" : (metrics?.activeEmployees ?? 0)}
           icon={UserCheck}
-          color="green"
           index={1}
         />
         <StatCard
           label="On Leave Today"
           value={isLoading ? "" : (metrics?.onLeaveToday ?? 0)}
           icon={CalendarOff}
-          color="gold"
           index={2}
           href="/hr/leaves"
         />
@@ -724,7 +721,6 @@ export function HrDashboardOverview() {
           label="Pending Leaves"
           value={isLoading ? "" : (metrics?.pendingLeaveRequests ?? 0)}
           icon={ClipboardList}
-          color="red"
           index={3}
           href="/hr/leaves"
         />
@@ -732,7 +728,6 @@ export function HrDashboardOverview() {
           label="Open Positions"
           value={isLoading ? "" : (metrics?.openPositions ?? 0)}
           icon={Briefcase}
-          color="purple"
           index={4}
           href="/hr/recruitment"
         />
@@ -740,7 +735,6 @@ export function HrDashboardOverview() {
           label="New Hires (Month)"
           value={isLoading ? "" : (metrics?.monthlyHires ?? 0)}
           icon={UserPlus}
-          color="gold"
           index={5}
         />
       </div>
