@@ -165,7 +165,7 @@ const credentialsProvider = Credentials({
         const { attempts, lockedUntil } = await recordFailedAttempt(user.id, user.loginAttempts);
         if (lockedUntil) {
           logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, lockedUntil });
-          sendAccountLockedEmail(user.email, user.name ?? user.email).catch((e) => logger.error("Auth: account-locked email failed", { userId: user.id, error: e }));
+          sendAccountLockedEmail(user.email, attempts, lockedUntil).catch((e) => logger.error("Auth: account-locked email failed", { userId: user.id, error: e }));
         } else {
           logger.warn("Auth: failed login attempt", { userId: user.id, email: normalizedEmail, attempt: attempts });
         }

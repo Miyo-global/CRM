@@ -6,6 +6,7 @@ export {
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendPasswordChangeConfirmationEmail,
+  sendAccountLockedEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
@@ -23,7 +24,6 @@ import {
   getTicketChangesRequestedEmailTemplate,
   getLeaveCancellationEmailTemplate,
   getAccountDeactivationEmailTemplate,
-  getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
   getExpenseSubmittedEmailTemplate,
@@ -580,14 +580,6 @@ export async function sendTerminationEmail(
       hrContactEmail
     ),
     attachments,
-  });
-}
-
-export async function sendAccountLockedEmail(email: string, name: string): Promise<void> {
-  await sendEmail({
-    to: email,
-    subject: "Account Locked",
-    html: getAccountLockedEmailTemplate(name),
   });
 }
 

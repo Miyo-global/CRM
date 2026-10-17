@@ -5,7 +5,6 @@ import {
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
   getAccountDeactivationEmailTemplate,
-  getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
 } from "../email-templates";
@@ -96,11 +95,19 @@ export async function sendAccountDeactivationEmail(
   });
 }
 
-export async function sendAccountLockedEmail(email: string, name: string): Promise<void> {
-  await sendEmail({
+/** MIYO-0220: the hand-written auth-account-locked template. */
+export async function sendAccountLockedEmail(
+  email: string,
+  attempts: number,
+  lockedUntil: Date,
+): Promise<void> {
+  await sendTemplateEmail("auth-account-locked", {
     to: email,
-    subject: "Account Locked",
-    html: getAccountLockedEmailTemplate(name),
+    vars: {
+      email,
+      attempts,
+      unlock_at: `${formatIST(lockedUntil)} IST`,
+    },
   });
 }
 
