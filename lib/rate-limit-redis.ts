@@ -5,7 +5,7 @@ import {
   type RateLimitResult,
 } from "./rate-limit";
 
-/** @deprecated name kept for callers — uses in-process rate limits only. */
+/** @deprecated name kept for callers — same as checkRateLimit (shared store when configured). */
 export async function checkRateLimitRedis(
   tierName: string,
   ip: string,

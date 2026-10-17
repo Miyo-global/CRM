@@ -1,5 +1,41 @@
 import { describe, expect, it } from "vitest";
-import { isSuspiciousBot, resolveTier } from "./rate-limit";
+import { checkRateLimitShared, isSuspiciousBot, resolveTier, type CounterStore } from "./rate-limit";
+
+function memoryStore(): CounterStore {
+  const m = new Map<string, unknown>();
+  return {
+    async get<T>(k: string) { return (m.get(k) as T) ?? null; },
+    async set(k: string, v: unknown) { m.set(k, v); return "OK"; },
+    async incr(k: string) { const n = ((m.get(k) as number) ?? 0) + 1; m.set(k, n); return n; },
+    async expire() { return 1; },
+  };
+}
+
+describe("checkRateLimitShared (SEC-0003)", () => {
+  it("two instances sharing one store share one budget", async () => {
+    const store = memoryStore();
+    const now = 1_000_000;
+    let allowed = 0;
+    for (let i = 0; i < 20; i++) {
+      // alternate "instances": both only talk to the shared store
+      const r = await checkRateLimitShared(store, "login", "1.2.3.4", now + i);
+      if (r?.allowed) allowed++;
+    }
+    expect(allowed).toBe(10);
+  });
+
+  it("blocks progressively once the budget is spent", async () => {
+    const store = memoryStore();
+    for (let i = 0; i < 10; i++) await checkRateLimitShared(store, "login", "ip", 0);
+    const blocked = await checkRateLimitShared(store, "login", "ip", 0);
+    expect(blocked).toEqual({ allowed: false, retryAfterSecs: 60 });
+  });
+
+  it("returns null when the store is unreachable", async () => {
+    const store = { ...memoryStore(), incr: async () => 0 };
+    expect(await checkRateLimitShared(store, "login", "ip")).toBeNull();
+  });
+});
 
 describe("isSuspiciousBot", () => {
   it.each([

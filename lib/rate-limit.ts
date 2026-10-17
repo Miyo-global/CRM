@@ -1,3 +1,4 @@
+import { isSharedRedis, redis } from "./redis";
 
 export interface RateLimitTier {
   maxRequests: number;
@@ -166,10 +167,65 @@ export interface RateLimitResult {
   retryAfterSecs: number;
 }
 
+/** Minimal store surface the shared limiter needs (lib/redis satisfies it). */
+export interface CounterStore {
+  get<T>(key: string): Promise<T | null>;
+  set(key: string, value: unknown, opts?: { ex?: number }): Promise<unknown>;
+  incr(key: string): Promise<number>;
+  expire(key: string, seconds: number): Promise<number>;
+}
+
+/**
+ * Fixed-window counter in the shared store, so every serverless instance
+ * counts against the same budget (SEC-0003 / MIYO-0062). Progressive tiers
+ * block for one window on the first breach and double on each further
+ * breach, up to maxBlockMs. Returns null when the store is unreachable
+ * (INCR answered 0), so the caller can fall back to the in-memory limiter.
+ */
+export async function checkRateLimitShared(
+  store: CounterStore,
+  tierName: string,
+  ip: string,
+  now = Date.now(),
+): Promise<RateLimitResult | null> {
+  const tier = RATE_LIMIT_TIERS[tierName];
+  if (!tier) return { allowed: true, retryAfterSecs: 0 };
+
+  const blockKey = `rl:block:${tierName}:${ip}`;
+  const blockedUntil = await store.get<number>(blockKey);
+  if (blockedUntil && blockedUntil > now) {
+    return { allowed: false, retryAfterSecs: Math.ceil((blockedUntil - now) / 1000) };
+  }
+
+  const windowSecs = Math.ceil(tier.windowMs / 1000);
+  const windowIndex = Math.floor(now / tier.windowMs);
+  const countKey = `rl:${tierName}:${ip}:${windowIndex}`;
+  const count = await store.incr(countKey);
+  if (count === 0) return null;
+  if (count === 1) await store.expire(countKey, windowSecs);
+  if (count <= tier.maxRequests) return { allowed: true, retryAfterSecs: 0 };
+
+  if (tier.progressive) {
+    const maxBlock = tier.maxBlockMs ?? 30 * 60_000;
+    const strikesKey = `rl:strikes:${tierName}:${ip}`;
+    const strikes = Math.max(1, await store.incr(strikesKey));
+    await store.expire(strikesKey, Math.ceil(maxBlock / 1000) * 2);
+    const blockMs = Math.min(tier.windowMs * 2 ** (strikes - 1), maxBlock);
+    await store.set(blockKey, now + blockMs, { ex: Math.ceil(blockMs / 1000) });
+    return { allowed: false, retryAfterSecs: Math.ceil(blockMs / 1000) };
+  }
+  const windowEnd = (windowIndex + 1) * tier.windowMs;
+  return { allowed: false, retryAfterSecs: Math.max(1, Math.ceil((windowEnd - now) / 1000)) };
+}
+
 export async function checkRateLimit(
   tierName: string,
   ip: string,
 ): Promise<RateLimitResult> {
+  if (isSharedRedis()) {
+    const shared = await checkRateLimitShared(redis, tierName, ip);
+    if (shared) return shared;
+  }
   return checkRateLimitInMemory(tierName, ip);
 }
 
