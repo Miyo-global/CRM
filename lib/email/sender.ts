@@ -188,3 +188,20 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   });
   throw lastError;
 }
+
+/**
+ * Send one of the email-templates/ templates. The plain-text part is always the
+ * hand-written .txt with the same values filled in, never a conversion of the
+ * HTML (MIYO-0098).
+ */
+export async function sendTemplateEmail(
+  id: import("@/lib/email-templates/render").EmailTemplateId,
+  options: Omit<EmailOptions, "subject" | "html" | "text"> & {
+    vars?: import("@/lib/email-templates/render").EmailVars;
+  },
+): Promise<void> {
+  const { renderEmail } = await import("@/lib/email-templates/render");
+  const { vars, ...rest } = options;
+  const { subject, html, text } = renderEmail(id, vars);
+  await sendEmail({ ...rest, subject, html, text });
+}
