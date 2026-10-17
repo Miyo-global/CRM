@@ -1682,7 +1682,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0233 [Low][Email templates] Replace email template `leave-cancelled`
+- [x] MIYO-0233 [Low][Email templates] Replace email template `leave-cancelled`
+  - **Agent note (2026-10-17):** renders `leave-cancelled` (30e208c4c). Per-template inbox check still outstanding.
   - **Where:** Current: getLeaveCancellationEmailTemplate. New: email-templates/leave-cancelled.html + .txt. Trigger: employee cancels leave. To: the approver.
   - **Problem:** Emoji heading ('🚫')
   - **Fix:** Implement with renderEmail('leave-cancelled', vars). Subject: "Leave cancelled: {{employee_name}}, {{date_range}}". Preheader: "No action needed.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1690,7 +1691,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0234 [Low][Email templates] Replace email template `leave-escalation-hr`
+- [x] MIYO-0234 [Low][Email templates] Replace email template `leave-escalation-hr`
+  - **Agent note (2026-10-17):** renders `leave-escalation-hr` (30e208c4c). Per-template inbox check still outstanding.
   - **Where:** Current: getLeaveHrMissedEscalationEmailTemplate. New: email-templates/leave-escalation-hr.html + .txt. Trigger: Inngest leave-escalation (pending > 2 days). To: HR.
   - **Problem:** '[Action Required]' prefix plus warning emoji; Uses '>' in subject
   - **Fix:** Implement with renderEmail('leave-escalation-hr', vars). Subject: "{{count}} leave requests waiting more than 2 days". Preheader: "Oldest from {{oldest_employee}} since {{oldest_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1698,7 +1700,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0235 [Low][Email templates] Replace email template `leave-escalation-ceo`
+- [x] MIYO-0235 [Low][Email templates] Replace email template `leave-escalation-ceo`
+  - **Agent note (2026-10-17):** renders `leave-escalation-ceo` (30e208c4c). Per-template inbox check still outstanding.
   - **Where:** Current: getLeaveCeoDelegateEscalationEmailTemplate. New: email-templates/leave-escalation-ceo.html + .txt. Trigger: Inngest leave-escalation (still pending). To: CEO.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('leave-escalation-ceo', vars). Subject: "{{count}} leave requests still pending". Preheader: "HR has not acted on these yet.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1706,7 +1709,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0236 [Low][Email templates] Replace email template `wfh-request`
+- [x] MIYO-0236 [Low][Email templates] Replace email template `wfh-request`
+  - **Agent note (2026-10-17):** renders `wfh-request` (30e208c4c). Per-template inbox check still outstanding.
   - **Where:** Current: getWfhRequestEmailTemplate. New: email-templates/wfh-request.html + .txt. Trigger: WFH applied. To: approvers.
   - **Problem:** Emoji heading ('🏠')
   - **Fix:** Implement with renderEmail('wfh-request', vars). Subject: "Work from home request: {{employee_name}}, {{date_range}}". Preheader: "Waiting for your approval.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1714,7 +1718,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0237 [Low][Email templates] Replace email template `attendance-auto-absent`
+- [x] MIYO-0237 [Low][Email templates] Replace email template `attendance-auto-absent`
+  - **Agent note (2026-10-17):** already done — `auto-absent-leave.ts` renders `attendance-auto-absent`. Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in server/actions/auto-absent-leave.ts. New: email-templates/attendance-auto-absent.html + .txt. Trigger: cron auto-absent-leave 12:00 IST. To: each absentee.
   - **Problem:** Inline HTML outside the shared layout; Sent every day to every absentee; no digest for HR (QA notification-noise finding)
   - **Fix:** Implement with renderEmail('attendance-auto-absent', vars). Subject: "No check-in recorded for {{date}}". Preheader: "Marked as {{marked_as}}. Fix it if you were working.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1722,7 +1727,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0238 [Low][Email templates] Replace email template `attendance-late-arrival`
+- [x] MIYO-0238 [Low][Email templates] Replace email template `attendance-late-arrival`
+  - **Agent note (2026-10-17):** already done — `late-arrival-after-check-in.ts` renders `attendance-late-arrival`. Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in lib/hr/late-arrival-after-check-in.ts. New: email-templates/attendance-late-arrival.html + .txt. Trigger: late check-in warning. To: the employee.
   - **Problem:** Inline HTML outside the shared layout
   - **Fix:** Implement with renderEmail('attendance-late-arrival', vars). Subject: "Late check-in on {{date}}". Preheader: "Checked in at {{check_in_time}} IST.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1730,7 +1736,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0239 [Low][Email templates] Replace email template `attendance-weekly-report`
+- [x] MIYO-0239 [Low][Email templates] Replace email template `attendance-weekly-report`
+  - **Agent note (2026-10-17):** renders `attendance-weekly-report`, one send (944838441 block). Per-template inbox check still outstanding.
   - **Where:** Current: getWeeklyAttendanceReportTemplate (reports.ts). New: email-templates/attendance-weekly-report.html + .txt. Trigger: weekly-attendance-report (Vercel Sat 14:30 IST AND Inngest Mon 13:30 IST — duplicate). To: management.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('attendance-weekly-report', vars). Subject: "Attendance, week of {{week_range}}". Preheader: "{{present_pct}}% present · {{late_count}} late arrivals · {{absent_count}} absences". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1738,7 +1745,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0240 [Low][Email templates] Replace email template `attendance-holiday-work-request`
+- [x] MIYO-0240 [Low][Email templates] Replace email template `attendance-holiday-work-request`
+  - **Agent note (2026-10-17):** already done — `/api/hr/holiday-work-requests` renders `attendance-holiday-work-request`. Per-template inbox check still outstanding.
   - **Where:** Current: getHolidayWorkRequestEmailToHr (hr.ts) / inline in app/api/hr/holiday-work-requests/route.ts. New: email-templates/attendance-holiday-work-request.html + .txt. Trigger: holiday/Sunday work request submitted. To: HR.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('attendance-holiday-work-request', vars). Subject: "Holiday work request: {{employee_name}}, {{date}}". Preheader: "{{compensation}} requested.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1746,7 +1754,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0241 [Low][Email templates] Replace email template `attendance-holiday-work-decision`
+- [x] MIYO-0241 [Low][Email templates] Replace email template `attendance-holiday-work-decision`
+  - **Agent note (2026-10-17):** new sender on approve and reject (9beed5005). Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in app/api/hr/holiday-work-requests (decision). New: email-templates/attendance-holiday-work-decision.html + .txt. Trigger: holiday work request decided. To: the employee.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('attendance-holiday-work-decision', vars). Subject: "Holiday work request {{decision}}: {{date}}". Preheader: "{{compensation}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1754,7 +1763,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0242 [Low][Email templates] Replace email template `payroll-approved`
+- [x] MIYO-0242 [Low][Email templates] Replace email template `payroll-approved`
+  - **Agent note (2026-10-17):** renders `payroll-approved` (ca8efd621). Per-template inbox check still outstanding.
   - **Where:** Current: getPayrollApprovedEmailTemplate (notifications.ts). New: email-templates/payroll-approved.html + .txt. Trigger: CEO approves payroll. To: the employee.
   - **Problem:** Emoji heading ('✅'); Tells the employee about an internal approval step; consider sending only the payslip email at PAID
   - **Fix:** Implement with renderEmail('payroll-approved', vars). Subject: "Payroll for {{month_label}} approved". Preheader: "Payment is scheduled for {{pay_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1762,7 +1772,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0243 [Low][Email templates] Replace email template `celebration-work-anniversary`
+- [x] MIYO-0243 [Low][Email templates] Replace email template `celebration-work-anniversary`
+  - **Agent note (2026-10-17):** already done in MIYO-0165 — `sendCelebrationEmail` renders `celebration-work-anniversary`. Per-template inbox check still outstanding.
   - **Where:** Current: getCelebrationEmailTemplate (anniversary branch). New: email-templates/celebration-work-anniversary.html + .txt. Trigger: Inngest celebration-greetings 08:00 IST. To: the person.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('celebration-work-anniversary', vars). Subject: "{{years}} years at {{org_name}}". Preheader: "Thank you for {{years}} years with us.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1771,6 +1782,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0244 [Low][Email templates] Replace email template `company-announcement`
+  - **Agent note (2026-10-17):** no sender exists: dashboard announcements are in-app only, and mailing every member is a new behaviour. Needs Tarun's decision before the template is wired up.
   - **Where:** Current: getCompanyAnnouncementEmailTemplate. New: email-templates/company-announcement.html + .txt. Trigger: announcement posted with email on. To: members.
   - **Problem:** Emoji heading ('📢'); Subject 'Announcement: … - Miyo Global'
   - **Fix:** Implement with renderEmail('company-announcement', vars). Subject: "{{announcement_title}}". Preheader: "{{announcement_summary}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1778,7 +1790,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0245 [Low][Email templates] Replace email template `recognition-recipient`
+- [x] MIYO-0245 [Low][Email templates] Replace email template `recognition-recipient`
+  - **Agent note (2026-10-17):** renders `recognition-recipient` (36f6de4af). Per-template inbox check still outstanding.
   - **Where:** Current: getRecognitionRecipientEmailTemplate. New: email-templates/recognition-recipient.html + .txt. Trigger: recognition given. To: the recipient.
   - **Problem:** Emoji in heading ('🎉'); Centered heading inconsistent with other templates
   - **Fix:** Implement with renderEmail('recognition-recipient', vars). Subject: "{{giver_name}} recognised your work". Preheader: ""{{message_snippet}}"". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1786,7 +1799,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0246 [Low][Email templates] Replace email template `recognition-shoutout`
+- [x] MIYO-0246 [Low][Email templates] Replace email template `recognition-shoutout`
+  - **Agent note (2026-10-17):** renders `recognition-shoutout` (36f6de4af). Per-template inbox check still outstanding.
   - **Where:** Current: getRecognitionShoutoutEmailTemplate. New: email-templates/recognition-shoutout.html + .txt. Trigger: recognition shared org-wide. To: the org.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('recognition-shoutout', vars). Subject: "Shout-out for {{recipient_name}}". Preheader: "From {{giver_name}}: "{{message_snippet}}"". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1794,7 +1808,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0247 [Low][Email templates] Replace email template `expense-submitted`
+- [x] MIYO-0247 [Low][Email templates] Replace email template `expense-submitted`
+  - **Agent note (2026-10-17):** renders `expense-submitted` (4c60fe421). Per-template inbox check still outstanding.
   - **Where:** Current: getExpenseSubmittedEmailTemplate. New: email-templates/expense-submitted.html + .txt. Trigger: expense submitted. To: approver.
   - **Problem:** Emoji heading ('🧾'); QA Round 1: admin's own expense auto-approved — make sure this mail goes to a different approver
   - **Fix:** Implement with renderEmail('expense-submitted', vars). Subject: "Expense claim: {{employee_name}}, ₹{{amount}}". Preheader: "{{category}} · {{expense_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1802,7 +1817,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0248 [Low][Email templates] Replace email template `expense-approved`
+- [x] MIYO-0248 [Low][Email templates] Replace email template `expense-approved`
+  - **Agent note (2026-10-17):** renders `expense-approved` (4c60fe421). Per-template inbox check still outstanding.
   - **Where:** Current: getExpenseApprovedEmailTemplate. New: email-templates/expense-approved.html + .txt. Trigger: expense approved. To: the employee.
   - **Problem:** Emoji heading ('✅')
   - **Fix:** Implement with renderEmail('expense-approved', vars). Subject: "Expense approved: ₹{{amount}}". Preheader: "It will be reimbursed with {{reimbursement_cycle}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1810,7 +1826,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0249 [Low][Email templates] Replace email template `expense-rejected`
+- [x] MIYO-0249 [Low][Email templates] Replace email template `expense-rejected`
+  - **Agent note (2026-10-17):** renders `expense-rejected` (4c60fe421). Per-template inbox check still outstanding.
   - **Where:** Current: getExpenseRejectedEmailTemplate. New: email-templates/expense-rejected.html + .txt. Trigger: expense rejected. To: the employee.
   - **Problem:** Emoji heading ('❌')
   - **Fix:** Implement with renderEmail('expense-rejected', vars). Subject: "Expense not approved: ₹{{amount}}". Preheader: "{{approver_name}} added a note.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1818,7 +1835,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0250 [Low][Email templates] Replace email template `expense-paid`
+- [x] MIYO-0250 [Low][Email templates] Replace email template `expense-paid`
+  - **Agent note (2026-10-17):** renders `expense-paid` (4c60fe421). Per-template inbox check still outstanding.
   - **Where:** Current: getExpensePaidEmailTemplate. New: email-templates/expense-paid.html + .txt. Trigger: expense marked paid. To: the employee.
   - **Problem:** Emoji heading ('💰')
   - **Fix:** Implement with renderEmail('expense-paid', vars). Subject: "Expense reimbursed: ₹{{amount}}". Preheader: "Paid on {{paid_on}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1826,7 +1844,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0251 [Low][Email templates] Replace email template `expense-monthly-report`
+- [x] MIYO-0251 [Low][Email templates] Replace email template `expense-monthly-report`
+  - **Agent note (2026-10-17):** renders `expense-monthly-report` with the workbook attached (944838441). Per-template inbox check still outstanding.
   - **Where:** Current: getMonthlyExpenseReportTemplate. New: email-templates/expense-monthly-report.html + .txt. Trigger: monthly-expense-report (Vercel 14:30 IST and Inngest 13:30 IST on the 1st — duplicate). To: management.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('expense-monthly-report', vars). Subject: "Expenses for {{month_label}}: ₹{{total}}". Preheader: "{{claim_count}} claims · {{pending_count}} pending". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1834,7 +1853,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0252 [Low][Email templates] Replace email template `bonus-paid-employee`
+- [x] MIYO-0252 [Low][Email templates] Replace email template `bonus-paid-employee`
+  - **Agent note (2026-10-17):** renders `bonus-paid-employee`. Per-template inbox check still outstanding.
   - **Where:** Current: getBonusPaidEmployeeEmailTemplate (bonus.ts). New: email-templates/bonus-paid-employee.html + .txt. Trigger: bonus marked PAID. To: the employee.
   - **Problem:** Emoji heading ('🎉 Bonus Marked as Paid'); Internal wording 'marked as paid'
   - **Fix:** Implement with renderEmail('bonus-paid-employee', vars). Subject: "Your bonus of ₹{{amount}} has been paid". Preheader: "{{bonus_type}} · paid on {{paid_on}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1842,7 +1862,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0253 [Low][Email templates] Replace email template `bonus-paid-stakeholder`
+- [x] MIYO-0253 [Low][Email templates] Replace email template `bonus-paid-stakeholder`
+  - **Agent note (2026-10-17):** renders `bonus-paid-stakeholder`. Per-template inbox check still outstanding.
   - **Where:** Current: getBonusPaidStakeholderEmailTemplate. New: email-templates/bonus-paid-stakeholder.html + .txt. Trigger: bonus marked PAID. To: stakeholders.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('bonus-paid-stakeholder', vars). Subject: "Bonus paid: {{employee_name}}, ₹{{amount}}". Preheader: "{{bonus_type}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1850,7 +1871,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0254 [Low][Email templates] Replace email template `exit-resignation-submitted`
+- [x] MIYO-0254 [Low][Email templates] Replace email template `exit-resignation-submitted`
+  - **Agent note (2026-10-17):** renders `exit-resignation-submitted` (3148e72ad). Per-template inbox check still outstanding.
   - **Where:** Current: getResignationSubmittedEmailTemplate. New: email-templates/exit-resignation-submitted.html + .txt. Trigger: resignation submitted. To: HR, CEO, Admin (except submitter) + manager.
   - **Problem:** Emoji heading ('📝'); Goes to every CEO/HR/ADMIN; the manager is not included
   - **Fix:** Implement with renderEmail('exit-resignation-submitted', vars). Subject: "Resignation: {{employee_name}}". Preheader: "Requested last day {{last_working_day}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1858,7 +1880,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0255 [Low][Email templates] Replace email template `exit-resignation-accepted`
+- [x] MIYO-0255 [Low][Email templates] Replace email template `exit-resignation-accepted`
+  - **Agent note (2026-10-17):** renders `exit-resignation-accepted` (3148e72ad). Per-template inbox check still outstanding.
   - **Where:** Current: getResignationApprovedEmailTemplate. New: email-templates/exit-resignation-accepted.html + .txt. Trigger: CEO approves resignation. To: the employee.
   - **Problem:** Emoji heading ('✅ Resignation Accepted')
   - **Fix:** Implement with renderEmail('exit-resignation-accepted', vars). Subject: "Your resignation has been accepted". Preheader: "Last working day: {{last_working_day}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1866,7 +1889,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0256 [Low][Email templates] Replace email template `exit-termination-notice`
+- [x] MIYO-0256 [Low][Email templates] Replace email template `exit-termination-notice`
+  - **Agent note (2026-10-17):** renders `exit-termination-notice` (3148e72ad). Per-template inbox check still outstanding.
   - **Where:** Current: getTerminationEmailTemplate. New: email-templates/exit-termination-notice.html + .txt. Trigger: termination letter sent. To: the employee (personal email).
   - **Problem:** Sent to the work address that will be deactivated; Title suffix ' - Miyo Global'
   - **Fix:** Implement with renderEmail('exit-termination-notice', vars). Subject: "Notice of termination of employment". Preheader: "Please read the attached letter.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1874,7 +1898,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0257 [Low][Email templates] Replace email template `perf-review-assigned`
+- [x] MIYO-0257 [Low][Email templates] Replace email template `perf-review-assigned`
+  - **Agent note (2026-10-17):** renders `perf-review-assigned` (1c306aca1). Per-template inbox check still outstanding.
   - **Where:** Current: getReviewAssignedEmailTemplate (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-review-assigned.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Emoji heading
   - **Fix:** Implement with renderEmail('perf-review-assigned', vars). Subject: "Review to complete: {{employee_name}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1883,6 +1908,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0258 [Low][Email templates] Replace email template `perf-self-review-reminder`
+  - **Agent note (2026-10-17):** sender added (`sendSelfReviewReminderEmail`, 1c306aca1) but nothing triggers it yet — needs the performance-cycle scheduler.
   - **Where:** Current: getSelfReviewReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-self-review-reminder.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Emoji heading
   - **Fix:** Implement with renderEmail('perf-self-review-reminder', vars). Subject: "Self-review due {{due_date}}". Preheader: "{{cycle_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1891,6 +1917,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0259 [Low][Email templates] Replace email template `perf-manager-review-reminder`
+  - **Agent note (2026-10-17):** sender added (`sendManagerReviewReminderEmail`, 1c306aca1); no trigger yet.
   - **Where:** Current: getManagerReviewReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-manager-review-reminder.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Emoji heading
   - **Fix:** Implement with renderEmail('perf-manager-review-reminder', vars). Subject: "{{pending_count}} reviews waiting for you". Preheader: "{{cycle_name}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1899,6 +1926,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0260 [Low][Email templates] Replace email template `perf-review-published`
+  - **Agent note (2026-10-17):** sender added (`sendReviewPublishedEmail`, 1c306aca1); no trigger yet.
   - **Where:** Current: getReviewPublishedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-review-published.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Emoji heading
   - **Fix:** Implement with renderEmail('perf-review-published', vars). Subject: "Your {{cycle_name}} review is ready". Preheader: "Shared by {{manager_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1907,6 +1935,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0261 [Low][Email templates] Replace email template `perf-goal-setting-reminder`
+  - **Agent note (2026-10-17):** sender added (`sendGoalSettingReminderEmail`, 1c306aca1); no trigger yet.
   - **Where:** Current: getGoalSettingReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-goal-setting-reminder.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Emoji heading
   - **Fix:** Implement with renderEmail('perf-goal-setting-reminder', vars). Subject: "Set your goals for {{quarter}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1914,7 +1943,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0262 [Low][Email templates] Replace email template `perf-appraisal-stage-assigned`
+- [x] MIYO-0262 [Low][Email templates] Replace email template `perf-appraisal-stage-assigned`
+  - **Agent note (2026-10-17):** renders `perf-appraisal-stage-assigned` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getAppraisalStageAssignedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-stage-assigned.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-appraisal-stage-assigned', vars). Subject: "Appraisal step for you: {{stage_label}}". Preheader: "{{employee_name}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1922,7 +1952,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0263 [Low][Email templates] Replace email template `perf-appraisal-finalized`
+- [x] MIYO-0263 [Low][Email templates] Replace email template `perf-appraisal-finalized`
+  - **Agent note (2026-10-17):** renders `perf-appraisal-finalized` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getAppraisalFinalApprovedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-finalized.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-appraisal-finalized', vars). Subject: "Appraisal finalised: {{employee_name}}". Preheader: "Final rating {{rating}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1930,7 +1961,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0264 [Low][Email templates] Replace email template `perf-appraisal-due-reminder`
+- [x] MIYO-0264 [Low][Email templates] Replace email template `perf-appraisal-due-reminder`
+  - **Agent note (2026-10-17):** renders `perf-appraisal-due-reminder` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getAppraisalDueReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-appraisal-due-reminder.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-appraisal-due-reminder', vars). Subject: "Due tomorrow: {{stage_label}}". Preheader: "{{employee_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1939,6 +1971,7 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
 - [ ] MIYO-0265 [Low][Email templates] Replace email template `perf-unsatisfactory-notice`
+  - **Agent note (2026-10-17):** sender added (`sendUnsatisfactoryPerformanceNoticeEmail`, 1c306aca1); no trigger yet.
   - **Where:** Current: getUnsatisfactoryPerformanceNoticeEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-unsatisfactory-notice.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-unsatisfactory-notice', vars). Subject: "Performance discussion: next steps". Preheader: "From {{manager_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1946,7 +1979,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0266 [Low][Email templates] Replace email template `perf-pip-initiated`
+- [x] MIYO-0266 [Low][Email templates] Replace email template `perf-pip-initiated`
+  - **Agent note (2026-10-17):** renders `perf-pip-initiated` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPInitiatedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-initiated.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-initiated', vars). Subject: "Performance improvement plan". Preheader: "Starts {{start_date}} · {{duration_days}} days". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1954,7 +1988,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0267 [Low][Email templates] Replace email template `perf-pip-manager-activated`
+- [x] MIYO-0267 [Low][Email templates] Replace email template `perf-pip-manager-activated`
+  - **Agent note (2026-10-17):** renders `perf-pip-manager-activated` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPManagerActivatedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-manager-activated.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-manager-activated', vars). Subject: "PIP active: {{employee_name}}". Preheader: "Check-ins start {{first_checkin}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1962,7 +1997,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0268 [Low][Email templates] Replace email template `perf-pip-checkin-reminder`
+- [x] MIYO-0268 [Low][Email templates] Replace email template `perf-pip-checkin-reminder`
+  - **Agent note (2026-10-17):** renders `perf-pip-checkin-reminder` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPCheckInDueReminderEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-checkin-reminder.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-checkin-reminder', vars). Subject: "PIP check-in on {{due_date}}". Preheader: "{{employee_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1970,7 +2006,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0269 [Low][Email templates] Replace email template `perf-pip-completed`
+- [x] MIYO-0269 [Low][Email templates] Replace email template `perf-pip-completed`
+  - **Agent note (2026-10-17):** renders `perf-pip-completed` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPSuccessEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-completed.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-completed', vars). Subject: "Your improvement plan is complete". Preheader: "Well done.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1978,7 +2015,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0270 [Low][Email templates] Replace email template `perf-pip-not-successful`
+- [x] MIYO-0270 [Low][Email templates] Replace email template `perf-pip-not-successful`
+  - **Agent note (2026-10-17):** renders `perf-pip-not-successful` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPFailedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-not-successful.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-not-successful', vars). Subject: "Outcome of your improvement plan". Preheader: "Please read the next steps.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1986,7 +2024,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0271 [Low][Email templates] Replace email template `perf-pip-extended`
+- [x] MIYO-0271 [Low][Email templates] Replace email template `perf-pip-extended`
+  - **Agent note (2026-10-17):** renders `perf-pip-extended` (0dc2d289e). Per-template inbox check still outstanding.
   - **Where:** Current: getPIPExtendedEmail (lib/email-templates/appraisal.ts / notifications.ts). New: email-templates/perf-pip-extended.html + .txt. Trigger: performance module. To: see trigger.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('perf-pip-extended', vars). Subject: "Your improvement plan has been extended". Preheader: "New end date {{end_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1994,7 +2033,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0272 [Low][Email templates] Replace email template `asset-assigned-employee`
+- [x] MIYO-0272 [Low][Email templates] Replace email template `asset-assigned-employee`
+  - **Agent note (2026-10-17):** renders `asset-assigned-employee`. Per-template inbox check still outstanding.
   - **Where:** Current: getAssetAssignedEmailTemplate (no production caller per design doc §11.2). New: email-templates/asset-assigned-employee.html + .txt. Trigger: asset assigned. To: the employee.
   - **Problem:** Emoji heading ('💻'); Sender has no production caller — wire it into the assign route
   - **Fix:** Implement with renderEmail('asset-assigned-employee', vars). Subject: "Asset assigned to you: {{asset_name}}". Preheader: "{{asset_tag}} · please confirm receipt". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2002,7 +2042,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0273 [Low][Email templates] Replace email template `asset-assigned-hr`
+- [x] MIYO-0273 [Low][Email templates] Replace email template `asset-assigned-hr`
+  - **Agent note (2026-10-17):** renders `asset-assigned-hr`, one send. Per-template inbox check still outstanding.
   - **Where:** Current: getAssetAssignedHrNotificationTemplate. New: email-templates/asset-assigned-hr.html + .txt. Trigger: asset assigned. To: HR.
   - **Problem:** Emoji heading ('📦')
   - **Fix:** Implement with renderEmail('asset-assigned-hr', vars). Subject: "Asset assigned: {{asset_tag}} to {{employee_name}}". Preheader: "{{asset_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2010,7 +2051,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0274 [Low][Email templates] Replace email template `document-expiry-reminder`
+- [x] MIYO-0274 [Low][Email templates] Replace email template `document-expiry-reminder`
+  - **Agent note (2026-10-17):** renders `document-expiry-reminder`. Per-template inbox check still outstanding.
   - **Where:** Current: getDocumentExpiryReminderEmailTemplate (no production caller). New: email-templates/document-expiry-reminder.html + .txt. Trigger: daily job (to be wired). To: the employee + HR.
   - **Problem:** Emoji heading ('📋'); No production caller; Expiry uses UTC date slicing (design doc §18.1)
   - **Fix:** Implement with renderEmail('document-expiry-reminder', vars). Subject: "{{document_name}} expires on {{expiry_date}}". Preheader: "Upload a renewed copy before it expires.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2018,7 +2060,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0275 [Low][Email templates] Replace email template `worklog-approved`
+- [x] MIYO-0275 [Low][Email templates] Replace email template `worklog-approved`
+  - **Agent note (2026-10-17):** renders `worklog-approved` (fe39eb912). Per-template inbox check still outstanding.
   - **Where:** Current: getWorkLogApprovedEmailTemplate. New: email-templates/worklog-approved.html + .txt. Trigger: work log approved. To: the employee.
   - **Problem:** Emoji heading ('✅'); No preheader
   - **Fix:** Implement with renderEmail('worklog-approved', vars). Subject: "Work log approved: {{log_date}}". Preheader: "{{hours}} hours approved by {{approver_name}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2026,7 +2069,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0276 [Low][Email templates] Replace email template `worklog-rejected`
+- [x] MIYO-0276 [Low][Email templates] Replace email template `worklog-rejected`
+  - **Agent note (2026-10-17):** renders `worklog-rejected` (fe39eb912). Per-template inbox check still outstanding.
   - **Where:** Current: getWorkLogRejectedEmailTemplate. New: email-templates/worklog-rejected.html + .txt. Trigger: work log rejected. To: the employee.
   - **Problem:** Emoji heading ('❌'); No preheader
   - **Fix:** Implement with renderEmail('worklog-rejected', vars). Subject: "Work log needs changes: {{log_date}}". Preheader: "{{approver_name}} added a note.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2034,7 +2078,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0277 [Low][Email templates] Replace email template `project-added`
+- [x] MIYO-0277 [Low][Email templates] Replace email template `project-added`
+  - **Agent note (2026-10-17):** renders `project-added` (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: getProjectAssignmentEmailTemplate (project.ts). New: email-templates/project-added.html + .txt. Trigger: added to a project. To: the member.
   - **Problem:** Emoji heading ('📋'); Does not show the project role (OWNER/MANAGER/CONTRIBUTOR/VIEWER from the Build port)
   - **Fix:** Implement with renderEmail('project-added', vars). Subject: "You were added to {{project_name}}". Preheader: "Role: {{project_role}} · added by {{added_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2042,7 +2087,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0278 [Low][Email templates] Replace email template `ticket-assigned`
+- [x] MIYO-0278 [Low][Email templates] Replace email template `ticket-assigned`
+  - **Agent note (2026-10-17):** renders `ticket-assigned` (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: getTicketAssignmentEmailTemplate. New: email-templates/ticket-assigned.html + .txt. Trigger: ticket assigned. To: assignee.
   - **Problem:** Subject '{{key}}{{title}} - Miyo Global'
   - **Fix:** Implement with renderEmail('ticket-assigned', vars). Subject: "[{{ticket_key}}] {{ticket_title}}". Preheader: "Assigned to you by {{assigned_by}} · {{priority}} · due {{due_date}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2050,7 +2096,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0279 [Low][Email templates] Replace email template `ticket-review-request`
+- [x] MIYO-0279 [Low][Email templates] Replace email template `ticket-review-request`
+  - **Agent note (2026-10-17):** renders `ticket-review-request` (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: getTicketReviewRequestEmailTemplate. New: email-templates/ticket-review-request.html + .txt. Trigger: ticket sent for review. To: reviewer.
   - **Problem:** Emoji heading ('👀')
   - **Fix:** Implement with renderEmail('ticket-review-request', vars). Subject: "[{{ticket_key}}] Review requested: {{ticket_title}}". Preheader: "From {{requested_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2058,7 +2105,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0280 [Low][Email templates] Replace email template `ticket-changes-requested`
+- [x] MIYO-0280 [Low][Email templates] Replace email template `ticket-changes-requested`
+  - **Agent note (2026-10-17):** renders `ticket-changes-requested` (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: getTicketChangesRequestedEmailTemplate. New: email-templates/ticket-changes-requested.html + .txt. Trigger: reviewer requests changes. To: assignee.
   - **Problem:** Emoji heading ('🔄')
   - **Fix:** Implement with renderEmail('ticket-changes-requested', vars). Subject: "[{{ticket_key}}] Changes requested". Preheader: "{{reviewer_name}}: {{note_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2066,7 +2114,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0281 [Low][Email templates] Replace email template `ticket-comment`
+- [x] MIYO-0281 [Low][Email templates] Replace email template `ticket-comment`
+  - **Agent note (2026-10-17):** renders `ticket-comment` (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: getTicketCommentEmailTemplate. New: email-templates/ticket-comment.html + .txt. Trigger: comment on a watched/assigned ticket. To: assignee and watchers.
   - **Problem:** Mentions are rendered via mentionsToPlainText; make sure no raw mention markup leaks; No separate email for @mentions (Build port added mentions with in-app notification only)
   - **Fix:** Implement with renderEmail('ticket-comment', vars). Subject: "[{{ticket_key}}] New comment from {{author_name}}". Preheader: "{{comment_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2074,7 +2123,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0282 [Low][Email templates] Replace email template `ticket-mention`
+- [x] MIYO-0282 [Low][Email templates] Replace email template `ticket-mention`
+  - **Agent note (2026-10-17):** renders `ticket-mention` for a comment that names someone (c5a82c6c6). Per-template inbox check still outstanding.
   - **Where:** Current: NEW (features/projects/comments mentions). New: email-templates/ticket-mention.html + .txt. Trigger: @mention in a ticket comment. To: mentioned user.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('ticket-mention', vars). Subject: "[{{ticket_key}}] {{author_name}} mentioned you". Preheader: "{{comment_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2082,7 +2132,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0283 [Low][Email templates] Replace email template `task-assigned`
+- [x] MIYO-0283 [Low][Email templates] Replace email template `task-assigned`
+  - **Agent note (2026-10-17):** renders `task-assigned` (d873738bb). Per-template inbox check still outstanding.
   - **Where:** Current: getTaskAssignedEmailTemplate (notifications.ts) / lib/email/crm.ts. New: email-templates/task-assigned.html + .txt. Trigger: task assigned. To: assignee.
   - **Problem:** Emoji heading ('📌'); Lives in lib/email/crm.ts next to deal/lead senders
   - **Fix:** Implement with renderEmail('task-assigned', vars). Subject: "Task assigned: {{task_title}}". Preheader: "Due {{due_date}} · from {{assigned_by}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2090,7 +2141,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0284 [Low][Email templates] Replace email template `support-ticket-created`
+- [x] MIYO-0284 [Low][Email templates] Replace email template `support-ticket-created`
+  - **Agent note (2026-10-17):** renders `support-ticket-created`. Per-template inbox check still outstanding.
   - **Where:** Current: getTicketCreatedEmailTemplate (notifications.ts). New: email-templates/support-ticket-created.html + .txt. Trigger: support ticket created/assigned. To: assigned agent.
   - **Problem:** Emoji heading ('🎫')
   - **Fix:** Implement with renderEmail('support-ticket-created', vars). Subject: "Support ticket #{{ticket_id}}: {{ticket_subject}}". Preheader: "{{priority}} · from {{requester_name}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2098,7 +2150,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0285 [Low][Email templates] Replace email template `support-ticket-reply`
+- [x] MIYO-0285 [Low][Email templates] Replace email template `support-ticket-reply`
+  - **Agent note (2026-10-17):** renders `support-ticket-reply`. Per-template inbox check still outstanding.
   - **Where:** Current: getTicketReplyEmailTemplate. New: email-templates/support-ticket-reply.html + .txt. Trigger: reply on support ticket. To: requester or agent.
   - **Problem:** Emoji heading ('💬')
   - **Fix:** Implement with renderEmail('support-ticket-reply', vars). Subject: "Re: #{{ticket_id}} {{ticket_subject}}". Preheader: "{{reply_snippet}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2106,7 +2159,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0286 [Low][Email templates] Replace email template `support-ticket-status`
+- [x] MIYO-0286 [Low][Email templates] Replace email template `support-ticket-status`
+  - **Agent note (2026-10-17):** renders `support-ticket-status`. Per-template inbox check still outstanding.
   - **Where:** Current: getTicketStatusEmailTemplate. New: email-templates/support-ticket-status.html + .txt. Trigger: support ticket status change. To: requester.
   - **Problem:** Emoji heading ('🔄')
   - **Fix:** Implement with renderEmail('support-ticket-status', vars). Subject: "Ticket #{{ticket_id}} is now {{status}}". Preheader: "{{ticket_subject}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2114,7 +2168,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0287 [Low][Email templates] Replace email template `helpdesk-ticket`
+- [x] MIYO-0287 [Low][Email templates] Replace email template `helpdesk-ticket`
+  - **Agent note (2026-10-17):** renders `helpdesk-ticket`. Per-template inbox check still outstanding.
   - **Where:** Current: getHelpdeskTicketEmailTemplate. New: email-templates/helpdesk-ticket.html + .txt. Trigger: HR helpdesk ticket events. To: HR / requester.
   - **Problem:** Emoji heading ('🎫')
   - **Fix:** Implement with renderEmail('helpdesk-ticket', vars). Subject: "HR helpdesk #{{ticket_id}}: {{ticket_subject}}". Preheader: "{{event_summary}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2122,7 +2177,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0288 [Low][Email templates] Replace email template `weekly-ceo-recap`
+- [x] MIYO-0288 [Low][Email templates] Replace email template `weekly-ceo-recap`
+  - **Agent note (2026-10-17):** renders `weekly-ceo-recap`, rebuilt on HR metrics (02d6e5122). Per-template inbox check still outstanding.
   - **Where:** Current: getWeeklyCeoRecapTemplate + server/actions/weekly-ceo-recap.ts. New: email-templates/weekly-ceo-recap.html + .txt. Trigger: weekly-ceo-recap (Vercel Mon 15:30 IST and Inngest Mon 14:30 IST — duplicate). To: CEO.
   - **Problem:** Duplicate schedule means it can arrive twice; Subject uses '|' separator
   - **Fix:** Implement with renderEmail('weekly-ceo-recap', vars). Subject: "Weekly recap: {{week_range}}". Preheader: "Headcount {{headcount}} · {{joiners}} joined · {{leavers}} left · attendance {{present_pct}}%". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2130,7 +2186,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0289 [Low][Email templates] Replace email template `one-on-one-invite`
+- [x] MIYO-0289 [Low][Email templates] Replace email template `one-on-one-invite`
+  - **Agent note (2026-10-17):** already done — `lib/hr/one-on-one-invite.ts` renders `one-on-one-invite`. Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in lib/hr/one-on-one-invite.ts. New: email-templates/one-on-one-invite.html + .txt. Trigger: 1:1 scheduled. To: attendees.
   - **Problem:** Inline HTML outside shared layout; Check that an .ics attachment is included
   - **Fix:** Implement with renderEmail('one-on-one-invite', vars). Subject: "1:1 with {{organizer_name}}: {{meeting_date}}". Preheader: "{{meeting_time}} IST · {{location}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2138,7 +2195,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0290 [Low][Email templates] Replace email template `calendar-event`
+- [x] MIYO-0290 [Low][Email templates] Replace email template `calendar-event`
+  - **Agent note (2026-10-17):** already done — `lib/calendar-event-notifications.ts` renders `calendar-event`. Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in lib/calendar-event-notifications.ts. New: email-templates/calendar-event.html + .txt. Trigger: event created/changed/15-min reminder. To: attendees.
   - **Problem:** Inline HTML outside shared layout; Three cases (created/changed/reminder) in one block of inline markup
   - **Fix:** Implement with renderEmail('calendar-event', vars). Subject: "{{event_action}}: {{event_title}}, {{event_date}}". Preheader: "{{event_time}} IST · {{location}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -2146,7 +2204,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0291 [Low][Email templates] Replace email template `data-export-ready`
+- [x] MIYO-0291 [Low][Email templates] Replace email template `data-export-ready`
+  - **Agent note (2026-10-17):** already done — `lib/hr/send-export-email.ts` renders `data-export-ready`. Per-template inbox check still outstanding.
   - **Where:** Current: inline HTML in app/api/hr/*/export/email routes and server/actions/expense-export.ts. New: email-templates/data-export-ready.html + .txt. Trigger: export requested by email. To: the requester.
   - **Problem:** Six export routes build their own inline email body
   - **Fix:** Implement with renderEmail('data-export-ready', vars). Subject: "Your {{export_name}} export is ready". Preheader: "{{row_count}} rows · attached as {{file_type}}". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.

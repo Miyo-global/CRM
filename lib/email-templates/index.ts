@@ -80,14 +80,6 @@ export {
 } from "./appraisal";
 
 export {
-  getLeadWelcomeEmail,
-  getFollowUpReminderEmail,
-  getDealWonEmail,
-  getSlaBreachAlertEmail,
-  getClientOnboardingEmail,
-} from "./crm";
-
-export {
   getWorkLogApprovedEmailTemplate,
   getWorkLogRejectedEmailTemplate,
   getOnboardingWelcomeEmailTemplate,
