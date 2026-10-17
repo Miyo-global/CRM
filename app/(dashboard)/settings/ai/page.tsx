@@ -56,11 +56,12 @@ const FLAG_META: {
   },
 ];
 
+// Model usage is billed by the provider in USD, so this one figure stays USD
+// — but it says so in words rather than with a dollar sign in a rupee app.
 function formatCost(usd: string): string {
   const val = parseFloat(usd);
-  if (val === 0) return "$0.00";
-  // Model usage is billed by the provider in USD, so this one stays USD.
-    if (val < 0.01) return `USD ${val.toFixed(4)}`;
+  if (val === 0) return "USD 0.00";
+  if (val < 0.01) return `USD ${val.toFixed(4)}`;
   return `USD ${val.toFixed(2)}`;
 }
 
