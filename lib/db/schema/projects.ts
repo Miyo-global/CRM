@@ -142,6 +142,8 @@ export const tickets = pgTable("tickets", {
   sprintIdx: index("idx_tickets_sprint_id").on(t.sprintId),
   orgStatusIdx: index("idx_tickets_org_status").on(t.orgId, t.status),
   // Board/list/overview: live tickets of one project in rank order (MIYO-0066).
+  // KEY-123 is unique per project; numbering's advisory lock alone was not a guarantee (MIYO-0068).
+  projectNumberLiveUniq: uniqueIndex("uniq_tickets_project_number_live").on(t.projectId, t.ticketNumber).where(sql`${t.deletedAt} is null`),
   projectRankLiveIdx: index("idx_tickets_project_rank_live").on(t.projectId, t.rank).where(sql`${t.deletedAt} is null`),
 }));
 
