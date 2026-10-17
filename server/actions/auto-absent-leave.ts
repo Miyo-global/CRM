@@ -12,8 +12,7 @@ import {
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { createNotification, notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
-import { sendEmail } from "@/lib/email";
-import { buildNotificationEmail } from "@/lib/notifications/email";
+import { sendTemplateEmail } from "@/lib/email/sender";
 import { logger } from "@/lib/logger";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 import { ATTENDANCE_EXEMPT_ROLES } from "@/lib/constants/roles";
@@ -165,12 +164,12 @@ export async function markAbsentEmployeesAsLeave() {
           link: "/hr/attendance",
         });
         if (m.email) {
-          const { subject, html } = buildNotificationEmail({
-            title: "Marked absent — treated as leave",
-            message: `${name}, you were not checked in by ${ABSENT_CUTOFF_LABEL} on ${today} and have no approved leave for the day, so it is being counted as leave. Tell HR if that is wrong.`,
-            link: "/hr/attendance",
+          // MIYO-0147: the hand-written attendance-auto-absent template,
+          // rather than the generic notification wrapper.
+          await sendTemplateEmail("attendance-auto-absent", {
+            to: m.email,
+            vars: { date: today, marked_as: "absent, counted as leave" },
           });
-          await sendEmail({ to: m.email, subject, html });
         }
       } catch (error) {
         logger.error("Failed to notify absent employee", { userId: m.userId, error });
