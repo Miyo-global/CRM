@@ -8,6 +8,8 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useProjectActivity, useProjectOverview } from "@/lib/api/hooks/projects/activity";
 import { ActivityList } from "@/features/projects/activity/activity-list";
 import { AttentionList } from "./attention-list";
+import { ProjectUpdates } from "./project-updates";
+import { useProject } from "@/lib/api/hooks/projects";
 
 const HEALTH_LABEL = { on_track: "On track", at_risk: "At risk", off_track: "Off track" } as const;
 const HEALTH_TONE = { on_track: "success", at_risk: "warning", off_track: "danger" } as const;
@@ -29,6 +31,7 @@ function OverviewSkeleton() {
 export function ProjectOverview({ projectId }: { projectId: number }) {
   const router = useRouter();
   const overview = useProjectOverview(projectId);
+  const { data: project } = useProject(projectId);
   const activity = useProjectActivity(projectId);
 
   if (overview.isLoading) return <OverviewSkeleton />;
@@ -73,6 +76,11 @@ export function ProjectOverview({ projectId }: { projectId: number }) {
           empty="All work in progress moved this week."
         />
       </div>
+
+      <ProjectUpdates
+        projectId={projectId}
+        canPost={project?.viewerRole === "OWNER" || project?.viewerRole === "MANAGER"}
+      />
 
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className="mb-3 text-sm font-semibold text-foreground">Recent activity</h2>

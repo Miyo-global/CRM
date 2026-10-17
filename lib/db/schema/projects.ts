@@ -440,6 +440,28 @@ export const projectClientGrantsRelations = relations(projectClientGrants, ({ on
   user: one(users, { fields: [projectClientGrants.userId], references: [users.id] }),
 }));
 
+/**
+ * MIYO-0116: a manager's status post on a project. The overview showed a
+ * computed health signal but no way to say why.
+ */
+export const projectUpdates = pgTable("project_updates", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id).notNull(),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  status: text("status").notNull().default("ON_TRACK"),
+  body: text("body").notNull(),
+  createdBy: text("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_project_updates_project_created").on(table.projectId, table.createdAt),
+]);
+
+export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
+  project: one(projects, { fields: [projectUpdates.projectId], references: [projects.id] }),
+  author: one(users, { fields: [projectUpdates.createdBy], references: [users.id] }),
+}));
+
 export const projectMilestonesRelations = relations(projectMilestones, ({ one, many }) => ({
   project: one(projects, { fields: [projectMilestones.projectId], references: [projects.id] }),
   creator: one(users, { fields: [projectMilestones.createdBy], references: [users.id] }),
@@ -453,6 +475,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   members: many(projectMembers),
   statuses: many(projectStatuses, { relationName: "projectStatuses" }),
   milestones: many(projectMilestones),
+  updates: many(projectUpdates),
 }));
 
 export const sprintsRelations = relations(sprints, ({ one, many }) => ({
