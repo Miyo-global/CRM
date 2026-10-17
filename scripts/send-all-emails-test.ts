@@ -84,7 +84,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "auth.accountDeactivation", run: () => sendAccountDeactivationEmail(TO, NAME, ACTOR, "Test deactivation reason") },
   { name: "auth.accountLocked", run: () => sendAccountLockedEmail(TO, 5, new Date(Date.now() + 15 * 60 * 1000)) },
   { name: "auth.newDeviceLogin", run: () => sendNewDeviceLoginEmail(TO, { userAgent: "Chrome 147 on macOS", ipAddress: "192.0.2.1" }) },
-  { name: "auth.passwordExpiryWarning", run: () => sendPasswordExpiryWarningEmail(TO, NAME, 7) },
+  { name: "auth.passwordExpiryWarning", run: () => sendPasswordExpiryWarningEmail(TO, "24 April 2026") },
 
   { name: "projects.projectAssignment", run: () => sendProjectAssignmentEmail(TO, NAME, "Miyo Global CRM", "VAIV", 1, ACTOR) },
   { name: "projects.ticketAssignment", run: () => sendTicketAssignmentEmail(TO, NAME, "Disable Standard Bonus Modules", "STORY", "MEDIUM", "Miyo Global CRM", 1, 123, ACTOR, "VAIV-123") },

@@ -5,7 +5,6 @@ import {
   getInvitationEmailTemplate,
   type WelcomeEmailDetails,
   getAccountDeactivationEmailTemplate,
-  getPasswordExpiryWarningEmailTemplate,
 } from "../email-templates";
 
 /** MIYO-0218: the hand-written auth-verify-email template. */
@@ -128,14 +127,13 @@ export async function sendNewDeviceLoginEmail(
   });
 }
 
+/** MIYO-0222: the hand-written auth-password-expiry template. */
 export async function sendPasswordExpiryWarningEmail(
   email: string,
-  name: string,
-  daysLeft: number
+  expiresOn: string,
 ): Promise<void> {
-  await sendEmail({
+  await sendTemplateEmail("auth-password-expiry", {
     to: email,
-    subject: `Your Password Expires in ${daysLeft} Days`,
-    html: getPasswordExpiryWarningEmailTemplate(name, daysLeft),
+    vars: { expires_on: expiresOn },
   });
 }

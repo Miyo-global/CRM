@@ -4,7 +4,13 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { documents, organizationMembers, organizations, users } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
-import { getTodayString, addDays, formatDateOnly } from "@/lib/date-utils";
+import {
+  getTodayString,
+  addDays,
+  formatDateOnly,
+  formatDisplayDate,
+  fromISODateString,
+} from "@/lib/date-utils";
 import { sendDocumentExpiryReminderEmail } from "@/lib/email/hr-documents";
 import { sendPasswordExpiryWarningEmail } from "@/lib/email/auth";
 
@@ -106,14 +112,16 @@ async function remindExpiringPasswords(today: string): Promise<number> {
           ),
         );
 
+      // The password expires `notice` days from today.
+      const expiresOn = formatDisplayDate(
+        fromISODateString(formatDateOnly(addDays(new Date(`${today}T00:00:00Z`), notice))),
+        { day: "numeric", month: "long", year: "numeric" },
+      );
+
       for (const row of rows) {
         if (!row.email) continue;
         try {
-          await sendPasswordExpiryWarningEmail(
-            row.email,
-            row.firstName ?? row.name ?? "there",
-            notice,
-          );
+          await sendPasswordExpiryWarningEmail(row.email, expiresOn);
           sent++;
         } catch (error) {
           logger.error("Password expiry reminder failed", { email: row.email, error });

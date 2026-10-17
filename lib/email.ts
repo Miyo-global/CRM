@@ -8,6 +8,7 @@ export {
   sendPasswordChangeConfirmationEmail,
   sendAccountLockedEmail,
   sendNewDeviceLoginEmail,
+  sendPasswordExpiryWarningEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
@@ -25,7 +26,6 @@ import {
   getTicketChangesRequestedEmailTemplate,
   getLeaveCancellationEmailTemplate,
   getAccountDeactivationEmailTemplate,
-  getPasswordExpiryWarningEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
   getExpenseRejectedEmailTemplate,
@@ -582,19 +582,6 @@ export async function sendTerminationEmail(
     attachments,
   });
 }
-
-export async function sendPasswordExpiryWarningEmail(
-  email: string,
-  name: string,
-  daysLeft: number
-): Promise<void> {
-  await sendEmail({
-    to: email,
-    subject: `Your Password Expires in ${daysLeft} Days`,
-    html: getPasswordExpiryWarningEmailTemplate(name, daysLeft),
-  });
-}
-
 
 export async function sendWorkLogStatusEmail(
   email: string,
