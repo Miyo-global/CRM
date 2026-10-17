@@ -118,6 +118,7 @@ async function deliverHolidayReminder(holiday: {
   name: string;
   date: string;
   message: string | null;
+  isHalfDay?: boolean | null;
 }) {
   const members = await db
     .select({
@@ -144,6 +145,8 @@ async function deliverHolidayReminder(holiday: {
       holiday.name,
       formatHolidayReminderDate(holiday.date),
       holiday.message || undefined,
+      // MIYO-0166: the template says whether the office closes for the day.
+      holiday.isHalfDay ? "Closed for half the day" : "Closed",
     );
   }
 

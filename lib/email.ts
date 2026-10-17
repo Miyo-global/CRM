@@ -3,6 +3,11 @@ import { sendEmail, sendTemplateEmail } from "./email/sender";
 // live in lib/email/auth.ts; this module re-exports them so its callers get
 // the same mail.
 export { sendPasswordResetEmail, sendWelcomeEmail } from "./email/auth";
+// MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
+export {
+  sendHolidayAnnouncementEmail,
+  sendBulkHolidayAnnouncement,
+} from "./email/announcements";
 import type { EmailOptions, EmailAttachment } from "./email/sender";
 import { appUrl } from "./app-url";
 import {
@@ -18,8 +23,6 @@ import {
   getAccountLockedEmailTemplate,
   getNewDeviceLoginEmailTemplate,
   getPasswordExpiryWarningEmailTemplate,
-  getCelebrationEmailTemplate,
-  getHolidayAnnouncementEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
   getExpenseRejectedEmailTemplate,
@@ -336,47 +339,38 @@ export async function sendAccountDeactivationEmail(
   });
 }
 
-/** Birthday or work-anniversary greeting to the person celebrating (A34). */
+/**
+ * MIYO-0165: the celebration-birthday and celebration-work-anniversary
+ * templates. The old body hard-coded "Miyo Global" and suffixed the subject
+ * with it; both now come from {{org_name}} (A34).
+ */
 export async function sendCelebrationEmail(
   email: string,
   name: string,
   kind: "birthday" | "anniversary",
   yearsCompleted?: number,
+  joiningDate?: string | null,
 ) {
-  await sendEmail({
+  const firstName = name.trim().split(/\s+/)[0] || name;
+
+  if (kind === "birthday") {
+    await sendTemplateEmail("celebration-birthday", {
+      to: email,
+      vars: { first_name: firstName },
+    });
+    return;
+  }
+
+  const years = yearsCompleted ?? 1;
+  await sendTemplateEmail("celebration-work-anniversary", {
     to: email,
-    subject:
-      kind === "birthday"
-        ? "Happy birthday from Miyo Global"
-        : "Happy work anniversary from Miyo Global",
-    html: getCelebrationEmailTemplate(name, kind, yearsCompleted),
+    vars: {
+      first_name: firstName,
+      years,
+      years_word: years === 1 ? "year" : "years",
+      joining_date: joiningDate ?? "your first day",
+    },
   });
-}
-
-export async function sendHolidayAnnouncementEmail(
-  email: string,
-  holidayName: string,
-  holidayDate: string,
-  message?: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Holiday Tomorrow: ${holidayName}`,
-    html: getHolidayAnnouncementEmailTemplate(holidayName, holidayDate, message),
-  });
-}
-
-export async function sendBulkHolidayAnnouncement(
-  emails: string[],
-  holidayName: string,
-  holidayDate: string,
-  message?: string
-) {
-  const emailPromises = emails.map(email =>
-    sendHolidayAnnouncementEmail(email, holidayName, holidayDate, message)
-  );
-
-  await Promise.allSettled(emailPromises);
 }
 
 export async function sendExpenseSubmittedEmail(

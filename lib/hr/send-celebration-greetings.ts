@@ -99,6 +99,7 @@ export async function sendCelebrationGreetings(
           celebration.name ?? "there",
           celebration.type,
           celebration.yearsCompleted,
+          celebration.joiningDate,
         );
       } catch (error) {
         logger.error("Celebration email failed", {

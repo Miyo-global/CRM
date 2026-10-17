@@ -1,16 +1,21 @@
-import { sendEmail } from "./sender";
-import { getHolidayAnnouncementEmailTemplate } from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 
+/** MIYO-0166: the holiday-reminder template. */
 export async function sendHolidayAnnouncementEmail(
   email: string,
   holidayName: string,
   holidayDate: string,
-  message?: string
+  message?: string,
+  closureType: string = "Closed",
 ) {
-  await sendEmail({
+  await sendTemplateEmail("holiday-reminder", {
     to: email,
-    subject: `Holiday Tomorrow: ${holidayName}`,
-    html: getHolidayAnnouncementEmailTemplate(holidayName, holidayDate, message),
+    vars: {
+      holiday_name: holidayName,
+      holiday_date: holidayDate,
+      closure_type: closureType,
+      message: message ?? "",
+    },
   });
 }
 
@@ -18,10 +23,11 @@ export async function sendBulkHolidayAnnouncement(
   emails: string[],
   holidayName: string,
   holidayDate: string,
-  message?: string
+  message?: string,
+  closureType?: string,
 ) {
   const emailPromises = emails.map((email) =>
-    sendHolidayAnnouncementEmail(email, holidayName, holidayDate, message)
+    sendHolidayAnnouncementEmail(email, holidayName, holidayDate, message, closureType)
   );
   await Promise.allSettled(emailPromises);
 }

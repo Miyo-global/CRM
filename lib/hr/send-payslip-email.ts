@@ -2,9 +2,9 @@ import { db } from "@/lib/db";
 import { users, organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
-import { sendEmail } from "@/lib/email";
+import { sendTemplateEmail } from "@/lib/email/sender";
+import { formatIST } from "@/lib/date-utils";
 import { buildPayslipPdfDataFromPayroll, generatePayslipPdf } from "@/lib/payslip-pdf";
-import { getPayslipEmailTemplate } from "@/lib/email-templates/hr";
 import { countApprovedLeaveDaysInMonth } from "@/server/queries/hr/payslip-leave-days";
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
@@ -24,7 +24,19 @@ type PayrollRow = {
   month: string;
   netSalary: string | null;
   leaveDaysDisplay: string | null;
+  grossSalary?: string | null;
+  lopDays?: string | null;
+  lopAmount?: string | null;
+  ptAmount?: string | null;
+  otherDeductions?: string | null;
+  paidAt?: Date | string | null;
 } & Record<string, unknown>;
+
+/** "12,500.00", or "0.00" for a missing figure. */
+function money(value: unknown): string {
+  const n = parseFloat(String(value ?? "0")) || 0;
+  return n.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 const ORG_FULL_NAME_HEADER = "Miyo Global";
 
@@ -81,19 +93,22 @@ export async function sendPayslipEmailForPayroll(
     );
     const pdfBuffer = await generatePayslipPdf(pdfBase);
 
-    const netSalary = parseFloat(payroll.netSalary || "0");
-    const emailContent = getPayslipEmailTemplate({
-      employeeName: employee.name ?? "Employee",
-      month: monthLabel,
-      netSalary: netSalary.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 2 }),
-      orgName: org?.name ?? "Company",
-      payslipUrl: `${appUrl}/api/hr/payrolls/${payroll.id}/download`,
-    });
-
-    await sendEmail({
+    // MIYO-0164: the payroll-payslip template. The subject comes from the
+    // template, so an org name with "&" is no longer HTML-escaped into it, and
+    // the body carries the gross-to-net breakdown, not the net alone.
+    await sendTemplateEmail("payroll-payslip", {
       to: employee.email,
-      subject: `Your Payslip for ${monthLabel} — ${org?.name ?? "Company"}`,
-      html: emailContent.html,
+      vars: {
+        month_label: monthLabel,
+        gross: money(payroll.grossSalary),
+        lop_days: payroll.lopDays ? String(parseFloat(payroll.lopDays)) : "0",
+        lop_amount: money(payroll.lopAmount),
+        pt: money(payroll.ptAmount),
+        other_deductions: money(payroll.otherDeductions),
+        net_pay: money(payroll.netSalary),
+        paid_on: payroll.paidAt ? formatIST(payroll.paidAt) : formatIST(new Date()),
+        org_name: org?.name ?? undefined,
+      },
       attachments: [
         {
           filename: `Payslip-${(employee.name ?? "employee").replace(/\s+/g, "-")}-${payroll.month ?? "unknown"}.pdf`,

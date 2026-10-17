@@ -38,6 +38,8 @@ describe("celebrations today, in IST (A34)", () => {
         email: "ravi@example.com",
         type: "anniversary",
         yearsCompleted: 3,
+        // MIYO-0165: the anniversary mail prints the start date.
+        joiningDate: "2023-10-15",
       },
     ]);
   });

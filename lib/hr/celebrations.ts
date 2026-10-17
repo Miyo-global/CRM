@@ -22,6 +22,8 @@ export interface Celebration {
   type: "birthday" | "anniversary";
   /** Completed years, for an anniversary. */
   yearsCompleted?: number;
+  /** Start date, shown in the anniversary mail (MIYO-0165). */
+  joiningDate?: string | null;
 }
 
 function isLeapYear(year: number): boolean {
@@ -71,6 +73,7 @@ export function celebrationsOn(
           email: member.email,
           type: "anniversary",
           yearsCompleted,
+          joiningDate: member.joiningDate,
         });
       }
     }
