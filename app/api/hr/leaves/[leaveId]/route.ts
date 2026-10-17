@@ -1,10 +1,10 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { leaveRequests, leaveBalances, leaveTypes } from "@/lib/db/schema";
+import { leaveRequests } from "@/lib/db/schema";
+import { deductApprovedLeaveBalance, restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { eq, and } from "drizzle-orm";
 import { resolveLeaveApproverRole, hasLeaveApproverRole } from "@/lib/auth/leave-approval";
 import { z } from "zod";
-import { LEAVE_POLICY } from "@/lib/leave-policy";
 import type { NextRequest } from "next/server";
 
 const updateLeaveSchema = z.object({
@@ -41,75 +41,29 @@ export async function PATCH(
       return err("You cannot approve or reject your own leave request.", 403);
     }
 
-    await db.transaction(async (tx) => {
-      await tx
+    const changed = await db.transaction(async (tx) => {
+      // Conditional on the status we read, so a double click cannot debit twice.
+      const [row] = await tx
         .update(leaveRequests)
         .set({
           status: body.status,
           approverId: body.status !== "PENDING" ? session.user.id : existing.approverId,
           rejectionReason: body.status === "REJECTED" ? (body.rejectionReason ?? null) : null,
         })
-        .where(eq(leaveRequests.id, requestId));
+        .where(and(eq(leaveRequests.id, requestId), eq(leaveRequests.status, existing.status!)))
+        .returning({ id: leaveRequests.id });
+      if (!row) return false;
 
-      const isRestoreTransition =
-        body.status !== "APPROVED" && existing.status === "APPROVED";
-      const isDebitTransition =
-        body.status === "APPROVED" && existing.status !== "APPROVED";
-
-      if ((isRestoreTransition || isDebitTransition) && existing.leaveTypeId) {
-        const leaveType = await tx.query.leaveTypes.findFirst({
-          where: eq(leaveTypes.id, existing.leaveTypeId),
-          columns: { name: true },
-        });
-
-        if (leaveType?.name !== LEAVE_POLICY.UNPAID.name) {
-          const start = new Date(existing.startDate);
-          const end = new Date(existing.endDate);
-          let diffDays = existing.isHalfDay ? 0.5 : 0;
-          if (!existing.isHalfDay) {
-            const cursor = new Date(start);
-            while (cursor <= end) {
-              const day = cursor.getDay();
-              if (day !== 0 && day !== 6) diffDays++;
-              cursor.setDate(cursor.getDate() + 1);
-            }
-          }
-
-          const balanceRecord = await tx.query.leaveBalances.findFirst({
-            where: and(
-              eq(leaveBalances.userId, existing.userId),
-              eq(leaveBalances.leaveTypeId, existing.leaveTypeId),
-              eq(leaveBalances.year, new Date().getFullYear()),
-            ),
-          });
-
-          if (balanceRecord) {
-            if (isRestoreTransition) {
-              const prevLopDays = Number(existing.lopDays ?? 0);
-              const paidDays = diffDays - prevLopDays;
-              const restored = Number(balanceRecord.balance) + paidDays;
-              await tx.update(leaveBalances)
-                .set({ balance: restored.toString() })
-                .where(eq(leaveBalances.id, balanceRecord.id));
-              await tx.update(leaveRequests)
-                .set({ lopDays: "0" })
-                .where(eq(leaveRequests.id, requestId));
-            } else {
-              const available = Number(balanceRecord.balance);
-              const lopDays = available <= 0 ? diffDays : Math.max(0, diffDays - available);
-              const paidDays = diffDays - lopDays;
-              const newBal = Math.max(0, available - paidDays);
-              await tx.update(leaveRequests)
-                .set({ lopDays: lopDays.toString() })
-                .where(eq(leaveRequests.id, requestId));
-              await tx.update(leaveBalances)
-                .set({ balance: newBal.toString() })
-                .where(eq(leaveBalances.id, balanceRecord.id));
-            }
-          }
-        }
+      // Same helpers as the approve route and auto-approve, so every path
+      // debits and restores the same days from the same year (R3-0020).
+      if (body.status === "APPROVED" && existing.status !== "APPROVED") {
+        await deductApprovedLeaveBalance(tx, existing);
+      } else if (body.status !== "APPROVED" && existing.status === "APPROVED") {
+        await restoreApprovedLeaveBalance(tx, existing);
       }
+      return true;
     });
+    if (!changed) return err("This leave request was just changed by someone else. Refresh to see its current status.", 409);
 
     return ok({ success: true });
   });

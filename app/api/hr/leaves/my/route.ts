@@ -1,3 +1,4 @@
+import { getTodayString } from "@/lib/date-utils";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances } from "@/lib/db/schema";
@@ -24,7 +25,7 @@ export async function GET() {
         where: and(
           eq(leaveBalances.userId, session.user.id),
           eq(leaveBalances.orgId, session.orgId),
-          eq(leaveBalances.year, new Date().getFullYear()),
+          eq(leaveBalances.year, Number(getTodayString().slice(0, 4))),
         ),
         with: {
           leaveType: { columns: { id: true, name: true, daysPerYear: true } },

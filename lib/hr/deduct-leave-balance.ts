@@ -29,36 +29,58 @@ export interface LeaveForDeduction {
  * Returns the LOP days charged and the balance left, or nulls when the leave
  * type is unpaid or the user has no balance row for that year.
  */
-export async function deductApprovedLeaveBalance(
-  tx: Tx,
-  leave: LeaveForDeduction,
-): Promise<{ lopDays: number; balanceAfter: number | null }> {
-  if (!leave.leaveTypeId) return { lopDays: 0, balanceAfter: null };
-
+async function paidLeaveDays(tx: Tx, leave: LeaveForDeduction): Promise<number | null> {
+  if (!leave.leaveTypeId) return null;
   const leaveType = await tx.query.leaveTypes.findFirst({
     where: eq(leaveTypes.id, leave.leaveTypeId),
     columns: { name: true },
   });
-  if (leaveType?.name === LEAVE_POLICY.UNPAID.name) {
-    return { lopDays: 0, balanceAfter: null };
-  }
-
-  const days = leave.isHalfDay
+  if (leaveType?.name === LEAVE_POLICY.UNPAID.name) return null;
+  return leave.isHalfDay
     ? 0.5
-    : await countLeaveWorkingDays({
-        orgId: leave.orgId,
-        startDate: leave.startDate,
-        endDate: leave.endDate,
-      });
+    : countLeaveWorkingDays({ orgId: leave.orgId, startDate: leave.startDate, endDate: leave.endDate });
+}
 
-  const leaveYear = Number(leave.startDate.slice(0, 4));
-  const balanceRecord = await tx.query.leaveBalances.findFirst({
+function balanceFor(tx: Tx, leave: LeaveForDeduction) {
+  // The balance year is the leave's own year, never "now" (R3-0020).
+  return tx.query.leaveBalances.findFirst({
     where: and(
       eq(leaveBalances.userId, leave.userId),
-      eq(leaveBalances.leaveTypeId, leave.leaveTypeId),
-      eq(leaveBalances.year, leaveYear),
+      eq(leaveBalances.leaveTypeId, leave.leaveTypeId!),
+      eq(leaveBalances.year, Number(leave.startDate.slice(0, 4))),
     ),
   });
+}
+
+/**
+ * Gives back what deductApprovedLeaveBalance took when an APPROVED leave is
+ * moved back to PENDING or REJECTED: the paid days return to the balance and
+ * the LOP days are cleared.
+ */
+export async function restoreApprovedLeaveBalance(
+  tx: Tx,
+  leave: LeaveForDeduction & { lopDays?: string | number | null },
+): Promise<void> {
+  const days = await paidLeaveDays(tx, leave);
+  if (days == null) return;
+  const balanceRecord = await balanceFor(tx, leave);
+  if (!balanceRecord) return;
+  const paidDays = Math.max(0, days - Number(leave.lopDays ?? 0));
+  await tx
+    .update(leaveBalances)
+    .set({ balance: (Number(balanceRecord.balance) + paidDays).toString() })
+    .where(eq(leaveBalances.id, balanceRecord.id));
+  await tx.update(leaveRequests).set({ lopDays: "0" }).where(eq(leaveRequests.id, leave.id));
+}
+
+export async function deductApprovedLeaveBalance(
+  tx: Tx,
+  leave: LeaveForDeduction,
+): Promise<{ lopDays: number; balanceAfter: number | null }> {
+  const days = await paidLeaveDays(tx, leave);
+  if (days == null) return { lopDays: 0, balanceAfter: null };
+
+  const balanceRecord = await balanceFor(tx, leave);
   if (!balanceRecord) return { lopDays: 0, balanceAfter: null };
 
   const available = Number(balanceRecord.balance);

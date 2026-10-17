@@ -1,3 +1,4 @@
+import { getTodayString } from "@/lib/date-utils";
 import { withAuth, ok, err, parseBody, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
@@ -59,7 +60,7 @@ export async function GET() {
           and(
             eq(leaveBalances.userId, userId),
             eq(leaveBalances.orgId, orgId),
-            eq(leaveBalances.year, new Date().getFullYear()),
+            eq(leaveBalances.year, Number(getTodayString().slice(0, 4))),
           ),
         ),
       db.query.leaveTypes.findMany({ where: eq(leaveTypes.orgId, orgId) }),
