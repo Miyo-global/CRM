@@ -18,6 +18,7 @@ export {
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
+export { sendDocumentExpiryReminderEmail } from "./email/hr-documents";
 export {
   sendReviewAssignedEmail,
   sendSelfReviewReminderEmail,
@@ -58,7 +59,6 @@ import {
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
-  getDocumentExpiryReminderEmailTemplate,
   getMonthlyExpenseReportTemplate,
   getWorkLogApprovedEmailTemplate,
   getWorkLogRejectedEmailTemplate,
@@ -342,26 +342,6 @@ export async function sendCelebrationEmail(
 
 
 
-export async function sendDocumentExpiryReminderEmail(
-  email: string,
-  employeeName: string,
-  documentName: string,
-  documentType: string,
-  expiryDate: string,
-  daysRemaining: number
-) {
-  await sendEmail({
-    to: email,
-    subject: `Document Expiring Soon: ${documentName}`,
-    html: getDocumentExpiryReminderEmailTemplate(
-      employeeName,
-      documentName,
-      documentType,
-      expiryDate,
-      daysRemaining
-    ),
-  });
-}
 
 export async function sendMonthlyExpenseReportEmail(
   monthLabel: string,

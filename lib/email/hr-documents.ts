@@ -1,23 +1,19 @@
-import { sendEmail } from "./sender";
-import { getDocumentExpiryReminderEmailTemplate } from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 
+/** MIYO-0274: the hand-written document-expiry-reminder template. */
 export async function sendDocumentExpiryReminderEmail(
   email: string,
-  employeeName: string,
   documentName: string,
-  documentType: string,
   expiryDate: string,
-  daysRemaining: number
+  daysRemaining: number,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("document-expiry-reminder", {
     to: email,
-    subject: `Document Expiring Soon: ${documentName}`,
-    html: getDocumentExpiryReminderEmailTemplate(
-      employeeName,
-      documentName,
-      documentType,
-      expiryDate,
-      daysRemaining
-    ),
+    category: "hr",
+    vars: {
+      document_name: documentName,
+      expiry_date: expiryDate,
+      days_left: daysRemaining,
+    },
   });
 }

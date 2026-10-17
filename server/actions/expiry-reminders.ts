@@ -65,14 +65,7 @@ async function remindExpiringDocuments(today: string): Promise<number> {
       (Date.parse(`${row.expiryDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
     );
     try {
-      await sendDocumentExpiryReminderEmail(
-        row.email,
-        row.firstName ?? row.userName ?? "there",
-        row.name,
-        row.type,
-        row.expiryDate,
-        daysRemaining,
-      );
+      await sendDocumentExpiryReminderEmail(row.email, row.name, row.expiryDate, daysRemaining);
       sent++;
     } catch (error) {
       logger.error("Document expiry reminder failed", { email: row.email, error });

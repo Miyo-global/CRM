@@ -133,7 +133,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "crm.leadAssigned", run: () => sendLeadAssignedEmail(TO, NAME, "Acme Corp", "Website", "HOT", ACTOR) },
   { name: "crm.taskAssigned", run: () => sendTaskAssignedEmail(TO, NAME, "Follow up with prospect", "FOLLOW_UP", NEXT_WEEK, ACTOR, "Lead: Acme Corp") },
 
-  { name: "hr.documentExpiry", run: () => sendDocumentExpiryReminderEmail(TO, NAME, "PAN Card", "Identity", NEXT_WEEK, 7) },
+  { name: "hr.documentExpiry", run: () => sendDocumentExpiryReminderEmail(TO, "Passport", NEXT_WEEK, 7) },
 
   { name: "support.ticketCreated", run: () => sendSupportTicketCreatedEmail(TO, NAME, "Cannot login on mobile", "HIGH", ACTOR, 42) },
   { name: "support.ticketReply", run: () => sendSupportTicketReplyEmail(TO, NAME, "Cannot login on mobile", 42, ACTOR, "Have you tried clearing your cache and reinstalling the app?") },
