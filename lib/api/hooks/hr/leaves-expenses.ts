@@ -22,7 +22,6 @@ import type {
   DocumentType,
   TicketStatus,
   RequestLeaveInput,
-  ApproveLeaveInput,
   CreateExpenseInput,
   UpdateExpenseStatusInput,
   CreateAssetInput,
@@ -65,15 +64,6 @@ export function useRequestLeave() {
       qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leavesMyRequests"] });
     },
-  });
-}
-
-export function useApproveLeave() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ requestId, ...data }: ApproveLeaveInput) =>
-      apiClient.patch<{ success: boolean }>(`/hr/leaves/${requestId}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() }),
   });
 }
 

@@ -1,15 +1,17 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests } from "@/lib/db/schema";
-import { deductApprovedLeaveBalance, restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
+import { restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { eq, and } from "drizzle-orm";
 import { resolveLeaveApproverRole, hasLeaveApproverRole } from "@/lib/auth/leave-approval";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 
+// PATCH only reverts a decision to PENDING. Approve and reject go through
+// PUT /approve and /reject, which check the approver chain and email the
+// employee; deciding here skipped the email (R3-0005).
 const updateLeaveSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED", "PENDING"]),
-  rejectionReason: z.string().optional(),
+  status: z.literal("PENDING"),
 });
 
 export async function PATCH(
@@ -37,9 +39,7 @@ export async function PATCH(
 
     if (!existing) return err("Leave request not found.", 404);
 
-    if (session.user.id === existing.userId && body.status !== "PENDING") {
-      return err("You cannot approve or reject your own leave request.", 403);
-    }
+    if (existing.status === "PENDING") return ok({ success: true });
 
     const changed = await db.transaction(async (tx) => {
       // Conditional on the status we read, so a double click cannot debit twice.
@@ -47,8 +47,7 @@ export async function PATCH(
         .update(leaveRequests)
         .set({
           status: body.status,
-          approverId: body.status !== "PENDING" ? session.user.id : existing.approverId,
-          rejectionReason: body.status === "REJECTED" ? (body.rejectionReason ?? null) : null,
+          rejectionReason: null,
         })
         .where(and(eq(leaveRequests.id, requestId), eq(leaveRequests.status, existing.status!)))
         .returning({ id: leaveRequests.id });
@@ -56,11 +55,7 @@ export async function PATCH(
 
       // Same helpers as the approve route and auto-approve, so every path
       // debits and restores the same days from the same year (R3-0020).
-      if (body.status === "APPROVED" && existing.status !== "APPROVED") {
-        await deductApprovedLeaveBalance(tx, existing);
-      } else if (body.status !== "APPROVED" && existing.status === "APPROVED") {
-        await restoreApprovedLeaveBalance(tx, existing);
-      }
+      if (existing.status === "APPROVED") await restoreApprovedLeaveBalance(tx, existing);
       return true;
     });
     if (!changed) return err("This leave request was just changed by someone else. Refresh to see its current status.", 409);

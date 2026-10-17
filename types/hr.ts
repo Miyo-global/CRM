@@ -506,12 +506,6 @@ export interface RequestLeaveInput {
   halfDayPeriod?: "AM" | "PM";
 }
 
-export interface ApproveLeaveInput {
-  requestId: number;
-  status: "APPROVED" | "REJECTED";
-  rejectionReason?: string;
-}
-
 export interface GeneratePayrollInput {
   month: string;
 }
