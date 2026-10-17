@@ -43,11 +43,7 @@ import {
   sendWeeklyAttendanceReportEmail,
   sendMonthlyExpenseReportEmail,
 } from "@/lib/email/hr-reports";
-import {
-  sendDealStageChangeEmail,
-  sendLeadAssignedEmail,
-  sendTaskAssignedEmail,
-} from "@/lib/email/crm";
+import { sendTaskAssignedEmail } from "@/lib/email";
 import { sendDocumentExpiryReminderEmail } from "@/lib/email/hr-documents";
 import {
   sendSupportTicketCreatedEmail,
@@ -129,9 +125,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
     [TO],
   ) },
 
-  { name: "crm.dealStageChange", run: () => sendDealStageChangeEmail(TO, NAME, "Acme Corp - Annual Subscription", "Proposal", "Negotiation", "250000.00", ACTOR, 1) },
-  { name: "crm.leadAssigned", run: () => sendLeadAssignedEmail(TO, NAME, "Acme Corp", "Website", "HOT", ACTOR) },
-  { name: "crm.taskAssigned", run: () => sendTaskAssignedEmail(TO, NAME, "Follow up with prospect", "FOLLOW_UP", NEXT_WEEK, ACTOR, "Lead: Acme Corp") },
+  { name: "crm.taskAssigned", run: () => sendTaskAssignedEmail(TO, { title: "Collect signed NDA", dueDate: NEXT_WEEK, assignedBy: ACTOR }) },
 
   { name: "hr.documentExpiry", run: () => sendDocumentExpiryReminderEmail(TO, "Passport", NEXT_WEEK, 7) },
 

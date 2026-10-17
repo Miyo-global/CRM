@@ -110,17 +110,11 @@ export async function POST(req: NextRequest) {
           const dueStr = body.dueDate
             ? new Date(body.dueDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })
             : null;
-          const entityLabel = body.entityType ? `${body.entityType} #${body.entityId ?? ""}` : undefined;
-
-          await sendTaskAssignedEmail(
-            assignee.email,
-            assignee.name ?? "Team Member",
-            body.title,
-            body.type,
-            dueStr,
-            session.user.name ?? "Team Member",
-            entityLabel
-          );
+          await sendTaskAssignedEmail(assignee.email, {
+            title: body.title,
+            dueDate: dueStr,
+            assignedBy: session.user.name ?? "Team Member",
+          });
         }
       })().catch(() => {});
     }

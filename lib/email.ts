@@ -70,9 +70,6 @@ import { appUrl } from "./app-url";
 import {
   getVerificationEmailTemplate,
   getMonthlyExpenseReportTemplate,
-  getTaskAssignedEmailTemplate,
-  getDealStageChangeEmailTemplate,
-  getLeadAssignedEmailTemplate,
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
 } from "./email-templates";
@@ -261,55 +258,26 @@ export async function sendMonthlyExpenseReportEmail(
 
 
 
+/** MIYO-0283: the hand-written task-assigned template. */
 export async function sendTaskAssignedEmail(
   email: string,
-  assigneeName: string,
-  taskTitle: string,
-  taskType: string,
-  dueDate: string | null,
-  creatorName: string,
-  entityLabel?: string
+  task: { title: string; dueDate?: string | null; assignedBy: string; url?: string },
 ) {
-  await sendEmail({
+  await sendTemplateEmail("task-assigned", {
     to: email,
-    subject: `Task Assigned: ${taskTitle}`,
-    html: getTaskAssignedEmailTemplate(assigneeName, taskTitle, taskType, dueDate, creatorName, entityLabel),
+    category: "tasks",
+    vars: {
+      task_title: task.title,
+      due_date: task.dueDate?.trim() || "not set",
+      assigned_by: task.assignedBy,
+      task_url: task.url ?? `${baseUrl}/tasks`,
+    },
   });
 }
 
 
-export async function sendDealStageChangeEmail(
-  email: string,
-  recipientName: string,
-  dealName: string,
-  previousStage: string,
-  newStage: string,
-  dealValue: string | null,
-  changedBy: string,
-  dealId: number
-) {
-  await sendEmail({
-    to: email,
-    subject: `Deal ${newStage === "WON" ? "Won" : newStage === "LOST" ? "Lost" : "Updated"}: ${dealName}`,
-    html: getDealStageChangeEmailTemplate(recipientName, dealName, previousStage, newStage, dealValue, changedBy, dealId),
-  });
-}
 
 
-export async function sendLeadAssignedEmail(
-  email: string,
-  repName: string,
-  leadName: string,
-  source: string,
-  priority: string,
-  assignedBy: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `New Lead Assigned: ${leadName}`,
-    html: getLeadAssignedEmailTemplate(repName, leadName, source, priority, assignedBy),
-  });
-}
 
 
 

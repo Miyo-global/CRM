@@ -77,14 +77,11 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
           const dueStr = updated.dueDate
             ? new Date(updated.dueDate).toLocaleDateString(DEFAULT_LOCALE, { day: "numeric", month: "short", year: "numeric" })
             : null;
-          await sendTaskAssignedEmail(
-            assignee.email,
-            assignee.name ?? "Team Member",
-            updated.title,
-            updated.type ?? "CUSTOM",
-            dueStr,
-            session.user.name ?? "Team Member"
-          );
+          await sendTaskAssignedEmail(assignee.email, {
+            title: updated.title,
+            dueDate: dueStr,
+            assignedBy: session.user.name ?? "Team Member",
+          });
         }
       })().catch(() => {});
     }
