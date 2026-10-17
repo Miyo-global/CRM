@@ -120,25 +120,3 @@ export const stats = [
   { value: "Secure", label: "End-to-end" },
 ];
 
-export const testimonials = [
-  {
-    quote:
-      "Miyo Global replaced 5 separate tools. Our HR, sales, and dev teams finally speak the same language.",
-    name: "Arjun Mehta",
-    role: "CTO, FinScale",
-    rating: 5,
-  },
-  {
-    quote:
-      "The sprint + CRM combo is game-changing. We track leads and sprints in the same view now.",
-    name: "Priya Sharma",
-    role: "Head of Sales, BuildBridge",
-    rating: 5,
-  },
-  {
-    quote: "Payroll automation alone saved us 20+ hours per month. Setup was surprisingly easy.",
-    name: "Rohit Das",
-    role: "HR Director, TechNest",
-    rating: 5,
-  },
-];

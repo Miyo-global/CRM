@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
-  Star,
   CheckCircle2,
   Shield,
   Zap,
@@ -19,7 +18,7 @@ import { IconChip } from "@/components/ui/icon-chip";
 import {
   fadeUp, stagger, scaleIn,
   SectionReveal, StaggerReveal,
-  features, stats, testimonials,
+  features, stats,
 } from "./landing-shared";
 import { LandingFooter } from "./landing-footer";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
@@ -265,36 +264,6 @@ export function LandingPage() {
                 </div>
               </SectionReveal>
             </div>
-          </div>
-        </section>
-
-        <section className="py-24 lg:py-32">
-          <div className="container mx-auto px-4 lg:px-8">
-            <SectionReveal className="text-center mb-12">
-              <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-brand-text">Testimonials</p>
-              <h2 className="font-display text-3xl font-bold tracking-tight">Trusted by growing teams</h2>
-            </SectionReveal>
-
-            <StaggerReveal className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
-              {testimonials.map((t) => (
-                <motion.div
-                  key={t.name}
-                  variants={scaleIn}
-                  className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-xs"
-                >
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-gold-400 text-gold-500" />
-                    ))}
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">&ldquo;{t.quote}&rdquo;</p>
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </StaggerReveal>
           </div>
         </section>
 
