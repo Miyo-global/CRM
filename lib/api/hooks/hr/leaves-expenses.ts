@@ -242,6 +242,7 @@ export function useHrLeaveApprovals(enabled = true) {
     queryKey: ["miyoglobal", "hr", "leaves", "team"] as const,
     queryFn: () => apiClient.get<LeaveApprovalsResult>("/hr/leaves/team"),
     enabled,
+    retry: false,
   });
 }
 

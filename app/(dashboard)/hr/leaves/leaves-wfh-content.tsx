@@ -44,7 +44,9 @@ export function LeavesWfhContent() {
   const { data: contextData, isLoading: contextLoading } = useHrLeaveContext();
   const { data: myData, isLoading: myLoading } = useHrMyLeaveRequests();
   const { data: approvalsData, isLoading: approvalsLoading, isError: approvalsError, error: approvalsErrorObj, refetch: refetchApprovals } =
-    useHrLeaveApprovals(isAdmin);
+    // Managers approve their reports' leave too (MIYO-0084), so everyone asks;
+    // the API answers 403 for someone with no team and no routed requests.
+    useHrLeaveApprovals(true);
   const { data: thisWeekData } = useHrLeavesThisWeek();
   const { data: pendingWfhRequests } = useHrPendingWfhRequests();
 
@@ -79,6 +81,7 @@ export function LeavesWfhContent() {
       ).length
     : 0;
   const totalPendingApprovals = actionableLeaveCount + actionableWfhCount;
+  const showApprovals = isAdmin || allIncomingLeaveRequests.length > 0;
 
   // Days already awaiting approval, so the balance hint and validation count
   // them against the balance (A29).
@@ -204,7 +207,7 @@ export function LeavesWfhContent() {
               >
                 Work From Home
               </TabsTrigger>
-              {isAdmin && (
+              {showApprovals && (
                 <TabsTrigger
                   value="approvals"
                   className="relative"
@@ -231,7 +234,7 @@ export function LeavesWfhContent() {
               <WfhTabContent />
             </TabsContent>
 
-            {isAdmin && (
+            {showApprovals && (
               <TabsContent value="approvals" className="mt-4">
                 {approvalsLoading ? (
                   <div className="space-y-3">
