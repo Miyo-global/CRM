@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computePayroll, type PayrollComputeInput } from "../compute";
-import { payrollRowValues } from "../to-row";
+import { generatedThroughFor, payrollRowValues } from "../to-row";
 
 /**
  * A3: the preview endpoint and the generate routes call the same loader and the
@@ -57,5 +57,18 @@ describe("preview equals the saved record", () => {
       );
       expect(r.netSalary).toBeCloseTo(r.grossSalary - r.totalDeductions, 2);
     }
+  });
+});
+
+describe("generatedThroughFor (MIYO-0074)", () => {
+  it("caps an unfinished month at today", () => {
+    expect(generatedThroughFor("2026-10", undefined, "2026-10-15")).toBe("2026-10-15");
+  });
+  it("uses the month end once the month is over", () => {
+    expect(generatedThroughFor("2026-09", undefined, "2026-10-15")).toBe("2026-09-30");
+    expect(generatedThroughFor("2024-02", undefined, "2026-10-15")).toBe("2024-02-29");
+  });
+  it("respects an earlier custom period end", () => {
+    expect(generatedThroughFor("2026-09", "2026-09-20", "2026-10-15")).toBe("2026-09-20");
   });
 });

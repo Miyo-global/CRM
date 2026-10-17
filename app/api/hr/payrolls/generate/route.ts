@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
             orgId: session.orgId,
             userId: body.userId,
             generatedBy: session.user.id,
+            periodEnd: body.periodEnd,
           }),
         )
         .returning();

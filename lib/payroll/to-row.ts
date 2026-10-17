@@ -1,4 +1,15 @@
 import type { PayrollComputeResult } from "./compute";
+import { getTodayString } from "@/lib/date-utils";
+
+/**
+ * Last day counted for a run: the month end, or today (IST) for a month that
+ * has not ended yet, or an earlier custom period end (MIYO-0074).
+ */
+export function generatedThroughFor(month: string, periodEnd?: string, today = getTodayString()): string {
+  const [y, m] = month.split("-").map(Number);
+  const monthEnd = `${month}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+  return [monthEnd, today, periodEnd].filter((d): d is string => !!d).sort()[0];
+}
 
 /**
  * Map a computed run onto payroll table columns. Shared by the per-employee
@@ -7,7 +18,7 @@ import type { PayrollComputeResult } from "./compute";
  */
 export function payrollRowValues(
   run: PayrollComputeResult,
-  meta: { orgId: string; userId: string; generatedBy: string },
+  meta: { orgId: string; userId: string; generatedBy: string; periodEnd?: string },
 ) {
   return {
     orgId: meta.orgId,
@@ -38,5 +49,6 @@ export function payrollRowValues(
     overtimeDays: run.overtimeDays.toString(),
     overtimeAmount: run.overtimeAmount.toString(),
     leaveDaysDisplay: run.paidLeaveDays.toString(),
+    generatedThrough: generatedThroughFor(run.month, meta.periodEnd),
   };
 }

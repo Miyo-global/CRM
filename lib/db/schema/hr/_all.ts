@@ -150,6 +150,8 @@ export const payrolls = pgTable("payrolls", {
   overtimeAmount: decimal("overtime_amount").default("0"),
   leaveDaysDisplay: decimal("leave_days_display"),
   payslipUrl: text("payslip_url"),
+  /** Last day of the month the attendance was counted up to (MIYO-0074). */
+  generatedThrough: date("generated_through"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_payrolls_org_month").on(table.orgId, table.month),
