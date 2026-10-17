@@ -1,8 +1,5 @@
 import { sendEmail } from "./sender";
-import {
-  getHolidayAnnouncementEmailTemplate,
-  getCompanyAnnouncementEmailTemplate,
-} from "../email-templates";
+import { getHolidayAnnouncementEmailTemplate } from "../email-templates";
 
 export async function sendHolidayAnnouncementEmail(
   email: string,
@@ -17,19 +14,6 @@ export async function sendHolidayAnnouncementEmail(
   });
 }
 
-export async function sendCompanyAnnouncementEmail(
-  email: string,
-  subject: string,
-  message: string,
-  announcedBy: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Announcement: ${subject}`,
-    html: getCompanyAnnouncementEmailTemplate(subject, message, announcedBy),
-  });
-}
-
 export async function sendBulkHolidayAnnouncement(
   emails: string[],
   holidayName: string,
@@ -38,18 +22,6 @@ export async function sendBulkHolidayAnnouncement(
 ) {
   const emailPromises = emails.map((email) =>
     sendHolidayAnnouncementEmail(email, holidayName, holidayDate, message)
-  );
-  await Promise.allSettled(emailPromises);
-}
-
-export async function sendBulkCompanyAnnouncement(
-  emails: string[],
-  subject: string,
-  message: string,
-  announcedBy: string
-) {
-  const emailPromises = emails.map((email) =>
-    sendCompanyAnnouncementEmail(email, subject, message, announcedBy)
   );
   await Promise.allSettled(emailPromises);
 }

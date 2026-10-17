@@ -24,9 +24,7 @@ import {
 } from "@/lib/email/hr-expenses";
 import {
   sendHolidayAnnouncementEmail,
-  sendCompanyAnnouncementEmail,
   sendBulkHolidayAnnouncement,
-  sendBulkCompanyAnnouncement,
 } from "@/lib/email/announcements";
 import {
   sendResignationSubmittedEmail,
@@ -38,7 +36,6 @@ import {
   sendReviewAssignedEmail,
 } from "@/lib/email/hr-performance";
 import {
-  sendPayslipGeneratedEmail,
   sendPayrollApprovedEmail,
 } from "@/lib/email/hr-payroll";
 import { sendAssetAssignedEmail } from "@/lib/email/hr-assets";
@@ -102,9 +99,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "hr.expensePaid", run: () => sendExpensePaidEmail(TO, NAME, "Travel", "1500.00", "TXN-987654") },
 
   { name: "announce.holiday", run: () => sendHolidayAnnouncementEmail(TO, "Diwali", "08 Nov 2026", "Office will remain closed on this day.") },
-  { name: "announce.company", run: () => sendCompanyAnnouncementEmail(TO, "All-hands meeting Friday", "Please join the all-hands at 4pm IST on Friday.", ACTOR) },
   { name: "announce.bulkHoliday", run: () => sendBulkHolidayAnnouncement([TO], "Christmas Day", "25 Dec 2026", "Wishing the team happy holidays.") },
-  { name: "announce.bulkCompany", run: () => sendBulkCompanyAnnouncement([TO], "Q1 results announcement", "Q1 results will be shared on Monday morning.", ACTOR) },
 
   { name: "hr.resignationSubmitted", run: () => sendResignationSubmittedEmail(TO, NAME, "John Doe", "Senior Engineer", TODAY, NEXT_WEEK, 30, "Personal reasons") },
   { name: "hr.resignationApproved", run: () => sendResignationApprovedEmail(TO, NAME, ACTOR, NEXT_WEEK, 30, TODAY) },
@@ -114,7 +109,6 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "hr.workLogStatusRejected", run: () => sendWorkLogStatusEmail(TO, NAME, TODAY, "REJECTED", ACTOR, "Insufficient detail in entries") },
   { name: "hr.reviewAssigned", run: () => sendReviewAssignedEmail(TO, NAME, ACTOR, "2026-01-01", "2026-03-31") },
 
-  { name: "hr.payslipGenerated", run: () => sendPayslipGeneratedEmail(TO, NAME, "April 2026", "85,000.00") },
   { name: "hr.payrollApproved", run: () => sendPayrollApprovedEmail(TO, NAME, "April 2026", ACTOR) },
 
   { name: "hr.assetAssigned", run: () => sendAssetAssignedEmail(TO, NAME, "MacBook Pro 16\"", "Laptop", "MBP-2026-001") },
