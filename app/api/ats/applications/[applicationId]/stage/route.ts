@@ -15,6 +15,7 @@ import {
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { canOnJob } from "@/lib/ats/access";
 import { sendStageEmail } from "@/lib/ats/stage-emails";
+import { createAuditLog } from "@/lib/audit-log";
 import { logger } from "@/lib/logger";
 
 const bodySchema = z.object({
@@ -138,6 +139,15 @@ export async function PATCH(
           }
         }
       }
+
+      await createAuditLog({
+        action: "ats.stage_moved",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(applicationId),
+        targetType: "candidate_application",
+        metadata: { toStage: stage.name, reason: reason?.name },
+      });
 
       return ok({ ...updated, emailSent });
     } catch (e) {

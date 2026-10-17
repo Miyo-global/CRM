@@ -7,6 +7,7 @@ import { atsActivity, candidateOffers } from "@/lib/db/schema";
 import { ATS_ROLES } from "@/lib/constants/roles";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { newOfferToken, sendOfferEmail } from "@/lib/ats/offers";
+import { createAuditLog } from "@/lib/audit-log";
 
 /**
  * MIYO-0661: send the offer. An offer waiting on CEO approval does not go
@@ -59,6 +60,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ off
       actorId: session.user.id,
       type: "offer_sent",
       data: { offerId, expiresAt: expiresAt.toISOString() },
+    });
+
+    await createAuditLog({
+      action: "ats.offer_sent",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(offerId),
+      targetType: "candidate_offer",
+      metadata: { candidateId: offer.candidateId, expiresAt: expiresAt.toISOString() },
     });
 
     return ok({ sent: true, expiresAt });

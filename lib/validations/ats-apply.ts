@@ -12,6 +12,8 @@ export const applyFieldsSchema = z.object({
   /** Answers to the job's own questions, keyed by question id. */
   answers: z.record(z.string(), z.union([z.string(), z.boolean(), z.number()])).optional(),
   consent: z.literal(true, { message: "Tick the consent box to apply." }),
+  /** Optional: keep me on file for other roles. */
+  talentPool: z.coerce.boolean().optional(),
   /** MIYO-0640: a bot fills this; a person never sees it. */
   website: z.string().max(0).optional(),
 });
@@ -22,3 +24,8 @@ export type ApplyFields = z.infer<typeof applyFieldsSchema>;
 export const CONSENT_TEXT_VERSION = "2026-10-17";
 export const CONSENT_TEXT =
   "I agree that my application may be stored and shared with the hiring team for this role.";
+
+/** MIYO-0678: how long a talent-pool consent lasts before it must be asked again. */
+export const TALENT_POOL_MONTHS = 12;
+export const TALENT_POOL_TEXT =
+  `Keep my details on file for other roles for ${TALENT_POOL_MONTHS} months.`;

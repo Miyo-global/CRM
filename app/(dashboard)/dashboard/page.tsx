@@ -49,6 +49,9 @@ import { AnnouncementsWidget } from "@/components/dashboard/widgets/announcement
 import { WidgetSkeleton } from "@/components/dashboard/widgets/widget-skeleton";
 import { CeoAdminSection } from "@/features/dashboard/ceo-admin-section";
 import { HrHomeSection } from "@/features/dashboard/hr-home-section";
+import { HiringCard } from "@/features/dashboard/hiring-card";
+import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
+import { isAtsRole } from "@/lib/constants/roles";
 import { SPAN } from "@/features/dashboard/bento";
 
 export default function DashboardPage() {
@@ -315,6 +318,11 @@ export default function DashboardPage() {
 
         {isCeo && <CeoAdminSection />}
 
+        {ATS_MODULE_ENABLED && isAtsRole(role) && (
+          <div className="mb-6">
+            <HiringCard />
+          </div>
+        )}
         {isHrAdmin && <HrHomeSection />}
 
 

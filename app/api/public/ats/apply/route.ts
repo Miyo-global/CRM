@@ -25,6 +25,7 @@ import { sendApplicationEmails } from "@/lib/ats/application-emails";
 import {
   applyFieldsSchema,
   CONSENT_TEXT_VERSION,
+  TALENT_POOL_MONTHS,
 } from "@/lib/validations/ats-apply";
 import {
   RESUME_MAX_FILE_SIZE_BYTES,
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
     const fields = applyFieldsSchema.parse({
       ...raw,
       consent: raw.consent === "true" || raw.consent === "on",
+      talentPool: raw.talentPool === "true" || raw.talentPool === "on",
       answers: raw.answers ? JSON.parse(String(raw.answers)) : undefined,
     });
 
@@ -219,12 +221,30 @@ export async function POST(req: NextRequest) {
       await db.insert(atsApplicationAnswers).values(answers).onConflictDoNothing();
     }
 
-    await db.insert(atsConsents).values({
-      candidateId: candidate.id,
-      type: "PROCESSING",
-      textVersion: CONSENT_TEXT_VERSION,
-      ip,
-    });
+    const talentPoolExpiry = new Date();
+    talentPoolExpiry.setMonth(talentPoolExpiry.getMonth() + TALENT_POOL_MONTHS);
+
+    await db.insert(atsConsents).values([
+      {
+        candidateId: candidate.id,
+        type: "PROCESSING",
+        textVersion: CONSENT_TEXT_VERSION,
+        ip,
+      },
+      // MIYO-0678: the optional one. It expires, and the retention sweep
+      // reads that expiry.
+      ...(fields.talentPool
+        ? [
+            {
+              candidateId: candidate.id,
+              type: "TALENT_POOL",
+              textVersion: CONSENT_TEXT_VERSION,
+              ip,
+              expiresAt: talentPoolExpiry,
+            },
+          ]
+        : []),
+    ]);
 
     await db.insert(atsActivity).values({
       orgId: job.orgId,

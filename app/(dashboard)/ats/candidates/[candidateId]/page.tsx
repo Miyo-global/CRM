@@ -18,13 +18,14 @@ import {
 } from "@/lib/db/schema";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { atsPageAccess } from "@/lib/ats/page-access";
-import { isAtsRole } from "@/lib/constants/roles";
+import { isAtsRole, ROLES } from "@/lib/constants/roles";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatIST } from "@/lib/date-utils";
 import { getResumePreviewSrc } from "@/lib/files/resume-preview-url";
 import { ScheduleInterviewDialog } from "@/features/ats/interviews/schedule-interview-dialog";
+import { CandidatePrivacyActions } from "@/features/ats/candidates/candidate-privacy-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,8 @@ export default async function CandidateProfilePage({
   // Offers are money. Only the org-wide ATS roles see them; a hiring
   // manager or an interviewer seated on the job does not.
   const maySeeOffers = isAtsRole(member.role);
+  // Erasure is HR's and the admins', never a recruiter's.
+  const canErase = member.role === ROLES.CEO || member.role === ROLES.HR || member.role === ROLES.ADMIN;
 
   const [interviewRows, notes, activity, emails, offers] = await Promise.all([
     db
@@ -164,6 +167,11 @@ export default async function CandidateProfilePage({
     <PageWrapper
       title={`${candidate.firstName} ${candidate.lastName}`}
       subtitle={contact}
+      actions={
+        maySeeOffers ? (
+          <CandidatePrivacyActions candidateId={candidate.id} canErase={canErase} />
+        ) : undefined
+      }
     >
       {candidate.duplicateOfId && (
         <Card className="mb-4">

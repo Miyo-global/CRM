@@ -88,7 +88,15 @@ export type AuditAction =
   | "branch.deleted"
   | "hr.bonus_paid"
   | "hr.assets_exported"
-  | "role.deleted";
+  | "role.deleted"
+  // MIYO-0681: the ATS actions worth answering for later.
+  | "ats.offer_created"
+  | "ats.offer_sent"
+  | "ats.offer_answered"
+  | "ats.stage_moved"
+  | "ats.candidate_erased"
+  | "ats.candidate_exported"
+  | "ats.retention_run";
 
 interface AuditLogEntry {
   action: AuditAction;

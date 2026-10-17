@@ -63,6 +63,10 @@
     {
       "path": "/api/cron/ats-interview-reminders",
       "schedule": "5 * * * *"
+    },
+    {
+      "path": "/api/cron/ats-retention",
+      "schedule": "40 1 * * *"
     }
   ]
 }

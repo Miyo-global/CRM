@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { validateResumeFileClient } from "@/lib/files/resume-file-validation";
-import { CONSENT_TEXT } from "@/lib/validations/ats-apply";
+import { CONSENT_TEXT, TALENT_POOL_TEXT } from "@/lib/validations/ats-apply";
 
 export interface ApplyQuestion {
   id: number;
@@ -186,6 +186,11 @@ export function ApplyForm({
       <label className="flex items-start gap-3 text-sm text-foreground">
         <input type="checkbox" name="consent" value="true" required className="mt-1" />
         <span>{CONSENT_TEXT}</span>
+      </label>
+
+      <label className="flex items-start gap-3 text-sm text-foreground">
+        <input type="checkbox" name="talentPool" value="true" className="mt-1" />
+        <span>{TALENT_POOL_TEXT}</span>
       </label>
 
       {turnstileSiteKey && (

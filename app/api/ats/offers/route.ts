@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { atsActivity, candidateApplications, candidateOffers, jobPostings } from "@/lib/db/schema";
 import { ATS_ROLES } from "@/lib/constants/roles";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
+import { createAuditLog } from "@/lib/audit-log";
 
 const createSchema = z.object({
   applicationId: z.coerce.number().int().positive(),
@@ -77,6 +78,15 @@ export async function POST(req: NextRequest) {
         actorId: session.user.id,
         type: "offer_drafted",
         data: { offerId: created.id, designation: body.offeredDesignation },
+      });
+
+      await createAuditLog({
+        action: "ats.offer_created",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(created.id),
+        targetType: "candidate_offer",
+        metadata: { candidateId: found.candidateId, designation: body.offeredDesignation },
       });
 
       return ok(created, 201);

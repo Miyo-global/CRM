@@ -14,6 +14,7 @@ import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { ADMIN_ROLES } from "@/lib/constants/roles";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { offerByToken, sendOfferResponseEmail } from "@/lib/ats/offers";
+import { createAuditLog } from "@/lib/audit-log";
 import { logger } from "@/lib/logger";
 
 const bodySchema = z.object({
@@ -92,6 +93,16 @@ export async function POST(req: NextRequest) {
       candidateId: found.offer.candidateId,
       type: accepted ? "offer_accepted" : "offer_declined",
       data: { offerId: found.offer.id, reason: body.reason },
+    });
+
+    await createAuditLog({
+      action: "ats.offer_answered",
+      userId: "candidate",
+      orgId: found.offer.orgId,
+      targetId: String(found.offer.id),
+      targetType: "candidate_offer",
+      metadata: { decision: body.decision },
+      ipAddress: ip,
     });
 
     try {
