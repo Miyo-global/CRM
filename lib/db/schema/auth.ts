@@ -6,6 +6,7 @@ import { genderEnum, onboardingStatusEnum, onboardingDocStatusEnum } from "./enu
 import { departments } from "./hr";
 import { tickets } from "./projects";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { encryptedJson, encryptedText } from "../encrypted-columns";
 
 export const organizations = pgTable("organizations", {
   id: text("id").primaryKey(),
@@ -51,8 +52,8 @@ export const users = pgTable("users", {
   experienceYears: decimal("experience_years"),
   joiningDate: date("joining_date"),
   dateOfBirth: date("date_of_birth"),
-  taxId: text("tax_id"),
-  bankDetails: jsonb("bank_details").$type<{
+  taxId: encryptedText("tax_id"),
+  bankDetails: encryptedJson<{
     accountNumber: string;
     bankName: string;
     branch: string;
@@ -61,7 +62,7 @@ export const users = pgTable("users", {
     pfUanNumber?: string;
     swiftCode?: string;
     iban?: string;
-  }>(),
+  }>("bank_details"),
   image: text("image"),
   role: text("role").default("ENGINEERING").notNull(),
   departmentId: integer("department_id"),
@@ -89,7 +90,7 @@ export const users = pgTable("users", {
   totpSecret: text("totp_secret"),
   totpEnabled: boolean("totp_enabled").default(false).notNull(),
   passwordChangedAt: timestamp("password_changed_at"),
-  googleRefreshToken: text("google_refresh_token"),
+  googleRefreshToken: encryptedText("google_refresh_token"),
   googleEmail: text("google_email"),
   isProfilePictureRequired: boolean("is_profile_picture_required").default(false),
   bio: text("bio"),
@@ -111,12 +112,12 @@ export const accounts = pgTable("accounts", {
   type: text("type").notNull(),
   provider: text("provider").notNull(),
   providerAccountId: text("provider_account_id").notNull(),
-  refresh_token: text("refresh_token"),
-  access_token: text("access_token"),
+  refresh_token: encryptedText("refresh_token"),
+  access_token: encryptedText("access_token"),
   expires_at: integer("expires_at"),
   token_type: text("token_type"),
   scope: text("scope"),
-  id_token: text("id_token"),
+  id_token: encryptedText("id_token"),
   session_state: text("session_state"),
 }, (table) => ({
   compoundKey: {

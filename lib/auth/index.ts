@@ -233,10 +233,14 @@ const googleProvider =
       })
     : null;
 
+type AdapterAccountsTable = NonNullable<Parameters<typeof DrizzleAdapter<typeof db>>[1]>["accountsTable"];
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
-    accountsTable: accounts,
+    // Token columns are encrypted custom types (SEC-0006): same runtime shape,
+    // but the adapter types only accept plain text columns.
+    accountsTable: accounts as unknown as AdapterAccountsTable,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }) as Adapter,
