@@ -181,3 +181,20 @@ export function earnedSalary(monthlySalary: number, window: EmploymentWindow): n
   if (!PRORATE_JOINERS || window.daysEmployed >= window.calendarDays) return round2(monthlySalary);
   return round2((monthlySalary * window.daysEmployed) / PER_DAY_DIVISOR);
 }
+
+/**
+ * MIYO-0125: EMIs are stored rounded up, so n equal instalments collect up to
+ * a rupee more than the loan. Each instalment is capped at what is still
+ * owed, which makes the last one the remainder.
+ */
+export function emiDueFor(loan: {
+  amount: string;
+  emiAmount: string | null;
+  paidEmis: number | null;
+}): number {
+  const emi = parseFloat(loan.emiAmount ?? "0") || 0;
+  const total = parseFloat(loan.amount) || 0;
+  const outstanding = round2(total - emi * (loan.paidEmis ?? 0));
+  if (outstanding <= 0) return 0;
+  return Math.min(emi, outstanding);
+}

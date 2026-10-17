@@ -17,7 +17,7 @@ import {
   resolvePayrollMonthlyCtc,
 } from "@/lib/hr/salary-effective-dates";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
-import { daysInMonth, otMultiplier, perDayRate, round2 } from "./rules";
+import { daysInMonth, emiDueFor, otMultiplier, perDayRate, round2 } from "./rules";
 import type { PayrollComputeInput } from "./compute";
 
 export function todayIst(): string {
@@ -93,7 +93,7 @@ export async function loadPayrollInputs(
           inArray(salaryLoans.userId, opts.userIds),
           eq(salaryLoans.status, "ACTIVE"),
         ),
-        columns: { userId: true, emiAmount: true, paidEmis: true, totalEmis: true },
+        columns: { userId: true, amount: true, emiAmount: true, paidEmis: true, totalEmis: true },
       }),
       db
         .select({ userId: resignations.userId, lastWorkingDate: resignations.lastWorkingDate })
@@ -188,7 +188,7 @@ export async function loadPayrollInputs(
       bonus: opts.overrides?.[userId]?.bonus ?? 0,
       otherDeductions: opts.overrides?.[userId]?.otherDeductions ?? 0,
       structureDeductions: parseFloat(structure?.deductions ?? "0") || 0,
-      advanceRecoveryAmount: loan ? parseFloat(loan.emiAmount ?? "0") || 0 : 0,
+      advanceRecoveryAmount: loan ? emiDueFor(loan) : 0,
       statutory: structure
         ? {
             pfApplicable: structure.pfApplicable ?? false,

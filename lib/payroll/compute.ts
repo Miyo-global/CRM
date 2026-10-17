@@ -59,6 +59,8 @@ export interface PayrollComputeResult {
   structureDeductions: number;
   otherDeductions: number;
   advanceRecoveryAmount: number;
+  /** True when a loan EMI was due but net pay could not cover it (MIYO-0125). */
+  advanceRecoverySkipped: boolean;
   bonus: number;
   overtimeDays: number;
   overtimeHours: number;
@@ -120,6 +122,9 @@ export function computePayroll(input: PayrollComputeInput): PayrollComputeResult
   const emi = Math.max(0, input.advanceRecoveryAmount || 0);
   const room = grossSalary - deductionsBeforeRecovery;
   const recoveredLoan = emi > 0 && room >= emi ? emi : 0;
+  // MIYO-0125: a skipped EMI used to disappear silently. The run says so, and
+  // the caller tells HR.
+  const advanceRecoverySkipped = emi > 0 && recoveredLoan === 0;
   const totalDeductions = deductionsBeforeRecovery + recoveredLoan;
 
   return {
@@ -146,6 +151,7 @@ export function computePayroll(input: PayrollComputeInput): PayrollComputeResult
     structureDeductions: round2(structureDeductions),
     otherDeductions: round2(otherDeductions),
     advanceRecoveryAmount: round2(recoveredLoan),
+    advanceRecoverySkipped,
     bonus: round2(bonus),
     overtimeDays: window.empty ? 0 : Math.max(0, input.overtimeDays || 0),
     overtimeHours: window.empty ? 0 : Math.max(0, input.overtimeHours || 0),

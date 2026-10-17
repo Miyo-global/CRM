@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  emiDueFor,
   employmentWindow,
   overtimeAmountForDays,
   otMultiplier,
   perDayRate,
   professionalTax,
   professionalTaxBandLabel,
+  round2,
   splitEarnings,
 } from "../rules";
 import { computePayroll } from "../compute";
@@ -157,5 +159,26 @@ describe("rounding", () => {
       if (typeof value !== "number") continue;
       expect(Number(value.toFixed(2))).toBe(value);
     }
+  });
+});
+
+describe("emiDueFor (MIYO-0125)", () => {
+  it("collects exactly the loan over its instalments", () => {
+    // ₹1,000 over 3 EMIs, stored rounded up to 333.34.
+    const loan = { amount: "1000", emiAmount: "333.34", paidEmis: 0 };
+    const first = emiDueFor(loan);
+    const second = emiDueFor({ ...loan, paidEmis: 1 });
+    const third = emiDueFor({ ...loan, paidEmis: 2 });
+
+    expect([first, second, third]).toEqual([333.34, 333.34, 333.32]);
+    expect(round2(first + second + third)).toBe(1000);
+  });
+
+  it("stops once the loan is paid off", () => {
+    expect(emiDueFor({ amount: "1000", emiAmount: "333.34", paidEmis: 3 })).toBe(0);
+  });
+
+  it("is zero when no EMI is set", () => {
+    expect(emiDueFor({ amount: "1000", emiAmount: null, paidEmis: 0 })).toBe(0);
   });
 });

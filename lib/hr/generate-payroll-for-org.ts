@@ -6,6 +6,8 @@ import { eq, and, inArray } from "drizzle-orm";
 import { loadPayrollInputs } from "@/lib/payroll/load-inputs";
 import { computePayroll } from "@/lib/payroll/compute";
 import { payrollRowValues } from "@/lib/payroll/to-row";
+import { notifyByRoles } from "@/server/actions/create-notification";
+import { ROLES } from "@/lib/constants/roles";
 
 export interface GeneratePayrollForOrgOptions {
   orgId: string;
@@ -71,13 +73,25 @@ export async function generatePayrollForOrg(
   });
 
   const newPayrolls = [];
+  const emiSkippedFor: string[] = [];
   for (const userId of pendingUserIds) {
     const input = inputs.get(userId);
     if (!input || input.monthlySalary <= 0) continue;
     const run = computePayroll(input);
     // Not employed in this month (joined later, or already left): no payslip.
     if (run.notEmployed) continue;
+    if (run.advanceRecoverySkipped) emiSkippedFor.push(userId);
     newPayrolls.push(payrollRowValues(run, { orgId, userId, generatedBy }));
+  }
+
+  // MIYO-0125: an EMI that net pay could not cover used to vanish quietly.
+  if (emiSkippedFor.length > 0) {
+    void notifyByRoles(orgId, [ROLES.CEO, ROLES.HR], {
+      type: "WARNING",
+      title: "Loan EMI not recovered",
+      message: `${emiSkippedFor.length} payslip${emiSkippedFor.length === 1 ? "" : "s"} for ${month} could not cover the loan EMI, so it was not deducted. The loan schedule is unchanged.`,
+      link: "/hr/loans",
+    });
   }
 
   if (newPayrolls.length === 0) return { generated: 0, payrollIds: [] };
