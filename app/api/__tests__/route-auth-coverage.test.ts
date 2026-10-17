@@ -19,6 +19,7 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "health/route.ts": "health probe",
   "inngest/route.ts": "Inngest serve() verifies its signing key",
   "public/intake/[token]/route.ts": "public project intake form",
+  "public/ats/offer-response/route.ts": "candidate accepting or declining an offer (MIYO-0662): identified by a hashed one-time token, rate limited",
   "public/ats/apply/route.ts": "careers site application (MIYO-0639): honeypot, Turnstile and a 5/hour limit per IP and email",
   "push/vapid-public-key/route.ts": "public VAPID key",
   "hr/integrations/biometric/route.ts": "x-api-key header",

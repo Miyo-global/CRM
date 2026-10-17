@@ -2225,6 +2225,8 @@ export const candidateOffers = pgTable("candidate_offers", {
   ceoReviewedBy: text("ceo_reviewed_by").references(() => users.id),
   ceoReviewedAt: timestamp("ceo_reviewed_at"),
   ceoRemarks: text("ceo_remarks"),
+  // MIYO-0661: which letter template this offer renders with.
+  offerLetterTemplateId: integer("offer_letter_template_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [

@@ -57,7 +57,25 @@ function formatDesignation(str: string) {
   }).join(" ");
 }
 
-export function OnboardingWizard() {
+/**
+ * MIYO-0663: a hire that came through the ATS arrives with the candidate's
+ * details already filled in, and the application is closed once the
+ * employee exists.
+ */
+export interface OnboardingPrefill {
+  applicationId: number;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string | null;
+  designation?: string | null;
+  departmentId?: number | null;
+  departmentName?: string | null;
+  joiningDate?: string | null;
+  monthlySalary?: string | null;
+}
+
+export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
   const router = useRouter();
@@ -112,6 +130,25 @@ export function OnboardingWizard() {
     } as DefaultValues<FormValues>,
     mode: "onChange",
   });
+
+  // The prefill arrives after the first render, so the form is reset once
+  // it lands rather than being built around it.
+  useEffect(() => {
+    if (!prefill) return;
+    form.reset({
+      ...form.getValues(),
+      firstName: prefill.firstName ?? "",
+      lastName: prefill.lastName ?? "",
+      email: prefill.email ?? "",
+      phone: prefill.phone ?? "",
+      designation: prefill.designation ?? "",
+      departmentId: prefill.departmentId ?? undefined,
+      departmentName: prefill.departmentName ?? "",
+      joiningDate: prefill.joiningDate ? new Date(prefill.joiningDate) : new Date(),
+      monthlySalary: prefill.monthlySalary ? Number(prefill.monthlySalary) : undefined,
+    } as DefaultValues<FormValues> as FormValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill?.applicationId]);
 
   useEffect(() => {
     if (currentStep !== STEPS.length) {
@@ -206,15 +243,28 @@ export function OnboardingWizard() {
           designation: formatDesignation(data.designation),
         } as import("@/types/hr").OnboardEmployeeInput,
         {
-          onSuccess: () => {
+          onSuccess: async (result) => {
             toast.success("Employee onboarded successfully");
+            // Close the application this hire came from. A failure here
+            // leaves the employee in place; the recruiter can mark it later.
+            if (prefill?.applicationId && result?.userId) {
+              try {
+                await fetch(`/api/ats/applications/${prefill.applicationId}/hire`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ userId: result.userId }),
+                });
+              } catch {
+                toast.error("Employee created, but the application stayed open.");
+              }
+            }
             router.push("/hr/onboarding?tab=workflow");
           },
           onError: (err) => toast.error(err.message || "Failed to onboard employee"),
         }
       );
     },
-    [onboardEmployee, router, currentStep]
+    [onboardEmployee, router, currentStep, prefill?.applicationId]
   );
 
   return (

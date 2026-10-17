@@ -26,7 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { HrSheet } from "@/features/hr/hr-sheet";
-import { OnboardingWizard } from "@/components/hr/onboarding-wizard";
+import { OnboardingWizard, type OnboardingPrefill } from "@/components/hr/onboarding-wizard";
 
 import { apiClient } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -500,6 +500,15 @@ function InitiateSheet({
   );
 }
 
+/** MIYO-0663: the candidate's details, when the wizard was opened from a hire. */
+function useAtsPrefill(applicationId: number | null) {
+  return useQuery<OnboardingPrefill>({
+    queryKey: ["ats", "hire-prefill", applicationId],
+    enabled: applicationId !== null,
+    queryFn: () => apiClient.get<OnboardingPrefill>(`/ats/applications/${applicationId}/hire`),
+  });
+}
+
 function stalledBadge(row: OnboardingStatus): boolean {
   if (row.percentComplete >= 100) return false;
   if (!row.lastCompletedAt) return false;
@@ -663,6 +672,12 @@ export default function OnboardingPage() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const applicationId = useMemo(() => {
+    const raw = Number(searchParams.get("application"));
+    return Number.isInteger(raw) && raw > 0 ? raw : null;
+  }, [searchParams]);
+  const { data: atsPrefill } = useAtsPrefill(applicationId);
+
   const activeTab = useMemo<OnboardingTab>(() => {
     const tab = searchParams.get("tab");
     return isOnboardingTab(tab) ? tab : "wizard";
@@ -732,7 +747,7 @@ export default function OnboardingPage() {
           </TabsContent>
 
           <TabsContent value="wizard" className="mt-0">
-            <OnboardingWizard />
+            <OnboardingWizard prefill={atsPrefill} />
           </TabsContent>
 
           <TabsContent value="documents" className="mt-0">

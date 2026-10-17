@@ -244,6 +244,14 @@ export default async function CandidateProfilePage({
                   jobTitle={application.jobTitle}
                   people={people.map((p) => ({ id: p.id, name: p.name ?? p.email }))}
                 />
+                {maySeeOffers && (
+                  <Link
+                    href={`/hr/onboarding?application=${application.id}`}
+                    className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  >
+                    Hire
+                  </Link>
+                )}
               </li>
             ))}
             {applications.length === 0 && (

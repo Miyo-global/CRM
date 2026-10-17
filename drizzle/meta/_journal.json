@@ -778,6 +778,13 @@
       "when": 1792257498540,
       "tag": "0167_ats_activity_requisition",
       "breakpoints": true
+    },
+    {
+      "idx": 168,
+      "version": "7",
+      "when": 1792262308465,
+      "tag": "0168_offer_letter_template",
+      "breakpoints": true
     }
   ]
 }

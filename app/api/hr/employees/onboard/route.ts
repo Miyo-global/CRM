@@ -289,6 +289,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return ok({ success: true });
+    // MIYO-0663: the ATS needs the new user id to close the application.
+    return ok({ success: true, userId: newUser.id });
   }, req);
 }
