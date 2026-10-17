@@ -146,7 +146,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "onboarding.welcome", run: () => sendOnboardingWelcomeEmail(TO, NAME, TODAY, 8, ACTOR) },
   { name: "onboarding.task", run: () => sendOnboardingTaskEmail(TO, "John Doe", "3 IT tasks", { joiningDate: TODAY }) },
   { name: "onboarding.completeEmployee", run: () => sendOnboardingCompleteEmployeeEmail(TO, NAME) },
-  { name: "onboarding.completeHr", run: () => sendOnboardingCompleteHrEmail(TO, NAME, "John Doe") },
+  { name: "onboarding.completeHr", run: () => sendOnboardingCompleteHrEmail(TO, { name: "John Doe", id: "u-123", employeeCode: "MG-014", department: "Engineering" }, 8, TODAY) },
 
   { name: "hr.leaveRequest", run: () => sendLeaveRequestEmail(TO, NAME, "John Doe", "Annual Leave", TODAY, NEXT_WEEK, "Family vacation") },
   { name: "hr.leaveStatusApproved", run: () => sendLeaveStatusUpdateEmail(TO, NAME, "Annual Leave", TODAY, NEXT_WEEK, "APPROVED", ACTOR) },

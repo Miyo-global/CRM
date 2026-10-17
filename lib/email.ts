@@ -15,7 +15,12 @@ export {
   sendMfaDisabledEmail,
   sendMfaResetByAdminEmail,
 } from "./email/auth";
-export { sendOnboardingWelcomeEmail, sendOnboardingTaskEmail } from "./email/onboarding";
+export {
+  sendOnboardingWelcomeEmail,
+  sendOnboardingTaskEmail,
+  sendOnboardingCompleteEmployeeEmail,
+  sendOnboardingCompleteHrEmail,
+} from "./email/onboarding";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {
   sendHolidayAnnouncementEmail,
@@ -42,8 +47,6 @@ import {
   getTerminationEmailTemplate,
   getWorkLogApprovedEmailTemplate,
   getWorkLogRejectedEmailTemplate,
-  getOnboardingCompleteEmployeeEmailTemplate,
-  getOnboardingCompleteHrEmailTemplate,
   getTicketCreatedEmailTemplate,
   getTicketReplyEmailTemplate,
   getTicketStatusEmailTemplate,
@@ -760,29 +763,6 @@ export async function sendPayrollApprovedEmail(
   });
 }
 
-
-export async function sendOnboardingCompleteEmployeeEmail(
-  email: string,
-  employeeName: string
-) {
-  await sendEmail({
-    to: email,
-    subject: "Onboarding Complete — Welcome to the Team!",
-    html: getOnboardingCompleteEmployeeEmailTemplate(employeeName),
-  });
-}
-
-export async function sendOnboardingCompleteHrEmail(
-  email: string,
-  hrName: string,
-  employeeName: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Onboarding Complete: ${employeeName}`,
-    html: getOnboardingCompleteHrEmailTemplate(hrName, employeeName),
-  });
-}
 
 export async function sendRecognitionRecipientEmail(
   recipientEmail: string,

@@ -1,10 +1,6 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
+import { sendTemplateEmail } from "./sender";
 import { COMPANY_OFFICE_LOCATION, WORK_START_TIME } from "@/lib/constants/company";
 import { appUrl } from "@/lib/app-url";
-import {
-  getOnboardingCompleteEmployeeEmailTemplate,
-  getOnboardingCompleteHrEmailTemplate,
-} from "../email-templates";
 
 /** MIYO-0228: the hand-written onboarding-welcome template. */
 export async function sendOnboardingWelcomeEmail(
@@ -46,25 +42,38 @@ export async function sendOnboardingTaskEmail(
   });
 }
 
+/** MIYO-0231: the hand-written onboarding-complete-employee template. */
 export async function sendOnboardingCompleteEmployeeEmail(
   email: string,
-  employeeName: string
+  employeeName: string,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("onboarding-complete-employee", {
     to: email,
-    subject: "Onboarding Complete — Welcome to the Team!",
-    html: getOnboardingCompleteEmployeeEmailTemplate(employeeName),
+    vars: { first_name: employeeName.trim().split(/\s+/)[0] || employeeName },
   });
 }
 
+/** MIYO-0232: the hand-written onboarding-complete-hr template. */
 export async function sendOnboardingCompleteHrEmail(
-  email: string,
-  hrName: string,
-  employeeName: string
+  email: string | string[],
+  employee: {
+    name: string;
+    id: string;
+    employeeCode?: string | null;
+    department?: string | null;
+  },
+  taskCount: number,
+  completedOn: string,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("onboarding-complete-hr", {
     to: email,
-    subject: `Onboarding Complete: ${employeeName}`,
-    html: getOnboardingCompleteHrEmailTemplate(hrName, employeeName),
+    vars: {
+      employee_name: employee.name,
+      employee_id: employee.id,
+      employee_code: employee.employeeCode ?? "not set",
+      department: employee.department ?? "not set",
+      task_count: taskCount,
+      completed_on: completedOn,
+    },
   });
 }

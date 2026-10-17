@@ -5,6 +5,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { onboardingTasks, users, organizationMembers } from "@/lib/db/schema";
 import { sendOnboardingCompleteEmployeeEmail, sendOnboardingCompleteHrEmail } from "@/lib/email";
+import { formatIST } from "@/lib/date-utils";
 
 const patchSchema = z.object({
   status: z.enum(["COMPLETED", "PENDING"]),
@@ -66,7 +67,8 @@ export async function PATCH(
 
         const employee = await db.query.users.findFirst({
           where: eq(users.id, task.userId),
-          columns: { email: true, name: true },
+          columns: { email: true, name: true, employeeId: true },
+          with: { department: { columns: { name: true } } },
         });
 
         if (employee?.email) {
@@ -77,19 +79,34 @@ export async function PATCH(
         }
 
         const hrUsers = await db
-          .select({ email: users.email, name: users.name })
+          .select({ email: users.email })
           .from(organizationMembers)
           .innerJoin(users, eq(users.id, organizationMembers.userId))
           .where(and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.role, "HR")));
 
-        for (const hrUser of hrUsers) {
-          if (hrUser.email) {
-            await sendOnboardingCompleteHrEmail(
-              hrUser.email,
-              hrUser.name ?? "HR",
-              employee?.name ?? "Employee"
+        const hrEmails = hrUsers.map((u) => u.email).filter((e): e is string => Boolean(e));
+        if (hrEmails.length > 0) {
+          const completed = await db
+            .select({ id: onboardingTasks.id })
+            .from(onboardingTasks)
+            .where(
+              and(
+                eq(onboardingTasks.userId, task.userId),
+                eq(onboardingTasks.orgId, session.orgId),
+              ),
             );
-          }
+
+          await sendOnboardingCompleteHrEmail(
+            hrEmails,
+            {
+              name: employee?.name ?? "Employee",
+              id: task.userId,
+              employeeCode: employee?.employeeId,
+              department: employee?.department?.name,
+            },
+            completed.length,
+            `${formatIST(now)} IST`,
+          );
         }
       })().catch(() => {});
     }
