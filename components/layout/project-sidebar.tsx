@@ -19,6 +19,7 @@ import {
   Inbox,
   User,
   Users,
+  ArrowDownUp,
   Diamond,
   IndianRupee,
   Gauge,
@@ -70,6 +71,7 @@ function navItems(baseUrl: string): NavItem[] {
     { label: "Reports", icon: BarChart3, href: `${baseUrl}/analytics` },
     { label: "Workload", icon: Users, href: `${baseUrl}/workload` },
     { label: "My Tickets", icon: User, href: `${baseUrl}/my-tickets` },
+    { label: "Import / Export", icon: ArrowDownUp, href: `${baseUrl}/import-export` },
     { label: "Settings", icon: Settings, href: `${baseUrl}/settings` },
   ];
 }

@@ -29,7 +29,13 @@ export const createTicketSchema = z.object({
 
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 
-type CreateContext = { orgId: string; projectId: number; actorId: string };
+type CreateContext = {
+  orgId: string;
+  projectId: number;
+  actorId: string;
+  /** Off for bulk imports, which would otherwise email every assignee once per row (MIYO-0121). */
+  notify?: boolean;
+};
 
 export function ticketAssigneeIds(input: Pick<CreateTicketInput, "assigneeId" | "assigneeIds">): Set<string> {
   const ids = new Set<string>(input.assigneeIds ?? []);
@@ -95,9 +101,11 @@ export async function createTicket(ctx: CreateContext, input: CreateTicketInput)
     [{ action: "created", field: null, fromValue: null, toValue: null }],
   );
 
-  void notifyNewTicket(ctx, input, created, assigneeIds).catch((error) =>
-    logger.error("Failed to send new ticket notifications", { error }),
-  );
+  if (ctx.notify !== false) {
+    void notifyNewTicket(ctx, input, created, assigneeIds).catch((error) =>
+      logger.error("Failed to send new ticket notifications", { error }),
+    );
+  }
 
   return created;
 }
