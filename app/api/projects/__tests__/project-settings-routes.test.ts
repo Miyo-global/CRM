@@ -7,6 +7,8 @@ const findUser = vi.fn();
 const findOrgMember = vi.fn();
 const createInvitation = vi.fn();
 const returning = vi.fn();
+const findStatus = vi.fn();
+const ticketUpdate = vi.fn();
 
 function chain() {
   const proxy: unknown = new Proxy(
@@ -29,6 +31,15 @@ vi.mock("@/lib/db", () => ({
     },
     insert: () => chain(),
     update: () => chain(),
+    transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        query: { projectStatuses: { findFirst: (...a: unknown[]) => findStatus(...a) } },
+        update: (table: { status?: unknown }) => {
+          // tickets has a status column; project_statuses does not.
+          if (table && "status" in table) ticketUpdate();
+          return chain();
+        },
+      }),
   },
 }));
 
@@ -102,14 +113,30 @@ describe("column WIP limit", () => {
   });
 
   it("returns 404 for a column in another project", async () => {
-    returning.mockResolvedValue([]);
+    findStatus.mockResolvedValue(undefined);
     const { PATCH } = await load();
     expect((await PATCH(req(json({ wipLimit: 3 }, "PATCH")), p({ projectId: "1", statusId: "3" }))).status).toBe(404);
   });
 
   it("clears the limit with null", async () => {
+    findStatus.mockResolvedValue({ name: "DOING" });
     returning.mockResolvedValue([{ id: 3, name: "DOING", wipLimit: null }]);
     const { PATCH } = await load();
     expect((await PATCH(req(json({ wipLimit: null }, "PATCH")), p({ projectId: "1", statusId: "3" }))).status).toBe(200);
+    expect(ticketUpdate).not.toHaveBeenCalled();
+  });
+
+  it("renames the column and its tickets together (MIYO-0070)", async () => {
+    findStatus.mockResolvedValueOnce({ name: "DOING" }).mockResolvedValueOnce(undefined);
+    returning.mockResolvedValue([{ id: 3, name: "IN_FLIGHT", wipLimit: null }]);
+    const { PATCH } = await load();
+    expect((await PATCH(req(json({ name: "In flight" }, "PATCH")), p({ projectId: "1", statusId: "3" }))).status).toBe(200);
+    expect(ticketUpdate).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a rename onto an existing column", async () => {
+    findStatus.mockResolvedValueOnce({ name: "DOING" }).mockResolvedValueOnce({ id: 9 });
+    const { PATCH } = await load();
+    expect((await PATCH(req(json({ name: "DONE" }, "PATCH")), p({ projectId: "1", statusId: "3" }))).status).toBe(409);
   });
 });
