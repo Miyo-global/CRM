@@ -386,15 +386,16 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  let body: z.infer<typeof bodySchema>;
-  try {
-    const raw = await req.json();
-    body = bodySchema.parse(raw);
-  } catch {
-    return err("Invalid request body — expected { templateId, testEmail }", 400);
-  }
-
+  // SEC-0009: authorise first. Parsing the body before withAdmin answered an
+  // unauthenticated caller with the route's schema.
   return withAdmin(async (session) => {
+    let body: z.infer<typeof bodySchema>;
+    try {
+      body = bodySchema.parse(await req.json());
+    } catch {
+      return err("Invalid request body — expected { templateId, testEmail }", 400);
+    }
+
     if (body.testEmail.toLowerCase() !== (session.user.email ?? "").toLowerCase()) {
       return err("Test emails can only be sent to your own account email.", 403);
     }

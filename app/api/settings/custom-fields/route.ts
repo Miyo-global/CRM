@@ -41,18 +41,19 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let data: z.infer<typeof createSchema>;
-  try {
-    const body = await req.json();
-    data = createSchema.parse(body);
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      return err(e.issues.map((i) => i.message).join("; "), 400);
-    }
-    return err("Invalid request body", 400);
-  }
-
+  // SEC-0009: authorise first, then read the body. An unauthenticated POST
+  // used to come back with the field schema in the error message.
   return withAdmin(async (session) => {
+    let data: z.infer<typeof createSchema>;
+    try {
+      data = createSchema.parse(await req.json());
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return err(e.issues.map((i) => i.message).join("; "), 400);
+      }
+      return err("Invalid request body", 400);
+    }
+
     const existing = await db
       .select({ id: customFieldDefinitions.id })
       .from(customFieldDefinitions)
