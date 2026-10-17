@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
     const stageId = Number(params.get("stageId"));
     const tagId = Number(params.get("tagId"));
     const source = params.get("source");
+    // MIYO-0646: the talent pool is everyone with no live application.
+    const poolOnly = params.get("pool") === "1";
     const since = params.get("since");
     const limit = Math.min(Number(params.get("limit")) || 50, 200);
 
@@ -58,6 +60,15 @@ export async function GET(req: NextRequest) {
     if (source) filters.push(eq(candidates.source, source));
     if (since && !Number.isNaN(Date.parse(since))) {
       filters.push(gte(candidates.createdAt, new Date(since)));
+    }
+    if (poolOnly) {
+      filters.push(
+        sql`NOT EXISTS (
+          SELECT 1 FROM candidate_applications a
+          WHERE a.candidate_id = ${candidates.id}
+            AND a.status NOT IN ('REJECTED', 'WITHDRAWN')
+        )`,
+      );
     }
     if (Number.isInteger(tagId)) {
       filters.push(

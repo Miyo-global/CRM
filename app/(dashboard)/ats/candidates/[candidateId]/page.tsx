@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import {
   atsActivity,
   atsCandidateNotes,
+  atsCandidateTagLinks,
+  atsCandidateTags,
   atsEmailLog,
   candidateApplications,
   candidateOffers,
@@ -26,6 +28,11 @@ import { formatIST } from "@/lib/date-utils";
 import { getResumePreviewSrc } from "@/lib/files/resume-preview-url";
 import { ScheduleInterviewDialog } from "@/features/ats/interviews/schedule-interview-dialog";
 import { CandidatePrivacyActions } from "@/features/ats/candidates/candidate-privacy-actions";
+import {
+  CandidateNoteComposer,
+  CandidateTags,
+} from "@/features/ats/candidates/candidate-notes";
+import { CandidateFiles } from "@/features/ats/candidates/candidate-files";
 
 export const dynamic = "force-dynamic";
 
@@ -152,6 +159,12 @@ export default async function CandidateProfilePage({
       : Promise.resolve([]),
   ]);
 
+  const tagRows = await db
+    .select({ name: atsCandidateTags.name })
+    .from(atsCandidateTagLinks)
+    .innerJoin(atsCandidateTags, eq(atsCandidateTags.id, atsCandidateTagLinks.tagId))
+    .where(eq(atsCandidateTagLinks.candidateId, candidateId));
+
   // Who can be put on an interview panel.
   const people = await db
     .select({ id: users.id, name: users.name, email: users.email })
@@ -191,6 +204,10 @@ export default async function CandidateProfilePage({
         </Card>
       )}
 
+      <div className="mb-4">
+        <CandidateTags candidateId={candidate.id} tags={tagRows.map((t) => t.name)} />
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -199,6 +216,7 @@ export default async function CandidateProfilePage({
           <TabsTrigger value="interviews">Interviews</TabsTrigger>
           {maySeeOffers && <TabsTrigger value="offers">Offers</TabsTrigger>}
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="files">Files</TabsTrigger>
           <TabsTrigger value="emails">Emails</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -302,6 +320,10 @@ export default async function CandidateProfilePage({
         )}
 
         <TabsContent value="notes">
+          <CandidateNoteComposer
+            candidateId={candidate.id}
+            people={people.map((p) => ({ id: p.id, name: p.name ?? p.email }))}
+          />
           <ul className="grid gap-3 py-2 text-sm">
             {notes.map((note) => (
               <li key={note.id}>
@@ -313,6 +335,10 @@ export default async function CandidateProfilePage({
             ))}
             {notes.length === 0 && <li className="text-muted-foreground">No notes yet.</li>}
           </ul>
+        </TabsContent>
+
+        <TabsContent value="files">
+          <CandidateFiles candidateId={candidate.id} />
         </TabsContent>
 
         <TabsContent value="emails">

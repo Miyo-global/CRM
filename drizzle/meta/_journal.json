@@ -792,6 +792,20 @@
       "when": 1792263173332,
       "tag": "0169_ats_email_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 170,
+      "version": "7",
+      "when": 1792264909618,
+      "tag": "0170_application_kanban_state",
+      "breakpoints": true
+    },
+    {
+      "idx": 171,
+      "version": "7",
+      "when": 1792265020836,
+      "tag": "0171_candidate_attachments",
+      "breakpoints": true
     }
   ]
 }

@@ -43,7 +43,13 @@ function jobLine(job: CareersJob): string {
 export default async function CareersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ department?: string; location?: string }>;
+  searchParams: Promise<{
+    department?: string;
+    location?: string;
+    /** MIYO-0641: embed=1 drops the heading and the chrome for an iframe. */
+    embed?: string;
+    utm_source?: string;
+  }>;
 }) {
   if (!ATS_MODULE_ENABLED) notFound();
 
@@ -51,7 +57,17 @@ export default async function CareersPage({
   if (!org) notFound();
 
   const jobs = await getPublishedJobs(org.id);
-  const { department, location } = await searchParams;
+  const { department, location, embed, utm_source: utmSource } = await searchParams;
+  const embedded = embed === "1";
+
+  // Whatever brought someone here travels with them to the job and the form.
+  const trackedHref = (slug: string) => {
+    const query = new URLSearchParams();
+    if (utmSource) query.set("utm_source", utmSource);
+    if (embedded) query.set("embed", "1");
+    const qs = query.toString();
+    return `/careers/${slug}${qs ? `?${qs}` : ""}`;
+  };
 
   const departments = [...new Set(jobs.map((j) => j.departmentName).filter(Boolean))].sort() as string[];
   const locations = [...new Set(jobs.map((j) => j.location).filter(Boolean))].sort() as string[];
@@ -73,8 +89,8 @@ export default async function CareersPage({
   };
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-16">
-      <header className="border-b border-border pb-8">
+    <main className={embedded ? "w-full px-4 py-6" : "mx-auto w-full max-w-3xl px-6 py-16"}>
+      <header className={embedded ? "hidden" : "border-b border-border pb-8"}>
         {org.logo && (
           <Image
             src={org.logo}
@@ -146,7 +162,7 @@ export default async function CareersPage({
         {shown.map((job) => (
           <li key={job.id} className="py-5">
             <Link
-              href={`/careers/${job.slug}`}
+              href={trackedHref(job.slug)}
               className="text-lg font-medium text-foreground underline-offset-4 hover:underline"
             >
               {job.title}

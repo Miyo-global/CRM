@@ -60,10 +60,13 @@ export function ApplyForm({
   jobId,
   questions,
   turnstileSiteKey,
+  source,
 }: {
   jobId: number;
   questions: ApplyQuestion[];
   turnstileSiteKey?: string;
+  /** MIYO-0641: where the applicant came from, for the source report. */
+  source?: string;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +98,7 @@ export function ApplyForm({
     }
     if (Object.keys(answers).length > 0) data.set("answers", JSON.stringify(answers));
     data.set("jobId", String(jobId));
+    if (source) data.set("source", source);
 
     setSending(true);
     try {

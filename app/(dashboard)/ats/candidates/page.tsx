@@ -6,7 +6,9 @@ import { db } from "@/lib/db";
 import { candidateApplications, candidates, jobPostings } from "@/lib/db/schema";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { atsPageAccess } from "@/lib/ats/page-access";
+import Link from "next/link";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { Button } from "@/components/ui/button";
 import { CandidateSearch } from "@/features/ats/candidates/candidate-search";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +73,20 @@ export default async function AtsCandidatesPage() {
     .map((row) => ({ ...row, jobs: jobsByCandidate.get(row.id) ?? [] }));
 
   return (
-    <PageWrapper title="Candidates" subtitle="Everyone who has applied">
+    <PageWrapper
+      title="Candidates"
+      subtitle="Everyone who has applied"
+      actions={
+        <div className="flex gap-3">
+          <Button variant="outline" asChild>
+            <Link href="/ats/candidates/import">Import</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/ats/candidates/new">Add candidate</Link>
+          </Button>
+        </div>
+      }
+    >
       <CandidateSearch initial={visible} />
     </PageWrapper>
   );

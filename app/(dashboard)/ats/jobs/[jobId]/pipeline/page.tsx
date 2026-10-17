@@ -49,6 +49,8 @@ export default async function JobPipelinePage({
         source: candidateApplications.source,
         stageId: candidateApplications.stageId,
         appliedAt: candidateApplications.appliedAt,
+        state: candidateApplications.kanbanState,
+        blockedReason: candidateApplications.kanbanReason,
         // Time in stage: the last move, or the application date.
         lastMovedAt: sql<Date | null>`(
           SELECT max(a.created_at) FROM ats_activity a
@@ -73,6 +75,8 @@ export default async function JobPipelinePage({
       source: row.source,
       // An application from before stages existed sits in the first column.
       stageId: row.stageId ?? firstStageId,
+      state: row.state ?? "READY",
+      blockedReason: row.blockedReason,
       daysInStage: since ? Math.floor((now - new Date(since).getTime()) / 86_400_000) : 0,
     };
   });

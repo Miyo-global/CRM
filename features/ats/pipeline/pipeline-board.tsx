@@ -45,6 +45,9 @@ export interface PipelineCard {
   source: string | null;
   stageId: number | null;
   daysInStage: number;
+  /** MIYO-0655: READY or BLOCKED, with a word on why. */
+  state: string;
+  blockedReason: string | null;
 }
 
 export interface RefuseReason {
@@ -169,6 +172,11 @@ export function PipelineBoard({
                             >
                               {card.name}
                             </Link>
+                            {card.state === "BLOCKED" && (
+                              <p className="mt-1 text-xs text-foreground">
+                                Blocked{card.blockedReason ? `: ${card.blockedReason}` : ""}
+                              </p>
+                            )}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {[
                                 card.rating ? `${card.rating}/5` : null,

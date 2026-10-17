@@ -62,8 +62,31 @@ export function JobStatusActions({
     }
   }
 
+  async function duplicate() {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/ats/jobs/${jobId}/duplicate`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(body?.error ?? "Could not duplicate the job.");
+        return;
+      }
+      toast.success("Copied as a draft, without the candidates.");
+      router.push(`/ats/jobs/${body.id}/edit`);
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-3">
+      <Button variant="outline" asChild>
+        <Link href={`/ats/jobs/${jobId}/form`}>Application form</Link>
+      </Button>
+      <Button variant="outline" disabled={busy} onClick={() => void duplicate()}>
+        Duplicate
+      </Button>
       {status === "OPEN" && slug && (
         <Button variant="outline" asChild>
           <Link href={`/careers/${slug}`} target="_blank">

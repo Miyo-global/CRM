@@ -66,8 +66,10 @@ export async function generateMetadata({
 /** MIYO-0638: one role, with the JobPosting markup search engines read. */
 export default async function CareersJobPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ utm_source?: string }>;
 }) {
   if (!ATS_MODULE_ENABLED) notFound();
 
@@ -76,6 +78,8 @@ export default async function CareersJobPage({
   if (!found) notFound();
   const { org, job } = found;
   const open = jobIsOpen(job);
+  const { utm_source: utmSource } = await searchParams;
+  const applyHref = `/careers/${job.slug}/apply${utmSource ? `?utm_source=${encodeURIComponent(utmSource)}` : ""}`;
 
   const facts = [
     job.departmentName,
@@ -155,7 +159,7 @@ export default async function CareersJobPage({
       ) : (
         <div className="mt-8">
           <Link
-            href={`/careers/${job.slug}/apply`}
+            href={applyHref}
             className="inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
           >
             Apply for this role

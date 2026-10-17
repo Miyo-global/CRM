@@ -1418,6 +1418,10 @@ export const candidateApplications = pgTable("candidate_applications", {
   rating: integer("rating"),
   rejectedReasonId: integer("rejected_reason_id"),
   source: text("source"),
+  // MIYO-0655: the Odoo-style kanban flag — is this one ready to move, or
+  // waiting on something?
+  kanbanState: text("kanban_state").default("READY"),
+  kanbanReason: text("kanban_reason"),
   currentRoundIndex: integer("current_round_index"),
   stageHistory: jsonb("stage_history").$type<{ stage: string; changedAt: string; changedBy?: string; notes?: string }[]>().default([]),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -2065,6 +2069,11 @@ export const candidateDocuments = pgTable("candidate_documents", {
   declinedAt: timestamp("declined_at"),
   
   acceptanceDeadline: timestamp("acceptance_deadline"),
+  // MIYO-0647: the same table also holds plain attachments — a portfolio,
+  // a certificate — which have a file rather than generated HTML.
+  fileKey: text("file_key"),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
   createdBy: text("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

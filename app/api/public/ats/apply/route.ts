@@ -104,6 +104,10 @@ export async function POST(req: NextRequest) {
       return bad("This role is no longer taking applications.", 410);
     }
 
+    // MIYO-0641: a utm_source from a share link is where this came from.
+    const utmSource = form.get("source")?.toString().trim().slice(0, 60);
+    const sourceLabel = utmSource ? `CAREERS:${utmSource}` : "CAREERS";
+
     const resume = form.get("resume");
     if (!(resume instanceof File) || resume.size === 0) return bad("Attach your resume.");
     if (resume.size > RESUME_MAX_FILE_SIZE_BYTES) return bad("Resume must be under 5MB.");
@@ -165,7 +169,7 @@ export async function POST(req: NextRequest) {
       linkedinUrl: fields.linkedinUrl || null,
       resumeUrl: upload.key,
       resumeText: resumeText || null,
-      source: "CAREERS",
+      source: sourceLabel,
     };
 
     const candidate = existing
@@ -205,7 +209,7 @@ export async function POST(req: NextRequest) {
         candidateId: candidate.id,
         jobPostingId: job.id,
         coverLetter: fields.coverLetter || null,
-        source: "CAREERS",
+        source: sourceLabel,
         stageId: await firstStageId(job.orgId, job.id),
       })
       .returning();
@@ -251,7 +255,7 @@ export async function POST(req: NextRequest) {
       candidateId: candidate.id,
       applicationId: application.id,
       type: "applied",
-      data: { jobId: job.id, source: "CAREERS" },
+      data: { jobId: job.id, source: sourceLabel },
     });
 
     const team = await db

@@ -15,7 +15,13 @@ export const metadata: Metadata = {
 };
 
 /** MIYO-0639: the application form for one role. */
-export default async function ApplyPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ApplyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ utm_source?: string }>;
+}) {
   if (!ATS_MODULE_ENABLED) notFound();
 
   const org = await getCareersOrg();
@@ -66,6 +72,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ slug: st
 
       <ApplyForm
         jobId={job.id}
+        source={(await searchParams).utm_source}
         questions={questions}
         turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
       />

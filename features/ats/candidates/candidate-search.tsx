@@ -41,8 +41,34 @@ function toCsv(rows: CandidateRow[]): string {
 }
 
 /** MIYO-0643: search as you type, with the server doing the matching. */
+interface SavedView {
+  name: string;
+  query: string;
+  source: string;
+  pool: boolean;
+}
+
+/**
+ * MIYO-0654: saved views live in this browser. They are one person's own
+ * shortcuts, not shared state, so they do not need a table.
+ * ponytail: localStorage per browser; move to a table if people ask to
+ * share views or use them on a second machine.
+ */
+const VIEWS_KEY = "ats.candidate-views";
+
+function readViews(): SavedView[] {
+  try {
+    return JSON.parse(localStorage.getItem(VIEWS_KEY) ?? "[]") as SavedView[];
+  } catch {
+    return [];
+  }
+}
+
 export function CandidateSearch({ initial }: { initial: CandidateRow[] }) {
   const [query, setQuery] = useState("");
+  const [source, setSource] = useState("");
+  const [pool, setPool] = useState(false);
+  const [views, setViews] = useState<SavedView[]>([]);
   const [rows, setRows] = useState(initial);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -68,20 +94,48 @@ export function CandidateSearch({ initial }: { initial: CandidateRow[] }) {
   }
 
   useEffect(() => {
-    const term = query.trim();
+    setViews(readViews());
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (source) params.set("source", source);
+    if (pool) params.set("pool", "1");
+
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `/api/ats/candidates/search?q=${encodeURIComponent(term)}`,
-        );
+        const res = await fetch(`/api/ats/candidates/search?${params.toString()}`);
         if (res.ok) setRows(await res.json());
       } finally {
         setLoading(false);
       }
     }, 250);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, source, pool]);
+
+  function saveView() {
+    const name = window.prompt("Call this view what?");
+    if (!name?.trim()) return;
+    const next = [
+      ...views.filter((v) => v.name !== name.trim()),
+      { name: name.trim(), query, source, pool },
+    ];
+    setViews(next);
+    try {
+      localStorage.setItem(VIEWS_KEY, JSON.stringify(next));
+      toast.success("View saved in this browser.");
+    } catch {
+      toast.error("This browser would not save the view.");
+    }
+  }
+
+  function applyView(view: SavedView) {
+    setQuery(view.query);
+    setSource(view.source);
+    setPool(view.pool);
+  }
 
   return (
     <div className="grid gap-4">
@@ -91,6 +145,33 @@ export function CandidateSearch({ initial }: { initial: CandidateRow[] }) {
         placeholder="Name, email, skills or anything in the resume"
         aria-label="Search candidates"
       />
+
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label className="flex items-center gap-2 text-foreground">
+          <Checkbox checked={pool} onCheckedChange={(checked) => setPool(checked === true)} />
+          Talent pool only
+        </label>
+        <Input
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="Source"
+          aria-label="Filter by source"
+          className="h-9 w-40"
+        />
+        <Button variant="outline" size="sm" onClick={saveView}>
+          Save this view
+        </Button>
+        {views.map((view) => (
+          <Button
+            key={view.name}
+            variant="ghost"
+            size="sm"
+            onClick={() => applyView(view)}
+          >
+            {view.name}
+          </Button>
+        ))}
+      </div>
 
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
