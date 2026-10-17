@@ -11,6 +11,7 @@ import {
   candidateApplications,
   candidateOffers,
   candidates,
+  organizationMembers,
   interviews,
   jobPostings,
   users,
@@ -23,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatIST } from "@/lib/date-utils";
 import { getResumePreviewSrc } from "@/lib/files/resume-preview-url";
+import { ScheduleInterviewDialog } from "@/features/ats/interviews/schedule-interview-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -147,6 +149,13 @@ export default async function CandidateProfilePage({
       : Promise.resolve([]),
   ]);
 
+  // Who can be put on an interview panel.
+  const people = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(organizationMembers)
+    .innerJoin(users, eq(users.id, organizationMembers.userId))
+    .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true)));
+
   const contact = [candidate.email, candidate.phone, candidate.location]
     .filter(Boolean)
     .join(" · ");
@@ -221,7 +230,7 @@ export default async function CandidateProfilePage({
         <TabsContent value="applications">
           <ul className="grid gap-2 py-2 text-sm">
             {applications.map((application) => (
-              <li key={application.id} className="flex flex-wrap gap-x-3">
+              <li key={application.id} className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <Link
                   href={`/ats/jobs/${application.jobId}/pipeline`}
                   className="text-foreground underline-offset-4 hover:underline"
@@ -230,6 +239,11 @@ export default async function CandidateProfilePage({
                 </Link>
                 <span className="text-muted-foreground">{application.status}</span>
                 <span className="text-muted-foreground">{when(application.appliedAt)}</span>
+                <ScheduleInterviewDialog
+                  applicationId={application.id}
+                  jobTitle={application.jobTitle}
+                  people={people.map((p) => ({ id: p.id, name: p.name ?? p.email }))}
+                />
               </li>
             ))}
             {applications.length === 0 && (

@@ -43,7 +43,13 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ? [
               {
                 label: "Hiring",
-                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+                routes: [
+                  { label: "Hiring", icon: UserPlus, href: "/ats" },
+                  { label: "Requisitions", icon: ClipboardList, href: "/ats/requisitions", isSubItem: true },
+                  { label: "Jobs", icon: Briefcase, href: "/ats/jobs", isSubItem: true },
+                  { label: "Candidates", icon: Users, href: "/ats/candidates", isSubItem: true },
+                  { label: "Interviews", icon: CalendarCheck, href: "/ats/interviews", isSubItem: true },
+                ],
               },
             ]
           : []),
@@ -193,7 +199,13 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ? [
               {
                 label: "Hiring",
-                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+                routes: [
+                  { label: "Hiring", icon: UserPlus, href: "/ats" },
+                  { label: "Requisitions", icon: ClipboardList, href: "/ats/requisitions", isSubItem: true },
+                  { label: "Jobs", icon: Briefcase, href: "/ats/jobs", isSubItem: true },
+                  { label: "Candidates", icon: Users, href: "/ats/candidates", isSubItem: true },
+                  { label: "Interviews", icon: CalendarCheck, href: "/ats/interviews", isSubItem: true },
+                ],
               },
             ]
           : []),
@@ -453,7 +465,13 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           ? [
               {
                 label: "Hiring",
-                routes: [{ label: "Hiring", icon: UserPlus, href: "/ats" }],
+                routes: [
+                  { label: "Hiring", icon: UserPlus, href: "/ats" },
+                  { label: "Requisitions", icon: ClipboardList, href: "/ats/requisitions", isSubItem: true },
+                  { label: "Jobs", icon: Briefcase, href: "/ats/jobs", isSubItem: true },
+                  { label: "Candidates", icon: Users, href: "/ats/candidates", isSubItem: true },
+                  { label: "Interviews", icon: CalendarCheck, href: "/ats/interviews", isSubItem: true },
+                ],
               },
             ]
           : []),
