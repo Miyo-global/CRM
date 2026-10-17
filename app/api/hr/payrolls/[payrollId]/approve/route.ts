@@ -75,12 +75,7 @@ export async function PATCH(
           columns: { email: true, name: true },
         });
         if (employee?.email) {
-          await sendPayrollApprovedEmail(
-            employee.email,
-            employee.name ?? "Employee",
-            existing.month ?? "Current Month",
-            session.user.name ?? "Admin"
-          );
+          await sendPayrollApprovedEmail(employee.email, existing.month ?? "this month");
         }
       } catch (error) {
         logger.error("Failed to send payroll approved email", { payrollId, error });

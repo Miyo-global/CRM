@@ -1,17 +1,25 @@
-import { sendEmail } from "./sender";
-import { getPayrollApprovedEmailTemplate } from "../email-templates";
+import { sendEmail, sendTemplateEmail } from "./sender";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 import { BRAND } from "@/lib/design/brand-hex";
 
+/**
+ * MIYO-0242: the hand-written payroll-approved template.
+ *
+ * `payDate` is what the org's payroll schedule says; callers that cannot work
+ * it out pass nothing and the mail says the date is not set yet rather than
+ * inventing one.
+ */
 export async function sendPayrollApprovedEmail(
   email: string,
-  employeeName: string,
-  month: string,
-  approverName: string
+  monthLabel: string,
+  payDate?: string | null,
 ) {
-  await sendEmail({
+  await sendTemplateEmail("payroll-approved", {
     to: email,
-    subject: `Payroll Approved — ${month}`,
-    html: getPayrollApprovedEmailTemplate(employeeName, month, approverName),
+    category: "payroll",
+    vars: {
+      month_label: monthLabel,
+      pay_date: payDate?.trim() || "a date HR will confirm",
+    },
   });
 }

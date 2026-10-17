@@ -157,12 +157,7 @@ async function autoApprovePayrolls(
           columns: { email: true, name: true },
         });
         if (employee?.email) {
-          await sendPayrollApprovedEmail(
-            employee.email,
-            employee.name ?? "Employee",
-            row.month ?? "Current Month",
-            "Automatic Payroll",
-          );
+          await sendPayrollApprovedEmail(employee.email, row.month ?? "this month");
         }
       } catch (e) {
         logger.error("Failed to send auto-approval payroll email", {

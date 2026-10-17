@@ -17,6 +17,7 @@ export {
 } from "./email/auth";
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
+export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export {
   sendOnboardingWelcomeEmail,
   sendOnboardingTaskEmail,
@@ -57,7 +58,6 @@ import {
   getHelpdeskTicketEmailTemplate,
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
-  getPayrollApprovedEmailTemplate,
   getRecognitionRecipientEmailTemplate,
   getRecognitionShoutoutEmailTemplate,
 } from "./email-templates";
@@ -709,18 +709,6 @@ export async function sendAssetAssignedHrEmail(
   });
 }
 
-export async function sendPayrollApprovedEmail(
-  email: string,
-  employeeName: string,
-  month: string,
-  approverName: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Payroll Approved — ${month}`,
-    html: getPayrollApprovedEmailTemplate(employeeName, month, approverName),
-  });
-}
 
 
 export async function sendRecognitionRecipientEmail(

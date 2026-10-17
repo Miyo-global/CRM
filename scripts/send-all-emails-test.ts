@@ -109,7 +109,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "hr.workLogStatusRejected", run: () => sendWorkLogStatusEmail(TO, NAME, TODAY, "REJECTED", ACTOR, "Insufficient detail in entries") },
   { name: "hr.reviewAssigned", run: () => sendReviewAssignedEmail(TO, NAME, ACTOR, "2026-01-01", "2026-03-31") },
 
-  { name: "hr.payrollApproved", run: () => sendPayrollApprovedEmail(TO, NAME, "April 2026", ACTOR) },
+  { name: "hr.payrollApproved", run: () => sendPayrollApprovedEmail(TO, "April 2026", "30 April 2026") },
 
   { name: "hr.assetAssigned", run: () => sendAssetAssignedEmail(TO, NAME, "MacBook Pro 16\"", "Laptop", "MBP-2026-001") },
 
