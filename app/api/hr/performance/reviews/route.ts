@@ -124,9 +124,8 @@ export async function POST(req: NextRequest) {
         await sendReviewAssignedEmail(
           employee.email,
           employee.name ?? "Employee",
-          reviewer?.name ?? session.user.name ?? "Manager",
-          body.periodStart,
-          body.periodEnd
+          `${body.periodStart} to ${body.periodEnd}`,
+          body.periodEnd,
         );
       }
     })().catch((e) => logger.error("review assigned email failed", { error: e }));

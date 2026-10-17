@@ -19,6 +19,14 @@ export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export {
+  sendReviewAssignedEmail,
+  sendSelfReviewReminderEmail,
+  sendManagerReviewReminderEmail,
+  sendReviewPublishedEmail,
+  sendGoalSettingReminderEmail,
+  sendUnsatisfactoryPerformanceNoticeEmail,
+} from "./email/hr-performance";
+export {
   sendRecognitionRecipientEmail,
   sendRecognitionShoutoutEmail,
   sendResignationSubmittedEmail,
@@ -60,7 +68,6 @@ import {
   getTaskAssignedEmailTemplate,
   getDealStageChangeEmailTemplate,
   getLeadAssignedEmailTemplate,
-  getReviewAssignedEmailTemplate,
   getHelpdeskTicketEmailTemplate,
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
@@ -508,19 +515,6 @@ export async function sendLeadAssignedEmail(
 }
 
 
-export async function sendReviewAssignedEmail(
-  email: string,
-  employeeName: string,
-  reviewerName: string,
-  periodStart: string,
-  periodEnd: string
-) {
-  await sendEmail({
-    to: email,
-    subject: "Performance Review Assigned",
-    html: getReviewAssignedEmailTemplate(employeeName, reviewerName, periodStart, periodEnd),
-  });
-}
 
 
 export async function sendHelpdeskTicketEmail(
