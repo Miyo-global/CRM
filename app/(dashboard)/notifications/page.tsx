@@ -303,7 +303,7 @@ export default function NotificationsPage() {
         <div
           role="toolbar"
           aria-label="Bulk actions"
-          className="fixed bottom-6 left-1/2 z-sticky flex h-11 max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-full bg-secondary px-4 text-secondary-foreground shadow-lg animate-fade-up"
+          className="fixed bottom-6 left-1/2 z-sticky flex h-11 max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-full bg-secondary px-4 text-secondary-foreground shadow-lg"
         >
           <span className="whitespace-nowrap text-sm font-medium tabular-nums">{selected.size} selected</span>
           <Button

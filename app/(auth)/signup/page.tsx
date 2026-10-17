@@ -122,7 +122,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="w-full max-w-[400px] space-y-8 animate-fade-up">
+    <div className="w-full max-w-[400px] space-y-8">
       <div>
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Create your account</h1>
         <p className="mt-2 text-base text-muted-foreground">

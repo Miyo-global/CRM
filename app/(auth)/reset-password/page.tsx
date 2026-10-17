@@ -128,7 +128,7 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <div className="mb-8">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
           Reset your password

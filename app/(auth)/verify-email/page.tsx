@@ -79,7 +79,7 @@ function VerifyEmailForm() {
 
   if (isVerified) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={CheckCircle2} tone="success" size="lg" className="mb-5" />
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Email Verified!</h1>
         <p className="mt-2 text-base text-muted-foreground">Your email has been successfully verified</p>
@@ -96,7 +96,7 @@ function VerifyEmailForm() {
 
   if (verifyEmail.isPending) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={Loader2} tone="brand" size="lg" className="mb-5 [&_svg]:animate-spin" />
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Verifying Email</h1>
         <p className="mt-2 text-base text-muted-foreground">Please wait while we verify your email address</p>
@@ -106,7 +106,7 @@ function VerifyEmailForm() {
   }
 
   return (
-    <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+    <div className="flex w-full max-w-[400px] flex-col items-center text-center">
       <IconChip icon={Mail} tone="brand" size="lg" className="mb-5" />
       <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Check your email</h1>
       <p className="mt-2 text-base text-muted-foreground">

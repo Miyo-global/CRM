@@ -99,7 +99,7 @@ export default function SignInPage() {
   const hasGoogleProvider = !!process.env.NEXT_PUBLIC_GOOGLE_ENABLED;
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <div className="mb-8">
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
           Sign in

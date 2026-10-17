@@ -75,7 +75,7 @@ export default function MfaChallengePage() {
   const canSubmit = useBackup ? code.trim().length > 0 : code.trim().length === 6;
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <IconChip icon={ShieldCheck} tone="brand" size="lg" className="mb-5" />
       <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
         Two-factor authentication

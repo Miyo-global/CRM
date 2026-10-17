@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={CheckCircle2} tone="success" size="lg" />
         <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-foreground">
           Check Your Email
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <div className="mb-8">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Forgot Password</h1>
         <p className="mt-2 text-base text-muted-foreground">

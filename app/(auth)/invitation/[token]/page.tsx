@@ -90,7 +90,7 @@ export default function InvitationPage() {
 
   if (invitationError) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={X} tone="danger" size="lg" className="mb-5" />
         <p className="text-base text-muted-foreground">
           {invitationError instanceof Error ? invitationError.message : "This invitation is invalid or has expired."}
@@ -112,7 +112,7 @@ export default function InvitationPage() {
   }
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <div className="mb-6">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Join Organization</h1>
         <p className="mt-2 text-base text-muted-foreground">

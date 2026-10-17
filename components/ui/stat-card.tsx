@@ -66,11 +66,10 @@ export function StatCard({
   const content = (
     <div
       className={cn(
-        "group relative h-full animate-fade-up rounded-lg border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow] duration-150",
+        "group relative h-full rounded-lg border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow] duration-150",
         href && "cursor-pointer hover:border-border-strong hover:shadow-md",
         className
       )}
-      style={{ animationDelay: `${index * 40}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">

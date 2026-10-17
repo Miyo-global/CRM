@@ -98,7 +98,7 @@ function SetupPasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
         <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Invalid Link</h1>
         <p className="mb-6 text-base text-muted-foreground">
@@ -122,7 +122,7 @@ function SetupPasswordContent() {
 
   if (tokenError || !tokenInfo) {
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
         <IconChip icon={AlertCircle} tone="danger" size="lg" className="mb-5" />
         <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Link Expired</h1>
         <p className="mb-6 text-base text-muted-foreground">
@@ -136,7 +136,7 @@ function SetupPasswordContent() {
   }
 
   return (
-    <div className="w-full max-w-[400px] animate-fade-up">
+    <div className="w-full max-w-[400px]">
       <div className="mb-8">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
           Welcome, {tokenInfo.name}!

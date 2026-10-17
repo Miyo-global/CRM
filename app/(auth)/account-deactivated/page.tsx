@@ -5,7 +5,7 @@ import { IconChip } from "@/components/ui/icon-chip";
 
 export default function AccountDeactivatedPage() {
   return (
-    <div className="flex w-full max-w-[400px] flex-col items-center text-center animate-fade-up">
+    <div className="flex w-full max-w-[400px] flex-col items-center text-center">
       <IconChip icon={ShieldOff} tone="danger" size="lg" className="mb-5" />
 
       <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
