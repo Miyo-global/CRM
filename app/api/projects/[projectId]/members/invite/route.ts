@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       email: body.email,
       role: "ENGINEERING",
       invitedBy: session.user.id,
+      actorRole: session.user.role,
       projectId: guard.projectId,
       projectRole: body.role,
     });

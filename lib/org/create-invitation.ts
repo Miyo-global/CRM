@@ -5,20 +5,31 @@ import { invitations, organizationMembers, organizations, users } from "@/lib/db
 import { sendInvitationEmail } from "@/lib/email";
 import { createAuditLog } from "@/lib/audit-log";
 import { hashToken } from "@/lib/secret-crypto";
+import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 
 type InviteInput = {
   orgId: string;
   email: string;
   role: string;
   invitedBy: string;
+  /** Role of the inviter, so HR cannot invite someone straight in as CEO/ADMIN. */
+  actorRole: string | null | undefined;
   projectId?: number;
   projectRole?: string;
 };
 
-export type InviteResult = { ok: true; invitationId: string } | { ok: false; status: 400 | 409; message: string };
+export type InviteResult = { ok: true; invitationId: string } | { ok: false; status: 400 | 403 | 409; message: string };
 
 export async function createOrgInvitation(input: InviteInput): Promise<InviteResult> {
   const email = input.email.trim().toLowerCase();
+  const roleError = await checkRoleAssignment({
+    orgId: input.orgId,
+    actorRole: input.actorRole,
+    actorId: input.invitedBy,
+    newRole: input.role,
+  });
+  if (roleError) return { ok: false, status: roleError.status, message: roleError.message };
+  const role = input.role.trim().toUpperCase();
   const existingUser = await db.query.users.findFirst({ where: eq(users.email, email), columns: { id: true } });
   if (existingUser) {
     const existingMember = await db.query.organizationMembers.findFirst({
@@ -61,7 +72,7 @@ export async function createOrgInvitation(input: InviteInput): Promise<InviteRes
     email,
     token: hashToken(token),
     orgId: input.orgId,
-    role: input.role,
+    role,
     invitedBy: input.invitedBy,
     expiresAt,
     projectId: input.projectId,
@@ -76,7 +87,7 @@ export async function createOrgInvitation(input: InviteInput): Promise<InviteRes
     orgId: input.orgId,
     targetId: invitationId,
     targetType: "invitation",
-    metadata: { email, role: input.role, projectId: input.projectId },
+    metadata: { email, role, projectId: input.projectId },
   });
 
   return { ok: true, invitationId };

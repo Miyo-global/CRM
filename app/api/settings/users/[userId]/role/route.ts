@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { users, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { ALL_ROLES } from "@/lib/constants/roles";
+import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 
@@ -33,13 +33,17 @@ export async function POST(
 
     const input = await parseBody(req, updateRoleSchema);
 
-    if (!ALL_ROLES.includes(input.role as (typeof ALL_ROLES)[number])) {
-      return err(`Invalid role. Valid roles: ${ALL_ROLES.join(", ")}`, 400);
-    }
-
-    if (userId === session.user.id) {
-      return err("You cannot change your own role", 403);
-    }
+    // Privilege-escalation gate (SEC-0001): only the CEO may grant or remove CEO/ADMIN.
+    const roleError = await checkRoleAssignment({
+      orgId: session.orgId,
+      actorRole: session.user.role,
+      actorId: session.user.id,
+      targetUserId: userId,
+      targetCurrentRole: member.role,
+      newRole: input.role,
+    });
+    if (roleError) return err(roleError.message, roleError.status);
+    input.role = input.role.trim().toUpperCase();
 
     const previousRole = member.role;
 

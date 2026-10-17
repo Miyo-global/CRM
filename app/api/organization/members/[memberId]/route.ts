@@ -5,6 +5,7 @@ import { organizationMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
 import { createAuditLog } from "@/lib/audit-log";
+import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { z } from "zod";
 
 const updateRoleSchema = z.object({
@@ -24,7 +25,22 @@ export async function PATCH(
       }
 
       const body = await req.json();
-      const { role } = updateRoleSchema.parse(body);
+      const role = updateRoleSchema.parse(body).role.trim().toUpperCase();
+
+      const member = await db.query.organizationMembers.findFirst({
+        where: and(eq(organizationMembers.userId, userId), eq(organizationMembers.orgId, session.orgId)),
+        columns: { role: true },
+      });
+      if (!member) return err("Member not found in this organization", 404);
+      const roleError = await checkRoleAssignment({
+        orgId: session.orgId,
+        actorRole: session.user.role,
+        actorId: session.user.id,
+        targetUserId: userId,
+        targetCurrentRole: member.role,
+        newRole: role,
+      });
+      if (roleError) return err(roleError.message, roleError.status);
 
       await db.transaction(async (tx) => {
         const updated = await tx

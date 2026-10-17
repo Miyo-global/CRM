@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         email: input.email,
         role: input.role,
         invitedBy: session.user.id,
+        actorRole: session.user.role,
       });
       if (!result.ok) return err(result.message, result.status);
       const { invitationId } = result;
