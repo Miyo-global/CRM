@@ -41,6 +41,15 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             { orgId: session.orgId, projectId: guard.projectId, ticketId: id, actorId: session.user.id },
             [{ action: "status_changed", field: "status", fromValue: outcome.fromStatus, toValue: outcome.ticket.status }],
           );
+          // MIYO-0122: dragging a card between columns is a move too.
+          void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+            dispatchWebhook(session.orgId, "ticket.moved", {
+              ticketId: id,
+              projectId: guard.projectId,
+              status: outcome.ticket.status,
+              fromStatus: outcome.fromStatus,
+            }),
+          );
         }
         return ok({ ticket: outcome.ticket });
     }

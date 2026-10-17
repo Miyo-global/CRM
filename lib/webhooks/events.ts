@@ -23,6 +23,10 @@ export const WEBHOOK_EVENTS = [
   "employee.onboarded",
   "employee.hired",
   "leave.approved",
+  // MIYO-0122: project ticket events.
+  "ticket.created",
+  "ticket.updated",
+  "ticket.moved",
 ] as const;
 
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];

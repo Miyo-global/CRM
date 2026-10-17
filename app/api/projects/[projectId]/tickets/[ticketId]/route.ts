@@ -153,6 +153,22 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       diffTicketActivity(before, pickChanged(after, body)),
     );
 
+    // MIYO-0122: a status change is a move, anything else an update.
+    void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+      dispatchWebhook(
+        session.orgId,
+        body.status !== undefined && body.status !== before.status ? "ticket.moved" : "ticket.updated",
+        {
+          ticketId: id,
+          projectId,
+          title: after.title,
+          status: after.status,
+          fromStatus: before.status,
+          assigneeId: after.assigneeId,
+        },
+      ),
+    );
+
     void notifyTicketUpdate({
       orgId: session.orgId,
       ticketId: id,

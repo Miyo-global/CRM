@@ -101,6 +101,20 @@ export async function createTicket(ctx: CreateContext, input: CreateTicketInput)
     [{ action: "created", field: null, fromValue: null, toValue: null }],
   );
 
+  // MIYO-0122: let the org's webhook endpoints hear about new tickets.
+  void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+    dispatchWebhook(ctx.orgId, "ticket.created", {
+      ticketId: created.id,
+      projectId: ctx.projectId,
+      ticketNumber: created.ticketNumber,
+      title: created.title,
+      type: created.type,
+      status: created.status,
+      priority: created.priority,
+      assigneeId: created.assigneeId,
+    }),
+  );
+
   if (ctx.notify !== false) {
     void notifyNewTicket(ctx, input, created, assigneeIds).catch((error) =>
       logger.error("Failed to send new ticket notifications", { error }),
