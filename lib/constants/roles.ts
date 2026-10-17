@@ -118,6 +118,11 @@ export function isPayrollApprover(role: string | undefined | null): boolean {
   return !!role && PAYROLL_APPROVER_ROLES.includes(role);
 }
 
+/** Who may add, edit or delete holidays: the same on the API and server actions (MIYO-0085). */
+export function canManageHolidays(role: string | undefined | null): boolean {
+  return isAdminOrOwner(role);
+}
+
 /**
  * Who gives the final sign-off on a resignation (R3-0002). CEO-only left an
  * org with no CEO user unable to finish any exit; Admin carries the same

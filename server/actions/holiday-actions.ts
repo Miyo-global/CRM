@@ -7,7 +7,7 @@ import { eq, and, gte, lte } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sendBulkHolidayAnnouncement } from "@/lib/email";
-import { ROLES } from "@/lib/constants/roles";
+import { canManageHolidays } from "@/lib/constants/roles";
 import { formatDateOnly } from "@/lib/date-utils";
 import {
   formatHolidayReminderDate,
@@ -30,7 +30,7 @@ export async function addHoliday(data: {
     where: eq(organizationMembers.userId, session.user.id),
   });
 
-  if (!member || (member.role !== ROLES.ADMIN && member.role !== ROLES.CEO)) {
+  if (!member || !canManageHolidays(member.role)) {
     return { error: "Permission denied" };
   }
 
@@ -82,7 +82,7 @@ export async function deleteHoliday(holidayId: number) {
     where: eq(organizationMembers.userId, session.user.id),
   });
 
-  if (!member || (member.role !== ROLES.ADMIN && member.role !== ROLES.CEO)) {
+  if (!member || !canManageHolidays(member.role)) {
     return { error: "Permission denied" };
   }
 
@@ -178,7 +178,7 @@ export async function bulkAddHolidays(holidayList: Array<{
     where: eq(organizationMembers.userId, session.user.id),
   });
 
-  if (!member || (member.role !== ROLES.ADMIN && member.role !== ROLES.CEO)) {
+  if (!member || !canManageHolidays(member.role)) {
     return { error: "Permission denied" };
   }
 

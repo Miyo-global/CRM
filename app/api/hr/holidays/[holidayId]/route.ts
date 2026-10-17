@@ -1,5 +1,5 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canManageHolidays } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
 import { eq, and, ne } from "drizzle-orm";
@@ -16,7 +16,7 @@ export async function PATCH(
   { params }: { params: Promise<{ holidayId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
+    if (!canManageHolidays(session.user.role)) {
       return err("Only admins can update holidays.", 403);
     }
 
@@ -70,7 +70,7 @@ export async function DELETE(
   { params }: { params: Promise<{ holidayId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
+    if (!canManageHolidays(session.user.role)) {
       return err("Only admins can delete holidays.", 403);
     }
 

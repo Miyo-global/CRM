@@ -1,6 +1,6 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { getHolidays } from "@/server/queries/hr";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canManageHolidays } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
+    if (!canManageHolidays(session.user.role)) {
       return err("Only admins can add holidays.", 403);
     }
 
