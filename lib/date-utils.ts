@@ -84,6 +84,18 @@ export function parseDateString(dateString: string): Date {
   return new Date(year, month - 1, day);
 }
 
+/**
+ * Parse a stored timestamp. DB columns are `timestamp without time zone`
+ * holding UTC, so a string with no offset ("2026-10-15 03:20:00") is UTC,
+ * not the viewer's local time (MIYO-0069 / MIYO-0073). Date-only strings
+ * and strings that already carry Z or an offset parse as usual.
+ */
+export function parseDbTimestamp(value: Date | string): Date {
+  if (typeof value !== "string") return value;
+  const naive = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(value.trim());
+  return new Date(naive ? `${value.trim().replace(" ", "T")}Z` : value);
+}
+
 export function parseDate(value: unknown): Date | null {
   if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
   if (typeof value === "string" || typeof value === "number") {
@@ -145,7 +157,7 @@ export function formatDisplayDateTime(
   locale: string = DEFAULT_LOCALE,
 ): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = parseDbTimestamp(date);
   if (isNaN(d.getTime())) return "";
   return d.toLocaleString(locale, {
     timeZone: DEFAULT_TIMEZONE,
@@ -168,7 +180,7 @@ export function formatIST(
   options?: Intl.DateTimeFormatOptions,
 ): string {
   if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = parseDbTimestamp(date);
   if (isNaN(d.getTime())) return "";
   return d.toLocaleString(DEFAULT_LOCALE, {
     timeZone: DEFAULT_TIMEZONE,
@@ -189,7 +201,7 @@ export function formatISTTime(date: Date | string | null | undefined): string {
 
 export function timeAgo(date: Date | string | null | undefined): string {
   if (!date) return "";
-  const d = new Date(date);
+  const d = parseDbTimestamp(date);
   if (isNaN(d.getTime())) return "";
   const diff = Math.floor((Date.now() - d.getTime()) / 1000);
   if (diff < 0) {

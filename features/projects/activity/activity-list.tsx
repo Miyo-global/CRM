@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
+import { parseDbTimestamp } from "@/lib/date-utils";
 import { History } from "lucide-react";
 import type { useProjectActivity } from "@/lib/api/hooks/projects/activity";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,7 @@ export function ActivityList({ query, showTicket = false, projectKey, onTicketCl
                 )}
               </p>
               <time dateTime={item.createdAt} className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(parseDbTimestamp(item.createdAt), { addSuffix: true })}
               </time>
             </div>
           </li>

@@ -20,6 +20,7 @@ import { useUpdateTicketComment, useDeleteTicketComment, useRestoreComment } fro
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { format, formatDistanceToNow } from "date-fns";
+import { parseDbTimestamp } from "@/lib/date-utils";
 import type { TicketComment, TicketUser } from "@/types/projects";
 import { CommentContent } from "@/features/projects/comments/comment-content";
 import { ReactionBar } from "@/features/projects/comments/reaction-bar";
@@ -47,7 +48,7 @@ export function CommentItem({
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const user = comment.user as TicketUser | undefined;
-  const createdAt = comment.createdAt ? new Date(comment.createdAt) : null;
+  const createdAt = comment.createdAt ? parseDbTimestamp(comment.createdAt) : null;
   const timeAgo = createdAt
     ? formatDistanceToNow(createdAt, { addSuffix: true })
     : "";
