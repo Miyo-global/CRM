@@ -30,5 +30,12 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "drizzle"]
+  "exclude": [
+    "node_modules",
+    "drizzle",
+    // MIYO-0686: the Playwright suite is not part of pnpm typecheck or
+    // pnpm test; it needs @playwright/test and a running app.
+    "e2e",
+    "playwright.config.ts"
+  ]
 }
