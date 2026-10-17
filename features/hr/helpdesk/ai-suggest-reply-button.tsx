@@ -30,7 +30,7 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
       onError: (e) => {
         const raw = getErrorMessage(e);
         const msg =
-          raw.includes("not configured") || raw.includes("OPENAI") || raw.includes("503")
+          raw.includes("not enabled") || raw.includes("not configured")
             ? "AI Reply is not available for your organization"
             : "Unable to generate a reply. Please try again.";
         setErrorMsg(msg);

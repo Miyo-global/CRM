@@ -15,7 +15,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   return withAuth(async () => {
-    if (!isOpenAIConfigured()) return err("AI not configured", 503);
+    if (!isOpenAIConfigured()) return err("AI features are not enabled for this workspace.", 403);
 
     const input = await parseBody(req, schema);
     const prompt = leadEnrichmentPrompt(input);

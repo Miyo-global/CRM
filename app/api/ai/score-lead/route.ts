@@ -15,7 +15,7 @@ const batchSchema = z.object({
 export async function POST(req: NextRequest) {
   return withAuth<unknown>(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI features are not available right now.", 503);
+      return err("AI features are not enabled for this workspace.", 403);
     }
 
     const body = await req.json();

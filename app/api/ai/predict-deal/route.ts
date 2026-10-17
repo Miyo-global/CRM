@@ -11,7 +11,7 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     if (!isOpenAIConfigured()) {
-      return err("AI features are not available right now.", 503);
+      return err("AI features are not enabled for this workspace.", 403);
     }
 
     const { dealId } = await parseBody(req, schema);
