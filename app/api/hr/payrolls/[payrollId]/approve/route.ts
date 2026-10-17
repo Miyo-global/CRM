@@ -42,14 +42,18 @@ export async function PATCH(
     if (existing.status === "APPROVED")
       return err("This payroll is already approved. The next step is to mark it as paid.", 400);
 
-    await db
+    // Conditional on the status we just checked, so two clicks cannot both
+    // approve and both send the email (MIYO-0072).
+    const [approved] = await db
       .update(payrolls)
       .set({
         status: "APPROVED",
         approvedBy: session.user.id,
         approvedAt: new Date(),
       })
-      .where(and(eq(payrolls.id, payrollId), eq(payrolls.orgId, session.orgId)));
+      .where(and(eq(payrolls.id, payrollId), eq(payrolls.orgId, session.orgId), eq(payrolls.status, existing.status ?? "DRAFT")))
+      .returning({ id: payrolls.id });
+    if (!approved) return err("This payroll was just changed by someone else. Refresh to see its current status.", 409);
 
     try {
       await createAuditLog({

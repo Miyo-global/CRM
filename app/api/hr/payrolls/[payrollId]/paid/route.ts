@@ -37,15 +37,19 @@ export async function PATCH(
 
     const recoveryAmount = parseFloat(existing.advanceRecoveryAmount ?? "0");
 
-    await db.transaction(async (tx) => {
-      await tx
+    // Only an APPROVED row flips to PAID; a second click updates nothing and
+    // gets 409, so the loan EMI and the payslip email happen once (MIYO-0072).
+    const paid = await db.transaction(async (tx) => {
+      const [row] = await tx
         .update(payrolls)
         .set({
           status: "PAID",
           paidBy: session.user.id,
           paidAt: new Date(),
         })
-        .where(and(eq(payrolls.id, payrollId), eq(payrolls.orgId, session.orgId)));
+        .where(and(eq(payrolls.id, payrollId), eq(payrolls.orgId, session.orgId), eq(payrolls.status, "APPROVED")))
+        .returning({ id: payrolls.id });
+      if (!row) return false;
 
       if (recoveryAmount > 0 && existing.userId) {
         const activeLoan = await tx.query.salaryLoans.findFirst({
@@ -73,7 +77,9 @@ export async function PATCH(
             .where(and(eq(salaryLoans.id, activeLoan.id), eq(salaryLoans.orgId, session.orgId)));
         }
       }
+      return true;
     });
+    if (!paid) return err("This payroll was just changed by someone else. Refresh to see its current status.", 409);
 
     try {
       await createAuditLog({
