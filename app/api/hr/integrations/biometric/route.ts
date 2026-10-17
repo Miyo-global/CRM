@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
 
 const biometricSchema = z.object({
-  orgId: z.string().min(1),
+  orgId: z.string().min(1).optional(),
   employeeId: z.string().min(1),
   timestamp: z.string().min(1),
   type: z.enum(["CHECK_IN", "CHECK_OUT"]),
@@ -17,7 +17,9 @@ const biometricSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const expectedKey = process.env.BIOMETRIC_API_KEY;
-  if (!expectedKey) return err("Biometric integration not configured.", 503);
+  // The org comes from server config, never the caller (MIYO-0078).
+  const orgId = process.env.BIOMETRIC_ORG_ID;
+  if (!expectedKey || !orgId) return err("Biometric integration not configured.", 503);
 
   const apiKey = req.headers.get("x-api-key");
   if (!apiKey) return err("Invalid API key.", 401);
@@ -32,25 +34,17 @@ export async function POST(req: NextRequest) {
   }
   if (!keyValid) return err("Invalid API key.", 401);
 
-  const body = biometricSchema.parse(await req.json());
+  const parsed = biometricSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return err("Invalid biometric event payload.", 400);
+  const body = parsed.data;
 
-  const allowedOrgId = process.env.BIOMETRIC_ORG_ID;
-  if (allowedOrgId) {
-    if (body.orgId !== allowedOrgId) {
-      logger.warn("biometric: org mismatch — caller-supplied orgId does not match BIOMETRIC_ORG_ID", {
-        suppliedOrgId: body.orgId,
-        employeeId: body.employeeId,
-        deviceId: body.deviceId,
-      });
-      return err("Forbidden: biometric API key is not authorized for this org.", 403);
-    }
-  } else {
-    logger.warn("biometric: orgId is caller-supplied and no BIOMETRIC_ORG_ID is set — set BIOMETRIC_ORG_ID to lock the API key to a single org until a device-registration table exists", {
-      orgId: body.orgId,
+  if (body.orgId && body.orgId !== orgId) {
+    logger.warn("biometric: caller-supplied orgId does not match BIOMETRIC_ORG_ID", {
+      suppliedOrgId: body.orgId,
       employeeId: body.employeeId,
       deviceId: body.deviceId,
-      type: body.type,
     });
+    return err("Forbidden: biometric API key is not authorized for this org.", 403);
   }
 
   const row = await db
@@ -60,7 +54,7 @@ export async function POST(req: NextRequest) {
       organizationMembers,
       and(
         eq(organizationMembers.userId, users.id),
-        eq(organizationMembers.orgId, body.orgId)
+        eq(organizationMembers.orgId, orgId)
       )
     )
     .where(eq(users.employeeId, body.employeeId))
@@ -75,7 +69,7 @@ export async function POST(req: NextRequest) {
 
   if (body.type === "CHECK_IN") {
     const [log] = await db.insert(attendance).values({
-      orgId: body.orgId,
+      orgId,
       userId,
       date: dateStr,
       checkIn: timestamp,
@@ -88,7 +82,7 @@ export async function POST(req: NextRequest) {
     where: and(
       eq(attendance.userId, userId),
       eq(attendance.date, dateStr),
-      eq(attendance.orgId, body.orgId)
+      eq(attendance.orgId, orgId)
     ),
     orderBy: (a, { desc }) => [desc(a.createdAt)],
   });
