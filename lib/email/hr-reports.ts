@@ -1,7 +1,4 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
-import {
-  getMonthlyExpenseReportTemplate,
-} from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 import type { MonthlyExpenseReportRow } from "../email-templates";
 import { generateMonthlyExpenseReportXlsx } from "../monthly-expense-report-xlsx";
 
@@ -40,33 +37,59 @@ export async function sendWeeklyAttendanceReportEmail(
   });
 }
 
+/**
+ * MIYO-0251: the hand-written expense-monthly-report template.
+ *
+ * The body is the month at a glance; the full table stays in the attached
+ * workbook rather than being rebuilt as HTML, and one send covers everyone.
+ */
 export async function sendMonthlyExpenseReportEmail(
   monthLabel: string,
   orgName: string,
   rows: MonthlyExpenseReportRow[],
-  summary: { totalAmount: string; totalCount: number; pendingCount: number; approvedCount: number; paidCount: number; rejectedCount: number },
-  recipientEmails: string[]
+  summary: {
+    totalAmount: string;
+    totalCount: number;
+    pendingCount: number;
+    approvedCount: number;
+    paidCount: number;
+    rejectedCount: number;
+  },
+  recipientEmails: string[],
 ) {
   if (recipientEmails.length === 0) return;
 
-  const subject = `Monthly Expense Report - ${monthLabel}`;
-  const html = getMonthlyExpenseReportTemplate(monthLabel, orgName, rows, summary);
   const xlsxBuffer = await generateMonthlyExpenseReportXlsx(monthLabel, orgName, rows, summary);
-  const safeMonthLabel = monthLabel.replace(/\s+/g, "-");
-  const xlsxFilename = `Monthly-Expense-Report-${safeMonthLabel}.xlsx`;
+  const xlsxFilename = `Monthly-Expense-Report-${monthLabel.replace(/\s+/g, "-")}.xlsx`;
 
-  for (const email of recipientEmails) {
-    await sendEmail({
-      to: email,
-      subject,
-      html,
-      attachments: [
-        {
-          filename: xlsxFilename,
-          content: xlsxBuffer,
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        },
-      ],
-    });
+  await sendTemplateEmail("expense-monthly-report", {
+    to: recipientEmails,
+    category: "expenses",
+    vars: {
+      month_label: monthLabel,
+      claim_count: summary.totalCount,
+      pending_count: summary.pendingCount,
+      total: summary.totalAmount,
+      approved_total: `${summary.approvedCount + summary.paidCount} of ${summary.totalCount}`,
+      top_category: topCategory(rows),
+    },
+    attachments: [
+      {
+        filename: xlsxFilename,
+        content: xlsxBuffer,
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+    ],
+  });
+}
+
+/** The category with the largest total, which is the line people look for. */
+function topCategory(rows: MonthlyExpenseReportRow[]): string {
+  const totals = new Map<string, number>();
+  for (const row of rows) {
+    const key = row.category || "Uncategorised";
+    totals.set(key, (totals.get(key) ?? 0) + Number(row.amount || 0));
   }
+  const best = [...totals.entries()].sort((a, b) => b[1] - a[1])[0];
+  return best ? best[0] : "none";
 }
