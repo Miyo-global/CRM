@@ -5,8 +5,7 @@ import { eq, and, desc, inArray } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
-import { sendEmail } from "@/lib/email";
-import { getHolidayWorkRequestEmailToHr } from "@/lib/email-templates";
+import { sendTemplateEmail } from "@/lib/email/sender";
 import { logger } from "@/lib/logger";
 import { resolveHolidayWorkRequestType } from "@/lib/hr/holiday-work-request-type";
 import { getTodayString } from "@/lib/date-utils";
@@ -154,18 +153,18 @@ async function emailHrAboutHolidayWorkRequest(params: {
       columns: { name: true },
     });
 
-    const { subject, html } = getHolidayWorkRequestEmailToHr({
-      employeeName: params.employeeName,
-      employeeEmail: params.employeeEmail,
-      requestDate: params.requestDate,
-      dayLabel: params.dayLabel,
-      reason: params.reason,
-      compensationPreference: params.compensationPreference,
-      submittedAt: params.submittedAt,
-      orgName: org?.name ?? "Miyo Global",
+    // MIYO-0154: the attendance-holiday-work-request template.
+    await sendTemplateEmail("attendance-holiday-work-request", {
+      to: toList,
+      vars: {
+        employee_name: params.employeeName,
+        date: params.requestDate,
+        day_type: params.dayLabel,
+        reason: params.reason || "None given",
+        compensation: params.compensationPreference,
+        org_name: org?.name ?? undefined,
+      },
     });
-
-    await sendEmail({ to: toList, subject, html });
   } catch (e) {
     logger.error("Failed to email HR about holiday work request", {
       orgId: params.orgId,

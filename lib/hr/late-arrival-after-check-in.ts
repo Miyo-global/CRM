@@ -3,6 +3,8 @@ import { lateArrivalWarnings, emailTemplates } from "@/lib/db/schema";
 import { and, count, eq, gte, lte } from "drizzle-orm";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { sendEmail } from "@/lib/email";
+import { sendTemplateEmail } from "@/lib/email/sender";
+import { formatISTTime } from "@/lib/date-utils";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
 function replaceTemplateVariables(text: string, vars: Record<string, string>): string {
@@ -90,7 +92,23 @@ export async function handleLateArrivalAfterCheckIn(params: {
   const template = await db.query.emailTemplates.findFirst({
     where: and(eq(emailTemplates.orgId, orgId), eq(emailTemplates.name, templateName)),
   });
-  if (!template) return;
+
+  // MIYO-0154: an org that never wrote its own warning text used to get no
+  // mail at all. Fall back to the attendance-late-arrival template.
+  if (!template) {
+    const cutoffHour = String(Math.floor(cutoff / 60)).padStart(2, "0");
+    const cutoffMinute = String(cutoff % 60).padStart(2, "0");
+    await sendTemplateEmail("attendance-late-arrival", {
+      to: userEmail.trim(),
+      vars: {
+        date: format(parseISO(date), "dd MMM yyyy"),
+        check_in_time: formatISTTime(checkIn),
+        shift_start: `${cutoffHour}:${cutoffMinute}`,
+        late_count: `${warningNumber} of 3`,
+      },
+    }).catch(() => undefined);
+    return;
+  }
 
   const displayName =
     userName?.trim() ||
