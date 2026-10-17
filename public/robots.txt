@@ -13,5 +13,6 @@ Disallow: /marketing/
 Disallow: /billing/
 Disallow: /timesheets/
 Disallow: /support/
+Disallow: /ats/
 
 Sitemap: https://crm.miyoglobal.com/sitemap.xml
