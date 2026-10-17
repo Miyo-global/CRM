@@ -51,11 +51,13 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
 
   const groups = [...byUser.values()].sort((a, b) => a.label.localeCompare(b.label));
 
+  // MIYO-0332: the list is not always scoped to a department, so the empty
+  // state talks about the filters that are set rather than naming one.
   if (groups.length === 0) {
     return (
       <EmptyState
         title="No work logs found"
-        description="No logged work matches the selected filters for this department."
+        description="No logged work matches the filters you have set."
       />
     );
   }
