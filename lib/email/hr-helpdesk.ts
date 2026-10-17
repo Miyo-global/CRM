@@ -1,17 +1,25 @@
-import { sendEmail } from "./sender";
-import { getHelpdeskTicketEmailTemplate } from "../email-templates";
+import { sendTemplateEmail } from "./sender";
 
+/** MIYO-0287: the hand-written helpdesk-ticket template. */
 export async function sendHelpdeskTicketEmail(
-  email: string,
-  recipientName: string,
-  ticketTitle: string,
-  category: string,
-  priority: string,
-  creatorName: string
+  email: string | string[],
+  ticket: {
+    id: number | string;
+    subject: string;
+    category: string;
+    status: string;
+    eventSummary: string;
+  },
 ) {
-  await sendEmail({
+  await sendTemplateEmail("helpdesk-ticket", {
     to: email,
-    subject: `Helpdesk Ticket: ${ticketTitle}`,
-    html: getHelpdeskTicketEmailTemplate(recipientName, ticketTitle, category, priority, creatorName),
+    category: "hr",
+    vars: {
+      ticket_id: ticket.id,
+      ticket_subject: ticket.subject,
+      category: ticket.category,
+      status: ticket.status.replace(/_/g, " ").toLowerCase(),
+      event_summary: ticket.eventSummary,
+    },
   });
 }

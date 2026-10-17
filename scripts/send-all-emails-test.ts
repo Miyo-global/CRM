@@ -91,7 +91,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "projects.ticketReviewRequest", run: () => sendTicketReviewRequestEmail(TO, { key: "VAIV-123", title: "Disable Standard Bonus Modules", projectName: "Miyo Global CRM", projectId: 1, requestedBy: ACTOR }) },
   { name: "projects.ticketChangesRequested", run: () => sendTicketChangesRequestedEmail(TO, { key: "VAIV-123", title: "Disable Standard Bonus Modules", projectId: 1, reviewerName: ACTOR, note: "Please add unit tests." }) },
 
-  { name: "hr.helpdeskTicket", run: () => sendHelpdeskTicketEmail(TO, NAME, "Cannot access payroll page", "Access", "HIGH", ACTOR) },
+  { name: "hr.helpdeskTicket", run: () => sendHelpdeskTicketEmail(TO, { id: 7, subject: "Cannot access payroll page", category: "Access", status: "OPEN", eventSummary: `${ACTOR} raised a high priority ticket.` }) },
 
   { name: "hr.expenseSubmitted", run: () => sendExpenseSubmittedEmail(TO, { employeeName: "John Doe", category: "Travel", amount: "1500.00", description: "Cab to client meeting", expenseDate: TODAY, expenseId: 42, hasReceipt: true }) },
   { name: "hr.expenseApproved", run: () => sendExpenseApprovedEmail(TO, "Travel", "1500.00", ACTOR, "with the next monthly payroll") },

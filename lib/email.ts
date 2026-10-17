@@ -19,6 +19,7 @@ export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
 export { sendDocumentExpiryReminderEmail } from "./email/hr-documents";
+export { sendHelpdeskTicketEmail } from "./email/hr-helpdesk";
 export {
   sendSupportTicketCreatedEmail,
   sendSupportTicketReplyEmail,
@@ -72,7 +73,6 @@ import {
   getTaskAssignedEmailTemplate,
   getDealStageChangeEmailTemplate,
   getLeadAssignedEmailTemplate,
-  getHelpdeskTicketEmailTemplate,
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
 } from "./email-templates";
@@ -314,20 +314,6 @@ export async function sendLeadAssignedEmail(
 
 
 
-export async function sendHelpdeskTicketEmail(
-  email: string,
-  recipientName: string,
-  ticketTitle: string,
-  category: string,
-  priority: string,
-  creatorName: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Helpdesk Ticket: ${ticketTitle}`,
-    html: getHelpdeskTicketEmailTemplate(recipientName, ticketTitle, category, priority, creatorName),
-  });
-}
 
 
 export async function sendAssetAssignedEmail(

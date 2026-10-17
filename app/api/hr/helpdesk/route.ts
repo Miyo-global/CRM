@@ -84,21 +84,23 @@ export async function POST(req: NextRequest) {
         .from(organizationMembers)
         .where(and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.role, "HR")));
 
+      const hrEmails: string[] = [];
       for (const m of hrMembers) {
         const hrUser = await db.query.users.findFirst({
           where: eq(users.id, m.userId),
-          columns: { email: true, name: true },
+          columns: { email: true },
         });
-        if (hrUser?.email) {
-          await sendHelpdeskTicketEmail(
-            hrUser.email,
-            hrUser.name ?? "HR",
-            body.title,
-            body.category ?? "General",
-            body.priority ?? "MEDIUM",
-            session.user.name ?? "Employee"
-          );
-        }
+        if (hrUser?.email) hrEmails.push(hrUser.email);
+      }
+
+      if (hrEmails.length > 0) {
+        await sendHelpdeskTicketEmail(hrEmails, {
+          id: ticket.id,
+          subject: body.title,
+          category: body.category ?? "General",
+          status: "OPEN",
+          eventSummary: `${session.user.name ?? "An employee"} raised a ${(body.priority ?? "MEDIUM").toLowerCase()} priority ticket.`,
+        });
       }
     })().catch(() => {});
 
