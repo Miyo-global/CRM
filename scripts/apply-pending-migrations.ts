@@ -3,12 +3,17 @@
  * drizzle.__drizzle_migrations (idempotent SQL with IF NOT EXISTS is safe).
  *
  * `--deploy` (pnpm db:migrate:deploy, run by the Vercel build) reads only
- * DATABASE_URL_MIGRATE, never DATABASE_URL, and skips preview builds. Until
- * DATABASE_URL_MIGRATE is set in Vercel (Production) it is a logged no-op.
+ * DATABASE_URL_MIGRATE, never DATABASE_URL, and skips preview builds. A
+ * production build without DATABASE_URL_MIGRATE fails, as does any failing
+ * migration, so code never ships ahead of its schema (MIYO-0002).
  * A pg advisory lock stops two concurrent deploys migrating at once.
+ *
+ * Applied set: the explicit PENDING_TAGS baseline plus every drizzle/*.sql
+ * numbered after the last baseline tag, so a new migration file needs no
+ * edit here. Each file runs in its own transaction.
  */
 import { createHash } from "crypto";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { DRIZZLE_DIR } from "@/lib/constants/paths";
 import postgres from "postgres";
@@ -25,6 +30,10 @@ if (DEPLOY && process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production")
   process.exit(0);
 }
 if (DEPLOY && !DATABASE_URL) {
+  if (process.env.VERCEL_ENV === "production") {
+    console.error("DATABASE_URL_MIGRATE is not set for this production build; refusing to ship code ahead of its schema.");
+    process.exit(1);
+  }
   console.log("skip migrations: DATABASE_URL_MIGRATE is not set");
   process.exit(0);
 }
@@ -72,6 +81,18 @@ const TIMESTAMPS: Record<string, number> = {
   "0158_salary_structure_professional_tax_drop_default": 1774390158000,
 };
 
+const migrationNumber = (tag: string) => Number(tag.slice(0, 4));
+const LAST_BASELINE = Math.max(...PENDING_TAGS.map(migrationNumber));
+
+/** Baseline tags, then every newer drizzle/NNNN_*.sql in order. */
+function tagsToApply(files: readonly string[]): string[] {
+  const newer = files
+    .filter((f) => /^\d{4}_.+\.sql$/.test(f))
+    .map((f) => f.replace(/\.sql$/, ""))
+    .filter((tag) => migrationNumber(tag) > LAST_BASELINE)
+    .sort();
+  return [...PENDING_TAGS, ...newer];
+}
 
 function hashFile(tag: string): string {
   const content = readFileSync(join(DRIZZLE_DIR, `${tag}.sql`), "utf-8");
@@ -97,7 +118,7 @@ async function main() {
   `;
   const existingHashes = new Set(existing.map((r) => r.hash));
 
-  for (const tag of PENDING_TAGS) {
+  for (const tag of tagsToApply(readdirSync(DRIZZLE_DIR))) {
     const hash = hashFile(tag);
     if (existingHashes.has(hash)) {
       console.log(`skip (already applied): ${tag}`);
@@ -106,12 +127,13 @@ async function main() {
 
     const fileSql = readFileSync(join(DRIZZLE_DIR, `${tag}.sql`), "utf-8");
     console.log(`applying: ${tag}`);
-    await sql.unsafe(fileSql);
-
-    await sql`
-      INSERT INTO drizzle."__drizzle_migrations" (hash, created_at)
-      VALUES (${hash}, ${TIMESTAMPS[tag]})
-    `;
+    await sql.begin(async (tx) => {
+      await tx.unsafe(fileSql);
+      await tx`
+        INSERT INTO drizzle."__drizzle_migrations" (hash, created_at)
+        VALUES (${hash}, ${TIMESTAMPS[tag] ?? Date.now()})
+      `;
+    });
     console.log(`applied: ${tag}`);
   }
 
