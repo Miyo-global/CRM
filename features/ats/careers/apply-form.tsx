@@ -3,6 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { validateResumeFileClient } from "@/lib/files/resume-file-validation";
 import { CONSENT_TEXT } from "@/lib/validations/ats-apply";
 
@@ -16,6 +23,34 @@ export interface ApplyQuestion {
 
 const input =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
+
+
+/**
+ * The shadcn Select is not a form control, so the chosen value is mirrored
+ * into a hidden input for the FormData the form posts.
+ */
+function QuestionSelect({ name, options }: { name: string; options: string[] }) {
+  const [value, setValue] = useState("");
+  return (
+    <>
+      <Select value={value || undefined} onValueChange={setValue}>
+        <SelectTrigger>
+          <SelectValue placeholder="Choose one" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {/* A hidden input is skipped by browser validation, so a required
+          question is enforced by the API, which answers with its label. */}
+      <input type="hidden" name={name} value={value} />
+    </>
+  );
+}
 
 /**
  * MIYO-0639: the apply form. Plain HTML fields, posted as multipart with the
@@ -134,20 +169,9 @@ export function ApplyForm({
           {question.type === "TEXTAREA" ? (
             <textarea name={`q_${question.id}`} rows={4} required={question.required} className={input} />
           ) : question.type === "SELECT" && question.options ? (
-            <select name={`q_${question.id}`} required={question.required} className={input}>
-              <option value="">Choose one</option>
-              {question.options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <QuestionSelect name={`q_${question.id}`} options={question.options} />
           ) : question.type === "BOOLEAN" ? (
-            <select name={`q_${question.id}`} required={question.required} className={input}>
-              <option value="">Choose one</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
+            <QuestionSelect name={`q_${question.id}`} options={["Yes", "No"]} />
           ) : (
             <input
               name={`q_${question.id}`}
