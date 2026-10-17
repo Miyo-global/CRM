@@ -24,7 +24,6 @@ import {
   leads,
   expenses,
   targets,
-  auditLogs,
 } from "@/lib/db/schema";
 import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull, gt, sum, ne } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
@@ -728,59 +727,8 @@ export async function getRecentActivity(orgId: string, userId: string, role?: st
     }
   }
 
-  const orgActivityItems: Array<{
-    id: string | number;
-    title: string;
-    status: string;
-    type: string;
-    updatedAt: Date;
-    actorName: string | null;
-    activityKind: "org";
-  }> = [];
-
-  if (isOwnerOrAdmin) {
-    const recentOrgLogs = await db
-      .select({
-        id: auditLogs.id,
-        action: auditLogs.action,
-        metadata: auditLogs.metadata,
-        createdAt: auditLogs.createdAt,
-        actorName: users.name,
-      })
-      .from(auditLogs)
-      .leftJoin(users, eq(users.id, auditLogs.userId))
-      .where(
-        and(
-          eq(auditLogs.orgId, orgId),
-          inArray(auditLogs.action, ["branch.created", "branch.updated", "branch.deleted"]),
-        )
-      )
-      .orderBy(desc(auditLogs.createdAt))
-      .limit(5);
-
-    for (const log of recentOrgLogs) {
-      const meta = log.metadata as Record<string, unknown> | null;
-      const entityName = (meta?.name as string) ?? "Branch";
-      const label =
-        log.action === "branch.created" ? `Branch "${entityName}" was created` :
-        log.action === "branch.updated" ? `Branch "${entityName}" was updated` :
-        `Branch "${entityName}" was deleted`;
-
-      orgActivityItems.push({
-        id: `audit-${log.id}`,
-        title: label,
-        status: log.action === "branch.deleted" ? "deleted" : "active",
-        type: "branch",
-        updatedAt: log.createdAt,
-        actorName: log.actorName,
-        activityKind: "org",
-      });
-    }
-  }
-
   const combined = [
     ...ticketItems.map((t) => ({ ...t, _ts: t.updatedAt?.getTime() ?? 0 })),
-    ...orgActivityItems.map((a) => ({ ...a, _ts: a.updatedAt.getTime() })),
   ]
     .sort((a, b) => b._ts - a._ts)
     .slice(0, 15);

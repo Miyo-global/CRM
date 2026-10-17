@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { Activity, GitBranch } from "lucide-react";
+import { Activity } from "lucide-react";
 import { IconChip } from "@/components/ui/icon-chip";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
@@ -65,25 +65,6 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
         ) : items && items.length > 0 ? (
           <ul className="-mx-2">
             {items.slice(0, MAX_ROWS).map((item) => {
-              if (item.activityKind === "org" || item.type === "branch") {
-                return (
-                  <li key={item.id}>
-                    <WidgetListRow
-                      href="/dashboard/branches"
-                      leading={<IconChip icon={GitBranch} tone="info" size="sm" className="size-8" />}
-                      title={item.title}
-                      meta={
-                        <>
-                          Branch
-                          {item.actorName && <> · by {item.actorName}</>}
-                          {item.updatedAt && <> · <RelativeTime value={item.updatedAt} /></>}
-                        </>
-                      }
-                    />
-                  </li>
-                );
-              }
-
               const type = isTicketType(item.type) ? item.type : null;
               const TypeIcon = type ? typeIcons[type] : DEFAULT_TICKET_ICON;
               return (

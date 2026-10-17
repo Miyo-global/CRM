@@ -32,7 +32,6 @@ export const ORG_ADMIN_SETTINGS_PAGES = [
   "webhooks",
   "audit-log",
   "ai",
-  "branches",
 ] as const;
 
 /** Every admin-only page under /settings, checked against the app router in the tests. */
@@ -88,7 +87,6 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
 
   "/ai": HR_TEAM,
   "/dashboard/admin-health": HR_TEAM,
-  "/dashboard/branches": HR_TEAM,
 
   // Pages that had no entry and so opened for every role (QA-0065).
   "/reports": HR_TEAM,
