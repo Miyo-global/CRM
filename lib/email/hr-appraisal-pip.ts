@@ -1,15 +1,4 @@
-import { sendEmail } from "@/lib/email/sender";
-import {
-  getAppraisalStageAssignedEmail,
-  getAppraisalFinalApprovedEmail,
-  getPIPInitiatedEmail,
-  getPIPManagerActivatedEmail,
-  getPIPSuccessEmail,
-  getPIPFailedEmail,
-  getPIPExtendedEmail,
-  getAppraisalDueReminderEmail,
-  getPIPCheckInDueReminderEmail,
-} from "@/lib/email-templates/appraisal";
+import { sendTemplateEmail } from "@/lib/email/sender";
 import { appUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import { appraisals, appraisalStages, organizationMembers, performanceImprovementPlans, pipCheckIns, users } from "@/lib/db/schema";
@@ -17,6 +6,23 @@ import { and, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 const base = appUrl;
+
+/** "SELF_REVIEW" reads as "self review" in a sentence. */
+function stageLabel(stage: string): string {
+  return stage.replace(/_/g, " ").toLowerCase();
+}
+
+/** "20 April 2026" for a timestamp. */
+function dayLabel(date: Date): string {
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function daysBetween(start: string, end: string): number {
+  return Math.max(
+    0,
+    Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86_400_000),
+  );
+}
 
 export async function notifyNewAppraisalAssignee(appraisalId: number): Promise<void> {
   const row = await db.query.appraisals.findFirst({
@@ -33,16 +39,16 @@ export async function notifyNewAppraisalAssignee(appraisalId: number): Promise<v
     columns: { email: true, name: true },
   });
   if (!assignee?.email) return;
-  const url = `${base}/hr/performance?tab=appraisals`;
-  await sendEmail({
+  // MIYO-0262: the hand-written perf-appraisal-stage-assigned template.
+  await sendTemplateEmail("perf-appraisal-stage-assigned", {
     to: assignee.email,
-    subject: "Appraisal — action required",
-    html: getAppraisalStageAssignedEmail(
-      assignee.name ?? "there",
-      pending.stage.replace(/_/g, " "),
-      row.user?.name ?? "Employee",
-      url
-    ),
+    category: "hr",
+    vars: {
+      employee_name: row.user?.name ?? "Employee",
+      stage_label: stageLabel(pending.stage),
+      due_date: pending.dueAt ? dayLabel(pending.dueAt) : "not set",
+      appraisal_url: `${base}/hr/performance?tab=appraisals`,
+    },
   });
 }
 
@@ -52,6 +58,7 @@ export async function notifyAppraisalClosedFanOut(appraisalId: number): Promise<
     with: {
       user: { columns: { id: true, name: true, email: true } },
       reviewer: { columns: { id: true, name: true, email: true } },
+      cycle: { columns: { type: true, periodEnd: true } },
     },
   });
   if (!row) return;
@@ -66,15 +73,17 @@ export async function notifyAppraisalClosedFanOut(appraisalId: number): Promise<
     try {
       const u = await db.query.users.findFirst({ where: eq(users.id, uid), columns: { email: true, name: true } });
       if (!u?.email) continue;
-      await sendEmail({
+      // MIYO-0263: the hand-written perf-appraisal-finalized template.
+      await sendTemplateEmail("perf-appraisal-finalized", {
         to: u.email,
-        subject: `Appraisal finalized — ${row.user?.name ?? "Employee"}`,
-        html: getAppraisalFinalApprovedEmail(
-          u.name ?? "there",
-          row.user?.name ?? "Employee",
-          "Current cycle",
-          url
-        ),
+        category: "hr",
+        vars: {
+          employee_name: row.user?.name ?? "Employee",
+          cycle_name: row.cycle ? `${stageLabel(row.cycle.type)} cycle` : "the current cycle",
+          rating: row.calibratedRating ?? row.overallRating ?? "not recorded",
+          effective_date: row.cycle?.periodEnd ? String(row.cycle.periodEnd) : "not set",
+          appraisal_url: url,
+        },
       });
     } catch (e) {
       logger.error("appraisal finalized email failed", { appraisalId, uid, error: e });
@@ -90,11 +99,15 @@ export async function notifyPIPDraftCreated(pipId: number): Promise<void> {
     },
   });
   if (!row?.user?.email) return;
-  const url = `${base}/hr/performance?tab=pip`;
-  await sendEmail({
+  // MIYO-0266: the hand-written perf-pip-initiated template.
+  await sendTemplateEmail("perf-pip-initiated", {
     to: row.user.email,
-    subject: "Performance Improvement Plan initiated",
-    html: getPIPInitiatedEmail(row.user.name ?? "Employee", url),
+    vars: {
+      start_date: String(row.startDate),
+      end_date: String(row.endDate),
+      duration_days: daysBetween(row.startDate, row.endDate),
+      pip_url: `${base}/hr/performance?tab=pip`,
+    },
   });
 }
 
@@ -107,15 +120,19 @@ export async function notifyPIPManagerAfterAcknowledge(pipId: number): Promise<v
     },
   });
   if (!row?.manager?.email) return;
-  const url = `${base}/hr/performance?tab=pip`;
-  await sendEmail({
+  // MIYO-0267: the hand-written perf-pip-manager-activated template.
+  const firstCheckIn = await db.query.pipCheckIns.findFirst({
+    where: eq(pipCheckIns.pipId, pipId),
+    orderBy: (c, { asc }) => [asc(c.checkInDate)],
+    columns: { checkInDate: true },
+  });
+  await sendTemplateEmail("perf-pip-manager-activated", {
     to: row.manager.email,
-    subject: `PIP activated — ${row.user?.name ?? "Employee"}`,
-    html: getPIPManagerActivatedEmail(
-      row.manager.name ?? "Manager",
-      row.user?.name ?? "Employee",
-      url
-    ),
+    vars: {
+      employee_name: row.user?.name ?? "Employee",
+      first_checkin: firstCheckIn?.checkInDate ? String(firstCheckIn.checkInDate) : "not scheduled",
+      pip_url: `${base}/hr/performance?tab=pip`,
+    },
   });
 }
 
@@ -125,18 +142,26 @@ export async function notifyPIPOutcome(pipId: number, outcome: "SUCCESS" | "FAIL
     with: { user: { columns: { email: true, name: true } } },
   });
   if (!row?.user?.email) return;
-  const name = row.user.name ?? "Employee";
-  const html =
-    outcome === "SUCCESS"
-      ? getPIPSuccessEmail(name)
-      : outcome === "FAILED"
-        ? getPIPFailedEmail(name)
-        : getPIPExtendedEmail(name);
-  await sendEmail({
+  const pipUrl = `${base}/hr/performance?tab=pip`;
+
+  // MIYO-0269, MIYO-0270, MIYO-0271: one template per outcome.
+  if (outcome === "SUCCESS") {
+    await sendTemplateEmail("perf-pip-completed", {
+      to: row.user.email,
+      vars: { duration_days: daysBetween(row.startDate, row.endDate) },
+    });
+    return;
+  }
+  if (outcome === "FAILED") {
+    await sendTemplateEmail("perf-pip-not-successful", {
+      to: row.user.email,
+      vars: { pip_url: pipUrl },
+    });
+    return;
+  }
+  await sendTemplateEmail("perf-pip-extended", {
     to: row.user.email,
-    subject:
-      outcome === "SUCCESS" ? "PIP successfully completed" : outcome === "FAILED" ? "PIP outcome — not successful" : "PIP extended",
-    html,
+    vars: { end_date: String(row.endDate), pip_url: pipUrl },
   });
 }
 
@@ -153,8 +178,11 @@ export async function sendAppraisalDueRemindersForTomorrow(): Promise<{ sent: nu
       id: appraisalStages.id,
       assigneeId: appraisalStages.assigneeId,
       stage: appraisalStages.stage,
+      employeeName: users.name,
     })
     .from(appraisalStages)
+    .innerJoin(appraisals, eq(appraisals.id, appraisalStages.appraisalId))
+    .leftJoin(users, eq(users.id, appraisals.userId))
     .where(
       and(
         eq(appraisalStages.status, "PENDING"),
@@ -174,10 +202,16 @@ export async function sendAppraisalDueRemindersForTomorrow(): Promise<{ sent: nu
         columns: { email: true, name: true },
       });
       if (!u?.email) continue;
-      await sendEmail({
+      // MIYO-0264: the hand-written perf-appraisal-due-reminder template.
+      await sendTemplateEmail("perf-appraisal-due-reminder", {
         to: u.email,
-        subject: `Due tomorrow: ${r.stage}`,
-        html: getAppraisalDueReminderEmail(u.name ?? "there", r.stage.replace(/_/g, " "), ymd, url),
+        category: "hr",
+        vars: {
+          employee_name: r.employeeName ?? "an employee",
+          stage_label: stageLabel(r.stage),
+          due_date: ymd,
+          appraisal_url: url,
+        },
       });
       sent += 1;
     } catch (e) {
@@ -200,9 +234,11 @@ export async function sendPIPCheckInDueRemindersForTomorrow(): Promise<{ sent: n
       pipId: pipCheckIns.pipId,
       userId: performanceImprovementPlans.userId,
       managerId: performanceImprovementPlans.managerId,
+      employeeName: users.name,
     })
     .from(pipCheckIns)
     .innerJoin(performanceImprovementPlans, eq(pipCheckIns.pipId, performanceImprovementPlans.id))
+    .leftJoin(users, eq(users.id, performanceImprovementPlans.userId))
     .where(
       and(
         inArray(performanceImprovementPlans.status, ["ACTIVE", "EXTENDED"]),
@@ -223,10 +259,14 @@ export async function sendPIPCheckInDueRemindersForTomorrow(): Promise<{ sent: n
           columns: { email: true, name: true },
         });
         if (!u?.email) continue;
-        await sendEmail({
+        // MIYO-0268: the hand-written perf-pip-checkin-reminder template.
+        await sendTemplateEmail("perf-pip-checkin-reminder", {
           to: u.email,
-          subject: "PIP check-in due tomorrow",
-          html: getPIPCheckInDueReminderEmail(u.name ?? "there", ymd, url),
+          vars: {
+            employee_name: r.employeeName ?? "the employee",
+            due_date: ymd,
+            pip_url: url,
+          },
         });
         emailed.add(key);
         sent += 1;
