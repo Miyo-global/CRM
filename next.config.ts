@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
   // MIYO-0012: Streamline "Build" was ported into /projects; keep old links working.
   async redirects() {
     return [
+      // QA-D006: /login and /register are what people type; this app signs
+      // in at /signin.
+      { source: "/login", destination: "/signin", permanent: false },
+      { source: "/register", destination: "/signin", permanent: false },
       { source: "/build", destination: "/projects", permanent: false },
       { source: "/build/:path*", destination: "/projects/:path*", permanent: false },
     ];
