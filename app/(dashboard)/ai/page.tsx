@@ -1,6 +1,5 @@
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Sparkles } from "lucide-react";
 import { isAIConfigured } from "@/lib/ai/openai";
 import { AI_MODULE_ENABLED } from "@/lib/constants/modules";
 import { AIHubClient } from "./ai-hub-client";
@@ -15,7 +14,6 @@ export default function AIHubPage() {
     return (
       <PageWrapper title="AI hub">
         <EmptyState
-          icon={Sparkles}
           title="AI features are unavailable"
           description="AI tools are not enabled for this workspace. Contact your administrator if you need them."
         />

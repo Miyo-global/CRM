@@ -21,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
-  Sparkles, Brain, Mail, TrendingUp, Target, MessageSquare,
+  Brain, Mail, TrendingUp, Target, MessageSquare,
   FileText, Users, ShieldCheck, Zap, AlertTriangle, ClipboardList,
   type LucideIcon,
 } from "lucide-react";
@@ -100,7 +100,6 @@ export function AIHubClient() {
     >
       {filtered.length === 0 ? (
         <EmptyState
-          icon={Sparkles}
           title="No results for these filters"
           description="No AI tools in this category yet."
           action={{ label: "Clear filters", onClick: () => setSelectedCategory("all") }}
@@ -256,7 +255,6 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
       )}
 
       <Button onClick={handleSubmit} loading={isLoading} className="w-full">
-        {!isLoading && <Sparkles aria-hidden="true" />}
         {isLoading ? "Processing..." : "Run AI"}
       </Button>
 
