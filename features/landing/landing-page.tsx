@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
@@ -15,11 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { IconChip } from "@/components/ui/icon-chip";
-import {
-  fadeUp, stagger, scaleIn,
-  SectionReveal, StaggerReveal,
-  features, stats,
-} from "./landing-shared";
+import { features, stats } from "./landing-shared";
 import { LandingFooter } from "./landing-footer";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 
@@ -55,12 +50,6 @@ export function LandingPage() {
   const signupEnabled = isSignupEnabled();
 
   const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -102,46 +91,36 @@ export function LandingPage() {
       <main className="flex-1">
 
         <section ref={heroRef} className="brand-mark-bg relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 size-[640px] rounded-full bg-gold-400/5 ring-1 ring-gold-400/10" />
 
-          <motion.div
-            className="container relative mx-auto px-4 lg:px-8 py-20 lg:py-32 text-center"
-            style={{ y: heroY, opacity: heroOpacity }}
-          >
-            <motion.div
-              initial={false}
-              animate="visible"
-              variants={stagger}
+          <div className="container relative mx-auto px-4 lg:px-8 py-20 lg:py-32 text-center">
+            <div
               className="max-w-4xl mx-auto"
             >
-              <motion.div variants={fadeUp}>
+              <div>
                 <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-accent px-4 py-1.5">
                   <span className="size-1.5 rounded-full bg-gold-400" />
                   <span className="text-2xs font-semibold uppercase tracking-widest text-gold-300">
                     Internal workspace
                   </span>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.h1
-                variants={fadeUp}
+              <h1
                 className="mb-6 font-display text-4xl font-extrabold tracking-tight text-sidebar-accent-foreground sm:text-5xl"
               >
                 One place for <span className="text-gold-400">HR</span>
                 <br className="hidden sm:block" />
                 {" "}and projects
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                variants={fadeUp}
+              <p
                 className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-sidebar-foreground sm:text-lg"
               >
                 Payroll, attendance, leave and onboarding next to the sprints and tickets
                 the work actually happens in.
-              </motion.p>
+              </p>
 
-              <motion.div
-                variants={fadeUp}
+              <div
                 className="flex flex-col sm:flex-row items-center justify-center gap-3"
               >
                 <Button asChild size="lg" className="px-8">
@@ -156,41 +135,40 @@ export function LandingPage() {
                     <ChevronRight />
                   </a>
                 </Button>
-              </motion.div>
-            </motion.div>
-          </motion.div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="border-t border-sidebar-border bg-ink-950 py-12">
           <div className="container mx-auto px-4 lg:px-8">
-            <StaggerReveal className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
               {stats.map((stat) => (
-                <motion.div key={stat.label} variants={fadeUp} className="text-center">
+                <div key={stat.label} className="text-center">
                   <p className="mb-1 font-display text-3xl font-extrabold tracking-tight text-gold-400">
                     {stat.value}
                   </p>
                   <p className="text-2xs font-medium uppercase tracking-wider text-sidebar-muted">{stat.label}</p>
-                </motion.div>
+                </div>
               ))}
-            </StaggerReveal>
+            </div>
           </div>
         </section>
 
         <section id="features" className="py-24 lg:py-32">
           <div className="container mx-auto px-4 lg:px-8">
-            <SectionReveal className="text-center mb-16">
+            <div className="text-center mb-16">
               <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-brand-text">Platform modules</p>
               <h2 className="mb-4 font-display text-3xl font-bold tracking-tight">Everything your team needs</h2>
               <p className="mx-auto max-w-xl text-base leading-relaxed text-muted-foreground">
                 From recruitment to retirement, sprint to close — all in one cohesive workspace.
               </p>
-            </SectionReveal>
+            </div>
 
-            <StaggerReveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
               {features.map((feature) => (
-                <motion.div
+                <div
                   key={feature.title}
-                  variants={scaleIn}
                   className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-xs transition-[border-color,box-shadow] duration-100 hover:border-border-strong hover:shadow-md"
                 >
                   <IconChip icon={feature.icon} tone={feature.tone} />
@@ -205,16 +183,16 @@ export function LandingPage() {
                       </Badge>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </StaggerReveal>
+            </div>
           </div>
         </section>
 
         <section className="border-y border-border bg-surface-sunken py-24 lg:py-32">
           <div className="container mx-auto px-4 lg:px-8">
             <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-2 items-center">
-              <SectionReveal>
+              <div>
                 <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-brand-text">Why teams choose Miyo Global</p>
                 <h2 className="mb-6 font-display text-3xl font-bold leading-tight tracking-tight">
                   Built for teams that
@@ -232,9 +210,9 @@ export function LandingPage() {
                     </div>
                   ))}
                 </div>
-              </SectionReveal>
+              </div>
 
-              <SectionReveal delay={200}>
+              <div>
                 <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
                   <div className="mb-2 flex items-center gap-2">
                     <div className="size-2 rounded-full bg-success-500 motion-safe:animate-pulse" />
@@ -247,12 +225,9 @@ export function LandingPage() {
                         <span className="font-semibold tabular-nums">{item.value}</span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                        <motion.div
+                        <div
                           className={`h-full rounded-full ${item.color}`}
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${item.pct}%` }}
-                          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                          viewport={{ once: true }}
+                          style={{ width: `${item.pct}%` }}
                         />
                       </div>
                     </div>
@@ -262,14 +237,14 @@ export function LandingPage() {
                     <span className="text-xs text-muted-foreground">All systems operational</span>
                   </div>
                 </div>
-              </SectionReveal>
+              </div>
             </div>
           </div>
         </section>
 
         <section className="brand-mark-bg relative overflow-hidden py-24 lg:py-32">
           <div className="container relative mx-auto px-4 lg:px-8 text-center max-w-3xl">
-            <SectionReveal>
+            <div>
               <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-gold-400">Get started today</p>
               <h2 className="mb-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-sidebar-accent-foreground">
                 Ready to unify
@@ -287,7 +262,7 @@ export function LandingPage() {
                   </Link>
                 </Button>
               </div>
-            </SectionReveal>
+            </div>
           </div>
         </section>
       </main>

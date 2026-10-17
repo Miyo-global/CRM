@@ -1,59 +1,7 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
 import { Users, LayoutGrid, TrendingUp, Calendar, MessageSquare, BarChart3 } from "lucide-react";
 import type { Tone } from "@/lib/design/tones";
-
-// R3-D001: the landing page no longer fades, scales or staggers itself in.
-// The names stay for the call sites; every state is the same.
-const STATIC: Variants = { hidden: {}, visible: {} };
-
-export const fadeUp = STATIC;
-export const stagger = STATIC;
-export const scaleIn = STATIC;
-
-export function SectionReveal({
-  children,
-  className,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}) {
-  return (
-    <motion.div
-      className={className}
-      initial={false}
-      whileInView="visible"
-      viewport={{ once: true, margin: "-10% 0px" }}
-      variants={fadeUp}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-export function StaggerReveal({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      className={className}
-      variants={stagger}
-      initial={false}
-      whileInView="visible"
-      viewport={{ once: true, margin: "-10% 0px" }}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 export const features = [
   {
