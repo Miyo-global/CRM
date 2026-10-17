@@ -5,6 +5,7 @@ import { organizationMembers, projects } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { resolveProjectAccess } from "@/lib/projects/project-access";
 import { parseIdParam } from "@/lib/projects/require-project-access";
+import { notFound } from "next/navigation";
 import { AccessDeniedView } from "./access-denied-view";
 
 async function loadProject(rawId: string) {
@@ -40,6 +41,8 @@ export default async function ProjectLayout({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
+  // /projects/build or /projects/abc is not a project id: plain 404 (MIYO-0067).
+  if (parseIdParam(projectId) === null) notFound();
   const project = await loadProject(projectId);
   if (!project) return <AccessDeniedView />;
 
