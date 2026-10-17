@@ -131,8 +131,8 @@ export function OnboardingWizard() {
    * Show the first error instead of failing silently: go to its step, focus the
    * field and let the message render (A16).
    */
-  const goToFirstError = useCallback(() => {
-    const fields = Object.keys(form.formState.errors);
+  const goToFirstError = useCallback((errors: object = form.formState.errors) => {
+    const fields = Object.keys(errors);
     if (fields.length === 0) return false;
     const steps = fields
       .map((f) => stepOfField(f))
@@ -158,7 +158,7 @@ export function OnboardingWizard() {
     if (fields) {
       const valid = await form.trigger(fields);
       if (!valid) {
-        goToFirstError();
+        goToFirstError(form.formState.errors);
         return;
       }
     }
@@ -178,7 +178,7 @@ export function OnboardingWizard() {
     if (currentStep === 4) {
       const fullValid = await form.trigger();
       if (!fullValid) {
-        goToFirstError();
+        goToFirstError(form.formState.errors);
         return;
       }
     }
@@ -265,7 +265,8 @@ export function OnboardingWizard() {
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          // A failed final submit jumps to the first broken step too (MIYO-0094).
+          onSubmit={form.handleSubmit(handleSubmit, (errors) => goToFirstError(errors))}
           onKeyDown={(e) => {
             if (e.key === "Enter" && currentStep < STEPS.length) {
               e.preventDefault();
