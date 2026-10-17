@@ -355,7 +355,8 @@
 }
 
 /* ── 7. Utilities that replace legacy helpers (only these survive) ─ */
-@utility brand-mark-bg { background: radial-gradient(60% 60% at 85% 10%, color-mix(in oklab, var(--gold-400) 14%, transparent), transparent 70%), var(--ink-950); }
+/* MIYO-0312: flat ink, no radial gold glow. */
+@utility brand-mark-bg { background: var(--ink-950); }
 @utility surface-sunken { background: var(--surface-sunken); }
 @utility focus-ring { outline: none; box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring); }
 
