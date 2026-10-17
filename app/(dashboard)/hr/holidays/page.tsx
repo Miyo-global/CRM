@@ -170,6 +170,10 @@ export default function HolidaysPage() {
   const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
 
   const currentYear = new Date().getFullYear();
+  // R3-0022: the date picker allows five years ahead, so the list has to
+  // reach as far — a holiday saved for 2031 was invisible and so could not
+  // be deleted before it mailed everyone.
+  const maxYear = currentYear + 5;
   const [viewYear, setViewYear] = useState(currentYear);
 
   const { data: rawHolidays, isLoading, isError, error, refetch } = useHrHolidaysForYear(viewYear);
@@ -360,7 +364,7 @@ export default function HolidaysPage() {
             variant="outline"
             size="icon-sm"
             onClick={() => setViewYear((y) => y + 1)}
-            disabled={viewYear >= currentYear + 2}
+            disabled={viewYear >= maxYear}
             aria-label="Next year"
           >
             <ChevronRight className="size-4" aria-hidden="true" />
