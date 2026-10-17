@@ -11,6 +11,9 @@ export {
   sendPasswordExpiryWarningEmail,
   sendAccountDeactivationEmail,
   sendInvitationEmail,
+  sendMfaEnabledEmail,
+  sendMfaDisabledEmail,
+  sendMfaResetByAdminEmail,
 } from "./email/auth";
 // MIYO-0166: the holiday reminder renders its template in lib/email/announcements.ts.
 export {

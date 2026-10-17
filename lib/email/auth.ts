@@ -148,3 +148,27 @@ export async function sendPasswordExpiryWarningEmail(
     vars: { expires_on: expiresOn },
   });
 }
+
+/** MIYO-0225: told when two-step verification is switched on. */
+export async function sendMfaEnabledEmail(email: string): Promise<void> {
+  await sendTemplateEmail("auth-mfa-enabled", {
+    to: email,
+    vars: { email, changed_at: formatIST(new Date()) },
+  });
+}
+
+/** MIYO-0226: told when two-step verification is switched off. */
+export async function sendMfaDisabledEmail(email: string): Promise<void> {
+  await sendTemplateEmail("auth-mfa-disabled", {
+    to: email,
+    vars: { email, changed_at: formatIST(new Date()) },
+  });
+}
+
+/** MIYO-0227: told when an administrator resets the second factor. */
+export async function sendMfaResetByAdminEmail(email: string): Promise<void> {
+  await sendTemplateEmail("auth-mfa-reset-by-admin", {
+    to: email,
+    vars: { changed_at: formatIST(new Date()) },
+  });
+}

@@ -6,8 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { invalidateUserSession } from "@/lib/auth";
 import { createAuditLog } from "@/lib/audit-log";
-import { buildNotificationEmail } from "@/lib/notifications/email";
-import { sendEmail } from "@/lib/email";
+import { sendMfaResetByAdminEmail } from "@/lib/email";
 import { ROLES, hasFullAccess } from "@/lib/constants/roles";
 
 const schema = z.object({ userId: z.string().min(1) });
@@ -57,14 +56,9 @@ export async function POST(req: NextRequest) {
       metadata: { targetRole: user.role },
     });
 
-    // The account owner is told their second factor was removed.
+    // MIYO-0227: the account owner is told their second factor was removed.
     if (user.email) {
-      const { subject, html } = buildNotificationEmail({
-        title: "Two-factor authentication was reset",
-        message: `${user.name ?? "Hello"}, an administrator reset two-factor authentication on your Miyo Global CRM account. You will be asked to set it up again the next time you sign in. If you did not expect this, contact HR immediately.`,
-        link: "/settings",
-      });
-      await sendEmail({ to: user.email, subject, html }).catch(() => undefined);
+      await sendMfaResetByAdminEmail(user.email).catch(() => undefined);
     }
 
     return ok({ reset: true });

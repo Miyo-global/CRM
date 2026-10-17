@@ -7,6 +7,8 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { invalidateUserSession } from "@/lib/auth";
+import { sendMfaDisabledEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 const schema = z.object({ token: z.string().length(6) });
 
@@ -28,6 +30,14 @@ export async function POST(req: NextRequest) {
 
     await db.update(users).set({ totpEnabled: false, totpSecret: null }).where(eq(users.id, session.user.id));
     await invalidateUserSession(session.user.id);
+
+    // MIYO-0226: switching the second factor off is worth a mail, in case it
+    // was not the account owner who did it.
+    if (user.email) {
+      await sendMfaDisabledEmail(user.email).catch((error) =>
+        logger.error("MFA disabled email failed", { error }),
+      );
+    }
 
     return ok({ disabled: true });
   });

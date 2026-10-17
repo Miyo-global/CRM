@@ -7,11 +7,22 @@ import { users, mfaBackupCodes } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { invalidateUserSession } from "@/lib/auth";
+import { sendMfaEnabledEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 const schema = z.union([
   z.object({ token: z.string().length(6), backupCode: z.undefined() }),
   z.object({ backupCode: z.string().min(1), token: z.undefined() }),
 ]);
+
+// MIYO-0225: turning on a second factor is a security change the account
+// owner should hear about, but a mail failure must not undo it.
+async function notifyEnabled(email: string | null): Promise<void> {
+  if (!email) return;
+  await sendMfaEnabledEmail(email).catch((error) =>
+    logger.error("MFA enabled email failed", { error }),
+  );
+}
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
@@ -46,6 +57,7 @@ export async function POST(req: NextRequest) {
 
           await db.update(users).set({ totpEnabled: true }).where(eq(users.id, session.user.id));
           await invalidateUserSession(session.user.id);
+          await notifyEnabled(user.email);
           return ok({ enabled: true });
         }
       }
@@ -57,6 +69,7 @@ export async function POST(req: NextRequest) {
 
     await db.update(users).set({ totpEnabled: true }).where(eq(users.id, session.user.id));
     await invalidateUserSession(session.user.id);
+    await notifyEnabled(user.email);
 
     return ok({ enabled: true });
   });
