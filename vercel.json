@@ -47,10 +47,6 @@
     {
       "path": "/api/cron/appraisal-pip-reminders",
       "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/cron/close-expired-job-postings",
-      "schedule": "30 0 * * *"
     }
   ]
 }
