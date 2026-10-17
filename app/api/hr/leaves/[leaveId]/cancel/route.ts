@@ -51,20 +51,28 @@ export async function PATCH(
           })
         : null;
 
-      const hrMembers = await db
-        .select({ userId: organizationMembers.userId })
-        .from(organizationMembers)
-        .where(and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.role, "HR")));
+      // The approver who owned the request (HR when nobody did), plus the
+      // employee as a confirmation (R3-0006). Previously only HR heard.
+      const recipientIds = new Set<string>([existing.userId]);
+      if (existing.approverId) {
+        recipientIds.add(existing.approverId);
+      } else {
+        const hrMembers = await db
+          .select({ userId: organizationMembers.userId })
+          .from(organizationMembers)
+          .where(and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.role, "HR")));
+        for (const m of hrMembers) recipientIds.add(m.userId);
+      }
 
-      for (const m of hrMembers) {
-        const hrUser = await db.query.users.findFirst({
-          where: eq(users.id, m.userId),
+      for (const userId of recipientIds) {
+        const recipient = await db.query.users.findFirst({
+          where: eq(users.id, userId),
           columns: { email: true, name: true },
         });
-        if (hrUser?.email) {
+        if (recipient?.email) {
           await sendLeaveCancellationEmail(
-            hrUser.email,
-            hrUser.name ?? "HR",
+            recipient.email,
+            recipient.name ?? "there",
             session.user.name ?? "Employee",
             leaveType?.name ?? "Leave",
             existing.startDate,
