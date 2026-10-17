@@ -675,3 +675,24 @@ export function useChecklistMutations(ticketId: number, projectId: number) {
 
   return { add, update, remove };
 }
+
+// MIYO-0113: tickets assigned to me across every project I can see.
+
+export interface MyWorkTicket {
+  id: number;
+  title: string;
+  type: string | null;
+  status: string | null;
+  priority: string | null;
+  ticketNumber: number | null;
+  dueDate: string | null;
+  projectId: number | null;
+  project: { id: number; name: string; key: string } | null;
+}
+
+export function useMyWork() {
+  return useQuery({
+    queryKey: [...queryKeys.projects.all, "my-work"] as const,
+    queryFn: () => apiClient.get<MyWorkTicket[]>("/projects/my-work"),
+  });
+}

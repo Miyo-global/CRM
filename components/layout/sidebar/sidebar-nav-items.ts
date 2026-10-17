@@ -146,6 +146,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "Projects & Time",
           routes: [
             { label: "All Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Templates", icon: LayoutTemplate, href: "/projects/templates", isSubItem: true },
             { label: "Resource Allocation", icon: Users, href: "/projects/resource-allocation", isSubItem: true },
             { label: "Timesheets", icon: Timer, href: "/timesheets/team" },
@@ -285,6 +286,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "Projects & Time",
           routes: [
             { label: "All Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Templates", icon: LayoutTemplate, href: "/projects/templates", isSubItem: true },
             { label: "Resource Allocation", icon: Users, href: "/projects/resource-allocation", isSubItem: true },
           ],
@@ -318,6 +320,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "My Work",
           routes: [
             { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
           ],
         },
@@ -360,6 +363,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "My Work",
           routes: [
             { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
           ],
         },
@@ -395,6 +399,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "My Work",
           routes: [
             { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
           ],
         },
@@ -432,6 +437,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "My Work",
           routes: [
             { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
             { label: "Support", icon: LifeBuoy, href: "/support" },
           ],
@@ -468,6 +474,7 @@ export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
           label: "My Work",
           routes: [
             { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
+            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
             { label: "Support", icon: LifeBuoy, href: "/support" },
           ],
