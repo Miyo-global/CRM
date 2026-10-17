@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
@@ -31,24 +31,42 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
   const maxDateOfBirth = useMemo(() => subYears(new Date(), MIN_EMPLOYEE_AGE_YEARS), []);
   const minDateOfBirth = useMemo(() => subYears(new Date(), 100), []);
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const inFlight = useRef<AbortController | null>(null);
+
+  // MIYO-0148: a slow check left "Checking email…" on screen for half a
+  // minute. It gives up after 5 seconds, and a new check cancels the last
+  // one. Either way the server re-checks on submit.
+  useEffect(() => () => inFlight.current?.abort(), []);
 
   const handleEmailBlur = useCallback(
     async (email: string) => {
       const trimmed = email.trim();
       form.setValue("email", trimmed);
       if (!trimmed || !z.string().email().safeParse(trimmed).success) return;
+
+      inFlight.current?.abort();
+      const controller = new AbortController();
+      inFlight.current = controller;
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
       setCheckingEmail(true);
       try {
         const res = await apiClient.get<{ exists: boolean }>(
           `/hr/employees/check-email?email=${encodeURIComponent(trimmed)}`,
+          undefined,
+          { signal: controller.signal },
         );
         if (res.exists) {
           form.setError("email", { message: "This email is already registered in your organisation" });
         }
       } catch {
-        // silently ignore network errors — server will validate on submit
+        // Timed out, cancelled, or offline: let the person carry on.
       } finally {
-        setCheckingEmail(false);
+        clearTimeout(timeout);
+        if (inFlight.current === controller) {
+          inFlight.current = null;
+          setCheckingEmail(false);
+        }
       }
     },
     [form],
