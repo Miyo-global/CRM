@@ -130,14 +130,12 @@ export async function PATCH(
             columns: { email: true, name: true },
           });
           if (creator?.email) {
-            await sendSupportTicketStatusEmail(
-              creator.email,
-              creator.name ?? "User",
-              ticket.title,
-              ticketId,
-              input.status!,
-              session.user.name ?? "Support"
-            );
+            await sendSupportTicketStatusEmail(creator.email, {
+              id: ticketId,
+              subject: ticket.title,
+              status: input.status!,
+              updatedBy: session.user.name ?? "Support",
+            });
           }
         })().catch(() => {});
       }
@@ -149,14 +147,12 @@ export async function PATCH(
             columns: { email: true, name: true },
           });
           if (assignee?.email) {
-            await sendSupportTicketCreatedEmail(
-              assignee.email,
-              assignee.name ?? "Team Member",
-              ticket.title,
-              ticket.priority ?? "MEDIUM",
-              session.user.name ?? "Support",
-              ticketId
-            );
+            await sendSupportTicketCreatedEmail(assignee.email, {
+              id: ticketId,
+              subject: ticket.title,
+              priority: ticket.priority ?? "MEDIUM",
+              requesterName: session.user.name ?? "Support",
+            });
           }
         })().catch(() => {});
       }

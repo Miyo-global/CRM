@@ -177,14 +177,12 @@ export async function POST(
           ]);
 
           if (recipient?.email) {
-            await sendSupportTicketReplyEmail(
-              recipient.email,
-              recipient.name ?? "User",
-              ticket.title,
+            await sendSupportTicketReplyEmail(recipient.email, {
               ticketId,
-              author?.name ?? session.user.name ?? "Team Member",
-              input.body
-            );
+              ticketSubject: ticket.title,
+              authorName: author?.name ?? session.user.name ?? "Team Member",
+              body: input.body,
+            });
           }
         })().catch(() => {});
       }

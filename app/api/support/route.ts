@@ -132,14 +132,12 @@ export async function POST(req: NextRequest) {
             columns: { email: true, name: true },
           });
           if (assignee?.email) {
-            await sendSupportTicketCreatedEmail(
-              assignee.email,
-              assignee.name ?? "Team Member",
-              input.title,
-              input.priority,
-              session.user.name ?? "User",
-              ticket.id
-            );
+            await sendSupportTicketCreatedEmail(assignee.email, {
+              id: ticket.id,
+              subject: input.title,
+              priority: input.priority,
+              requesterName: session.user.name ?? "A user",
+            });
           }
         })().catch(() => {});
       }

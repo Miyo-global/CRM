@@ -135,9 +135,9 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
 
   { name: "hr.documentExpiry", run: () => sendDocumentExpiryReminderEmail(TO, "Passport", NEXT_WEEK, 7) },
 
-  { name: "support.ticketCreated", run: () => sendSupportTicketCreatedEmail(TO, NAME, "Cannot login on mobile", "HIGH", ACTOR, 42) },
-  { name: "support.ticketReply", run: () => sendSupportTicketReplyEmail(TO, NAME, "Cannot login on mobile", 42, ACTOR, "Have you tried clearing your cache and reinstalling the app?") },
-  { name: "support.ticketStatus", run: () => sendSupportTicketStatusEmail(TO, NAME, "Cannot login on mobile", 42, "RESOLVED", ACTOR) },
+  { name: "support.ticketCreated", run: () => sendSupportTicketCreatedEmail(TO, { id: 42, subject: "Cannot login on mobile", priority: "HIGH", requesterName: "John Doe" }) },
+  { name: "support.ticketReply", run: () => sendSupportTicketReplyEmail(TO, { ticketId: 42, ticketSubject: "Cannot login on mobile", authorName: ACTOR, body: "We have reset your session, please try again." }) },
+  { name: "support.ticketStatus", run: () => sendSupportTicketStatusEmail(TO, { id: 42, subject: "Cannot login on mobile", status: "RESOLVED", updatedBy: ACTOR }) },
 
   { name: "onboarding.welcome", run: () => sendOnboardingWelcomeEmail(TO, NAME, TODAY, 8, ACTOR) },
   { name: "onboarding.task", run: () => sendOnboardingTaskEmail(TO, "John Doe", "3 IT tasks", { joiningDate: TODAY }) },
