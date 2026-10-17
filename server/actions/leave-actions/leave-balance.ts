@@ -28,40 +28,29 @@ import {
 } from "@/lib/hr/casual-leave-monthly";
 
 export async function ensureLeaveTypes(orgId: string) {
-  let types = await db.query.leaveTypes.findMany({
+  const types = await db.query.leaveTypes.findMany({
     where: eq(leaveTypes.orgId, orgId),
   });
 
-  if (types.length === 0) {
+  const existingNames = new Set(types.map((t) => t.name));
+  const missing = DEFAULT_LEAVE_TYPES.filter((t) => !existingNames.has(t.name));
 
-    for (const t of DEFAULT_LEAVE_TYPES) {
-      await db.insert(leaveTypes).values({
-        orgId,
-        name: t.name,
-        daysPerYear: t.daysPerYear,
-        carryForward: t.carryForward,
-      });
-    }
-  } else {
+  // R3-0105: the common case is that nothing is missing, so return the rows
+  // already in hand instead of inserting nothing and reading them again.
+  if (missing.length === 0) return types;
 
-    const existingNames = new Set(types.map((t) => t.name));
-    for (const t of DEFAULT_LEAVE_TYPES) {
-      if (!existingNames.has(t.name)) {
-        await db.insert(leaveTypes).values({
-          orgId,
-          name: t.name,
-          daysPerYear: t.daysPerYear,
-          carryForward: t.carryForward,
-        });
-      }
-    }
-  }
+  await db.insert(leaveTypes).values(
+    missing.map((t) => ({
+      orgId,
+      name: t.name,
+      daysPerYear: t.daysPerYear,
+      carryForward: t.carryForward,
+    })),
+  );
 
-  types = await db.query.leaveTypes.findMany({
+  return db.query.leaveTypes.findMany({
     where: eq(leaveTypes.orgId, orgId),
   });
-
-  return types;
 }
 
 export async function ensureUserBalances(
