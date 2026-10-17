@@ -50,6 +50,7 @@ import { EditTimeEntryDialog } from "@/components/timesheets/edit-time-entry-dia
 import { toast } from "sonner";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { TimesheetTableRow, type EditEntry } from "@/features/timesheets/timesheet-table-row";
+import { pluralise } from "@/lib/format-utils";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -386,7 +387,7 @@ export default function TimesheetsPage() {
                   {entries && entries.length > 0 && (
                     <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 sm:px-6">
                       <span className="text-sm tabular-nums text-muted-foreground">
-                        Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, entries.length)}–{Math.min(page * ITEMS_PER_PAGE, entries.length)} of {entries.length} entries
+                        Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, entries.length)}–{Math.min(page * ITEMS_PER_PAGE, entries.length)} of {pluralise(entries.length, "entry", "entries")}
                       </span>
                       {totalPages > 1 && (
                         <div className="flex items-center gap-1.5">

@@ -24,6 +24,7 @@ import type { Employee } from "@/types/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getTodayIST, normalizeDeadlineDate } from "@/lib/hr/application-dates";
 import { formatDisplayDate } from "@/lib/date-utils";
+import { pluralise } from "@/lib/format-utils";
 
 
 function ownerRoleTone(role: string): Tone {
@@ -98,7 +99,7 @@ function ProgressRing({
         </text>
       </svg>
       <p className="text-sm tabular-nums text-muted-foreground">
-        {completed} of {total} tasks done
+        {completed} of {pluralise(total, "task")} done
       </p>
     </div>
   );

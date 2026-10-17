@@ -34,6 +34,7 @@ import { DocumentTable, type FolderItem } from "@/features/hr/documents/document
 import { NewFolderDialog } from "@/features/hr/documents/new-folder-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { formatIST } from "@/lib/date-utils";
+import { pluralise } from "@/lib/format-utils";
 
 const DOCUMENT_CATEGORIES = [
   "Personal Documents",
@@ -353,7 +354,7 @@ function RichDocumentsSection() {
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm">Created Documents</h3>
-          <span className="text-xs text-muted-foreground tabular-nums">{richDocs.length} documents</span>
+          <span className="text-xs text-muted-foreground tabular-nums">{pluralise(richDocs.length, "document")}</span>
         </div>
         <div className="space-y-2">
           {richDocs.map((doc) => (

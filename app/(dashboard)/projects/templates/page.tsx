@@ -51,6 +51,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
+import { pluralise } from "@/lib/format-utils";
 
 interface TicketDraft {
   title: string;
@@ -142,7 +143,7 @@ function ApplyDialog({
             </div>
           </div>
           <div className="space-y-1 rounded-md border border-border bg-surface-sunken/60 p-3 text-sm">
-            <p className="font-medium">{template.tickets.length} tasks will be created:</p>
+            <p className="font-medium">{pluralise(template.tickets.length, "task")} will be created:</p>
             {template.tickets.slice(0, 5).map((t) => (
               <div key={t.id} className="flex items-center gap-2 text-muted-foreground">
                 <Badge variant="outline" className="text-2xs">{t.type}</Badge>
@@ -377,7 +378,7 @@ function TemplateCard({
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <Badge variant="secondary">{template.category}</Badge>
-            <Badge variant="outline" className="tabular-nums">{template.tickets.length} tasks</Badge>
+            <Badge variant="outline" className="tabular-nums">{pluralise(template.tickets.length, "task")}</Badge>
           </div>
         </div>
       </CardHeader>

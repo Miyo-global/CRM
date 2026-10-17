@@ -31,6 +31,7 @@ import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constan
 import type { LeaveRequest, WfhRequest } from "./leaves-shared";
 import { LeaveRequestTable, WfhRequestItem, formatUserDisplayName } from "./leaves-shared";
 import { canActOnLeaveRequest } from "@/lib/auth/leave-approval-roles";
+import { pluralise } from "@/lib/format-utils";
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
   { value: "ALL", label: "All Status" },
@@ -200,7 +201,7 @@ function LeaveApprovalsTable({
           )}
         </div>
         <Badge variant="secondary" className="ml-auto w-fit tabular-nums">
-          {filteredRequests.length} of {requests.length} requests
+          {filteredRequests.length} of {pluralise(requests.length, "request")}
         </Badge>
       </div>
 

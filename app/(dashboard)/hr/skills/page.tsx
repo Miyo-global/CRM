@@ -41,6 +41,7 @@ import {
   getCertStatus, certStatusLabel, formatCertDate, type CertStatus,
 } from "@/features/hr/skills/cert-status";
 import { getTodayString } from "@/lib/date-utils";
+import { pluralise } from "@/lib/format-utils";
 
 const CERT_TONE: Record<CertStatus, Tone> = {
   expired: "danger",
@@ -348,7 +349,7 @@ export default function SkillsPage() {
   return (
     <PageWrapper
       title="Skills matrix"
-      badge={`${uniqueSkillCount} skill${uniqueSkillCount !== 1 ? "s" : ""} · ${totalEntryCount} entries`}
+      badge={`${pluralise(uniqueSkillCount, "skill")} · ${pluralise(totalEntryCount, "entry", "entries")}`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <ExportButton

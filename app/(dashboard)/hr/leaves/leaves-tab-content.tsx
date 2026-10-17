@@ -32,6 +32,7 @@ import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared"
 import { LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 import { ExportButton } from "@/components/ui/export-button";
+import { pluralise } from "@/lib/format-utils";
 
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
@@ -244,7 +245,7 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
               <CardTitle className="text-base font-semibold text-foreground">Request History</CardTitle>
               {myLeaveRequests.length > 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  Showing {filteredRequests.length} of {myLeaveRequests.length} requests
+                  Showing {filteredRequests.length} of {pluralise(myLeaveRequests.length, "request")}
                 </p>
               ) : null}
             </div>

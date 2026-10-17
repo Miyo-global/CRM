@@ -299,3 +299,12 @@ export function plural(count: number, singular: string, pluralForm?: string): st
   const noun = count === 1 ? singular : (pluralForm ?? `${singular}s`);
   return `${count} ${noun}`;
 }
+
+/**
+ * QA-D009: "1 items" and "1 reviews" read as a bug to anyone looking at the
+ * screen. `pluralise(1, "item")` is "1 item", `pluralise(3, "item")` is
+ * "3 items"; pass the plural when adding an s is wrong ("entry", "entries").
+ */
+export function pluralise(count: number, singular: string, plural?: string): string {
+  return `${count} ${count === 1 ? singular : plural ?? `${singular}s`}`;
+}
