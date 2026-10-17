@@ -99,9 +99,17 @@ export default async function AtsJobsPage() {
                       .join(" · ")}
                   </p>
                 </div>
-                <Badge variant={row.status === "OPEN" ? "default" : "secondary"}>
-                  {STATUS_LABELS[row.status ?? "DRAFT"] ?? row.status}
-                </Badge>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/ats/jobs/${row.id}/pipeline`}
+                    className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  >
+                    Pipeline
+                  </Link>
+                  <Badge variant={row.status === "OPEN" ? "default" : "secondary"}>
+                    {STATUS_LABELS[row.status ?? "DRAFT"] ?? row.status}
+                  </Badge>
+                </div>
               </CardContent>
             </Card>
           ))}

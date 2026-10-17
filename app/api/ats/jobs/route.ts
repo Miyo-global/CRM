@@ -14,6 +14,7 @@ import {
   requisitionUsable,
   setHiringTeam,
 } from "@/lib/ats/jobs";
+import { copyStagesToJob } from "@/lib/ats/stages";
 import { jobBodySchema } from "@/lib/validations/ats-job";
 
 /** MIYO-0633: the jobs this person may see. */
@@ -84,6 +85,9 @@ export async function POST(req: NextRequest) {
         .returning();
 
       await setHiringTeam(created.id, body.hiringTeam);
+      // MIYO-0650: the job takes its own copy of the stage list, so later
+      // edits to the org list do not move candidates already in a pipeline.
+      await copyStagesToJob(session.orgId, created.id);
 
       return ok(created, 201);
     } catch (e) {

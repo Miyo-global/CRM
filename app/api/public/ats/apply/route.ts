@@ -20,6 +20,7 @@ import { verifyTurnstile } from "@/lib/ats/turnstile";
 import { normalisePhone } from "@/lib/ats/phone";
 import { findDuplicates } from "@/lib/ats/duplicates";
 import { jobIsOpen } from "@/lib/ats/careers";
+import { firstStageId } from "@/lib/ats/stages";
 import { sendApplicationEmails } from "@/lib/ats/application-emails";
 import {
   applyFieldsSchema,
@@ -203,6 +204,7 @@ export async function POST(req: NextRequest) {
         jobPostingId: job.id,
         coverLetter: fields.coverLetter || null,
         source: "CAREERS",
+        stageId: await firstStageId(job.orgId, job.id),
       })
       .returning();
 
