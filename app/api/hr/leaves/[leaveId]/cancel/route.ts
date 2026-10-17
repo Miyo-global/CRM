@@ -72,11 +72,12 @@ export async function PATCH(
         if (recipient?.email) {
           await sendLeaveCancellationEmail(
             recipient.email,
-            recipient.name ?? "there",
             session.user.name ?? "Employee",
             leaveType?.name ?? "Leave",
-            existing.startDate,
-            existing.endDate
+            existing.startDate === existing.endDate
+              ? existing.startDate
+              : `${existing.startDate} – ${existing.endDate}`,
+            existing.status ?? "PENDING",
           );
         }
       }

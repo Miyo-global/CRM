@@ -170,7 +170,7 @@ export const leaveEscalation = inngest.createFunction(
 
         try {
           await emailUniqueRecipients(hrMembers, async (email, name) => {
-            await sendLeaveHrMissedEscalationEmail(email, name, orgName, rows);
+            await sendLeaveHrMissedEscalationEmail(email, rows);
             hrEmails += 1;
           });
 
@@ -179,17 +179,12 @@ export const leaveEscalation = inngest.createFunction(
             (member) => member.email?.trim().toLowerCase() === hrInboxKey,
           );
           if (!hrAlreadyEmailed) {
-            await sendLeaveHrMissedEscalationEmail(
-              HR_LEAVE_NOTIFY_EMAIL,
-              "HR Team",
-              orgName,
-              rows,
-            );
+            await sendLeaveHrMissedEscalationEmail(HR_LEAVE_NOTIFY_EMAIL, rows);
             hrEmails += 1;
           }
 
           await emailUniqueRecipients(ceoMembers, async (email, name) => {
-            await sendLeaveCeoDelegateEscalationEmail(email, name, orgName, rows);
+            await sendLeaveCeoDelegateEscalationEmail(email, rows);
             ceoEmails += 1;
           });
 

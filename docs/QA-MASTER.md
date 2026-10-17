@@ -1637,7 +1637,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0228 [Low][Email templates] Replace email template `onboarding-welcome`
+- [x] MIYO-0228 [Low][Email templates] Replace email template `onboarding-welcome`
+  - **Agent note (2026-10-17):** renders `onboarding-welcome` with manager, location and start time (e288a26e8); office location and start time are new env constants. Inbox check outstanding.
   - **Where:** Current: getOnboardingWelcomeEmailTemplate (notifications.ts) via Inngest initiate-onboarding. New: email-templates/onboarding-welcome.html + .txt. Trigger: onboarding checklist started. To: the new hire.
   - **Problem:** Emoji heading ('🎉 Welcome to the Team!'); Overlaps with auth-welcome-set-password=[redacted] new hire gets two 'Welcome' emails on the same day; Preheader 'Your onboarding journey starts now!' is filler
   - **Fix:** Implement with renderEmail('onboarding-welcome', vars). Subject: "Your first day at {{org_name}}: {{joining_date}}". Preheader: "What to expect on day one and the tasks waiting for you.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1645,7 +1646,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0229 [Low][Email templates] Replace email template `onboarding-tasks-assigned`
+- [x] MIYO-0229 [Low][Email templates] Replace email template `onboarding-tasks-assigned`
+  - **Agent note (2026-10-17):** renders `onboarding-tasks-assigned` (e288a26e8). Inbox check outstanding.
   - **Where:** Current: getOnboardingTaskEmailTemplate. New: email-templates/onboarding-tasks-assigned.html + .txt. Trigger: onboarding task assigned to HR/IT/manager. To: task owner.
   - **Problem:** Emoji heading; No due date per task
   - **Fix:** Implement with renderEmail('onboarding-tasks-assigned', vars). Subject: "Onboarding task for {{employee_name}}: {{task_title}}". Preheader: "Due {{due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1653,7 +1655,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0230 [Low][Email templates] Replace email template `onboarding-reminder`
+- [x] MIYO-0230 [Low][Email templates] Replace email template `onboarding-reminder`
+  - **Agent note (2026-10-17):** already done — `/api/hr/onboarding/reminders` renders `onboarding-reminder` with pending_count and oldest_due_date.
   - **Where:** Current: inline HTML in app/api/hr/onboarding/reminders/route.ts. New: email-templates/onboarding-reminder.html + .txt. Trigger: POST /api/hr/onboarding/reminders. To: task owners.
   - **Problem:** Inline HTML outside the template system, not using the shared layout; Subject 'Onboarding Reminder — Pending Tasks' gives no count or name
   - **Fix:** Implement with renderEmail('onboarding-reminder', vars). Subject: "{{pending_count}} onboarding tasks still open". Preheader: "Oldest is due {{oldest_due_date}}.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1661,7 +1664,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0231 [Low][Email templates] Replace email template `onboarding-complete-employee`
+- [x] MIYO-0231 [Low][Email templates] Replace email template `onboarding-complete-employee`
+  - **Agent note (2026-10-17):** renders `onboarding-complete-employee` (7131f26b7). Inbox check outstanding.
   - **Where:** Current: getOnboardingCompleteEmployeeEmailTemplate. New: email-templates/onboarding-complete-employee.html + .txt. Trigger: last onboarding task completed. To: the new hire.
   - **Problem:** Emoji heading ('🎉 Onboarding Complete!'); Preheader 'You're all set!' is filler
   - **Fix:** Implement with renderEmail('onboarding-complete-employee', vars). Subject: "Onboarding complete". Preheader: "All your onboarding tasks are done.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.
@@ -1669,7 +1673,8 @@ Target look: simple, neat, clean, not AI-looking. Gold `#D4AF37`, ink `#201E1F`,
   - **Retest status:** PARTIAL
   - **Remaining:** rewritten templates live under lib/email-templates/*.ts (QA-0008/0040/0041); per-template visual inbox check not done
 
-- [ ] MIYO-0232 [Low][Email templates] Replace email template `onboarding-complete-hr`
+- [x] MIYO-0232 [Low][Email templates] Replace email template `onboarding-complete-hr`
+  - **Agent note (2026-10-17):** renders `onboarding-complete-hr`, one send to all HR with code, department, task count and time (7131f26b7). Inbox check outstanding.
   - **Where:** Current: getOnboardingCompleteHrEmailTemplate. New: email-templates/onboarding-complete-hr.html + .txt. Trigger: last onboarding task completed. To: HR.
   - **Problem:** Inherits the base-layout problems (gradient header/button, style-block CSS, hidden preheader missing, CRM footer).
   - **Fix:** Implement with renderEmail('onboarding-complete-hr', vars). Subject: "{{employee_name}} finished onboarding". Preheader: "All {{task_count}} tasks are complete.". Fill every {{placeholder}} used in the files; remove the old function once callers are switched.

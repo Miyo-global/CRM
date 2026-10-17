@@ -146,24 +146,12 @@ export async function POST(req: NextRequest) {
           hrUser.name ||
           `${hrUser.firstName ?? ""} ${hrUser.lastName ?? ""}`.trim() ||
           "HR";
-        await sendWfhRequestEmail(
-          hrUser.email,
-          hrName,
-          employeeName,
-          dateLabel,
-          reasonForEmail,
-        );
+        await sendWfhRequestEmail(hrUser.email, employeeName, dateLabel, reasonForEmail);
       }
 
       const inboxKey = HR_LEAVE_NOTIFY_EMAIL.toLowerCase();
       if (!emailed.has(inboxKey)) {
-        await sendWfhRequestEmail(
-          HR_LEAVE_NOTIFY_EMAIL,
-          "HR",
-          employeeName,
-          dateLabel,
-          reasonForEmail,
-        );
+        await sendWfhRequestEmail(HR_LEAVE_NOTIFY_EMAIL, employeeName, dateLabel, reasonForEmail);
       }
 
       await notifyByRoles(session.orgId, [ROLES.HR, ROLES.CEO, ROLES.ADMIN], {

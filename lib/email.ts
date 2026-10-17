@@ -15,6 +15,7 @@ export {
   sendMfaDisabledEmail,
   sendMfaResetByAdminEmail,
 } from "./email/auth";
+export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export {
   sendOnboardingWelcomeEmail,
   sendOnboardingTaskEmail,
@@ -34,7 +35,6 @@ import {
   getTicketAssignmentEmailTemplate,
   getTicketReviewRequestEmailTemplate,
   getTicketChangesRequestedEmailTemplate,
-  getLeaveCancellationEmailTemplate,
   getExpenseSubmittedEmailTemplate,
   getExpenseApprovedEmailTemplate,
   getExpenseRejectedEmailTemplate,
@@ -288,27 +288,6 @@ export async function sendLeaveStatusUpdateEmail(
       date_range: dateRange,
       rejection_reason: rejectionReason?.trim() || "No note was added.",
     },
-  });
-}
-
-export async function sendLeaveCancellationEmail(
-  email: string,
-  approverName: string,
-  employeeName: string,
-  leaveType: string,
-  startDate: string,
-  endDate: string
-) {
-  await sendEmail({
-    to: email,
-    subject: `Leave Cancelled: ${employeeName}`,
-    html: getLeaveCancellationEmailTemplate(
-      approverName,
-      employeeName,
-      leaveType,
-      startDate,
-      endDate
-    ),
   });
 }
 

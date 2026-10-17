@@ -151,7 +151,7 @@ const tests: { name: string; run: () => Promise<unknown> }[] = [
   { name: "hr.leaveRequest", run: () => sendLeaveRequestEmail(TO, NAME, "John Doe", "Annual Leave", TODAY, NEXT_WEEK, "Family vacation") },
   { name: "hr.leaveStatusApproved", run: () => sendLeaveStatusUpdateEmail(TO, NAME, "Annual Leave", TODAY, NEXT_WEEK, "APPROVED", ACTOR) },
   { name: "hr.leaveStatusRejected", run: () => sendLeaveStatusUpdateEmail(TO, NAME, "Annual Leave", TODAY, NEXT_WEEK, "REJECTED", ACTOR, "Coverage unavailable") },
-  { name: "hr.leaveCancellation", run: () => sendLeaveCancellationEmail(TO, NAME, "John Doe", "Annual Leave", TODAY, NEXT_WEEK) },
+  { name: "hr.leaveCancellation", run: () => sendLeaveCancellationEmail(TO, "John Doe", "Annual Leave", `${TODAY} – ${NEXT_WEEK}`, "APPROVED") },
 ];
 
 function delay(ms: number): Promise<void> {
