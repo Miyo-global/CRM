@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { CalendarClock, CheckCircle2, Save, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import {
   usePayrollSchedule,
   useUpdatePayrollSchedule,
@@ -113,13 +111,10 @@ export default function PayrollSchedulePage() {
         ) : undefined
       }
     >
-      <motion.div
+      <div
         className="space-y-6"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
       >
-        <motion.div variants={fadeUp}>
+        <div>
           <SettingsSection
             title={
               <span className="flex items-center gap-2">
@@ -190,9 +185,9 @@ export default function PayrollSchedulePage() {
               }
             />
           </SettingsSection>
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp}>
+        <div>
           <SettingsSection
             title={
               <span className="flex items-center gap-2">
@@ -220,14 +215,14 @@ export default function PayrollSchedulePage() {
               )}
             </div>
           </SettingsSection>
-        </motion.div>
+        </div>
 
         {!canEdit && (
           <p className="text-xs text-muted-foreground">
             Only CEO or Admin can change the payroll schedule.
           </p>
         )}
-      </motion.div>
+      </div>
     </PageWrapper>
   );
 }

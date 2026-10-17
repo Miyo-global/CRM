@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import {
   format,
   subDays,
@@ -18,7 +17,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { TimeEntryDetailSheet } from "@/components/timesheets/time-entry-detail-sheet";
 import { LogTimeDialog } from "@/components/timesheets/log-time-dialog";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { WeeklyProductivityChart } from "@/features/timesheets/team/weekly-productivity-chart";
@@ -201,8 +199,8 @@ function TeamTimesheetsContent() {
         />
       }
     >
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
-        <motion.div variants={fadeUp}>
+      <div className="space-y-6">
+        <div>
           <TeamSummary
             totalHours={statistics.totalHours}
             uniqueEmployees={statistics.uniqueEmployees}
@@ -210,9 +208,9 @@ function TeamTimesheetsContent() {
             avgHoursPerDay={statistics.avgHoursPerDay}
             entryCount={timesheets?.length ?? 0}
           />
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <WeeklyProductivityChart
             timesheets={timesheets}
             totalHours={statistics.totalHours}
@@ -233,9 +231,9 @@ function TeamTimesheetsContent() {
             onCalendarMonthChange={setCalendarMonth}
             onDateSelect={handleDateSelect}
           />
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp}>
+        <div>
           <TeamTable
             timesheets={timesheets}
             isLoading={isLoading}
@@ -249,8 +247,8 @@ function TeamTimesheetsContent() {
             onEntryClick={handleEntryClick}
             onExportCSV={exportToCSV}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <TimeEntryDetailSheet
         entry={selectedEntry}

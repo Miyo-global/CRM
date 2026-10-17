@@ -4,8 +4,6 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { uploadOnboardingDocument } from "@/server/actions/onboarding-actions";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { FormNavButtons } from "@/components/onboarding/form-nav-buttons";
 import { Button } from "@/components/ui/button";
 
@@ -140,11 +138,11 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
 
   return (
     <div>
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-        <motion.div variants={fadeUp} className="mb-5">
+      <div>
+        <div className="mb-5">
           <h2 className="font-display text-xl font-bold text-foreground">Documents</h2>
           <p className="text-sm text-muted-foreground mt-1">Please upload the necessary documents.</p>
-        </motion.div>
+        </div>
         <form onSubmit={handleFormSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-live="polite">
               {DOCUMENT_TYPES.map((doc) => {
@@ -152,9 +150,8 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                 const isThisLoading = loadingDoc === doc.type;
                 const isRequired = REQUIRED_DOC_TYPES.has(doc.type);
                 return (
-                  <motion.div
+                  <div
                     key={doc.type}
-                    variants={fadeUp}
                     className={`flex flex-col items-center space-y-2 rounded-lg border-2 border-dashed p-5 text-center transition-colors ${
                       isUploaded ? "border-success-500/50 bg-success-soft" : "border-border-strong bg-surface-sunken/40 hover:border-primary hover:bg-brand-soft"
                     }`}
@@ -196,20 +193,20 @@ export function DocumentsTab({ onComplete, onBack, savedUploads }: DocumentsTabP
                     >
                       {isUploaded ? "Replace File" : "Select File"}
                     </Button>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
             {validationError && (
-              <motion.p variants={fadeUp} role="alert" className="text-sm text-destructive mt-4">
+              <p role="alert" className="text-sm text-destructive mt-4">
                 {validationError}
-              </motion.p>
+              </p>
             )}
-            <motion.div variants={fadeUp} className="sticky bottom-0 z-sticky">
+            <div className="sticky bottom-0 z-sticky">
               <FormNavButtons onBack={onBack} isLoading={loadingDoc !== null} submitLabel="Continue to Review" />
-            </motion.div>
+            </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }

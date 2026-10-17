@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   Ticket,
   Clock,
@@ -27,7 +26,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { useSupportDashboard } from "@/lib/hooks/trpc-hooks";
-import { staggerContainer, fadeUp, slideInLeft } from "@/lib/motion-variants";
 import { safeMax, calcPercent } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors, sparkColors } from "@/lib/theme-constants";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -90,14 +88,11 @@ export default function SupportDashboardPage() {
     <PageWrapper
       title="Support analytics"
     >
-    <motion.div
+    <div
       className="grid grid-cols-12 gap-4 xl:gap-6"
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
     >
 
-      <motion.div variants={fadeUp} className="col-span-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-6">
+      <div className="col-span-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-6">
         <MetricCard
           label="Open Tickets"
           value={supportDashboardStats.openTickets.value}
@@ -126,9 +121,9 @@ export default function SupportDashboardPage() {
           trend={supportDashboardStats.responseRate.trend}
           sparkColor={sparkColors.purple}
         />
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-5">
         <WidgetCard title="Ticket status breakdown" icon={Shield}>
           <div className="flex items-center justify-center py-4">
             {totalTickets > 0 ? (
@@ -147,9 +142,9 @@ export default function SupportDashboardPage() {
             )}
           </div>
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-7">
         <WidgetCard title="Ticket volume trend" icon={Ticket} tone="info">
           {hasVolume ? (
             <MiniAreaChart
@@ -168,9 +163,9 @@ export default function SupportDashboardPage() {
             />
           )}
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-5" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-5">
         <WidgetCard title="SLA compliance" icon={Gauge} tone="success">
           {slaCompliance && slaCompliance.totalTickets > 0 ? (
             <div className="space-y-4">
@@ -201,9 +196,9 @@ export default function SupportDashboardPage() {
             />
           )}
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-7" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-7">
         <WidgetCard title="Response & resolution SLA by priority" icon={MessageSquareReply} tone="plum">
           {slaCompliance && slaCompliance.totalTickets > 0 ? (
             <div className="space-y-4">
@@ -272,9 +267,9 @@ export default function SupportDashboardPage() {
             />
           )}
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-4" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-4">
         <WidgetCard title="Recent activity" icon={Activity} tone="neutral">
           <div className="max-h-96 overflow-y-auto pr-1">
             {supportActivityFeed.length > 0 ? (
@@ -289,9 +284,9 @@ export default function SupportDashboardPage() {
             )}
           </div>
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12 lg:col-span-8" variants={fadeUp}>
+      <div className="col-span-12 lg:col-span-8">
         <WidgetCard title="Team access" icon={Users} tone="teal" count={supportTeamMembers.length || undefined}>
           {supportTeamMembers.length === 0 ? (
             <EmptyState
@@ -346,9 +341,9 @@ export default function SupportDashboardPage() {
             </Table>
           )}
         </WidgetCard>
-      </motion.div>
+      </div>
 
-      <motion.div className="col-span-12" variants={fadeUp}>
+      <div className="col-span-12">
         <WidgetCard title="Tickets by priority" icon={Shield} tone="warning">
           {totalPriority === 0 ? (
             <EmptyState
@@ -363,10 +358,9 @@ export default function SupportDashboardPage() {
               const percentage = calcPercent(priority.value, totalPriority);
 
               return (
-                <motion.div
+                <div
                   key={priority.label}
                   className="rounded-lg border border-border p-3"
-                  variants={slideInLeft}
                 >
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -389,24 +383,22 @@ export default function SupportDashboardPage() {
                     </div>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <motion.div
+                    <div
                       className="h-full rounded-full"
-                      style={{ backgroundColor: priority.color }}
-                      initial={{ width: 0 }}
-                      animate={{
+                      style={{
+                        backgroundColor: priority.color,
                         width: `${(priority.value / maxPriorityValue) * 100}%`,
                       }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
                     />
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
           )}
         </WidgetCard>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
     </PageWrapper>
   );
 }

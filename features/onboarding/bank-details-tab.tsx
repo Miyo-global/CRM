@@ -7,8 +7,6 @@ import { bankDetailsSchema } from "@/lib/validations/bank-details";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateBankDetails } from "@/server/actions/onboarding-actions";
-import { motion } from "framer-motion";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useOnboardingSubmit } from "@/lib/hooks/use-onboarding-submit";
 import { FormNavButtons } from "@/components/onboarding/form-nav-buttons";
 
@@ -51,13 +49,13 @@ export function BankDetailsTab({ onComplete, onBack, defaultValues }: BankDetail
 
   return (
     <div>
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-        <motion.div variants={fadeUp} className="mb-6">
+      <div>
+        <div className="mb-6">
           <h2 className="text-xl font-bold text-foreground">Bank & Tax Details</h2>
           <p className="text-sm text-muted-foreground mt-1">Required for payroll processing.</p>
-        </motion.div>
+        </div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="accountHolder">Account Holder Name</Label>
                 <Input
@@ -132,17 +130,17 @@ export function BankDetailsTab({ onComplete, onBack, defaultValues }: BankDetail
                 />
                 {errors.ifsc && <p id="ifsc-error" role="alert" className="text-sm text-destructive">{errors.ifsc.message}</p>}
               </div>
-            </motion.div>
-            <motion.div variants={fadeUp} className="space-y-2">
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="taxId">Tax ID (PAN/SSN) <span className="text-muted-foreground font-normal ml-1">(Optional)</span></Label>
               <Input id="taxId" {...form.register("taxId")} placeholder="ABCDE1234F" aria-describedby="taxId-hint" className="text-base sm:text-sm focus-visible:ring-primary" />
               <p id="taxId-hint" className="sr-only">Optional tax identification number</p>
-            </motion.div>
-            <motion.div variants={fadeUp} className="sticky bottom-0 z-sticky">
+            </div>
+            <div className="sticky bottom-0 z-sticky">
               <FormNavButtons onBack={onBack} isLoading={isLoading} />
-            </motion.div>
+            </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import { Plus, Webhook, Trash2, Copy, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
@@ -196,13 +194,13 @@ function WebhooksContent() {
         </Button>
       }
     >
-      <motion.div className="space-y-4" variants={staggerContainer} initial="hidden" animate="visible">
+      <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Each delivery is a JSON POST signed with the endpoint secret: header{" "}
           <code className="font-mono text-xs">X-Miyo-Signature: sha256=&lt;HMAC-SHA256 of the raw body&gt;</code>.
         </p>
         {(!webhooks || webhooks.length === 0) ? (
-          <motion.div variants={fadeUp}>
+          <div>
             <EmptyState
               compact
               icon={Webhook}
@@ -210,9 +208,9 @@ function WebhooksContent() {
               description="Webhooks let external services receive notifications when events happen in your CRM."
               action={{ label: "Add your first webhook", onClick: () => setSheetOpen(true) }}
             />
-          </motion.div>
+          </div>
         ) : (
-          <motion.div variants={fadeUp}>
+          <div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -293,9 +291,9 @@ function WebhooksContent() {
                 ))}
               </TableBody>
             </Table>
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent size="md" className="w-full">

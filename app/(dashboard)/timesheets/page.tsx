@@ -3,7 +3,6 @@
 import { useState, useMemo, useCallback, useTransition, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import {
   format,
   startOfWeek,
@@ -48,7 +47,6 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { LogTimeDialog } from "@/components/timesheets/log-time-dialog";
 import { EditTimeEntryDialog } from "@/components/timesheets/edit-time-entry-dialog";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { toast } from "sonner";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { TimesheetTableRow, type EditEntry } from "@/features/timesheets/timesheet-table-row";
@@ -313,18 +311,18 @@ export default function TimesheetsPage() {
       }
       filters={filtersBar}
     >
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+      <div className="space-y-6">
         {entries && entries.length > 0 && (
-          <motion.div variants={fadeUp}>
+          <div>
             <p className="text-sm tabular-nums text-muted-foreground">
               <span className="font-semibold text-foreground">{entries.length}</span>{" "}
               {entries.length === 1 ? "entry" : "entries"} —{" "}
               <span className="font-semibold text-foreground">{totalHours.toFixed(1)}h</span> logged
             </p>
-          </motion.div>
+          </div>
         )}
 
-        <motion.div variants={fadeUp}>
+        <div>
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               {isError ? (
@@ -431,8 +429,8 @@ export default function TimesheetsPage() {
               )}
             </CardContent>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {editingEntry && (
         <EditTimeEntryDialog

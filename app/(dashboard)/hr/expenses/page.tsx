@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import { Plus, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -22,7 +21,6 @@ import {
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { QueryErrorState } from "@/components/ui/query-error-state";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import {
   EXPENSE_CATEGORIES,
   PAYMENT_METHODS,
@@ -297,16 +295,13 @@ export default function ExpensesPage() {
         }
         noInternalScroll
       >
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
+        <div
           className="flex h-full min-h-0 flex-col gap-6"
         >
-          <motion.div variants={fadeUp}>
+          <div>
             <AdminExpenseStats stats={stats} pendingCount={pendingCount} />
-          </motion.div>
-          <motion.div variants={fadeUp}>
+          </div>
+          <div>
             <AdminExpenseFilters
               statusFilter={statusFilter}
               pendingCount={pendingCount}
@@ -315,8 +310,8 @@ export default function ExpensesPage() {
               onSpentByChange={(id) => setFilter("userId", id)}
               employees={employees}
             />
-          </motion.div>
-          <motion.div variants={fadeUp}>
+          </div>
+          <div>
             <ExpenseSearchFilters
               search={filters.search ?? ""}
               minAmount={filters.minAmount}
@@ -329,8 +324,8 @@ export default function ExpensesPage() {
               onEmployeeChange={(v) => setFilter("userId", v)}
               hideEmployeeFilter
             />
-          </motion.div>
-          <motion.div variants={fadeUp} className="flex-1 min-h-0 overflow-y-auto">
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto">
             {isError ? (
               <QueryErrorState title="Couldn't load expenses" error={error} onRetry={() => void refetch()} />
             ) : (
@@ -364,8 +359,8 @@ export default function ExpensesPage() {
               onShowAll={() => setStatusFilter("ALL")}
             />
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         <CreateExpenseDialog
           open={isCreateOpen}
@@ -405,16 +400,13 @@ export default function ExpensesPage() {
         </Button>
       }
     >
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+      <div
         className="space-y-6"
       >
-        <motion.div variants={fadeUp}>
+        <div>
           <MemberExpenseStats stats={stats} />
-        </motion.div>
-        <motion.div variants={fadeUp}>
+        </div>
+        <div>
           <MemberExpenseFilters
             statusFilter={statusFilter}
             datePreset={datePreset}
@@ -423,8 +415,8 @@ export default function ExpensesPage() {
             onStatusChange={setStatusFilter}
             onDatePresetChange={setDatePreset}
           />
-        </motion.div>
-        <motion.div variants={fadeUp}>
+        </div>
+        <div>
           {isError ? (
             <QueryErrorState title="Couldn't load expenses" error={error} onRetry={() => void refetch()} />
           ) : (
@@ -446,8 +438,8 @@ export default function ExpensesPage() {
             }
           />
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <CreateExpenseDialog
         open={isCreateOpen}

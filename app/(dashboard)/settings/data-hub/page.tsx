@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
 import {
   Upload, Download, FileSpreadsheet, Users,
   CreditCard, Package, CheckCircle2, AlertCircle, Loader2,
@@ -12,7 +11,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Progress } from "@/components/ui/progress";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import { getTodayString } from "@/lib/date-utils";
@@ -156,18 +154,15 @@ function DataHubContent() {
     <PageWrapper
       title="Data import / export hub"
     >
-      <motion.div
+      <div
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
       >
         {ENTITIES.map(entity => {
           const upload = uploadStates[entity.id] ?? { status: "idle", progress: 0, message: "" };
           const isExporting = exportingIds.has(entity.id);
 
           return (
-            <motion.div key={entity.id} variants={fadeUp}>
+            <div key={entity.id}>
               <Card className="h-full flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
@@ -264,10 +259,10 @@ function DataHubContent() {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           );
         })}
-      </motion.div>
+      </div>
     </PageWrapper>
   );
 }

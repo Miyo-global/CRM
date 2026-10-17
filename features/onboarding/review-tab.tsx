@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { CheckCircle, ArrowLeft, ArrowRight, Check, Send, Shield, type LucideIcon } from "lucide-react";
 import { submitOnboarding } from "@/server/actions/onboarding-actions";
 import { useSession } from "next-auth/react";
@@ -69,21 +67,18 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
     return (
       <Card className="border-0 bg-transparent py-6 text-center shadow-none">
         <CardContent className="flex flex-col items-center space-y-4">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
+          <div
             className="flex flex-col items-center space-y-4"
           >
-            <motion.div variants={fadeUp} className="bg-success-soft p-4 rounded-full">
+            <div className="bg-success-soft p-4 rounded-full">
               <CheckCircle className="size-12 text-success-strong" aria-hidden="true" />
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="font-display text-2xl font-bold">You&apos;re All Set!</motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground max-w-md">
+            </div>
+            <h2 className="font-display text-2xl font-bold">You&apos;re All Set!</h2>
+            <p className="text-muted-foreground max-w-md">
               Your onboarding information has been submitted. The HR team will verify your documents and approve your profile soon.
-            </motion.p>
+            </p>
 
-            <motion.div variants={fadeUp} className="w-full max-w-sm space-y-2 pt-4">
+            <div className="w-full max-w-sm space-y-2 pt-4">
               {dataSteps.map((step) => (
                 <div
                   key={step.id}
@@ -108,15 +103,15 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
                   Assigned
                 </span>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUp} className="pt-4">
+            <div className="pt-4">
               <Button onClick={handleGoToDashboard}>
                 Go to Dashboard
                 <ArrowRight aria-hidden="true" />
               </Button>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -125,21 +120,18 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
   return (
     <Card className="border-0 bg-transparent py-6 text-center shadow-none">
       <CardContent className="flex flex-col items-center space-y-4">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
+        <div
           className="flex flex-col items-center space-y-4"
         >
-          <motion.div variants={fadeUp} className="bg-brand-soft p-4 rounded-full">
+          <div className="bg-brand-soft p-4 rounded-full">
             <Send className="size-10 text-brand-text" aria-hidden="true" />
-          </motion.div>
-          <motion.h2 variants={fadeUp} className="font-display text-2xl font-bold">Review & Submit</motion.h2>
-          <motion.p variants={fadeUp} className="text-muted-foreground max-w-md">
+          </div>
+          <h2 className="font-display text-2xl font-bold">Review & Submit</h2>
+          <p className="text-muted-foreground max-w-md">
             Please review your completed steps below. When you&apos;re ready, click Submit to finalize your onboarding.
-          </motion.p>
+          </p>
 
-          <motion.div variants={fadeUp} className="w-full max-w-sm space-y-2 pt-4">
+          <div className="w-full max-w-sm space-y-2 pt-4">
             {dataSteps.map((step) => {
               const isCompleted = completedSteps.has(step.id);
               const StepIcon = step.icon;
@@ -172,13 +164,13 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
                 Assigned
               </span>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.p variants={fadeUp} className="pt-2 text-sm text-muted-foreground">
+          <p className="pt-2 text-sm text-muted-foreground">
             Default leave balances will be allocated upon submission
-          </motion.p>
+          </p>
 
-          <motion.div variants={fadeUp} className="flex w-full justify-between gap-3 border-t border-border pt-4">
+          <div className="flex w-full justify-between gap-3 border-t border-border pt-4">
             <Button variant="ghost" onClick={onBack}>
               <ArrowLeft aria-hidden="true" />
               Back
@@ -197,8 +189,8 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
             {!allDataStepsComplete && (
               <p id="review-hint" className="sr-only">Complete all previous steps to enable this button</p>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

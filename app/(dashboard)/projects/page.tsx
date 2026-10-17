@@ -4,7 +4,6 @@ import { useCallback, useState, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { isAdminOrOwner } from "@/lib/auth/role-guards";
-import { motion } from "framer-motion";
 import { useProjects } from "@/lib/api/hooks/projects";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { ProjectCreateWizard } from "@/features/projects/project-create/project-create-wizard";
@@ -18,7 +17,6 @@ import type { ProjectGroupBy } from "@/features/projects/project-list/project-op
 import type { ProjectFilters } from "@/types/projects";
 import { ProjectPagination } from "./project-pagination";
 import { ProjectsEmptyState } from "./projects-empty-state";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useDebouncedValue } from "@/hooks/use-expense-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -213,35 +211,29 @@ export default function ProjectsPage() {
           </div>
         </>
       ) : viewMode === "grid" ? (
-        <motion.div
+        <div
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
           role="list"
           aria-label="Projects grid"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
         >
           {projects.map((project) => (
-            <motion.div key={project.id} variants={fadeUp} className="h-full">
+            <div key={project.id} className="h-full">
               <ProjectCard project={project} />
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       ) : (
-        <motion.div
+        <div
           className="space-y-2"
           role="list"
           aria-label="Projects list"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
         >
           {projects.map((project) => (
-            <motion.div key={project.id} variants={fadeUp}>
+            <div key={project.id}>
               <ProjectListRow project={project} />
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       )}
 
       {!showDeleted && pagination && pagination.totalPages > 1 && (

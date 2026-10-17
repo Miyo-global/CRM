@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import { Bell, Mail, Smartphone, Monitor, Moon, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/lib/api/hooks/hr/leaves-expenses";
 import { toast } from "sonner";
 import { SettingsSection, SettingRow } from "@/features/settings/settings-row";
@@ -122,9 +120,9 @@ export default function NotificationPreferencesPage() {
         </>
       }
     >
-      <motion.div className="space-y-6" variants={staggerContainer} initial="hidden" animate="visible">
+      <div className="space-y-6">
 
-        <motion.div variants={fadeUp}>
+        <div>
           <SettingsSection
             title={
               <span className="flex items-center gap-2">
@@ -149,9 +147,9 @@ export default function NotificationPreferencesPage() {
               />
             ))}
           </SettingsSection>
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp}>
+        <div>
           <SettingsSection
             title={
               <span className="flex items-center gap-2">
@@ -191,9 +189,9 @@ export default function NotificationPreferencesPage() {
               )}
             </div>
           </SettingsSection>
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp}>
+        <div>
           <SettingsSection
             title={
               <span className="flex items-center gap-2">
@@ -219,8 +217,8 @@ export default function NotificationPreferencesPage() {
               />
             ))}
           </SettingsSection>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </PageWrapper>
   );
 }

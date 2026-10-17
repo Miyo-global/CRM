@@ -10,11 +10,8 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updatePersonalDetails } from "@/server/actions/onboarding-actions";
-import { motion } from "framer-motion";
-import { staggerContainer, fadeUp } from "@/lib/motion-variants";
 import { useOnboardingSubmit } from "@/lib/hooks/use-onboarding-submit";
 import { FormNavButtons } from "@/components/onboarding/form-nav-buttons";
-import type { Variants } from "framer-motion";
 
 const MAX_EXPERIENCE_YEARS = 60;
 
@@ -56,9 +53,6 @@ interface PersonalInfoTabProps {
   defaultValues?: Record<string, string | undefined>;
 }
 
-const staggerVariants = staggerContainer as Variants;
-const fadeUpVariants = fadeUp as Variants;
-
 export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabProps) {
   const { isLoading, handleSubmit } = useOnboardingSubmit(updatePersonalDetails, {
     successMessage: "Personal details saved!",
@@ -80,13 +74,13 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
 
   return (
     <div>
-      <motion.div variants={staggerVariants} initial="hidden" animate="visible">
-        <motion.div variants={fadeUpVariants} className="mb-5">
+      <div>
+        <div className="mb-5">
           <h2 className="font-display text-xl font-bold text-foreground">Welcome to Miyo Global!</h2>
           <p className="text-sm text-muted-foreground mt-1">Tell us a bit about yourself to get started.</p>
-        </motion.div>
+        </div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-            <motion.div variants={fadeUpVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="phone">Phone Number</Label>
                 <Controller
@@ -123,9 +117,9 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
                 />
                 {errors.dateOfBirth && <p role="alert" className="text-xs text-destructive">{errors.dateOfBirth.message}</p>}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUpVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="gender">Gender</Label>
                 <Controller
@@ -162,9 +156,9 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
                 />
                 {errors.experienceYears && <p role="alert" className="text-xs text-destructive">{errors.experienceYears.message}</p>}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUpVariants} className="space-y-1.5">
+            <div className="space-y-1.5">
               <Label htmlFor="skills">Skills <span className="text-muted-foreground font-normal">(comma separated)</span></Label>
               <Input
                 id="skills"
@@ -174,13 +168,13 @@ export function PersonalInfoTab({ onComplete, defaultValues }: PersonalInfoTabPr
                 aria-invalid={!!errors.skills}
               />
               {errors.skills && <p role="alert" className="text-xs text-destructive">{errors.skills.message}</p>}
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUpVariants} className="sticky bottom-0 z-sticky">
+            <div className="sticky bottom-0 z-sticky">
               <FormNavButtons isLoading={isLoading} />
-            </motion.div>
+            </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }
