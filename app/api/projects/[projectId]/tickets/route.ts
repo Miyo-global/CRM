@@ -7,6 +7,7 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { createTicket, createTicketSchema, ticketAssigneeIds } from "@/lib/projects/create-ticket";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { userColumns } from "@/lib/projects/ticket-columns";
+import { likePattern } from "@/lib/db/escape-like";
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
@@ -33,8 +34,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       ? [
           ...baseConditions,
           or(
-            sql`${tickets.title} ILIKE ${"%" + search + "%"}`,
-            sql`${tickets.description} ILIKE ${"%" + search + "%"}`
+            sql`${tickets.title} ILIKE ${likePattern(search)}`,
+            sql`${tickets.description} ILIKE ${likePattern(search)}`
           )!,
         ]
       : baseConditions;

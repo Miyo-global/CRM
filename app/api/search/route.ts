@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { organizationMembers, projects, tickets, users } from "@/lib/db/schema";
 import { eq, and, ilike, isNull, or } from "drizzle-orm";
 import { z } from "zod";
+import { likePattern } from "@/lib/db/escape-like";
 
 const querySchema = z.object({
   q: z.string().min(3, "Query must be at least 3 characters"),
@@ -18,11 +19,6 @@ interface SearchResult {
   subtitle: string;
   href: string;
   status?: string;
-}
-
-/** % and _ are wildcards in LIKE: a search for "50%" must match literally. */
-function likePattern(q: string): string {
-  return `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 }
 
 export async function GET(req: NextRequest) {

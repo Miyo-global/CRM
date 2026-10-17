@@ -7,6 +7,7 @@ import {
   parseAutoSequence,
   yearSuffix,
 } from "@/lib/hr/employee-id-format";
+import { escapeLike } from "@/lib/db/escape-like";
 
 export {
   AUTO_EMPLOYEE_ID_PREFIX,
@@ -22,7 +23,7 @@ export async function generateNextEmployeeId(referenceDate: Date = new Date()): 
   const rows = await db
     .select({ employeeId: users.employeeId })
     .from(users)
-    .where(ilike(users.employeeId, `${prefix}%`));
+    .where(ilike(users.employeeId, `${escapeLike(prefix)}%`));
 
   let maxSeq = 0;
   for (const row of rows) {

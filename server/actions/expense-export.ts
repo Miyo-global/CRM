@@ -15,6 +15,7 @@ import { getMonthlyExpenseReportTemplate, type MonthlyExpenseReportRow } from "@
 import { generateMonthlyExpenseReportXlsx } from "@/lib/monthly-expense-report-xlsx";
 import { formatCurrencyFull } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
+import { likePattern } from "@/lib/db/escape-like";
 
 export interface ExpenseExportMailInput {
   to: string[];
@@ -140,7 +141,7 @@ function buildExportConditions(
     conditions.push(eq(expenses.paymentMethod, filters.paymentMethod));
   }
   if (filters.search && filters.search.trim()) {
-    const searchTerm = `%${filters.search.trim().toLowerCase()}%`;
+    const searchTerm = likePattern(filters.search.trim().toLowerCase());
     conditions.push(
       or(
         like(sql`LOWER(${expenses.description})`, searchTerm),

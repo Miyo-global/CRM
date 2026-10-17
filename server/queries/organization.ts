@@ -8,6 +8,7 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, and, desc, gt, isNull, count, ilike, or, inArray, type SQL } from "drizzle-orm";
+import { likePattern } from "@/lib/db/escape-like";
 
 export async function getOrgSettings(orgId: string) {
   return db.query.organizations.findFirst({
@@ -29,7 +30,7 @@ export async function getOrgMembers(
     conditions.push(inArray(organizationMembers.role, roles));
   }
   if (search) {
-    conditions.push(or(ilike(users.name, `%${search}%`), ilike(users.email, `%${search}%`)));
+    conditions.push(or(ilike(users.name, likePattern(search)), ilike(users.email, likePattern(search))));
   }
   const searchConditions = conditions;
 

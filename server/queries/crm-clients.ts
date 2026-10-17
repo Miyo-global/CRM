@@ -5,6 +5,7 @@ import { clientAccounts, clientAccountActivities, leads } from "@/lib/db/schema"
 import { eq, and, desc, sql, count, or } from "drizzle-orm";
 import type { ClientAccountFilters } from "@/types/crm";
 import { ROLES } from "@/lib/constants/roles";
+import { likePattern } from "@/lib/db/escape-like";
 
 export async function getClientAccounts(
   orgId: string,
@@ -21,9 +22,9 @@ export async function getClientAccounts(
   if (filters?.search) {
     f.push(
       or(
-        sql`${clientAccounts.clientName} ILIKE ${"%" + filters.search + "%"}`,
-        sql`${clientAccounts.clientEmail} ILIKE ${"%" + filters.search + "%"}`,
-        sql`${clientAccounts.clientPhone} ILIKE ${"%" + filters.search + "%"}`
+        sql`${clientAccounts.clientName} ILIKE ${likePattern(filters.search)}`,
+        sql`${clientAccounts.clientEmail} ILIKE ${likePattern(filters.search)}`,
+        sql`${clientAccounts.clientPhone} ILIKE ${likePattern(filters.search)}`
       )!
     );
   }

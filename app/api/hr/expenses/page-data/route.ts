@@ -16,6 +16,7 @@ import {
 } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
+import { likePattern } from "@/lib/db/escape-like";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,7 @@ function buildConditions(
 
   const search = params.get("search");
   if (search?.trim()) {
-    const term = `%${search.trim().toLowerCase()}%`;
+    const term = likePattern(search.trim().toLowerCase());
     conditions.push(
       or(
         like(sql`LOWER(${expenses.description})`, term),

@@ -27,6 +27,7 @@ import type {
   TicketFilters,
   TimeEntryFilters,
 } from "@/types/projects";
+import { likePattern } from "@/lib/db/escape-like";
 
 export async function getProjects(orgId: string, filters?: ProjectFilters) {
   const conditions = [eq(projects.orgId, orgId), isNull(projects.deletedAt)];
@@ -34,8 +35,8 @@ export async function getProjects(orgId: string, filters?: ProjectFilters) {
   if (filters?.search) {
     conditions.push(
       or(
-        sql`${projects.name} ILIKE ${"%" + filters.search + "%"}`,
-        sql`${projects.key} ILIKE ${"%" + filters.search + "%"}`
+        sql`${projects.name} ILIKE ${likePattern(filters.search)}`,
+        sql`${projects.key} ILIKE ${likePattern(filters.search)}`
       )!
     );
   }
@@ -93,8 +94,8 @@ export async function getTickets(
   if (filters?.search) {
     conditions.push(
       or(
-        sql`${tickets.title} ILIKE ${"%" + filters.search + "%"}`,
-        sql`${tickets.description} ILIKE ${"%" + filters.search + "%"}`
+        sql`${tickets.title} ILIKE ${likePattern(filters.search)}`,
+        sql`${tickets.description} ILIKE ${likePattern(filters.search)}`
       )!
     );
   }

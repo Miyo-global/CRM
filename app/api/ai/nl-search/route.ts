@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { leads } from "@/lib/db/schema/crm";
 import { users } from "@/lib/db/schema/auth";
 import { and, eq, gte, lte, ilike, inArray } from "drizzle-orm";
+import { likePattern } from "@/lib/db/escape-like";
 
 const bodySchema = z.object({
   query: z.string().min(1).max(500),
@@ -67,19 +68,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (parsedFilters.source) {
-      conditions.push(ilike(leads.source, `%${parsedFilters.source}%`));
+      conditions.push(ilike(leads.source, likePattern(parsedFilters.source)));
     }
 
     if (parsedFilters.city) {
-      conditions.push(ilike(leads.city, `%${parsedFilters.city}%`));
+      conditions.push(ilike(leads.city, likePattern(parsedFilters.city)));
     }
 
     if (parsedFilters.company) {
-      conditions.push(ilike(leads.company, `%${parsedFilters.company}%`));
+      conditions.push(ilike(leads.company, likePattern(parsedFilters.company)));
     }
 
     if (parsedFilters.nameSearch) {
-      conditions.push(ilike(leads.name, `%${parsedFilters.nameSearch}%`));
+      conditions.push(ilike(leads.name, likePattern(parsedFilters.nameSearch)));
     }
 
     if (

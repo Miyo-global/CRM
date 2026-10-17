@@ -19,6 +19,7 @@ import { projectKeySchema } from "@/lib/projects/project-key";
 import { firstFreeProjectKey, isProjectKeyTaken } from "@/lib/projects/project-key-availability";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
+import { likePattern } from "@/lib/db/escape-like";
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -88,8 +89,8 @@ export async function GET(req: NextRequest) {
     if (search?.trim()) {
       conditions.push(
         or(
-          sql`${projects.name} ILIKE ${"%" + search + "%"}`,
-          sql`${projects.key} ILIKE ${"%" + search + "%"}`
+          sql`${projects.name} ILIKE ${likePattern(search)}`,
+          sql`${projects.key} ILIKE ${likePattern(search)}`
         )!
       );
     }

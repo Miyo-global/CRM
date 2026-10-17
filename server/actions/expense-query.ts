@@ -5,6 +5,7 @@ import { expenses, expenseCategories, users, expenseStatusEnum } from "@/lib/db/
 import { eq, and, desc, gte, lte, sql, inArray, like, or, asc, count } from "drizzle-orm";
 import { getAuthenticatedMember } from "@/lib/auth/helpers";
 import { isAuthError } from "@/lib/auth/types";
+import { likePattern } from "@/lib/db/escape-like";
 
 export interface ExpenseFilters {
   startDate?: string;
@@ -169,7 +170,7 @@ function buildFilterConditions(
     conditions.push(eq(expenses.projectId, filters.projectId));
   }
   if (filters.search && filters.search.trim()) {
-    const searchTerm = `%${filters.search.trim().toLowerCase()}%`;
+    const searchTerm = likePattern(filters.search.trim().toLowerCase());
     conditions.push(
       or(
         like(sql`LOWER(${expenses.description})`, searchTerm),

@@ -59,6 +59,7 @@ import type {
   PaginatedResult,
   PaginatedEmployees,
 } from "@/types/hr";
+import { likePattern } from "@/lib/db/escape-like";
 
 export async function getDepartments(orgId: string): Promise<Department[]> {
   return db.query.departments.findMany({
@@ -616,7 +617,7 @@ export async function getDocumentsForExport(
     conditions.push(eq(documents.type, filters.type as import("@/types/hr").DocumentType));
   }
   if (filters.category?.trim()) {
-    conditions.push(ilike(documents.category, `%${filters.category.trim()}%`));
+    conditions.push(ilike(documents.category, likePattern(filters.category.trim())));
   }
   if (filters.uploadedBy?.trim()) {
     conditions.push(eq(documents.uploadedBy, filters.uploadedBy.trim()));

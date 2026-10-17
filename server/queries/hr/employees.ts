@@ -24,6 +24,7 @@ import type {
   OrgChartNode,
   PaginatedEmployees,
 } from "@/types/hr";
+import { likePattern } from "@/lib/db/escape-like";
 
 export async function getDepartments(orgId: string): Promise<Department[]> {
   return db.query.departments.findMany({
@@ -127,10 +128,10 @@ export async function getEmployeesPaginated(
     ? [
         ...baseConditions,
         or(
-          ilike(users.name, `%${search}%`),
-          ilike(users.email, `%${search}%`),
-          ilike(users.employeeId, `%${search}%`),
-          ilike(users.designation, `%${search}%`)
+          ilike(users.name, likePattern(search)),
+          ilike(users.email, likePattern(search)),
+          ilike(users.employeeId, likePattern(search)),
+          ilike(users.designation, likePattern(search))
         ),
       ]
     : baseConditions;
