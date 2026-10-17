@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       // Email to recipient
       if (recipient?.email) {
         await sendRecognitionRecipientEmail(
-          recipient.email, recipientName, senderName, category, body.message, sender?.image ?? null,
+          recipient.email, senderName, categoryLabel, body.message,
         ).catch(() => {});
       }
 
@@ -150,16 +150,14 @@ export async function POST(req: NextRequest) {
         if (emailed.has(key)) continue;
         emailed.add(key);
         await sendRecognitionShoutoutEmail(
-          member.email, member.name ?? "Team Member", recipientName,
-          recipient?.image ?? null, senderName, category, body.message,
+          member.email, recipientName, senderName, body.message,
         ).catch(() => {});
       }
 
       // Always CC the HR inbox
       if (!emailed.has(HR_INBOX)) {
         await sendRecognitionShoutoutEmail(
-          HR_INBOX, "HR Team", recipientName,
-          recipient?.image ?? null, senderName, category, body.message,
+          HR_INBOX, recipientName, senderName, body.message,
         ).catch(() => {});
       }
     })();

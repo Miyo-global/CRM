@@ -18,6 +18,7 @@ export {
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";
 export { sendPayrollApprovedEmail } from "./email/hr-payroll";
+export { sendRecognitionRecipientEmail, sendRecognitionShoutoutEmail } from "./email/hr-employees";
 export {
   sendOnboardingWelcomeEmail,
   sendOnboardingTaskEmail,
@@ -58,8 +59,6 @@ import {
   getHelpdeskTicketEmailTemplate,
   getAssetAssignedEmailTemplate,
   getAssetAssignedHrNotificationTemplate,
-  getRecognitionRecipientEmailTemplate,
-  getRecognitionShoutoutEmailTemplate,
 } from "./email-templates";
 import type { MonthlyExpenseReportRow } from "./email-templates";
 import { generateMonthlyExpenseReportXlsx } from "./monthly-expense-report-xlsx";
@@ -711,36 +710,7 @@ export async function sendAssetAssignedHrEmail(
 
 
 
-export async function sendRecognitionRecipientEmail(
-  recipientEmail: string,
-  recipientName: string,
-  senderName: string,
-  category: string,
-  message: string,
-  senderImageUrl: string | null
-) {
-  await sendEmail({
-    to: recipientEmail,
-    subject: `You've been recognised by ${senderName}!`,
-    html: getRecognitionRecipientEmailTemplate(recipientName, senderName, category, message, senderImageUrl),
-  });
-}
 
-export async function sendRecognitionShoutoutEmail(
-  viewerEmail: string,
-  viewerName: string,
-  recipientName: string,
-  recipientImageUrl: string | null,
-  senderName: string,
-  category: string,
-  message: string
-) {
-  await sendEmail({
-    to: viewerEmail,
-    subject: `${recipientName} just got recognised — Team Shoutout!`,
-    html: getRecognitionShoutoutEmailTemplate(viewerName, recipientName, recipientImageUrl, senderName, category, message),
-  });
-}
 
 export async function sendCandidateStageEmail(
   candidateEmail: string,
