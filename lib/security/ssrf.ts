@@ -56,3 +56,38 @@ export function isSafePublicHttpsUrl(raw: string): boolean {
   if (parsed.protocol !== "https:") return false;
   return !isBlockedSsrfHostname(parsed.hostname);
 }
+
+/** Resolves a hostname to its IP addresses. Swapped out in tests. */
+export type HostResolver = (hostname: string) => Promise<string[]>;
+
+const nodeResolver: HostResolver = async (hostname) => {
+  const { lookup } = await import("node:dns/promises");
+  const records = await lookup(hostname, { all: true });
+  return records.map((r) => r.address);
+};
+
+/**
+ * SEC-0008: the string checks above only see the hostname, so a name that
+ * resolves to 169.254.169.254 or a private address walks past them. This
+ * resolves the host and rejects the URL when any answer is a blocked address.
+ *
+ * It narrows, but cannot close, the rebinding window: the socket may still
+ * resolve again. An egress proxy is the complete fix.
+ */
+export async function isSafePublicHttpsUrlResolved(
+  raw: string,
+  resolve: HostResolver = nodeResolver,
+): Promise<boolean> {
+  if (!isSafePublicHttpsUrl(raw)) return false;
+
+  const { hostname } = new URL(raw);
+  let addresses: string[];
+  try {
+    addresses = await resolve(hostname);
+  } catch {
+    return false;
+  }
+
+  if (addresses.length === 0) return false;
+  return addresses.every((address) => !isBlockedSsrfHostname(address));
+}

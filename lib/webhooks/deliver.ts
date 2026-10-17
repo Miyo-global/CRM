@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { webhookEndpoints, webhookLogs } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { createHmac } from "crypto";
-import { isSafePublicHttpsUrl } from "@/lib/security/ssrf";
+import { isSafePublicHttpsUrlResolved } from "@/lib/security/ssrf";
 import { logger } from "@/lib/logger";
 
 /** Header carrying `sha256=<hex HMAC of the raw body>`, keyed by the endpoint secret. */
@@ -61,21 +61,23 @@ export async function deliverToEndpoint(
 
   // Re-validate at dispatch time: blocks SSRF from rows created before this
   // guard existed, and narrows the DNS-rebinding window.
-  if (!isSafePublicHttpsUrl(endpoint.url)) {
+  if (!(await isSafePublicHttpsUrlResolved(endpoint.url))) {
     await db.insert(webhookLogs).values({
       endpointId: endpoint.id,
       orgId,
       event: eventName,
       payload,
       statusCode: null,
-      responseBody: "Blocked: endpoint URL is not a public HTTPS address.",
+      responseBody: "Blocked: endpoint URL does not resolve to a public address.",
       success: false,
     });
     throw new Error("Webhook delivery blocked: non-public URL");
   }
 
   let statusCode: number | null = null;
-  let responseBody: string | null = null;
+  // SEC-0008: the remote body is not stored. Keeping 2 KB of it turned any
+  // reachable internal service into a readable one for an admin.
+  let failureReason: string | null = null;
   let success = false;
 
   try {
@@ -86,10 +88,10 @@ export async function deliverToEndpoint(
       signal: AbortSignal.timeout(10_000),
     });
     statusCode = res.status;
-    responseBody = await res.text().catch(() => null);
     success = res.ok;
+    if (!success) failureReason = `Endpoint responded ${res.status}.`;
   } catch (deliveryErr) {
-    responseBody = deliveryErr instanceof Error ? deliveryErr.message : "Request failed";
+    failureReason = deliveryErr instanceof Error ? deliveryErr.message : "Request failed";
   }
 
   await db.insert(webhookLogs).values({
@@ -98,7 +100,7 @@ export async function deliverToEndpoint(
     event: eventName,
     payload,
     statusCode,
-    responseBody: responseBody?.slice(0, 2000) ?? null,
+    responseBody: failureReason,
     success,
   });
 

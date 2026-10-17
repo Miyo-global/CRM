@@ -6,7 +6,7 @@ import { qrCodes, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { appUrl } from "@/lib/app-url";
-import { isBlockedSsrfHostname } from "@/lib/security/ssrf";
+import { isBlockedSsrfHostname, isSafePublicHttpsUrlResolved } from "@/lib/security/ssrf";
 
 const MAX_RESPONSE_SIZE = 10 * 1024 * 1024;
 
@@ -16,7 +16,7 @@ const ALLOWED_DOMAINS = [
   "api.dicebear.com",
 ];
 
-function isAllowedUrl(url: string): boolean {
+async function isAllowedUrl(url: string): Promise<boolean> {
   try {
     const parsed = new URL(url);
 
@@ -26,9 +26,15 @@ function isAllowedUrl(url: string): boolean {
 
     if (isBlockedSsrfHostname(hostname)) return false;
 
-    return ALLOWED_DOMAINS.some(
-      (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
-    );
+    if (
+      !ALLOWED_DOMAINS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`))
+    ) {
+      return false;
+    }
+
+    // SEC-0008: an allowed name that resolves to a private or metadata
+    // address is still a private fetch.
+    return await isSafePublicHttpsUrlResolved(url);
   } catch {
     return false;
   }
@@ -114,7 +120,7 @@ export async function GET(req: NextRequest) {
         fetchUrl = `${appUrl}${finalUrl}`;
       }
 
-      if (!isAllowedUrl(fetchUrl)) {
+      if (!(await isAllowedUrl(fetchUrl))) {
         logger.warn("Blocked SSRF attempt on QR download", { url: fetchUrl });
         return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
       }
