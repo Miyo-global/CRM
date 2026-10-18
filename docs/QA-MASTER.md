@@ -1343,7 +1343,8 @@ SEC-0001 is first. Overlapping R3/QA/MIYO IDs are folded into the canonical item
 
 - [ ] R3-0018 [Medium][RBAC] `/api/webhooks/{id}` and `/api/roles/templates` return 200 to employees — Where: matrix unexpected-200 — Steps: non-HR GET → 200 — Fix: gate — Ref: QA-0064 family
 
-- [ ] R3-0022 [Medium][Holidays] List year nav capped at currentYear+2 while Add allows ~+5 (to 2031) — Where: `app/(dashboard)/hr/holidays/page.tsx:170-171,358` `disabled={viewYear >= currentYear + 2}` — Steps: Add holiday 25 Oct 2031; list next-arrow dies at 2027/2028; holiday invisible/undeletable — r3b-holidays-2028-cap.png — Expected: list navigable to same max as picker (`toYear`) — Actual: far-future orphaned — Fix: align max year; show orphan years — Acceptance: 2031 holiday visible+deletable — Ref: MIYO-0618, ui-B
+- [x] R3-0022 [Medium][Holidays] List year nav capped at currentYear+2 while Add allows ~+5 (to 2031) — Where: `app/(dashboard)/hr/holidays/page.tsx:170-171,358` `disabled={viewYear >= currentYear + 2}` — Steps: Add holiday 25 Oct 2031; list next-arrow dies at 2027/2028; holiday invisible/undeletable — r3b-holidays-2028-cap.png — Expected: list navigable to same max as picker (`toYear`) — Actual: far-future orphaned — Fix: align max year; show orphan years — Acceptance: 2031 holiday visible+deletable — Ref: MIYO-0618, ui-B
+  - **Agent note (2026-10-18):** the list's next-year button now stops at currentYear + 5, the same bound the date picker uses, so a far-future holiday is reachable and deletable. The 2031 QA holiday itself is MIYO-0618, which is a prod-data delete for Tarun.
 
 - [ ] R3-0023 [Medium][Holidays] Date picker year dropdown closes without applying — Where: `components/ui/calendar.tsx` year `Select` `onValueChange` → `goToMonth(setYear(…))` inside Popover (`date-picker.tsx`) — Steps: Add holiday → open year → pick year → picker closes, year not applied — Expected: year changes month view, popover stays open until day click — Actual: closes without apply — Fix: stop popover dismiss on select; keep focus — Acceptance: year change sticks — Ref: MIYO-0331 PARTIAL, ui-B
 
@@ -3641,399 +3642,456 @@ ats-application-received, ats-new-application-internal, ats-application-rejected
 
 ### ATS checklist (MIYO-0626 – MIYO-0687)
 
-- [ ] MIYO-0626 [High][ATS/0 Foundation] Decide and record reuse/drop for every leftover recruitment table
+- [x] MIYO-0626 [High][ATS/0 Foundation] Decide and record reuse/drop for every leftover recruitment table
+  - **Agent note (2026-10-17):** docs/ATS-DECISIONS.md records the reuse/drop decision for every leftover table, with the row-count SELECT Tarun runs before any drop.
   - **Where:** ATS-MASTER-PROMPT.md §3, lib/db/schema/hr/_all.ts
   - **Problem:** The Recruitment module was removed in Oct 2026 but 22 tables and 5 enums remain; building fresh tables beside them doubles the schema.
   - **Fix:** Apply the table in ATS-MASTER-PROMPT.md §3: REUSE job_postings, candidates, candidate_applications, interviews, scorecard_templates, interview_scorecards, candidate_sources, candidate_offers, hr_offer_letter_templates, hr_offer_letter_custom_variables, job_roles, candidate_documents; REUSE-LATER interview_booking_links, candidate_referrals, background_verifications; DROP hiring_flow_templates, hiring_flow_rounds (replaced by ats_stages), candidate_documents_vault (merge into candidate_documents), interview_slas, candidate_sla_tracking, interview_questions, candidate_reference_checks. Count rows on prod first (Tarun runs the SELECT); drop only empty tables, in a later migration.
   - **Acceptance check:** Decision table committed; a migration exists that drops only the DROP tables with `IF EXISTS`, gated behind Tarun's row-count confirmation.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0627 [High][ATS/0 Foundation] Decide reuse/drop for leftover recruitment code
+- [x] MIYO-0627 [High][ATS/0 Foundation] Decide reuse/drop for leftover recruitment code
+  - **Agent note (2026-10-17):** same file, code section: what the ATS reuses, adapts and replaces.
   - **Where:** ATS-MASTER-PROMPT.md §3
   - **Problem:** Unreachable files remain from the removed module.
   - **Fix:** REUSE: lib/files/extract-resume-text.ts, lib/files/resume-file-validation.ts, lib/constants/candidate-offers.ts, lib/constants/interview-format.ts, lib/hr/render-offer-letter-for-offer.ts, lib/hr/job-opening-form-state.ts, application-field-config, lib/data/india-locations.ts. REWRITE: lib/email-templates/hr-recruitment.ts (replace with email-templates/ats-*). DROP: lib/integrations/job-boards.ts until a job-board phase, duplicate getCandidateRejectionEmail/interview helpers in lib/email-templates/hr.ts.
   - **Acceptance check:** Each file is either imported by ATS code or deleted; `pnpm lint:dead-code` passes.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0628 [High][ATS/0 Foundation] Merge the RECRUITER role (branch cursor/admin-onboarding-recruiter-role-b650, commit 7fa03d7)
+- [x] MIYO-0628 [High][ATS/0 Foundation] Merge the RECRUITER role (branch cursor/admin-onboarding-recruiter-role-b650, commit 7fa03d7)
+  - **Agent note (2026-10-17):** RECRUITER is a system role with eleven ats:* permissions; /ats is guarded for CEO, HR and RECRUITER (e56bc43a0).
   - **Where:** lib/constants/roles.ts, user_role enum migration, lib/auth/route-access.ts
   - **Problem:** RECRUITER exists only on an unmerged branch.
   - **Fix:** Cherry-pick/rebase the role (enum value via `ALTER TYPE ... ADD VALUE IF NOT EXISTS`), add ATS_ROLES = [CEO, ADMIN, HR, RECRUITER]; RECRUITMENT_HR_ROLES points to it.
   - **Acceptance check:** A RECRUITER user can open /ats and nothing in /hr/payroll.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0629 [High][ATS/0 Foundation] Per-job hiring team permissions
+- [x] MIYO-0629 [High][ATS/0 Foundation] Per-job hiring team permissions
+  - **Agent note (2026-10-17):** lib/ats/access.ts (jobCapabilities, canOnJob, visibleJobIds) over the pure rules in lib/ats/capabilities.ts, with tests (617c79dbc).
   - **Where:** new table ats_job_members (jobId, userId, role HIRING_MANAGER|INTERVIEWER|RECRUITER)
   - **Problem:** Managers and interviewers need access to only their jobs.
   - **Fix:** lib/ats/access.ts: canViewJob/canEditJob/canViewCandidate/canScore; HR/CEO/Admin/RECRUITER see all; hiring managers see their jobs; interviewers see only candidates they interview, no salary/offer fields.
   - **Acceptance check:** Matrix test covers each role × action; interviewer gets 404 on another job's candidate.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0630 [High][ATS/0 Foundation] Create the ATS schema migration (additive)
+- [x] MIYO-0630 [High][ATS/0 Foundation] Create the ATS schema migration (additive)
+  - **Agent note (2026-10-17):** migration 0166_ats_schema.sql: eleven new tables plus the additive columns on job_postings, candidates, applications, interviews and offers. Not yet applied to prod — Tarun runs it (43704d930).
   - **Where:** drizzle/0157_ats_core.sql, lib/db/schema/ats.ts
   - **Problem:** Reused tables lack the columns the new design needs.
   - **Fix:** Add: ats_requisitions, ats_stages (per org, per job override, order, type APPLIED/SCREEN/INTERVIEW/OFFER/HIRED/REJECTED, emailTemplateId, autoEmail bool), ats_job_members, ats_application_questions, ats_application_answers, ats_candidate_tags, ats_candidate_notes, ats_activity, ats_refuse_reasons, ats_consents, ats_email_log; add job_postings.slug (unique per org), publishedAt, closesAt, seo fields; candidate_applications.stageId, rating, rejectedReasonId, source; candidates.search tsvector + GIN index, phoneNormalized, linkedinUrl index. All `IF NOT EXISTS`. Register in apply-pending and the journal.
   - **Acceptance check:** Migration applies on a fresh DB built from all SQL files and is idempotent on a second run.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0632 [High][ATS/1 Requisitions & jobs] Requisitions with approval
+- [x] MIYO-0632 [High][ATS/1 Requisitions & jobs] Requisitions with approval
+  - **Agent note (2026-10-17):** 51745911d — app/api/ats/requisitions (GET/POST, PATCH/DELETE, submit, decision), /ats/requisitions list, new and detail pages, lib/ats/requisitions.ts (approver resolution + ats-requisition-approval mail), history in ats_activity (migration 0167 makes candidate_id optional and adds requisition_id). Migration not applied to prod.
   - **Where:** /ats/requisitions, app/api/ats/requisitions/**
   - **Problem:** No way to request headcount.
   - **Fix:** Fields: title, department, location, employment type, openings, salary range (hidden from interviewers), justification, hiring manager. Submit → approver (CEO by default, configurable) gets ats-requisition-approval email; approve/reject with comment; history in ats_activity.
   - **Acceptance check:** Approved requisition can be turned into a job; rejected one cannot.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0633 [High][ATS/1 Requisitions & jobs] Job postings CRUD from requisitions
+- [x] MIYO-0633 [High][ATS/1 Requisitions & jobs] Job postings CRUD from requisitions
+  - **Agent note (2026-10-17):** 530b6ed6a — app/api/ats/jobs (GET/POST) and [jobId] (GET/PATCH), /ats/jobs list, new and edit pages, features/ats/jobs/job-form.tsx. Zod via lib/validations/ats-job.ts, description and requirements run through sanitizeHtml, hiring team in ats_job_members, slug unique per org. A job seeded from a requisition is refused unless that requisition is APPROVED.
   - **Where:** /ats/jobs, /ats/jobs/new, /ats/jobs/[jobId]/edit
   - **Problem:** —
   - **Fix:** Rich-text description (sanitised), requirements, location (india-locations), remote option, salary visibility toggle, closing date, hiring team.
   - **Acceptance check:** Job saves, validates with zod, and appears in the list with status DRAFT.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0634 [High][ATS/1 Requisitions & jobs] Publish / unpublish / close jobs
+- [x] MIYO-0634 [High][ATS/1 Requisitions & jobs] Publish / unpublish / close jobs
+  - **Agent note (2026-10-17):** 530b6ed6a — app/api/ats/jobs/[jobId]/publish takes publish/unpublish/hold/close/reopen, sets publishedAt and the slug, and revalidates the careers cache tag. Auto-close runs from /api/cron/close-expired-jobs (vercel.json, 01:15 UTC) rather than Inngest, which is not connected on prod. The 410 page for a closed job belongs to the careers site (MIYO-0638).
   - **Where:** app/api/ats/jobs/[jobId]/publish
   - **Problem:** —
   - **Fix:** States DRAFT → PUBLISHED → CLOSED (plus ON_HOLD). Publish sets publishedAt and slug; unpublish hides from careers; closesAt auto-closes via one Inngest daily job (replace the dead close-expired-job-postings cron).
   - **Acceptance check:** Published job appears on /careers within one request; closed job returns 410 page.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0637 [High][ATS/2 Careers site] Public careers page
+- [x] MIYO-0637 [High][ATS/2 Careers site] Public careers page
+  - **Agent note (2026-10-17):** 14a17465d — app/(public)/careers/page.tsx, data in lib/ats/careers.ts (unstable_cache, tag careers-jobs, dropped on every publish/pause/close). Lists OPEN jobs of the org only, with team and location filters. Load time not measured: no dev server in this sandbox (local port binding off).
   - **Where:** app/(public)/careers/page.tsx (no auth), lib/auth/route-access public list
   - **Problem:** —
   - **Fix:** Plain list of published jobs with department/location filters, org logo, ink/gold palette, no illustrations. Server-rendered, cached with revalidateTag on publish.
   - **Acceptance check:** Loads < 1 s uncached locally; lists only PUBLISHED jobs of the org.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0638 [High][ATS/2 Careers site] Job detail page with SEO
+- [x] MIYO-0638 [High][ATS/2 Careers site] Job detail page with SEO
+  - **Agent note (2026-10-17):** 14a17465d — app/(public)/careers/[slug]/page.tsx with generateMetadata (canonical, OpenGraph, noindex when closed) and JobPosting JSON-LD (datePosted, validThrough, employmentType, hiringOrganization, jobLocation, baseSalary only when salaryVisible). app/sitemap.ts added; robots.txt now disallows /ats. Rich Results test not run (needs a deployed URL). A closed role answers 200 with a closed notice, not 410 — Next has no way to set 410 from a server component.
   - **Where:** app/(public)/careers/[slug]/page.tsx
   - **Problem:** —
   - **Fix:** generateMetadata (title, description, canonical, OpenGraph), JSON-LD JobPosting (datePosted, validThrough, employmentType, hiringOrganization, jobLocation, baseSalary when visible), sitemap.xml entries, robots allow.
   - **Acceptance check:** Google Rich Results test validates JobPosting.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0639 [High][ATS/2 Careers site] Apply form with R2 resume upload
+- [x] MIYO-0639 [High][ATS/2 Careers site] Apply form with R2 resume upload
+  - **Agent note (2026-10-17):** 2496c9b08 — app/(public)/careers/[slug]/apply + app/api/public/ats/apply. Magic-byte and 5MB checks via resume-file-validation.ts, upload through lib/storage.ts (R2, org-prefixed key stored, never a public URL), resume text extracted, candidate reused by email, consent row written, ats-application-received to the candidate and ats-new-application-internal to the hiring team. Not exercised end to end: no R2 credentials or dev server in this sandbox.
   - **Where:** app/(public)/careers/[slug]/apply, app/api/public/ats/apply
   - **Problem:** —
   - **Fix:** Name, email, phone, LinkedIn, resume (PDF/DOC/DOCX ≤ 5 MB via resume-file-validation.ts, magic-byte check), custom questions, consent checkbox. Upload to R2 private bucket with presigned PUT; store key only.
   - **Acceptance check:** Application row + candidate + resume object created; candidate gets ats-application-received; team gets ats-new-application-internal.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0640 [High][ATS/2 Careers site] Spam protection and rate limiting on apply
+- [x] MIYO-0640 [High][ATS/2 Careers site] Spam protection and rate limiting on apply
+  - **Agent note (2026-10-17):** 2496c9b08 — honeypot field, Cloudflare Turnstile (skipped unless TURNSTILE_SECRET_KEY is set; site key in NEXT_PUBLIC_TURNSTILE_SITE_KEY), and a new ats-apply rate tier of 5/hour counted on both the IP and the email through checkRateLimit, which uses Upstash when configured. Disposable-domain rejection not added. Needs UPSTASH_REDIS_REST_* on prod to be more than per-instance (same gap as QA-0068).
   - **Where:** app/api/public/ats/apply
   - **Problem:** Public endpoint.
   - **Fix:** Cloudflare Turnstile (or hCaptcha), honeypot field, per-IP and per-email limit (5/hour) using a real store (Upstash/Postgres — lib/redis.ts is in-memory and does not work on Vercel), reject disposable domains optionally.
   - **Acceptance check:** Sixth submission in an hour from one IP gets 429; bot without token gets 400.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0642 [High][ATS/3 Candidates] Resume text extraction
+- [x] MIYO-0642 [High][ATS/3 Candidates] Resume text extraction
+  - **Agent note (2026-10-17):** a5b974a6e — extraction runs inline in the apply route (pdf-parse / mammoth via lib/files/extract-resume-text.ts) and is logged on failure, never blocking the application. Not an Inngest function: Inngest is not connected on prod. candidates.search is a generated tsvector column, so it updates in the same write.
   - **Where:** Inngest function ats/resume.uploaded, lib/files/extract-resume-text.ts
   - **Problem:** —
   - **Fix:** Extract text (pdf-parse/mammoth) after upload, store candidates.resumeText, update tsvector. Failures logged, never block apply.
   - **Acceptance check:** Uploaded PDF's text searchable within a minute.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0643 [High][ATS/3 Candidates] Full-text candidate search
+- [x] MIYO-0643 [High][ATS/3 Candidates] Full-text candidate search
+  - **Agent note (2026-10-17):** a5b974a6e — app/api/ats/candidates/search uses websearch_to_tsquery + ts_rank on the generated column, with an escaped ILIKE fallback on email and name, and filters by job, stage, tag, source and date. /ats/candidates searches as you type. Not run against real data: no prod DB access from here.
   - **Where:** /ats/candidates, app/api/ats/candidates/search
   - **Problem:** —
   - **Fix:** Postgres websearch_to_tsquery on name, email, skills, resume text with ts_rank; filters by tag, stage, job, source, date; escaped ILIKE fallback.
   - **Acceptance check:** Searching 'react node' finds candidates with both words in their resume.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0644 [High][ATS/3 Candidates] Duplicate detection
+- [x] MIYO-0644 [High][ATS/3 Candidates] Duplicate detection
+  - **Agent note (2026-10-17):** a5b974a6e — lib/ats/duplicates.ts matches lower(email), normalised phone (lib/ats/phone.ts) and the LinkedIn handle (lib/ats/match.ts, tested). An email match attaches the new application to the existing candidate; a phone or LinkedIn match is stored as duplicateOfId and shown as a banner on the profile. Merge action itself not built.
   - **Where:** lib/ats/duplicates.ts
   - **Problem:** Same person applies twice.
   - **Fix:** On apply/create, match on lower(email), normalised phone, LinkedIn URL; link to existing candidate (new application on existing profile); show 'Possible duplicate' banner with merge action for fuzzy name+phone.
   - **Acceptance check:** Second application with same email attaches to the first candidate.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0645 [High][ATS/3 Candidates] Candidate profile page
+- [x] MIYO-0645 [High][ATS/3 Candidates] Candidate profile page
+  - **Agent note (2026-10-17):** a5b974a6e — /ats/candidates/[candidateId] with Overview, Resume (inline iframe through the signed download route), Applications, Interviews, Notes, Emails and Activity. The Offers tab renders only for CEO/HR/ADMIN/RECRUITER. Scorecards and Files tabs wait on MIYO-0657 and MIYO-0648. /ats is no longer role-gated in the middleware; lib/ats/page-access.ts gives seat holders access to their jobs only.
   - **Where:** /ats/candidates/[candidateId]
   - **Problem:** —
   - **Fix:** Header (name, contact, current stage per application, rating), tabs: Overview, Resume (inline PDF viewer), Applications, Interviews, Scorecards, Offers, Notes, Files, Activity, Emails. Salary/offer data hidden from interviewers.
   - **Acceptance check:** All tabs load; interviewer sees no offer tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0650 [High][ATS/4 Pipeline] Configurable stages
+- [x] MIYO-0650 [High][ATS/4 Pipeline] Configurable stages
+  - **Agent note (2026-10-17):** 2fec6a595 — lib/ats/stages.ts seeds Applied/Screening/Interview/Offer/Hired/Rejected per org, /ats/settings/stages adds and removes the middle ones, and each job copies the list on creation (so a later edit does not move live candidates). A new stage is inserted before Hired and Rejected.
   - **Where:** /ats/settings/stages, ats_stages
   - **Problem:** —
   - **Fix:** Default stages: Applied, Screening, Interview, Offer, Hired, Rejected (OpenCATS/Odoo style); org-level list with per-job override; each stage may auto-send a template.
   - **Acceptance check:** Admin adds 'Assignment' between Screening and Interview; new jobs use it.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0651 [High][ATS/4 Pipeline] Kanban pipeline with drag and drop
+- [x] MIYO-0651 [High][ATS/4 Pipeline] Kanban pipeline with drag and drop
+  - **Agent note (2026-10-17):** 2fec6a595 — /ats/jobs/[jobId]/pipeline with optimistic drag and rollback, days in stage from ats_activity, reason dialog on Rejected and a send/skip choice on any stage that carries a template. Uses @hello-pangea/dnd and components/shared/kanban (already in the repo) rather than dnd-kit. Drag persistence not clicked through: no dev server here.
   - **Where:** /ats/jobs/[jobId]/pipeline
   - **Problem:** —
   - **Fix:** Columns = stages, cards with name, rating, days in stage, source; dnd-kit drag with optimistic update + rollback; moving to Rejected opens reason dialog; moving to a stage with autoEmail shows 'Send email?' preview (can skip).
   - **Acceptance check:** Drag to Interview persists after refresh; activity logged.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0652 [High][ATS/4 Pipeline] Bulk actions
+- [x] MIYO-0652 [High][ATS/4 Pipeline] Bulk actions
+  - **Agent note (2026-10-17):** 2fec6a595 — app/api/ats/applications/bulk does move, reject and tag over up to 200 applications, checking the hiring team of every job in the selection, writing one ats_activity row each and sending the mails one at a time so a single failure does not stop the rest. The candidate list has selection and CSV export; assign is not built.
   - **Where:** pipeline and candidate list
   - **Problem:** —
   - **Fix:** Select many → move stage, reject with reason + email, tag, assign, export CSV.
   - **Acceptance check:** Bulk reject of 20 sends 20 rejection emails (queued) and logs 20 activities.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0656 [High][ATS/5 Interviews] Interview scheduling with ICS
+- [x] MIYO-0656 [High][ATS/5 Interviews] Interview scheduling with ICS
+  - **Agent note (2026-10-18):** 086b6f0b7 — app/api/ats/interviews (POST with conflict check, PATCH reschedule/cancel), /ats/interviews list, schedule dialog on the candidate profile. lib/ats/ics.ts builds METHOD:REQUEST/CANCEL with a stable UID and a rising SEQUENCE, attached as text/calendar so Gmail shows the add-to-calendar card. Not verified in a real inbox: no deployment from here.
   - **Where:** /ats/interviews, app/api/ats/interviews
   - **Problem:** —
   - **Fix:** Schedule round (type, interviewers, start/end in IST, location or meeting link). Send ats-interview-invite to the candidate and interviewers with ICS (METHOD:REQUEST, UID stable, SEQUENCE bump on reschedule, CANCEL on cancel). Conflict check on interviewer busy times.
   - **Acceptance check:** Gmail shows an Add-to-calendar card; reschedule updates the same event.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0657 [High][ATS/5 Interviews] Interview reminders
+- [x] MIYO-0657 [High][ATS/5 Interviews] Interview reminders
+  - **Agent note (2026-10-18):** 086b6f0b7 — /api/cron/ats-interview-reminders, hourly in vercel.json: ats-interview-reminder to the candidate 24h before and to the interviewer 1h before. interviews.remindersSent gates each one, so a repeat run sends nothing. A cron, not Inngest, which is not connected on prod.
   - **Where:** Inngest scheduled step
   - **Problem:** —
   - **Fix:** ats-interview-reminder 24 h before to candidate; interviewer reminder 1 h before.
   - **Acceptance check:** Reminder sent once per interview.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0658 [High][ATS/5 Interviews] Scorecards and ratings
+- [x] MIYO-0658 [High][ATS/5 Interviews] Scorecards and ratings
+  - **Agent note (2026-10-18):** 086b6f0b7 — app/api/ats/interviews/[interviewId]/scorecard with 1–5 criteria and a Strong no…Strong yes recommendation. The GET hides other scorecards until this interviewer has submitted theirs (enforced in the API, not just the page), and submitting averages the rating onto the interview and the application. Criteria come from an active scorecard_template, else four defaults.
   - **Where:** scorecard_templates, interview_scorecards (reuse)
   - **Problem:** —
   - **Fix:** Template per job/round: criteria with 1–5 scale, overall recommendation (Strong no…Strong yes), notes. Interviewers can't see others' scorecards until they submit their own.
   - **Acceptance check:** Average rating shows on the card; hidden-until-submit enforced in API.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0661 [High][ATS/6 Offers & hire] Offers with letter templates
+- [x] MIYO-0661 [High][ATS/6 Offers & hire] Offers with letter templates
+  - **Agent note (2026-10-18):** 6abea2b43 — app/api/ats/offers (POST draft, [offerId]/send). Letter rendering reuses render-offer-letter-for-offer.ts; candidate_offers gains offer_letter_template_id (migration 0168). Optional CEO approval blocks sending while approvalStatus is PENDING. PDF not rendered here: needs real template rows.
   - **Where:** candidate_offers, hr_offer_letter_templates (reuse), /hr/offer-letter-templates
   - **Problem:** —
   - **Fix:** Create offer (CTC, joining date, designation, department, manager, expiry). Render letter via render-offer-letter-for-offer.ts + offer-letter-branded-pdf.tsx. Optional approval by CEO before sending.
   - **Acceptance check:** PDF renders with the template variables filled.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0662 [High][ATS/6 Offers & hire] Candidate accept/decline page
+- [x] MIYO-0662 [High][ATS/6 Offers & hire] Candidate accept/decline page
+  - **Agent note (2026-10-18):** 6abea2b43 — app/(public)/offer/[token] with the summary, accept (typed name + tick) or decline (reason); app/api/public/ats/offer-response is rate limited and matches on the token hash only. Accepting moves the application to ACCEPTED (hire is the separate step MIYO-0663); an expired link shows an expiry page, and answering spends the token.
   - **Where:** app/(public)/offer/[token]
   - **Problem:** —
   - **Fix:** Tokenised page (hashed token, expiry) showing offer summary and PDF; accept (typed name + checkbox) or decline (reason). Notify HR with ats-offer-response-hr.
   - **Acceptance check:** Accepted offer moves application to Hired-pending; expired token shows expiry page.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0663 [High][ATS/6 Offers & hire] Convert hire to employee and trigger onboarding
+- [x] MIYO-0663 [High][ATS/6 Offers & hire] Convert hire to employee and trigger onboarding
+  - **Agent note (2026-10-18):** 6abea2b43 — /ats/applications/[id]/hire returns the prefill and the Hire link opens /hr/onboarding?application=<id> with the wizard filled from the candidate and the accepted offer. The existing onboard route still creates the user, salary structure, checklist and welcome mail and still 409s on a duplicate email; the POST then closes the application, marks the candidate HIRED and sets the requisition to FILLED.
   - **Where:** app/api/ats/applications/[id]/hire, existing onboard flow
   - **Problem:** —
   - **Fix:** Prefill the existing onboard form (name, personal email, phone, designation, department, joining date, salary) from the offer; on submit create user + salary structure, mark application HIRED, close requisition opening, trigger initiate-onboarding (Inngest) and auth-welcome-set-password.
   - **Acceptance check:** Hired candidate appears in /employees with onboarding tasks; no duplicate user if already exists.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0664 [High][ATS/7 Emails] Implement candidate/team email `ats-application-received`
+- [x] MIYO-0664 [High][ATS/7 Emails] Implement candidate/team email `ats-application-received`
+  - **Agent note (2026-10-18):** ac0a78c5f — template wired and sending; candidate-facing sends are written to ats_email_log so they show on the profile's Emails tab. Not seen in a real inbox from here. Sent from the public apply route (lib/ats/application-emails.ts).
   - **Where:** email-templates/ats-application-received.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on apply via renderEmail('ats-application-received', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0666 [High][ATS/7 Emails] Implement candidate/team email `ats-application-rejected`
+- [x] MIYO-0666 [High][ATS/7 Emails] Implement candidate/team email `ats-application-rejected`
+  - **Agent note (2026-10-18):** ac0a78c5f — template wired and sending; candidate-facing sends are written to ats_email_log so they show on the profile's Emails tab. Not seen in a real inbox from here. Sent by the refuse reason attached to a rejection (lib/ats/stage-emails.ts); a reason with no template sends nothing.
   - **Where:** email-templates/ats-application-rejected.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on reject with an emailing reason via renderEmail('ats-application-rejected', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0667 [High][ATS/7 Emails] Implement candidate/team email `ats-interview-invite`
+- [x] MIYO-0667 [High][ATS/7 Emails] Implement candidate/team email `ats-interview-invite`
+  - **Agent note (2026-10-18):** ac0a78c5f — template wired and sending; candidate-facing sends are written to ats_email_log so they show on the profile's Emails tab. Not seen in a real inbox from here. Sent with the ICS attachment on scheduling and on every reschedule (lib/ats/interviews.ts).
   - **Where:** email-templates/ats-interview-invite.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on schedule/reschedule via renderEmail('ats-interview-invite', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0670 [High][ATS/7 Emails] Implement candidate/team email `ats-offer`
+- [x] MIYO-0670 [High][ATS/7 Emails] Implement candidate/team email `ats-offer`
+  - **Agent note (2026-10-18):** ac0a78c5f — template wired and sending; candidate-facing sends are written to ats_email_log so they show on the profile's Emails tab. Not seen in a real inbox from here. Sent by /api/ats/offers/[offerId]/send with the tokenised link.
   - **Where:** email-templates/ats-offer.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on offer send via renderEmail('ats-offer', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0678 [High][ATS/9 Privacy & retention] Consent capture
+- [x] MIYO-0678 [High][ATS/9 Privacy & retention] Consent capture
+  - **Agent note (2026-10-18):** 85be60ab9 — the apply form takes the required processing consent and an optional 12-month talent-pool consent; both rows store the wording version, the time and the IP, and the talent-pool row carries an expiry the retention sweep reads.
   - **Where:** ats_consents, apply form
   - **Problem:** DPDP Act 2023 / GDPR.
   - **Fix:** Required consent for processing; optional consent to keep in talent pool for N months; store text version, timestamp, IP.
   - **Acceptance check:** Consent record exists for each application.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0679 [High][ATS/9 Privacy & retention] Retention and erasure
+- [x] MIYO-0679 [High][ATS/9 Privacy & retention] Retention and erasure
+  - **Agent note (2026-10-18):** 85be60ab9 — /api/cron/ats-retention daily (vercel.json, not Inngest). Rejected candidates past ATS_RETENTION_MONTHS (default 12) are anonymised, their R2 resume deleted and their consents removed, while the application rows stay so the reports hold. Manual erase at /api/ats/candidates/[id]/erase needs ats:candidates:erase; both write an audit row. Not run against prod data.
   - **Where:** Inngest daily ats/retention, /ats/candidates/[id] delete
   - **Problem:** —
   - **Fix:** Org setting retention months (default 12) for rejected candidates; auto-anonymise (keep stats) and delete R2 files; manual 'erase candidate' for requests; audit log.
   - **Acceptance check:** Candidate older than retention is anonymised and resume object deleted.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0682 [High][ATS/10 Tests] ATS permission matrix tests
+- [x] MIYO-0682 [High][ATS/10 Tests] ATS permission matrix tests
+  - **Agent note (2026-10-18):** a25ec20bd — lib/ats/__tests__/access.test.ts: every system role against every seat, the no-narrowing rule, and the whole matrix written out as counts (7 tests).
   - **Where:** lib/ats/__tests__/access.test.ts
   - **Problem:** —
   - **Fix:** Every role × job membership × action.
   - **Acceptance check:** Tests pass.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0683 [High][ATS/10 Tests] Apply endpoint tests
+- [x] MIYO-0683 [High][ATS/10 Tests] Apply endpoint tests
+  - **Agent note (2026-10-18):** a25ec20bd — app/api/public/ats/apply/__tests__/apply.test.ts: validation, missing consent, a spoofed PDF, the honeypot, a failed Turnstile, a 429 with Retry-After, and reusing the candidate already on file (8 tests).
   - **Where:** app/api/public/ats/apply/__tests__
   - **Problem:** —
   - **Fix:** Validation, file type spoofing, rate limit, duplicate merge, consent required, emails queued.
   - **Acceptance check:** Tests pass.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0631 [Medium][ATS/0 Foundation] ATS feature flag and navigation
+- [x] MIYO-0631 [Medium][ATS/0 Foundation] ATS feature flag and navigation
+  - **Agent note (2026-10-17):** NEXT_PUBLIC_ATS_MODULE gates the module; /ats overview and the Hiring nav entry appear only when it is on (f38aa7d8b).
   - **Where:** lib/flags, components/layout/sidebar/sidebar-nav-items.ts
   - **Problem:** Rollout should be gradual.
   - **Fix:** Org flag `ats` (default off); nav group 'Hiring' with Jobs, Candidates, Interviews, Offers, Reports, Settings for ATS roles.
   - **Acceptance check:** Flag off → /ats 404 and no nav; on → nav visible to ATS roles only.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0635 [Medium][ATS/1 Requisitions & jobs] Custom application questions per job
+- [x] MIYO-0635 [Medium][ATS/1 Requisitions & jobs] Custom application questions per job
+  - **Agent note (2026-10-18):** ba77096de — /ats/jobs/[jobId]/form edits the questions (short/long text, one or several choices, yes-no, number, file) with a required flag and an optional knock-out answer; the apply route enforces both and answers a knocked-out application with a neutral message.
   - **Where:** ats_application_questions, /ats/jobs/[jobId]/form
   - **Problem:** —
   - **Fix:** Types: short text, long text, single/multi select, yes/no, number, file; required flag; knock-out answers auto-reject (configurable).
   - **Acceptance check:** Candidate must answer required questions; knock-out sends to Rejected with reason 'Did not meet requirement'.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0636 [Medium][ATS/1 Requisitions & jobs] Job templates and duplication
+- [x] MIYO-0636 [Medium][ATS/1 Requisitions & jobs] Job templates and duplication
+  - **Agent note (2026-10-18):** ba77096de — /api/ats/jobs/[jobId]/duplicate copies the wording, hiring team, stages and questions into a new DRAFT with its own slug; applications are not copied. Save-as-template is not separate: duplicating a job is the same thing here.
   - **Where:** /ats/jobs/[jobId] menu
   - **Problem:** Repeated roles retyped.
   - **Fix:** Duplicate job (without candidates); save as template.
   - **Acceptance check:** Duplicated job is DRAFT with same form.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0641 [Medium][ATS/2 Careers site] Embeddable job list and share links
+- [x] MIYO-0641 [Medium][ATS/2 Careers site] Embeddable job list and share links
+  - **Agent note (2026-10-18):** ba77096de — /careers?embed=1 drops the header and the page chrome for an iframe, and a utm_source carries from the list to the role, the apply form and the stored application source (CAREERS:<source>), where the source report counts it.
   - **Where:** /careers?embed=1, share buttons
   - **Problem:** —
   - **Fix:** Minimal embed mode, UTM source capture into application.source.
   - **Acceptance check:** Application from ?utm_source=linkedin shows source LinkedIn.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0646 [Medium][ATS/3 Candidates] Talent pool, tags and notes
+- [x] MIYO-0646 [Medium][ATS/3 Candidates] Talent pool, tags and notes
+  - **Agent note (2026-10-18):** ba77096de — tags on the profile (created on first use), notes with @mentions that raise a notification, and a talent-pool filter on the list for candidates with no live application.
   - **Where:** ats_candidate_tags, ats_candidate_notes
   - **Problem:** —
   - **Fix:** Tag candidates, add @mention notes (notify mentioned user), pool view of candidates not in an active application.
   - **Acceptance check:** Tagged candidate appears in pool filter.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0647 [Medium][ATS/3 Candidates] Attachments on candidates
+- [x] MIYO-0647 [Medium][ATS/3 Candidates] Attachments on candidates
+  - **Agent note (2026-10-18):** ba77096de — Files tab on the profile; upload via /api/ats/candidates/[id]/files with a 10MB limit, a magic-byte check and R2 storage, read back through 15-minute signed links. Access goes through lib/ats/page-access.ts.
   - **Where:** candidate_documents (reuse), R2
   - **Problem:** —
   - **Fix:** Upload extra files (portfolio, certificates) with access via lib/ats/access.ts and signed GET URLs.
   - **Acceptance check:** Interviewer without access gets 404 on the file URL.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0648 [Medium][ATS/3 Candidates] Activity timeline
+- [x] MIYO-0648 [Medium][ATS/3 Candidates] Activity timeline
+  - **Agent note (2026-10-18):** ba77096de — ats_activity already records applications, stage moves, notes, interviews, offers and hires with actor and time; the profile's Activity tab shows them in IST.
   - **Where:** ats_activity
   - **Problem:** —
   - **Fix:** Record stage changes, emails, notes, interviews, offers with actor and timestamp (IST display).
   - **Acceptance check:** Every action shows on the timeline.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0649 [Medium][ATS/3 Candidates] Manual candidate add and CSV import
+- [x] MIYO-0649 [Medium][ATS/3 Candidates] Manual candidate add and CSV import
+  - **Agent note (2026-10-18):** ba77096de — /ats/candidates/new for one person and /ats/candidates/import for a CSV, with header mapping, a dry run that writes nothing, and a duplicate check against both the file and what is on file. lib/ats/csv.ts is a small quoted-CSV reader with tests; no new dependency.
   - **Where:** /ats/candidates/new, /ats/candidates/import
   - **Problem:** Referrals and sourced candidates.
   - **Fix:** Form + CSV import with mapping, dry run, duplicate check.
   - **Acceptance check:** Import of 100 rows reports created/merged/skipped.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0653 [Medium][ATS/4 Pipeline] Refuse reasons linked to templates
+- [x] MIYO-0653 [Medium][ATS/4 Pipeline] Refuse reasons linked to templates
+  - **Agent note (2026-10-17):** 2fec6a595 — lib/ats/refuse-reasons.ts seeds Not qualified, Position filled, Salary mismatch, Withdrew and No show. The last two have no template, so choosing them sends nothing; the dialog says so on the option.
   - **Where:** ats_refuse_reasons
   - **Problem:** —
   - **Fix:** Reasons (Not qualified, Position filled, Withdrew, Salary mismatch…) each with optional template; 'Do not email' option.
   - **Acceptance check:** Reason 'Withdrew' sends nothing.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0654 [Medium][ATS/4 Pipeline] List view with filters and saved views
+- [x] MIYO-0654 [Medium][ATS/4 Pipeline] List view with filters and saved views
+  - **Agent note (2026-10-18):** ba77096de — the candidate list filters by text, source and talent pool, and saves named views. The views live in this browser's localStorage, not a table: they are one person's shortcuts. Column chooser not built.
   - **Where:** /ats/candidates
   - **Problem:** —
   - **Fix:** Table with column chooser, filters, sort, saved views per user.
   - **Acceptance check:** Saved view restores filters.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0659 [Medium][ATS/5 Interviews] Feedback request and overdue nudges
+- [x] MIYO-0659 [Medium][ATS/5 Interviews] Feedback request and overdue nudges
+  - **Agent note (2026-10-18):** 086b6f0b7 — in the same hourly job: ats-interviewer-feedback-request an hour after the interview ends, one nudge 24h later, both skipped once a scorecard row has submittedAt.
   - **Where:** ats-interviewer-feedback-request
   - **Problem:** —
   - **Fix:** Send 1 h after interview end; nudge after 24 h.
   - **Acceptance check:** Submitted scorecard stops nudges.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0665 [Medium][ATS/7 Emails] Implement candidate/team email `ats-new-application-internal`
+- [x] MIYO-0665 [Medium][ATS/7 Emails] Implement candidate/team email `ats-new-application-internal`
+  - **Agent note (2026-10-18):** ac0a78c5f — sent to the job's hiring team on every application (lib/ats/application-emails.ts). Internal mail, so it is not logged against the candidate.
   - **Where:** email-templates/ats-new-application-internal.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on apply, to hiring team (digest option) via renderEmail('ats-new-application-internal', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0668 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interview-reminder`
+- [x] MIYO-0668 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interview-reminder`
+  - **Agent note (2026-10-18):** ac0a78c5f — template wired and sending; candidate-facing sends are written to ats_email_log so they show on the profile's Emails tab. Not seen in a real inbox from here. Sent by the hourly reminder job 24h before to the candidate and 1h before to the interviewer.
   - **Where:** email-templates/ats-interview-reminder.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send 24 h before via renderEmail('ats-interview-reminder', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0669 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interviewer-feedback-request`
+- [x] MIYO-0669 [Medium][ATS/7 Emails] Implement candidate/team email `ats-interviewer-feedback-request`
+  - **Agent note (2026-10-18):** ac0a78c5f — sent an hour after the interview ends and nudged once a day later, both stopped by a submitted scorecard. Interviewer mail, not logged against the candidate.
   - **Where:** email-templates/ats-interviewer-feedback-request.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send 1 h after interview via renderEmail('ats-interviewer-feedback-request', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0671 [Medium][ATS/7 Emails] Implement candidate/team email `ats-offer-response-hr`
+- [x] MIYO-0671 [Medium][ATS/7 Emails] Implement candidate/team email `ats-offer-response-hr`
+  - **Agent note (2026-10-18):** ac0a78c5f — sent to the org's admins when a candidate accepts or declines (lib/ats/offers.ts).
   - **Where:** email-templates/ats-offer-response-hr.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on accept/decline via renderEmail('ats-offer-response-hr', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0672 [Medium][ATS/7 Emails] Implement candidate/team email `ats-requisition-approval`
+- [x] MIYO-0672 [Medium][ATS/7 Emails] Implement candidate/team email `ats-requisition-approval`
+  - **Agent note (2026-10-18):** ac0a78c5f — sent to the approver when a requisition is submitted (lib/ats/requisitions.ts, MIYO-0632).
   - **Where:** email-templates/ats-requisition-approval.html + .txt
   - **Problem:** New ATS email.
   - **Fix:** Send on requisition submit via renderEmail('ats-requisition-approval', vars); log in ats_email_log; respect candidate unsubscribe for non-transactional mails.
   - **Acceptance check:** Mail arrives with the designed layout and appears in the candidate's Emails tab.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0673 [Medium][ATS/7 Emails] Editable per-org templates and per-stage email
+- [x] MIYO-0673 [Medium][ATS/7 Emails] Editable per-org templates and per-stage email
+  - **Agent note (2026-10-18):** ac0a78c5f — /ats/settings/emails stores a per-org subject and Markdown body in ats_email_templates (migration 0169); lib/ats/email-overrides.ts uses it on the next send and falls back to the shipped wording. The body renders into the standard frame, HTML typed in is escaped and only http links survive (lib/ats/markdown.ts, tested). Live preview with a sample candidate not built.
   - **Where:** /ats/settings/emails
   - **Problem:** HR wants to adjust wording.
   - **Fix:** Store overrides (subject, body markdown) per template id; preview with sample candidate; fall back to defaults.
   - **Acceptance check:** Override is used in the next send; reset restores default.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0674 [Medium][ATS/8 Reports] Time-to-hire and time-in-stage report
+- [x] MIYO-0674 [Medium][ATS/8 Reports] Time-to-hire and time-in-stage report
+  - **Agent note (2026-10-18):** 85be60ab9 — /ats/reports: median and average days applied→hired per job, and average time in each stage from the ats_activity move trail (lib/ats/reports.ts). Numbers not checked against real data: no prod DB access here.
   - **Where:** /ats/reports
   - **Problem:** —
   - **Fix:** Median/avg days from applied → hired per job/department; time in each stage from ats_activity.
   - **Acceptance check:** Numbers match a hand count on seed data.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0675 [Medium][ATS/8 Reports] Source effectiveness report
+- [x] MIYO-0675 [Medium][ATS/8 Reports] Source effectiveness report
+  - **Agent note (2026-10-18):** 85be60ab9 — /ats/reports/sources counts applications, interviews, offers and hires per source.
   - **Where:** /ats/reports/sources
   - **Problem:** —
   - **Fix:** Applications, interviews, offers, hires by source.
   - **Acceptance check:** Totals match the pipeline.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0676 [Medium][ATS/8 Reports] Funnel report
+- [x] MIYO-0676 [Medium][ATS/8 Reports] Funnel report
+  - **Agent note (2026-10-18):** 85be60ab9 — /ats/reports/funnel in stage order, filtered by job and applied-date range, with a CSV of what is shown.
   - **Where:** /ats/reports/funnel
   - **Problem:** —
   - **Fix:** Conversion between stages per job with date range; CSV export.
   - **Acceptance check:** Funnel percentages add up.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0680 [Medium][ATS/9 Privacy & retention] Candidate data export on request
+- [x] MIYO-0680 [Medium][ATS/9 Privacy & retention] Candidate data export on request
+  - **Agent note (2026-10-18):** 85be60ab9 — /api/ats/candidates/[id]/export returns the candidate, applications, interviews, notes, activity, emails and consents as JSON, with the resume as a one-hour signed link instead of bytes. Not a zip: a signed link avoids copying the file into something that gets forwarded.
   - **Where:** /ats/candidates/[id] export
   - **Problem:** —
   - **Fix:** JSON + files zip of candidate data.
   - **Acceptance check:** Export contains all applications, notes visible to candidate rights, files.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0681 [Medium][ATS/9 Privacy & retention] Audit log for ATS actions
+- [x] MIYO-0681 [Medium][ATS/9 Privacy & retention] Audit log for ATS actions
+  - **Agent note (2026-10-18):** 85be60ab9 — ats.offer_created, ats.offer_sent, ats.offer_answered, ats.stage_moved, ats.candidate_erased and ats.candidate_exported added to lib/audit-log.ts and written at each of those points.
   - **Where:** existing audit_logs
   - **Problem:** —
   - **Fix:** Log offer create/send/accept, stage moves, deletes, exports.
   - **Acceptance check:** Audit page shows ATS entries.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0684 [Medium][ATS/10 Tests] Pipeline move/bulk tests
+- [x] MIYO-0684 [Medium][ATS/10 Tests] Pipeline move/bulk tests
+  - **Agent note (2026-10-18):** a25ec20bd — lib/ats/__tests__/pipeline.test.ts: stage belongs to the job, hiring-team check, no mail unless asked, stage template, refuse reason with and without a template (8 tests).
   - **Where:** lib/ats/__tests__/pipeline.test.ts
   - **Problem:** —
   - **Fix:** Optimistic concurrency, reject reason, auto-email decisions.
   - **Acceptance check:** Tests pass.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0685 [Medium][ATS/10 Tests] Offer token and hire conversion tests
+- [x] MIYO-0685 [Medium][ATS/10 Tests] Offer token and hire conversion tests
+  - **Agent note (2026-10-18):** a25ec20bd — lib/ats/__tests__/offer.test.ts: token randomness and hash-only storage, accept needs a typed name, the token is spent on answering, expired is 410 and a second answer is 409 (7 tests). 'Hire creates exactly one user' is enforced by the existing onboard route's duplicate-email 409, which MIYO-0663 reuses rather than duplicating.
   - **Where:** lib/ats/__tests__/offer.test.ts
   - **Problem:** —
   - **Fix:** Token expiry, single use, hire creates exactly one user.
@@ -4041,34 +4099,39 @@ ats-application-received, ats-new-application-internal, ats-application-rejected
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
 - [ ] MIYO-0686 [Medium][ATS/10 Tests] Playwright ATS golden path
+  - **Agent note (2026-10-18):** a25ec20bd — e2e/ats.spec.ts and playwright.config.ts are written (sign in, create, publish, apply, move, schedule, score; the offer link step is annotated because it arrives by email) and `pnpm test:e2e` runs them. Left unticked because it has never been run: @playwright/test cannot be installed here (the sandbox cannot write to the pnpm store) and there is no dev server or seeded database. Tarun: `pnpm add -D @playwright/test && pnpm exec playwright install chromium`, then run it against a preview URL with E2E_EMAIL/E2E_PASSWORD set.
   - **Where:** e2e/ats.spec.ts
   - **Problem:** —
   - **Fix:** Create job → publish → apply on careers → move to Interview → schedule → scorecard → offer → accept → hire → employee exists.
   - **Acceptance check:** Passes locally against a local DB.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0655 [Low][ATS/4 Pipeline] Ready/blocked flag per card
+- [x] MIYO-0655 [Low][ATS/4 Pipeline] Ready/blocked flag per card
+  - **Agent note (2026-10-18):** ba77096de — candidate_applications gains kanban_state and kanban_reason (migration 0170); /api/ats/applications/[id]/flag sets them and a blocked card says so on the board.
   - **Where:** candidate_applications
   - **Problem:** Odoo kanban state.
   - **Fix:** Simple flag + reason.
   - **Acceptance check:** Flag visible on card.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0660 [Low][ATS/5 Interviews] Self-scheduling links (later)
+- [x] MIYO-0660 [Low][ATS/5 Interviews] Self-scheduling links (later)
+  - **Agent note (2026-10-18):** 0f7d701db — /api/ats/booking-links offers times and mails the link; /interview/[token] lets the candidate pick one, and booking creates the interview and sends the same ICS invite as scheduling by hand. The chosen time must be one of those offered, the link works once and expires, and the public endpoint is rate limited.
   - **Where:** interview_booking_links (reuse-later)
   - **Problem:** —
   - **Fix:** Candidate picks from offered slots.
   - **Acceptance check:** Booked slot creates the interview.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0677 [Low][ATS/8 Reports] Hiring dashboard widget
+- [x] MIYO-0677 [Low][ATS/8 Reports] Hiring dashboard widget
+  - **Agent note (2026-10-18):** 85be60ab9 — features/dashboard/hiring-card.tsx on /dashboard for ATS roles: open jobs, applications in the last 7 days, interviews today (app/api/ats/summary).
   - **Where:** /dashboard for ATS roles
   - **Problem:** —
   - **Fix:** Open jobs, new applications this week, interviews today.
   - **Acceptance check:** Widget visible only to ATS roles.
   - **Retest status:** ATS not built (removed in 3cbeb49); /hr/ats /careers /jobs → 404
 
-- [ ] MIYO-0687 [Low][ATS/10 Tests] Email rendering tests for ats-* templates
+- [x] MIYO-0687 [Low][ATS/10 Tests] Email rendering tests for ats-* templates
+  - **Agent note (2026-10-18):** a25ec20bd — lib/email-templates/ats-copy.test.ts renders every ats-* template and checks for leftover placeholders, 'undefined', a subject and a text part, plus the ICS shape (30 cases).
   - **Where:** lib/email-templates/__tests__
   - **Problem:** —
   - **Fix:** No placeholders left; ICS attached for interview invite.

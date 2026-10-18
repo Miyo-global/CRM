@@ -996,7 +996,7 @@ export const kbIndexedBytesQuota = pgTable(
     limitBytes: bigint("limit_bytes", { mode: "number" }).notNull().default(536870912),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
+  () => [
     check(
       "chk_kb_indexed_bytes_quota_non_negative",
       sql`indexed_bytes >= 0 AND limit_bytes >= 0`,
