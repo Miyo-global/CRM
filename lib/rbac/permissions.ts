@@ -342,6 +342,11 @@ const EMPLOYEE_SELF_SERVICE = [
   "self:payslips",
   "hr:leaves:create",
   "hr:expenses:create",
+  // KB-0003: Streamline's UNIVERSAL_MEMBER_PERMISSION_GRANTS. Everyone can read
+  // the wiki; what they can read is then narrowed by space and page access.
+  "kb:articles:view",
+  "kb:spaces:view",
+  "kb:pages:view",
 ];
 
 /**
@@ -404,6 +409,18 @@ PERMISSIONS.push(...KB_PERMISSIONS);
 /** Every kb:* name, for the roles that get the lot. */
 export const KB_PERMISSION_NAMES: string[] = KB_PERMISSIONS.map((p) => p.name);
 
+/** HR and Customer Support get everything but the irreversible purge (D8, §2.4). */
+export const KB_FULL_EXCEPT_PURGE: string[] = KB_PERMISSION_NAMES.filter(
+  (name) => name !== "kb:pages:purge",
+);
+
+/**
+ * On top of the universal view grants in EMPLOYEE_SELF_SERVICE. Creating and
+ * editing pages in a private space or a space they are an editor of comes from
+ * kb_space_members, not from this list (D8).
+ */
+const KB_EMPLOYEE_PERMISSIONS: string[] = ["kb:ai:generate", "kb:pages:export", "kb:reviews:view"];
+
 export const SYSTEM_ROLES = [
   "CEO",
   "HR",
@@ -434,6 +451,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   HR: [
     ...EMPLOYEE_SELF_SERVICE,
     ...ATS_PERMISSIONS.map((p) => p.name),
+    ...KB_FULL_EXCEPT_PURGE,
     "hr:employees:view",
     "hr:employees:create",
     "hr:employees:update",
@@ -472,6 +490,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   SALES: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",
     "projects:tickets:view",
     "projects:tickets:create",
@@ -482,6 +501,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   CUSTOMER_SUPPORT: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_FULL_EXCEPT_PURGE,
     "dashboard:support:view",
     "projects:view",
     "projects:tickets:view",
@@ -493,6 +513,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   ENGINEERING: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",
     "projects:tickets:view",
     "projects:tickets:create",
@@ -504,6 +525,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   DESIGN: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",
     "projects:tickets:view",
     "projects:tickets:create",
@@ -514,6 +536,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   VIDEO_EDITOR: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",
     "projects:tickets:view",
     "projects:tickets:create",
@@ -524,6 +547,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   DIGITAL_MARKETING: [
     ...EMPLOYEE_SELF_SERVICE,
+    ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",
     "projects:tickets:view",
     "projects:tickets:create",
