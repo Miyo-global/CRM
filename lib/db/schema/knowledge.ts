@@ -25,6 +25,7 @@ import {
   timestamp,
   unique,
   uniqueIndex,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 import { organizations, users } from "./auth";
@@ -513,6 +514,218 @@ export const kbPageRestrictions = pgTable(
       foreignColumns: [kbPages.orgId, kbPages.id],
       name: "fk_kb_page_restrictions_org_page",
     }).onDelete("cascade"),
+  ],
+);
+
+export const KB_PURGE_STORES = [
+  "visits",
+  "favorites",
+  "source_links",
+  "reviews",
+  "versions",
+  "comments",
+  "grants",
+  "chunks",
+  "analytics",
+  "notifications",
+  "caches",
+  "public_cdn",
+  "connector_projections",
+  "page_rows",
+  "blobs",
+] as const;
+export type KbPurgeStore = (typeof KB_PURGE_STORES)[number];
+
+export const kbPageReviews = pgTable(
+  "kb_page_reviews",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    type: text("type").$type<"approval" | "freshness">().notNull(),
+    status: text("status").$type<"pending" | "approved" | "rejected">().notNull().default("pending"),
+    requestedById: text("requested_by_id").references(() => users.id, { onDelete: "set null" }),
+    reviewerId: text("reviewer_id").references(() => users.id, { onDelete: "set null" }),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    decisionNote: text("decision_note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_reviews_org_id").on(table.orgId, table.id),
+    index("idx_kb_page_reviews_org_status_due").on(table.orgId, table.status, table.dueAt),
+    index("idx_kb_page_reviews_org_page").on(table.orgId, table.pageId),
+    index("idx_kb_page_reviews_org_reviewer").on(
+      table.orgId,
+      table.reviewerId,
+      table.status,
+      table.dueAt,
+    ),
+    index("idx_kb_page_reviews_org_requester").on(
+      table.orgId,
+      table.requestedById,
+      table.status,
+      table.dueAt,
+    ),
+    check("chk_kb_page_reviews_type", sql`type IN ('approval', 'freshness')`),
+    check("chk_kb_page_reviews_status", sql`status IN ('pending', 'approved', 'rejected')`),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_reviews_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const kbImportJobs = pgTable(
+  "kb_import_jobs",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    sourceType: text("source_type").$type<"markdown" | "html" | "zip" | "support_kb">().notNull(),
+    fileKey: text("file_key"),
+    status: text("status")
+      .$type<"pending" | "processing" | "completed" | "failed" | "cancelled">()
+      .notNull()
+      .default("pending"),
+    totalItems: integer("total_items").notNull().default(0),
+    processedItems: integer("processed_items").notNull().default(0),
+    succeededItems: integer("succeeded_items").notNull().default(0),
+    failedItems: integer("failed_items").notNull().default(0),
+    duplicateItems: integer("duplicate_items").notNull().default(0),
+    inputOptions: jsonb("input_options").$type<Record<string, unknown>>(),
+    retryOfJobId: integer("retry_of_job_id"),
+    errorReport: jsonb("error_report").$type<Record<string, unknown>>(),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_import_jobs_org_id").on(table.orgId, table.id),
+    index("idx_kb_import_jobs_org_created").on(table.orgId, table.createdAt),
+    uniqueIndex("uniq_kb_import_jobs_org_retry_of_job")
+      .on(table.orgId, table.retryOfJobId)
+      .where(sql`retry_of_job_id IS NOT NULL`),
+  ],
+);
+
+export const kbExportJobs = pgTable(
+  "kb_export_jobs",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    scopeType: text("scope_type").$type<"page" | "all">().notNull(),
+    scopeId: integer("scope_id"),
+    format: text("format").$type<"markdown" | "html">().notNull(),
+    status: text("status")
+      .$type<"pending" | "processing" | "completed" | "failed">()
+      .notNull()
+      .default("pending"),
+    fileKey: text("file_key"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_export_jobs_org_id").on(table.orgId, table.id),
+    index("idx_kb_export_jobs_org_created").on(table.orgId, table.createdAt),
+    foreignKey({
+      columns: [table.orgId, table.scopeId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_export_jobs_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+/** An export object is recorded before it is attached, so nothing is orphaned. */
+export const kbExportObjectAttempts = pgTable(
+  "kb_export_object_attempts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orgId: text("org_id").notNull(),
+    storageKey: text("storage_key").notNull(),
+    bucket: text("bucket").$type<"default">().notNull().default("default"),
+    state: text("state")
+      .$type<"planned" | "uploaded" | "attached" | "failed">()
+      .notNull()
+      .default("planned"),
+    exportJobId: integer("export_job_id"),
+    reviewAfterAt: timestamp("review_after_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("uniq_kb_export_object_attempts_org_key").on(table.orgId, table.storageKey),
+    index("idx_kb_export_object_attempts_org_state_created").on(
+      table.orgId,
+      table.state,
+      table.createdAt,
+    ),
+    check("kb_export_object_attempts_bucket_check", sql`bucket = 'default'`),
+    check(
+      "kb_export_object_attempts_state_check",
+      sql`state IN ('planned', 'uploaded', 'attached', 'failed')`,
+    ),
+  ],
+);
+
+/** One row per store per page, so a partial purge is resumable. */
+export const kbPagePurgeLedger = pgTable(
+  "kb_page_purge_ledger",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    store: text("store").$type<KbPurgeStore>().notNull(),
+    status: text("status").$type<"pending" | "completed" | "failed">().notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    failedReason: text("failed_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("uniq_kb_purge_ledger_org_page_store").on(table.orgId, table.pageId, table.store),
+    index("idx_kb_purge_ledger_org_status_created").on(table.orgId, table.status, table.createdAt),
+    index("idx_kb_purge_ledger_pending_global")
+      .on(table.status, table.createdAt)
+      .where(sql`status = 'pending'`),
+    check("chk_kb_purge_ledger_status", sql`status IN ('pending', 'completed', 'failed')`),
+  ],
+);
+
+export const kbSettings = pgTable(
+  "kb_settings",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    trashRetentionDays: integer("trash_retention_days").notNull().default(30),
+    chatHistoryRetentionDays: integer("chat_history_retention_days").default(90),
+    hrmsKbLinkEnabled: boolean("hrms_kb_link_enabled").notNull().default(false),
+    hrmsKbSearchEnabled: boolean("hrms_kb_search_enabled").notNull().default(false),
+    hrmsKbAiEnabled: boolean("hrms_kb_ai_enabled").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_settings_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_settings_org").on(table.orgId),
+    // search needs the link, AI needs search
+    check(
+      "chk_kb_settings_hrms_flag_order",
+      sql`(NOT hrms_kb_search_enabled OR hrms_kb_link_enabled) AND (NOT hrms_kb_ai_enabled OR hrms_kb_search_enabled)`,
+    ),
   ],
 );
 
