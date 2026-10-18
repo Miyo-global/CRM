@@ -1243,6 +1243,104 @@ export const kbEvents = pgTable(
   ],
 );
 
+export const KB_HEALTH_ITEM_KINDS = [
+  "unowned",
+  "stale",
+  "unverified",
+  "empty",
+  "overdue_review",
+  "broken_link",
+  "overexposed",
+  "duplicate_candidate",
+  "contradictory_claim",
+] as const;
+export type KbHealthItemKind = (typeof KB_HEALTH_ITEM_KINDS)[number];
+
+export const KB_HEALTH_ITEM_STATES = ["open", "resolved", "dismissed"] as const;
+export type KbHealthItemState = (typeof KB_HEALTH_ITEM_STATES)[number];
+
+export const KB_REPAIR_ACTIONS = ["assign_owner", "request_review", "mark_needs_content"] as const;
+export type KbRepairAction = (typeof KB_REPAIR_ACTIONS)[number];
+
+export const kbHealthItems = pgTable(
+  "kb_health_items",
+  {
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    kind: text("kind").$type<KbHealthItemKind>().notNull(),
+    /** Bumped when a rule changes, so old findings are not mistaken for current ones. */
+    ruleVersion: integer("rule_version").notNull().default(1),
+    evidence: jsonb("evidence").$type<Record<string, unknown>>().notNull().default({}),
+    impact: integer("impact").notNull().default(0),
+    state: text("state").$type<KbHealthItemState>().notNull().default("open"),
+    assigneeId: text("assignee_id").references(() => users.id, { onDelete: "set null" }),
+    repairAction: text("repair_action").$type<KbRepairAction>(),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    detectedAt: timestamp("detected_at", { withTimezone: true }).defaultNow().notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+    dismissedReason: text("dismissed_reason"),
+    dismissalExpiresAt: timestamp("dismissal_expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_health_items_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_health_items_open")
+      .on(table.orgId, table.pageId, table.kind, table.ruleVersion)
+      .where(sql`state = 'open'`),
+    index("idx_kb_health_items_org_state_impact").on(
+      table.orgId,
+      table.state,
+      table.impact,
+      table.id,
+    ),
+    index("idx_kb_health_items_org_kind_state").on(table.orgId, table.kind, table.state),
+    index("idx_kb_health_items_org_page").on(table.orgId, table.pageId),
+    index("idx_kb_health_items_org_assignee").on(table.orgId, table.assigneeId),
+    index("idx_kb_health_items_org_due").on(table.orgId, table.dueAt),
+    index("idx_kb_health_items_org_dismissal_expiry").on(table.orgId, table.dismissalExpiresAt),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_health_items_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+/** visitor_id covers the public help centre, where there is no session. */
+export const kbPageFeedback = pgTable(
+  "kb_page_feedback",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    helpful: boolean("helpful").notNull(),
+    comment: text("comment"),
+    visitorId: text("visitor_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_feedback_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_page_feedback_org_page_visitor").on(
+      table.orgId,
+      table.pageId,
+      table.visitorId,
+    ),
+    index("idx_kb_page_feedback_page").on(table.pageId),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_feedback_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const kbSpacesRelations = relations(kbSpaces, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [kbSpaces.orgId],
