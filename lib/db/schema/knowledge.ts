@@ -21,6 +21,7 @@ import {
   pgEnum,
   pgTable,
   serial,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -726,6 +727,161 @@ export const kbSettings = pgTable(
       "chk_kb_settings_hrms_flag_order",
       sql`(NOT hrms_kb_search_enabled OR hrms_kb_link_enabled) AND (NOT hrms_kb_ai_enabled OR hrms_kb_search_enabled)`,
     ),
+  ],
+);
+
+export const kbPageAttachments = pgTable(
+  "kb_page_attachments",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id"),
+    fileKey: text("file_key").notNull(),
+    fileName: text("file_name").notNull(),
+    fileUrl: text("file_url"),
+    mimeType: text("mime_type").notNull(),
+    fileSize: integer("file_size").notNull(),
+    sha256: text("sha256"),
+    uploadedById: text("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("uniq_kb_page_attachments_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_page_attachments_org_file_key").on(table.orgId, table.fileKey),
+    index("idx_kb_page_attachments_org_page")
+      .on(table.orgId, table.pageId, table.createdAt)
+      .where(sql`deleted_at IS NULL`),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_attachments_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const KB_SOURCE_KINDS = ["file", "note"] as const;
+export type KbSourceKind = (typeof KB_SOURCE_KINDS)[number];
+
+export const KB_SOURCE_STATUSES = ["processing", "ready", "failed"] as const;
+export type KbSourceStatus = (typeof KB_SOURCE_STATUSES)[number];
+
+/** Material Ask can draw on that is not itself a page: a file or a pasted note. */
+export const kbSources = pgTable(
+  "kb_sources",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    spaceId: integer("space_id"),
+    kind: text("kind").$type<KbSourceKind>().notNull(),
+    title: text("title").notNull(),
+    fileKey: text("file_key"),
+    fileUrl: text("file_url"),
+    mimeType: text("mime_type"),
+    fileSize: integer("file_size"),
+    noteText: text("note_text"),
+    status: text("status").$type<KbSourceStatus>().notNull().default("processing"),
+    chunkCount: integer("chunk_count").notNull().default(0),
+    errorMessage: text("error_message"),
+    createdById: text("created_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("uniq_kb_sources_org_id").on(table.orgId, table.id),
+    index("idx_kb_sources_org_space").on(table.orgId, table.spaceId),
+    check("chk_kb_sources_kind", sql`kind IN ('file', 'note')`),
+    check("chk_kb_sources_status", sql`status IN ('processing', 'ready', 'failed')`),
+    foreignKey({
+      columns: [table.orgId, table.spaceId],
+      foreignColumns: [kbSpaces.orgId, kbSpaces.id],
+      name: "fk_kb_sources_org_space",
+    }),
+  ],
+);
+
+export const kbTranslationStatusEnum = pgEnum("kb_translation_status", [
+  "draft",
+  "in_progress",
+  "translated",
+  "published",
+  "outdated",
+]);
+
+export const kbTags = pgTable(
+  "kb_tags",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_tags_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_tags_org_slug").on(table.orgId, table.slug),
+  ],
+);
+
+export const kbPageTags = pgTable(
+  "kb_page_tags",
+  {
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    tagId: integer("tag_id").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.orgId, table.pageId, table.tagId] }),
+    index("idx_kb_page_tags_org_tag").on(table.orgId, table.tagId),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_tags_org_page",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.orgId, table.tagId],
+      foreignColumns: [kbTags.orgId, kbTags.id],
+      name: "fk_kb_page_tags_org_tag",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const kbPageTranslations = pgTable(
+  "kb_page_translations",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    locale: text("locale").notNull(),
+    title: text("title").notNull(),
+    content: text("content").default("").notNull(),
+    contentText: text("content_text").default("").notNull(),
+    excerpt: text("excerpt"),
+    status: kbTranslationStatusEnum("status").default("draft").notNull(),
+    revision: integer("revision").default(1).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_translations_org_id").on(table.orgId, table.id),
+    unique("uniq_kb_page_translations").on(table.pageId, table.locale),
+    index("idx_kb_page_translations_org_page").on(table.orgId, table.pageId),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_translations_org_page",
+    }).onDelete("cascade"),
   ],
 );
 
