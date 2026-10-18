@@ -18,6 +18,8 @@ import {
 const pageCollection = kbCollection(kbPageSummarySchema);
 
 export interface KbPageFilters extends Record<string, unknown> {
+  /** all (default), private (mine), shared (granted to me), space, project. */
+  scope?: "all" | "private" | "shared" | "space" | "project";
   q?: string;
   spaceId?: number;
   projectId?: number;
