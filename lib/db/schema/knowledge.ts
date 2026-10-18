@@ -255,6 +255,98 @@ export const kbPages = pgTable(
   ],
 );
 
+export const kbPageFavorites = pgTable(
+  "kb_page_favorites",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_favorites_org_id").on(table.orgId, table.id),
+    unique("uniq_kb_page_favorites_page_user").on(table.pageId, table.userId),
+    index("idx_kb_page_favorites_org_user_sort").on(
+      table.orgId,
+      table.userId,
+      table.sortOrder,
+      table.createdAt,
+    ),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_favorites_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+/** One row per page per reader, moved forward on each visit. */
+export const kbPageVisits = pgTable(
+  "kb_page_visits",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    visitedAt: timestamp("visited_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_visits_org_id").on(table.orgId, table.id),
+    unique("uniq_kb_page_visits_page_user").on(table.pageId, table.userId),
+    index("idx_kb_page_visits_org_user_visited").on(table.orgId, table.userId, table.visitedAt),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_visits_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+/** Re-synced from page content on every save (KB-0041). */
+export const kbPageLinks = pgTable(
+  "kb_page_links",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    sourcePageId: integer("source_page_id").notNull(),
+    targetPageId: integer("target_page_id"),
+    targetType: text("target_type").notNull().default("page"),
+    targetId: text("target_id"),
+    label: text("label"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_links_org_id").on(table.orgId, table.id),
+    unique("uniq_kb_page_links_source_target").on(table.sourcePageId, table.targetPageId),
+    uniqueIndex("uniq_kb_page_links_org_source_record")
+      .on(table.orgId, table.sourcePageId, table.targetType, table.targetId)
+      .where(sql`target_id IS NOT NULL`),
+    index("idx_kb_page_links_org_target").on(table.orgId, table.targetPageId),
+    foreignKey({
+      columns: [table.orgId, table.sourcePageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_links_org_source",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.orgId, table.targetPageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_links_org_target",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const kbSpacesRelations = relations(kbSpaces, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [kbSpaces.orgId],
@@ -278,4 +370,21 @@ export const kbPagesRelations = relations(kbPages, ({ one, many }) => ({
   }),
   children: many(kbPages, { relationName: "kb_page_parent" }),
   owner: one(users, { fields: [kbPages.ownerUserId], references: [users.id] }),
+  favorites: many(kbPageFavorites),
+  visits: many(kbPageVisits),
+  outboundLinks: many(kbPageLinks, { relationName: "kb_link_source" }),
+  inboundLinks: many(kbPageLinks, { relationName: "kb_link_target" }),
+}));
+
+export const kbPageLinksRelations = relations(kbPageLinks, ({ one }) => ({
+  sourcePage: one(kbPages, {
+    fields: [kbPageLinks.sourcePageId],
+    references: [kbPages.id],
+    relationName: "kb_link_source",
+  }),
+  targetPage: one(kbPages, {
+    fields: [kbPageLinks.targetPageId],
+    references: [kbPages.id],
+    relationName: "kb_link_target",
+  }),
 }));
