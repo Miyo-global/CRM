@@ -10,12 +10,9 @@ import { kbCollection, kbPageReviewSchema } from "./schemas";
 const reviewCollection = kbCollection(kbPageReviewSchema);
 
 export interface KbReviewFilters extends Record<string, unknown> {
-  status?: string;
+  status?: "pending" | "approved" | "rejected";
+  type?: "approval" | "freshness";
   reviewerId?: string;
-  spaceId?: number;
-  contentType?: string;
-  cursor?: string;
-  limit?: number;
 }
 
 export function useKbReviews(filters: KbReviewFilters = {}) {
@@ -45,8 +42,11 @@ export function useKbPageReviews(pageId: number | undefined) {
 export function useRequestKbPageReview(pageId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { reviewerId: string; dueAt?: string; note?: string }) =>
-      apiClient.post(`/knowledge/pages/${pageId}/reviews`, input),
+    mutationFn: (input: {
+      type?: "approval" | "freshness";
+      reviewerId?: string;
+      dueAt?: string;
+    }) => apiClient.post(`/knowledge/pages/${pageId}/reviews`, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.pageReviews(pageId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.reviewsAll() });
@@ -74,13 +74,9 @@ export function useDecideKbReview() {
 export function useBulkDecideKbReviews() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: {
-      reviewIds: number[];
-      decision: "approve" | "reject";
-      note?: string;
-    }) =>
+    mutationFn: (input: { ids: number[]; decision: "approve" | "reject"; note?: string }) =>
       apiClient.post<{
-        results: { reviewId: number; status: "decided" | "failed"; reason?: string }[];
+        results: { id: number; status: string; pageId?: number }[];
       }>("/knowledge/page-reviews/bulk-decide", input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.reviewsAll() });
