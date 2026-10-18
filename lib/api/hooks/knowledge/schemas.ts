@@ -61,7 +61,18 @@ export type KbPage = z.infer<typeof kbPageSchema>;
 
 /** Every list endpoint pages with a cursor, never an offset. */
 export function kbCollection<T extends z.ZodTypeAny>(item: T) {
-  return z.object({ items: z.array(item), nextCursor: z.string().nullable().optional() });
+  return z.object({
+    items: z.array(item),
+    nextCursor: z.string().nullable().optional(),
+    // The page collection also returns counts per status and content type,
+    // over the whole filtered set rather than the page in hand.
+    facets: z
+      .object({
+        status: z.record(z.string(), z.number()).optional(),
+        contentType: z.record(z.string(), z.number()).optional(),
+      })
+      .optional(),
+  });
 }
 
 export const kbPageTreeNodeSchema = z.object({

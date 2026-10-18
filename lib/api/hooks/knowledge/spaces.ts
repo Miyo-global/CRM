@@ -63,14 +63,23 @@ export function useUpdateKbSpace(spaceId: number) {
   });
 }
 
-/** What archiving would hide, shown before the confirmation. */
+export interface KbSpaceArchiveImpact {
+  pages: number;
+  published: number;
+  /** Share links archiving will revoke. */
+  publicLinks: number;
+  linkedDocuments: number;
+}
+
+/** What archiving would hide and revoke, shown before the confirmation. */
 export function useKbSpaceArchiveImpact(spaceId: number | undefined) {
   return useQuery({
     queryKey: queryKeys.knowledge.spaceArchiveImpact(spaceId ?? 0),
     queryFn: () =>
-      apiClient.get<{ pages: number; publishedPages: number; members: number }>(
-        `/knowledge/spaces/${spaceId}/archive-impact`,
-      ),
+      apiClient.get<{
+        space: { id: number; name: string; archivedAt: string | null };
+        impact: KbSpaceArchiveImpact;
+      }>(`/knowledge/spaces/${spaceId}/archive-impact`),
     enabled: !!spaceId,
   });
 }
