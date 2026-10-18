@@ -1,9 +1,9 @@
+import { WikiShell } from "@/features/knowledge/components/wiki-shell";
+
 /**
- * KB-0067: the wiki frame.
- *
- * The sidebar and quick find arrive with WikiShell in KB-0068; until then this
- * is the full-height container every wiki page lays itself out inside.
+ * KB-0067, KB-0068: the wiki frame — the sidebar, quick find and Trash around
+ * every wiki page. The page tree arrives in KB-0069.
  */
 export default function WikiLayout({ children }: { children: React.ReactNode }) {
-  return <div className="flex h-full min-h-0 flex-col">{children}</div>;
+  return <WikiShell>{children}</WikiShell>;
 }
