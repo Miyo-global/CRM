@@ -10,6 +10,7 @@ import { kbContext } from "@/lib/knowledge/actor";
 import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { accessSatisfies, type KbPageAction } from "@/lib/knowledge/access-levels";
 import { kbConflict, kbDenied, kbNotFound } from "@/lib/knowledge/errors";
+import { deliverMentions } from "@/lib/knowledge/mentions";
 import { trashSubtree } from "@/lib/knowledge/page-lifecycle";
 import { commitPageChange, KbPageConflictError } from "@/lib/knowledge/page-writer";
 import { isPageSpaceArchived } from "@/lib/knowledge/space-lifecycle";
@@ -152,6 +153,11 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ pageI
         ...(expectedRevision !== undefined ? { expectedRevision } : {}),
         metadata,
       });
+
+      // After the commit, never inside it: this talks to the mailer.
+      if (result.newMentions.length > 0) {
+        void deliverMentions(session.orgId, id, session.user.id, result.newMentions);
+      }
 
       return ok({ id, ...result });
     } catch (error) {
