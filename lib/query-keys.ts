@@ -348,6 +348,57 @@ export const queryKeys = {
     detail: (id: number) => [...base, "quotes", "detail", id] as const,
   },
 
+  // KB-0066: the Knowledge Base. Every key hangs off "knowledge", so one
+  // invalidate clears the module; list keys carry their params so a filter
+  // change is a different cache entry rather than a refetch of the same one.
+  knowledge: {
+    all: [...base, "knowledge"] as const,
+    capabilities: () => [...base, "knowledge", "capabilities"] as const,
+    settings: () => [...base, "knowledge", "settings"] as const,
+    pages: (params?: Record<string, unknown>) => [...base, "knowledge", "pages", params] as const,
+    pagesAll: () => [...base, "knowledge", "pages"] as const,
+    page: (id: number) => [...base, "knowledge", "page", id] as const,
+    pageTree: (params?: Record<string, unknown>) => [...base, "knowledge", "pageTree", params] as const,
+    pageTreeAll: () => [...base, "knowledge", "pageTree"] as const,
+    recentPages: () => [...base, "knowledge", "recentPages"] as const,
+    favoritePages: () => [...base, "knowledge", "favoritePages"] as const,
+    pageOwners: () => [...base, "knowledge", "pageOwners"] as const,
+    pageVersions: (pageId: number) => [...base, "knowledge", "pageVersions", pageId] as const,
+    pageVersion: (pageId: number, versionNumber: number) =>
+      [...base, "knowledge", "pageVersion", pageId, versionNumber] as const,
+    pageBacklinks: (pageId: number) => [...base, "knowledge", "pageBacklinks", pageId] as const,
+    pageComments: (pageId: number) => [...base, "knowledge", "pageComments", pageId] as const,
+    pageGrants: (pageId: number) => [...base, "knowledge", "pageGrants", pageId] as const,
+    grantCandidates: (pageId: number, q?: string) =>
+      [...base, "knowledge", "grantCandidates", pageId, q] as const,
+    pageAttachments: (pageId: number) => [...base, "knowledge", "pageAttachments", pageId] as const,
+    pageRecordLinks: (pageId: number) => [...base, "knowledge", "pageRecordLinks", pageId] as const,
+    recordPages: (params: { targetType: string; targetId: string }) =>
+      [...base, "knowledge", "recordPages", params] as const,
+    pageTags: (pageId: number) => [...base, "knowledge", "pageTags", pageId] as const,
+    pageTranslations: (pageId: number) => [...base, "knowledge", "pageTranslations", pageId] as const,
+    tags: () => [...base, "knowledge", "tags"] as const,
+    spaces: (params?: Record<string, unknown>) => [...base, "knowledge", "spaces", params] as const,
+    spacesAll: () => [...base, "knowledge", "spaces"] as const,
+    space: (id: number) => [...base, "knowledge", "space", id] as const,
+    spaceMembers: (spaceId: number) => [...base, "knowledge", "spaceMembers", spaceId] as const,
+    spaceArchiveImpact: (spaceId: number) =>
+      [...base, "knowledge", "spaceArchiveImpact", spaceId] as const,
+    templates: () => [...base, "knowledge", "templates"] as const,
+    template: (id: number) => [...base, "knowledge", "template", id] as const,
+    reviews: (params?: Record<string, unknown>) => [...base, "knowledge", "reviews", params] as const,
+    reviewsAll: () => [...base, "knowledge", "reviews"] as const,
+    reviewsDue: () => [...base, "knowledge", "reviewsDue"] as const,
+    pageReviews: (pageId: number) => [...base, "knowledge", "pageReviews", pageId] as const,
+    trash: (params?: Record<string, unknown>) => [...base, "knowledge", "trash", params] as const,
+    trashAll: () => [...base, "knowledge", "trash"] as const,
+    trashDeleters: () => [...base, "knowledge", "trashDeleters"] as const,
+    search: (params?: Record<string, unknown>) => [...base, "knowledge", "search", params] as const,
+    importJobs: () => [...base, "knowledge", "importJobs"] as const,
+    importJob: (id: number) => [...base, "knowledge", "importJob", id] as const,
+    exportJobs: () => [...base, "knowledge", "exportJobs"] as const,
+  },
+
   tasks: {
     all: [...base, "tasks"] as const,
     list: (params?: Record<string, unknown>) => [...base, "tasks", "list", params] as const,
