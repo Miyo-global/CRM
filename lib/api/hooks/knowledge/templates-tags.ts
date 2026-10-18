@@ -5,13 +5,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 
-import { kbCollection, kbTagSchema, kbTemplateSchema } from "./schemas";
+import {
+  kbCollection,
+  kbTagSchema,
+  kbTemplateSchema,
+  kbTemplatesResponseSchema,
+} from "./schemas";
 
+/** The org's own templates, plus the starters that ship with the product. */
 export function useKbTemplates() {
   return useQuery({
     queryKey: queryKeys.knowledge.templates(),
     queryFn: async () =>
-      kbCollection(kbTemplateSchema).parse(await apiClient.get("/knowledge/page-templates")),
+      kbTemplatesResponseSchema.parse(await apiClient.get("/knowledge/page-templates")),
   });
 }
 

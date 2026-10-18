@@ -191,11 +191,26 @@ export const kbTemplateSchema = z.object({
   icon: z.string().nullable().optional(),
   contentType: z.string().nullable().optional(),
   content: z.unknown().optional(),
-  isStarter: z.boolean().optional(),
   useCount: z.number().optional(),
+  lastUsedAt: timestamp.optional(),
   createdAt: timestamp.optional(),
 });
 export type KbTemplate = z.infer<typeof kbTemplateSchema>;
+
+/** A starter ships with the product, so it has a key rather than an id. */
+export const kbStarterTemplateSchema = z.object({
+  key: z.string(),
+  name: z.string(),
+  description: z.string(),
+  category: z.string(),
+  icon: z.string().nullable(),
+});
+export type KbStarterTemplate = z.infer<typeof kbStarterTemplateSchema>;
+
+export const kbTemplatesResponseSchema = z.object({
+  items: z.array(kbTemplateSchema),
+  starters: z.array(kbStarterTemplateSchema),
+});
 
 export const kbTagSchema = z.object({
   id: z.number(),
