@@ -1004,6 +1004,245 @@ export const kbIndexedBytesQuota = pgTable(
   ],
 );
 
+export const KB_CHAT_ROLES = ["user", "assistant"] as const;
+export type KbChatRole = (typeof KB_CHAT_ROLES)[number];
+
+export type KbChatCitation =
+  | { kind: "page"; pageId: number; title: string; spaceId: number | null }
+  | { kind: "source"; sourceId: number; title: string; spaceId: number | null }
+  | { kind: "document"; linkedDocumentId: number; title: string; spaceId: null };
+
+export const kbChatConversations = pgTable(
+  "kb_chat_conversations",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    title: text("title"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_chat_conversations_org_id").on(table.orgId, table.id),
+    index("idx_kb_chat_conversations_org_user").on(table.orgId, table.userId, table.updatedAt),
+  ],
+);
+
+export const kbChatMessages = pgTable(
+  "kb_chat_messages",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    conversationId: integer("conversation_id"),
+    role: text("role").$type<KbChatRole>().notNull(),
+    content: text("content").notNull(),
+    citations: jsonb("citations").$type<KbChatCitation[]>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_chat_messages_org_id").on(table.orgId, table.id),
+    index("idx_kb_chat_messages_org_user").on(table.orgId, table.userId),
+    index("idx_kb_chat_messages_conversation").on(table.conversationId),
+    check("chk_kb_chat_messages_role", sql`role IN ('user', 'assistant')`),
+    foreignKey({
+      columns: [table.orgId, table.conversationId],
+      foreignColumns: [kbChatConversations.orgId, kbChatConversations.id],
+      name: "fk_kb_chat_messages_org_conversation",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const KB_AI_INTERACTION_STATES = [
+  "answered",
+  "no_context",
+  "credits_exhausted",
+  "provider_unavailable",
+  "error",
+] as const;
+export type KbAiInteractionState = (typeof KB_AI_INTERACTION_STATES)[number];
+
+export interface KbAiSourceRecord {
+  kind: "page" | "source" | "document";
+  id: number;
+  aclRevision: number | null;
+}
+
+/** One row per AI call: what it saw, what it cost, how it ended. */
+export const kbAiInteractions = pgTable(
+  "kb_ai_interactions",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    correlationId: text("correlation_id").notNull(),
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    conversationId: integer("conversation_id"),
+    messageId: integer("message_id"),
+    provider: text("provider"),
+    model: text("model"),
+    promptPolicyVersion: integer("prompt_policy_version"),
+    sourceIdsWithRevisions: jsonb("source_ids_with_revisions").$type<KbAiSourceRecord[]>(),
+    promptTokens: integer("prompt_tokens"),
+    completionTokens: integer("completion_tokens"),
+    totalTokens: integer("total_tokens"),
+    latencyMs: integer("latency_ms"),
+    resultState: text("result_state").$type<KbAiInteractionState>().notNull(),
+    feedback: text("feedback"),
+    costCredits: integer("cost_credits"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_ai_interactions_org_id").on(table.orgId, table.id),
+    index("idx_kb_ai_interactions_org_time").on(table.orgId, table.createdAt),
+    index("idx_kb_ai_interactions_org_actor").on(table.orgId, table.actorId),
+    check(
+      "chk_kb_ai_interactions_result_state",
+      sql`result_state IN ('answered', 'no_context', 'credits_exhausted', 'provider_unavailable', 'error')`,
+    ),
+  ],
+);
+
+export const KB_RESEARCH_BRIEF_STATUSES = ["queued", "running", "completed", "failed"] as const;
+export type KbResearchBriefStatus = (typeof KB_RESEARCH_BRIEF_STATUSES)[number];
+
+export const kbResearchBriefs = pgTable(
+  "kb_research_briefs",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    topic: text("topic").notNull(),
+    spaceId: integer("space_id"),
+    status: text("status").$type<KbResearchBriefStatus>().notNull().default("queued"),
+    /** The Inngest run id, which is a string here rather than Streamline's BullMQ int. */
+    jobId: text("job_id"),
+    sourceCount: integer("source_count").notNull().default(0),
+    report: text("report"),
+    citations: jsonb("citations").$type<
+      Array<{
+        kind: string;
+        id: number;
+        title: string;
+        href: string | null;
+        updatedAt: string | null;
+      }>
+    >(),
+    errorMessage: text("error_message"),
+    rating: text("rating").$type<"helpful" | "not_helpful" | null>(),
+    costCredits: integer("cost_credits"),
+    provider: text("provider"),
+    model: text("model"),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    approvedById: text("approved_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_research_briefs_org_id").on(table.orgId, table.id),
+    index("idx_kb_research_briefs_org_user").on(table.orgId, table.userId, table.createdAt),
+    index("idx_kb_research_briefs_job").on(table.jobId),
+    check(
+      "chk_kb_research_briefs_status",
+      sql`status IN ('queued', 'running', 'completed', 'failed')`,
+    ),
+    check(
+      "chk_kb_research_briefs_rating",
+      sql`rating IS NULL OR rating IN ('helpful', 'not_helpful')`,
+    ),
+    foreignKey({
+      columns: [table.orgId, table.spaceId],
+      foreignColumns: [kbSpaces.orgId, kbSpaces.id],
+      name: "fk_kb_research_briefs_org_space",
+    }).onDelete("set null"),
+  ],
+);
+
+/** monthlyAllowance null means unlimited (D7). */
+export const tenantAiCredits = pgTable(
+  "tenant_ai_credits",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull()
+      .unique(),
+    balance: integer("balance").notNull().default(0),
+    monthlyAllowance: integer("monthly_allowance"),
+    lastResetAt: timestamp("last_reset_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique("uniq_tenant_ai_credits_org_id").on(table.orgId, table.id)],
+);
+
+export const tenantAiCreditTransactions = pgTable(
+  "tenant_ai_credit_transactions",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    delta: integer("delta").notNull(),
+    balanceAfter: integer("balance_after").notNull(),
+    reason: text("reason").notNull(),
+    feature: text("feature"),
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_tenant_ai_credit_txns_org_id").on(table.orgId, table.id),
+    index("idx_tenant_ai_credit_txns_org_time").on(table.orgId, table.createdAt),
+    index("idx_tenant_ai_credit_txns_org_actor").on(table.orgId, table.actorId),
+  ],
+);
+
+export const KB_EVENT_TYPES = [
+  "view",
+  "search",
+  "search_no_results",
+  "helpful_vote",
+  "ai_answer",
+  "ai_answer_no_context",
+  "ticket_deflected",
+  "ai_feedback",
+  "research_brief_requested",
+] as const;
+export type KbEventType = (typeof KB_EVENT_TYPES)[number];
+
+export const kbEvents = pgTable(
+  "kb_events",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    eventType: text("event_type").$type<KbEventType>().notNull(),
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    pageId: integer("page_id"),
+    query: text("query"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    correlationId: text("correlation_id"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_events_org_id").on(table.orgId, table.id),
+    index("idx_kb_events_org_type_time").on(table.orgId, table.eventType, table.occurredAt),
+  ],
+);
+
 export const kbSpacesRelations = relations(kbSpaces, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [kbSpaces.orgId],
