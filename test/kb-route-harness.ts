@@ -6,8 +6,6 @@
  * fakes the session, the org flags and the few Drizzle shapes the handlers use,
  * and nothing else.
  */
-import { vi } from "vitest";
-
 export interface HarnessSession {
   user: { id: string; role: string | null; isActive?: boolean };
   orgId: string;
