@@ -820,6 +820,13 @@
       "when": 1792300100000,
       "tag": "0173_kb_page_social",
       "breakpoints": true
+    },
+    {
+      "idx": 174,
+      "version": "7",
+      "when": 1792300200000,
+      "tag": "0174_kb_collab",
+      "breakpoints": true
     }
   ]
 }
