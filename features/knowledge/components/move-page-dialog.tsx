@@ -54,7 +54,9 @@ export function MovePageDialog({
   function submit() {
     if (!target) return;
     movePage.mutate(
-      target.kind === "page" ? { parentId: target.id } : { spaceId: target.id, parentId: null },
+      target.kind === "page"
+        ? { parentPageId: target.id }
+        : { parentPageId: null, spaceId: target.id },
       {
         onSuccess: () => {
           toast.success(`Moved to ${target.label}`);

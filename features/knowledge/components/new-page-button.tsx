@@ -24,10 +24,10 @@ import { pageHref } from "@/lib/knowledge/routes";
  */
 export function NewPageButton({
   spaceId,
-  parentId,
+  parentPageId,
 }: {
   spaceId?: number;
-  parentId?: number;
+  parentPageId?: number;
 }) {
   const router = useRouter();
   const createPage = useCreateKbPage();
@@ -35,7 +35,7 @@ export function NewPageButton({
 
   function create(templateId?: number) {
     createPage.mutate(
-      { spaceId, parentId, templateId },
+      { spaceId, parentPageId, templateId },
       {
         onSuccess: (page) => router.push(pageHref(page.id)),
         onError: () => toast.error("Couldn't create the page."),

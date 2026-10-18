@@ -9,7 +9,7 @@ import {
   kbCollection,
   kbPageSchema,
   kbPageSummarySchema,
-  kbPageTreeNodeSchema,
+  kbPageTreeSchema,
   type KbPage,
   type KbPageSummary,
   type KbPageTreeNode,
@@ -49,20 +49,15 @@ export function useKbPage(pageId: number | undefined) {
   });
 }
 
-/**
- * One level of the tree at a time: a wiki with thousands of pages should not
- * send the whole tree to open one space.
- */
+/** The visible tree for a space or project, flat and capped at 500 nodes. */
 export function useKbPageTree(
-  params: { spaceId?: number; parentId?: number; projectId?: number } = {},
+  params: { spaceId?: number; projectId?: number } = {},
   options: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: queryKeys.knowledge.pageTree(params),
     queryFn: async () =>
-      kbCollection(kbPageTreeNodeSchema).parse(
-        await apiClient.get("/knowledge/pages/tree", { ...params }),
-      ),
+      kbPageTreeSchema.parse(await apiClient.get("/knowledge/pages/tree", { ...params })),
     enabled: options.enabled ?? true,
   });
 }
@@ -84,11 +79,13 @@ export function useKbFavoritePages() {
 export interface CreateKbPageInput {
   title?: string;
   spaceId?: number;
-  parentId?: number;
+  parentPageId?: number;
   projectId?: number;
   visibility?: string;
   contentType?: string;
   templateId?: number;
+  /** A starter template, which has a key rather than an id. */
+  starterKey?: string;
   content?: unknown;
 }
 
@@ -142,8 +139,12 @@ export function useDeleteKbPage() {
 export function useMoveKbPage(pageId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { parentId?: number | null; spaceId?: number; sortOrder?: number }) =>
-      apiClient.post(`/knowledge/pages/${pageId}/move`, input),
+    mutationFn: (input: {
+      parentPageId: number | null;
+      spaceId?: number | null;
+      /** Position among the new siblings. */
+      index?: number;
+    }) => apiClient.post(`/knowledge/pages/${pageId}/move`, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.pageTreeAll() });
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.page(pageId) });

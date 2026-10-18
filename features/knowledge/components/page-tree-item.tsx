@@ -11,7 +11,7 @@ export interface PageTreeRow {
   id: number;
   title: string;
   icon?: string | null;
-  parentId?: number | null;
+  parentPageId?: number | null;
   hasChildren?: boolean;
 }
 

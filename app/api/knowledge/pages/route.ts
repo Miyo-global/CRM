@@ -27,6 +27,7 @@ import { buildExcerpt, extractContentText } from "@/lib/knowledge/content";
 import { escapeLike } from "@/lib/db/escape-like";
 import { kbNotFound } from "@/lib/knowledge/errors";
 import { resolveSpaceRole, spaceRoleSatisfies } from "@/lib/knowledge/space-access";
+import { STARTER_TEMPLATES } from "@/lib/knowledge/starter-templates";
 import { nextSortOrder } from "@/lib/knowledge/tree";
 
 const CONTENT_TYPES = [
@@ -49,6 +50,12 @@ const createSchema = z
     parentPageId: z.coerce.number().int().positive().optional(),
     projectId: z.coerce.number().int().positive().optional(),
     templateId: z.coerce.number().int().positive().optional(),
+    /**
+     * A starter template (KB-0056) is not a row, so it cannot be addressed by
+     * id; the key is resolved here rather than letting the client post content
+     * it claims came from a starter.
+     */
+    starterKey: z.string().trim().max(60).optional(),
     contentType: z.enum(CONTENT_TYPES).default("note"),
     visibility: z.enum(["private", "org", "public"]).optional(),
     content: z.unknown().optional(),
@@ -115,6 +122,11 @@ export async function POST(req: NextRequest) {
       }
 
       let content = body.content ?? null;
+      if (body.starterKey) {
+        const starter = STARTER_TEMPLATES.find((template) => template.key === body.starterKey);
+        if (!starter) return kbNotFound();
+        content = starter.content;
+      }
       if (body.templateId) {
         const template = await db.query.kbPageTemplates.findFirst({
           where: and(

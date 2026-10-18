@@ -79,13 +79,22 @@ export const kbPageTreeNodeSchema = z.object({
   id: z.number(),
   title: z.string(),
   icon: z.string().nullable().optional(),
-  parentId: z.number().nullable().optional(),
-  spaceId: z.number().nullable().optional(),
+  parentPageId: z.number().nullable().optional(),
   sortOrder: z.number().optional(),
   hasChildren: z.boolean().optional(),
   status: z.string().optional(),
 });
 export type KbPageTreeNode = z.infer<typeof kbPageTreeNodeSchema>;
+
+/**
+ * The tree comes back flat and capped (TREE_NODE_CAP), with the parent on each
+ * node; the client assembles it. `truncated` is true when a space has more
+ * pages than one tree response carries.
+ */
+export const kbPageTreeSchema = z.object({
+  nodes: z.array(kbPageTreeNodeSchema),
+  truncated: z.boolean().optional(),
+});
 
 export const kbSpaceSchema = z.object({
   id: z.number(),
