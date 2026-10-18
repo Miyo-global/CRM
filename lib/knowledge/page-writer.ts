@@ -19,11 +19,11 @@
  */
 import "server-only";
 
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 
 import { createAuditLog, type AuditAction } from "@/lib/audit-log";
 import { db } from "@/lib/db";
-import { kbPageLinks, kbPages, kbPageVersions } from "@/lib/db/schema";
+import { kbPageLinks, kbPages, kbPageTranslations, kbPageVersions } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
 
 import { buildExcerpt, extractContentText, extractMentions, extractPageLinks } from "./content";
@@ -218,6 +218,20 @@ export async function commitPageChange(input: CommitPageInput): Promise<CommitPa
 
     if (contentChanged) {
       await resyncPageLinks(tx, orgId, pageId, input.content);
+
+      // KB-0064: a translation of the old wording is now stale. It stays
+      // readable — a slightly out-of-date translation beats no translation —
+      // but it is labelled, so a translator can see what needs revisiting.
+      await tx
+        .update(kbPageTranslations)
+        .set({ status: "outdated", updatedAt: new Date() })
+        .where(
+          and(
+            eq(kbPageTranslations.orgId, orgId),
+            eq(kbPageTranslations.pageId, pageId),
+            ne(kbPageTranslations.status, "outdated"),
+          ),
+        );
     }
 
     const previousMentions = contentChanged ? extractMentions(current.content) : [];
