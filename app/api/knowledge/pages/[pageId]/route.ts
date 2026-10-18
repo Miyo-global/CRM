@@ -3,12 +3,14 @@ import { and, eq } from "drizzle-orm";
 import { z, ZodError } from "zod";
 
 import { err, ok, parseBody, withAuth } from "@/lib/api/helpers";
+import { createAuditLog } from "@/lib/audit-log";
 import { db } from "@/lib/db";
 import { kbPageFavorites, kbPages } from "@/lib/db/schema";
 import { kbContext } from "@/lib/knowledge/actor";
 import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { accessSatisfies, type KbPageAction } from "@/lib/knowledge/access-levels";
 import { kbConflict, kbDenied, kbNotFound } from "@/lib/knowledge/errors";
+import { trashSubtree } from "@/lib/knowledge/page-lifecycle";
 import { commitPageChange, KbPageConflictError } from "@/lib/knowledge/page-writer";
 import { isPageSpaceArchived } from "@/lib/knowledge/space-lifecycle";
 import { getAncestors } from "@/lib/knowledge/tree";
@@ -157,5 +159,45 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ pageI
       if (error instanceof ZodError) return err(error.issues[0]?.message ?? "Invalid page.", 400);
       throw error;
     }
+  }, req);
+}
+
+/**
+ * KB-0043: delete to the trash, with the subtree, and revoke the share links.
+ * Nothing is removed for good here; that is the purge in KB-0044.
+ */
+export async function DELETE(req: NextRequest, context: { params: Promise<{ pageId: string }> }) {
+  const { pageId } = await context.params;
+  return withAuth(async (session) => {
+    const ctx = await kbContext(session);
+    if ("response" in ctx) return ctx.response;
+
+    const id = Number(pageId);
+    const decision = await resolvePageAccess(ctx.actor, id, "manage");
+    if (decision.outcome === "notFound") return kbNotFound();
+    if (decision.outcome === "denied") return kbDenied();
+
+    const page = await db.query.kbPages.findFirst({
+      where: and(eq(kbPages.id, id), eq(kbPages.orgId, session.orgId)),
+      columns: { id: true, legalHold: true, deletedAt: true },
+    });
+    if (!page) return kbNotFound();
+    if (page.deletedAt) return err("That page is already in the trash.", 409);
+    if (page.legalHold) {
+      return err("This page is under legal hold and cannot be deleted.", 409);
+    }
+
+    const ids = await trashSubtree(session.orgId, id, session.user.id);
+
+    await createAuditLog({
+      action: "kb.page.deleted",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(id),
+      targetType: "kb_page",
+      metadata: { pages: ids.length },
+    });
+
+    return ok({ id, deleted: ids.length });
   }, req);
 }
