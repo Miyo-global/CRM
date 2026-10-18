@@ -27,6 +27,7 @@ import {
   unique,
   uniqueIndex,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 import { organizations, users } from "./auth";
@@ -882,6 +883,124 @@ export const kbPageTranslations = pgTable(
       foreignColumns: [kbPages.orgId, kbPages.id],
       name: "fk_kb_page_translations_org_page",
     }).onDelete("cascade"),
+  ],
+);
+
+export const KB_EMBEDDING_DIMENSIONS = 1536;
+
+export const KB_CHUNK_SOURCES = ["page_body", "attachment", "source", "article_body"] as const;
+export type KbChunkSource = (typeof KB_CHUNK_SOURCES)[number];
+
+/**
+ * Only exists where pgvector does (migration 0179 is guarded). Probe with
+ * hasKbVectorStore() in lib/knowledge/config.ts before querying it; without it
+ * search falls back to Postgres FTS.
+ *
+ * The page ACL columns are copied onto the chunk so retrieval can filter
+ * without joining kb_pages, and acl_revision says whether that copy is stale.
+ */
+export const kbChunks = pgTable(
+  "kb_chunks",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id"),
+    attachmentId: bigint("attachment_id", { mode: "number" }),
+    sourceId: integer("source_id"),
+    source: text("source").$type<KbChunkSource>().notNull(),
+    chunkIndex: integer("chunk_index").notNull(),
+    content: text("content").notNull(),
+    contentHash: text("content_hash"),
+    tokens: integer("tokens"),
+    embedding: vector("embedding", { dimensions: KB_EMBEDDING_DIMENSIONS }).notNull(),
+    embeddingModel: text("embedding_model").notNull(),
+    pageVisibility: text("page_visibility"),
+    pageProjectId: integer("page_project_id"),
+    pageCreatedById: text("page_created_by_id"),
+    aclRevision: integer("acl_revision").notNull().default(1),
+    contentRevision: integer("content_revision"),
+    aclSyncedAt: timestamp("acl_synced_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_chunks_org_id").on(table.orgId, table.id),
+    index("idx_kb_chunks_org_page").on(table.orgId, table.pageId),
+    index("idx_kb_chunks_org_source").on(table.orgId, table.sourceId),
+    index("idx_kb_chunks_org_page_acl")
+      .on(table.orgId, table.pageVisibility, table.pageProjectId, table.pageCreatedById)
+      .where(sql`page_id IS NOT NULL`),
+    uniqueIndex("uniq_kb_chunks_page_chunk")
+      .on(table.orgId, table.pageId, table.chunkIndex)
+      .where(sql`page_id IS NOT NULL`),
+    index("idx_kb_chunks_embedding_hnsw").using("hnsw", table.embedding.op("vector_cosine_ops")),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_chunks_org_page",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.orgId, table.attachmentId],
+      foreignColumns: [kbPageAttachments.orgId, kbPageAttachments.id],
+      name: "fk_kb_chunks_org_attachment",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.orgId, table.sourceId],
+      foreignColumns: [kbSources.orgId, kbSources.id],
+      name: "fk_kb_chunks_org_source",
+    }).onDelete("cascade"),
+  ],
+);
+
+/** Re-embedding is the expensive part of a retry, so each vector is kept. */
+export const kbIngestionCheckpoints = pgTable(
+  "kb_ingestion_checkpoints",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    contentType: text("content_type").notNull(),
+    contentId: integer("content_id").notNull(),
+    contentHash: text("content_hash").notNull(),
+    chunkIndex: integer("chunk_index").notNull(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: KB_EMBEDDING_DIMENSIONS }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_ingestion_checkpoint").on(
+      table.orgId,
+      table.contentType,
+      table.contentId,
+      table.chunkIndex,
+    ),
+    index("idx_kb_ingestion_checkpoint_lookup").on(
+      table.orgId,
+      table.contentType,
+      table.contentId,
+      table.contentHash,
+    ),
+  ],
+);
+
+/** 512 MB per org by default. */
+export const kbIndexedBytesQuota = pgTable(
+  "kb_indexed_bytes_quota",
+  {
+    orgId: text("org_id")
+      .primaryKey()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    indexedBytes: bigint("indexed_bytes", { mode: "number" }).notNull().default(0),
+    limitBytes: bigint("limit_bytes", { mode: "number" }).notNull().default(536870912),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      "chk_kb_indexed_bytes_quota_non_negative",
+      sql`indexed_bytes >= 0 AND limit_bytes >= 0`,
+    ),
   ],
 );
 
