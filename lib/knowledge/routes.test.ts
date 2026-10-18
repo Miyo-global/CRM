@@ -31,6 +31,12 @@ describe("knowledge wiki page URLs", () => {
     expect(pageHref("5")).not.toContain("/pages/");
   });
 
+  it("takes a numeric row id as readily as a route string", () => {
+    expect(pageHref(5)).toBe("/knowledge/wiki/doc/5");
+    expect(spaceHref(12)).toBe("/knowledge/wiki/spaces/12");
+    expect(projectPageHref(3, 9)).toBe("/projects/3/pages/9");
+  });
+
   it("builds space, company document and brief URLs", () => {
     expect(spaceHref("a1")).toBe("/knowledge/wiki/spaces/a1");
     expect(companyDocumentHref("d1")).toBe("/knowledge/wiki/company-documents/d1");

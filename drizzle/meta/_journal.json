@@ -806,6 +806,13 @@
       "when": 1792265020836,
       "tag": "0171_candidate_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 172,
+      "version": "7",
+      "when": 1792300000000,
+      "tag": "0172_kb_core",
+      "breakpoints": true
     }
   ]
 }
