@@ -31,6 +31,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { organizations, users } from "./auth";
+import { documents } from "./hr";
 import { projects } from "./projects";
 
 export const kbAudienceEnum = pgEnum("kb_audience", ["internal", "public", "mixed"]);
@@ -1337,6 +1338,110 @@ export const kbPageFeedback = pgTable(
       columns: [table.orgId, table.pageId],
       foreignColumns: [kbPages.orgId, kbPages.id],
       name: "fk_kb_page_feedback_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const KB_LINKED_DOCUMENT_STATUSES = ["active", "unpublished", "source_removed"] as const;
+export type KbLinkedDocumentStatus = (typeof KB_LINKED_DOCUMENT_STATUSES)[number];
+
+export const KB_LINKED_DOCUMENT_VERSION_MODES = ["FOLLOW_LATEST", "PINNED"] as const;
+export type KbLinkedDocumentVersionMode = (typeof KB_LINKED_DOCUMENT_VERSION_MODES)[number];
+
+export const KB_DOCUMENT_AUDIENCE_KINDS = ["all", "department", "role", "user"] as const;
+export type KbDocumentAudienceKind = (typeof KB_DOCUMENT_AUDIENCE_KINDS)[number];
+
+/** An HR document published into the KB (D4, off by default). */
+export const kbLinkedDocuments = pgTable(
+  "kb_linked_documents",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    documentId: integer("document_id").references(() => documents.id, { onDelete: "set null" }),
+    versionMode: text("version_mode")
+      .$type<KbLinkedDocumentVersionMode>()
+      .notNull()
+      .default("FOLLOW_LATEST"),
+    pinnedVersion: integer("pinned_version"),
+    status: text("status").$type<KbLinkedDocumentStatus>().notNull().default("active"),
+    spaceId: integer("space_id"),
+    publishedById: text("published_by_id").references(() => users.id, { onDelete: "set null" }),
+    publishedAt: timestamp("published_at", { withTimezone: true }).defaultNow().notNull(),
+    unpublishedById: text("unpublished_by_id").references(() => users.id, { onDelete: "set null" }),
+    unpublishedAt: timestamp("unpublished_at", { withTimezone: true }),
+    unpublishReason: text("unpublish_reason"),
+    sourceRemovedAt: timestamp("source_removed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_linked_documents_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_linked_documents_active_document")
+      .on(table.orgId, table.documentId)
+      .where(sql`status = 'active' AND document_id IS NOT NULL`),
+    index("idx_kb_linked_documents_org_status_published").on(
+      table.orgId,
+      table.status,
+      table.publishedAt.desc(),
+      table.id.desc(),
+    ),
+    index("idx_kb_linked_documents_org_document").on(table.orgId, table.documentId),
+    index("idx_kb_linked_documents_org_space").on(table.orgId, table.spaceId),
+    check("chk_kb_linked_documents_version_mode", sql`version_mode IN ('FOLLOW_LATEST', 'PINNED')`),
+    check(
+      "chk_kb_linked_documents_pin",
+      sql`(version_mode = 'PINNED') = (pinned_version IS NOT NULL)`,
+    ),
+    check(
+      "chk_kb_linked_documents_pin_positive",
+      sql`pinned_version IS NULL OR pinned_version >= 1`,
+    ),
+    check(
+      "chk_kb_linked_documents_status",
+      sql`status IN ('active', 'unpublished', 'source_removed')`,
+    ),
+    check(
+      "chk_kb_linked_documents_unpublished_stamped",
+      sql`status = 'active' OR unpublished_at IS NOT NULL`,
+    ),
+    check(
+      "chk_kb_linked_documents_removed_stamped",
+      sql`status <> 'source_removed' OR source_removed_at IS NOT NULL`,
+    ),
+    foreignKey({
+      columns: [table.orgId, table.spaceId],
+      foreignColumns: [kbSpaces.orgId, kbSpaces.id],
+      name: "fk_kb_linked_documents_space_id_org",
+    }).onDelete("set null"),
+  ],
+);
+
+export const kbLinkedDocumentAudiences = pgTable(
+  "kb_linked_document_audiences",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    linkedDocumentId: integer("linked_document_id").notNull(),
+    kind: text("kind").$type<KbDocumentAudienceKind>().notNull(),
+    refId: text("ref_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_linked_document_audiences_org_id").on(table.orgId, table.id),
+    index("idx_kb_linked_document_audiences_org_kind_ref").on(table.orgId, table.kind, table.refId),
+    check(
+      "chk_kb_linked_document_audiences_kind",
+      sql`kind IN ('all', 'department', 'role', 'user')`,
+    ),
+    check("chk_kb_linked_document_audiences_ref", sql`(kind = 'all') = (ref_id IS NULL)`),
+    foreignKey({
+      columns: [table.orgId, table.linkedDocumentId],
+      foreignColumns: [kbLinkedDocuments.orgId, kbLinkedDocuments.id],
+      name: "fk_kb_linked_document_audiences_link_org",
     }).onDelete("cascade"),
   ],
 );
