@@ -438,6 +438,84 @@ export const kbPageTemplates = pgTable(
   ],
 );
 
+export const KB_PAGE_GRANT_ACCESS = ["view", "comment", "edit", "manage"] as const;
+export type KbPageGrantAccess = (typeof KB_PAGE_GRANT_ACCESS)[number];
+
+export const KB_RESTRICTION_LEVELS = ["view", "edit"] as const;
+export type KbRestrictionLevel = (typeof KB_RESTRICTION_LEVELS)[number];
+
+/** A grant is revoked, never deleted, so the live uniques are partial. */
+export const kbPageGrants = pgTable(
+  "kb_page_grants",
+  {
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+    role: text("role"),
+    access: text("access").$type<KbPageGrantAccess>().default("view").notNull(),
+    grantedById: text("granted_by_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("uniq_kb_page_grants_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_page_grants_live_user")
+      .on(table.orgId, table.pageId, table.userId)
+      .where(sql`revoked_at IS NULL AND user_id IS NOT NULL`),
+    uniqueIndex("uniq_kb_page_grants_live_role")
+      .on(table.orgId, table.pageId, table.role)
+      .where(sql`revoked_at IS NULL AND role IS NOT NULL`),
+    index("idx_kb_page_grants_org_user_live")
+      .on(table.orgId, table.userId, table.pageId)
+      .where(sql`revoked_at IS NULL`),
+    index("idx_kb_page_grants_org_role_live")
+      .on(table.orgId, table.role, table.pageId)
+      .where(sql`revoked_at IS NULL`),
+    index("idx_kb_page_grants_org_page_live")
+      .on(table.orgId, table.pageId)
+      .where(sql`revoked_at IS NULL`),
+    index("idx_kb_page_grants_org_granted_by").on(table.orgId, table.grantedById),
+    check("chk_kb_page_grants_access", sql`access IN ('view', 'comment', 'edit', 'manage')`),
+    check("chk_kb_page_grants_subject", sql`(user_id IS NOT NULL) OR (role IS NOT NULL)`),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_grants_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const kbPageRestrictions = pgTable(
+  "kb_page_restrictions",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    pageId: integer("page_id").notNull(),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+    role: text("role"),
+    team: text("team"),
+    level: text("level").$type<KbRestrictionLevel>().default("view").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_page_restrictions_org_id").on(table.orgId, table.id),
+    index("idx_kb_page_restrictions_page").on(table.pageId),
+    index("idx_kb_page_restrictions_org_user").on(table.orgId, table.userId),
+    index("idx_kb_page_restrictions_org_page").on(table.orgId, table.pageId),
+    check("chk_kb_page_restrictions_level", sql`level IN ('view', 'edit')`),
+    foreignKey({
+      columns: [table.orgId, table.pageId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_kb_page_restrictions_org_page",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const kbSpacesRelations = relations(kbSpaces, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [kbSpaces.orgId],
