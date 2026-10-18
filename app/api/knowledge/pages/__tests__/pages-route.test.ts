@@ -33,7 +33,7 @@ vi.mock("@/lib/knowledge/space-lifecycle", () => ({
 
 vi.mock("@/lib/knowledge/events", () => ({ logKbEvent: async () => undefined }));
 
-const { POST } = await import("../route");
+const { POST, GET: GET_LIST } = await import("../route");
 const { GET, PATCH } = await import("../[pageId]/route");
 const { KbPageConflictError } = await import("@/lib/knowledge/page-writer");
 
@@ -228,5 +228,81 @@ describe("PATCH /api/knowledge/pages/[pageId]", () => {
       );
       expect(res.status).toBe(400);
     }
+  });
+});
+
+describe("GET /api/knowledge/pages (the collection)", () => {
+  beforeEach(() => {
+    harness.selectRows = [[], []];
+  });
+
+  it("rejects a limit over the cap", async () => {
+    const res = await GET_LIST(kbRequest("/api/knowledge/pages?limit=101") as never);
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({ error: expect.stringContaining("100") });
+  });
+
+  it("rejects an unknown scope, sort or status", async () => {
+    for (const query of ["scope=nope", "sort=nope", "status=nope"]) {
+      const res = await GET_LIST(kbRequest(`/api/knowledge/pages?${query}`) as never);
+      expect(res.status, query).toBe(400);
+    }
+  });
+
+  it("requires an id for the space and project scopes", async () => {
+    for (const query of ["scope=space", "scope=project"]) {
+      const res = await GET_LIST(kbRequest(`/api/knowledge/pages?${query}`) as never);
+      expect(res.status, query).toBe(400);
+    }
+  });
+
+  it("returns items, facets and a null cursor on a short page", async () => {
+    harness.selectRows = [
+      [
+        {
+          id: 1,
+          title: "A",
+          status: "published",
+          contentType: "note",
+          views: 2,
+          createdAt: new Date("2026-10-01T00:00:00Z"),
+          updatedAt: new Date("2026-10-02T00:00:00Z"),
+        },
+      ],
+      [{ status: "published", contentType: "note", count: 1 }],
+    ];
+
+    const res = await GET_LIST(kbRequest("/api/knowledge/pages") as never);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      items: unknown[];
+      nextCursor: string | null;
+      facets: { status: Record<string, number>; contentType: Record<string, number> };
+    };
+    expect(body.items).toHaveLength(1);
+    expect(body.nextCursor).toBeNull();
+    expect(body.facets.status).toEqual({ published: 1 });
+    expect(body.facets.contentType).toEqual({ note: 1 });
+  });
+
+  it("hands back a cursor that decodes to the last row when the page is full", async () => {
+    const rows = Array.from({ length: 2 }, (_, i) => ({
+      id: i + 1,
+      title: `P${i}`,
+      status: "draft",
+      contentType: "note",
+      views: 0,
+      createdAt: new Date("2026-10-01T00:00:00Z"),
+      updatedAt: new Date("2026-10-02T00:00:00Z"),
+    }));
+    harness.selectRows = [rows, []];
+
+    const res = await GET_LIST(kbRequest("/api/knowledge/pages?limit=2") as never);
+    const body = (await res.json()) as { nextCursor: string };
+    const { decodeCursor } = await import("@/lib/knowledge/collection");
+    expect(decodeCursor(body.nextCursor)).toEqual({
+      id: 2,
+      value: "2026-10-02T00:00:00.000Z",
+    });
   });
 });
