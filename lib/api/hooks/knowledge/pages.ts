@@ -51,13 +51,17 @@ export function useKbPage(pageId: number | undefined) {
  * One level of the tree at a time: a wiki with thousands of pages should not
  * send the whole tree to open one space.
  */
-export function useKbPageTree(params: { spaceId?: number; parentId?: number; projectId?: number } = {}) {
+export function useKbPageTree(
+  params: { spaceId?: number; parentId?: number; projectId?: number } = {},
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: queryKeys.knowledge.pageTree(params),
     queryFn: async () =>
       kbCollection(kbPageTreeNodeSchema).parse(
         await apiClient.get("/knowledge/pages/tree", { ...params }),
       ),
+    enabled: options.enabled ?? true,
   });
 }
 
