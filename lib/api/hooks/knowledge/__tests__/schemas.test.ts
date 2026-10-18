@@ -120,10 +120,12 @@ describe("knowledge response schemas", () => {
         sourceType: "markdown",
         totalItems: 3,
         processedItems: 3,
-        createdPageIds: [1, 2, 3],
-        failedTitles: [],
-      }).createdPageIds,
-    ).toEqual([1, 2, 3]);
+        succeededItems: 2,
+        failedItems: 1,
+        duplicateItems: 0,
+        errorReport: { errors: [{ title: "Broken page", reason: "Empty body" }] },
+      }).errorReport?.errors?.[0].title,
+    ).toBe("Broken page");
     expect(
       kbExportJobSchema.parse({ id: 2, status: "completed", format: "markdown" }).format,
     ).toBe("markdown");

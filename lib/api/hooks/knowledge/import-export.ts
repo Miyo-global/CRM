@@ -10,12 +10,14 @@ import {
   kbExportJobSchema,
   kbImportJobSchema,
   kbImportPlanSchema,
+  kbImportResultSchema,
 } from "./schemas";
 
 export interface KbImportItem {
   title: string;
-  body: string;
-  path?: string;
+  contentText: string;
+  parentPageId?: number;
+  /** Both or neither: the pair is what identifies a re-import. */
   externalId?: string;
   externalSource?: string;
 }
@@ -24,7 +26,7 @@ export interface KbImportInput {
   sourceType: "markdown" | "html" | "zip";
   items: KbImportItem[];
   spaceId?: number;
-  visibility?: string;
+  visibility?: "private" | "org" | "public";
   duplicatePolicy?: "skip" | "update";
 }
 
@@ -40,7 +42,7 @@ export function useKbImport() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: KbImportInput) =>
-      kbImportJobSchema.parse(await apiClient.post("/knowledge/pages/import", input)),
+      kbImportResultSchema.parse(await apiClient.post("/knowledge/pages/import", input)),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.all });
     },

@@ -281,13 +281,19 @@ export const kbSearchResponseSchema = z.object({
 export const kbImportJobSchema = z.object({
   id: z.number(),
   status: z.string(),
-  sourceType: z.string().nullable().optional(),
-  totalItems: z.number().nullable().optional(),
-  processedItems: z.number().nullable().optional(),
-  createdPageIds: z.array(z.number()).nullable().optional(),
-  failedTitles: z.array(z.string()).nullable().optional(),
-  error: z.string().nullable().optional(),
+  sourceType: z.string(),
+  totalItems: z.number(),
+  processedItems: z.number(),
+  succeededItems: z.number(),
+  failedItems: z.number(),
+  duplicateItems: z.number(),
   retryOfJobId: z.number().nullable().optional(),
+  /** { errors: [{ title, reason }] } — the titles that did not come through. */
+  errorReport: z
+    .object({ errors: z.array(z.object({ title: z.string(), reason: z.string() })).optional() })
+    .nullable()
+    .optional(),
+  createdById: z.string().nullable().optional(),
   createdAt: timestamp.optional(),
   updatedAt: timestamp.optional(),
 });
@@ -295,12 +301,29 @@ export type KbImportJob = z.infer<typeof kbImportJobSchema>;
 
 export const kbImportPlanSchema = z.object({
   total: z.number(),
-  newPages: z.number(),
-  duplicates: z.number(),
+  new: z.number(),
+  duplicate: z.number(),
   invalid: z.number(),
-  items: z
-    .array(z.object({ title: z.string(), outcome: z.string(), reason: z.string().optional() }))
-    .optional(),
+  items: z.array(
+    z.object({
+      title: z.string(),
+      outcome: z.enum(["new", "duplicate", "invalid"]),
+      reason: z.string().optional(),
+      existingPageId: z.number().optional(),
+    }),
+  ),
+});
+export type KbImportPlan = z.infer<typeof kbImportPlanSchema>;
+
+/** A small import runs inline, so the response may already be the outcome. */
+export const kbImportResultSchema = z.object({
+  jobId: z.number(),
+  status: z.string(),
+  created: z.number().optional(),
+  updated: z.number().optional(),
+  skipped: z.number().optional(),
+  failed: z.number().optional(),
+  errors: z.array(z.object({ title: z.string(), reason: z.string() })).optional(),
 });
 
 export const kbExportJobSchema = z.object({
@@ -311,6 +334,7 @@ export const kbExportJobSchema = z.object({
   fileKey: z.string().nullable().optional(),
   expiresAt: timestamp.optional(),
   createdAt: timestamp.optional(),
+  updatedAt: timestamp.optional(),
 });
 export type KbExportJob = z.infer<typeof kbExportJobSchema>;
 
