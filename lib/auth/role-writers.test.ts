@@ -16,13 +16,15 @@ describe("system role writers", () => {
       .split("\n")
       .filter((f) => f && !f.endsWith(".test.ts"));
     // Project roles and the permission matrix are not system roles. Neither is
-    // a KB space seat (KB-0037): kb_space_members.role names the role a seat is
-    // granted *to*, which widens access inside one space; it never writes a
-    // system role onto a user or a membership.
+    // a KB space seat (KB-0037) or a page grant (KB-0049): both name the role
+    // the seat or grant is given *to* ("everyone in SALES may read this"),
+    // which widens access to one space or page; neither writes a system role
+    // onto a user or a membership.
     const notSystemRoles = [
       "app/api/projects/",
       "app/api/rbac/role-permissions/",
       "app/api/knowledge/spaces/",
+      "app/api/knowledge/pages/[pageId]/grants/",
     ];
     const offenders = files.filter(
       (f) =>
