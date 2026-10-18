@@ -120,3 +120,30 @@ describe("previously unmapped pages (QA-0065)", () => {
     expect(canAccessRoute("/reports", "HR")).toBe(true);
   });
 });
+
+describe("knowledge routes (KB-0008)", () => {
+  it("opens the wiki to every system role", () => {
+    for (const role of SYSTEM_ROLES) {
+      expect(canAccessRoute("/knowledge", role), role).toBe(true);
+      expect(canAccessRoute("/knowledge/wiki/doc/abc", role), role).toBe(true);
+      expect(canAccessRoute("/knowledge/chat", role), role).toBe(true);
+    }
+  });
+
+  it("keeps analytics and content health off an employee role", () => {
+    for (const path of ["/knowledge/wiki/analytics", "/knowledge/wiki/manage"]) {
+      expect(canAccessRoute(path, "ENGINEERING"), path).toBe(false);
+      expect(canAccessRoute(path, "HR"), path).toBe(true);
+      expect(canAccessRoute(path, "CEO"), path).toBe(true);
+    }
+  });
+
+  it("opens import/export to an employee role, which holds kb:pages:export", () => {
+    expect(canAccessRoute("/knowledge/wiki/import", "ENGINEERING")).toBe(true);
+    expect(canAccessRoute("/knowledge/wiki/search", "ENGINEERING")).toBe(true);
+  });
+
+  it("does not match a sibling prefix", () => {
+    expect(canAccessRoute("/knowledgex", "ENGINEERING")).toBe(true);
+  });
+});

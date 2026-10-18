@@ -1,4 +1,5 @@
 import { hasFullAccess } from "@/lib/constants/roles";
+import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import { SYSTEM_ROLES } from "@/lib/rbac/roles";
 
 /** Routes any signed-in employee may open. */
@@ -40,6 +41,18 @@ export const ADMIN_SETTINGS_PAGES = [
   ...HR_SETTINGS_PAGES,
   ...ORG_ADMIN_SETTINGS_PAGES,
 ] as const;
+
+/**
+ * KB-0008: the middleware cannot read a per-user permission override, so a
+ * permission-gated page is mapped to the roles whose defaults hold it. The API
+ * route behind the page still checks the permission itself.
+ */
+function rolesWithPermission(...permissions: string[]): string[] {
+  return SYSTEM_ROLES.filter((role) => {
+    const granted = ROLE_DEFAULT_PERMISSIONS[role] ?? [];
+    return permissions.some((permission) => granted.includes(permission));
+  });
+}
 
 export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   // MIYO-0645: /ats is not gated by role here. A hiring manager or an
@@ -104,6 +117,14 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/tasks/overdue": HR_TEAM,
 
   "/calendar": EVERYONE,
+
+  // KB-0008: the wiki itself is open to every signed-in employee; what they can
+  // read is narrowed by space and page access inside. Longest prefix wins, so
+  // the three gated pages below still need their permission.
+  "/knowledge": EVERYONE,
+  "/knowledge/wiki/manage": rolesWithPermission("kb:analytics:view"),
+  "/knowledge/wiki/analytics": rolesWithPermission("kb:analytics:view"),
+  "/knowledge/wiki/import": rolesWithPermission("kb:pages:import", "kb:pages:export"),
   // The denied view itself is open to everyone (QA-0034).
   "/access-restricted": EVERYONE,
 };

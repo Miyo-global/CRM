@@ -32,6 +32,9 @@ function authJsSessionCookieName(req: NextRequest): string {
 
 const PROTECTED_ROUTES = [
   "/ats",
+  // KB-0008: /knowledge needs a session. The public wiki share page (/wiki/*)
+  // and the public help centre (/help/*) deliberately stay out of this list.
+  "/knowledge",
   "/dashboard",
   "/projects",
   "/hr",
