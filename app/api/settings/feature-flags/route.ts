@@ -12,6 +12,10 @@ const updateSchema = z.object({
     "aiSmartNotifications",
     "aiWeeklyRecap",
     "clientPortal",
+    "knowledgeBase",
+    "knowledgeAi",
+    "knowledgePublicSharing",
+    "knowledgeHelpCentre",
   ] as const satisfies readonly (keyof OrgFeatureFlags)[]),
   enabled: z.boolean(),
 });

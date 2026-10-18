@@ -9,6 +9,14 @@ export interface OrgFeatureFlags {
   aiSmartNotifications: boolean;
   aiWeeklyRecap: boolean;
   clientPortal: boolean;
+  /** KB-0007: the Knowledge module as a whole. Off makes /api/knowledge/* 404. */
+  knowledgeBase: boolean;
+  /** Ask, page AI and briefs. Only effective when an AI key is configured. */
+  knowledgeAi: boolean;
+  /** Public share links for wiki pages. */
+  knowledgePublicSharing: boolean;
+  /** Public help centre (D5). Off by default. */
+  knowledgeHelpCentre: boolean;
 }
 
 const DEFAULT_FLAGS: OrgFeatureFlags = {
@@ -18,6 +26,10 @@ const DEFAULT_FLAGS: OrgFeatureFlags = {
   aiSmartNotifications: true,
   aiWeeklyRecap: true,
   clientPortal: false,
+  knowledgeBase: true,
+  knowledgeAi: true,
+  knowledgePublicSharing: true,
+  knowledgeHelpCentre: false,
 };
 
 export function parseOrgFeatureFlags(settings: Record<string, unknown> | null | undefined): OrgFeatureFlags {
@@ -29,6 +41,11 @@ export function parseOrgFeatureFlags(settings: Record<string, unknown> | null | 
     aiSmartNotifications: features.aiSmartNotifications ?? DEFAULT_FLAGS.aiSmartNotifications,
     aiWeeklyRecap: features.aiWeeklyRecap ?? DEFAULT_FLAGS.aiWeeklyRecap,
     clientPortal: features.clientPortal ?? DEFAULT_FLAGS.clientPortal,
+    knowledgeBase: features.knowledgeBase ?? DEFAULT_FLAGS.knowledgeBase,
+    knowledgeAi: features.knowledgeAi ?? DEFAULT_FLAGS.knowledgeAi,
+    knowledgePublicSharing:
+      features.knowledgePublicSharing ?? DEFAULT_FLAGS.knowledgePublicSharing,
+    knowledgeHelpCentre: features.knowledgeHelpCentre ?? DEFAULT_FLAGS.knowledgeHelpCentre,
   };
 }
 
