@@ -96,7 +96,33 @@ export type AuditAction =
   | "ats.stage_moved"
   | "ats.candidate_erased"
   | "ats.candidate_exported"
-  | "ats.retention_run";
+  | "ats.retention_run"
+  // KB-0009: the Knowledge Base actions worth answering for later.
+  | "kb.page.created"
+  | "kb.page.updated"
+  | "kb.page.moved"
+  | "kb.page.deleted"
+  | "kb.page.restored"
+  | "kb.page.purged"
+  | "kb.page.published"
+  | "kb.page.archived"
+  | "kb.page.verified"
+  | "kb.page.visibility_changed"
+  | "kb.page.locked"
+  | "kb.version.restored"
+  | "kb.grant.created"
+  | "kb.grant.revoked"
+  | "kb.space.created"
+  | "kb.space.updated"
+  | "kb.space.archived"
+  | "kb.space.restored"
+  | "kb.member.added"
+  | "kb.member.removed"
+  | "kb.import.started"
+  | "kb.export.started"
+  | "kb.settings.updated"
+  | "kb.share_link.created"
+  | "kb.share_link.revoked";
 
 interface AuditLogEntry {
   action: AuditAction;
