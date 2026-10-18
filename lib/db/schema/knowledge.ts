@@ -27,6 +27,7 @@ import {
   unique,
   uniqueIndex,
   uuid,
+  varchar,
   vector,
 } from "drizzle-orm/pg-core";
 
@@ -187,7 +188,7 @@ export const kbPages = pgTable(
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     projectId: integer("project_id").references(() => projects.id, { onDelete: "set null" }),
-    /** No FK until kb_categories lands in KB-0022. */
+    /** FK added by migration 0184, once kb_categories exists (KB-0022). */
     categoryId: integer("category_id"),
     sourceTicketId: integer("source_ticket_id"),
     externalId: text("external_id"),
@@ -1443,6 +1444,95 @@ export const kbLinkedDocumentAudiences = pgTable(
       foreignColumns: [kbLinkedDocuments.orgId, kbLinkedDocuments.id],
       name: "fk_kb_linked_document_audiences_link_org",
     }).onDelete("cascade"),
+  ],
+);
+
+export const kbCategories = pgTable(
+  "kb_categories",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    spaceId: integer("space_id"),
+    parentId: integer("parent_id"),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    icon: text("icon"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isPublished: boolean("is_published").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_kb_categories_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_kb_categories_org_space_slug").on(table.orgId, table.spaceId, table.slug),
+    index("idx_kb_categories_space").on(table.spaceId),
+    index("idx_kb_categories_parent").on(table.parentId),
+    foreignKey({
+      columns: [table.orgId, table.spaceId],
+      foreignColumns: [kbSpaces.orgId, kbSpaces.id],
+      name: "fk_kb_categories_org_space",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.orgId, table.parentId],
+      foreignColumns: [table.orgId, table.id],
+      name: "fk_kb_categories_org_parent",
+    }).onDelete("set null"),
+  ],
+);
+
+export const SUPPORT_KNOWLEDGE_GAP_STATUSES = [
+  "OPEN",
+  "DRAFTED",
+  "ROUTED",
+  "PUBLISHED",
+  "DISMISSED",
+] as const;
+export type SupportKnowledgeGapStatus = (typeof SUPPORT_KNOWLEDGE_GAP_STATUSES)[number];
+
+/** Repeat questions clustered, so a missing article shows up as a gap. */
+export const supportKnowledgeGaps = pgTable(
+  "support_knowledge_gaps",
+  {
+    id: serial("id").primaryKey(),
+    orgId: text("org_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    clusterKey: varchar("cluster_key", { length: 500 }).notNull(),
+    representativeQuestion: text("representative_question").notNull(),
+    ticketCount: integer("ticket_count").notNull().default(0),
+    sampleTicketIds: jsonb("sample_ticket_ids").$type<number[]>().notNull().default([]),
+    status: text("status").$type<SupportKnowledgeGapStatus>().notNull().default("OPEN"),
+    proposedArticleId: integer("proposed_article_id"),
+    dismissalReason: text("dismissal_reason"),
+    draftedBy: text("drafted_by").references(() => users.id, { onDelete: "set null" }),
+    reviewedBy: text("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+    evidence: jsonb("evidence")
+      .$type<{ searchQueries: Array<{ query: string; count: number }>; relatedTicketIds: number[] }>()
+      .notNull()
+      .default({ searchQueries: [], relatedTicketIds: [] }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("uniq_support_knowledge_gaps_org_id").on(table.orgId, table.id),
+    uniqueIndex("uniq_support_knowledge_gaps_org_cluster").on(table.orgId, table.clusterKey),
+    index("idx_support_knowledge_gaps_org_status_created").on(
+      table.orgId,
+      table.status,
+      table.createdAt,
+    ),
+    check(
+      "support_knowledge_gaps_status_check",
+      sql`status IN ('OPEN', 'DRAFTED', 'ROUTED', 'PUBLISHED', 'DISMISSED')`,
+    ),
+    foreignKey({
+      columns: [table.orgId, table.proposedArticleId],
+      foreignColumns: [kbPages.orgId, kbPages.id],
+      name: "fk_support_knowledge_gaps_org_article",
+    }).onDelete("set null"),
   ],
 );
 
