@@ -7,11 +7,16 @@ import { queryKeys } from "@/lib/query-keys";
 
 import { kbCollection, kbPurgeImpactSchema, kbTrashItemSchema } from "./schemas";
 
+export interface KbPurgeResult {
+  purged: number[];
+  /** Left alone because they are on legal hold. */
+  held: number[];
+  /** Pages whose stored files could not all be removed; the row survives. */
+  incomplete: number[];
+}
+
 export interface KbTrashFilters extends Record<string, unknown> {
-  q?: string;
-  deletedById?: string;
-  cursor?: string;
-  limit?: number;
+  deletedBy?: string;
 }
 
 export function useKbTrash(filters: KbTrashFilters = {}) {
@@ -29,7 +34,7 @@ export function useKbTrashDeleters() {
   return useQuery({
     queryKey: queryKeys.knowledge.trashDeleters(),
     queryFn: () =>
-      apiClient.get<{ items: { id: string; name: string | null; count: number }[] }>(
+      apiClient.get<{ items: { id: string | null; name: string | null; pages: number }[] }>(
         "/knowledge/pages/trash/deleters",
       ),
   });
@@ -38,8 +43,11 @@ export function useKbTrashDeleters() {
 export function useRestoreKbPages() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (pageIds: number[]) =>
-      apiClient.post("/knowledge/pages/trash/restore", { pageIds }),
+    mutationFn: (ids: number[]) =>
+      apiClient.post<{ results: { id: number; status: string; reason?: string }[] }>(
+        "/knowledge/pages/trash/restore",
+        { ids },
+      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.all });
     },
@@ -52,9 +60,9 @@ export function useRestoreKbPages() {
  */
 export function useKbPurgeImpact() {
   return useMutation({
-    mutationFn: async (pageIds: number[]) =>
+    mutationFn: async (ids: number[]) =>
       kbPurgeImpactSchema.parse(
-        await apiClient.post("/knowledge/pages/trash/purge-impact", { pageIds }),
+        await apiClient.post("/knowledge/pages/trash/purge-impact", { ids }),
       ),
   });
 }
@@ -62,7 +70,8 @@ export function useKbPurgeImpact() {
 export function usePurgeKbPages() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (pageIds: number[]) => apiClient.post("/knowledge/pages/trash/purge", { pageIds }),
+    mutationFn: (ids: number[]) =>
+      apiClient.post<KbPurgeResult>("/knowledge/pages/trash/purge", { ids }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.all });
     },
@@ -72,7 +81,7 @@ export function usePurgeKbPages() {
 export function useEmptyKbTrash() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.post("/knowledge/pages/trash/empty"),
+    mutationFn: () => apiClient.post<KbPurgeResult>("/knowledge/pages/trash/empty"),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.all });
     },

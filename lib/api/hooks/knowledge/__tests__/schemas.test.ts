@@ -132,12 +132,23 @@ describe("knowledge response schemas", () => {
   it("parses the settings row", () => {
     const settings = kbSettingsSchema.parse({
       trashRetentionDays: 30,
-      verifiedWindowDays: 180,
-      chatRetentionDays: 90,
-      hrLinkEnabled: true,
-      hrLinkPolicies: true,
-      hrLinkHandbook: false,
+      chatHistoryRetentionDays: 90,
+      hrmsKbLinkEnabled: true,
+      hrmsKbSearchEnabled: true,
+      hrmsKbAiEnabled: false,
     });
     expect(settings.trashRetentionDays).toBe(30);
+  });
+
+  it("keeps chat retention nullable, which is how keeping it forever is stored", () => {
+    expect(
+      kbSettingsSchema.parse({
+        trashRetentionDays: 30,
+        chatHistoryRetentionDays: null,
+        hrmsKbLinkEnabled: false,
+        hrmsKbSearchEnabled: false,
+        hrmsKbAiEnabled: false,
+      }).chatHistoryRetentionDays,
+    ).toBeNull();
   });
 });

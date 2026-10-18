@@ -17,7 +17,7 @@ import { KB_COMPANY_DOCUMENTS } from "@/lib/knowledge/routes";
 export function WikiCompanyDocumentsStrip() {
   const { data } = useKbSettings();
 
-  if (!data?.companyDocumentsEnabled) return null;
+  if (!data?.hrmsKbLinkEnabled) return null;
 
   return (
     <section className="flex flex-col gap-3">

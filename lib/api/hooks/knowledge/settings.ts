@@ -41,13 +41,17 @@ export function useUpdateKbSettings() {
   });
 }
 
+/**
+ * The HR flags nest: search needs the link, and AI needs search. The server
+ * applies that nesting, so switching the link off switches the rest off too.
+ */
 export function useUpdateKbHrLinkFlags() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: {
-      hrLinkEnabled?: boolean;
-      hrLinkPolicies?: boolean;
-      hrLinkHandbook?: boolean;
+      hrmsKbLinkEnabled?: boolean;
+      hrmsKbSearchEnabled?: boolean;
+      hrmsKbAiEnabled?: boolean;
     }) => apiClient.patch("/knowledge/settings/hr-link-flags", input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.settings() });

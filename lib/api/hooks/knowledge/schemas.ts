@@ -312,35 +312,32 @@ export const kbExportJobSchema = z.object({
 export type KbExportJob = z.infer<typeof kbExportJobSchema>;
 
 export const kbSettingsSchema = z.object({
-  orgId: z.string().optional(),
   trashRetentionDays: z.number(),
-  verifiedWindowDays: z.number(),
-  chatRetentionDays: z.number().nullable().optional(),
-  defaultReviewIntervalDays: z.number().nullable().optional(),
-  hrLinkEnabled: z.boolean().optional(),
-  hrLinkPolicies: z.boolean().optional(),
-  hrLinkHandbook: z.boolean().optional(),
-  companyDocumentsEnabled: z.boolean().optional(),
-  updatedAt: timestamp.optional(),
+  chatHistoryRetentionDays: z.number().nullable(),
+  /** The HR link, and what it carries: search, then AI on top of search. */
+  hrmsKbLinkEnabled: z.boolean(),
+  hrmsKbSearchEnabled: z.boolean(),
+  hrmsKbAiEnabled: z.boolean(),
 });
 export type KbSettings = z.infer<typeof kbSettingsSchema>;
 
 export const kbTrashItemSchema = z.object({
   id: z.number(),
   title: z.string(),
+  icon: z.string().nullable().optional(),
+  spaceId: z.number().nullable().optional(),
   deletedAt: timestamp,
   deletedById: z.string().nullable().optional(),
   deletedByName: z.string().nullable().optional(),
-  daysUntilPurge: z.number().nullable().optional(),
-  childCount: z.number().optional(),
+  /** A page on legal hold is never purged, by the retention sweep or by hand. */
+  legalHold: z.boolean().optional(),
 });
 export type KbTrashItem = z.infer<typeof kbTrashItemSchema>;
 
 export const kbPurgeImpactSchema = z.object({
   pages: z.number(),
-  versions: z.number().optional(),
-  comments: z.number().optional(),
-  attachments: z.number().optional(),
-  chunks: z.number().optional(),
-  bytes: z.number().optional(),
+  attachments: z.number(),
+  /** Pages the purge will refuse to touch, because they are on hold. */
+  heldPages: z.array(z.number()),
 });
+export type KbPurgeImpact = z.infer<typeof kbPurgeImpactSchema>;
