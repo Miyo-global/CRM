@@ -21,7 +21,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import { MetricCard } from "@/components/charts/metric-card";
-import { MiniAreaChart } from "@/components/charts/mini-area-chart";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { AXIS_TICK, CHART_AXIS, CHART_GRID, CHART_TOOLTIP_STYLE } from "@/lib/design/chart-styles";
 import { MiniDonutChart } from "@/components/charts/mini-donut-chart";
 import { ActivityFeed } from "@/components/charts/activity-feed";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -45,7 +46,6 @@ const SUPPORT_SUBTITLE = (
   </>
 );
 
-const formatTicketValue = (v: number) => v.toLocaleString();
 
 export default function SupportDashboardPage() {
   const { data: session, status } = useSession();
@@ -181,14 +181,42 @@ function SupportAnalytics() {
       </div>
 
       <div className="col-span-12 lg:col-span-7">
-        <WidgetCard title="Ticket volume trend" icon={Ticket} tone="info">
+        <WidgetCard title="Tickets created per month" icon={Ticket} tone="info">
           {hasVolume ? (
-            <MiniAreaChart
-              data={ticketVolumeTimeline}
-              color={sparkColors.blue}
-              height={240}
-              formatValue={formatTicketValue}
-            />
+            // BUG-31: labelled axes instead of a bare sparkline.
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={ticketVolumeTimeline} margin={{ top: 8, right: 8, bottom: 16, left: 0 }}>
+                <defs>
+                  <linearGradient id="supportVolumeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={sparkColors.blue} stopOpacity={0.24} />
+                    <stop offset="100%" stopColor={sparkColors.blue} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid {...CHART_GRID} />
+                <XAxis
+                  dataKey="month"
+                  {...CHART_AXIS}
+                  label={{ value: "Month", position: "insideBottom", offset: -12, ...AXIS_TICK }}
+                />
+                <YAxis
+                  {...CHART_AXIS}
+                  allowDecimals={false}
+                  width={40}
+                  label={{ value: "Tickets", angle: -90, position: "insideLeft", ...AXIS_TICK }}
+                />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  name="Tickets created"
+                  stroke={sparkColors.blue}
+                  fill="url(#supportVolumeGrad)"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           ) : (
             <EmptyState
               compact
