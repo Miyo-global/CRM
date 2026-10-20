@@ -269,8 +269,12 @@ function ReviewsTab() {
                     <AvatarFallback className="bg-brand-soft text-2xs text-brand-soft-foreground">{review.user?.name?.[0] ?? "?"}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{review.user?.name ?? "Employee"}</p>
-                    <p className="truncate text-xs text-muted-foreground tabular-nums">
+                    {/* Two lines with the full text on hover, not one cut-off line (BUG-30). */}
+                    <p className="line-clamp-2 break-words text-sm font-semibold text-foreground" title={review.user?.name ?? undefined}>{review.user?.name ?? "Employee"}</p>
+                    <p
+                      className="line-clamp-2 break-words text-xs text-muted-foreground tabular-nums"
+                      title={`${review.periodStart} → ${review.periodEnd}${review.reviewer?.name ? ` · by ${review.reviewer.name}` : ""}`}
+                    >
                       {review.periodStart} → {review.periodEnd}
                       {review.reviewer?.name && <> &middot; by {review.reviewer.name}</>}
                     </p>
@@ -458,7 +462,7 @@ function GoalsTab() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <p className="text-sm font-semibold leading-tight text-foreground">{goal.title}</p>
+                <p className="line-clamp-2 break-words text-sm font-semibold leading-tight text-foreground" title={goal.title}>{goal.title}</p>
                 {goal.endDate && <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums"><Calendar className="size-3.5" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
                 <div className="mt-auto space-y-1.5">
                   <div className="flex justify-between text-xs">
@@ -708,15 +712,15 @@ function OneOnOnesTab() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-foreground">{m.manager?.name} & {m.employee?.name}</p>
+                  <p className="line-clamp-2 break-words text-sm font-semibold text-foreground" title={`${m.manager?.name ?? ""} & ${m.employee?.name ?? ""}`}>{m.manager?.name} & {m.employee?.name}</p>
                   <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
                     <Clock className="size-3.5" />
                     {formatMeetingDateTime(String(m.scheduledAt))} &middot; {m.duration}min
                   </p>
                   {participants.length > 0 && (
-                    <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-                      <Users className="size-3.5 shrink-0" />
-                      <span className="truncate">
+                    <p className="flex items-start gap-1 text-xs text-muted-foreground">
+                      <Users className="mt-px size-3.5 shrink-0" />
+                      <span className="line-clamp-2 break-words" title={participants.map((p) => p.name ?? "Participant").join(", ")}>
                         with {participants.map((p) => p.name ?? "Participant").join(", ")}
                       </span>
                     </p>

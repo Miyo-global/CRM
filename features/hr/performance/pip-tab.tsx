@@ -479,7 +479,7 @@ export function PipTab() {
             <Card key={p.id} interactive role="button" tabIndex={0} className="focus-visible:focus-ring" onClick={() => setOpenId(p.id)} onKeyDown={(e) => { if (e.key === "Enter") setOpenId(p.id); }}>
               <CardContent className="flex items-center justify-between gap-3 p-4">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">{p.user?.name ?? p.userId}</p>
+                  <p className="line-clamp-2 break-words text-sm font-semibold text-foreground" title={p.user?.name ?? p.userId}>{p.user?.name ?? p.userId}</p>
                   <p className="text-xs text-muted-foreground tabular-nums">
                     {p.startDate} → {p.endDate} · {p.goals?.length ?? 0} goal{p.goals?.length === 1 ? "" : "s"}
                     {p.phase && p.phase !== "FORMAL_PIP" && (

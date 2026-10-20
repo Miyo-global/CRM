@@ -416,7 +416,7 @@ export function AppraisalsTab() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground">{a.user?.name ?? a.userId}</p>
+                      <p className="line-clamp-2 break-words text-sm font-semibold text-foreground" title={a.user?.name ?? a.userId}>{a.user?.name ?? a.userId}</p>
                       <p className="font-mono text-xs text-muted-foreground">Appraisal #{a.id}</p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
