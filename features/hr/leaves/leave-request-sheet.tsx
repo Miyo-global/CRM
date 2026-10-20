@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import type { LeaveType, LeaveBalance } from "@/app/(dashboard)/hr/leaves/leaves
 import {
   calculateLeaveWorkingDays,
   createLeaveRequestSchema,
+  LEAVE_REASON_MAX,
 } from "@/lib/validations/leave-request";
 import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 import { useLeavePreview } from "@/lib/api/hooks/hr/leave-preview";
@@ -99,6 +100,24 @@ export function LeaveRequestSheet({
   const watchedStartDate = form.watch("startDate");
   const watchedEndDate = form.watch("endDate");
   const watchedHalfDay = form.watch("halfDay");
+
+  // The balance and weekend checks tie leave type, dates and half-day
+  // together, but onChange validation only re-checks the field that changed,
+  // so a stale cross-field error kept Submit disabled until the reason was
+  // retyped (QA-BUG-24). Re-check all the linked fields together; the reason
+  // joins in once it has been typed, so an untouched field shows no error.
+  const reasonDirty = !!form.formState.dirtyFields.reason;
+  useEffect(() => {
+    if (!watchedLeaveTypeId && !watchedStartDate) return;
+    void form.trigger([
+      "leaveTypeId",
+      "startDate",
+      "endDate",
+      "halfDay",
+      "halfDayPeriod",
+      ...(reasonDirty ? (["reason"] as const) : []),
+    ]);
+  }, [form, watchedLeaveTypeId, watchedStartDate, watchedEndDate, watchedHalfDay, reasonDirty, leaveFormSchema]);
 
   const holidayDates = useHolidayDates();
   // The server's verdict for this draft, so the preview cannot promise what
@@ -371,6 +390,7 @@ export function LeaveRequestSheet({
                     placeholder="E.g. Family function, Doctor appointment..."
                     className="resize-none"
                     rows={3}
+                    maxLength={LEAVE_REASON_MAX}
                     {...field}
                   />
                 </FormControl>
