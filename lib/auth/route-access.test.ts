@@ -147,3 +147,14 @@ describe("knowledge routes (KB-0008)", () => {
     expect(canAccessRoute("/knowledgex", "ENGINEERING")).toBe(true);
   });
 });
+
+describe("own employee record (QA-AUTH-09)", () => {
+  it("opens only your own record page, not someone else's or its sub-routes", async () => {
+    const { isOwnEmployeeRecord } = await import("./route-access");
+    expect(isOwnEmployeeRecord("/hr/employees/u1", "u1")).toBe(true);
+    expect(isOwnEmployeeRecord("/hr/employees/u1/", "u1")).toBe(true);
+    expect(isOwnEmployeeRecord("/hr/employees/u2", "u1")).toBe(false);
+    expect(isOwnEmployeeRecord("/hr/employees/u1/edit", "u1")).toBe(false);
+    expect(isOwnEmployeeRecord("/hr/employees/u1", undefined)).toBe(false);
+  });
+});

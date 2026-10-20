@@ -141,3 +141,14 @@ export function canAccessRoute(pathname: string, role: string): boolean {
 
   return ROUTE_ROLE_MAP[matchingRoutes[0]].includes(role);
 }
+
+/**
+ * QA-AUTH-09: everyone may open their own employee record (it has a
+ * my-profile tab and the loader already allows it), though /hr is otherwise
+ * the people team's. Only the record page itself, not its edit routes.
+ */
+export function isOwnEmployeeRecord(pathname: string, userId: string | null | undefined): boolean {
+  if (!userId) return false;
+  const path = pathname.replace(/\/+$/, "");
+  return path === `/hr/employees/${userId}`;
+}

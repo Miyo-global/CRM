@@ -7,7 +7,7 @@ import {
 } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
-import { canAccessRoute } from "@/lib/auth/route-access";
+import { canAccessRoute, isOwnEmployeeRecord } from "@/lib/auth/route-access";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { buildCsp } from "@/lib/security/csp";
 
@@ -298,7 +298,7 @@ export default async function proxy(req: NextRequest) {
 
   if (isAuthenticated && token?.role && startsWithAny(pathname, PROTECTED_ROUTES)) {
     const userRole = token.role as string;
-    if (!canAccessRoute(pathname, userRole)) {
+    if (!canAccessRoute(pathname, userRole) && !isOwnEmployeeRecord(pathname, token.sub)) {
       // One denied view for every route denial, instead of a silent bounce to
       // the dashboard from some pages and Access Restricted on others
       // (QA-0034).
