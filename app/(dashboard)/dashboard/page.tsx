@@ -224,7 +224,7 @@ export default function DashboardPage() {
         title="Dashboard"
         actions={<Skeleton className="h-10 w-64 rounded-full" />}
       >
-        <div className="grid grid-cols-12 gap-4 xl:gap-6" role="status" aria-live="polite" aria-label="Loading dashboard">
+        <div className="grid grid-cols-12 gap-4" role="status" aria-live="polite" aria-label="Loading dashboard">
           <div className="col-span-12">
             <DashboardStatsSkeleton />
           </div>
@@ -299,7 +299,7 @@ export default function DashboardPage() {
         variants={fadeUp}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-12 gap-4 xl:gap-6"
+        className="grid grid-cols-12 gap-4"
       >
         {statCards.map((stat, i) => (
           <div key={stat.id} className={kpiSpan}>
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                 <MyTasksWidget />
               </Suspense>
             </div>
-            <div className={`${SPAN.third} flex flex-col gap-4 xl:gap-6`}>
+            <div className={`${SPAN.third} flex flex-col gap-4`}>
               <Suspense fallback={<WidgetSkeleton rows={3} />}>
                 <LeaveBalanceWidgetNew />
               </Suspense>

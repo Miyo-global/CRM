@@ -7,8 +7,12 @@ import { Breadcrumbs, useAutoBreadcrumbs, type Crumb } from "./breadcrumbs";
 /**
  * One page container for every page, so widths line up across the app (B1).
  * Forms opt into the narrower measure with `contentClassName="max-w-[720px]"`.
+ *
+ * QA-DES-01: 1200px left wide empty gutters on either side of a 1280px+
+ * screen even with the sidebar open; content now fills the viewport up to
+ * 1440px, with 16px gutters on a phone and 24px from lg.
  */
-export const PAGE_CONTAINER = "mx-auto w-full max-w-[1200px] px-6";
+export const PAGE_CONTAINER = "mx-auto w-full max-w-[1440px] px-4 lg:px-6";
 
 interface PageWrapperProps {
   title: string;
@@ -49,7 +53,7 @@ export function PageWrapper({
   const crumbs = breadcrumbs === false ? [] : (breadcrumbs ?? (autoCrumbs.length > 1 ? autoCrumbs : []));
 
   const titleBlock = (
-    <div className={cn(PAGE_CONTAINER, "pt-6 pb-4")}>
+    <div className={cn(PAGE_CONTAINER, "pt-5 pb-3")}>
       {/* Auto crumbs duplicate the topbar's on lg+; explicit crumbs always render. */}
       {crumbs.length > 0 && (
         <Breadcrumbs items={crumbs} className={cn("mb-2", breadcrumbs === undefined && "lg:hidden")} />
@@ -119,11 +123,11 @@ export function PageWrapper({
       )}
 
       {noInternalScroll ? (
-        <div className={cn(PAGE_CONTAINER, "flex-1 min-h-0 overflow-hidden pt-4 pb-4", contentClassName)}>
+        <div className={cn(PAGE_CONTAINER, "flex-1 min-h-0 overflow-hidden pt-3 pb-4", contentClassName)}>
           {children}
         </div>
       ) : (
-        <div className={cn(PAGE_CONTAINER, "pt-4 pb-10", contentClassName)}>{children}</div>
+        <div className={cn(PAGE_CONTAINER, "pt-3 pb-8", contentClassName)}>{children}</div>
       )}
     </div>
   );
