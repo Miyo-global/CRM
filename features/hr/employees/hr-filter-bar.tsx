@@ -19,13 +19,6 @@ const ROLE_OPTIONS = [
   { value: "ADMIN", label: "Admin" },
   { value: "HR", label: "HR" },
   { value: "EMPLOYEE", label: "Employee" },
-  // Retired job-title roles stay filterable while anyone still holds one.
-  { value: "SALES", label: "Sales" },
-  { value: "CUSTOMER_SUPPORT", label: "Customer Support" },
-  { value: "ENGINEERING", label: "Engineering" },
-  { value: "DESIGN", label: "Design" },
-  { value: "VIDEO_EDITOR", label: "Video Editor" },
-  { value: "DIGITAL_MARKETING", label: "Digital Marketing" },
 ];
 
 interface HrFilterBarProps {

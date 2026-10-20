@@ -46,7 +46,8 @@ const STEP_FIELDS: Record<number, FieldPath<FormValues>[]> = {
   ],
 };
 
-const COMMON_DEPARTMENTS = ["HR", "Sales", "Customer Support", "Engineering", "Design", "Video Editing"];
+// QA-SALES-01: no Sales department is suggested; there is no sales function.
+const COMMON_DEPARTMENTS = ["HR", "Customer Support", "Engineering", "Design", "Video Editing"];
 
 const KNOWN_ACRONYMS = new Set(["CEO", "CTO", "CFO", "COO", "CMO", "CIO", "CHRO", "VP", "SVP", "EVP", "AVP", "HR", "IT", "QA", "UI", "UX"]);
 
