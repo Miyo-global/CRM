@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useCallback, useRef } from "react";
 import {
   Upload, Download, FileSpreadsheet, Users,
@@ -151,8 +152,19 @@ function DataHubContent() {
   }, []);
 
   return (
+    // Nothing here imports yet, so the page says export (BUG-15) and points
+    // to the one bulk import that exists.
     <PageWrapper
-      title="Data import / export hub"
+      title="Data export"
+      subtitle={
+        <>
+          Download HR records as Excel or CSV. To import expense claims, use{" "}
+          <Link href="/hr/expenses" className="text-brand-text hover:underline">
+            Expenses
+          </Link>
+          .
+        </>
+      }
     >
       <div
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
