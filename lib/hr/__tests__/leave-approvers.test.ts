@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { canActOnLeave, countActionableLeaves, leaveApproverRolesFor } from "../leave-approvers";
+import {
+  autoApprovesUnroutedLeave,
+  canActOnLeave,
+  countActionableLeaves,
+  leaveApproverRolesFor,
+} from "../leave-approvers";
 
 const pending = (
   user: { id: string; role: string; reportingTo?: string | null },
@@ -11,13 +16,26 @@ describe("leave approver chain (A27)", () => {
     expect(leaveApproverRolesFor("ENGINEERING")).toEqual(["HR", "CEO", "ADMIN"]);
   });
 
-  it("sends HR and Admin leave to the CEO", () => {
-    expect(leaveApproverRolesFor("HR")).toEqual(["CEO"]);
-    expect(leaveApproverRolesFor("ADMIN")).toEqual(["CEO"]);
+  it("sends HR and Admin leave to the CEO or another Admin (QA-AUTH-05)", () => {
+    expect(leaveApproverRolesFor("HR")).toEqual(["CEO", "ADMIN"]);
+    expect(leaveApproverRolesFor("ADMIN")).toEqual(["CEO", "ADMIN"]);
   });
 
   it("sends the CEO's own leave to an admin", () => {
     expect(leaveApproverRolesFor("CEO")).toEqual(["ADMIN"]);
+  });
+});
+
+describe("autoApprovesUnroutedLeave (QA-AUTH-05)", () => {
+  it("never auto-approves an Admin's or HR's own leave", () => {
+    expect(autoApprovesUnroutedLeave("ADMIN", false)).toBe(false);
+    expect(autoApprovesUnroutedLeave("HR", false)).toBe(false);
+    expect(autoApprovesUnroutedLeave("ENGINEERING", false)).toBe(false);
+  });
+
+  it("auto-approves the Super Admin's leave only with no other Admin", () => {
+    expect(autoApprovesUnroutedLeave("CEO", false)).toBe(true);
+    expect(autoApprovesUnroutedLeave("CEO", true)).toBe(false);
   });
 });
 
@@ -32,6 +50,7 @@ describe("canActOnLeave", () => {
   it("gives the admin's own request to the CEO", () => {
     const request = pending({ id: "admin-1", role: "ADMIN" });
     expect(canActOnLeave(ceo, request)).toBe(true);
+    expect(canActOnLeave({ id: "admin-2", role: "ADMIN" }, request)).toBe(true);
     expect(canActOnLeave({ id: "hr-1", role: "HR" }, request)).toBe(false);
   });
 

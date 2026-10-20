@@ -1,9 +1,15 @@
 import "server-only";
 
 import { db } from "@/lib/db";
-import { leaveRequests, users } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
-import { canActOnLeave, leaveApproverRolesFor, type LeaveViewer } from "./leave-approvers";
+import { leaveRequests, organizationMembers, users } from "@/lib/db/schema";
+import { and, eq, ne } from "drizzle-orm";
+import { ROLES } from "@/lib/constants/roles";
+import {
+  autoApprovesUnroutedLeave,
+  canActOnLeave,
+  leaveApproverRolesFor,
+  type LeaveViewer,
+} from "./leave-approvers";
 import { resolveLeaveApprovers } from "./leave-approver-chain";
 
 /** Pending requests the viewer may act on, with just the fields the rule needs. */
@@ -43,7 +49,7 @@ export async function countPendingLeaveApprovals(
 export interface ResolvedLeaveApprover {
   /** The user who should act on the request, when there is exactly one. */
   approverId: string | null;
-  /** True when nobody in the org can approve it, so it is approved on creation. */
+  /** True only for the Super Admin of an org with no other Admin (QA-AUTH-05). */
   autoApprove: boolean;
 }
 
@@ -69,7 +75,23 @@ export async function resolveLeaveApprover(
     if (match) return { approverId: match.id, autoApprove: false };
   }
 
-  // Nobody holds an approver role for this requester — the CEO of a one-person
-  // leadership team. Approve on creation rather than leaving it stuck (A27).
-  return { approverId: null, autoApprove: true };
+  // Nobody free right now. Leave it PENDING and unowned so every approver role
+  // sees it, unless the Super Admin is the only leader there is (QA-AUTH-05).
+  // Candidates skip people on leave today, so count Admins separately.
+  let otherAdminExists = false;
+  if (requester.role === ROLES.CEO) {
+    const other = await db
+      .select({ id: organizationMembers.userId })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.orgId, orgId),
+          eq(organizationMembers.role, ROLES.ADMIN),
+          ne(organizationMembers.userId, requester.id),
+        ),
+      )
+      .limit(1);
+    otherAdminExists = other.length > 0;
+  }
+  return { approverId: null, autoApprove: autoApprovesUnroutedLeave(requester.role, otherAdminExists) };
 }

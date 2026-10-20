@@ -10,7 +10,8 @@ import {
   ensureLeaveTypes,
   ensureUserBalances,
 } from "@/server/actions/leave-actions/leave-balance";
-import { createNotification } from "@/server/actions/create-notification";
+import { createNotification, notifyByRoles } from "@/server/actions/create-notification";
+import { leaveApproverRolesFor } from "@/lib/hr/leave-approvers";
 import { z } from "zod";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import type { NextRequest } from "next/server";
@@ -256,6 +257,18 @@ export async function POST(req: NextRequest) {
             title: "Leave request pending",
             message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
             link: "/hr/leaves",
+          });
+        } else {
+          // Unowned (e.g. an Admin's leave with no Super Admin free): tell
+          // everyone who can act on it, never the requester (QA-AUTH-05).
+          await notifyByRoles(session.orgId, leaveApproverRolesFor(requester?.role ?? session.user.role), {
+            type: "WARNING",
+            title: "Leave request pending",
+            message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
+            link: "/hr/leaves",
+            excludeUserId: session.user.id,
+            // The one email already went to the HR inbox above (QA-0010).
+            email: false,
           });
         }
       })().catch(() => {});

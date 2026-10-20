@@ -5,8 +5,9 @@ import { ROLES } from "@/lib/constants/roles";
  *
  * A normal employee's request goes to their manager, then to HR, the CEO or an
  * admin. People who are themselves approvers cannot sign off their own leave,
- * so their requests go up: HR and Admin to the CEO, and the CEO to an Admin
- * (auto-approved when the org has no Admin).
+ * so their requests go up: HR and Admin to the Super Admin (CEO) or another
+ * Admin, and the CEO to an Admin. With no CEO in the org, an Admin's leave was
+ * auto-approved; it now waits for another Admin (QA-AUTH-05).
  */
 export function leaveApproverRolesFor(requesterRole: string | null | undefined): string[] {
   switch (requesterRole) {
@@ -14,10 +15,23 @@ export function leaveApproverRolesFor(requesterRole: string | null | undefined):
       return [ROLES.ADMIN];
     case ROLES.ADMIN:
     case ROLES.HR:
-      return [ROLES.CEO];
+      return [ROLES.CEO, ROLES.ADMIN];
     default:
       return [ROLES.HR, ROLES.CEO, ROLES.ADMIN];
   }
+}
+
+/**
+ * Whether a request nobody is free to approve is approved on creation. Only
+ * the Super Admin's, and only when the org has no other Admin at all: someone
+ * has to be able to take leave, and there is nobody above them. Everyone else's
+ * stays PENDING for the approver roles (QA-AUTH-05).
+ */
+export function autoApprovesUnroutedLeave(
+  requesterRole: string | null | undefined,
+  otherAdminExists: boolean,
+): boolean {
+  return requesterRole === ROLES.CEO && !otherAdminExists;
 }
 
 export interface LeaveViewer {
