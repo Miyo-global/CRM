@@ -105,7 +105,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   // means "org admins only".
   ...Object.fromEntries(ORG_ADMIN_SETTINGS_PAGES.map((p) => [`/settings/${p}`, [] as string[]])),
   "/notifications": EVERYONE,
-  "/ceo": HR_TEAM,
+  // QA-AUTH-07: QR codes are an HR and admin tool, not a CEO page.
+  "/tools": HR_TEAM,
 
   "/ai": HR_TEAM,
   "/dashboard/admin-health": HR_TEAM,

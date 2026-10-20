@@ -40,7 +40,7 @@ const PROTECTED_ROUTES = [
   "/hr",
   "/settings",
   "/onboarding",
-  "/ceo",
+  "/tools",
   "/timesheets",
   "/support",
   "/reports",

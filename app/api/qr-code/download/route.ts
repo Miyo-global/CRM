@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api/helpers";
-import { getQRCodeImageUrl } from "@/app/(dashboard)/ceo/qr-code/actions";
+import { getQRCodeImageUrl } from "@/app/(dashboard)/tools/qr-code/actions";
 import { db } from "@/lib/db";
 import { qrCodes, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";

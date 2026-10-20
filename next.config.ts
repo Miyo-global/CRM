@@ -41,6 +41,8 @@ const nextConfig: NextConfig = {
       { source: "/login", destination: "/signin", permanent: false },
       { source: "/register", destination: "/signin", permanent: false },
       { source: "/build", destination: "/projects", permanent: false },
+      // QA-AUTH-07: the QR code manager moved off the CEO-named path.
+      { source: "/ceo/qr-code", destination: "/tools/qr-code", permanent: true },
       { source: "/build/:path*", destination: "/projects/:path*", permanent: false },
     ];
   },
