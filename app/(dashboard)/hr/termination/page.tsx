@@ -64,6 +64,9 @@ export default function TerminationPage() {
   const role = session?.user?.role;
   const isHR = role === "HR";
   const isCEO = role === "CEO";
+  // Admins could create a termination through the API but had no button for
+  // it; the members table's "Start termination" lands them here (QA-BUG-37).
+  const canStartTermination = isHR || isCEO || role === "ADMIN";
 
   const { data: terminations, isLoading, isError, error, refetch } = useTerminations();
   const { data: employeesData } = useHrEmployees();
@@ -214,7 +217,7 @@ export default function TerminationPage() {
       return;
     }
     if (isCeoRole(selectedEmployee?.role)) {
-      toast.error("The CEO cannot be terminated through this process.");
+      toast.error("The Super Admin cannot be terminated through this process.");
       return;
     }
     if (selectedUserId === currentUserId) {
@@ -278,7 +281,7 @@ export default function TerminationPage() {
     if (!submitId) return;
     submitTermination.mutate(submitId, {
       onSuccess: () => {
-        toast.success("Submitted for CEO approval");
+        toast.success("Submitted for Super Admin approval");
         setSubmitId(null);
       },
       onError: (e) => toast.error(getErrorMessage(e)),
@@ -376,7 +379,7 @@ export default function TerminationPage() {
       title="Termination management"
       badge={`${(terminations ?? []).length} records`}
       actions={
-        (isHR || isCEO) ? (
+        canStartTermination ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" asChild>
               <Link href="/settings/termination-reasons">
@@ -412,7 +415,7 @@ export default function TerminationPage() {
         statusFilter === "ALL" ? (
           <EmptyState
             title="No termination records found."
-            {...((isHR || isCEO) ? { action: { label: "New Termination", onClick: () => setCreateOpen(true) } } : {})}
+            {...(canStartTermination ? { action: { label: "New Termination", onClick: () => setCreateOpen(true) } } : {})}
           />
         ) : (
           <EmptyState
@@ -685,8 +688,8 @@ export default function TerminationPage() {
         onOpenChange={(open) => {
           if (!open) setSubmitId(null);
         }}
-        title="Submit for CEO approval"
-        description="Are you sure you want to submit this termination record for CEO approval? The record will move to PENDING_CEO status."
+        title="Submit for Super Admin approval"
+        description="Submit this termination record for the Super Admin's approval? It will move to Pending Super Admin."
         confirmLabel="Submit"
         variant="default"
         onConfirm={handleSubmitForApproval}
@@ -826,7 +829,7 @@ export default function TerminationPage() {
 
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">
-                CEO Remarks{" "}
+                Super Admin remarks{" "}
                 {reviewDecision === "reject" ? (
                   <span className="text-destructive">*</span>
                 ) : (
@@ -842,7 +845,7 @@ export default function TerminationPage() {
                 value={ceoRemarks}
                 onChange={(e) => setCeoRemarks(e.target.value)}
                 rows={3}
-                aria-label="CEO remarks"
+                aria-label="Super Admin remarks"
               />
             </div>
           </>

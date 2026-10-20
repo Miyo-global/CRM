@@ -55,7 +55,7 @@ export type TerminationStatusValue = (typeof TERMINATION_STATUSES)[number];
 
 export const TERMINATION_STATUS_LABELS: Record<TerminationStatusValue, string> = {
   DRAFT: "Draft",
-  PENDING_CEO: "Pending CEO",
+  PENDING_CEO: "Pending Super Admin",
   APPROVED: "Approved",
   REJECTED: "Rejected",
   SENT: "Email Sent",

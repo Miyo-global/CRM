@@ -143,7 +143,7 @@ export function TerminationCard({
                 variant="outline"
                 onClick={() => onSubmit(record.id)}
                 disabled={isSubmitting}
-                aria-label={`Submit termination for ${employee?.name ?? "employee"} for CEO approval`}
+                aria-label={`Submit termination for ${employee?.name ?? "employee"} for Super Admin approval`}
               >
                 <AlertTriangle aria-hidden="true" />
                 Submit for Approval
@@ -156,7 +156,7 @@ export function TerminationCard({
                 variant="outline"
                 onClick={() => onSubmit(record.id)}
                 disabled={isSubmitting}
-                aria-label={`Resubmit termination for ${employee?.name ?? "employee"} for CEO approval`}
+                aria-label={`Resubmit termination for ${employee?.name ?? "employee"} for Super Admin approval`}
               >
                 <AlertTriangle aria-hidden="true" />
                 Resubmit
