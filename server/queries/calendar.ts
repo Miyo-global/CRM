@@ -1,6 +1,7 @@
 "server-only";
 import { db } from "@/lib/db";
-import { calendarEvents, leaveRequests, interviews, users, tasks, eventAttendees, holidays } from "@/lib/db/schema";
+import { calendarEvents, leaveRequests, leaveTypes, interviews, users, tasks, eventAttendees, holidays } from "@/lib/db/schema";
+import { canSeeLeaveDetails, REDACTED_LEAVE_LABEL } from "@/lib/hr/leave-visibility";
 import { eq, and, gte, lte, isNotNull, inArray } from "drizzle-orm";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
 
@@ -37,7 +38,8 @@ export async function getCalendarEvents(
   orgId: string,
   userId: string,
   start: Date,
-  end: Date
+  end: Date,
+  viewerRole?: string | null,
 ): Promise<CalendarEventItem[]> {
   const [eventsData, leavesData, interviewsData, tasksData, holidaysData] = await Promise.all([
     db.query.calendarEvents.findMany({
@@ -58,9 +60,11 @@ export async function getCalendarEvents(
         endDate: leaveRequests.endDate,
         reason: leaveRequests.reason,
         userName: users.name,
+        leaveTypeName: leaveTypes.name,
       })
       .from(leaveRequests)
       .innerJoin(users, eq(leaveRequests.userId, users.id))
+      .leftJoin(leaveTypes, eq(leaveTypes.id, leaveRequests.leaveTypeId))
       .where(
         and(
           eq(leaveRequests.orgId, orgId),
@@ -164,16 +168,18 @@ export async function getCalendarEvents(
   }
 
   for (const lv of leavesData) {
+    // Type and reason only for the person and leave approvers (QA-AUTH-08).
+    const detailed = canSeeLeaveDetails({ id: userId, role: viewerRole }, lv.userId);
     result.push({
       id: `leave-${lv.id}`,
-      title: `${lv.userName ?? "Employee"} — OOO`,
+      title: `${lv.userName ?? "Employee"} — ${detailed ? (lv.leaveTypeName ?? REDACTED_LEAVE_LABEL) : REDACTED_LEAVE_LABEL}`,
       start: new Date(lv.startDate),
       end: new Date(lv.endDate),
       allDay: true,
       color: "green",
       category: "leave",
       source: "leave",
-      description: lv.reason ?? null,
+      description: detailed ? (lv.reason ?? null) : null,
       creatorName: lv.userName ?? null,
     });
   }

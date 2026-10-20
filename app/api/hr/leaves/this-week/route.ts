@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { leaveRequests } from "@/lib/db/schema";
 import { eq, and, lte, gte, desc } from "drizzle-orm";
 import { getTodayString, fromISODateString, formatDateOnly } from "@/lib/date-utils";
+import { canSeeLeaveDetails, REDACTED_LEAVE_LABEL } from "@/lib/hr/leave-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export async function GET() {
     const weekStart = formatDateOnly(weekStartDate);
     const weekEnd = formatDateOnly(weekEndDate);
 
+    // Every signed-in user reads this, so it carries only what the card shows:
+    // `user: true` sent whole user rows and every leave reason (QA-AUTH-08).
     const leaves = await db.query.leaveRequests.findMany({
       where: and(
         eq(leaveRequests.orgId, session.orgId),
@@ -27,14 +30,21 @@ export async function GET() {
         lte(leaveRequests.startDate, weekEnd),
         gte(leaveRequests.endDate, weekStart),
       ),
+      columns: { id: true, userId: true, startDate: true, endDate: true, isHalfDay: true },
       with: {
-        user: true,
+        user: { columns: { id: true, firstName: true, lastName: true, name: true, image: true } },
         leaveType: { columns: { id: true, name: true } },
       },
       orderBy: [desc(leaveRequests.startDate)],
       limit: 500,
     });
 
-    return ok(leaves);
+    return ok(
+      leaves.map((lv) =>
+        canSeeLeaveDetails(session.user, lv.userId)
+          ? lv
+          : { ...lv, leaveType: { id: null, name: REDACTED_LEAVE_LABEL } },
+      ),
+    );
   });
 }

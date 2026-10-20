@@ -78,7 +78,8 @@ export async function GET(req: NextRequest) {
         session.orgId,
         session.user.id,
         rangeStart,
-        rangeEnd
+        rangeEnd,
+        session.user.role,
       );
       return ok(events);
     } catch (error) {
