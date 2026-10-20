@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -31,8 +30,13 @@ const whyPoints = [
   {
     icon: Target,
     title: "Role-based access",
-    desc: "CEO, HR, managers and engineers each see what their role needs, and nothing else.",
+    desc: "The Super Admin, admins and employees each see what their role needs, and nothing else.",
   },
+];
+
+const NAV_LINKS = [
+  { label: "Features", href: "#features" },
+  { label: "Why Miyo Global", href: "#why" },
 ];
 
 const dashboardPreview = [
@@ -48,27 +52,29 @@ export function LandingPage() {
   // (QA-D006).
   const signupEnabled = isSignupEnabled();
 
-  const heroRef = useRef(null);
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-topbar w-full border-b border-sidebar-border bg-ink-950">
+      {/* QA-DES-02: the landing uses the same light tokens as sign-in and the
+          app instead of a separate dark marketing theme. */}
+      <header className="sticky top-0 z-topbar w-full border-b border-border bg-background">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Miyo Global" width={28} height={28} className="size-7 shrink-0" />
-            <span className="font-display text-base font-bold tracking-tight text-sidebar-accent-foreground">
+            <span className="font-display text-base font-bold tracking-tight text-foreground">
               Miyo Global
             </span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            {["Features", "Solutions", "Pricing"].map((item) => (
+            {/* QA-BUG-32: only anchors that land on a section of this page;
+                there is no pricing section. */}
+            {NAV_LINKS.map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="rounded-sm text-sm font-medium text-sidebar-foreground outline-none transition-colors hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                key={item.href}
+                href={item.href}
+                className="rounded-sm text-sm font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </nav>
@@ -77,7 +83,7 @@ export function LandingPage() {
               both buttons read "Sign in", one beside the other. */}
           <div className="flex items-center gap-2">
             {signupEnabled && (
-              <Button asChild variant="outline-inverse" size="sm" className="border-transparent">
+              <Button asChild variant="ghost" size="sm">
                 <Link href="/signin">Sign in</Link>
               </Button>
             )}
@@ -93,31 +99,30 @@ export function LandingPage() {
 
       <main className="flex-1">
 
-        <section ref={heroRef} className="brand-mark-bg relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden">
-
-          <div className="container relative mx-auto px-4 lg:px-8 py-20 lg:py-32 text-center">
+        {/* QA-DES-02: a compact hero — headline, one line and one call to
+            action above the fold, not a full-screen dark panel. */}
+        <section className="border-b border-border">
+          <div className="container mx-auto px-4 lg:px-8 py-14 lg:py-20 text-center">
             <div
               className="max-w-4xl mx-auto"
             >
               <div>
-                <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-accent px-4 py-1.5">
-                  <span className="size-1.5 rounded-full bg-gold-400" />
-                  <span className="text-2xs font-semibold uppercase tracking-widest text-gold-300">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface-sunken px-3 py-1">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  <span className="text-2xs font-semibold uppercase tracking-widest text-brand-text">
                     Internal workspace
                   </span>
                 </div>
               </div>
 
               <h1
-                className="mb-6 font-display text-4xl font-extrabold tracking-tight text-sidebar-accent-foreground sm:text-5xl"
+                className="mb-4 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
               >
-                One place for <span className="text-gold-400">HR</span>
-                <br className="hidden sm:block" />
-                {" "}and projects
+                HR, Projects and Time for <span className="text-brand-text">Miyo Global</span>
               </h1>
 
               <p
-                className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-sidebar-foreground sm:text-lg"
+                className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-muted-foreground"
               >
                 Payroll, attendance, leave and onboarding next to the sprints and tickets
                 the work actually happens in.
@@ -132,7 +137,7 @@ export function LandingPage() {
                     <ArrowRight />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline-inverse" className="px-8">
+                <Button asChild size="lg" variant="outline" className="px-8">
                   <a href="#features">
                     Explore features
                     <ChevronRight />
@@ -143,28 +148,28 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="border-t border-sidebar-border bg-ink-950 py-12">
+        <section className="border-b border-border bg-surface-sunken py-8">
           <div className="container mx-auto px-4 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <p className="mb-1 font-display text-3xl font-extrabold tracking-tight text-gold-400">
+                  <p className="mb-1 font-display text-2xl font-extrabold tracking-tight text-brand-text">
                     {stat.value}
                   </p>
-                  <p className="text-2xs font-medium uppercase tracking-wider text-sidebar-muted">{stat.label}</p>
+                  <p className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="features" className="py-24 lg:py-32">
+        <section id="features" className="scroll-mt-16 py-14 lg:py-20">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-brand-text">Platform modules</p>
               <h2 className="mb-4 font-display text-3xl font-bold tracking-tight">Everything your team needs</h2>
               <p className="mx-auto max-w-xl text-base leading-relaxed text-muted-foreground">
-                From recruitment to retirement, sprint to close — all in one cohesive workspace.
+                People, projects and time in one workspace, from a new hire&apos;s first day to the sprint they ship.
               </p>
             </div>
 
@@ -191,7 +196,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="border-y border-border bg-surface-sunken py-24 lg:py-32">
+        <section id="why" className="scroll-mt-16 border-t border-border bg-surface-sunken py-14 lg:py-20">
           <div className="container mx-auto px-4 lg:px-8">
             <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-2 items-center">
               <div>
@@ -243,29 +248,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="brand-mark-bg relative overflow-hidden py-24 lg:py-32">
-          <div className="container relative mx-auto px-4 lg:px-8 text-center max-w-3xl">
-            <div>
-              <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-gold-400">Get started today</p>
-              <h2 className="mb-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-sidebar-accent-foreground">
-                Ready to unify
-                <br />
-                your operations?
-              </h2>
-              <p className="mx-auto mb-10 max-w-xl text-base leading-relaxed text-sidebar-foreground sm:text-lg">
-                Join teams using Miyo Global to manage HR, track projects, and close deals — all from one place.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button asChild size="lg" className="px-10">
-                  <Link href={signupEnabled ? "/signup" : "/signin"}>
-                    {signupEnabled ? "Start for free" : "Sign in to your account"}
-                    <ArrowRight />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <LandingFooter />

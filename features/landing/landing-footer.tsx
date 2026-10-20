@@ -3,71 +3,44 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const footerCols = [
-  {
-    title: "Product",
-    links: [
-      { label: "Features", href: "#features" },
-      { label: "Solutions", href: "#solutions" },
-      { label: "Pricing", href: "#pricing" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Blog", href: "/blog" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-    ],
-  },
+// QA-BUG-32: the About, Blog, Privacy, Terms and Pricing links went to pages
+// and sections that do not exist.
+const footerLinks = [
+  { label: "Features", href: "#features" },
+  { label: "Why Miyo Global", href: "#why" },
+  { label: "Sign in", href: "/signin" },
 ];
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-sidebar-border bg-ink-950">
+    <footer className="border-t border-border bg-background">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-16">
-          <div className="col-span-2 md:col-span-1">
-            <div className="mb-4 flex items-center gap-2.5">
-              <Image src="/logo.svg" alt="Miyo Global" width={28} height={28} className="size-7 shrink-0" />
-              <span className="font-display text-base font-bold text-sidebar-accent-foreground">
-                Miyo Global
-              </span>
+        <div className="flex flex-col gap-6 py-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="mb-1 flex items-center gap-2.5">
+              <Image src="/logo.svg" alt="Miyo Global" width={24} height={24} className="size-6 shrink-0" />
+              <span className="font-display text-base font-bold text-foreground">Miyo Global</span>
             </div>
-            <p className="max-w-52 text-sm leading-relaxed text-sidebar-muted">
-              The enterprise operating system for modern teams.
-            </p>
+            <p className="text-sm text-muted-foreground">HR, Projects and Time in one workspace.</p>
           </div>
-
-          {footerCols.map((col) => (
-            <div key={col.title}>
-              <h4 className="mb-4 text-2xs font-semibold uppercase tracking-widest text-sidebar-muted">
-                {col.title}
-              </h4>
-              <ul className="space-y-2.5">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="rounded-sm text-sm text-sidebar-foreground outline-none transition-colors hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <nav aria-label="Footer">
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {footerLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
-        <div className="border-t border-sidebar-border py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-sidebar-muted">
+        <div className="border-t border-border py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Miyo Global. All rights reserved.
           </p>
           <div className="flex items-center gap-5">
@@ -75,7 +48,7 @@ export function LandingFooter() {
               href="https://twitter.com/miyoglobal"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-sm text-sidebar-muted outline-none transition-colors hover:text-gold-400 focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              className="rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
               aria-label="Twitter"
             >
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -86,7 +59,7 @@ export function LandingFooter() {
               href="https://linkedin.com/company/miyo-global"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-sm text-sidebar-muted outline-none transition-colors hover:text-gold-400 focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              className="rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
               aria-label="LinkedIn"
             >
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
