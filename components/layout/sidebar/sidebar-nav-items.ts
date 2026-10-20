@@ -170,9 +170,9 @@ function roleNavGroups(role: string): NavGroup[] {
         {
           label: "HR – Support",
           routes: [
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-            { label: "Support Tickets", icon: LifeBuoy, href: "/support", isSubItem: true },
-            { label: "Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "Customer Support", icon: LifeBuoy, href: "/support", isSubItem: true },
+            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
             { label: "HR Analytics", icon: BarChart3, href: "/hr/analytics" },
           ],
         },
@@ -326,9 +326,9 @@ function roleNavGroups(role: string): NavGroup[] {
         {
           label: "HR – Support",
           routes: [
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-            { label: "Support Tickets", icon: LifeBuoy, href: "/support", isSubItem: true },
-            { label: "Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "Customer Support", icon: LifeBuoy, href: "/support", isSubItem: true },
+            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
             { label: "HR Analytics", icon: BarChart3, href: "/hr/analytics" },
           ],
         },
@@ -416,7 +416,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -432,10 +432,10 @@ function roleNavGroups(role: string): NavGroup[] {
           ],
         },
         {
-          label: "Helpdesk",
+          label: "Customer Support",
           routes: [
-            { label: "All Tickets", icon: LifeBuoy, href: "/support" },
-            { label: "Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
+            { label: "Customer Support", icon: LifeBuoy, href: "/support" },
+            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
           ],
         },
         {
@@ -463,7 +463,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -503,7 +503,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -543,7 +543,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips" },
             { label: "My Documents", icon: FileText, href: "/hr/my-documents" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -568,7 +568,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-            { label: "Support", icon: LifeBuoy, href: "/support" },
+            { label: "My Support Tickets", icon: LifeBuoy, href: "/support/inbox" },
           ],
         },
         {
@@ -587,7 +587,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -609,7 +609,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-            { label: "Support", icon: LifeBuoy, href: "/support" },
+            { label: "My Support Tickets", icon: LifeBuoy, href: "/support/inbox" },
           ],
         },
         {
@@ -628,7 +628,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
+            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
