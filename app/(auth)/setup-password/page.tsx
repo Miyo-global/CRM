@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useUrlToken } from "@/lib/hooks/use-url-token";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -59,9 +60,8 @@ const setupSchema = z
 type FormValues = z.infer<typeof setupSchema>;
 
 function SetupPasswordContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token") ?? "";
+  const token = useUrlToken() ?? "";
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({

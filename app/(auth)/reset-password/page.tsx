@@ -17,7 +17,8 @@ import {
 import { toast } from "sonner";
 import { resetPassword } from "@/server/actions/auth-actions";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useUrlToken } from "@/lib/hooks/use-url-token";
 import { PASSWORD_REGEX, passwordChecks } from "@/lib/utils/password-validation";
 import { cn } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
@@ -81,8 +82,7 @@ function getPasswordStrength(password: string): {
 function ResetPasswordContent() {
   const { update } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = useUrlToken();
   const [loading, setLoading] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

@@ -113,6 +113,12 @@ const nextConfig: NextConfig = {
         source: "/:path((?!api/).*)",
         headers: [{ key: "X-Frame-Options", value: "DENY" }],
       },
+      ...["/reset-password", "/setup-password", "/invitation/:token"].map((source) => ({
+        // Links carrying a one-time token never send it on as a Referer
+        // (QA-SEC-12). Listed after the catch-all, so this value wins.
+        source,
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
+      })),
       {
         // All API routes except the download proxy: strict no-framing
         source: "/api/:path((?!storage/download).*)",
