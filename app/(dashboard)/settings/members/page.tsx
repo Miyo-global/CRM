@@ -337,7 +337,7 @@ function MembersSettingsContent() {
                           <TableHead className="px-5">Email</TableHead>
                           <TableHead className="px-5">Role</TableHead>
                           <TableHead className="px-5">Joined</TableHead>
-                          <TableHead className="px-5 text-right">Actions</TableHead>
+                          <TableHead pinned="right" className="px-5 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -538,7 +538,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
       <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
       </TableCell>
-      <TableCell className="px-5 text-right">
+      <TableCell pinned="right" className="px-5 text-right">
         <div className="flex items-center justify-end gap-2">
           {canManageMfa && member.totpEnabled && (
             <AlertDialog>
