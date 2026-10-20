@@ -4,10 +4,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function EmployeesLoadingSkeleton() {
   return (
+    // QA-PERF-01: the skeleton mirrors the loaded page — same sticky header,
+    // the same three actions and the view toggle — so swapping it for the
+    // real page does not shift the layout (CLS 0.105 on /hr).
     <PageWrapper
       title="Employees"
+      stickyHeader
       actions={
         <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-24 rounded-md" />
           <Skeleton className="h-8 w-24 rounded-md" />
           <Skeleton className="h-8 w-32 rounded-md" />
         </div>
@@ -18,6 +23,7 @@ export function EmployeesLoadingSkeleton() {
           <Skeleton className="h-8 w-[130px] rounded-md" />
           <Skeleton className="h-8 w-[110px] rounded-md" />
           <Skeleton className="h-8 w-[120px] rounded-md" />
+          <Skeleton className="ml-auto h-9 w-[76px] rounded-md" />
         </div>
       }
     >
