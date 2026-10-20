@@ -40,7 +40,8 @@ function TabsList({
       className={cn(
         "group/tabs-list text-muted-foreground inline-flex max-w-full items-center justify-start overflow-x-auto",
         variant === "underline"
-          ? "h-10 w-full gap-6 border-b border-border"
+          ? // Page tabs overflow on phones: scroll with a faded edge so the cut reads as "more" (QA-RESP-06).
+            "h-10 w-full gap-6 border-b border-border overscroll-x-contain max-md:mask-x-from-95%"
           : "h-8 w-full sm:w-fit gap-0.5 rounded-md bg-muted p-0.5",
         className
       )}

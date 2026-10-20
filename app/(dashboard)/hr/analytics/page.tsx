@@ -142,16 +142,15 @@ function AnalyticsContent() {
         <ExecutiveKpiStrip data={executive} isLoading={execLoading} />
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <div className="overflow-x-auto">
-            <TabsList variant="underline" className="w-max min-w-full">
-              {TAB_LIST.map(({ value, label, Icon }) => (
-                <TabsTrigger key={value} value={value} className="shrink-0 gap-1.5">
-                  <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  <span>{label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+          {/* The list scrolls itself; a second scroller around it clipped it at 375px (QA-RESP-06). */}
+          <TabsList variant="underline">
+            {TAB_LIST.map(({ value, label, Icon }) => (
+              <TabsTrigger key={value} value={value} className="shrink-0 gap-1.5">
+                <Icon className="size-4 shrink-0" aria-hidden="true" />
+                <span>{label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-0">
             {isLoading ? (
