@@ -80,8 +80,8 @@ function PasswordInput({
         <button
           type="button"
           onClick={handleToggleShow}
-          tabIndex={-1}
-          aria-label={show ? "Hide" : "Show"}
+          aria-label={show ? "Hide password" : "Show password"}
+          aria-pressed={show}
           className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:focus-ring"
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

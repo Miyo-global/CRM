@@ -170,7 +170,7 @@ export default function SignInPage() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 {...form.register("password")}
                 disabled={isPending}
                 className="h-10 pr-9 hide-native-password-reveal"
@@ -180,9 +180,9 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                aria-pressed={showPassword}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:focus-ring"
               >
                 {showPassword ? (
                   <EyeOff className="size-4" aria-hidden="true" />
