@@ -12,7 +12,7 @@ import { z } from "zod";
 
 const updateTicketSchema = z
   .object({
-    status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]).optional(),
+    status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CLOSED", "CANCELLED"]).optional(),
     assigneeId: z.string().min(1).nullable().optional(),
     resolution: z.string().trim().max(5000).optional(),
   })
@@ -21,16 +21,21 @@ const updateTicketSchema = z
     { message: "No changes provided." },
   );
 
+// Done and Closed both count as resolved; Cancelled was never resolved (BUG-35).
+const RESOLVED_STATUSES: readonly string[] = ["DONE", "CLOSED"];
+
+function parseTicketId(raw: string): number | null {
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
   return withAuth(async (session) => {
-    const { ticketId: ticketIdRaw } = await params;
-    const ticketId = Number(ticketIdRaw);
-    if (!Number.isInteger(ticketId) || ticketId <= 0) {
-      return err("Invalid ticket id.", 400);
-    }
+    const ticketId = parseTicketId((await params).ticketId);
+    if (!ticketId) return err("Invalid ticket id.", 400);
 
     const ticket = await db.query.helpdeskTickets.findFirst({
       where: and(eq(helpdeskTickets.id, ticketId), eq(helpdeskTickets.orgId, session.orgId)),
@@ -69,9 +74,9 @@ export async function PATCH(
     if (data.assigneeId !== undefined) updates.assigneeId = data.assigneeId;
     if (data.resolution !== undefined) updates.resolution = data.resolution || null;
 
-    if (data.status === "DONE" && ticket.status !== "DONE") {
-      updates.resolvedAt = new Date();
-    } else if (data.status !== undefined && data.status !== "DONE") {
+    if (data.status !== undefined && RESOLVED_STATUSES.includes(data.status)) {
+      if (!RESOLVED_STATUSES.includes(ticket.status ?? "")) updates.resolvedAt = new Date();
+    } else if (data.status !== undefined) {
       updates.resolvedAt = null;
     }
 
@@ -93,5 +98,32 @@ export async function PATCH(
     }
 
     return ok(updated);
+  });
+}
+
+/** Admin-only hard delete, for spam and test tickets (BUG-35). */
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ ticketId: string }> },
+) {
+  return withAuth(async (session) => {
+    if (!isAdminOrOwner(session.user.role)) {
+      return err("Only an administrator can delete tickets.", 403);
+    }
+    const ticketId = parseTicketId((await params).ticketId);
+    if (!ticketId) return err("Invalid ticket id.", 400);
+
+    const deleted = await db.transaction(async (tx) => {
+      // The comments FK has no cascade, so they go first.
+      await tx
+        .delete(helpdeskTicketComments)
+        .where(and(eq(helpdeskTicketComments.ticketId, ticketId), eq(helpdeskTicketComments.orgId, session.orgId)));
+      return tx
+        .delete(helpdeskTickets)
+        .where(and(eq(helpdeskTickets.id, ticketId), eq(helpdeskTickets.orgId, session.orgId)))
+        .returning({ id: helpdeskTickets.id });
+    });
+    if (deleted.length === 0) return err("Ticket not found.", 404);
+    return ok({ id: ticketId });
   });
 }

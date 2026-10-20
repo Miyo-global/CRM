@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         and(
           eq(helpdeskTickets.orgId, session.orgId),
           sql`lower(${helpdeskTickets.title}) = ${body.title.toLowerCase()}`,
-          sql`${helpdeskTickets.status} <> 'DONE'`,
+          sql`${helpdeskTickets.status} NOT IN ('DONE', 'CLOSED', 'CANCELLED')`,
         ),
       )
       .limit(1);

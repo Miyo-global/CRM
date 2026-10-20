@@ -15,7 +15,7 @@ export type DocumentType =
   | "OTHER";
 export type ReviewStatus = "DRAFT" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED";
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-export type TicketStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+export type TicketStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE" | "CLOSED" | "CANCELLED";
 export type WfhRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type DeviceStatus = "ACTIVE" | "INACTIVE" | "RETURNED";
 export type AttendanceStatus = "OFFLINE" | "PRESENT" | "ON_BREAK" | "CHECKED_OUT";

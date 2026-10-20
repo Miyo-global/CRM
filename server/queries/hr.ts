@@ -46,6 +46,7 @@ import type {
   PerformanceReview,
   Goal,
   HelpdeskTicket,
+  TicketStatus,
   EmployeeStats,
   EmployeePayslip,
   WfhRequest,
@@ -782,7 +783,7 @@ export async function getHelpdeskTickets(
   isAdmin: boolean,
   params?: {
     filterUserId?: string;
-    status?: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+    status?: TicketStatus;
   }
 ): Promise<HelpdeskTicket[]> {
   const conditions = [eq(helpdeskTickets.orgId, orgId)];

@@ -81,7 +81,7 @@ export async function aiAnalyzeAttritionRisk(
       and(
         eq(helpdeskTickets.orgId, orgId),
         eq(helpdeskTickets.userId, userId),
-        sql`${helpdeskTickets.status} != 'DONE'`,
+        sql`${helpdeskTickets.status} NOT IN ('DONE', 'CLOSED', 'CANCELLED')`,
       ),
     );
 

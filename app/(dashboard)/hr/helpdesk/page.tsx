@@ -62,6 +62,8 @@ const STATUS_OPTIONS: { value: TicketStatus | "ALL"; label: string }[] = [
   { value: "IN_PROGRESS", label: "In Progress" },
   { value: "IN_REVIEW", label: "In Review" },
   { value: "DONE", label: "Done" },
+  { value: "CLOSED", label: "Closed" },
+  { value: "CANCELLED", label: "Cancelled" },
 ];
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
@@ -94,7 +96,9 @@ const CATEGORY_OPTIONS = [
 
 function statusTone(status: string | null): Tone {
   switch (status) {
-    case "DONE": return "success";
+    case "DONE":
+    case "CLOSED": return "success";
+    case "CANCELLED": return "neutral";
     case "IN_PROGRESS": return "info";
     case "IN_REVIEW": return "plum";
     default: return "warning";
@@ -175,7 +179,7 @@ export default function HelpdeskPage() {
       total: tickets.length,
       open: tickets.filter((t) => t.status === "TODO").length,
       inProgress: tickets.filter((t) => t.status === "IN_PROGRESS" || t.status === "IN_REVIEW").length,
-      resolved: tickets.filter((t) => t.status === "DONE").length,
+      resolved: tickets.filter((t) => t.status === "DONE" || t.status === "CLOSED").length,
     };
   }, [tickets]);
 

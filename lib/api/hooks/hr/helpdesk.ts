@@ -68,6 +68,14 @@ export function useUpdateHelpdeskTicket(ticketId: number) {
   });
 }
 
+export function useDeleteHelpdeskTicket() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ticketId: number) => apiClient.delete<{ id: number }>(`/hr/helpdesk/${ticketId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.helpdeskTickets() }),
+  });
+}
+
 export interface HelpdeskAssigneeOption {
   userId: string;
   name: string | null;

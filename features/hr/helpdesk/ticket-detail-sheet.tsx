@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { format, formatDistanceToNow } from "date-fns";
-import { Paperclip, ExternalLink, Send, Lock, UserPlus } from "lucide-react";
+import { Paperclip, ExternalLink, Send, Lock, UserPlus, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -36,6 +36,7 @@ import { AISuggestReplyButton } from "@/features/hr/helpdesk/ai-suggest-reply-bu
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
 import { getRoleLabel } from "@/lib/rbac/roles";
 import {
@@ -43,6 +44,7 @@ import {
   useAddHelpdeskTicketComment,
   useUpdateHelpdeskTicket,
   useHelpdeskAssignees,
+  useDeleteHelpdeskTicket,
   type HelpdeskTicketComment,
 } from "@/lib/api/hooks/hr/helpdesk";
 
@@ -51,6 +53,8 @@ const STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: "In Progress",
   IN_REVIEW: "In Review",
   DONE: "Done",
+  CLOSED: "Closed",
+  CANCELLED: "Cancelled",
 };
 
 const CATEGORY_ROUTING: Record<string, string> = {
@@ -68,12 +72,17 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "IN_PROGRESS", label: "In Progress" },
   { value: "IN_REVIEW", label: "In Review" },
   { value: "DONE", label: "Done" },
+  { value: "CLOSED", label: "Closed" },
+  { value: "CANCELLED", label: "Cancelled" },
 ];
 
 function statusTone(status: string | null): Tone {
   switch (status) {
     case "DONE":
+    case "CLOSED":
       return "success";
+    case "CANCELLED":
+      return "neutral";
     case "IN_PROGRESS":
       return "info";
     case "IN_REVIEW":
@@ -208,6 +217,8 @@ export function TicketDetailSheet({
 
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteTicket = useDeleteHelpdeskTicket();
 
   const assigneeOptions = useMemo(
     () => [
@@ -228,7 +239,7 @@ export function TicketDetailSheet({
 
   if (!ticket) return null;
 
-  const isResolved = ticket.status === "DONE";
+  const isResolved = ticket.status === "DONE" || ticket.status === "CLOSED";
 
   const handleSend = () => {
     const trimmed = body.trim();
@@ -463,7 +474,36 @@ export function TicketDetailSheet({
 
         <SheetFooter className="shrink-0 flex-row justify-between border-t bg-surface-sunken/40 px-5 py-3">
           <AISuggestReplyButton ticketId={ticket.id} />
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={() => setConfirmDelete(true)}
+              disabled={deleteTicket.isPending}
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" />
+              Delete ticket
+            </Button>
+          )}
         </SheetFooter>
+        <ConfirmDialog
+          open={confirmDelete}
+          onOpenChange={setConfirmDelete}
+          title="Delete this ticket?"
+          description={`"${ticket.title}" and its conversation will be removed for everyone. This cannot be undone.`}
+          confirmLabel="Delete ticket"
+          destructive
+          onConfirm={() =>
+            deleteTicket.mutate(ticket.id, {
+              onSuccess: () => {
+                toast.success("Ticket deleted");
+                onOpenChange(false);
+              },
+              onError: (e) => toast.error(getErrorMessage(e)),
+            })
+          }
+        />
       </SheetContent>
     </Sheet>
   );
