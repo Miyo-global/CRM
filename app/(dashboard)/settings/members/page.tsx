@@ -6,7 +6,9 @@ import {
   useInviteUser,
   useCancelInvitation,
   useUpdateMemberRole,
+  useSetPortalAccess,
 } from "@/lib/api/hooks/organization";
+import { useRolesList } from "@/lib/api/hooks/roles";
 import { useResetMfa, useResendInvitation } from "@/lib/api/hooks/mfa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -37,7 +39,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail } from "lucide-react";
+import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { resolveImageUrl } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/use-debounce";
@@ -46,11 +52,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
-import { ROLE_OPTIONS } from "@/lib/rbac/roles";
-import { getRoleLabel } from "@/lib/rbac/roles";
+import { ASSIGNABLE_ROLE_OPTIONS, getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
+import { canChangeRoleOf } from "@/lib/auth/role-change-rules";
 
-/** Every system role, labelled (A12, A13). */
-const ALL_ROLES = ROLE_OPTIONS;
+type RoleOption = { value: string; label: string };
+
+/**
+ * QA-ROLE-02: invite, and the role control on a member row, offer the same
+ * list — the assignable system roles plus the org's custom roles. Admin-level
+ * roles appear only for the Super Admin, the one person who may grant them.
+ */
+function useAssignableRoleOptions(actorRole: string | undefined): RoleOption[] {
+  const { data: orgRoles } = useRolesList();
+  const custom = (orgRoles ?? [])
+    .filter((role) => !isSystemRole(role.slug))
+    .map((role) => ({ value: role.slug, label: role.name }));
+  const system = ASSIGNABLE_ROLE_OPTIONS.filter(
+    (option) => actorRole === "CEO" || (option.value !== "ADMIN" && option.value !== "HR"),
+  );
+  return [...system, ...custom];
+}
 
 const countPill = "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-soft px-1.5 text-2xs font-semibold tabular-nums text-neutral-strong";
 
@@ -81,6 +102,7 @@ function MembersSettingsContent() {
   const currentUserRole = session?.user?.role;
   const currentUserId = session?.user?.id;
   const canManageMfa = currentUserRole === "CEO" || currentUserRole === "HR";
+  const roleOptions = useAssignableRoleOptions(currentUserRole);
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -105,6 +127,7 @@ function MembersSettingsContent() {
   const inviteUser = useInviteUser();
   const cancelInvitation = useCancelInvitation();
   const updateRole = useUpdateMemberRole();
+  const setPortalAccess = useSetPortalAccess();
   const resetMfa = useResetMfa();
   const resendInvitation = useResendInvitation();
 
@@ -161,13 +184,6 @@ function MembersSettingsContent() {
       toast.error("You cannot change your own role");
       return;
     }
-    if (currentRole === "CEO" && newRole !== "CEO") {
-      const ceoCount = membersData?.data.filter((m) => m.role === "CEO").length ?? 0;
-      if (ceoCount <= 1) {
-        toast.error("Cannot demote the last remaining CEO");
-        return;
-      }
-    }
     updateRole.mutate(
       { userId, role: newRole },
       {
@@ -175,7 +191,17 @@ function MembersSettingsContent() {
         onError: (err) => toast.error(getErrorMessage(err)),
       }
     );
-  }, [updateRole, currentUserId, membersData]);
+  }, [updateRole, currentUserId]);
+
+  const handlePortalAccess = useCallback((userId: string, enabled: boolean) => {
+    setPortalAccess.mutate(
+      { userId, enabled },
+      {
+        onSuccess: () => toast.success(enabled ? "Portal access restored" : "Portal access switched off"),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      }
+    );
+  }, [setPortalAccess]);
 
   const handleResetMfa = useCallback((userId: string) => {
     resetMfa.mutate(
@@ -254,7 +280,7 @@ function MembersSettingsContent() {
                       <Select value={inviteRole} onValueChange={setInviteRole}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {ALL_ROLES.filter(r => r.value !== "CEO").map(r => (
+                          {roleOptions.map(r => (
                             <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                           ))}
                         </SelectContent>
@@ -335,6 +361,9 @@ function MembersSettingsContent() {
                               key={member.userId}
                               member={member}
                               onUpdateRole={handleUpdateRole}
+                              onPortalAccess={handlePortalAccess}
+                              actor={{ userId: currentUserId, role: currentUserRole }}
+                              roleOptions={roleOptions}
                               onResetMfa={handleResetMfa}
                               canManageMfa={canManageMfa}
                               isResettingMfa={resetMfa.isPending}
@@ -392,7 +421,7 @@ function MembersSettingsContent() {
                     <Select value={inviteRole} onValueChange={setInviteRole}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {ALL_ROLES.filter(r => r.value !== "CEO").map(r => (
+                        {roleOptions.map(r => (
                           <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -460,16 +489,31 @@ interface MemberTableRowProps {
     role: string;
     joinedAt?: string | Date | null;
     totpEnabled?: boolean;
+    hasDashboardAccess?: boolean;
   };
+  actor: { userId: string | undefined; role: string | undefined };
+  roleOptions: RoleOption[];
   onUpdateRole: (userId: string, newRole: string, currentRole: string) => void;
+  onPortalAccess: (userId: string, enabled: boolean) => void;
   onResetMfa: (userId: string) => void;
   canManageMfa: boolean;
   isResettingMfa: boolean;
 }
 
-function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isResettingMfa }: MemberTableRowProps) {
+function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAccess, onResetMfa, canManageMfa, isResettingMfa }: MemberTableRowProps) {
   const handleRoleChange = useCallback((newRole: string) => onUpdateRole(member.userId, newRole, member.role), [member.userId, member.role, onUpdateRole]);
   const handleResetMfa = useCallback(() => onResetMfa(member.userId), [member.userId, onResetMfa]);
+  const portalOn = member.hasDashboardAccess !== false;
+  const handlePortalAccess = useCallback(() => onPortalAccess(member.userId, !portalOn), [member.userId, portalOn, onPortalAccess]);
+
+  // QA-AUTH-01: no role control on the Super Admin's row, on your own row, or
+  // on an Admin-level row unless you are the Super Admin. The server applies
+  // the same rule.
+  const canChangeRole = canChangeRoleOf(actor, { userId: member.userId, role: member.role });
+  // QA-BUG-37: the same people can switch off portal access or start the
+  // termination workflow — never for the owner, never for yourself.
+  const canManageMember = canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId);
+  const currentRoleListed = roleOptions.some((r) => r.value === member.role);
 
   return (
     <TableRow>
@@ -528,14 +572,41 @@ function MemberTableRow({ member, onUpdateRole, onResetMfa, canManageMfa, isRese
               </AlertDialogContent>
             </AlertDialog>
           )}
-          <Select value={member.role} onValueChange={handleRoleChange}>
-            <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ALL_ROLES.map(r => (
-                <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {canChangeRole && (
+            <Select value={member.role} onValueChange={handleRoleChange}>
+              <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {!currentRoleListed && (
+                  <SelectItem value={member.role} className="text-xs" disabled>{getRoleLabel(member.role)}</SelectItem>
+                )}
+                {roleOptions.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {canManageMember && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${member.name || member.email}`}>
+                  <MoreHorizontal aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handlePortalAccess}>
+                  {portalOn ? <ShieldOff aria-hidden /> : <LogIn aria-hidden />}
+                  {portalOn ? "Switch off portal access" : "Restore portal access"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild variant="destructive">
+                  <Link href={`/hr/termination?employee=${encodeURIComponent(member.userId)}`}>
+                    <UserX aria-hidden />
+                    Start termination
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </TableCell>
     </TableRow>

@@ -70,6 +70,15 @@ export async function PATCH(
     const body = await parseBody(req, updateEmployeeProfileBodySchema);
     let previousRole: string | null = null;
 
+    // QA-AUTH-01: the Super Admin's record is theirs to run. An Admin cannot
+    // switch off the owner's portal access, or their own.
+    if (body.hasDashboardAccess === false && (isSelf || targetMember.role === "CEO")) {
+      return err(
+        isSelf ? "You cannot switch off your own portal access." : "The Super Admin's portal access cannot be switched off.",
+        403,
+      );
+    }
+
     if (body.isActive === false) {
       return err(
         "Use the termination workflow to deactivate an employee (so CEO approval, full-and-final settlement, and asset returns are recorded).",

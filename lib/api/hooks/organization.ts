@@ -133,6 +133,18 @@ export const useUpdateMemberRole = () => {
   });
 };
 
+/** QA-BUG-37: switch a member's portal sign-in off or back on from the members table. */
+export const useSetPortalAccess = () => {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { userId: string; enabled: boolean }>({
+    mutationFn: ({ userId, enabled }) =>
+      apiClient.patch(`/hr/employees/${userId}`, { hasDashboardAccess: enabled }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.organization.members() });
+    },
+  });
+};
+
 export const useRemoveMember = () => {
   const queryClient = useQueryClient();
   return useMutation<{ success: boolean }, Error, string>({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
@@ -75,8 +76,11 @@ export default function TerminationPage() {
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState("");
+  // QA-BUG-37: "Start termination" on the members table lands here with the
+  // person already chosen.
+  const preselectedUserId = useSearchParams().get("employee") ?? "";
+  const [createOpen, setCreateOpen] = useState(preselectedUserId !== "");
+  const [selectedUserId, setSelectedUserId] = useState(preselectedUserId);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [explanation, setExplanation] = useState("");
   const [effectiveDate, setEffectiveDate] = useState("");
