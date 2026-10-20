@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
+import { useHrOrgChart } from "@/lib/api/hooks/hr/employees";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,15 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, resolveImageUrl } from "@/lib/utils";
-import { Users, Network, Building2 } from "lucide-react";
+import { Users, Network, Building2, ChevronRight } from "lucide-react";
 import type { Employee } from "@/types/hr";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
+import {
+  buildTree, countSubtree, departmentFallback, type TreeNode as OrgTreeNode,
+} from "@/features/hr/org-chart/org-tree";
 
-interface TreeNode {
-  employee: Employee;
-  children: TreeNode[];
-}
+type TreeNode = OrgTreeNode<Employee>;
 
 const ROLE_DOT: Record<string, string> = {
   CEO: "bg-warning-500",
@@ -81,69 +82,14 @@ function dedupeEmployees(employees: Employee[]): Employee[] {
   return out;
 }
 
-function buildTree(employees: Employee[]): TreeNode[] {
-  const map = new Map<string, TreeNode>();
-  const roots: TreeNode[] = [];
-
-  for (const emp of employees) {
-    map.set(emp.id, { employee: emp, children: [] });
-  }
-
-  for (const emp of employees) {
-    const node = map.get(emp.id)!;
-    if (emp.reportingTo && map.has(emp.reportingTo) && emp.reportingTo !== emp.id) {
-      map.get(emp.reportingTo)!.children.push(node);
-    } else {
-      roots.push(node);
-    }
-  }
-
-  const visited = new Set<string>();
-  const inStack = new Set<string>();
-
-  function detectAndBreakCycles(nodeId: string): boolean {
-    if (inStack.has(nodeId)) return true;
-    if (visited.has(nodeId)) return false;
-    visited.add(nodeId);
-    inStack.add(nodeId);
-    const node = map.get(nodeId);
-    if (node) {
-      node.children = node.children.filter((child) => {
-        const isCycle = detectAndBreakCycles(child.employee.id);
-        if (isCycle) {
-          roots.push(child);
-          return false;
-        }
-        return true;
-      });
-    }
-    inStack.delete(nodeId);
-    return false;
-  }
-
-  for (const root of [...roots]) {
-    detectAndBreakCycles(root.employee.id);
-  }
-
-  const priority: Record<string, number> = { CEO: 0, ADMIN: 1, HR: 2 };
-  function sortNodes(nodes: TreeNode[]) {
-    nodes.sort((a, b) => {
-      const pa = priority[canonicalRole(a.employee.role)] ?? 99;
-      const pb = priority[canonicalRole(b.employee.role)] ?? 99;
-      return pa !== pb ? pa - pb : displayName(a.employee).localeCompare(displayName(b.employee));
-    });
-    nodes.forEach((n) => sortNodes(n.children));
-  }
-  sortNodes(roots);
-  return roots;
-}
-
+/** Name and designation, each clamped to two lines with the full text as a tooltip (QA-DES-04). */
 function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" }) {
   const isSm = size === "sm";
+  const title = emp.designation ?? roleDisplay(emp.role);
   return (
     <div className={cn(
       "flex items-center gap-2.5 rounded-lg border border-border bg-card p-2.5 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-md",
-      isSm ? "w-60" : "w-64"
+      isSm ? "w-56" : "w-60"
     )}>
       <Avatar className={isSm ? "size-8" : "size-9"}>
         <AvatarImage src={resolveImageUrl(emp.image)} alt="" />
@@ -153,35 +99,29 @@ function PersonCard({ emp, size = "md" }: { emp: Employee; size?: "sm" | "md" })
       </Avatar>
       <div className="min-w-0 flex-1">
         <p
-          className={cn("font-medium break-words", isSm ? "text-xs" : "text-sm")}
+          className={cn("flex items-center gap-1.5 font-medium", isSm ? "text-xs" : "text-sm")}
           title={emp.email ? `${displayName(emp)} · ${emp.email}` : displayName(emp)}
         >
-          {displayName(emp)}
+          <span
+            className={cn("size-2 shrink-0 rounded-full", ROLE_DOT[canonicalRole(emp.role)] ?? "bg-ink-300")}
+            aria-hidden="true"
+          />
+          <span className="line-clamp-2 break-words">{displayName(emp)}</span>
         </p>
-        <p className="text-2xs text-muted-foreground break-words">
-          {emp.designation ?? roleDisplay(emp.role)}
-          {emp.employeeId ? ` · ${emp.employeeId}` : ""}
+        <p className="line-clamp-2 break-words text-2xs text-muted-foreground" title={title}>
+          {title}
         </p>
       </div>
-      <Badge variant="outline" className="shrink-0 gap-1.5">
-        <span
-          className={cn("size-2 shrink-0 rounded-full", ROLE_DOT[canonicalRole(emp.role)] ?? "bg-ink-300")}
-          aria-hidden="true"
-        />
-        {roleDisplay(emp.role)}
-      </Badge>
     </div>
   );
 }
 
 const MAX_TREE_DEPTH = 20;
 
-function countSubtree(node: TreeNode): number {
-  return 1 + node.children.reduce((sum, child) => sum + countSubtree(child), 0);
-}
-
 function TreeBranch({ node, depth = 0, isLast = false }: { node: TreeNode; depth?: number; isLast?: boolean }) {
   const hasChildren = node.children.length > 0 && depth < MAX_TREE_DEPTH;
+  // The first two levels start open; deeper teams start collapsed.
+  const [open, setOpen] = useState(depth < 2);
 
   return (
     <div className="relative">
@@ -201,13 +141,20 @@ function TreeBranch({ node, depth = 0, isLast = false }: { node: TreeNode; depth
         <div className="flex items-center gap-2">
           <PersonCard emp={node.employee} size={depth > 1 ? "sm" : "md"} />
           {hasChildren && (
-            <Badge variant="secondary" className="tabular-nums">
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-label={`${open ? "Collapse" : "Expand"} ${displayName(node.employee)}'s team`}
+              className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs tabular-nums text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:focus-ring"
+            >
+              <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} aria-hidden="true" />
               {countSubtree(node) - 1} in team
-            </Badge>
+            </button>
           )}
         </div>
 
-        {hasChildren && (
+        {hasChildren && open && (
           <div className="mt-2 ml-4 space-y-2">
             {node.children.map((child, idx) => (
               <TreeBranch
@@ -247,15 +194,21 @@ function TreeLegend() {
 export default function OrgChartPage() {
   const { data: employeesRaw, isLoading, isError, error, refetch } = useHrEmployees();
   const { data: departments } = useHrDepartments();
+  // /hr/employees strips the reporting chain for non-admins (QA-0062), which
+  // left everyone's chart flat; the org-chart endpoint carries it for all.
+  const { data: orgChart } = useHrOrgChart();
 
   const employees = useMemo(() => {
     const raw = (Array.isArray(employeesRaw)
       ? employeesRaw
       : (employeesRaw as { data?: Employee[] })?.data ?? []) as Employee[];
-    return dedupeEmployees(raw);
-  }, [employeesRaw]);
+    const managerOf = new Map((orgChart ?? []).map((n) => [n.id, n.reportingTo]));
+    return dedupeEmployees(raw).map((e) =>
+      managerOf.has(e.id) ? { ...e, reportingTo: managerOf.get(e.id) ?? null } : e,
+    );
+  }, [employeesRaw, orgChart]);
 
-  const tree = useMemo(() => buildTree(employees), [employees]);
+  const tree = useMemo(() => buildTree(employees, displayName), [employees]);
 
   // True only if at least one person actually has a direct report. When every
   // employee is a root (no reportingTo set), the "tree" is really a flat list,
@@ -267,6 +220,11 @@ export default function OrgChartPage() {
     departments?.forEach((d) => map.set(d.id, d.name));
     return map;
   }, [departments]);
+
+  const fallbackGroups = useMemo(
+    () => departmentFallback(tree, employees.length, (id) => (id && deptMap.get(id)) || "No department"),
+    [tree, employees.length, deptMap],
+  );
 
   const deptGroups = useMemo(() => {
     const groups = new Map<string, Employee[]>();
@@ -353,7 +311,7 @@ export default function OrgChartPage() {
               </div>
               {!hasHierarchy && employees.length > 0 && (
                 <div role="note" className="mx-4 rounded-lg bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
-                  No reporting managers are assigned yet, so everyone appears at the top level.
+                  No reporting managers are assigned yet, so people are grouped by department.
                   Set each person&apos;s manager in{" "}
                   <span className="font-medium">Employees → Edit → Reporting Manager</span>{" "}
                   to build the hierarchy.
@@ -364,13 +322,31 @@ export default function OrgChartPage() {
                 type="auto"
               >
                 <div className="min-w-[720px] space-y-2 p-4">
-                  {tree.map((root, idx) => (
-                    <TreeBranch
-                      key={root.employee.id}
-                      node={root}
-                      isLast={idx === tree.length - 1}
-                    />
-                  ))}
+                  {fallbackGroups
+                    ? fallbackGroups.map((group) => (
+                        <details key={group.department} open className="group/dept">
+                          <summary className="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md px-1 text-sm font-semibold hover:bg-accent focus-visible:focus-ring">
+                            <ChevronRight className="size-4 transition-transform group-open/dept:rotate-90" aria-hidden="true" />
+                            <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
+                            {group.department}
+                            <Badge variant="secondary" className="tabular-nums">
+                              {group.nodes.reduce((sum, n) => sum + countSubtree(n), 0)}
+                            </Badge>
+                          </summary>
+                          <div className="mt-2 ml-6 space-y-2">
+                            {group.nodes.map((root, idx) => (
+                              <TreeBranch key={root.employee.id} node={root} depth={1} isLast={idx === group.nodes.length - 1} />
+                            ))}
+                          </div>
+                        </details>
+                      ))
+                    : tree.map((root, idx) => (
+                        <TreeBranch
+                          key={root.employee.id}
+                          node={root}
+                          isLast={idx === tree.length - 1}
+                        />
+                      ))}
                   {tree.length === 0 && (
                     <EmptyState
                       title="No reporting structure found"
