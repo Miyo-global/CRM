@@ -19,7 +19,7 @@ function FilterChip({ active = false, count, onRemove, className, children, ...p
       data-slot="filter-pill"
       data-active={active || undefined}
       className={cn(
-        "inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors",
+        "inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors pointer-coarse:h-11",
         active
           ? "border-gold-300 bg-brand-soft text-brand-soft-foreground"
           : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -45,7 +45,7 @@ function FilterChip({ active = false, count, onRemove, className, children, ...p
           type="button"
           aria-label="Remove filter"
           onClick={onRemove}
-          className="inline-flex size-5 items-center justify-center rounded-full outline-none hover:bg-foreground/10 focus-visible:focus-ring"
+          className="inline-flex size-5 items-center justify-center rounded-full outline-none hover:bg-foreground/10 focus-visible:focus-ring pointer-coarse:size-9"
         >
           <X className="size-3" aria-hidden="true" />
         </button>

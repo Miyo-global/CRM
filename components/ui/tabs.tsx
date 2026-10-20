@@ -41,8 +41,9 @@ function TabsList({
         "group/tabs-list text-muted-foreground inline-flex max-w-full items-center justify-start overflow-x-auto",
         variant === "underline"
           ? // Page tabs overflow on phones: scroll with a faded edge so the cut reads as "more" (QA-RESP-06).
-            "h-10 w-full gap-6 border-b border-border overscroll-x-contain max-md:mask-x-from-95%"
-          : "h-8 w-full sm:w-fit gap-0.5 rounded-md bg-muted p-0.5",
+            "h-10 w-full gap-6 border-b border-border overscroll-x-contain max-md:mask-x-from-95% pointer-coarse:h-11"
+          : // View toggles are segmented lists: 44px tall on touch (QA-RESP-07).
+            "h-8 w-full sm:w-fit gap-0.5 rounded-md bg-muted p-0.5 pointer-coarse:h-11",
         className
       )}
       {...props}
@@ -62,7 +63,7 @@ function TabsTrigger({
         "transition-[color,background-color,box-shadow] duration-150 focus-visible:focus-ring disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // segmented (default)
-        "h-full flex-1 sm:flex-initial rounded-sm px-3 text-muted-foreground hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs",
+        "h-full flex-1 sm:flex-initial rounded-sm px-3 pointer-coarse:min-w-11 text-muted-foreground hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs",
         // underline
         "group-data-[variant=underline]/tabs-list:flex-initial group-data-[variant=underline]/tabs-list:rounded-none group-data-[variant=underline]/tabs-list:px-0.5",
         "group-data-[variant=underline]/tabs-list:data-[state=active]:bg-transparent group-data-[variant=underline]/tabs-list:data-[state=active]:shadow-none",
