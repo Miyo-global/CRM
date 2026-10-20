@@ -40,6 +40,7 @@ import {
   DOC_TYPE_NAME_HINT,
 } from "@/lib/validations/document-types";
 import { SYSTEM_ROLES, ROLE_LABELS, getRoleLabel } from "@/lib/rbac/roles";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 import {
   Tooltip,
   TooltipContent,
@@ -153,7 +154,9 @@ function isDuplicateDocumentType(
 export default function DocumentTypesPage() {
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const isHROrCEO = role === "HR" || role === "CEO";
+  // Same roles the API allows (withAdmin). Admins were left out, so an Admin
+  // saw an empty page with no way to add a type (QA-BUG-10).
+  const isHROrCEO = isAdminOrOwner(role);
 
   const { data, isLoading, isError, error, refetch } = useDocumentTypes();
   const createMutation = useCreateDocumentType();
@@ -324,8 +327,13 @@ export default function DocumentTypesPage() {
         <QueryErrorState title="Couldn't load document types" error={error} onRetry={() => void refetch()} />
       ) : list.length === 0 ? (
         <EmptyState
-          title="No document types configured"
-          description="Add document types to define what employees must submit during onboarding."
+          compact
+          title="No document types yet"
+          description={
+            isHROrCEO
+              ? "Add the documents employees must submit during onboarding, like PAN or a degree certificate."
+              : "HR hasn't set up the documents to submit during onboarding yet."
+          }
           action={
             isHROrCEO
               ? { label: "Add Document Type", onClick: openCreate }
