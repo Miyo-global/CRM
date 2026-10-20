@@ -88,4 +88,15 @@ describe("resolveTier", () => {
   it("rate-limits credential login", () => {
     expect(resolveTier("/api/auth/callback/credentials")).toBe("login");
   });
+
+  it("rate-limits every password and invitation endpoint (QA-SEC-11)", () => {
+    for (const path of [
+      "/api/auth/forgot-password",
+      "/api/auth/reset-password",
+      "/api/auth/setup-password",
+      "/api/auth/accept-invitation",
+    ]) {
+      expect(resolveTier(path)).toBe("auth-write");
+    }
+  });
 });
