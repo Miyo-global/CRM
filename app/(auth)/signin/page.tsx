@@ -1,7 +1,7 @@
 "use client";
 
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -32,6 +32,13 @@ export default function SignInPage() {
     resolver: zodResolver(signinSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  // An accepted invitation that could not sign in directly lands here with
+  // the address prefilled (QA-BUG-04).
+  useEffect(() => {
+    const email = new URLSearchParams(window.location.search).get("email");
+    if (email) form.setValue("email", email);
+  }, [form]);
 
   const getCallbackUrl = () => {
     if (typeof window !== "undefined") {

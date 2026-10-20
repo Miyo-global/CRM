@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery } from "@tanstack/react-query";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import { PasswordStrengthIndicator } from "@/components/auth/password-strength-i
 import { PasswordConfirmField } from "@/components/auth/password-confirm-field";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, X, Shield } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { getRoleLabel } from "@/lib/rbac/roles";
 
 const invitationSchema = z.object({
   firstName: z.string().optional(),
@@ -76,9 +78,22 @@ export default function InvitationPage() {
         password: values.password,
       },
       {
-        onSuccess: () => {
-          toast.success("Account created! Redirecting to dashboard...");
-          router.push("/dashboard");
+        // Sign straight in with the password just chosen; the old toast
+        // promised the dashboard and then the proxy bounced to /signin
+        // (QA-BUG-04).
+        onSuccess: async () => {
+          const result = await signIn("credentials", {
+            email: invitation.email,
+            password: values.password,
+            redirect: false,
+          }).catch(() => null);
+          if (result?.ok && !result.error) {
+            toast.success("Account created. Welcome!");
+            window.location.href = "/dashboard";
+            return;
+          }
+          toast.success("Account created. Sign in to continue.");
+          router.push(`/signin?email=${encodeURIComponent(invitation.email)}`);
         },
         onError: (error) => {
           toast.error(getErrorMessage(error));
@@ -129,7 +144,7 @@ export default function InvitationPage() {
               <Shield className="size-3" aria-hidden="true" />
               Assigned Role
             </p>
-            <p className="truncate text-sm font-medium text-foreground">{invitation.role}</p>
+            <p className="truncate text-sm font-medium text-foreground">{getRoleLabel(invitation.role)}</p>
           </div>
         </div>
       </div>

@@ -74,6 +74,10 @@ export async function POST(req: NextRequest) {
       lastName: input.lastName,
       emailVerified: new Date(),
       role: invitation.role,
+      // The column defaults to off for HR-created records; someone who was
+      // deliberately invited should land in the app, not on "Portal Access
+      // Restricted" (QA-BUG-04).
+      hasDashboardAccess: true,
       ...(employeeId ? { employeeId } : {}),
     });
 
