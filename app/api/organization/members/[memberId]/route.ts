@@ -3,7 +3,7 @@ import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
+import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createAuditLog } from "@/lib/audit-log";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { z } from "zod";
@@ -20,8 +20,12 @@ export async function PATCH(
     try {
       const { memberId: userId } = await params;
 
-      if (!isCEO(session.user.role)) {
-        return err("Only organization owners can update member roles", 403);
+      // Admins and HR may move ordinary members; checkRoleAssignment keeps
+      // Admin-level roles and the Super Admin for the Super Admin alone
+      // (QA-AUTH-01). A CEO-only gate here left an org whose owner held
+      // plain Admin unable to change any role.
+      if (!isAdminOrOwner(session.user.role)) {
+        return err("Only admins can update member roles", 403);
       }
 
       const body = await req.json();
@@ -91,6 +95,14 @@ export async function DELETE(
 
       if (!isAdminOrOwner(session.user.role)) {
         return err("Forbidden", 403);
+      }
+
+      const target = await db.query.organizationMembers.findFirst({
+        where: and(eq(organizationMembers.userId, userId), eq(organizationMembers.orgId, session.orgId)),
+        columns: { role: true },
+      });
+      if (target?.role === "CEO") {
+        return err("The Super Admin cannot be removed from the organization", 403);
       }
 
       await db
