@@ -37,9 +37,18 @@ export const createProjectInputSchema = z.object({
   path: ["endDate"],
 });
 
+/** Same limit in the form, the create route and the edit route (QA-BUG-22). */
+export const TICKET_TITLE_MAX = 200;
+
+export const ticketTitleSchema = z
+  .string()
+  .trim()
+  .min(1, "Title is required")
+  .max(TICKET_TITLE_MAX, `Title must be at most ${TICKET_TITLE_MAX} characters`);
+
 export const createTicketInputSchema = z.object({
   projectId: z.number().int().positive(),
-  title: z.string().min(1, "Title is required").max(500),
+  title: ticketTitleSchema,
   description: z.string().max(5000).optional(),
   type: ticketTypeSchema,
   priority: ticketPrioritySchema.optional(),
@@ -57,7 +66,7 @@ export const createTicketInputSchema = z.object({
 
 export const updateTicketInputSchema = z.object({
   ticketId: z.number().int().positive(),
-  title: z.string().min(1).optional(),
+  title: ticketTitleSchema.optional(),
   description: z.string().optional(),
   type: ticketTypeSchema.optional(),
   status: ticketStatusSchema.optional(),

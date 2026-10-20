@@ -13,7 +13,7 @@ const bodySchema = z.object({
   // A rejection with no reason left the employee nothing to act on
   // (QA-0071).
   reason: z.string().trim().min(1, "Give a reason for the rejection.").max(500),
-  comment: z.string().optional(),
+  comment: z.string().max(1000).optional(),
 });
 
 export async function PUT(

@@ -14,6 +14,7 @@ import { createNotification, notifyByRoles } from "@/server/actions/create-notif
 import { leaveApproverRolesFor } from "@/lib/hr/leave-approvers";
 import { z } from "zod";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
+import { leaveReasonSchema } from "@/lib/validations/leave-request";
 import type { NextRequest } from "next/server";
 import { sendLeaveRequestEmail } from "@/lib/email";
 import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
@@ -25,7 +26,7 @@ const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
   startDate: z.string(),
   endDate: z.string(),
-  reason: z.string().trim().min(1, "Reason is required").max(500, "Reason must be 500 characters or less"),
+  reason: leaveReasonSchema,
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional().default("MEDIUM"),
   approverId: z.string().optional(),
   attachmentUrl: storedFileRefSchema.optional(),

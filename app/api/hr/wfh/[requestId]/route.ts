@@ -8,7 +8,7 @@ import { z } from "zod";
 
 const updateWfhSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
-  rejectionReason: z.string().optional(),
+  rejectionReason: z.string().max(1000).optional(),
 });
 
 export async function PATCH(

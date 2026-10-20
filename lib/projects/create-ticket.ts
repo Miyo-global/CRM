@@ -6,9 +6,10 @@ import { sendTicketAssignmentEmail } from "@/lib/email";
 import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
 import { recordTicketActivity } from "@/lib/projects/record-ticket-activity";
+import { ticketTitleSchema } from "@/lib/validations/project";
 
 export const createTicketSchema = z.object({
-  title: z.string().trim().min(1).max(500),
+  title: ticketTitleSchema,
   description: z.string().optional(),
   type: z.enum(["TASK", "BUG", "STORY", "EPIC", "SUBTASK"]).default("TASK"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),

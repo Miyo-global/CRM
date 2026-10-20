@@ -6,6 +6,7 @@ import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
+import { LEAVE_REASON_MAX } from "@/lib/validations/leave-request";
 import { sendWfhRequestEmail } from "@/lib/email/hr-leaves";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
@@ -17,7 +18,7 @@ import { dateOnlySchema } from "@/lib/validations/date";
 const createWfhApiSchema = z.object({
   date: dateOnlySchema,
   endDate: dateOnlySchema.optional(),
-  reason: z.string().optional(),
+  reason: z.string().max(LEAVE_REASON_MAX).optional(),
 });
 
 export async function GET() {

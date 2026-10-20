@@ -52,7 +52,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Upload, Link as LinkIcon, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { createTicketInputSchema } from "@/lib/validations/project";
+import { createTicketInputSchema, TICKET_TITLE_MAX } from "@/lib/validations/project";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -323,7 +323,7 @@ export function CreateTicketDialog({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="E.g. Implement login page" {...field} className="text-base font-medium capitalize" />
+                    <Input placeholder="E.g. Implement login page" maxLength={TICKET_TITLE_MAX} {...field} className="text-base font-medium" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

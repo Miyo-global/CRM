@@ -34,6 +34,7 @@ import { TicketAttachments } from "./ticket-attachments";
 import { TicketConflictDialog } from "./ticket-conflict-dialog";
 import { TicketHistory } from "./ticket-history";
 import { useTicketMembers } from "./use-ticket-members";
+import { TICKET_TITLE_MAX } from "@/lib/validations/project";
 
 type Fields = Record<string, unknown>;
 
@@ -206,6 +207,7 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
                 if (e.target.value.trim()) debouncedSave({ title: e.target.value });
               }}
               aria-label="Ticket title"
+              maxLength={TICKET_TITLE_MAX}
               className="-mx-2 h-auto border-transparent bg-transparent px-2 py-1 font-display text-xl font-semibold shadow-none hover:border-border focus-visible:border-input"
               placeholder="Ticket title"
             />

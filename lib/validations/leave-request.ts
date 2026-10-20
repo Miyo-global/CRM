@@ -15,6 +15,15 @@ const leaveAttachmentSchema = storedFileRefSchema;
 
 export const MAX_LEAVE_ATTACHMENTS = 1;
 
+/** One limit for the form, the apply route and the reason edit (QA-BUG-22). */
+export const LEAVE_REASON_MAX = 1000;
+
+export const leaveReasonSchema = z
+  .string()
+  .trim()
+  .min(1, "Reason is required")
+  .max(LEAVE_REASON_MAX, `Reason must be ${LEAVE_REASON_MAX} characters or less`);
+
 /** Parse YYYY-MM-DD (or ISO prefix) as local calendar date — avoids UTC off-by-one. */
 export function parseLocalDate(value: string): Date {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
@@ -113,11 +122,7 @@ export function createLeaveRequestSchema(hooks: LeaveValidationHooks = {}) {
       halfDay: z.boolean(),
       halfDayPeriod: z.enum(["AM", "PM"]).optional(),
       priority: leaveRequestPrioritySchema,
-      reason: z
-        .string()
-        .trim()
-        .min(1, "Reason is required")
-        .max(500, "Reason must be 500 characters or less"),
+      reason: leaveReasonSchema,
       attachments: z.array(leaveAttachmentSchema).max(
         MAX_LEAVE_ATTACHMENTS,
         `You can upload at most ${MAX_LEAVE_ATTACHMENTS} attachment`,

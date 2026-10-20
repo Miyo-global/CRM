@@ -19,9 +19,10 @@ import { diffTicketActivity, recordTicketActivity } from "@/lib/projects/record-
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { notifyTicketUpdate } from "@/lib/projects/ticket-update-notifications";
 import { ticketConflict, ticketResponseColumns, userColumns } from "@/lib/projects/ticket-columns";
+import { ticketTitleSchema } from "@/lib/validations/project";
 
 const updateTicketSchema = z.object({
-  title: z.string().trim().min(1).max(500).optional(),
+  title: ticketTitleSchema.optional(),
   description: z.string().nullable().optional(),
   type: z.string().max(40).optional(),
   status: z.string().min(1).max(80).optional(),
