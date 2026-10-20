@@ -380,6 +380,17 @@ export const useCreateAnnouncement = () => {
   });
 };
 
+export const useUpdateAnnouncement = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: number; content: string; isPinned?: boolean }) =>
+      apiClient.patch<Announcement>(`/dashboard/announcements?id=${id}`, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.dashboard.announcements() });
+    },
+  });
+};
+
 export const useDeleteAnnouncement = () => {
   const qc = useQueryClient();
   return useMutation({

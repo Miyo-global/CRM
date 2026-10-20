@@ -16,9 +16,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import {
   useAnnouncements,
   useCreateAnnouncement,
+  useUpdateAnnouncement,
   useDeleteAnnouncement,
 } from "@/lib/api/hooks/dashboard";
-import { Megaphone, X, Pin, Plus } from "lucide-react";
+import { Megaphone, X, Pin, Plus, Pencil } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -33,29 +34,58 @@ export function AnnouncementsWidget() {
 
   const { data, isLoading, error, refetch } = useAnnouncements();
   const createMutation = useCreateAnnouncement();
+  const updateMutation = useUpdateAnnouncement();
   const deleteMutation = useDeleteAnnouncement();
 
   const [showForm, setShowForm] = useState(false);
   const [content, setContent] = useState("");
   const [isPinned, setIsPinned] = useState(false);
+  // The create form doubles as the edit form (BUG-16).
+  const [editingId, setEditingId] = useState<number | null>(null);
   // One click on X used to delete with no way back (BUG-34).
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
+  const closeForm = () => {
+    setContent("");
+    setIsPinned(false);
+    setEditingId(null);
+    setShowForm(false);
+  };
+
+  const openEdit = (ann: { id: number; content: string; isPinned: boolean }) => {
+    setEditingId(ann.id);
+    setContent(ann.content);
+    setIsPinned(ann.isPinned);
+    setShowForm(true);
+  };
+
   const handleSubmit = () => {
     if (!content.trim()) return;
+    if (editingId !== null) {
+      updateMutation.mutate(
+        { id: editingId, content: content.trim(), isPinned },
+        {
+          onSuccess: () => {
+            closeForm();
+            toast.success("Announcement updated");
+          },
+          onError: () => toast.error("Failed to update announcement"),
+        }
+      );
+      return;
+    }
     createMutation.mutate(
       { content: content.trim(), isPinned },
       {
         onSuccess: () => {
-          setContent("");
-          setIsPinned(false);
-          setShowForm(false);
+          closeForm();
           toast.success("Announcement posted");
         },
         onError: () => toast.error("Failed to post announcement"),
       }
     );
   };
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id, {
@@ -75,7 +105,7 @@ export function AnnouncementsWidget() {
           <Button
             variant="ghost"
             size="xs"
-            onClick={() => setShowForm((v) => !v)}
+            onClick={() => (showForm ? closeForm() : setShowForm(true))}
             aria-label="Add announcement"
           >
             <Plus aria-hidden="true" />
@@ -85,7 +115,7 @@ export function AnnouncementsWidget() {
       }
       contentClassName="space-y-3"
     >
-      {showForm && isAdmin && (
+      {showForm && (isAdmin || editingId !== null) && (
         <div className="space-y-2 rounded-md border border-border bg-surface-sunken/40 p-3">
           {/* The server caps this at 2,000 characters; the box used to
               accept any length and fail on submit (QA-D007). */}
@@ -113,18 +143,18 @@ export function AnnouncementsWidget() {
               <Button
                 variant="ghost"
                 size="xs"
-                onClick={() => { setShowForm(false); setContent(""); }}
+                onClick={closeForm}
               >
                 Cancel
               </Button>
               <Button
                 size="xs"
                 onClick={handleSubmit}
-                loading={createMutation.isPending}
+                loading={isSaving}
                 disabled={!content.trim()}
-                aria-label="Post announcement"
+                aria-label={editingId !== null ? "Save announcement" : "Post announcement"}
               >
-                {createMutation.isPending ? "Posting..." : "Post"}
+                {editingId !== null ? (isSaving ? "Saving..." : "Save") : isSaving ? "Posting..." : "Post"}
               </Button>
             </div>
           </div>
@@ -172,6 +202,17 @@ export function AnnouncementsWidget() {
                     </span>
                   </div>
                 </div>
+                {(isAdmin || ann.authorId === session?.user?.id) && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => openEdit(ann)}
+                    aria-label={`Edit announcement from ${authorDisplay}`}
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil aria-hidden="true" />
+                  </Button>
+                )}
                 {isAdmin && (
                   <Button
                     variant="ghost"

@@ -450,6 +450,30 @@ export async function createAnnouncement(data: {
   return row;
 }
 
+/**
+ * Edits an announcement. `authorId` (set for non-admins) limits it to their
+ * own posts; returns null when nothing matched (BUG-16).
+ */
+export async function updateAnnouncement(
+  id: number,
+  orgId: string,
+  data: { content: string; isPinned?: boolean },
+  authorId?: string,
+) {
+  const [row] = await db
+    .update(announcements)
+    .set({ content: data.content, ...(data.isPinned !== undefined ? { isPinned: data.isPinned } : {}) })
+    .where(
+      and(
+        eq(announcements.id, id),
+        eq(announcements.orgId, orgId),
+        authorId ? eq(announcements.authorId, authorId) : undefined,
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
 export async function deleteAnnouncement(id: number, orgId: string) {
   await db
     .delete(announcements)

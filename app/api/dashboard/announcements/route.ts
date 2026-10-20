@@ -4,6 +4,7 @@ import { withAuth, ok, err, parseBody, parseQuery, toNumber } from "@/lib/api/he
 import {
   getActiveAnnouncements,
   createAnnouncement,
+  updateAnnouncement,
   deleteAnnouncement,
 } from "@/server/queries/dashboard";
 import { invalidateCache } from "@/lib/cache";
@@ -19,6 +20,12 @@ const createSchema = z.object({
 const deleteSchema = z.object({
   id: z.string(),
 });
+
+const updateSchema = createSchema.pick({ content: true, isPinned: true });
+
+function isAnnouncementAdmin(role: string | undefined) {
+  return role === "CEO" || role === "HR" || role === "ADMIN";
+}
 
 export async function GET() {
   return withAuth(async (session) => {
@@ -53,6 +60,20 @@ export async function POST(req: NextRequest) {
       logger.error("Failed to create announcement", error);
       return err("Failed to create announcement", 500);
     }
+  });
+}
+
+/** The author or an admin can edit an announcement (BUG-16). */
+export async function PATCH(req: NextRequest) {
+  return withAuth(async (session) => {
+    const numId = toNumber(parseQuery(req, deleteSchema).id);
+    if (numId === undefined) return err("Invalid id", 400);
+    const body = await parseBody(req, updateSchema);
+    const authorId = isAnnouncementAdmin(session.user.role) ? undefined : session.user.id;
+    const row = await updateAnnouncement(numId, session.orgId, body, authorId);
+    if (!row) return err("Announcement not found", 404);
+    await invalidateCache(CACHE_KEYS.announcementsList(session.orgId));
+    return ok(row);
   });
 }
 
