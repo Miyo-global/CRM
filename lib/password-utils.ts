@@ -1,13 +1,8 @@
 import { toneBar } from "@/lib/design/tones";
+import { passwordChecks } from "@/lib/utils/password-validation";
 
 export function getPasswordStrength(password: string) {
-  const checks = {
-    length: password.length >= 8,
-    lowercase: /[a-z]/.test(password),
-    uppercase: /[A-Z]/.test(password),
-    number: /\d/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-  };
+  const checks = passwordChecks(password);
   const passed = Object.values(checks).filter(Boolean).length;
   let level: "weak" | "fair" | "good" | "strong" = "weak";
   let color: string = toneBar.danger;

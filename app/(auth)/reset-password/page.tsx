@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { resetPassword } from "@/server/actions/auth-actions";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PASSWORD_REGEX } from "@/lib/password-utils";
+import { PASSWORD_REGEX, passwordChecks } from "@/lib/utils/password-validation";
 import { cn } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
 import { apiClient } from "@/lib/api-client";
@@ -70,7 +70,7 @@ function getPasswordStrength(password: string): {
   if (/[A-Z]/.test(password)) score++;
   if (/[a-z]/.test(password)) score++;
   if (/\d/.test(password)) score++;
-  if (/[@$!%*?&]/.test(password)) score++;
+  if (passwordChecks(password).special) score++;
 
   if (score <= 2) return { score: 1, label: "Weak", color: toneBar.danger };
   if (score <= 4) return { score: 2, label: "Medium", color: toneBar.warning };

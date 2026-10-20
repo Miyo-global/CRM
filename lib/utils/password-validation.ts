@@ -20,32 +20,46 @@ export const PASSWORD_RULES = {
 /** Same rule as validatePasswordStrength, for zod .regex() in forms. */
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,128}$/;
 
+/** Per-rule results; client checklists and the server read the same tests. */
+export function passwordChecks(password: string) {
+  return {
+    length: password.length >= PASSWORD_RULES.minLength && password.length <= PASSWORD_RULES.maxLength,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    // Any non-alphanumeric character counts (QA-BUG-03).
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+}
+
 export function validatePasswordStrength(password: string): {
   valid: boolean;
   score: number;
   missing: string[];
 } {
   const missing: string[] = [];
+  const checks = passwordChecks(password);
 
   if (password.length < PASSWORD_RULES.minLength) {
     missing.push(`At least ${PASSWORD_RULES.minLength} characters`);
+  } else if (!checks.length) {
+    missing.push(`At most ${PASSWORD_RULES.maxLength} characters`);
   }
-  if (!/[A-Z]/.test(password)) {
+  if (!checks.uppercase) {
     missing.push("At least one uppercase letter");
   }
-  if (!/[a-z]/.test(password)) {
+  if (!checks.lowercase) {
     missing.push("At least one lowercase letter");
   }
-  if (!/\d/.test(password)) {
+  if (!checks.number) {
     missing.push("At least one number");
   }
-  if (!/[^A-Za-z0-9]/.test(password)) {
+  if (!checks.special) {
     missing.push("At least one special character or space");
   }
 
-  const checks = 5;
-  const passed = checks - missing.length;
-  const score = Math.round((passed / checks) * 100);
+  const passed = Object.values(checks).filter(Boolean).length;
+  const score = Math.round((passed / 5) * 100);
 
   return {
     valid: missing.length === 0,

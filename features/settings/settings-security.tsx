@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PASSWORD_RULES } from "@/lib/utils/password-validation";
+import { PASSWORD_RULES, passwordChecks } from "@/lib/utils/password-validation";
 
 function getStrength(pw: string) {
   let s = 0;
@@ -22,7 +22,7 @@ function getStrength(pw: string) {
   if (/[A-Z]/.test(pw)) s++;
   if (/[a-z]/.test(pw)) s++;
   if (/\d/.test(pw)) s++;
-  if (/[@$!%*?&]/.test(pw)) s++;
+  if (passwordChecks(pw).special) s++;
   const level = s <= 2 ? 1 : s <= 4 ? 2 : s <= 5 ? 3 : 4;
   const colors = ["bg-danger-500", "bg-warning-400", "bg-success-400", "bg-success-500"];
   const labels = ["Weak", "Fair", "Good", "Strong"];
@@ -30,11 +30,11 @@ function getStrength(pw: string) {
 }
 
 const RULES: { label: string; test: (pw: string) => boolean }[] = [
-  { label: `${PASSWORD_RULES.minLength}–${PASSWORD_RULES.maxLength} characters`, test: (pw) => pw.length >= PASSWORD_RULES.minLength && pw.length <= PASSWORD_RULES.maxLength },
-  { label: "One uppercase letter", test: (pw) => /[A-Z]/.test(pw) },
-  { label: "One lowercase letter", test: (pw) => /[a-z]/.test(pw) },
-  { label: "One number", test: (pw) => /\d/.test(pw) },
-  { label: "One special character (@$!%*?&)", test: (pw) => /[@$!%*?&]/.test(pw) },
+  { label: `${PASSWORD_RULES.minLength}–${PASSWORD_RULES.maxLength} characters`, test: (pw) => passwordChecks(pw).length },
+  { label: "One uppercase letter", test: (pw) => passwordChecks(pw).uppercase },
+  { label: "One lowercase letter", test: (pw) => passwordChecks(pw).lowercase },
+  { label: "One number", test: (pw) => passwordChecks(pw).number },
+  { label: "One symbol or space", test: (pw) => passwordChecks(pw).special },
 ];
 
 function isPasswordValid(pw: string) {
