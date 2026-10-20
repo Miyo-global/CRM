@@ -48,13 +48,14 @@ interface PermissionGroupRowProps {
   isExpanded: boolean;
   enabledCount: number;
   isCEO: boolean;
+  builtIn: Set<string>;
   rolePermissions: Set<string>;
   onToggleGroup: (name: string) => void;
   onToggleAll: (perms: Permission[], enable: boolean) => void;
   onTogglePermission: (name: string) => void;
 }
 
-function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO, rolePermissions, onToggleGroup, onToggleAll, onTogglePermission }: PermissionGroupRowProps) {
+function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO, builtIn, rolePermissions, onToggleGroup, onToggleAll, onTogglePermission }: PermissionGroupRowProps) {
   const allEnabled = enabledCount === perms.length;
   const someEnabled = enabledCount > 0 && !allEnabled;
   const handleToggleGroup = useCallback(() => onToggleGroup(groupName), [groupName, onToggleGroup]);
@@ -95,7 +96,7 @@ function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO,
             key={perm.name}
             perm={perm}
             enabled={isCEO || rolePermissions.has(perm.name)}
-            isCEO={isCEO}
+            isCEO={isCEO || builtIn.has(perm.name)}
             onToggle={onTogglePermission}
           />
         ))}
@@ -115,9 +116,15 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
   const updateRole = useUpdateRole();
 
   const rolePermissions = new Set(role.permissions ?? []);
+  // A system role's defaults are always held; only additions are stored and
+  // toggled, so a checkbox never claims to remove what the code still grants.
+  const builtIn = new Set(role.defaultPermissions ?? []);
+  const storedAdditions = () => new Set((role.permissions ?? []).filter((name) => !builtIn.has(name)));
+  const withBuiltIn = (stored: string[]) => [...new Set([...builtIn, ...stored])];
 
   const togglePermission = (permName: string) => {
-    const current = new Set(role.permissions ?? []);
+    if (builtIn.has(permName)) return;
+    const current = storedAdditions();
     if (current.has(permName)) {
       current.delete(permName);
     } else {
@@ -128,7 +135,7 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
       { id: role.id, permissions: newPermissions },
       {
         onSuccess: () => {
-          onUpdate({ ...role, permissions: newPermissions });
+          onUpdate({ ...role, permissions: withBuiltIn(newPermissions) });
           toast.success("Permissions updated");
         },
       }
@@ -145,8 +152,9 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
   };
 
   const toggleAllInGroup = (perms: Permission[], enable: boolean) => {
-    const current = new Set(role.permissions ?? []);
+    const current = storedAdditions();
     for (const p of perms) {
+      if (builtIn.has(p.name)) continue;
       if (enable) current.add(p.name);
       else current.delete(p.name);
     }
@@ -155,7 +163,7 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
       { id: role.id, permissions: newPermissions },
       {
         onSuccess: () => {
-          onUpdate({ ...role, permissions: newPermissions });
+          onUpdate({ ...role, permissions: withBuiltIn(newPermissions) });
           toast.success("Permissions updated");
         },
       }
@@ -198,6 +206,7 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
               groupName={groupName}
               perms={perms}
               isExpanded={expandedGroups.has(groupName)}
+              builtIn={builtIn}
               enabledCount={perms.filter((p) => rolePermissions.has(p.name)).length}
               isCEO={isCEO}
               rolePermissions={rolePermissions}

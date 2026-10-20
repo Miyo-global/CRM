@@ -85,7 +85,10 @@ export interface Role {
   name: string;
   slug: string;
   isSystem: boolean;
+  /** Effective permissions: the role's built-in defaults plus anything added. */
   permissions: string[];
+  /** Built-in to a system role; always held, so not toggleable (QA-ROLE-03). */
+  defaultPermissions?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
