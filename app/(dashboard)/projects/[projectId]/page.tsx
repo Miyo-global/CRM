@@ -35,7 +35,10 @@ export default function ProjectBoardPage({ params }: PageProps) {
   const router = useRouter();
 
   const view = (searchParams.get("view") as ViewType) ?? "board";
-  const [hideCompleted, setHideCompleted] = useState(true);
+  // BUG-21: the switch was labelled "Done" but ON meant hidden. It now says
+  // "Show done" and ON shows the Done tickets.
+  const [showDone, setShowDone] = useState(false);
+  const hideCompleted = !showDone;
   const ticketParam = searchParams.get("ticket");
   const selectedTicketId = ticketParam ? parseInt(ticketParam) : null;
 
@@ -231,19 +234,17 @@ export default function ProjectBoardPage({ params }: PageProps) {
           <div aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-border sm:block" />
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <Switch
-              id="hide-done"
-              checked={hideCompleted}
-              onCheckedChange={setHideCompleted}
+              id="show-done"
+              checked={showDone}
+              onCheckedChange={setShowDone}
             />
             <Label
-              htmlFor="hide-done"
+              htmlFor="show-done"
               className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-xs font-normal"
             >
               <CheckCircle2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
-              Done
-              {hideCompleted && doneCount > 0 && (
-                <span className="tabular-nums text-muted-foreground">({doneCount})</span>
-              )}
+              Show done
+              <span className="tabular-nums text-muted-foreground">({doneCount})</span>
             </Label>
           </div>
         </>
