@@ -81,7 +81,23 @@ export async function getInvitations(orgId: string) {
     orderBy: [desc(invitations.createdAt)],
   });
 
-  return orgInvitations.map((inv) => ({
+  // QA-AUTH-06: accepting marks only the invitation whose link was used, so a
+  // resent or repeated invite for the same address stayed "pending" after the
+  // person had joined. Anyone already a member is not pending.
+  const emails = [...new Set(orgInvitations.map((inv) => inv.email.toLowerCase()))];
+  const joined = emails.length
+    ? new Set(
+        (
+          await db
+            .select({ email: users.email })
+            .from(organizationMembers)
+            .innerJoin(users, eq(users.id, organizationMembers.userId))
+            .where(and(eq(organizationMembers.orgId, orgId), inArray(users.email, emails)))
+        ).map((row) => row.email.toLowerCase()),
+      )
+    : new Set<string>();
+
+  return orgInvitations.filter((inv) => !joined.has(inv.email.toLowerCase())).map((inv) => ({
     id: inv.id,
     email: inv.email,
     role: inv.role,
