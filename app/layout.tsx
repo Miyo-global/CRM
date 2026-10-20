@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { IBM_Plex_Mono, Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 
 import "../globals.css";
@@ -72,9 +73,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // QA-SEC-01: script-src is nonce + 'strict-dynamic' with no 'unsafe-inline'
+  // (proxy.ts). Next only stamps its inline scripts with the nonce when a page
+  // renders per request, and a static page's scripts would be blocked, so
+  // reading the request here keeps every page dynamic. next-themes' inline
+  // theme script needs the nonce passed in by hand.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
@@ -87,6 +94,7 @@ export default function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
+            nonce={nonce}
           >
           <SessionProvider>
             <QueryProvider>

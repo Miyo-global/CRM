@@ -4,7 +4,10 @@ const TURNSTILE = "https://challenges.cloudflare.com";
  * MIYO-0132: with a nonce, script-src drops 'unsafe-inline' and uses
  * 'strict-dynamic', so an injected inline script cannot run. The proxy mints
  * one nonce per HTML request; next.config has no request to key off, so its
- * static header still falls back to 'unsafe-inline'.
+ * static header (API routes only) still falls back to 'unsafe-inline'.
+ * Under 'strict-dynamic' the Turnstile host entry is ignored by CSP3
+ * browsers; Turnstile still loads because the nonced app bundle injects its
+ * script tag, and trust propagates to scripts a trusted script creates.
  *
  * style-src keeps 'unsafe-inline': the inline styles Next and the UI
  * components emit are not nonced.

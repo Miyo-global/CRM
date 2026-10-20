@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildCsp } from "./csp";
 
@@ -54,6 +55,20 @@ describe("buildCsp with a nonce (MIYO-0132)", () => {
     expect(directive(buildCsp("production", "abc123"), "script-src")).toContain(
       "https://challenges.cloudflare.com",
     );
+  });
+
+  it("still frames the Turnstile challenge", () => {
+    expect(directive(buildCsp("production", "abc123"), "frame-src")).toContain(
+      "https://challenges.cloudflare.com",
+    );
+  });
+
+  it("keeps every page dynamic so Next can stamp the nonce (QA-SEC-01)", () => {
+    const layout = readFileSync("app/layout.tsx", "utf-8");
+    expect(layout).toMatch(/await headers\(\)\)\.get\("x-nonce"\)/);
+    expect(layout).toContain("nonce={nonce}");
+    const proxy = readFileSync("proxy.ts", "utf-8");
+    expect(proxy).toMatch(/buildCsp\(process\.env\.NODE_ENV, nonce\)/);
   });
 
   it("keeps unsafe-inline for styles, which are not nonced", () => {
