@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Command as CommandPrimitive } from "cmdk";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
-  UserCheck, Briefcase, Ticket,
+  UserCheck, Briefcase, Ticket, CalendarDays, Megaphone, PartyPopper, LifeBuoy, Plane,
   Search, Loader2, ArrowRight, History, Rows3, LogOut,
 } from "lucide-react";
 import {
@@ -37,12 +37,22 @@ const ENTITY_ICONS = {
   ticket: Ticket,
   project: Briefcase,
   employee: UserCheck,
+  event: CalendarDays,
+  announcement: Megaphone,
+  holiday: PartyPopper,
+  helpdesk: LifeBuoy,
+  leave: Plane,
 } as const;
 
 const ENTITY_LABELS = {
   ticket: "Tickets",
   project: "Projects",
   employee: "People",
+  event: "Calendar events",
+  announcement: "Announcements",
+  holiday: "Holidays",
+  helpdesk: "Helpdesk tickets",
+  leave: "Leaves",
 } as const;
 
 const SEARCH_DEBOUNCE_MS = 400;
@@ -294,7 +304,7 @@ export function CommandPalette() {
         >
           <div className="relative">
             <CommandInput
-              placeholder="Search pages, people, projects, tickets…"
+              placeholder="Search pages, people, projects, leaves…"
               value={query}
               onValueChange={setQuery}
               className="pr-20"
