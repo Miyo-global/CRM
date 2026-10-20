@@ -146,13 +146,13 @@ export function useTicketByKey(projectId: number, ticketKey: string) {
 
 export function useDeleteTicket(
   projectId: number,
-  options?: Omit<UseMutationOptions<{ success: boolean }, Error, { ticketId: number }>, "mutationFn">
+  options?: Omit<UseMutationOptions<{ success: boolean }, Error, { ticketId: number; permanent?: boolean }>, "mutationFn">
 ) {
   const queryClient = useQueryClient();
-  return useMutation<{ success: boolean }, Error, { ticketId: number }>(mergeMutationOptions({
-    mutationFn: ({ ticketId }) =>
+  return useMutation<{ success: boolean }, Error, { ticketId: number; permanent?: boolean }>(mergeMutationOptions({
+    mutationFn: ({ ticketId, permanent }) =>
       apiClient.delete<{ success: boolean }>(
-        `/projects/${projectId}/tickets/${ticketId}`
+        `/projects/${projectId}/tickets/${ticketId}${permanent ? "?permanent=true" : ""}`
       ),
     onSuccess: (_data, { ticketId }) => {
       queryClient.setQueryData<ProjectWithDetails | null>(queryKeys.projects.detail(projectId), (old) =>

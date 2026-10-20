@@ -95,10 +95,14 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
   const updateTicket = useUpdateTicket(projectId);
   const restoreTicket = useRestoreTicket(projectId);
   const archiveTicket = useDeleteTicket(projectId, {
-    onSuccess: () => {
-      toast.success("Archived the ticket", {
-        action: { label: "Undo", onClick: () => restoreTicket.mutate({ ticketId }) },
-      });
+    onSuccess: (_d, { permanent }) => {
+      if (permanent) {
+        toast.success("Deleted the ticket");
+      } else {
+        toast.success("Archived the ticket", {
+          action: { label: "Undo", onClick: () => restoreTicket.mutate({ ticketId }) },
+        });
+      }
       onArchived?.();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -187,6 +191,11 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
         saving={saving}
         isDeleting={archiveTicket.isPending}
         onDelete={canEdit && ticket ? () => archiveTicket.mutate({ ticketId }) : undefined}
+        onDeletePermanently={
+          projectData?.viewerRole === "OWNER" && ticket
+            ? () => archiveTicket.mutate({ ticketId, permanent: true })
+            : undefined
+        }
         fullPageHref={variant === "pane" && ticketKey ? `/projects/${projectId}/tickets/${ticketKey}` : undefined}
         titleEditor={
           ticket && canEdit ? (

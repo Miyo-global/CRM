@@ -10,6 +10,7 @@ import { z } from "zod";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { userColumns } from "@/lib/projects/ticket-columns";
+import { hasFullAccess } from "@/lib/constants/roles";
 
 const updateProjectSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
@@ -204,7 +205,8 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     const { projectId: rawProjectId } = await params;
     const guard = await requireProjectAccess(session, rawProjectId, "manage");
     if (!guard.ok) return guard.response;
-    if (session.user.role !== "CEO") return err("Only organization owners can delete projects", 403);
+    // Super Admin and Admins (BUG-33); it was CEO-only, which nobody held.
+    if (!hasFullAccess(session.user.role)) return err("Only admins can delete projects", 403);
     const { projectId } = guard;
 
     const project = await db.query.projects.findFirst({

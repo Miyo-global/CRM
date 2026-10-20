@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { projects, ticketComments, tickets } from "@/lib/db/schema";
 import { createAuditLog } from "@/lib/audit-log";
 import { parseIdParam } from "@/lib/projects/require-project-access";
+import { hasFullAccess } from "@/lib/constants/roles";
 
 type RouteParams = { params: Promise<{ projectId: string }> };
 
@@ -13,7 +14,7 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
     const { projectId: rawProjectId } = await params;
     const projectId = parseIdParam(rawProjectId);
     if (projectId === null) return err("Project not found", 404);
-    if (session.user.role !== "CEO") return err("Only organization owners can restore projects", 403);
+    if (!hasFullAccess(session.user.role)) return err("Only admins can restore projects", 403);
 
     const project = await db.query.projects.findFirst({
       where: and(eq(projects.id, projectId), eq(projects.orgId, session.orgId)),

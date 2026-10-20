@@ -38,7 +38,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { hasFullAccess } from "@/lib/constants/roles";
 import { ProjectMembersSection } from "@/features/projects/members/project-members-section";
 import { WipLimitsSection } from "@/features/projects/settings/wip-limits-section";
 import { ClientAccessSection } from "@/features/projects/client-portal/client-access-section";
@@ -79,6 +89,7 @@ export default function ProjectSettingsPage({ params }: PageProps) {
 
   const updateMutation = useUpdateProject();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
 
   const handleDeleteConfirm = useCallback(() => {
     deleteMutation.mutate(
@@ -130,7 +141,8 @@ export default function ProjectSettingsPage({ params }: PageProps) {
     );
   }
 
-  const isOwner = session?.user?.role === "CEO";
+  // Super Admin and Admins; the server enforces the same (BUG-33).
+  const isOwner = hasFullAccess(session?.user?.role);
   const canEdit = project.viewerRole === "OWNER" || project.viewerRole === "MANAGER";
 
   const onSubmit = (values: FormValues) => {
@@ -273,7 +285,7 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                 <p className="text-sm font-medium">Delete project</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   Removes the project and its tickets from every list. An
-                  organization owner can restore it from the deleted projects list.
+                  admin can restore it from the deleted projects list.
                 </p>
               </div>
               <Button
@@ -287,15 +299,44 @@ export default function ProjectSettingsPage({ params }: PageProps) {
                 Delete project
               </Button>
             </div>
-            <ConfirmDialog
+            <AlertDialog
               open={deleteDialogOpen}
-              onOpenChange={setDeleteDialogOpen}
-              title={`Delete ${project.name}?`}
-              description="The project, its tickets and comments leave every list. An organization owner can restore them later."
-              confirmLabel="Delete project"
-              destructive
-              onConfirm={handleDeleteConfirm}
-            />
+              onOpenChange={(open) => {
+                setDeleteDialogOpen(open);
+                if (!open) setConfirmName("");
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {project.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The project, its tickets and comments leave every list. An admin can restore them later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="confirm-project-name">
+                    Type <span className="font-semibold">{project.name}</span> to confirm
+                  </Label>
+                  <Input
+                    id="confirm-project-name"
+                    value={confirmName}
+                    onChange={(e) => setConfirmName(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    disabled={confirmName.trim() !== project.name.trim()}
+                    loading={deleteMutation.isPending}
+                    onClick={handleDeleteConfirm}
+                  >
+                    Delete project
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </Card>
         )}
       </div>

@@ -52,7 +52,13 @@ vi.mock("@/lib/db", () => ({
     insert: () => chain(() => undefined),
     delete: () => chain(() => undefined),
     select: () => chain(() => selectRows()),
-    transaction: async (fn: (tx: unknown) => unknown) => fn({ execute: async () => undefined, select: () => chain(() => selectRows()) }),
+    transaction: async (fn: (tx: unknown) => unknown) =>
+      fn({
+        execute: async () => undefined,
+        select: () => chain(() => selectRows()),
+        update: () => chain(() => undefined),
+        delete: () => chain(() => undefined),
+      }),
   },
 }));
 
@@ -161,6 +167,45 @@ describe("ticket by key", () => {
     const { GET } = await load();
     const res = await GET(req("/x"), p({ projectId: "1", ticketKey: "WEB-3" }));
     expect(await res.json()).toMatchObject({ id: 9 });
+  });
+});
+
+describe("ticket delete permanently (BUG-33)", () => {
+  const call = async () => {
+    const { DELETE } = await import("@/app/api/projects/[projectId]/tickets/[ticketId]/route");
+    return DELETE(req("/x?permanent=true", { method: "DELETE" }), p({ projectId: "1", ticketId: "2" }));
+  };
+
+  it.each(["CONTRIBUTOR", "MANAGER"])("forbids a project %s", async (role) => {
+    allow(role);
+    expect((await call()).status).toBe(403);
+  });
+
+  it("lets the project owner delete", async () => {
+    allow("OWNER");
+    findTicket.mockResolvedValue({ id: 2 });
+    expect((await call()).status).toBe(200);
+  });
+});
+
+describe("project delete (BUG-33)", () => {
+  const call = async () => {
+    const { DELETE } = await import("@/app/api/projects/[projectId]/route");
+    return DELETE(req("/x", { method: "DELETE" }), p({ projectId: "1" }));
+  };
+
+  it("forbids HR, who can manage projects but not delete them", async () => {
+    signIn("HR");
+    allow("OWNER");
+    expect((await call()).status).toBe(403);
+  });
+
+  it.each(["ADMIN", "CEO"])("lets %s delete", async (role) => {
+    signIn(role);
+    allow("OWNER");
+    findProject.mockResolvedValue({ name: "QA" });
+    selectRows.mockResolvedValue([]);
+    expect((await call()).status).toBe(200);
   });
 });
 

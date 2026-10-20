@@ -20,6 +20,7 @@ import { firstFreeProjectKey, isProjectKeyTaken } from "@/lib/projects/project-k
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
 import { likePattern } from "@/lib/db/escape-like";
+import { hasFullAccess } from "@/lib/constants/roles";
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
     const priority = searchParams.get("priority");
 
     const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
-    const showDeleted = searchParams.get("deleted") === "1" && session.user.role === "CEO";
+    const showDeleted = searchParams.get("deleted") === "1" && hasFullAccess(session.user.role);
     const conditions = [eq(projects.orgId, session.orgId), showDeleted ? isNotNull(projects.deletedAt) : isNull(projects.deletedAt)];
     if (priority && PRIORITIES.has(priority)) conditions.push(eq(projects.priority, priority));
 

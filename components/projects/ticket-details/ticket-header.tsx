@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Archive, Loader2, Maximize2 } from "lucide-react";
+import { Archive, Loader2, Maximize2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PriorityBadge } from "../shared/priority-badge";
 import { StatusBadge } from "../shared/status-badge";
@@ -21,6 +21,8 @@ interface TicketHeaderProps {
   saving: boolean;
   isDeleting: boolean;
   onDelete?: () => void;
+  /** Hard delete, for an admin or the project owner (BUG-33). */
+  onDeletePermanently?: () => void;
   type?: string | null;
   titleEditor?: React.ReactNode;
   fullPageHref?: string;
@@ -37,12 +39,14 @@ export function TicketHeader({
   saving,
   isDeleting,
   onDelete,
+  onDeletePermanently,
   type,
   titleEditor,
   fullPageHref,
   variant,
 }: TicketHeaderProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [purgeOpen, setPurgeOpen] = useState(false);
   const Wrapper = variant === "pane" ? SheetHeader : "div";
   const titleClass = cn("font-display text-xl leading-snug font-semibold line-clamp-2", titleEditor && "sr-only");
 
@@ -94,6 +98,18 @@ export function TicketHeader({
                 <Archive className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             )}
+            {!isLoading && ticketId && onDeletePermanently && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-10 text-muted-foreground hover:text-destructive"
+                aria-label="Delete ticket"
+                onClick={() => setPurgeOpen(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -114,6 +130,17 @@ export function TicketHeader({
           confirmLabel="Archive"
           destructive
           onConfirm={onDelete}
+        />
+      )}
+      {onDeletePermanently && (
+        <ConfirmDialog
+          open={purgeOpen}
+          onOpenChange={setPurgeOpen}
+          title="Delete this ticket permanently?"
+          description="The ticket, its comments and attachments are removed for good. Logged time stays, without the ticket. Archive instead if you may need it back."
+          confirmLabel="Delete permanently"
+          destructive
+          onConfirm={onDeletePermanently}
         />
       )}
     </div>

@@ -1,7 +1,17 @@
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { tickets, ticketAssignees, ticketComments, workItemRelations, projectMilestones } from "@/lib/db/schema";
+import {
+  tickets,
+  ticketAssignees,
+  ticketComments,
+  ticketAttachments,
+  ticketLabelMappings,
+  workItemRelations,
+  projectMilestones,
+  intakeItems,
+  timesheets,
+} from "@/lib/db/schema";
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
@@ -219,6 +229,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const id = parseIdParam(ticketId);
     if (id === null) return err("Ticket not found", 404);
     const force = req.nextUrl.searchParams.get("force") === "true";
+    if (req.nextUrl.searchParams.get("permanent") === "true") {
+      return deletePermanently(session.orgId, guard.projectId, id, guard.role);
+    }
 
     const scope = and(eq(tickets.id, id), eq(tickets.projectId, guard.projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
     const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true } });
@@ -243,4 +256,30 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     return ok({ success: true });
   });
+}
+
+/**
+ * Hard delete for test and junk tickets, next to Archive (BUG-33). Only the
+ * project owner (org admins resolve to OWNER). The tables without an
+ * ON DELETE CASCADE are cleared first; logged hours stay, unlinked.
+ */
+async function deletePermanently(orgId: string, projectId: number, id: number, role: string) {
+  if (role !== "OWNER") return err("Only an admin or the project owner can delete tickets", 403);
+  const ticket = await db.query.tickets.findFirst({
+    where: and(eq(tickets.id, id), eq(tickets.projectId, projectId), eq(tickets.orgId, orgId)),
+    columns: { id: true },
+  });
+  if (!ticket) return err("Ticket not found", 404);
+
+  await db.transaction(async (tx) => {
+    await tx.update(tickets).set({ parentTicketId: null }).where(eq(tickets.parentTicketId, id));
+    await tx.update(timesheets).set({ ticketId: null }).where(eq(timesheets.ticketId, id));
+    await tx.update(intakeItems).set({ linkedWorkItemId: null }).where(eq(intakeItems.linkedWorkItemId, id));
+    await tx.delete(ticketAssignees).where(eq(ticketAssignees.ticketId, id));
+    await tx.delete(ticketComments).where(eq(ticketComments.ticketId, id));
+    await tx.delete(ticketAttachments).where(eq(ticketAttachments.ticketId, id));
+    await tx.delete(ticketLabelMappings).where(eq(ticketLabelMappings.ticketId, id));
+    await tx.delete(tickets).where(eq(tickets.id, id));
+  });
+  return ok({ success: true });
 }

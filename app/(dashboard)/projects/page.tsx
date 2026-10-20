@@ -21,6 +21,7 @@ import { useDebouncedValue } from "@/hooks/use-expense-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
+import { hasFullAccess } from "@/lib/constants/roles";
 
 type StatusFilter = "ALL" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
 
@@ -32,7 +33,7 @@ export default function ProjectsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const { data: session } = useSession();
   const canCreate = isAdminOrOwner(session?.user?.role);
-  const canRestore = session?.user?.role === "CEO";
+  const canRestore = hasFullAccess(session?.user?.role);
   const showDeleted = canRestore && searchParams.get("deleted") === "1";
 
   const search = searchParams.get("q") || "";
