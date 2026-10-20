@@ -3,7 +3,7 @@ import { getHolidays } from "@/server/queries/hr";
 import { canManageHolidays } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { findHolidayConflict } from "@/lib/hr/holiday-conflict";
 import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 import { createHolidaySchema } from "@/lib/validations/holidays";
@@ -30,18 +30,15 @@ export async function POST(req: NextRequest) {
     if (dup) return dup;
     const holidayDate = formatDateOnly(body.date);
 
-    const duplicate = await db.query.holidays.findFirst({
-      where: and(eq(holidays.orgId, session.orgId), eq(holidays.date, holidayDate)),
-    });
-    if (duplicate) {
-      return err("A holiday already exists on this date.", 409);
-    }
+    const conflict = await findHolidayConflict(session.orgId, { name: body.name, date: holidayDate });
+    if (conflict) return err(conflict, 409);
 
     const [holiday] = await db
       .insert(holidays)
       .values({
         orgId: session.orgId,
-        name: body.name.replace(/\b\w/g, (char) => char.toUpperCase()),
+        // As typed; title-casing turned "QA-TEST <b>" into "Qa-Test" (QA-BUG-18).
+        name: body.name,
         date: holidayDate,
         type: body.type ?? "PUBLIC",
         message: body.message,

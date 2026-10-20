@@ -1,19 +1,17 @@
 import { z } from "zod";
 import { dateOnlySchema } from "@/lib/validations/date";
-import {
-  collapseSpaces,
-  hasMeaningfulContent,
-  isSimpleName,
-  SIMPLE_NAME_ALLOWED_HINT,
-} from "@/lib/validations/text-rules";
+import { collapseSpaces, hasMeaningfulContent } from "@/lib/validations/text-rules";
 
+export const HOLIDAY_NAME_MAX = 100;
+
+// Stored as typed (QA-BUG-18): no character allow-list and no title-casing.
+// It is plain text everywhere; React and the email renderer escape it.
 const holidayNameSchema = z
   .string()
   .trim()
   .min(2, "Holiday name must be at least 2 characters")
-  .max(100, "Holiday name must be at most 100 characters")
+  .max(HOLIDAY_NAME_MAX, `Holiday name must be at most ${HOLIDAY_NAME_MAX} characters`)
   .refine((v) => hasMeaningfulContent(v), "Holiday name must contain at least one letter or number")
-  .refine((v) => isSimpleName(v), `Holiday name can only contain ${SIMPLE_NAME_ALLOWED_HINT}`)
   .transform(collapseSpaces);
 
 const holidayDateSchema = dateOnlySchema;

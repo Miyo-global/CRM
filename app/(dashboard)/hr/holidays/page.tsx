@@ -22,8 +22,8 @@ import {
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { getTodayString, formatDisplayDate, fromISODateString } from "@/lib/date-utils";
-import { createHolidaySchema, HOLIDAY_MESSAGE_MAX } from "@/lib/validations/holidays";
-import { sanitizeSimpleName } from "@/lib/validations/text-rules";
+import { createHolidaySchema, HOLIDAY_MESSAGE_MAX, HOLIDAY_NAME_MAX } from "@/lib/validations/holidays";
+import { getErrorMessage } from "@/lib/get-error-message";
 import { cn } from "@/lib/utils";
 import {
   Plus, ChevronLeft, ChevronRight, Pencil, Trash2,
@@ -92,7 +92,7 @@ const HolidayRow = memo(function HolidayRow({
         isToday && "bg-brand-soft",
       )}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex flex-1 items-center gap-3 min-w-0">
         <div className={cn(
           "flex size-9 shrink-0 items-center justify-center rounded-full",
           typeCfg.className,
@@ -104,7 +104,9 @@ const HolidayRow = memo(function HolidayRow({
               the row actions at 375 and 768. */}
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className={cn(
-              "min-w-0 break-words text-sm font-medium",
+              // wrap-anywhere, not break-words: break-words does not lower the
+              // min-content width, so one long token still pushed the row wide (QA-BUG-27).
+              "min-w-0 wrap-anywhere text-sm font-medium",
               isPast && !isToday ? "text-muted-foreground" : "text-foreground",
             )}>
               {holiday.name}
@@ -120,7 +122,7 @@ const HolidayRow = memo(function HolidayRow({
             {formatHolidayDate(holiday.date)} &middot; {getDayOfWeek(holiday.date)}
           </p>
           {holiday.message && (
-            <p className="mt-0.5 line-clamp-1 text-xs text-subtle-foreground" title={holiday.message ?? undefined}>
+            <p className="mt-0.5 line-clamp-2 wrap-anywhere text-xs text-subtle-foreground" title={holiday.message ?? undefined}>
               {holiday.message}
             </p>
           )}
@@ -193,10 +195,12 @@ export default function HolidaysPage() {
   const [type, setType]           = useState<HolidayType>("PUBLIC");
   const [message, setMessage]     = useState("");
   const [isHalfDay, setIsHalfDay] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setName(""); setDate(format(new Date(), "yyyy-MM-dd"));
     setType("PUBLIC"); setMessage(""); setIsHalfDay(false);
+    setFormError(null);
   }, []);
 
   const openAdd = useCallback(() => {
@@ -211,59 +215,59 @@ export default function HolidaysPage() {
     setType((h.type as HolidayType) ?? "PUBLIC");
     setMessage(h.message ?? "");
     setIsHalfDay(h.isHalfDay ?? false);
+    setFormError(null);
     setSheetMode("edit");
   }, []);
 
   const validate = useCallback((): boolean => {
     const result = createHolidaySchema.safeParse({ name, date, type, message: message || undefined, isHalfDay });
     if (!result.success) {
-      toast.error(result.error.issues[0]?.message ?? "Invalid input");
+      setFormError(result.error.issues[0]?.message ?? "Invalid input");
       return false;
     }
+    setFormError(null);
     return true;
   }, [name, date, type, message, isHalfDay]);
 
-  const executeCreate = useCallback(() => {
-    addMutation.mutate(
-      { name: name.trim(), date, message: message.trim() || undefined, type, isHalfDay } as Parameters<typeof addMutation.mutate>[0],
-      {
-        onSuccess: () => {
-          toast.success("Holiday added");
-          setCreateConfirmOpen(false);
-          setSheetMode(null);
-          resetForm();
-          const y = Number(date.slice(0, 4));
-          if (y) setViewYear(y);
-        },
-        onError: (e) => {
-          toast.error(e.message);
-          setCreateConfirmOpen(false);
-        },
-      },
-    );
+  // QA-BUG-08 / BUG-19: awaited, so a rejection (duplicate name or date) is
+  // shown inside the sheet, which stays open, and a save always gets its toast;
+  // the hook's invalidation refreshes the list without a reload.
+  const executeCreate = useCallback(async () => {
+    setCreateConfirmOpen(false);
+    try {
+      await addMutation.mutateAsync(
+        { name: name.trim(), date, message: message.trim() || undefined, type, isHalfDay } as Parameters<typeof addMutation.mutate>[0],
+      );
+      toast.success("Holiday added");
+      setSheetMode(null);
+      resetForm();
+      const y = Number(date.slice(0, 4));
+      if (y) setViewYear(y);
+    } catch (e) {
+      setFormError(getErrorMessage(e));
+    }
   }, [name, date, type, message, isHalfDay, addMutation, resetForm]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!validate()) return;
 
     if (sheetMode === "add") {
       setCreateConfirmOpen(true);
     } else if (sheetMode === "edit" && editTarget) {
-      updateMutation.mutate(
-        { holidayId: editTarget.id, name: name.trim(), date, message: message.trim() || undefined, type, isHalfDay },
-        {
-          onSuccess: () => {
-            toast.success("Holiday updated");
-            setSheetMode(null);
-            setEditTarget(null);
-            const y = Number(date.slice(0, 4));
-            if (y) setViewYear(y);
-          },
-          onError: (e) => toast.error(e.message),
-        },
-      );
+      try {
+        await updateMutation.mutateAsync(
+          { holidayId: editTarget.id, name: name.trim(), date, message: message.trim() || undefined, type, isHalfDay },
+        );
+        toast.success("Holiday updated");
+        setSheetMode(null);
+        setEditTarget(null);
+        const y = Number(date.slice(0, 4));
+        if (y) setViewYear(y);
+      } catch (e) {
+        setFormError(getErrorMessage(e));
+      }
     }
-  }, [sheetMode, validate, date, type, editTarget, updateMutation, resetForm]);
+  }, [sheetMode, validate, name, date, message, type, isHalfDay, editTarget, updateMutation]);
 
   const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
@@ -438,6 +442,14 @@ export default function HolidaysPage() {
           isPending={addMutation.isPending || updateMutation.isPending}
         >
           <div className="space-y-4">
+            {formError && (
+              <p
+                role="alert"
+                className="break-words rounded-md border border-danger-strong/25 bg-danger-soft px-3 py-2 text-sm text-danger-strong"
+              >
+                {formError}
+              </p>
+            )}
             <div className="space-y-1.5">
               <label className="text-sm font-medium">
                 Holiday Name <span className="text-destructive">*</span>
@@ -445,8 +457,8 @@ export default function HolidaysPage() {
               <Input
                 placeholder="e.g. Diwali"
                 value={name}
-                onChange={(e) => setName(sanitizeSimpleName(e.target.value))}
-                maxLength={100}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={HOLIDAY_NAME_MAX}
               />
             </div>
 

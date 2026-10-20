@@ -2,14 +2,11 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { canManageHolidays } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 import { updateHolidaySchema } from "@/lib/validations/holidays";
+import { findHolidayConflict } from "@/lib/hr/holiday-conflict";
 import type { NextRequest } from "next/server";
-
-function capitalizeWords(str: string): string {
-  return str.replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 export async function PATCH(
   req: NextRequest,
@@ -32,23 +29,20 @@ export async function PATCH(
     const body = await parseBody(req, updateHolidaySchema);
     const patch: Record<string, unknown> = { updatedAt: new Date() };
 
-    if (body.name !== undefined) patch.name = capitalizeWords(body.name);
-    if (body.date !== undefined) {
-      const newDate = formatDateOnly(body.date);
-      if (newDate !== existing.date) {
-        const duplicate = await db.query.holidays.findFirst({
-          where: and(
-            eq(holidays.orgId, session.orgId),
-            eq(holidays.date, newDate),
-            ne(holidays.id, holidayId),
-          ),
-        });
-        if (duplicate) {
-          return err("A holiday already exists on this date.", 409);
-        }
-        patch.date = newDate;
-        patch.notificationSent = false;
-      }
+    // As typed, no title-casing (QA-BUG-18).
+    if (body.name !== undefined) patch.name = body.name;
+    const newDate = body.date !== undefined ? formatDateOnly(body.date) : existing.date;
+    if (newDate !== existing.date || (body.name !== undefined && body.name !== existing.name)) {
+      const conflict = await findHolidayConflict(
+        session.orgId,
+        { name: body.name ?? existing.name, date: newDate },
+        holidayId,
+      );
+      if (conflict) return err(conflict, 409);
+    }
+    if (newDate !== existing.date) {
+      patch.date = newDate;
+      patch.notificationSent = false;
     }
     if (body.type !== undefined) patch.type = body.type;
     if (body.message !== undefined) patch.message = body.message;
