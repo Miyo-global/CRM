@@ -7,6 +7,7 @@ import { SettingsProfile } from "@/features/settings/settings-profile";
 import { SettingsSecurity } from "@/features/settings/settings-security";
 import { SettingsPreferences } from "@/features/settings/settings-preferences";
 import { MfaSettings } from "@/components/settings/mfa-settings";
+import { SettingsIndexLinks } from "../settings-index-links";
 
 const SECTIONS = [
   { id: "profile", label: "Profile" },
@@ -47,6 +48,8 @@ export default function SettingsPage() {
       }
     >
       <div className="max-w-3xl space-y-10">
+        <SettingsIndexLinks />
+
         <section id="profile" className="scroll-mt-24">
           <SectionHeading title="Profile" description="Update your display name and profile photo." />
           <Card className="p-5">
