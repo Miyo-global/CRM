@@ -106,11 +106,14 @@ export default function SignInPage() {
   const hasGoogleProvider = !!process.env.NEXT_PUBLIC_GOOGLE_ENABLED;
 
   return (
-    <div className="w-full max-w-[400px]">
-      <div className="mb-8">
+    <div className="w-full max-w-[440px]">
+      <div className="mb-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
           Sign in
         </h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Use your work email to reach your HR, projects and timesheets.
+        </p>
       </div>
 
       {/* One generic failure message: a separate "account locked" banner told
