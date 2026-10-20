@@ -17,6 +17,7 @@ import {
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { likePattern } from "@/lib/db/escape-like";
+import { EXPENSE_APPROVER, EXPENSE_USER } from "@/lib/db/expense-user-columns";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +123,7 @@ export async function GET(req: NextRequest) {
     const [expenseList, countResult, statsResult, pendingList, categoryList] = await Promise.all([
       db.query.expenses.findMany({
         where: and(...conditions),
-        with: { user: true, approver: true, expenseCategory: true, project: true },
+        with: { user: EXPENSE_USER, approver: EXPENSE_APPROVER, expenseCategory: true, project: true },
         orderBy: [
           asc(sql`CASE ${expenses.status} WHEN 'PENDING' THEN 0 WHEN 'APPROVED' THEN 1 WHEN 'REJECTED' THEN 2 WHEN 'PAID' THEN 3 ELSE 4 END`),
           orderFn(sortColumn),
@@ -150,7 +151,7 @@ export async function GET(req: NextRequest) {
       isAdmin
         ? db.query.expenses.findMany({
             where: and(eq(expenses.orgId, orgId), eq(expenses.status, "PENDING")),
-            with: { user: true, approver: true, expenseCategory: true, project: true },
+            with: { user: EXPENSE_USER, approver: EXPENSE_APPROVER, expenseCategory: true, project: true },
             orderBy: [desc(expenses.createdAt)],
             limit: 100,
           })

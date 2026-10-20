@@ -6,6 +6,7 @@ import { eq, and, desc, gte, lte, sql, inArray, like, or, asc, count } from "dri
 import { getAuthenticatedMember } from "@/lib/auth/helpers";
 import { isAuthError } from "@/lib/auth/types";
 import { likePattern } from "@/lib/db/escape-like";
+import { EXPENSE_APPROVER, EXPENSE_USER } from "@/lib/db/expense-user-columns";
 
 export interface ExpenseFilters {
   startDate?: string;
@@ -206,8 +207,8 @@ async function fetchExpensesWithPagination(
     db.query.expenses.findMany({
       where: and(...conditions),
       with: {
-        user: true,
-        approver: true,
+        user: EXPENSE_USER,
+        approver: EXPENSE_APPROVER,
         expenseCategory: true,
         project: true,
       },
@@ -274,8 +275,8 @@ async function fetchPendingExpenses(orgId: string): Promise<ExpenseWithRelations
       eq(expenses.status, "PENDING")
     ),
     with: {
-      user: true,
-      approver: true,
+      user: EXPENSE_USER,
+      approver: EXPENSE_APPROVER,
       expenseCategory: true,
       project: true,
     },
@@ -353,8 +354,8 @@ export async function getExpensesForExport(
     db.query.expenses.findMany({
       where: and(...conditions),
       with: {
-        user: true,
-        approver: true,
+        user: EXPENSE_USER,
+        approver: EXPENSE_APPROVER,
         expenseCategory: true,
         project: true,
       },
