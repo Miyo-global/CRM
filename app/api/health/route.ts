@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { redisHealth, isRedisEnabled, isSharedRedis } from "@/lib/redis";
 import { isEmailConfigured } from "@/lib/email/config";
+import { verifyCronSecret } from "@/lib/cron-auth";
+import { withAdmin } from "@/lib/api/helpers";
 
 /**
  * Columns added by recent migrations. Selecting them with LIMIT 0 fails fast
@@ -24,6 +26,17 @@ interface HealthCheck {
   latencyMs?: number;
 }
 
+/**
+ * QA-SEC-07: anonymous callers get only {status}; latencies and per-service
+ * checks are for the cron secret (smoke workflow) or a signed-in admin.
+ */
+async function canSeeDetail(req: NextRequest): Promise<boolean> {
+  if (process.env.CRON_SECRET && verifyCronSecret(req.headers.get("authorization")) === null) return true;
+  if (!req.cookies.getAll().some((c) => c.name.includes("authjs.session-token"))) return false;
+  const res = await withAdmin(async () => NextResponse.json({ ok: true }));
+  return res.status === 200;
+}
+
 export async function GET(req: NextRequest) {
   const checks: Record<string, HealthCheck> = {};
   const startTime = Date.now();
@@ -36,9 +49,7 @@ export async function GET(req: NextRequest) {
     checks.database = { status: "error" };
   }
 
-  const isInternalRequest =
-    !!process.env.CRON_SECRET &&
-    req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  const isInternalRequest = await canSeeDetail(req);
 
   if (isInternalRequest && checks.database.status === "ok") {
     try {
@@ -76,12 +87,18 @@ export async function GET(req: NextRequest) {
   const allHealthy = Object.values(checks).every((c) => c.status !== "error");
   const totalLatencyMs = Date.now() - startTime;
 
-  const response = {
-    status: allHealthy ? "healthy" : "unhealthy",
-    timestamp: new Date().toISOString(),
-    latencyMs: totalLatencyMs,
-    ...(isInternalRequest ? { checks } : {}),
-  };
+  const status = allHealthy ? 200 : 503;
+  if (!isInternalRequest) {
+    return NextResponse.json({ status: allHealthy ? "ok" : "error" }, { status });
+  }
 
-  return NextResponse.json(response, { status: allHealthy ? 200 : 503 });
+  return NextResponse.json(
+    {
+      status: allHealthy ? "healthy" : "unhealthy",
+      timestamp: new Date().toISOString(),
+      latencyMs: totalLatencyMs,
+      checks,
+    },
+    { status },
+  );
 }
