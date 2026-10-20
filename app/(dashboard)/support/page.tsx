@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
   Ticket,
@@ -33,6 +34,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getRoleLabel } from "@/lib/rbac/roles";
 import { isSupportStaff } from "@/lib/constants/support-sla";
 
+// BUG-13: Customer Support and HR Helpdesk are separate queues; say which is which.
+const SUPPORT_SUBTITLE = (
+  <>
+    Client issues: technical problems, billing, account access and bugs.{" "}
+    Need help from HR?{" "}
+    <Link href="/hr/helpdesk" className="font-medium text-brand-text hover:underline">
+      Go to HR Helpdesk
+    </Link>
+  </>
+);
+
 const formatTicketValue = (v: number) => v.toLocaleString();
 
 export default function SupportDashboardPage() {
@@ -42,7 +54,7 @@ export default function SupportDashboardPage() {
   // tickets instead (AUTH-03; the API refuses them too).
   if (!isSupportStaff(session?.user?.role)) {
     return (
-      <PageWrapper title="Support">
+      <PageWrapper title="Customer Support" subtitle={SUPPORT_SUBTITLE}>
         <EmptyState
           icon={Ticket}
           title="Your support tickets"
@@ -85,7 +97,8 @@ function SupportAnalytics() {
   if (isError && !data) {
     return (
       <PageWrapper
-        title="Support analytics"
+        title="Customer Support analytics"
+        subtitle={SUPPORT_SUBTITLE}
       >
         <QueryErrorState error={error} onRetry={() => void refetch()} />
       </PageWrapper>
@@ -108,7 +121,8 @@ function SupportAnalytics() {
 
   return (
     <PageWrapper
-      title="Support analytics"
+      title="Customer Support analytics"
+      subtitle={SUPPORT_SUBTITLE}
     >
     <div
       className="grid grid-cols-12 gap-4 xl:gap-6"

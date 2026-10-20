@@ -589,7 +589,7 @@ function CreateTicketDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent size="sm" className="w-full">
-        <SheetHeader className="border-b border-border"><SheetTitle>New Support Ticket</SheetTitle></SheetHeader>
+        <SheetHeader className="border-b border-border"><SheetTitle>New customer support ticket</SheetTitle></SheetHeader>
         <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
           <div>
             <Label className="text-sm">Title <span className="text-destructive">*</span></Label>

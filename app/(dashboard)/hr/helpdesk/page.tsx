@@ -2,6 +2,7 @@
 import { getErrorMessage } from "@/lib/get-error-message";
 
 import { useState, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { HelpdeskCreateTicketForm } from "@/features/hr/helpdesk/helpdesk-create-ticket-form";
 import { TicketDetailSheet } from "@/features/hr/helpdesk/ticket-detail-sheet";
 import { useHelpdeskAssignees } from "@/lib/api/hooks/hr/helpdesk";
@@ -70,6 +71,17 @@ const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
   { value: "URGENT", label: "Urgent" },
 ];
 
+// BUG-13: Helpdesk and Customer Support are separate queues; say which is which.
+const HELPDESK_SUBTITLE = (
+  <>
+    Questions for HR: payroll, leave, policy, equipment and access.{" "}
+    Reporting a client issue?{" "}
+    <Link href="/support" className="font-medium text-brand-text hover:underline">
+      Go to Customer Support
+    </Link>
+  </>
+);
+
 const CATEGORY_OPTIONS = [
   "IT Support",
   "HR Query",
@@ -118,7 +130,8 @@ export default function HelpdeskPage() {
     return map;
   }, [assignees]);
 
-  const [sheetOpen, setSheetOpen] = useState(false);
+  // The Global Create menu links here with ?new=1.
+  const [sheetOpen, setSheetOpen] = useState(() => searchParams.get("new") === "1");
   const [canSubmitTicket, setCanSubmitTicket] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<HelpdeskTicket | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -204,7 +217,7 @@ export default function HelpdeskPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Helpdesk">
+      <PageWrapper title="HR Helpdesk" subtitle={HELPDESK_SUBTITLE}>
         <div className="space-y-4">
           <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-2">
@@ -219,7 +232,8 @@ export default function HelpdeskPage() {
 
   return (
     <PageWrapper
-      title="Helpdesk"
+      title="HR Helpdesk"
+      subtitle={HELPDESK_SUBTITLE}
       badge={`${stats.total} tickets`}
       actions={
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -231,8 +245,8 @@ export default function HelpdeskPage() {
           </SheetTrigger>
           <SheetContent className="flex flex-col p-0 gap-0">
             <SheetHeader className="shrink-0 px-4 pt-4 pb-3 border-b">
-              <SheetTitle className="text-base">Create Support Ticket</SheetTitle>
-              <SheetDescription className="text-xs">Describe your issue and we&apos;ll get back to you.</SheetDescription>
+              <SheetTitle className="text-base">New HR Helpdesk ticket</SheetTitle>
+              <SheetDescription className="text-xs">Describe your question and HR will get back to you.</SheetDescription>
             </SheetHeader>
             <SheetScrollArea className="flex-1 min-h-0">
               <HelpdeskCreateTicketForm

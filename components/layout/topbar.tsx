@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarCheck, LifeBuoy, Menu, Plus, Search, Timer, ChevronDown } from "lucide-react";
+import { CalendarCheck, HeadphonesIcon, LifeBuoy, Menu, Plus, Search, Timer, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Breadcrumbs, useAutoBreadcrumbs } from "@/components/ui/breadcrumbs";
@@ -35,7 +35,21 @@ import { openCommandPalette } from "./shortcuts-provider";
 const CREATE_ITEMS = [
   // MIYO-0173: the lead and deal entries pointed at /crm/leads and
   // /crm/deals, which were removed with the CRM module and 404.
-  { label: "New support ticket", navHref: "/support", href: "/support/inbox?new=1", icon: LifeBuoy },
+  // BUG-13: the two ticket systems say what each one is for.
+  {
+    label: "HR Helpdesk ticket",
+    description: "Ask HR about payroll, leave, policy or equipment",
+    navHref: "/hr/helpdesk",
+    href: "/hr/helpdesk?new=1",
+    icon: HeadphonesIcon,
+  },
+  {
+    label: "Customer support ticket",
+    description: "Log a client issue: technical, billing, access",
+    navHref: "/support",
+    href: "/support/inbox?new=1",
+    icon: LifeBuoy,
+  },
   { label: "Log time", navHref: "/timesheets", href: "/timesheets?new=1", icon: Timer },
   { label: "Apply for leave", navHref: "/hr/leaves", href: "/hr/leaves?apply=leave", icon: CalendarCheck },
 ] as const;
@@ -133,12 +147,17 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
               <ChevronDown className="-mr-0.5 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            {createItems.map(({ label, href, icon: Icon }) => (
-              <DropdownMenuItem key={href} asChild>
-                <Link href={href}>
-                  <Icon />
-                  {label}
+          <DropdownMenuContent align="end" className="w-64">
+            {createItems.map((item) => (
+              <DropdownMenuItem key={item.href} asChild>
+                <Link href={item.href}>
+                  <item.icon />
+                  <span className="min-w-0">
+                    {item.label}
+                    {"description" in item && (
+                      <span className="block text-xs text-muted-foreground">{item.description}</span>
+                    )}
+                  </span>
                 </Link>
               </DropdownMenuItem>
             ))}
