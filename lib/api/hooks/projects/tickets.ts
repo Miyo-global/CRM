@@ -88,6 +88,8 @@ export function useCreateTicket(
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects.detail(variables.projectId),
       });
+      // The board header counts come from their own query (BUG-20).
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(variables.projectId) });
     },
   }, options));
 }
@@ -508,6 +510,7 @@ export function useBulkUpdateTickets(projectId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.tickets() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.columnCounts(projectId) });
     },
   });
 }

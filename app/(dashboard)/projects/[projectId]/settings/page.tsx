@@ -155,6 +155,8 @@ export default function ProjectSettingsPage({ params }: PageProps) {
       {
         onSuccess: () => {
           toast.success("Saved the project settings");
+          // The project header is rendered by the server layout (BUG-20).
+          router.refresh();
         },
         onError: (error) => {
           toast.error(getErrorMessage(error));
