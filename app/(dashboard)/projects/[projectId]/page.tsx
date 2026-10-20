@@ -207,10 +207,14 @@ export default function ProjectBoardPage({ params }: PageProps) {
       title={data.name}
       subtitle={data.description ?? undefined}
       noInternalScroll
-      contentClassName="!p-0"
+      // RESP-04: below md the page is the one vertical scroll; the board
+      // only scrolls sideways instead of nesting a short scroll box.
+      className="max-md:flex-none"
+      contentClassName="!p-0 max-md:flex-none max-md:overflow-visible"
       actions={readOnly ? undefined : <CreateTicketDialog projectId={projectId} />}
       filters={
-        <>
+        // Wraps instead of being clipped at 375px (RESP-04).
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
           <ViewSwitcher activeView={view} onViewChange={handleViewChange} />
           {view === "board" && (
             <Select value={swimlane} onValueChange={(v) => handleSwimlaneChange(v as SwimlaneKey)}>
@@ -247,12 +251,12 @@ export default function ProjectBoardPage({ params }: PageProps) {
               <span className="tabular-nums text-muted-foreground">({doneCount})</span>
             </Label>
           </div>
-        </>
+        </div>
       }
     >
 
       {view === "board" && (
-        <div className="flex h-full w-full flex-col bg-surface-sunken sm:px-2 xl:px-4">
+        <div className="flex w-full flex-col bg-surface-sunken sm:px-2 md:h-full xl:px-4">
           {swimlane === "none" ? (
             <KanbanBoard
               tickets={filteredTickets}

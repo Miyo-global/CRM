@@ -155,7 +155,7 @@ export function KanbanBoard({
 
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <KanbanCanvas className="h-full items-stretch rounded-lg">
+      <KanbanCanvas className="items-start rounded-lg md:h-full md:items-stretch">
         {columns.map((col) => {
           const columnTickets = sortByRank(optimisticTickets.filter((t) => t.status === col.id));
           const total = columnCounts?.[col.id] ?? columnTickets.length;
@@ -185,7 +185,9 @@ export function KanbanBoard({
                   innerRef={provided.innerRef}
                   droppableProps={provided.droppableProps}
                   className={cn(
-                    "max-h-full [&>[data-rfd-droppable-id]]:overflow-y-auto",
+                    // Columns scroll on their own only from md; on a phone
+                    // the page scrolls (RESP-04).
+                    "md:max-h-full md:[&>[data-rfd-droppable-id]]:overflow-y-auto",
                     overWip && "ring-1 ring-danger-500 ring-inset"
                   )}
                   footer={
