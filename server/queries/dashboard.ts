@@ -28,6 +28,7 @@ import {
 import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull, gt, sum, ne } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { teamDayStatuses } from "@/lib/hr/team-day-status";
 
 async function coassignedTicketIdsForUser(userId: string): Promise<number[]> {
   const rows = await db
@@ -614,31 +615,46 @@ export async function getExecutiveDashboard(orgId: string) {
   };
 }
 
-export async function getManagerDashboard(orgId: string, userId: string) {
+/**
+ * Every active employee (active user, member of the org) with today's IST
+ * status. The one headcount both dashboard attendance widgets use (QA-BUG-09).
+ */
+export async function getTeamDay(orgId: string) {
   const today = getTodayString();
-
-  const [teamMembers, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
+  const [members, checkedIn, onLeave] = await Promise.all([
     db
-      .select({
-        userId: users.id,
-        name: users.name,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        checkIn: attendance.checkIn,
-        status: attendance.status,
-        leaveStatus: leaveRequests.status,
-      })
+      .select({ userId: users.id, name: users.name, firstName: users.firstName, lastName: users.lastName })
       .from(organizationMembers)
       .innerJoin(users, eq(organizationMembers.userId, users.id))
-      .leftJoin(attendance, and(eq(attendance.userId, users.id), eq(attendance.date, today)))
-      .leftJoin(leaveRequests, and(
-        eq(leaveRequests.userId, users.id),
+      .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true))),
+    db
+      .selectDistinct({ userId: attendance.userId })
+      .from(attendance)
+      .where(and(eq(attendance.orgId, orgId), eq(attendance.date, today), isNotNull(attendance.checkIn))),
+    db
+      .selectDistinct({ userId: leaveRequests.userId })
+      .from(leaveRequests)
+      .where(and(
+        eq(leaveRequests.orgId, orgId),
         eq(leaveRequests.status, "APPROVED"),
-        lt(leaveRequests.startDate, today),
+        // lte, not lt: a leave starting today is leave today.
+        lte(leaveRequests.startDate, today),
         gte(leaveRequests.endDate, today),
-      ))
-      .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true)))
-      .limit(50),
+      )),
+  ]);
+  return teamDayStatuses(
+    members.map((m) => ({
+      userId: m.userId,
+      name: m.firstName && m.lastName ? `${m.firstName} ${m.lastName}` : (m.name ?? "Unknown"),
+    })),
+    new Set(checkedIn.map((r) => r.userId)),
+    new Set(onLeave.map((r) => r.userId)),
+  );
+}
+
+export async function getManagerDashboard(orgId: string, userId: string) {
+  const [teamAttendanceToday, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
+    getTeamDay(orgId),
     db
       .select({ cnt: count() })
       .from(leaveRequests)
@@ -652,17 +668,6 @@ export async function getManagerDashboard(orgId: string, userId: string) {
       .from(tickets)
       .where(and(eq(tickets.orgId, orgId), isNull(tickets.deletedAt), or(eq(tickets.status, "TODO"), eq(tickets.status, "IN_PROGRESS")))),
   ]);
-
-  const teamAttendanceToday = teamMembers.map((m) => {
-    let status: "present" | "absent" | "leave" = "absent";
-    if (m.leaveStatus === "APPROVED") status = "leave";
-    else if (m.checkIn) status = "present";
-    return {
-      userId: m.userId,
-      name: m.firstName && m.lastName ? `${m.firstName} ${m.lastName}` : (m.name ?? "Unknown"),
-      status,
-    };
-  });
 
   return {
     teamAttendanceToday,
