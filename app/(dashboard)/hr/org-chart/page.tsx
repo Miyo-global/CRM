@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
 import { useHrOrgChart } from "@/lib/api/hooks/hr/employees";
+import { countDepartments, NO_DEPARTMENT } from "@/lib/hr/department-count";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Card, CardContent } from "@/components/ui/card";
@@ -232,7 +233,7 @@ export default function OrgChartPage() {
       // A department id with no matching record went to "Other" while people
       // with no department went to "Unassigned", which read as two kinds of
       // the same thing (QA-D008). Both are "No department".
-      const name = (emp.departmentId && deptMap.get(emp.departmentId)) || "No department";
+      const name = (emp.departmentId && deptMap.get(emp.departmentId)) || NO_DEPARTMENT;
       if (!groups.has(name)) groups.set(name, []);
       groups.get(name)!.push(emp);
     }
@@ -267,6 +268,16 @@ export default function OrgChartPage() {
     [employees],
   );
   const inactiveMemberTotal = employees.length - activeMemberTotal;
+  // Same count as HR Analytics: named departments with an active member (QA-BUG-14).
+  const departmentTotal = useMemo(
+    () =>
+      countDepartments(
+        employees
+          .filter((e) => e.isActive !== false)
+          .map((e) => (e.departmentId ? deptMap.get(e.departmentId) : null)),
+      ),
+    [employees, deptMap],
+  );
 
   if (isLoading) {
     return (
@@ -279,7 +290,7 @@ export default function OrgChartPage() {
   return (
     <PageWrapper
       title="Organization"
-      subtitle={`${activeMemberTotal} active ${activeMemberTotal === 1 ? "member" : "members"} across ${deptGroups.length} departments${
+      subtitle={`${activeMemberTotal} active ${activeMemberTotal === 1 ? "member" : "members"} across ${departmentTotal} ${departmentTotal === 1 ? "department" : "departments"}${
         inactiveMemberTotal > 0 ? ` · ${inactiveMemberTotal} deactivated` : ""
       }`}
     >

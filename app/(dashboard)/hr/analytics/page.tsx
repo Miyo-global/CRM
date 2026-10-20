@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { monthBars } from "@/lib/hr/month-bars";
+import { countDepartments } from "@/lib/hr/department-count";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -165,7 +166,7 @@ function AnalyticsContent() {
                   items={[
                     { label: "Attendance (month)", icon: IcoCalendar, value: data.attendance.totalLogsThisMonth },
                     { label: "Leaves (YTD)", icon: IcoClock, value: totalLeaves },
-                    { label: "Departments", icon: IcoGrid, value: data.departments.length },
+                    { label: "Departments", icon: IcoGrid, value: countDepartments(data.departments.map((d) => d.name)) },
                   ]}
                 />
 

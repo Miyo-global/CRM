@@ -6,6 +6,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql, count, desc } from "drizzle-orm";
 import { cached, HR_CACHE, CACHE_TTL } from "@/lib/hr-cache";
+import { NO_DEPARTMENT } from "@/lib/hr/department-count";
 
 export async function GET() {
   return withAdmin(async (session) => {
@@ -130,10 +131,16 @@ export async function GET() {
         active: Number(activeEmployeesResult[0]?.count ?? 0),
         newThisMonth: Number(recentJoinsResult[0]?.count ?? 0),
       },
-      departments: deptDistribution.map((d) => ({
-        name: d.departmentId ? (deptMap.get(d.departmentId) ?? "Other") : "Unassigned",
-        count: Number(d.count),
-      })),
+      // "Other" (dangling id) and "Unassigned" (none) are one "No department",
+      // as on the org chart, so both pages count departments alike (QA-BUG-14).
+      departments: Array.from(
+        deptDistribution.reduce((acc, d) => {
+          const name = (d.departmentId && deptMap.get(d.departmentId)) || NO_DEPARTMENT;
+          acc.set(name, (acc.get(name) ?? 0) + Number(d.count));
+          return acc;
+        }, new Map<string, number>()),
+        ([name, count]) => ({ name, count }),
+      ),
       gender: genderDistribution.map((g) => ({
         gender: g.gender ?? "Unknown",
         count: Number(g.count),
