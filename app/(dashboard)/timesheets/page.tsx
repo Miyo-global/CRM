@@ -298,7 +298,7 @@ export default function TimesheetsPage() {
 
   return (
     <PageWrapper
-      title="Daily work logs"
+      title="Timesheets"
       actions={
         <LogTimeDialog
           defaultOpen={searchParams.get("new") === "1"}

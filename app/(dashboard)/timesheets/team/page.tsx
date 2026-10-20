@@ -187,7 +187,7 @@ function TeamTimesheetsContent() {
 
   return (
     <PageWrapper
-      title="Daily work logs"
+      title="Timesheets"
       actions={
         <LogTimeDialog
           trigger={
