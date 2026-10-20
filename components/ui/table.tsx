@@ -75,12 +75,22 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+/**
+ * `pinned` keeps a column (row actions) stuck to the right edge while the
+ * table scrolls sideways, so it is never clipped off-screen (QA-BUG-11).
+ */
+const PINNED_RIGHT =
+  "sticky right-0 z-[1] bg-card shadow-[inset_1px_0_0_var(--color-border)] [tr:hover>&]:bg-accent";
+
+type PinnableProps = { pinned?: "right" };
+
+function TableHead({ className, pinned, ...props }: React.ComponentProps<"th"> & PinnableProps) {
   return (
     <th
       data-slot="table-head"
       className={cn(
         "h-9 px-3 text-left align-middle text-2xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5",
+        pinned === "right" && cn(PINNED_RIGHT, "bg-surface-sunken [tr:hover>&]:bg-surface-sunken"),
         className
       )}
       {...props}
@@ -88,12 +98,13 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   );
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+function TableCell({ className, pinned, ...props }: React.ComponentProps<"td"> & PinnableProps) {
   return (
     <td
       data-slot="table-cell"
       className={cn(
         "px-3 py-(--cell-py) align-middle text-sm whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5",
+        pinned === "right" && PINNED_RIGHT,
         className
       )}
       {...props}

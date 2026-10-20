@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Eye, Pencil, UserX, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { HrEmployeeListToolbar } from "./hr-employee-list-toolbar";
+import { EmployeeDirectoryCard } from "./employee-directory-card";
 import type { StatusFilter, RoleFilter } from "./hr-types";
 import { cn, resolveImageUrl } from "@/lib/utils";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -150,8 +151,27 @@ function EmployeeTableBody({
   onRequestDelete,
 }: Pick<HrEmployeeTableProps, "employees" | "currentUserRole" | "currentUserId" | "onRequestDelete">) {
   return (
-        <div className="min-h-0 flex-1 overflow-auto" role="region" aria-label="Employee directory table">
-          <div className="min-w-[900px]">
+      <>
+        {/* Under 768px the eight columns cannot fit; show cards (QA-RESP-01). */}
+        <ul className="grid gap-3 p-3 md:hidden" aria-label="Employee directory">
+          {employees.map((user) => (
+            <li key={user.id}>
+              <EmployeeDirectoryCard
+                id={user.id}
+                name={getDisplayName(user)}
+                initials={getInitials(user)}
+                email={user.email}
+                role={user.role}
+                roleLabel={ROLE_LABELS[user.role] ?? user.role}
+                designation={user.designation}
+                department={user.department?.name ?? null}
+                image={user.image}
+                isActive={user.isActive !== false}
+              />
+            </li>
+          ))}
+        </ul>
+        <div className="hidden min-h-0 flex-1 overflow-y-auto md:block" role="region" aria-label="Employee directory table">
             <Table>
               <TableHeader className="sticky top-0 z-sticky bg-card">
                 <TableRow className="hover:bg-transparent">
@@ -162,10 +182,7 @@ function EmployeeTableBody({
                   <TableHead>Department</TableHead>
                   <TableHead>Joining Date</TableHead>
                   <TableHead>Status</TableHead>
-                  {/* R3-0025: the row is wider than a 1280px viewport, so the
-                      actions stay pinned to the right edge instead of being
-                      scrolled out of reach. */}
-                  <TableHead className="sticky right-0 bg-card text-right">Actions</TableHead>
+                  <TableHead pinned="right" className="bg-card text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -239,7 +256,7 @@ function EmployeeTableBody({
                         </StatusPill>
                       </TableCell>
 
-                      <TableCell className="sticky right-0 bg-card text-right">
+                      <TableCell pinned="right" className="text-right">
                         {/* Always visible: hover-only icons read as an empty Actions column (A43). */}
                         <div className="flex items-center justify-end gap-1">
                           <Button
@@ -283,8 +300,8 @@ function EmployeeTableBody({
                 })}
               </TableBody>
             </Table>
-          </div>
         </div>
+      </>
   );
 }
 

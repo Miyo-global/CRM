@@ -107,7 +107,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
       <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
         {log.ipAddress ?? ""}
       </TableCell>
-      <TableCell>
+      <TableCell pinned="right">
         <Button variant="ghost" size="icon-xs" className="text-muted-foreground" aria-label="View details" tabIndex={-1}>
           <Info aria-hidden />
         </Button>
@@ -365,7 +365,38 @@ function AuditLogContent() {
                 )}
               </div>
             ) : (
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                {/* Under 768px: one stacked row per event — time, actor, action, target (QA-RESP-01). */}
+                <ul className="divide-y divide-border md:hidden">
+                  {logs.map((log) => (
+                    <li key={log.id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLog(log)}
+                        className="flex w-full flex-col gap-1 px-4 py-3 text-left hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-none"
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm font-medium">{log.userName ?? log.userEmail ?? log.userId}</span>
+                          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                            {formatIST(log.createdAt, { year: undefined })}
+                          </span>
+                        </span>
+                        <span className="flex flex-wrap items-center gap-2">
+                          <StatusPill tone={actionTone(log.action)} className="max-w-full truncate font-mono">
+                            {log.action}
+                          </StatusPill>
+                          {log.targetType && (
+                            <span className="text-xs capitalize text-muted-foreground">
+                              {log.targetType}
+                              {log.targetId && <span className="tabular-nums"> #{log.targetId}</span>}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block">
                 <Table className="min-w-175">
                   <TableHeader>
                     <TableRow>
@@ -374,7 +405,7 @@ function AuditLogContent() {
                       <TableHead>Action</TableHead>
                       <TableHead className="w-28">Entity</TableHead>
                       <TableHead className="w-28">IP Address</TableHead>
-                      <TableHead className="w-12"><span className="sr-only">Details</span></TableHead>
+                      <TableHead pinned="right" className="w-12"><span className="sr-only">Details</span></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -383,6 +414,7 @@ function AuditLogContent() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             )}
 
