@@ -263,19 +263,21 @@ function WebhooksContent() {
                         {wh.isActive ? "Active" : "Inactive"}
                       </StatusPill>
                     </TableCell>
+                    {/* The column already says "Created"; the deliveries link
+                        ran into the date here and now sits with the row actions (QA-BUG-29). */}
                     <TableCell className="text-xs text-muted-foreground tabular-nums">
-                      Created {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
-                      <Button
-                        variant="link"
-                        size="xs"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => setDeliveriesFor(wh.id)}
-                      >
-                        Recent deliveries
-                      </Button>
+                      {new Date(wh.createdAt).toLocaleDateString(DEFAULT_LOCALE)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          className="text-xs"
+                          onClick={() => setDeliveriesFor(wh.id)}
+                        >
+                          Recent deliveries
+                        </Button>
                         <Switch
                           checked={wh.isActive}
                           onCheckedChange={() => handleToggle(wh.id, wh.isActive)}
