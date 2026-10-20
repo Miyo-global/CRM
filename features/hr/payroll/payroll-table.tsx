@@ -42,6 +42,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
@@ -51,6 +52,7 @@ import type { Tone } from "@/lib/design/tones";
 import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { isPayrollApprover } from "@/lib/constants/roles";
+import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
 
 const PAYROLL_STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -279,12 +281,16 @@ export function PayrollTable({
                                   Approve
                                 </Button>
                               ) : (
-                                <span
-                                  className="text-2xs text-muted-foreground"
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() => onPreview(payroll)}
                                   title="Only the CEO or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it."
                                 >
-                                  Awaiting approval
-                                </span>
+                                  <Eye className="size-3.5 shrink-0" aria-hidden />
+                                  Preview
+                                </Button>
                               ))}
                             {payroll.status === "APPROVED" && (
                               <Button
@@ -349,15 +355,20 @@ export function PayrollTable({
                                     Resend payslip email
                                   </DropdownMenuItem>
                                 )}
-                                {payroll.status === "DRAFT" && (
-                                  <DropdownMenuItem
-                                    variant="destructive"
-                                    onClick={() => setDeleteTarget(payroll)}
-                                    disabled={isDeletePending}
-                                  >
-                                    <Trash2 className="mr-2 size-4" aria-hidden />
-                                    Delete
-                                  </DropdownMenuItem>
+                                {/* Kept apart from Recalculate so it is not a mis-tap away
+                                    (RESP-02), and Admin/Super Admin only (QA-AUTH-04). */}
+                                {payroll.status === "DRAFT" && canDeleteHrRecord(currentUserRole) && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      variant="destructive"
+                                      onClick={() => setDeleteTarget(payroll)}
+                                      disabled={isDeletePending}
+                                    >
+                                      <Trash2 className="mr-2 size-4" aria-hidden />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </>
                                 )}
                               </DropdownMenuContent>
                             </DropdownMenu>
