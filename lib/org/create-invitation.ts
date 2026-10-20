@@ -79,8 +79,16 @@ export async function createOrgInvitation(input: InviteInput): Promise<InviteRes
     projectRole: input.projectRole,
   });
 
+  // QA-BUG-05: the first send had no inviter name; the resend did.
+  const inviter = await db.query.users.findFirst({
+    where: eq(users.id, input.invitedBy),
+    columns: { name: true, firstName: true, lastName: true },
+  });
+  const inviterName =
+    [inviter?.firstName, inviter?.lastName].filter(Boolean).join(" ") || inviter?.name || undefined;
   await sendInvitationEmail(email, token, org?.name ?? "Unknown Organization", {
     role,
+    inviterName,
     expiresOn: expiresAt,
   }).catch(() => undefined);
 

@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
     await sendInvitationEmail(invitation.email, newToken, org?.name ?? "Miyo Global", {
       inviterName,
       role: invitation.role,
+      expiresOn: newExpiresAt,
     });
 
     return ok({ success: true });

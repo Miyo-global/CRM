@@ -13,6 +13,6 @@ Thanks,
 {{org_name}} HR
 
 --
-You are receiving this because you have an account at {{org_name}}.
+You are receiving this because {{inviter_name}} invited {{email}} to {{org_name}}. Not expecting it? You can ignore this email.
 Questions? Write to {{support_email}}.
 {{org_name}} · {{org_address}}

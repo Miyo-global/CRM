@@ -33,4 +33,14 @@ describe("email template catalog (MIYO-0097..0100)", () => {
     const s = renderEmail("auth-invitation", { inviter_name: "O'Neil", org_name: "A & B" });
     expect(s.subject).toBe("O'Neil invited you to A & B");
   });
+
+  it("the invitation names the role and the inviter, and does not assume an account (QA-BUG-05)", () => {
+    const out = renderEmail("auth-invitation", {
+      inviter_name: "Asha Rao", org_name: "Acme", invite_target: "Acme", role: "Employee", email: "new@acme.test",
+    });
+    for (const part of [out.html, out.text]) {
+      expect(part).toContain("Asha Rao invited you to join Acme as Employee");
+      expect(part).not.toMatch(/you have an account/i);
+    }
+  });
 });
