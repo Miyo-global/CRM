@@ -7,6 +7,7 @@ import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /** Matches the cap enforced by POST /api/dashboard/announcements. */
 const ANNOUNCEMENT_MAX_CHARS = 2000;
@@ -37,6 +38,8 @@ export function AnnouncementsWidget() {
   const [showForm, setShowForm] = useState(false);
   const [content, setContent] = useState("");
   const [isPinned, setIsPinned] = useState(false);
+  // One click on X used to delete with no way back (BUG-34).
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
   const handleSubmit = () => {
     if (!content.trim()) return;
@@ -56,6 +59,7 @@ export function AnnouncementsWidget() {
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id, {
+      onSuccess: () => toast.success("Announcement deleted"),
       onError: () => toast.error("Failed to delete announcement"),
     });
   };
@@ -171,8 +175,8 @@ export function AnnouncementsWidget() {
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    size="icon-xs"
-                    onClick={() => handleDelete(ann.id)}
+                    size="icon-sm"
+                    onClick={() => setPendingDelete(ann.id)}
                     aria-label={`Delete announcement from ${authorDisplay}`}
                     disabled={deleteMutation.isPending}
                     className="shrink-0 text-muted-foreground hover:text-destructive"
@@ -185,6 +189,15 @@ export function AnnouncementsWidget() {
           })}
         </ul>
       )}
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        title="Delete this announcement?"
+        description="It will be removed from everyone's dashboard. This cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => pendingDelete !== null && handleDelete(pendingDelete)}
+      />
     </WidgetCard>
   );
 }
