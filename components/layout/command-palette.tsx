@@ -24,14 +24,7 @@ import { THEME_OPTIONS, useMountedTheme } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 
 
-interface SearchResult {
-  id: number | string;
-  type: "ticket" | "project" | "employee";
-  title: string;
-  subtitle: string;
-  href: string;
-  status?: string;
-}
+import type { SearchResult } from "@/lib/search/merge-results";
 
 interface RecentRoute {
   href: string;
@@ -53,6 +46,8 @@ const ENTITY_LABELS = {
 } as const;
 
 const SEARCH_DEBOUNCE_MS = 400;
+/** Past this the palette stops spinning and offers a retry (QA-BUG-06). */
+const SEARCH_TIMEOUT_MS = 8_000;
 const MIN_ENTITY_SEARCH_LENGTH = 3;
 const RECENT_KEY = "cmdk-recent";
 const RECENT_LIMIT = 5;
@@ -104,6 +99,8 @@ export function CommandPalette() {
   const [query, setQuery] = useState("");
   const [entityResults, setEntityResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<"timeout" | "failed" | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [recent, setRecent] = useState<RecentRoute[]>([]);
   const router = useRouter();
   const pathname = usePathname();
@@ -155,8 +152,12 @@ export function CommandPalette() {
   const normalizedDebouncedQuery = debouncedQuery.trim();
   const searchSettled = query.trim() === normalizedDebouncedQuery;
 
+  // `open` is a dependency so closing aborts the request in flight and
+  // reopening with the same query searches again; before, a request aborted
+  // on close left no fetch running and the cleared results never came back.
   useEffect(() => {
-    if (!normalizedDebouncedQuery || normalizedDebouncedQuery.length < MIN_ENTITY_SEARCH_LENGTH) {
+    setSearchError(null);
+    if (!open || !normalizedDebouncedQuery || normalizedDebouncedQuery.length < MIN_ENTITY_SEARCH_LENGTH) {
       setEntityResults([]);
       setIsSearching(false);
       return;
@@ -169,21 +170,23 @@ export function CommandPalette() {
       .get<{ results: SearchResult[] }>(
         "/search",
         { q: normalizedDebouncedQuery },
-        { signal: controller.signal },
+        { signal: controller.signal, timeout: SEARCH_TIMEOUT_MS },
       )
       .then((data) => {
-        if (!controller.signal.aborted) setEntityResults(data.results);
+        if (!controller.signal.aborted) setEntityResults(data.results ?? []);
       })
       .catch((error) => {
         if (controller.signal.aborted || axios.isCancel(error)) return;
         setEntityResults([]);
+        const timedOut = axios.isAxiosError(error) && (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT");
+        setSearchError(timedOut ? "timeout" : "failed");
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsSearching(false);
       });
 
     return () => controller.abort();
-  }, [normalizedDebouncedQuery]);
+  }, [open, normalizedDebouncedQuery, retryCount]);
 
   const reset = useCallback(() => {
     setOpen(false);
@@ -268,10 +271,12 @@ export function CommandPalette() {
   const isPendingEntitySearch =
     query.trim().length >= MIN_ENTITY_SEARCH_LENGTH && !searchSettled;
   const showEntityLoading = isSearching || isPendingEntitySearch;
+  const showSearchError = searchSettled && !showEntityLoading && searchError !== null;
   const showEmpty =
     searchSettled &&
     normalizedDebouncedQuery.length >= MIN_ENTITY_SEARCH_LENGTH &&
     !showEntityLoading &&
+    !showSearchError &&
     !hasResults;
 
   return (
@@ -303,6 +308,21 @@ export function CommandPalette() {
           </div>
 
           <CommandList className="max-h-[min(420px,60vh)] p-1">
+
+            {showSearchError && (
+              <div role="alert" className="flex items-center justify-between gap-3 px-3 py-3 text-sm">
+                <span className="text-muted-foreground">
+                  {searchError === "timeout" ? "Search took too long." : "Search failed."}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRetryCount((n) => n + 1)}
+                  className="rounded-md px-2 py-1 font-medium text-primary hover:bg-muted"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
 
             {showEmpty && (
               <CommandEmpty>
@@ -412,7 +432,7 @@ export function CommandPalette() {
             </div>
             <span className="ml-auto tabular-nums">
               {query.trim().length >= MIN_ENTITY_SEARCH_LENGTH
-                ? showEntityLoading ? "Searching…" : `${entityResults.length} records`
+                ? showEntityLoading ? "Searching…" : showSearchError ? "Search unavailable" : `${entityResults.length} records`
                 : `${pages.length} pages`}
             </span>
           </div>
