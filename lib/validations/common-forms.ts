@@ -2,7 +2,7 @@ import { z } from "zod";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 import { getTodayIST } from "@/lib/hr/application-dates";
 import { formatJobPostingLocation, formatJobPostingTitle } from "@/lib/hr/job-posting-format";
-import { cleanRequiredName, cleanStrictName } from "@/lib/validations/text-rules";
+import { cleanRequiredText, cleanStrictName } from "@/lib/validations/text-rules";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export const requiredString = (label: string, max = 500) =>
@@ -51,7 +51,7 @@ export const positiveAmount = z.coerce
   .max(999_999_999, "Amount is too large");
 
 export const helpdeskTicketSchema = z.object({
-  title: cleanRequiredName("Title", 200, 3),
+  title: cleanRequiredText("Title", 200, 3),
   description: z
     .string()
     .trim()

@@ -16,7 +16,6 @@ import {
   helpdeskTicketSchema,
   type HelpdeskTicketFormValues,
 } from "@/lib/validations/common-forms";
-import { sanitizeName } from "@/lib/validations/text-rules";
 import type { TicketPriority } from "@/types/hr";
 import { useSession } from "next-auth/react";
 import { isAdminOrOwner } from "@/lib/constants/roles";
@@ -116,13 +115,10 @@ export function HelpdeskCreateTicketForm({
                   placeholder="Brief description of the issue"
                   maxLength={200}
                   value={field.value}
-                  onChange={(e) => field.onChange(sanitizeName(e.target.value))}
+                  onChange={(e) => field.onChange(e.target.value)}
                   onBlur={field.onBlur}
                 />
               </FormControl>
-              <p className="text-2xs text-muted-foreground">
-                Letters, numbers, spaces, and basic punctuation only
-              </p>
               <FormMessage />
             </FormItem>
           )}

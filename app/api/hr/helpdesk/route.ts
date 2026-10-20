@@ -8,11 +8,12 @@ import type { TicketPriority, TicketStatus } from "@/types/hr";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendHelpdeskTicketEmail } from "@/lib/email";
-import { cleanRequiredName } from "@/lib/validations/text-rules";
+import { cleanRequiredText } from "@/lib/validations/text-rules";
 import { sql } from "drizzle-orm";
 
 const createTicketSchema = z.object({
-  title: cleanRequiredName("Title", 200, 3),
+  // Free text, kept as typed (QA-BUG-18); the email template escapes it.
+  title: cleanRequiredText("Title", 200, 3),
   description: z.string().trim().max(5000).optional(),
   category: z.string().trim().min(1, "Category is required").max(100),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),

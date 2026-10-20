@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   validateCalendarTitle,
+  sanitizeCalendarTitleInput,
   shouldShowMeetConnect,
   shouldShowMeetGenerate,
   isValidUrl,
@@ -32,8 +33,9 @@ describe("validateCalendarTitle", () => {
     expect(validateCalendarTitle(long)).toMatch(/at most/i);
   });
 
-  it("rejects titles with disallowed characters (e.g. emoji)", () => {
-    expect(validateCalendarTitle("Team sync 😀")).toMatch(/only contain/i);
+  it("keeps special characters and emoji as typed (QA-BUG-18)", () => {
+    expect(validateCalendarTitle(`QA-TEST <b>bold</b> ' " & é 😀`)).toBeNull();
+    expect(sanitizeCalendarTitleInput(`Team <sync> "😀"`)).toBe(`Team <sync> "😀"`);
   });
 
   it("accepts typical titles at the minimum length", () => {

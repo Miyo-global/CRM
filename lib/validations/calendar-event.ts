@@ -4,7 +4,6 @@
  */
 
 import { parseISO } from "date-fns";
-import { isAllowedName, NAME_ALLOWED_HINT, sanitizeName } from "./text-rules";
 
 export const CALENDAR_TITLE_MIN = 5;
 export const CALENDAR_TITLE_MAX = 100;
@@ -17,14 +16,18 @@ export const CALENDAR_MIN_DURATION_MINUTES = CALENDAR_MIN_DURATION_MS / 60_000;
 export const CALENDAR_TITLE_NUMERIC_ONLY_ERROR =
   "Title cannot contain only numeric values. Please enter a valid title.";
 
-/** Strip disallowed characters and cap length (same rules as {@link validateCalendarTitle}). */
+/**
+ * Cap the length only. Titles are kept as typed (QA-BUG-18): stripping
+ * < > " and emoji silently changed what people wrote, and titles are plain
+ * text everywhere they render, so React escapes them.
+ */
 export function sanitizeCalendarTitleInput(raw: string): string {
-  return sanitizeName(raw).slice(0, CALENDAR_TITLE_MAX);
+  return raw.slice(0, CALENDAR_TITLE_MAX);
 }
 
 /**
  * Validate an event title. Returns an error message, or null when valid.
- * Rejects empty, too-short, too-long, disallowed characters, and numeric-/symbol-only titles (must contain a letter).
+ * Rejects empty, too-short, too-long, and numeric-/symbol-only titles (must contain a letter).
  */
 export function validateCalendarTitle(raw: string): string | null {
   const trimmed = raw.trim();
@@ -38,11 +41,8 @@ export function validateCalendarTitle(raw: string): string | null {
   if (/^[\d\s]+$/.test(trimmed) && /\d/.test(trimmed)) {
     return CALENDAR_TITLE_NUMERIC_ONLY_ERROR;
   }
-  if (!/[a-zA-Z]/.test(trimmed)) {
+  if (!/\p{L}/u.test(trimmed)) {
     return "Title must contain at least one letter";
-  }
-  if (!isAllowedName(trimmed)) {
-    return `Title can only contain ${NAME_ALLOWED_HINT}`;
   }
   return null;
 }

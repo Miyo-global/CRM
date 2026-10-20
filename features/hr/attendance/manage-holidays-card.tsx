@@ -18,7 +18,6 @@ import {
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { createHolidaySchema, HOLIDAY_MESSAGE_MAX } from "@/lib/validations/holidays";
-import { sanitizeSimpleName } from "@/lib/validations/text-rules";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -102,7 +101,7 @@ function EditRow({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Input
             value={editName}
-            onChange={(e) => setEditName(sanitizeSimpleName(e.target.value))}
+            onChange={(e) => setEditName(e.target.value)}
             placeholder="Holiday name"
             className="h-8 text-sm"
           />
@@ -357,7 +356,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
                   id="holiday-name"
                   placeholder="e.g. Diwali"
                   value={name}
-                  onChange={(e) => setName(sanitizeSimpleName(e.target.value))}
+                  onChange={(e) => setName(e.target.value)}
                   className="bg-background"
                 />
               </div>
