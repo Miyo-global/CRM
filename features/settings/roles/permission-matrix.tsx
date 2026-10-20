@@ -182,13 +182,16 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
             {rolePermissions.size} of {PERMISSIONS.length} permissions enabled
+            {role.isSystem && !isCEO && builtIn.size > 0 && " · built-in ones are locked"}
           </p>
         </div>
         {updateRole.isPending && (
           <Loader2 className="size-4 animate-spin text-muted-foreground" aria-label="Saving" />
         )}
       </div>
-      <div className="max-h-[65vh] overflow-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+      {/* One scroll container per page on a phone: the list and the matrix used
+          to scroll inside the page scroll (QA-RESP-05). */}
+      <div className="overflow-x-auto lg:overflow-auto lg:min-h-0 lg:flex-1">
         <table className="w-full border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-sticky bg-surface-sunken">
             <tr>

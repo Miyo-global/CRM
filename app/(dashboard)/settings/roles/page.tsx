@@ -93,6 +93,13 @@ function RolesContent() {
 
   const handleOpenCreate = useCallback(() => setCreateOpen(true), []);
   const handleUpdateRole = useCallback((updated: Role) => setSelectedRole(updated), []);
+  const handleSelectRole = useCallback((role: Role) => {
+    setSelectedRole(role);
+    // Stacked layout: bring the matrix into view instead of leaving it below the list.
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+      requestAnimationFrame(() => document.getElementById("role-permission-matrix")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  }, []);
   const handleDeleteDialogClose = useCallback(() => setDeleteTarget(null), []);
 
   return (
@@ -127,14 +134,14 @@ function RolesContent() {
                 ))}
               </div>
             ) : (
-              <ScrollArea className="max-h-[45vh] lg:max-h-none lg:h-full" type="auto">
+              <ScrollArea className="lg:h-full" type="auto">
                 <div className="divide-y divide-border">
                   {(roles ?? []).map((role) => (
                     <RoleListItem
                       key={role.id}
                       role={role}
                       isSelected={selectedRole?.id === role.id}
-                      onSelect={setSelectedRole}
+                      onSelect={handleSelectRole}
                       onDelete={setDeleteTarget}
                     />
                   ))}
@@ -145,11 +152,13 @@ function RolesContent() {
         </Card>
 
         {selectedRole ? (
+          <div id="role-permission-matrix" className="scroll-mt-4 lg:contents">
           <PermissionMatrix
             role={selectedRole}
             permissionGroups={permissionGroups}
             onUpdate={handleUpdateRole}
           />
+          </div>
         ) : (
           <EmptyState
             className="min-h-64 lg:min-h-0 lg:h-full"
