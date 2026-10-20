@@ -202,7 +202,10 @@ export function AnnouncementsWidget() {
                   aria-hidden="true"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm leading-snug text-foreground">{ann.content}</p>
+                  {/* wrap-anywhere: one long token pushed the card wide (QA-BUG-27). */}
+                  <p className="line-clamp-4 wrap-anywhere text-sm leading-snug text-foreground" title={ann.content}>
+                    {ann.content}
+                  </p>
                   <div className="mt-1 flex items-center gap-2">
                     {ann.isPinned && (
                       <Pin className={cn("size-3 shrink-0", toneText.warning)} aria-label="Pinned" />

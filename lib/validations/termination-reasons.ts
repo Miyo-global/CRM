@@ -1,10 +1,13 @@
 import { z } from "zod";
 
+/** A reason is a short label picked from a list, not a sentence (QA-BUG-27). */
+export const TERMINATION_REASON_LABEL_MAX = 120;
+
 export const terminationReasonLabelSchema = z
   .string()
   .trim()
   .min(1, "Label is required")
-  .max(200, "Label must be at most 200 characters");
+  .max(TERMINATION_REASON_LABEL_MAX, `Label must be at most ${TERMINATION_REASON_LABEL_MAX} characters`);
 
 export const terminationReasonFormSchema = z.object({
   label: terminationReasonLabelSchema,

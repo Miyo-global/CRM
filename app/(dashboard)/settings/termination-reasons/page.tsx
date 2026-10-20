@@ -26,7 +26,7 @@ import {
   type TerminationReason,
 } from "@/lib/api/hooks/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { terminationReasonFormSchema } from "@/lib/validations/termination-reasons";
+import { terminationReasonFormSchema, TERMINATION_REASON_LABEL_MAX } from "@/lib/validations/termination-reasons";
 import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
 
 export default function TerminationReasonsSettingsPage() {
@@ -195,13 +195,15 @@ function TerminationReasonsContent() {
                 <TableRow key={reason.id}>
                   <TableCell className="max-w-0 w-full whitespace-normal">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{reason.label}</span>
+                      <span className="min-w-0 wrap-anywhere text-sm font-medium">{reason.label}</span>
                       {reason.label === OTHER_TERMINATION_REASON && (
                         <StatusPill tone="info">System</StatusPill>
                       )}
                     </div>
                     {reason.description && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">{reason.description}</p>
+                      <p className="mt-0.5 line-clamp-3 wrap-anywhere text-xs text-muted-foreground" title={reason.description}>
+                        {reason.description}
+                      </p>
                     )}
                   </TableCell>
                   <TableCell>
@@ -265,7 +267,7 @@ function TerminationReasonsContent() {
           <Input
             id="reason-label"
             value={label}
-            maxLength={200}
+            maxLength={TERMINATION_REASON_LABEL_MAX}
             placeholder="e.g. Repeated policy violations"
             onChange={(e) => setLabel(e.target.value)}
           />
