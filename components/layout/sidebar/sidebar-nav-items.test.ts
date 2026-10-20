@@ -54,3 +54,38 @@ describe("sidebar links point at real pages", () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe("KB-0065: the Knowledge module in the nav", () => {
+  it.each(ALL_ROLES)("gives %s the wiki", (role) => {
+    const groups = getNavGroupsForRole(role).map((g) => g.label);
+    expect(groups).toContain("Knowledge – Wiki");
+    expect(hrefs(role)).toContain("/knowledge/wiki");
+  });
+
+  it("puts the wiki straight after Core, not at the bottom", () => {
+    const groups = getNavGroupsForRole("HR").map((g) => g.label);
+    expect(groups[0]).toBe("Core");
+    expect(groups[1]).toBe("Knowledge – Wiki");
+  });
+
+  it("gives HR the manage group", () => {
+    const groups = getNavGroupsForRole("HR").map((g) => g.label);
+    expect(groups).toContain("Knowledge – Manage");
+    expect(hrefs("HR")).toContain("/knowledge/wiki/reviews");
+  });
+
+  it("does not offer SALES import and export, which it cannot do", () => {
+    expect(hrefs("SALES")).not.toContain("/knowledge/wiki/import");
+    // It still sees the reviews queue, which every employee may read.
+    expect(hrefs("SALES")).toContain("/knowledge/wiki/reviews");
+  });
+
+  it("never links a role to a knowledge page the route map denies it", () => {
+    for (const role of ALL_ROLES) {
+      const denied = hrefs(role)
+        .filter((href) => href.startsWith("/knowledge"))
+        .filter((href) => !canAccessRoute(href, role));
+      expect(denied).toEqual([]);
+    }
+  });
+});

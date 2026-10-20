@@ -1,8 +1,9 @@
 
 
-import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
 
 import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
+import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 
 export interface NavRoute {
   label: string;
@@ -20,9 +21,66 @@ export interface NavGroup {
   defaultCollapsed?: boolean;
 }
 
+/**
+ * KB-0065: the Knowledge module.
+ *
+ * Every role gets the wiki — what someone can actually read is decided by space
+ * and page access inside, not by the menu. The manage group is added only for
+ * roles whose defaults hold the matching permission; the API checks it again.
+ *
+ * Search, Ask KB, Analytics, Content Health, Company documents and KB settings
+ * join these groups as their pages land (Phases F to J).
+ */
+function knowledgeWikiGroup(): NavGroup {
+  return {
+    label: "Knowledge – Wiki",
+    routes: [
+      { label: "Wiki", icon: BookOpen, href: "/knowledge/wiki" },
+      { label: "My pages", icon: FileText, href: "/knowledge/wiki/private", isSubItem: true },
+      { label: "Shared with me", icon: Users, href: "/knowledge/wiki/shared", isSubItem: true },
+      { label: "Spaces", icon: Library, href: "/knowledge/wiki/spaces", isSubItem: true },
+      { label: "Templates", icon: LayoutTemplate, href: "/knowledge/wiki/templates", isSubItem: true },
+    ],
+  };
+}
+
+function knowledgeManageGroup(role: string): NavGroup[] {
+  const granted = ROLE_DEFAULT_PERMISSIONS[role] ?? [];
+  const routes: NavRoute[] = [];
+
+  if (granted.includes("kb:reviews:view") || granted.includes("kb:reviews:manage")) {
+    routes.push({ label: "Reviews", icon: FileCheck, href: "/knowledge/wiki/reviews" });
+  }
+  // Export alone is every employee's (one page at a time, from the page), so
+  // the import-and-export screen is offered only to roles that can import.
+  if (granted.includes("kb:pages:import")) {
+    routes.push({ label: "Import & Export", icon: ArrowDownUp, href: "/knowledge/wiki/import" });
+  }
+
+  return routes.length > 0 ? [{ label: "Knowledge – Manage", defaultCollapsed: true, routes }] : [];
+}
+
+/**
+ * KB-0065: the Knowledge groups go in for every role, straight after Core, so
+ * the wiki sits where people look for it instead of at the bottom of whatever
+ * each role's menu happens to end with.
+ */
 export function getNavGroupsForRole(role: string | undefined): NavGroup[] {
   if (!role) return [];
 
+  const groups = roleNavGroups(role);
+  if (groups.length === 0) return groups;
+
+  const afterCore = groups[0]?.label === "Core" ? 1 : 0;
+  return [
+    ...groups.slice(0, afterCore),
+    knowledgeWikiGroup(),
+    ...knowledgeManageGroup(role),
+    ...groups.slice(afterCore),
+  ];
+}
+
+function roleNavGroups(role: string): NavGroup[] {
   switch (role) {
     case "CEO":
     case "ADMIN":
