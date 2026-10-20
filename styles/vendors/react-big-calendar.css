@@ -125,6 +125,36 @@
   color: var(--event-strong, var(--brand-soft-foreground));
 }
 
+/* Month chips: at least 20px tall so they stay readable and tappable (QA-RESP-03). */
+.calendar-container .rbc-month-view .rbc-event {
+  min-height: 20px;
+  line-height: 18px;
+}
+
+/* "+N more" popover */
+.calendar-container .rbc-overlay {
+  z-index: 20;
+  min-width: 12rem;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+
+.calendar-container .rbc-overlay-header {
+  margin: -8px -8px 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.calendar-container .rbc-overlay > * + * {
+  margin-top: 2px;
+}
+
 .calendar-container .rbc-event.rbc-selected {
   box-shadow: 0 0 0 1px var(--event-tone, var(--primary));
 }

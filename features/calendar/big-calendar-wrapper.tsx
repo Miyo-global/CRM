@@ -6,7 +6,7 @@ import {
   type SlotInfo,
   type EventPropGetter,
 } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import { format, parse, startOfWeek, getDay, getDaysInMonth, startOfMonth } from "date-fns";
 import { enIN } from "date-fns/locale/en-IN";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -62,12 +62,18 @@ export function BigCalendarWrapper({
     view === "month"
       ? { height: calHeight }
       : { height: "100%" };
+  // The list ("agenda") view follows the month in the header: the whole month.
+  const isAgenda = view === "agenda";
 
   return (
     <Calendar
       localizer={localizer}
       events={events}
-      date={date}
+      date={isAgenda ? startOfMonth(date) : date}
+      length={isAgenda ? getDaysInMonth(date) : undefined}
+      // "+N more" opens a popover with the day's events instead of jumping to day view.
+      popup
+      messages={{ agenda: "List", noEventsInRange: "No events this month." }}
       view={view}
       onView={onView}
       onNavigate={onNavigate}

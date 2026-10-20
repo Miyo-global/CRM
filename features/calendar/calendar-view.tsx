@@ -102,11 +102,22 @@ const BigCalendarWrapper = dynamic(
 );
 
 
-const VIEWS: View[] = ["month", "week", "day"];
+const VIEWS: View[] = ["month", "week", "day", "agenda"];
+const VIEW_LABELS: Partial<Record<View, string>> = { agenda: "List" };
+/** Under 768px month chips shrink to ~14px and overlap, so phones open the list (QA-RESP-03). */
+const NARROW_QUERY = "(max-width: 767px)";
 
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<View>("month");
+
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW_QUERY);
+    const apply = () => setView((v) => (mq.matches ? "agenda" : v === "agenda" ? "month" : v));
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   const calContainerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(600);
@@ -196,7 +207,7 @@ export function CalendarView() {
 
   const handlePrev = useCallback(() => {
     setCurrentDate((d) => {
-      if (view === "month") return subMonths(d, 1);
+      if (view === "month" || view === "agenda") return subMonths(d, 1);
       if (view === "week") return subWeeks(d, 1);
       return subDays(d, 1);
     });
@@ -204,7 +215,7 @@ export function CalendarView() {
 
   const handleNext = useCallback(() => {
     setCurrentDate((d) => {
-      if (view === "month") return addMonths(d, 1);
+      if (view === "month" || view === "agenda") return addMonths(d, 1);
       if (view === "week") return addWeeks(d, 1);
       return addDays(d, 1);
     });
@@ -274,7 +285,7 @@ export function CalendarView() {
               <ChevronRight className="size-4" />
             </Button>
           </div>
-          {view === "month" ? (
+          {view === "month" || view === "agenda" ? (
             <h2 className="flex items-center">
               <Select
                 value={String(calMonth)}
@@ -334,7 +345,7 @@ export function CalendarView() {
             <TabsList aria-label="Calendar view">
               {VIEWS.map((v) => (
                 <TabsTrigger key={v} value={v} className="capitalize">
-                  {v}
+                  {VIEW_LABELS[v] ?? v}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -371,7 +382,7 @@ export function CalendarView() {
 
       <div
         ref={calContainerRef}
-        className={`flex-1 min-h-0 rounded-lg border border-border bg-card calendar-container ${view === "month" ? "overflow-y-scroll" : "overflow-hidden"}`}
+        className={`flex-1 min-h-0 rounded-lg border border-border bg-card calendar-container ${view === "month" || view === "agenda" ? "overflow-y-auto" : "overflow-hidden"}`}
       >
         <BigCalendarWrapper
           events={calEvents}
