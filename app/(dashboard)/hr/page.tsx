@@ -39,6 +39,7 @@ import { HrEmployeePagination, HrEmployeeTable } from "@/features/hr/employees/h
 import { EmployeeDirectoryCard } from "@/features/hr/employees/employee-directory-card";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getTodayString } from "@/lib/date-utils";
+import { uniqueDepartmentNames } from "@/lib/hr/department-count";
 
 const MIN_SEARCH_LENGTH = 3;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -133,7 +134,7 @@ export default function HRDashboardPage() {
   );
 
   const departments = useMemo(
-    () => departmentRows.map((d) => d.name).sort(),
+    () => uniqueDepartmentNames(departmentRows),
     [departmentRows],
   );
 

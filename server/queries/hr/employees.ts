@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { departments, organizationMembers, users, leaveRequests, attendance } from "@/lib/db/schema";
 import { timesheets, projectMembers, projects, tickets, sprints } from "@/lib/db/schema/projects";
-import { eq, and, desc, gte, lte, ilike, or, count, isNull } from "drizzle-orm";
+import { eq, and, desc, gte, lte, ilike, or, count, isNull, sql } from "drizzle-orm";
 
 function departmentFromId(
   departmentId: number | null | undefined,
@@ -121,7 +121,10 @@ export async function getEmployeesPaginated(
   }
 
   if (filters?.departmentName && filters.departmentName !== "All") {
-    baseConditions.push(eq(departments.name, filters.departmentName));
+    // Match the filter's one-entry-per-name list: every same-named copy (QA-BUG-26).
+    baseConditions.push(
+      sql`lower(trim(${departments.name})) = ${filters.departmentName.trim().toLowerCase()}`,
+    );
   }
 
   const searchConditions = search
