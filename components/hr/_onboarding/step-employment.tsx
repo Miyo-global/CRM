@@ -25,15 +25,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
-import { ROLE_OPTIONS } from "@/lib/rbac/roles";
+import { ASSIGNABLE_ROLE_OPTIONS } from "@/lib/rbac/roles";
 import { EmployeeAssignCombobox, type EmployeeAssignOption } from "@/components/hr/employee-assign-combobox";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
-/** Every system role except CEO, which is never assigned from the wizard (A12). */
-const FALLBACK_ROLES: Array<{ slug: string; name: string }> = ROLE_OPTIONS.filter(
-  (r) => r.value !== "CEO",
-).map((r) => ({ slug: r.value, name: r.label }));
+/** The assignable system roles; Super Admin is never assigned from the wizard (A12). */
+const FALLBACK_ROLES: Array<{ slug: string; name: string }> = ASSIGNABLE_ROLE_OPTIONS.map(
+  (r) => ({ slug: r.value, name: r.label }),
+);
 
 interface Department { id: number; name: string }
 interface Role { slug: string; name: string }

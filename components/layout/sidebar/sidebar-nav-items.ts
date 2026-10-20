@@ -548,6 +548,7 @@ function roleNavGroups(role: string): NavGroup[] {
         },
       ];
 
+    case "EMPLOYEE":
     case "ENGINEERING":
     case "DESIGN":
     case "VIDEO_EDITOR":

@@ -196,7 +196,7 @@ const credentialsProvider = Credentials({
             .values({
               userId: user.id,
               orgId: org.id,
-              role: user.role || "ENGINEERING",
+              role: user.role || "EMPLOYEE",
             })
             .onConflictDoNothing();
         }

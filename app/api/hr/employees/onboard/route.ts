@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     // Server-side department ↔ role compatibility (D10): resolve the canonical
     // department name so we do not rely solely on the client-supplied name.
-    const onboardRole = body.role || "ENGINEERING";
+    const onboardRole = body.role || "EMPLOYEE";
 
     // Privilege-escalation gate (QA-0002): HR cannot onboard a CEO/ADMIN, and
     // an unknown role string is rejected instead of stored.
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
           designation: body.designation,
           departmentId,
           reportingTo: reportingTo ?? null,
-          role: body.role || "ENGINEERING",
+          role: body.role || "EMPLOYEE",
           employeeId,
           joiningDate: formatDateOnly(body.joiningDate),
           dateOfBirth: formatDateOnly(body.dateOfBirth),
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
       await tx.insert(organizationMembers).values({
         orgId: session.orgId,
         userId: u.id,
-        role: body.role || "ENGINEERING",
+        role: body.role || "EMPLOYEE",
       });
 
       // Keep the department_members join table in sync with users.departmentId

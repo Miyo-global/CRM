@@ -18,6 +18,7 @@ import { StepEmployment } from "./_onboarding/step-employment";
 import { StepSkillsPay } from "./_onboarding/step-skills-pay";
 import { StepBanking } from "./_onboarding/step-banking";
 import { StepReview } from "./_onboarding/step-review";
+import { filterAssignableOrgRoles } from "@/lib/rbac/roles";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -96,7 +97,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
   }, [employeesData]);
 
   const assignableRoles = useMemo(
-    () => (orgRoles ?? []).filter((r) => r.slug !== "CEO"),
+    () => filterAssignableOrgRoles(orgRoles ?? []),
     [orgRoles]
   );
 
@@ -114,7 +115,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       firstName: "", lastName: "", email: "", phone: "",
       whatsappSameAsPhone: true, whatsappNumber: "", gender: "MALE",
       designation: "", departmentId: undefined, departmentName: "", reportingTo: "",
-      role: "ENGINEERING", employeeId: "", joiningDate: new Date(),
+      role: "EMPLOYEE", employeeId: "", joiningDate: new Date(),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
       taxId: "", monthlySalary: undefined,
       bankDetails: {

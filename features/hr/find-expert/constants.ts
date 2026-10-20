@@ -31,7 +31,9 @@ export type ViewMode = "list" | "grid";
 /** Role slugs shown in Find Expert filters (matches org member job roles). */
 export const FIND_EXPERT_ROLE_SLUGS = [
   "CEO",
+  "ADMIN",
   "HR",
+  "EMPLOYEE",
   "SALES",
   "CUSTOMER_SUPPORT",
   "ENGINEERING",

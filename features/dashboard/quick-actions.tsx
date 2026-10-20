@@ -36,6 +36,7 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
         { label: "My tickets", href: "/support" },
         { label: "Check in", href: "/hr/attendance" },
       ];
+    case "EMPLOYEE":
     case "ENGINEERING":
     case "DESIGN":
     case "VIDEO_EDITOR":

@@ -27,7 +27,7 @@ export async function ensureOrgMembership(
   const org = await db.query.organizations.findFirst();
   if (!org) return null;
 
-  const memberRole = role || "ENGINEERING";
+  const memberRole = role || "EMPLOYEE";
 
   try {
     await db

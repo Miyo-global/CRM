@@ -8,18 +8,8 @@ import { CheckCircle, ArrowLeft, ArrowRight, Check, Send, Shield, type LucideIco
 import { submitOnboarding } from "@/server/actions/onboarding-actions";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { getRoleLabel } from "@/lib/rbac/roles";
 
-const ROLE_LABELS: Record<string, string> = {
-  CEO: "CEO",
-  ADMIN: "Admin",
-  HR: "Human Resources",
-  ENGINEERING: "Engineering",
-  SALES: "Sales",
-  DIGITAL_MARKETING: "Digital Marketing",
-  CUSTOMER_SUPPORT: "Customer Support",
-  DESIGN: "Design",
-  VIDEO_EDITOR: "Video Editor",
-};
 
 interface Step {
   id: string;
@@ -40,7 +30,7 @@ export function ReviewTab({ completedSteps, steps, reviewStepId, onBack }: Revie
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const userRole = session?.user?.role;
-  const roleLabel = userRole ? ROLE_LABELS[userRole] || userRole : "Pending assignment";
+  const roleLabel = userRole ? getRoleLabel(userRole) : "Pending assignment";
   const dataSteps = steps.filter((s) => s.id !== reviewStepId);
   const allDataStepsComplete = dataSteps.every((s) => completedSteps.has(s.id));
 

@@ -18,7 +18,9 @@ export type StatusFilter = "All" | "Active" | "Inactive";
 export type RoleFilter =
   | "All"
   | "CEO"
+  | "ADMIN"
   | "HR"
+  | "EMPLOYEE"
   | "SALES"
   | "CUSTOMER_SUPPORT"
   | "ENGINEERING"
@@ -27,8 +29,9 @@ export type RoleFilter =
   | "DIGITAL_MARKETING";
 
 export const ROLE_LABELS: Record<string, string> = {
-  CEO: "CEO",
+  CEO: "Super Admin",
   HR: "HR",
+  EMPLOYEE: "Employee",
   SALES: "Sales",
   CUSTOMER_SUPPORT: "Customer Support",
   ENGINEERING: "Engineering",

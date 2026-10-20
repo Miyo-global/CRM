@@ -1,5 +1,6 @@
 
 export const ROLES = {
+  /** The Super Admin: exactly one per org, the owner (QA-AUTH-02). */
   CEO: "CEO",
   HR: "HR",
   ADMIN: "ADMIN",
@@ -11,6 +12,11 @@ export const ROLES = {
   DIGITAL_MARKETING: "DIGITAL_MARKETING",
   /** MIYO-0628: works the hiring pipeline; no other HR access. */
   RECRUITER: "RECRUITER",
+  /**
+   * QA-ROLE-01: the one role for everyone who is not an admin. A job title is
+   * data (designation, department), not an access level.
+   */
+  EMPLOYEE: "EMPLOYEE",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -43,6 +49,24 @@ export function isRecruitmentHr(role: string | undefined | null): boolean {
 }
 
 export const ALL_ROLES: readonly string[] = Object.values(ROLES);
+
+/**
+ * QA-ROLE-01: the job-title roles every non-admin used to hold. Existing rows
+ * keep working (same permissions as EMPLOYEE) until migration 0186 moves them,
+ * but none is offered for assignment any more.
+ */
+export const LEGACY_JOB_TITLE_ROLES: readonly string[] = [
+  ROLES.SALES,
+  ROLES.ENGINEERING,
+  ROLES.DESIGN,
+  ROLES.CUSTOMER_SUPPORT,
+  ROLES.VIDEO_EDITOR,
+  ROLES.DIGITAL_MARKETING,
+];
+
+export function isLegacyJobTitleRole(role: string | undefined | null): boolean {
+  return !!role && LEGACY_JOB_TITLE_ROLES.includes(role);
+}
 
 export function isAdminOrOwner(role: string | undefined | null): boolean {
   return !!role && ADMIN_ROLES.includes(role);

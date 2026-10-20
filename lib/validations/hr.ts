@@ -32,6 +32,7 @@ import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
 const GENERIC_ROLE_SLUGS = new Set([
   "CEO",
   "ADMIN",
+  "EMPLOYEE",
 ]);
 
 const KNOWN_DEPARTMENT_ROLE_SLUGS = new Set([
@@ -630,7 +631,7 @@ export const onboardEmployeeInputSchema = z
     departmentName: z.string().trim().optional(),
     /** Reporting manager, settable during onboarding (QA-0021). */
     reportingTo: z.string().trim().optional(),
-    role: z.string().default("ENGINEERING"),
+    role: z.string().default("EMPLOYEE"),
     employeeId: optionalEmployeeIdSchema().transform((val) => {
       const trimmed = val?.trim();
       return trimmed ? trimmed : undefined;

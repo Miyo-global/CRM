@@ -15,8 +15,11 @@ import { ROLE_LABELS, type StatusFilter, type RoleFilter } from "./hr-types";
 
 const ROLE_OPTIONS = [
   { value: "All", label: "All Roles" },
-  { value: "CEO", label: "CEO" },
+  { value: "CEO", label: "Super Admin" },
+  { value: "ADMIN", label: "Admin" },
   { value: "HR", label: "HR" },
+  { value: "EMPLOYEE", label: "Employee" },
+  // Retired job-title roles stay filterable while anyone still holds one.
   { value: "SALES", label: "Sales" },
   { value: "CUSTOMER_SUPPORT", label: "Customer Support" },
   { value: "ENGINEERING", label: "Engineering" },

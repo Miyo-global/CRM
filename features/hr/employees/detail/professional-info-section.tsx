@@ -24,18 +24,13 @@ import type { EmployeeFormValues } from "@/app/(dashboard)/hr/employees/[employe
 import { useHrEmployees, useHrDepartments } from "@/lib/api/hooks/hr";
 import { isRoleAllowedForDepartment } from "@/lib/validations/hr";
 import type { Employee } from "@/types/hr";
+import { ASSIGNABLE_ROLE_OPTIONS } from "@/lib/rbac/roles";
 
 const NO_MANAGER = "__none__";
 
-const FALLBACK_ROLES: Array<{ slug: string; name: string }> = [
-  { slug: "ENGINEERING", name: "Engineering" },
-  { slug: "HR", name: "HR" },
-  { slug: "SALES", name: "Sales" },
-  { slug: "CUSTOMER_SUPPORT", name: "Customer Support" },
-  { slug: "DESIGN", name: "Design" },
-  { slug: "VIDEO_EDITOR", name: "Video Editor" },
-  { slug: "DIGITAL_MARKETING", name: "Digital Marketing" },
-];
+const FALLBACK_ROLES: Array<{ slug: string; name: string }> = ASSIGNABLE_ROLE_OPTIONS.map(
+  (r) => ({ slug: r.value, name: r.label }),
+);
 
 interface ProfessionalInfoSectionProps {
   assignableRoles: Array<{ slug: string; name: string }>;

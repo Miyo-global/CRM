@@ -69,7 +69,7 @@ function MembersSettingsContent() {
   const { data: session } = useSession();
   const [, startTransition] = useTransition();
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<string>("ENGINEERING");
+  const [inviteRole, setInviteRole] = useState<string>("EMPLOYEE");
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 

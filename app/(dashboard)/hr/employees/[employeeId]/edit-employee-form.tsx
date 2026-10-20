@@ -21,6 +21,7 @@ import { ProfessionalInfoSection } from "@/features/hr/employees/detail/professi
 import { BankDetailsSection } from "@/features/hr/employees/detail/bank-details-section";
 import { ActiveStatusSection } from "@/features/hr/employees/detail/active-status-section";
 import { PortalAccessSection } from "@/features/hr/employees/portal-access-section";
+import { filterAssignableOrgRoles } from "@/lib/rbac/roles";
 
 export type EmployeeFormValues = EditEmployeeFormValues;
 
@@ -72,7 +73,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const updateProfileMutation = useUpdateProfile();
   const { data: orgRoles } = useRolesList();
   const assignableRoles = useMemo(
-    () => (orgRoles || []).filter((r) => r.slug !== "CEO"),
+    () => filterAssignableOrgRoles(orgRoles || []),
     [orgRoles],
   );
 
@@ -81,7 +82,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     defaultValues: {
       firstName: employee.firstName || "",
       lastName: employee.lastName || "",
-      role: (employee.role || "ENGINEERING").trim().toUpperCase(),
+      role: (employee.role || "EMPLOYEE").trim().toUpperCase(),
       designation: employee.designation || "",
       departmentId: employee.departmentId || undefined,
       departmentName:

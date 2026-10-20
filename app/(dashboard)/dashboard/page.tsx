@@ -172,6 +172,7 @@ export default function DashboardPage() {
           { id: "done", label: "Completed", value: rs?.myTicketsDone ?? 0, icon: CheckCircle2, tone: "success" as const },
           { id: "inprogress", label: "In Progress", value: rs?.myTicketsInProgress ?? 0, icon: ListChecks, tone: "warning" as const },
         ];
+      case "EMPLOYEE":
       case "ENGINEERING":
       case "DESIGN":
       case "VIDEO_EDITOR":

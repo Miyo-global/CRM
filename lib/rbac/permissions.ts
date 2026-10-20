@@ -421,6 +421,18 @@ export const KB_FULL_EXCEPT_PURGE: string[] = KB_PERMISSION_NAMES.filter(
  */
 const KB_EMPLOYEE_PERMISSIONS: string[] = ["kb:ai:generate", "kb:pages:export", "kb:reviews:view"];
 
+const EMPLOYEE_PERMISSIONS: string[] = [
+  ...EMPLOYEE_SELF_SERVICE,
+  ...KB_EMPLOYEE_PERMISSIONS,
+  "projects:view",
+  "projects:tickets:view",
+  "projects:tickets:create",
+  "projects:tickets:update",
+  "projects:sprints:view",
+  "projects:timesheets:view",
+  "projects:timesheets:create",
+];
+
 export const SYSTEM_ROLES = [
   "CEO",
   "HR",
@@ -432,6 +444,7 @@ export const SYSTEM_ROLES = [
   "VIDEO_EDITOR",
   "DIGITAL_MARKETING",
   "RECRUITER",
+  "EMPLOYEE",
 ] as const;
 
 export type SystemRole = (typeof SYSTEM_ROLES)[number];
@@ -511,17 +524,12 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "projects:timesheets:create",
   ],
 
-  ENGINEERING: [
-    ...EMPLOYEE_SELF_SERVICE,
-    ...KB_EMPLOYEE_PERMISSIONS,
-    "projects:view",
-    "projects:tickets:view",
-    "projects:tickets:create",
-    "projects:tickets:update",
-    "projects:sprints:view",
-    "projects:timesheets:view",
-    "projects:timesheets:create",
-  ],
+  ENGINEERING: EMPLOYEE_PERMISSIONS,
+
+  // QA-ROLE-01: the single non-admin role. It carries what Engineering always
+  // had, the widest of the old job-title sets, so nobody moved onto it loses
+  // a page they could open.
+  EMPLOYEE: EMPLOYEE_PERMISSIONS,
 
   DESIGN: [
     ...EMPLOYEE_SELF_SERVICE,

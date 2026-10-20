@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const result = await createOrgInvitation({
       orgId: session.orgId,
       email: body.email,
-      role: "ENGINEERING",
+      role: "EMPLOYEE",
       invitedBy: session.user.id,
       actorRole: session.user.role,
       projectId: guard.projectId,
