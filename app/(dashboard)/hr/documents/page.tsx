@@ -35,6 +35,7 @@ import { NewFolderDialog } from "@/features/hr/documents/new-folder-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { formatIST } from "@/lib/date-utils";
 import { pluralise } from "@/lib/format-utils";
+import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
 
 const DOCUMENT_CATEGORIES = [
   "Personal Documents",
@@ -287,7 +288,7 @@ export default function DocumentsPage() {
           searchTerm={searchTerm}
           folderOptions={folderOptions}
           onPageChange={setPage}
-          onDelete={handleDelete}
+          onDelete={canDeleteHrRecord(session?.user?.role) ? handleDelete : undefined}
           onOpenUpload={() => setIsUploadOpen(true)}
           onFolderSelect={handleCategoryChange}
           onMove={handleMove}
@@ -321,6 +322,8 @@ export default function DocumentsPage() {
 }
 
 function RichDocumentsSection() {
+  const { data: session } = useSession();
+  const canDelete = canDeleteHrRecord(session?.user?.role);
   const { data: richDocs, isLoading } = useRichDocuments();
   const deleteMutation = useDeleteRichDocument();
 
@@ -395,17 +398,19 @@ function RichDocumentsSection() {
                     View
                   </Link>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
-                  onClick={() => handleDelete(doc.id)}
-                  disabled={deleteMutation.isPending}
-                  aria-label={`Delete ${doc.title}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
-                  <span className="hidden sm:inline">Delete</span>
-                </Button>
+                {canDelete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
+                    onClick={() => handleDelete(doc.id)}
+                    disabled={deleteMutation.isPending}
+                    aria-label={`Delete ${doc.title}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+                    <span className="hidden sm:inline">Delete</span>
+                  </Button>
+                )}
               </div>
             </div>
           ))}

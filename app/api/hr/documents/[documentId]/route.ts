@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -69,10 +70,12 @@ export async function DELETE(
 
     if (!doc) return err("Document not found.", 404);
 
+    // Your own upload is yours to remove; anyone else's needs an Admin or the
+    // Super Admin, not HR (QA-AUTH-04).
     const isOwner = doc.userId === session.user.id;
-    const isAdmin = isAdminOrOwner(session.user.role);
-
-    if (!isOwner && !isAdmin) return err("Not authorized to delete this document.", 403);
+    if (!isOwner && !canDeleteHrRecord(session.user.role)) {
+      return err("Only an Admin or the Super Admin can delete this document.", 403);
+    }
 
     await db
       .update(documents)

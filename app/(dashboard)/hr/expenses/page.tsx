@@ -340,6 +340,7 @@ export default function ExpensesPage() {
               rejectionReason={rejectionReason}
               isPending={updateStatusMutation.isPending}
               currentUserId={session?.user?.id}
+              currentUserRole={session?.user?.role}
               onApprove={handleApprove}
               onMarkPaid={handleMarkPaid}
               onRejectStart={(id) => {

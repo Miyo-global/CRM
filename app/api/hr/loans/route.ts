@@ -29,7 +29,7 @@ export async function GET() {
 
     const data = await db.query.salaryLoans.findMany({
       where: and(...conditions),
-      with: { user: { columns: { id: true, name: true, email: true } } },
+      with: { user: { columns: { id: true, name: true, email: true, role: true } } },
       orderBy: [desc(salaryLoans.createdAt)],
     });
     return ok(data);

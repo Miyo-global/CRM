@@ -83,6 +83,7 @@ export interface ExpenseWithRelations {
     name: string | null;
     email: string;
     image: string | null;
+    role?: string | null;
   } | null;
   approver: {
     id: string;

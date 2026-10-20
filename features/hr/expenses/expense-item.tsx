@@ -27,6 +27,7 @@ import {
   STATUS_LABELS,
 } from "./expense-constants";
 import { formatExpenseSubmitterLabel } from "@/lib/validations/expense";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 
 function SubmitterContactPopover({
   expense,
@@ -142,6 +143,7 @@ interface AdminExpenseItemProps {
   rejectionReason: string;
   isPending: boolean;
   currentUserId?: string;
+  currentUserRole?: string;
   onApprove: (id: number) => void;
   onRejectStart: (id: number) => void;
   onRejectConfirm: (id: number) => void;
@@ -157,6 +159,7 @@ export function AdminExpenseItem({
   rejectionReason,
   isPending,
   currentUserId,
+  currentUserRole,
   onApprove,
   onRejectStart,
   onRejectConfirm,
@@ -165,6 +168,11 @@ export function AdminExpenseItem({
   onMarkPaid,
 }: AdminExpenseItemProps) {
   const status = expense.status || "PENDING";
+  // Same rule as the API: no deciding your own claim or an HR/Admin colleague's (QA-AUTH-04).
+  const canDecide = canDecideRequest(
+    { id: currentUserId, role: currentUserRole },
+    { id: expense.userId, role: expense.user?.role },
+  ).allowed;
   const catConfig = getCategoryConfig(expense.category || "Other");
   const CatIcon = catConfig.icon;
   const isRejecting = rejectingId === expense.id;
@@ -327,7 +335,7 @@ export function AdminExpenseItem({
           </div>
         )}
 
-        {isRejecting ? (
+        {!canDecide ? null : isRejecting ? (
           <div className="space-y-2 text-left">
             <Input
               placeholder="Reason for rejection (required)..."

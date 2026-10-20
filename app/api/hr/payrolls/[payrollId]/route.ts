@@ -4,12 +4,16 @@ import { payrolls } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
+import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ payrollId: string }> }
 ) {
   return withAdmin(async (session) => {
+    if (!canDeleteHrRecord(session.user.role)) {
+      return err("Only an Admin or the Super Admin can delete payroll drafts.", 403);
+    }
     const { payrollId: id } = await params;
     const payrollId = Number(id);
     if (!payrollId) return err("Invalid payroll ID.", 400);

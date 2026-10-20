@@ -5,6 +5,8 @@ import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { richDocumentTitleSchema } from "@/lib/validations/hr-documents";
 import type { NextRequest } from "next/server";
+import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
 
 const updateRichDocumentSchema = z.object({
   title: richDocumentTitleSchema.optional(),
@@ -34,6 +36,7 @@ export async function PATCH(
   { params }: { params: Promise<{ documentId: string }> }
 ) {
   return withAuth(async (session) => {
+    if (!isAdminOrOwner(session.user.role)) return err("Only HR or an Admin can edit documents.", 403);
     const { documentId: id } = await params;
     const documentId = Number(id);
     if (!documentId) return err("Invalid document ID.", 400);
@@ -64,6 +67,10 @@ export async function DELETE(
   { params }: { params: Promise<{ documentId: string }> }
 ) {
   return withAuth(async (session) => {
+    // Any signed-in user could delete these (QA-AUTH-04).
+    if (!canDeleteHrRecord(session.user.role)) {
+      return err("Only an Admin or the Super Admin can delete documents.", 403);
+    }
     const { documentId: id } = await params;
     const documentId = Number(id);
     if (!documentId) return err("Invalid document ID.", 400);

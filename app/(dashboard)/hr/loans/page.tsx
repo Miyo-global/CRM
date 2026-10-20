@@ -3,6 +3,7 @@
 import { getErrorMessage } from "@/lib/get-error-message";
 import { formatINR } from "@/lib/format-utils";
 import { isAdminOrOwner } from "@/lib/auth/role-guards";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { useState, useCallback } from "react";
 import {
   useSalaryLoans, useCreateSalaryLoan, useProcessSalaryLoan,
@@ -159,7 +160,10 @@ export default function LoansPage() {
                   </TableCell>
                   {isAdmin && (
                     <TableCell className="text-right">
-                      {loan.status === "PENDING" && loan.user?.id !== session?.user?.id ? (
+                      {!canDecideRequest(
+                        { id: session?.user?.id, role: session?.user?.role },
+                        { id: loan.userId, role: loan.user?.role },
+                      ).allowed ? null : loan.status === "PENDING" ? (
                         <div className="flex justify-end gap-1.5">
                           <Button size="sm" onClick={() => handleApprove(loan.id)} disabled={process.isPending}>
                             <CheckCircle2 className="size-4" aria-hidden="true" />Approve

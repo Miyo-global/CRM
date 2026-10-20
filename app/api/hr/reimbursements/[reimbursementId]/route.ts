@@ -1,5 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { db } from "@/lib/db";
 import { reimbursements } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -23,8 +24,11 @@ export async function PATCH(
 
     const existing = await db.query.reimbursements.findFirst({
       where: and(eq(reimbursements.id, reimbursementId), eq(reimbursements.orgId, session.orgId)),
+      with: { user: { columns: { id: true, role: true } } },
     });
     if (!existing) return err("Not found.", 404);
+    const duty = canDecideRequest(session.user, { id: existing.userId, role: existing.user?.role });
+    if (!duty.allowed) return err(duty.message, 403);
 
     const body = updateSchema.parse(await req.json());
     await db.update(reimbursements).set({

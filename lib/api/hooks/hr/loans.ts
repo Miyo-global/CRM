@@ -16,7 +16,7 @@ export interface SalaryLoan {
   approvedBy: string | null;
   disbursedAt: Date | string | null;
   createdAt: Date | string | null;
-  user?: { id: string; name: string | null; email: string } | null;
+  user?: { id: string; name: string | null; email: string; role?: string | null } | null;
 }
 
 const loanKeys = {

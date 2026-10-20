@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { expenses, reimbursements, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
@@ -87,6 +88,16 @@ export async function PATCH(
       return err("status must be APPROVED, REJECTED, or PAID.", 400);
     }
     const body = parsedStatus.data;
+
+    const owner = await db
+      .select({ id: users.id, role: users.role })
+      .from(expenses)
+      .innerJoin(users, eq(users.id, expenses.userId))
+      .where(and(eq(expenses.id, expenseId), eq(expenses.orgId, session.orgId)))
+      .limit(1);
+    if (!owner[0]) return err("Expense not found.", 404);
+    const duty = canDecideRequest(session.user, owner[0]);
+    if (!duty.allowed) return err(duty.message, 403);
 
     await db.transaction(async (tx) => {
       const [expense] = await tx

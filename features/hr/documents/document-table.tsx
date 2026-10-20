@@ -131,7 +131,8 @@ export interface DocumentTableProps {
   searchTerm: string;
   folderOptions?: string[];
   onPageChange: (page: number) => void;
-  onDelete: (documentId: number) => Promise<void>;
+  /** Omitted for viewers who may not delete (HR; QA-AUTH-04). */
+  onDelete?: (documentId: number) => Promise<void>;
   onOpenUpload: () => void;
   onFolderSelect?: (folderName: string) => void;
   onMove?: (documentId: number, folderName: string) => Promise<void>;
@@ -144,7 +145,7 @@ export interface DocumentTableProps {
 interface DocumentRowProps {
   doc: Document;
   assignedCount?: number;
-  onDelete: (id: number) => Promise<void>;
+  onDelete?: (id: number) => Promise<void>;
   onRequestMove?: (doc: Document) => void;
   onRequestAssign?: (doc: Document) => void;
 }
@@ -195,7 +196,7 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
   const handleDelete = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      void onDelete(doc.id);
+      void onDelete?.(doc.id);
     },
     [onDelete, doc.id],
   );
@@ -336,11 +337,15 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
                   Assign / Share
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete} className="text-danger-strong">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {onDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleDelete} className="text-danger-strong">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
