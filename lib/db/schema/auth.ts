@@ -32,7 +32,7 @@ export const organizationMembers = pgTable("organization_members", {
   id: serial("id").primaryKey(),
   userId: text("user_id").references(() => users.id).notNull(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
-  role: text("role").default("ENGINEERING").notNull(),
+  role: text("role").default("EMPLOYEE").notNull(),
   joinedAt: timestamp("joined_at").defaultNow(),
 }, (table) => [
   uniqueIndex("uniq_org_members_user_org").on(table.userId, table.orgId),
@@ -64,7 +64,7 @@ export const users = pgTable("users", {
     iban?: string;
   }>("bank_details"),
   image: text("image"),
-  role: text("role").default("ENGINEERING").notNull(),
+  role: text("role").default("EMPLOYEE").notNull(),
   departmentId: integer("department_id"),
   designation: text("designation"),
   phone: text("phone"),
@@ -149,7 +149,7 @@ export const invitations = pgTable("invitations", {
   email: text("email").notNull(),
   token: text("token").notNull().unique(),
   orgId: text("org_id").references(() => organizations.id).notNull(),
-  role: text("role").default("ENGINEERING").notNull(),
+  role: text("role").default("EMPLOYEE").notNull(),
   invitedBy: text("invited_by").references(() => users.id).notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   acceptedAt: timestamp("accepted_at"),
