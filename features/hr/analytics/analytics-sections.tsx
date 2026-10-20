@@ -386,8 +386,6 @@ export function ExecutiveKpiStrip({
   );
 }
 
-// ── Recruitment Section ───────────────────────────────────────────────────────
-
 // ── Retention Section ─────────────────────────────────────────────────────────
 
 export function RetentionSection({

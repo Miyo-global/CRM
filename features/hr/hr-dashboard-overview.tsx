@@ -22,6 +22,7 @@ import { useHrLeaveAnalytics } from "@/lib/api/hooks/hr/leaves-expenses";
 import { useAnniversaryFeed } from "@/lib/api/hooks/hr";
 import { Users, UserCheck, CalendarOff, ClipboardList, Briefcase, UserPlus, Cake, CheckCircle2, Clock, TrendingUp, TrendingDown, Wallet, Timer, PieChart, BarChart3, ShieldCheck, Download, PartyPopper, Award } from "lucide-react";
 import Link from "next/link";
+import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { getInitials } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
@@ -708,13 +709,17 @@ export function HrDashboardOverview() {
           index={3}
           href="/hr/leaves"
         />
-        <StatCard
-          label="Open Positions"
-          value={isLoading ? "" : (metrics?.openPositions ?? 0)}
-          icon={Briefcase}
-          index={4}
-          href="/hr/recruitment"
-        />
+        {/* QA-BUG-07: /hr/recruitment no longer exists; open positions live in
+            the ATS, which ships off. */}
+        {ATS_MODULE_ENABLED && (
+          <StatCard
+            label="Open Positions"
+            value={isLoading ? "" : (metrics?.openPositions ?? 0)}
+            icon={Briefcase}
+            index={4}
+            href="/ats/requisitions"
+          />
+        )}
         <StatCard
           label="New Hires (Month)"
           value={isLoading ? "" : (metrics?.monthlyHires ?? 0)}
@@ -734,7 +739,7 @@ export function HrDashboardOverview() {
 
       <div className="grid sm:grid-cols-3 gap-3">
         <DiversityWidget />
-        <TimeToFillWidget />
+        {ATS_MODULE_ENABLED && <TimeToFillWidget />}
         <PayrollSummaryWidget />
       </div>
 
