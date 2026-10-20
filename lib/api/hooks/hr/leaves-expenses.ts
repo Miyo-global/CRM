@@ -170,6 +170,22 @@ export function useCancelLeave() {
       apiClient.patch<{ success: boolean }>(`/hr/leaves/${leaveId}/cancel`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() });
+      // An approver cancelling an approved leave changes the approvals list too (QA-BUG-36).
+      qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leaves", "team"] });
+      qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leavesMyRequests"] });
+    },
+  });
+}
+
+/** The owner edits a pending request's reason (QA-BUG-17). */
+export function useEditLeaveReason() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leaveId, reason }: { leaveId: number; reason: string }) =>
+      apiClient.patch<{ success: boolean }>(`/hr/leaves/${leaveId}/reason`, { reason }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.hr.leaves() });
+      qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leaves", "team"] });
       qc.invalidateQueries({ queryKey: ["miyoglobal", "hr", "leavesMyRequests"] });
     },
   });

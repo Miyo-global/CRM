@@ -32,9 +32,12 @@ import {
   Check,
   X,
   RotateCcw,
+  Pencil,
   type LucideIcon,
 } from "lucide-react";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
+import { LEAVE_REASON_MAX } from "@/lib/validations/leave-request";
 
 import { resolveImageUrl } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -302,6 +305,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   onCancel,
   onViewDetails,
   onRequestReject,
+  onRequestCancelApproved,
+  onRequestEditReason,
 }: {
   request: LeaveRequest;
   isAdmin?: boolean;
@@ -314,6 +319,10 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   onCancel?: (id: number) => void;
   onViewDetails?: () => void;
   onRequestReject?: () => void;
+  /** Set only when this viewer may cancel this approved leave (QA-BUG-36). */
+  onRequestCancelApproved?: () => void;
+  /** The owner editing a pending request's reason (QA-BUG-17). */
+  onRequestEditReason?: () => void;
 }) {
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
@@ -410,6 +419,12 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
+            {isSelf && status === "PENDING" && onRequestEditReason && (
+              <DropdownMenuItem onClick={onRequestEditReason}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit reason
+              </DropdownMenuItem>
+            )}
             {isSelf && status === "PENDING" && onCancel && (
               <>
                 <DropdownMenuSeparator />
@@ -422,7 +437,17 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
                 </DropdownMenuItem>
               </>
             )}
-            {isAdmin && canManage && (
+            {status === "APPROVED" && onRequestCancelApproved && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onRequestCancelApproved} className="text-danger-strong">
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel leave
+                </DropdownMenuItem>
+              </>
+            )}
+            {/* Nobody decides their own leave (QA-AUTH-05): no approver actions in "My leaves". */}
+            {isAdmin && canManage && !isSelf && (
               <>
                 <DropdownMenuSeparator />
                 {status !== "APPROVED" && status !== "CANCELLED" && (
@@ -434,7 +459,7 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
                     Approve
                   </DropdownMenuItem>
                 )}
-                {status !== "REJECTED" && status !== "CANCELLED" && (
+                {status === "PENDING" && (
                   <DropdownMenuItem
                     onClick={onRequestReject}
                     className="text-danger-strong"
@@ -653,6 +678,10 @@ export function LeaveRequestTable({
   onReject,
   onRevert,
   onCancel,
+  canCancelApproved,
+  onCancelApproved,
+  onEditReason,
+  isMutating = false,
 }: {
   requests: LeaveRequest[];
   isAdmin?: boolean;
@@ -665,9 +694,18 @@ export function LeaveRequestTable({
   onReject?: (id: number, reason?: string) => void;
   onRevert?: (id: number) => void;
   onCancel?: (id: number) => void;
+  /** Whether this viewer may cancel this approved leave (QA-BUG-36). */
+  canCancelApproved?: (request: LeaveRequest) => boolean;
+  onCancelApproved?: (id: number) => Promise<unknown>;
+  /** The owner saves a new reason for a pending request (QA-BUG-17). */
+  onEditReason?: (id: number, reason: string) => Promise<unknown>;
+  isMutating?: boolean;
 }) {
   const [detailsRequest, setDetailsRequest] = useState<LeaveRequest | null>(null);
   const [rejectRequest, setRejectRequest] = useState<LeaveRequest | null>(null);
+  const [cancelRequest, setCancelRequest] = useState<LeaveRequest | null>(null);
+  const [editRequest, setEditRequest] = useState<LeaveRequest | null>(null);
+  const [draftReason, setDraftReason] = useState("");
 
   const handleRejectConfirm = (reason: string) => {
     if (!rejectRequest) return;
@@ -710,6 +748,17 @@ export function LeaveRequestTable({
                   onCancel={onCancel}
                   onViewDetails={() => setDetailsRequest(req)}
                   onRequestReject={() => setRejectRequest(req)}
+                  onRequestCancelApproved={
+                    onCancelApproved && canCancelApproved?.(req) ? () => setCancelRequest(req) : undefined
+                  }
+                  onRequestEditReason={
+                    onEditReason
+                      ? () => {
+                          setDraftReason(req.reason ?? "");
+                          setEditRequest(req);
+                        }
+                      : undefined
+                  }
                 />
               ))}
             </tbody>
@@ -728,6 +777,44 @@ export function LeaveRequestTable({
         onOpenChange={(open) => { if (!open) setRejectRequest(null); }}
         onConfirm={handleRejectConfirm}
       />
+      <ConfirmActionDialog
+        open={cancelRequest !== null}
+        onOpenChange={(open) => { if (!open) setCancelRequest(null); }}
+        title="Cancel this approved leave?"
+        description={
+          cancelRequest
+            ? `${formatEmployeeName(cancelRequest)}'s ${cancelRequest.leaveType?.name ?? "leave"} (${cancelRequest.startDate} to ${cancelRequest.endDate}) will be cancelled and the days returned to their balance. They will be notified.`
+            : ""
+        }
+        confirmLabel="Cancel leave"
+        cancelLabel="Keep it"
+        isPending={isMutating}
+        onConfirm={() => {
+          if (cancelRequest) void onCancelApproved?.(cancelRequest.id).finally(() => setCancelRequest(null));
+        }}
+      />
+      <ConfirmActionDialog
+        open={editRequest !== null}
+        onOpenChange={(open) => { if (!open) setEditRequest(null); }}
+        title="Edit reason"
+        description="Your approver sees the new reason. Only pending requests can be edited."
+        confirmLabel="Save reason"
+        variant="default"
+        isPending={isMutating}
+        confirmDisabled={!draftReason.trim() || draftReason.trim() === (editRequest?.reason ?? "").trim()}
+        onConfirm={() => {
+          if (editRequest) void onEditReason?.(editRequest.id, draftReason.trim()).finally(() => setEditRequest(null));
+        }}
+      >
+        <Textarea
+          value={draftReason}
+          onChange={(e) => setDraftReason(e.target.value)}
+          maxLength={LEAVE_REASON_MAX}
+          rows={4}
+          className="resize-none"
+          aria-label="Reason"
+        />
+      </ConfirmActionDialog>
     </>
   );
 }

@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Filter } from "lucide-react";
-import { useCancelLeave, useApproveLeaveDedicated, useRejectLeaveDedicated, useRevertLeave } from "@/lib/api/hooks/hr";
+import { useCancelLeave, useApproveLeaveDedicated, useRejectLeaveDedicated, useRevertLeave, useEditLeaveReason } from "@/lib/api/hooks/hr";
 import { cn } from "@/lib/utils";
 
 import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared";
@@ -136,6 +136,16 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
   const rejectMutation = useRejectLeaveDedicated();
   const revertMutation = useRevertLeave();
   const cancelMutation = useCancelLeave();
+  const editReasonMutation = useEditLeaveReason();
+
+  const handleEditReason = useCallback(
+    (id: number, reason: string) =>
+      editReasonMutation
+        .mutateAsync({ leaveId: id, reason })
+        .then(() => toast.success("Reason updated"))
+        .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to update reason")),
+    [editReasonMutation],
+  );
 
   const handleApproveRequest = useCallback((id: number) => {
     approveMutation.mutate(
@@ -349,6 +359,8 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
               onReject={handleRejectRequest}
               onRevert={handleRevertRequest}
               onCancel={handleCancelRequest}
+              onEditReason={handleEditReason}
+              isMutating={editReasonMutation.isPending}
             />
           )}
         </CardContent>

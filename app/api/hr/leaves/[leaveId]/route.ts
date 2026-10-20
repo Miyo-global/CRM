@@ -38,6 +38,10 @@ export async function PATCH(
     });
 
     if (!existing) return err("Leave request not found.", 404);
+    // Undoing a decision is a decision: not on your own leave (QA-AUTH-05).
+    if (existing.userId === session.user.id) {
+      return err("You cannot change the decision on your own leave request.", 403);
+    }
 
     if (existing.status === "PENDING") return ok({ success: true });
 

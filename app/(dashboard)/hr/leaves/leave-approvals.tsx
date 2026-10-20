@@ -8,6 +8,7 @@ import {
   useProcessWfhRequest,
   useApproveLeaveDedicated,
   useRejectLeaveDedicated,
+  useCancelLeave,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -71,6 +72,7 @@ function LeaveApprovalsTable({
   onApprove,
   onReject,
 }: LeaveApprovalsTableProps) {
+  const cancelLeave = useCancelLeave();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
@@ -223,6 +225,17 @@ function LeaveApprovalsTable({
             canManage={(req) => canActOnLeaveRequest(currentRole, currentUserId, req)}
             onApprove={onApprove}
             onReject={onReject}
+            // Whoever could approve it may cancel it once approved (QA-BUG-36).
+            canCancelApproved={(req) =>
+              canActOnLeaveRequest(currentRole, currentUserId, { ...req, status: "PENDING", approverId: null })
+            }
+            onCancelApproved={(id) =>
+              cancelLeave
+                .mutateAsync(id)
+                .then(() => toast.success("Leave cancelled and balance restored"))
+                .catch((e) => toast.error(getErrorMessage(e)))
+            }
+            isMutating={cancelLeave.isPending}
           />
         </div>
       )}
