@@ -247,7 +247,7 @@ export default function InvitationPage() {
         </div>
 
         <p className="text-xs text-subtle-foreground">
-          By accepting this invitation, you will have access to shared leads, deal pipelines, and team analytics within this organization.
+          By accepting this invitation, you join this organization&apos;s HR, Projects and Time workspace: your profile, leave and attendance, and the projects you are added to.
         </p>
       </form>
     </div>

@@ -72,8 +72,8 @@ const signupSchema = z.object({
 type FormValues = z.infer<typeof signupSchema>;
 
 const PLANS = [
-  { id: "STARTER", name: "Starter", price: "999", features: ["Up to 10 users", "CRM + Lead Pipeline", "Basic HR"] },
-  { id: "PROFESSIONAL", name: "Professional", price: "2,499", features: ["Up to 50 users", "Full CRM + AI", "HR + Recruitment", "Projects"] },
+  { id: "STARTER", name: "Starter", price: "999", features: ["Up to 10 users", "HR and attendance", "Leave and time off"] },
+  { id: "PROFESSIONAL", name: "Professional", price: "2,499", features: ["Up to 50 users", "Everything in Starter", "Projects and timesheets", "Payroll and performance"] },
   { id: "ENTERPRISE", name: "Enterprise", price: "4,999", features: ["Unlimited users", "Everything in Pro", "Custom integrations", "Priority support"] },
 ];
 
