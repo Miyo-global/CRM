@@ -1,11 +1,11 @@
 import { db } from "@/lib/db";
 import { roles } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, isLegacyJobTitleRole } from "@/lib/constants/roles";
 import { SYSTEM_ROLES } from "@/lib/rbac/permissions";
+import { ELEVATED_ROLES } from "./role-change-rules";
 
-/** Roles that carry full access — only the CEO may grant or take them away. */
-const ELEVATED_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
+export { canChangeRoleOf } from "./role-change-rules";
 
 export interface RoleAssignmentCheck {
   orgId: string;
@@ -52,12 +52,27 @@ export async function checkRoleAssignment(
     return { message: "You cannot change your own system role.", status: 403 };
   }
 
-  const actorIsCeo = input.actorRole === ROLES.CEO;
+  // QA-AUTH-02: there is exactly one Super Admin, the owner. The role is
+  // never handed out or taken away through a role change.
+  if (currentRole === ROLES.CEO) {
+    return { message: "The Super Admin's role cannot be changed.", status: 403 };
+  }
+  if (newRole === ROLES.CEO) {
+    return { message: "There is one Super Admin, the owner. The role cannot be granted.", status: 403 };
+  }
+
+  // QA-ROLE-01: the job-title roles are retired; job titles live in the
+  // designation field and everyone non-admin is an Employee.
+  if (isLegacyJobTitleRole(newRole)) {
+    return { message: `"${input.newRole}" is retired. Assign Employee and set the designation instead.`, status: 400 };
+  }
+
+  const actorIsSuperAdmin = input.actorRole === ROLES.CEO;
   if (
-    !actorIsCeo &&
+    !actorIsSuperAdmin &&
     (ELEVATED_ROLES.includes(newRole) || (currentRole && ELEVATED_ROLES.includes(currentRole)))
   ) {
-    return { message: "Only the CEO can grant or remove the CEO and Admin roles.", status: 403 };
+    return { message: "Only the Super Admin can grant or remove the Admin and HR roles.", status: 403 };
   }
 
   return null;
