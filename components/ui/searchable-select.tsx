@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -30,6 +30,8 @@ interface SearchableSelectProps {
   compact?: boolean;
   /** Portal popover into a parent (e.g. sheet) so the list scrolls under modal scroll-lock. */
   popoverContainer?: HTMLElement | null;
+  /** Accessible name; a combobox is not named by its text. Defaults to `placeholder`. */
+  "aria-label"?: string;
 }
 
 /** Input-style trigger shared by the searchable select family (matches SelectTrigger). */
@@ -56,8 +58,10 @@ export function SearchableSelect({
   listMaxHeight = "min(18rem, 60vh)",
   compact = false,
   popoverContainer,
+  "aria-label": ariaLabel,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);
+  const contentId = useId();
 
   const selected = options.find((o) => o.value === value);
 
@@ -68,6 +72,10 @@ export function SearchableSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={ariaLabel ?? placeholder}
+          // Radix points aria-controls at the content even while it is not
+          // mounted, an invalid ARIA reference (QA-A11Y-02).
+          aria-controls={open ? contentId : undefined}
           disabled={disabled}
           className={cn(
             comboboxTriggerClassName,
@@ -80,6 +88,7 @@ export function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent
+        id={contentId}
         className={cn("p-0 overflow-hidden", className)}
         align="start"
         container={popoverContainer ?? undefined}

@@ -77,6 +77,7 @@ export function HrFilterBar({
           value={deptFilter}
           onValueChange={onDeptChange}
           placeholder="Department"
+          aria-label="Department"
           searchPlaceholder="Search department…"
           triggerClassName="h-9 w-44 text-sm"
           className="w-[220px]"
@@ -102,6 +103,7 @@ export function HrFilterBar({
           value={roleFilter}
           onValueChange={(v) => onRoleChange(v as RoleFilter)}
           placeholder="All Roles"
+          aria-label="Role"
           searchPlaceholder="Search role…"
           triggerClassName="h-9 w-44 text-sm"
           className="w-[220px]"

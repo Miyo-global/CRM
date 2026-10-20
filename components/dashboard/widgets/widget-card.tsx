@@ -38,7 +38,8 @@ function WidgetCard({
     <Card className={cn("h-full", className)}>
       <div className="flex items-center gap-3 px-5 pt-5 pb-3">
         {icon ? React.createElement(icon, { className: "size-4 shrink-0 text-muted-foreground", "aria-hidden": true }) : null}
-        <h3 className="min-w-0 truncate font-sans text-sm font-semibold tracking-normal">{title}</h3>
+        {/* h2: widgets sit straight under the page h1; h3 skipped a level (QA-A11Y-02). */}
+        <h2 className="min-w-0 truncate font-sans text-sm font-semibold tracking-normal">{title}</h2>
         {count !== undefined && (
           <Badge variant="secondary" className="tabular-nums">
             {count}

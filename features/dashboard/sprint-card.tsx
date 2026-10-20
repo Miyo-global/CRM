@@ -47,7 +47,7 @@ export const SprintCard = memo(function SprintCard({ summary, isLoading }: Sprin
         ) : summary ? (
           <div className="space-y-4">
             <div>
-              <h4 className="truncate font-sans text-base font-semibold text-foreground">{summary.name}</h4>
+              <h3 className="truncate font-sans text-base font-semibold text-foreground">{summary.name}</h3>
               <p className="truncate text-sm text-muted-foreground">{summary.projectName}</p>
             </div>
 
