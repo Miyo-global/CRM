@@ -44,10 +44,22 @@ function StatsStrip({ items, className, emptyLabel = "Nothing to report yet." }:
     );
   }
 
+  // Under 768px a two-column grid: a sideways-scrolling strip read as cut off
+  // at 375px (QA-RESP-01). Cells draw their own dividers in both layouts.
   return (
-    <Card className={cn("flex-row divide-x divide-border overflow-x-auto", className)}>
-      {items.map(({ label, value, hint, tone, icon: Icon }) => (
-        <div key={label} className="min-w-36 flex-1 px-4 py-3">
+    <Card className={cn("grid grid-cols-2 overflow-hidden md:flex md:flex-row md:overflow-x-auto", className)}>
+      {items.map(({ label, value, hint, tone, icon: Icon }, i) => (
+        <div
+          key={label}
+          className={cn(
+            "min-w-0 border-border px-4 py-3 md:min-w-36 md:flex-1",
+            i % 2 === 1 && "border-l",
+            i >= 2 && "border-t md:border-t-0",
+            i > 0 && "md:border-l",
+            // An odd last cell spans the row instead of leaving a hole.
+            i === items.length - 1 && i % 2 === 0 && "col-span-2",
+          )}
+        >
           <div className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
             {Icon && <Icon className={cn("size-3.5", tone && toneText[tone])} aria-hidden="true" />}
             <span className="min-w-0 break-words">{label}</span>
