@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useSession } from "next-auth/react";
 import {
   Ticket,
   Clock,
@@ -30,10 +31,31 @@ import { safeMax, calcPercent } from "@/lib/format-utils";
 import { getColorSafe, onlineStatusColors, sparkColors } from "@/lib/theme-constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRoleLabel } from "@/lib/rbac/roles";
+import { isSupportStaff } from "@/lib/constants/support-sla";
 
 const formatTicketValue = (v: number) => v.toLocaleString();
 
 export default function SupportDashboardPage() {
+  const { data: session, status } = useSession();
+  if (status === "loading") return <Skeleton className="h-10 w-64" />;
+  // The analytics are org-wide, so the rest of the team gets their own
+  // tickets instead (AUTH-03; the API refuses them too).
+  if (!isSupportStaff(session?.user?.role)) {
+    return (
+      <PageWrapper title="Support">
+        <EmptyState
+          icon={Ticket}
+          title="Your support tickets"
+          description="Support analytics are for the support team. You can raise a ticket and follow the ones you raised or are assigned to."
+          action={{ label: "My tickets", href: "/support/inbox" }}
+        />
+      </PageWrapper>
+    );
+  }
+  return <SupportAnalytics />;
+}
+
+function SupportAnalytics() {
   const { data, isLoading, isError, error, refetch } = useSupportDashboard();
 
   const ticketStatusBreakdown = data?.ticketStatusBreakdown ?? [];

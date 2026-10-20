@@ -5,13 +5,8 @@ import { supportTickets, supportTicketMessages, users } from "@/lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { sendSupportTicketReplyEmail } from "@/lib/email";
-import { ADMIN_ROLES, ROLES } from "@/lib/constants/roles";
+import { SUPPORT_STAFF_ROLES } from "@/lib/constants/support-sla";
 import { logSupportActivity } from "@/server/queries/support";
-
-const SUPPORT_STAFF_ROLES: readonly string[] = [
-  ...ADMIN_ROLES,
-  ROLES.CUSTOMER_SUPPORT,
-];
 
 const replySchema = z.object({
   body: z.string().min(1),

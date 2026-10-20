@@ -6,6 +6,7 @@ import { supportTickets, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendSupportTicketStatusEmail, sendSupportTicketCreatedEmail } from "@/lib/email";
+import { isSupportStaff } from "@/lib/constants/support-sla";
 
 const updateSchema = z.object({
   status: z
@@ -32,7 +33,8 @@ export async function GET(
       const ticketId = Number(id);
       if (!Number.isFinite(ticketId)) return err("Invalid ID", 400);
 
-      const ticket = await getSupportTicket(session.orgId, ticketId);
+      const viewerId = isSupportStaff(session.user.role) ? undefined : session.user.id;
+      const ticket = await getSupportTicket(session.orgId, ticketId, viewerId);
       if (!ticket) return err("Ticket not found", 404);
       return ok(ticket);
     } catch (error) {
@@ -59,8 +61,17 @@ export async function PATCH(
       });
       if (!ticket) return err("Ticket not found", 404);
 
+      // Non-staff may only update their own tickets and never reassign them.
+      const staff = isSupportStaff(session.user.role);
+      if (!staff && ticket.createdBy !== session.user.id && ticket.assigneeId !== session.user.id) {
+        return err("Ticket not found", 404);
+      }
+
       const body = await req.json();
       const input = updateSchema.parse(body);
+      if (!staff && input.assigneeId !== undefined) {
+        return err("Only the support team can assign tickets.", 403);
+      }
 
       if (
         input.status &&

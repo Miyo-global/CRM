@@ -8,7 +8,7 @@ import { z } from "zod";
 import { sendSupportTicketCreatedEmail } from "@/lib/email";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
-import { computeSlaDueAt } from "@/lib/constants/support-sla";
+import { computeSlaDueAt, isSupportStaff } from "@/lib/constants/support-sla";
 
 const SUPPORT_CATEGORIES = [
   "Technical Issue",
@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
         status: status ?? undefined,
         priority: priority ?? undefined,
         assigneeId,
+        viewerId: isSupportStaff(session.user.role) ? undefined : session.user.id,
         page,
         limit,
       });

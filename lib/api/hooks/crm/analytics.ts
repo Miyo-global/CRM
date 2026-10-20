@@ -5,8 +5,9 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { SupportDashboard } from "@/types/crm";
 
-export function useSupportDashboard() {
+export function useSupportDashboard(enabled = true) {
   return useQuery({
+    enabled,
     queryKey: queryKeys.crm.supportDashboard(),
     queryFn: () => apiClient.get<SupportDashboard>("/crm/support-dashboard"),
     refetchInterval: 30_000,

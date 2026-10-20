@@ -53,7 +53,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn, resolveImageUrl } from "@/lib/utils";
-import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { useSession } from "next-auth/react";
+import { isSupportStaff } from "@/lib/constants/support-sla";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
@@ -93,14 +94,10 @@ function toSentenceCase(str: string) {
 }
 
 export default function SupportInboxPage() {
-  return (
-    <DashboardGate allowedRoles={["CEO", "HR", "CUSTOMER_SUPPORT"]}>
-      <InboxContent />
-    </DashboardGate>
-  );
-}
-
-function InboxContent() {
+  // Everyone can open it: the API scopes non-staff to the tickets they raised
+  // or are assigned to (AUTH-03), so it doubles as "My tickets".
+  const { data: session } = useSession();
+  const staff = isSupportStaff(session?.user?.role);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -141,7 +138,7 @@ function InboxContent() {
   return (
     <>
       <PageWrapper
-        title="Support inbox"
+        title={staff ? "Support inbox" : "My support tickets"}
         subtitle={
           statsLoading
             ? "Loading..."
@@ -229,7 +226,7 @@ function InboxContent() {
 
         <div className={cn("flex min-w-0 flex-1 flex-col", !selectedTicketId && "hidden lg:flex")}>
           {selectedTicketId ? (
-            <TicketDetail ticketId={selectedTicketId} onBack={handleBackFromTicket} />
+            <TicketDetail ticketId={selectedTicketId} onBack={handleBackFromTicket} staff={staff} />
           ) : (
             <div className="flex flex-1 items-center justify-center p-6">
               <EmptyState
@@ -299,7 +296,7 @@ function TicketListItem({ ticket, isSelected, onSelect }: TicketListItemProps) {
   );
 }
 
-function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => void }) {
+function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: () => void; staff: boolean }) {
   const { data: ticket, isLoading } = useSupportTicket(ticketId);
   const [replyText, setReplyText] = useState("");
   const [isInternal, setIsInternal] = useState(false);
@@ -443,7 +440,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
         </ScrollArea>
 
         <div className="shrink-0 border-t border-border bg-card px-4 py-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
+          {staff && <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Switch id="reply-internal" checked={isInternal} onCheckedChange={setIsInternal} />
               <Label htmlFor="reply-internal" className="cursor-pointer text-xs text-muted-foreground">
@@ -462,7 +459,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               {!aiReply.isPending && <Sparkles aria-hidden />}
               AI Reply
             </Button>
-          </div>
+          </div>}
           <div className="flex gap-2">
             <Textarea
               value={replyText}

@@ -1,4 +1,17 @@
+import { ADMIN_ROLES, ROLES } from "@/lib/constants/roles";
+
 export type SupportPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+/**
+ * Roles that work the support queue: they see every ticket and the
+ * org-wide analytics. Anyone else sees only the tickets they raised or are
+ * assigned to (AUTH-03).
+ */
+export const SUPPORT_STAFF_ROLES: readonly string[] = [...ADMIN_ROLES, ROLES.CUSTOMER_SUPPORT];
+
+export function isSupportStaff(role: string | null | undefined): boolean {
+  return !!role && SUPPORT_STAFF_ROLES.includes(role);
+}
 
 export interface SlaTarget {
   firstResponseHours: number;

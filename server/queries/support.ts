@@ -9,7 +9,7 @@ import {
   organizationMembers,
   users,
 } from "@/lib/db/schema";
-import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { eq, and, or, desc, sql, inArray } from "drizzle-orm";
 import { subDays } from "date-fns";
 import { isSlaBreached } from "@/lib/constants/support-sla";
 
@@ -47,8 +47,14 @@ export interface SupportFilters {
   status?: "OPEN" | "IN_PROGRESS" | "WAITING" | "RESOLVED" | "CLOSED";
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   assigneeId?: string;
+  /** Set for non-staff: only the tickets this user raised or is assigned to (AUTH-03). */
+  viewerId?: string;
   page?: number;
   limit?: number;
+}
+
+function ownTickets(viewerId: string) {
+  return or(eq(supportTickets.createdBy, viewerId), eq(supportTickets.assigneeId, viewerId))!;
 }
 
 export async function getSupportTickets(orgId: string, filters?: SupportFilters) {
@@ -62,6 +68,7 @@ export async function getSupportTickets(orgId: string, filters?: SupportFilters)
     conditions.push(eq(supportTickets.priority, filters.priority));
   if (filters?.assigneeId)
     conditions.push(eq(supportTickets.assigneeId, filters.assigneeId));
+  if (filters?.viewerId) conditions.push(ownTickets(filters.viewerId));
 
   const [items, [countResult]] = await Promise.all([
     db.query.supportTickets.findMany({
@@ -89,9 +96,14 @@ export async function getSupportTickets(orgId: string, filters?: SupportFilters)
   };
 }
 
-export async function getSupportTicket(orgId: string, id: number) {
+/** `viewerId` (non-staff) limits it to their own ticket and hides internal notes. */
+export async function getSupportTicket(orgId: string, id: number, viewerId?: string) {
   return db.query.supportTickets.findFirst({
-    where: and(eq(supportTickets.id, id), eq(supportTickets.orgId, orgId)),
+    where: and(
+      eq(supportTickets.id, id),
+      eq(supportTickets.orgId, orgId),
+      viewerId ? ownTickets(viewerId) : undefined,
+    ),
     with: {
       client: true,
       assignee: { columns: { id: true, name: true, image: true } },
@@ -100,6 +112,7 @@ export async function getSupportTicket(orgId: string, id: number) {
         with: {
           author: { columns: { id: true, name: true, image: true } },
         },
+        where: viewerId ? eq(supportTicketMessages.isInternal, false) : undefined,
         orderBy: [desc(supportTicketMessages.createdAt)],
       },
     },
@@ -117,7 +130,7 @@ export interface SupportTicketStats {
   sla_breached: number;
 }
 
-export async function getSupportTicketStats(orgId: string): Promise<SupportTicketStats> {
+export async function getSupportTicketStats(orgId: string, viewerId?: string): Promise<SupportTicketStats> {
   const rows = await db
     .select({
       status: supportTickets.status,
@@ -128,7 +141,7 @@ export async function getSupportTicketStats(orgId: string): Promise<SupportTicke
       slaDeadline: supportTickets.slaDeadline,
     })
     .from(supportTickets)
-    .where(eq(supportTickets.orgId, orgId));
+    .where(and(eq(supportTickets.orgId, orgId), viewerId ? ownTickets(viewerId) : undefined));
 
   const counts = { open: 0, in_progress: 0, waiting: 0, resolved: 0, closed: 0, sla_breached: 0 };
   const now = Date.now();
