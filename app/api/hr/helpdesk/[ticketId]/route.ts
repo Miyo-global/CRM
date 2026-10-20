@@ -5,19 +5,22 @@ import {
   helpdeskTicketComments,
   organizationMembers,
 } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { cleanRequiredText } from "@/lib/validations/text-rules";
 
 const updateTicketSchema = z
   .object({
     status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CLOSED", "CANCELLED"]).optional(),
     assigneeId: z.string().min(1).nullable().optional(),
     resolution: z.string().trim().max(5000).optional(),
+    title: cleanRequiredText("Title", 200, 3).optional(),
   })
   .refine(
-    (v) => v.status !== undefined || v.assigneeId !== undefined || v.resolution !== undefined,
+    (v) =>
+      v.status !== undefined || v.assigneeId !== undefined || v.resolution !== undefined || v.title !== undefined,
     { message: "No changes provided." },
   );
 
@@ -56,6 +59,25 @@ export async function PATCH(
       return err("Only an administrator can assign tickets.", 403);
     }
 
+    // The creator or an admin may fix the title until the ticket is Done (QA-BUG-17).
+    if (data.title !== undefined && data.title !== ticket.title) {
+      if (!isOwner && !isAdmin) return err("Only the creator or an admin can edit the title.", 403);
+      if (ticket.status === "DONE") return err("A Done ticket's title can't be changed.", 400);
+      const [duplicate] = await db
+        .select({ id: helpdeskTickets.id })
+        .from(helpdeskTickets)
+        .where(
+          and(
+            eq(helpdeskTickets.orgId, session.orgId),
+            ne(helpdeskTickets.id, ticketId),
+            sql`lower(${helpdeskTickets.title}) = ${data.title.toLowerCase()}`,
+            sql`${helpdeskTickets.status} <> 'DONE'`,
+          ),
+        )
+        .limit(1);
+      if (duplicate) return err("An open ticket with this title already exists.", 409);
+    }
+
     if (data.assigneeId) {
       const member = await db.query.organizationMembers.findFirst({
         where: and(
@@ -73,6 +95,7 @@ export async function PATCH(
     if (data.status !== undefined) updates.status = data.status;
     if (data.assigneeId !== undefined) updates.assigneeId = data.assigneeId;
     if (data.resolution !== undefined) updates.resolution = data.resolution || null;
+    if (data.title !== undefined) updates.title = data.title;
 
     if (data.status !== undefined && RESOLVED_STATUSES.includes(data.status)) {
       if (!RESOLVED_STATUSES.includes(ticket.status ?? "")) updates.resolvedAt = new Date();

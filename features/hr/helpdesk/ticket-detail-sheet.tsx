@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { format, formatDistanceToNow } from "date-fns";
-import { Paperclip, ExternalLink, Send, Lock, UserPlus, Trash2 } from "lucide-react";
+import { Paperclip, ExternalLink, Send, Lock, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -219,6 +220,10 @@ export function TicketDetailSheet({
   const [internal, setInternal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteTicket = useDeleteHelpdeskTicket();
+  // Title editing (QA-BUG-17): null while not editing. savedTitle shows the
+  // new title at once; the ticket prop is a snapshot from the list.
+  const [titleDraft, setTitleDraft] = useState<string | null>(null);
+  const [savedTitle, setSavedTitle] = useState<{ id: number; title: string } | null>(null);
 
   const assigneeOptions = useMemo(
     () => [
@@ -240,6 +245,27 @@ export function TicketDetailSheet({
   if (!ticket) return null;
 
   const isResolved = ticket.status === "DONE" || ticket.status === "CLOSED";
+  const title = savedTitle?.id === ticket.id ? savedTitle.title : ticket.title;
+  const canEditTitle = !isResolved && (isAdmin || ticket.userId === session?.user?.id);
+
+  const handleTitleSave = () => {
+    const next = titleDraft?.trim() ?? "";
+    if (!next || next === title) {
+      setTitleDraft(null);
+      return;
+    }
+    updateTicket.mutate(
+      { title: next },
+      {
+        onSuccess: () => {
+          setSavedTitle({ id: ticket.id, title: next });
+          setTitleDraft(null);
+          toast.success("Title updated");
+        },
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
+    );
+  };
 
   const handleSend = () => {
     const trimmed = body.trim();
@@ -282,7 +308,47 @@ export function TicketDetailSheet({
         <SheetHeader className="shrink-0 border-b px-5 pb-4 pt-5 pr-12">
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
-              <SheetTitle className="font-display text-lg leading-snug">{ticket.title}</SheetTitle>
+              {titleDraft !== null ? (
+                <form
+                  className="flex items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleTitleSave();
+                  }}
+                >
+                  <SheetTitle className="sr-only">{title}</SheetTitle>
+                  <Input
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                    maxLength={200}
+                    aria-label="Ticket title"
+                    autoFocus
+                    className="h-8"
+                  />
+                  <Button type="submit" size="sm" disabled={updateTicket.isPending || titleDraft.trim().length < 3}>
+                    Save
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setTitleDraft(null)}>
+                    Cancel
+                  </Button>
+                </form>
+              ) : (
+                <div className="flex items-start gap-1">
+                  <SheetTitle className="min-w-0 wrap-anywhere font-display text-lg leading-snug">{title}</SheetTitle>
+                  {canEditTitle && (
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="ghost"
+                      className="shrink-0"
+                      onClick={() => setTitleDraft(title)}
+                      aria-label="Edit title"
+                    >
+                      <Pencil className="size-3.5" aria-hidden="true" />
+                    </Button>
+                  )}
+                </div>
+              )}
               <SheetDescription className="mt-1 text-xs tabular-nums">
                 <span className="font-mono">#{ticket.id}</span> &middot;{" "}
                 {ticket.createdAt ? format(new Date(ticket.createdAt), "dd MMM yyyy, HH:mm") : ""}

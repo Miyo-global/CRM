@@ -54,6 +54,7 @@ export interface UpdateHelpdeskTicketInput {
   status?: TicketStatus;
   assigneeId?: string | null;
   resolution?: string;
+  title?: string;
 }
 
 export function useUpdateHelpdeskTicket(ticketId: number) {
