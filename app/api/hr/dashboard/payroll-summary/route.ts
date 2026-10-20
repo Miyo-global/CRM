@@ -1,8 +1,9 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { payrolls } from "@/lib/db/schema";
-import { eq, and, sql, sum } from "drizzle-orm";
+import { eq, and, inArray, sql, sum } from "drizzle-orm";
 import { cached, CACHE_TTL } from "@/lib/hr-cache";
+import { PAYROLL_SUMMARY_STATUSES, payrollSummaryMonths } from "@/lib/payroll/summary";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +14,7 @@ export async function GET() {
     const data = await cached(
       `hr:dashboard:payroll-summary:${orgId}`,
       async () => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const currentMonth = `${year}-${month}`;
+        const { current: currentMonth, previous: prevMonth } = payrollSummaryMonths(new Date());
 
         const [currentResult, prevResult] = await Promise.all([
           db
@@ -31,7 +29,7 @@ export async function GET() {
               and(
                 eq(payrolls.orgId, orgId),
                 eq(payrolls.month, currentMonth),
-                sql`${payrolls.status} IN ('APPROVED', 'SUBMITTED')`,
+                inArray(payrolls.status, PAYROLL_SUMMARY_STATUSES),
               ),
             ),
 
@@ -43,14 +41,8 @@ export async function GET() {
             .where(
               and(
                 eq(payrolls.orgId, orgId),
-                eq(
-                  payrolls.month,
-                  (() => {
-                    const d = new Date(year, now.getMonth() - 1, 1);
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-                  })(),
-                ),
-                sql`${payrolls.status} IN ('APPROVED', 'SUBMITTED')`,
+                eq(payrolls.month, prevMonth),
+                inArray(payrolls.status, PAYROLL_SUMMARY_STATUSES),
               ),
             ),
         ]);

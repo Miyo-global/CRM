@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatCard } from "@/components/ui/stat-card";
+import { QueryErrorState } from "@/components/ui/query-error-state";
 import {
   useHrDashboardMetrics,
   useHrLeaveCalendar,
@@ -377,7 +378,7 @@ function TimeToFillWidget() {
 function PayrollSummaryWidget() {
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const { data, isLoading } = useHrPayrollSummary();
+  const { data, isLoading, isError, error, refetch } = useHrPayrollSummary();
 
   if (!role || !["CEO", "ADMIN", "FINANCE"].includes(role)) return null;
 
@@ -398,6 +399,9 @@ function PayrollSummaryWidget() {
       <CardContent className="p-4 pt-0">
         {isLoading ? (
           <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
+        ) : isError ? (
+          // A failed load is not "no payroll": say so here, not only in a toast (QA-BUG-01).
+          <QueryErrorState error={error} onRetry={() => void refetch()} className="min-h-0 py-6" />
         ) : !data || data.employeeCount === 0 ? (
           <p className="text-xs text-muted-foreground py-4 text-center">No payroll data for this month</p>
         ) : (
