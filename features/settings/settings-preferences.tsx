@@ -1,5 +1,6 @@
 "use client";
 
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { useState, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -23,18 +24,24 @@ interface PrefRowProps {
   disabled?: boolean;
 }
 
-const NOTIFICATION_CATEGORIES = [
+const ALL_NOTIFICATION_CATEGORIES = [
   { key: "lead_assigned", label: "Lead assigned", description: "When a lead is assigned to you." },
   { key: "lead_converted", label: "Lead converted", description: "When a lead you own is converted." },
   { key: "deal_stage_change", label: "Deal stage changes", description: "When a deal moves to a new pipeline stage." },
-  { key: "sla_breach", label: "SLA breach warnings", description: "When a lead or ticket is about to breach SLA." },
+  { key: "sla_breach", label: "SLA breach warnings", description: CRM_MODULE_ENABLED ? "When a lead or ticket is about to breach SLA." : "When a ticket is about to breach SLA." },
   { key: "leave_request", label: "Leave requests", description: "When someone submits a leave request for your approval." },
   { key: "leave_decision", label: "Leave approved/rejected", description: "When your leave request is approved or rejected." },
   { key: "expense_approved", label: "Expense approved", description: "When your expense claim is approved or rejected." },
   { key: "payslip_generated", label: "Payslip generated", description: "When your monthly payslip is ready." },
   { key: "holiday_reminder", label: "Holiday reminders", description: "Reminders about upcoming holidays." },
-  { key: "target_achieved", label: "Target achieved", description: "When you hit a sales or performance target." },
+  { key: "target_achieved", label: "Target achieved", description: "When you hit a performance target." },
 ];
+
+// Lead and deal alerts only exist with the CRM module on.
+const CRM_PREF_KEYS = new Set(["lead_assigned", "lead_converted", "deal_stage_change"]);
+const NOTIFICATION_CATEGORIES = ALL_NOTIFICATION_CATEGORIES.filter(
+  (c) => CRM_MODULE_ENABLED || !CRM_PREF_KEYS.has(c.key),
+);
 
 function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange, disabled }: PrefRowProps) {
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { useState, useCallback } from "react";
 import { Plus, Webhook, Trash2, Copy, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,7 +23,7 @@ import { toast } from "sonner";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
-const AVAILABLE_EVENTS = [
+const ALL_EVENTS = [
   { id: "lead.created", label: "Lead Created" },
   { id: "lead.status_changed", label: "Lead Status Changed" },
   { id: "lead.assigned", label: "Lead Assigned" },
@@ -42,6 +43,11 @@ const AVAILABLE_EVENTS = [
   { id: "employee.hired", label: "Employee Hired" },
   { id: "leave.approved", label: "Leave Approved" },
 ];
+
+// Lead and deal events only fire from the CRM module.
+const AVAILABLE_EVENTS = CRM_MODULE_ENABLED
+  ? ALL_EVENTS
+  : ALL_EVENTS.filter((ev) => !ev.id.startsWith("lead.") && !ev.id.startsWith("deal."));
 
 interface WebhookEndpoint {
   id: number;

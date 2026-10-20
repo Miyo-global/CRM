@@ -1,5 +1,6 @@
 "use client";
 
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -37,7 +38,7 @@ interface AiFeature {
   tone: Tone;
 }
 
-const AI_FEATURES: AiFeature[] = [
+const ALL_AI_FEATURES: AiFeature[] = [
   { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", tone: "warning" },
   { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", tone: "info" },
   { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", tone: "success" },
@@ -52,9 +53,12 @@ const AI_FEATURES: AiFeature[] = [
   { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", tone: "info" },
 ];
 
+// Sales tools read leads and deals, which only exist with the CRM module on.
+const AI_FEATURES = ALL_AI_FEATURES.filter((f) => CRM_MODULE_ENABLED || f.category !== "sales");
+
 const CATEGORIES = [
   { value: "all", label: "All Features" },
-  { value: "sales", label: "Sales & CRM" },
+  ...(CRM_MODULE_ENABLED ? [{ value: "sales", label: "Sales & CRM" }] : []),
   { value: "hr", label: "HR & People" },
   { value: "marketing", label: "Marketing" },
   { value: "general", label: "General" },
