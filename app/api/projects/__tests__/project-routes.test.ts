@@ -188,6 +188,16 @@ describe("ticket delete permanently (BUG-33)", () => {
   });
 });
 
+describe("project rename (BUG-23)", () => {
+  it("refuses a name another project in the org already uses", async () => {
+    allow("MANAGER");
+    findProject.mockResolvedValue({ id: 9 });
+    const { PATCH } = await import("@/app/api/projects/[projectId]/route");
+    const res = await PATCH(req("/x", json({ name: "qa-test project" })), p({ projectId: "1" }));
+    expect(res.status).toBe(409);
+  });
+});
+
 describe("project delete (BUG-33)", () => {
   const call = async () => {
     const { DELETE } = await import("@/app/api/projects/[projectId]/route");

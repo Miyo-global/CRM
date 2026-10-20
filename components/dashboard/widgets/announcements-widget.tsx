@@ -42,6 +42,8 @@ export function AnnouncementsWidget() {
   const [isPinned, setIsPinned] = useState(false);
   // The create form doubles as the edit form (BUG-16).
   const [editingId, setEditingId] = useState<number | null>(null);
+  // BUG-23: posting the same text twice asks first.
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
   // One click on X used to delete with no way back (BUG-34).
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
@@ -59,8 +61,16 @@ export function AnnouncementsWidget() {
     setShowForm(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (allowDuplicate = false) => {
     if (!content.trim()) return;
+    const text = content.trim().toLowerCase();
+    if (
+      !allowDuplicate &&
+      (data ?? []).some((a) => a.id !== editingId && a.content.trim().toLowerCase() === text)
+    ) {
+      setDuplicateOpen(true);
+      return;
+    }
     if (editingId !== null) {
       updateMutation.mutate(
         { id: editingId, content: content.trim(), isPinned },
@@ -149,7 +159,7 @@ export function AnnouncementsWidget() {
               </Button>
               <Button
                 size="xs"
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 loading={isSaving}
                 disabled={!content.trim()}
                 aria-label={editingId !== null ? "Save announcement" : "Post announcement"}
@@ -230,6 +240,14 @@ export function AnnouncementsWidget() {
           })}
         </ul>
       )}
+      <ConfirmDialog
+        open={duplicateOpen}
+        onOpenChange={setDuplicateOpen}
+        title="This announcement is already posted"
+        description="An announcement with the same text is on the dashboard. Post it again anyway?"
+        confirmLabel="Post anyway"
+        onConfirm={() => handleSubmit(true)}
+      />
       <ConfirmDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => !open && setPendingDelete(null)}

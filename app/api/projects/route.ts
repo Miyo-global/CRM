@@ -16,7 +16,12 @@ import { logger } from "@/lib/logger";
 import { z } from "zod";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { projectKeySchema } from "@/lib/projects/project-key";
-import { firstFreeProjectKey, isProjectKeyTaken } from "@/lib/projects/project-key-availability";
+import {
+  DUPLICATE_PROJECT_NAME,
+  firstFreeProjectKey,
+  isProjectKeyTaken,
+  isProjectNameTaken,
+} from "@/lib/projects/project-key-availability";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
 import { likePattern } from "@/lib/db/escape-like";
@@ -232,6 +237,8 @@ export async function POST(req: NextRequest) {
 
     const template = body.templateId ? await findTemplate(session.orgId, body.templateId) : null;
     if (body.templateId && !template) return err("Template not found", 404);
+
+    if (await isProjectNameTaken(session.orgId, body.name)) return err(DUPLICATE_PROJECT_NAME, 409);
 
     let projectKey = body.key;
     if (projectKey && (await isProjectKeyTaken(projectKey))) {

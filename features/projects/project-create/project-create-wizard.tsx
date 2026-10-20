@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { DUPLICATE_PROJECT_NAME } from "@/lib/projects/project-name";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -89,8 +90,15 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
         router.push(`/projects/${(project as Project).id}`);
       },
       onError: (error) => {
-        toast.error(getErrorMessage(error));
-        if (getErrorMessage(error).toLowerCase().includes("key")) setStep(0);
+        const message = getErrorMessage(error);
+        // Duplicate names are refused by the server (BUG-23); show it on the field.
+        if (message === DUPLICATE_PROJECT_NAME) {
+          setStep(0);
+          form.setError("name", { message });
+          return;
+        }
+        toast.error(message);
+        if (message.toLowerCase().includes("key")) setStep(0);
       },
     });
   });

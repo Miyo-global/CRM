@@ -11,6 +11,7 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { userColumns } from "@/lib/projects/ticket-columns";
 import { hasFullAccess } from "@/lib/constants/roles";
+import { DUPLICATE_PROJECT_NAME, isProjectNameTaken } from "@/lib/projects/project-key-availability";
 
 const updateProjectSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
@@ -68,6 +69,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const { projectId } = guard;
 
     const body = await parseBody(req, updateProjectSchema);
+    if (body.name !== undefined && (await isProjectNameTaken(session.orgId, body.name, projectId))) {
+      return err(DUPLICATE_PROJECT_NAME, 409);
+    }
 
     const people = [...(body.memberIds ?? []), ...Object.values(body.reassignments ?? {})];
     if (body.managerId) people.push(body.managerId);

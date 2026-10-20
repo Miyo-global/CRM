@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useId } from "react";
-import { format, parseISO, addHours, endOfDay } from "date-fns";
+import { useState, useCallback, useEffect, useMemo, useId, useRef } from "react";
+import { format, parseISO, addHours, endOfDay, startOfDay } from "date-fns";
+import { apiClient } from "@/lib/api-client";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Sheet,
   SheetContent,
@@ -198,6 +200,9 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
     isEdit ? toEditForm(event!) : toDefaultForm(defaultSlot)
   );
   const [titleError, setTitleError] = useState<string | null>(null);
+  // BUG-23: same title on the same day asks first; set once the user agrees.
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
+  const allowDuplicate = useRef(false);
   const [descError, setDescError] = useState<string | null>(null);
   const [attendeeSearch, setAttendeeSearch] = useState("");
   const createEvent = useCreateCalendarEvent();
@@ -389,6 +394,20 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
       category: form.category,
       attendeeIds: form.attendeeIds,
     };
+    if (!isEdit && !allowDuplicate.current) {
+      const sameDay = await apiClient
+        .get<CalendarListItem[]>("/calendar/events", {
+          start: startOfDay(startDate).toISOString(),
+          end: endOfDay(startDate).toISOString(),
+        })
+        .catch(() => [] as CalendarListItem[]);
+      if (sameDay.some((e) => e.title.trim().toLowerCase() === trimmedTitle.toLowerCase())) {
+        setDuplicateOpen(true);
+        return;
+      }
+    }
+    allowDuplicate.current = false;
+
     try {
       if (isEdit && event) {
         const numericId = extractEventNumericId(event.id);
@@ -730,6 +749,17 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
               : (isEdit ? "Save Changes" : "Create Event")}
           </Button>
         </SheetFooter>
+        <ConfirmDialog
+          open={duplicateOpen}
+          onOpenChange={setDuplicateOpen}
+          title="An event with this title already exists that day"
+          description={`"${form.title.trim()}" is already on the calendar for this date. Create another one anyway?`}
+          confirmLabel="Create anyway"
+          onConfirm={() => {
+            allowDuplicate.current = true;
+            void handleSave();
+          }}
+        />
       </SheetContent>
     </Sheet>
   );

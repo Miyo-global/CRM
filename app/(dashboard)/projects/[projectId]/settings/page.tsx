@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { hasFullAccess } from "@/lib/constants/roles";
+import { DUPLICATE_PROJECT_NAME } from "@/lib/projects/project-name";
 import { ProjectMembersSection } from "@/features/projects/members/project-members-section";
 import { WipLimitsSection } from "@/features/projects/settings/wip-limits-section";
 import { ClientAccessSection } from "@/features/projects/client-portal/client-access-section";
@@ -159,7 +160,9 @@ export default function ProjectSettingsPage({ params }: PageProps) {
           router.refresh();
         },
         onError: (error) => {
-          toast.error(getErrorMessage(error));
+          const message = getErrorMessage(error);
+          if (message === DUPLICATE_PROJECT_NAME) form.setError("name", { message });
+          else toast.error(message);
         },
       }
     );

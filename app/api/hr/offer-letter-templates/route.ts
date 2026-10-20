@@ -1,4 +1,5 @@
-import { withHrEmailTemplateAccess, ok } from "@/lib/api/helpers";
+import { withHrEmailTemplateAccess, ok, err } from "@/lib/api/helpers";
+import { DUPLICATE_TEMPLATE_NAME, isOfferTemplateNameTaken } from "@/lib/hr/offer-letter-template-name";
 import { db } from "@/lib/db";
 import { offerLetterTemplates } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -30,6 +31,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   return withHrEmailTemplateAccess(async (session) => {
     const body = createSchema.parse(await req.json());
+    if (await isOfferTemplateNameTaken(session.orgId, body.name)) return err(DUPLICATE_TEMPLATE_NAME, 409);
 
     const [record] = await db.transaction(async (tx) => {
       if (body.isDefault) {

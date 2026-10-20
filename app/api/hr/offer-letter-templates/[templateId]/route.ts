@@ -1,4 +1,5 @@
 import { withHrEmailTemplateAccess, ok, err } from "@/lib/api/helpers";
+import { DUPLICATE_TEMPLATE_NAME, isOfferTemplateNameTaken } from "@/lib/hr/offer-letter-template-name";
 import { db } from "@/lib/db";
 import { offerLetterTemplates } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -25,6 +26,9 @@ export async function PATCH(
     if (isNaN(templateId)) return err("Invalid template ID.", 400);
 
     const body = patchSchema.parse(await req.json());
+    if (body.name !== undefined && (await isOfferTemplateNameTaken(session.orgId, body.name, templateId))) {
+      return err(DUPLICATE_TEMPLATE_NAME, 409);
+    }
 
     const [updated] = await db.transaction(async (tx) => {
       if (body.isDefault) {
