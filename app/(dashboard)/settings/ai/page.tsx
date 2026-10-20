@@ -16,6 +16,7 @@ import {
 } from "@/lib/api/hooks/ai";
 import { Bot, Zap, TrendingUp, BarChart3, BrainCircuit, type LucideIcon } from "lucide-react";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 const FLAG_META: {
   key: keyof OrgFeatureFlags;
@@ -26,31 +27,37 @@ const FLAG_META: {
   {
     key: "aiChat",
     label: "AI Chat Assistant",
-    description: "Context-aware chat that can answer questions about your leads, deals, and tasks.",
+    description: "Context-aware chat that can answer questions about your team, projects, and tasks.",
     icon: Bot,
   },
-  {
-    key: "aiLeadScoring",
-    label: "AI Lead Scoring",
-    description: "Automatically score leads using AI based on their profile and activity.",
-    icon: TrendingUp,
-  },
-  {
-    key: "aiEmailDraft",
-    label: "AI Email Draft",
-    description: "Generate follow-up email drafts from lead context with one click.",
-    icon: Zap,
-  },
+  // Lead scoring and lead email drafts only act on CRM data, so they are not
+  // offered while the CRM module is off.
+  ...(CRM_MODULE_ENABLED
+    ? [
+        {
+          key: "aiLeadScoring" as const,
+          label: "AI Lead Scoring",
+          description: "Automatically score leads using AI based on their profile and activity.",
+          icon: TrendingUp,
+        },
+        {
+          key: "aiEmailDraft" as const,
+          label: "AI Email Draft",
+          description: "Generate follow-up email drafts from lead context with one click.",
+          icon: Zap,
+        },
+      ]
+    : []),
   {
     key: "aiSmartNotifications",
     label: "Smart Notifications",
-    description: "AI-enriched notification text with lead context and suggested actions.",
+    description: "AI-enriched notification text with context and suggested next steps.",
     icon: BrainCircuit,
   },
   {
     key: "aiWeeklyRecap",
     label: "AI Weekly Recap",
-    description: "Generate a narrative CEO recap from weekly metrics automatically.",
+    description: "Generate a narrative weekly leadership recap from HR, project and time metrics.",
     icon: BarChart3,
   },
 ];
