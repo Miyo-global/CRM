@@ -33,7 +33,7 @@ export default async function DashboardLayout({
     // The session is already resolved here, so hand it to a nested provider:
     // the sidebar and every role-gated page then render on first paint rather
     // than after a client /api/auth/session fetch (A44).
-    <SessionProvider session={session}>
+    <SessionProvider session={session} redirectOnSignOut>
       <DashboardShell
         userId={session.user.id}
         hasDashboardAccess={hasDashboardAccess}
