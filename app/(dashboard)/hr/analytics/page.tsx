@@ -22,6 +22,7 @@ import {
   LeaveAnalyticsSection,
   CompensationSection,
   DiversitySection,
+  VBars,
   type FilterValues,
 } from "@/features/hr/analytics/analytics-sections";
 import { downloadAnalyticsXlsx, downloadAnalyticsCsv } from "@/lib/export/hr-analytics-export";
@@ -36,6 +37,7 @@ import {
   IndianRupee as IcoCoin, UserMinus as IcoUserMinus, ClipboardList as IcoClipboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { monthBars } from "@/lib/hr/month-bars";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -209,31 +211,12 @@ function AnalyticsContent() {
                     </CardContent>
                   </Card>
 
-                  {data.leaves.byMonth.length > 0 && (
-                    <Card>
-                      <CardHeader><CardTitle className="font-sans text-sm font-semibold">Leave Requests by Month</CardTitle></CardHeader>
-                      <CardContent className="px-5 pb-5">
-                        {(() => {
-                          const monthData = data.leaves.byMonth;
-                          const max = Math.max(...monthData.map((x) => x.count), 1);
-                          return (
-                            <div className="flex items-end gap-1 h-28">
-                              {monthData.map((m) => {
-                                const h = Math.max(6, (m.count / max) * 100);
-                                return (
-                                  <div key={m.month} className="flex-1 flex flex-col items-center gap-0.5">
-                                    {m.count > 0 && <span className="text-3xs font-medium tabular-nums text-muted-foreground">{m.count}</span>}
-                                    <div className="w-full max-w-7 rounded-t bg-chart-1" style={{ height: `${h}%` }} />
-                                    <span className="text-3xs tabular-nums text-muted-foreground">{m.month.slice(5)}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()}
-                      </CardContent>
-                    </Card>
-                  )}
+                  <Card>
+                    <CardHeader><CardTitle className="font-sans text-sm font-semibold">Leave Requests by Month</CardTitle></CardHeader>
+                    <CardContent className="px-5 pb-5">
+                      <VBars data={monthBars(data.leaves.byMonth)} height={112} emptyMessage="No leave requests this year" />
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <HrDashboardOverview />

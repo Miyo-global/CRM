@@ -25,6 +25,7 @@ import { formatINRCompact } from "@/lib/format-utils";
 import { toneVar, type Tone } from "@/lib/design/tones";
 import { cn } from "@/lib/utils";
 import { percentageSplit } from "@/lib/hr/percentage-split";
+import { monthBars } from "@/lib/hr/month-bars";
 import { EmptyState as UiEmptyState } from "@/components/ui/empty-state";
 import { StatsStrip } from "@/components/shared/stats-strip";
 import {
@@ -92,41 +93,68 @@ function HBar({
   );
 }
 
-function VBars({
+/**
+ * Vertical bar chart with a y-axis (0 and max) and a baseline. Every bar
+ * column is full height so a bar's percentage height resolves; the hand-rolled
+ * copies this replaces left the column at auto height, so bars drew 0px
+ * (QA-BUG-02).
+ */
+export function VBars({
   data,
   height = 100,
   colorClass = "bg-chart-1",
+  emptyMessage,
 }: {
   data: { label: string; value: number }[];
   height?: number;
   colorClass?: string;
+  /** Shown instead of the chart when every value is 0. */
+  emptyMessage?: string;
 }) {
-  const max = Math.max(...data.map((d) => d.value), 1);
+  const max = Math.max(...data.map((d) => d.value), 0);
+  if (emptyMessage && max === 0) return <EmptyState message={emptyMessage} />;
+  const top = Math.max(max, 1);
   return (
-    <div className="flex items-end gap-0.5" style={{ height }}>
-      {data.map((d) => {
-        const pct = Math.max(4, (d.value / max) * 100);
-        return (
-          <div
-            key={d.label}
-            className="flex-1 flex flex-col items-center gap-0.5 h-full justify-end"
-          >
-            {d.value > 0 && (
-              <span className="text-3xs font-medium tabular-nums text-muted-foreground">
-                {d.value}
-              </span>
-            )}
-            <div
-              className={cn("w-full max-w-7 rounded-t transition-[height] duration-500 motion-reduce:transition-none", colorClass)}
-              style={{ height: `${pct}%` }}
-              title={`${d.label}: ${d.value}`}
-            />
-            <span className="text-3xs text-muted-foreground mt-0.5 leading-none">
+    <div className="flex gap-1.5">
+      <div
+        className="flex flex-col justify-between text-right text-3xs tabular-nums leading-none text-muted-foreground"
+        style={{ height }}
+        aria-hidden="true"
+      >
+        <span>{top}</span>
+        <span>0</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-end gap-0.5 border-b border-l border-border pt-3" style={{ height }}>
+          {data.map((d, i) => {
+            const pct = d.value > 0 ? Math.max(4, (d.value / top) * 100) : 0;
+            return (
+              <div key={`${d.label}-${i}`} className="relative flex h-full flex-1 items-end justify-center">
+                {d.value > 0 && (
+                  <span
+                    className="absolute text-3xs font-medium tabular-nums leading-none text-muted-foreground"
+                    style={{ bottom: `calc(${pct}% + 2px)` }}
+                  >
+                    {d.value}
+                  </span>
+                )}
+                <div
+                  className={cn("w-full max-w-7 rounded-t transition-[height] duration-500 motion-reduce:transition-none", colorClass)}
+                  style={{ height: `${pct}%` }}
+                  title={`${d.label}: ${d.value}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-1 flex gap-0.5">
+          {data.map((d, i) => (
+            <span key={`${d.label}-${i}`} className="flex-1 truncate text-center text-3xs leading-none text-muted-foreground">
               {d.label}
             </span>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -792,19 +820,15 @@ export function LeaveAnalyticsSection({
             />
             <Mini label="Pending" value={totalPending} accent="amber" />
           </div>
-          {data.monthlyTrend.length > 0 && (
-            <div>
-              <SubLabel>Approved Leaves by Month</SubLabel>
-              <VBars
-                data={data.monthlyTrend.map((m) => ({
-                  label: m.month.slice(5) ?? m.month,
-                  value: m.count,
-                }))}
-                height={100}
-                colorClass="bg-chart-1"
-              />
-            </div>
-          )}
+          <div>
+            <SubLabel>Approved Leaves by Month</SubLabel>
+            <VBars
+              data={monthBars(data.monthlyTrend)}
+              height={100}
+              colorClass="bg-chart-1"
+              emptyMessage="No approved leave this year"
+            />
+          </div>
           {data.byDepartment.length > 0 && (
             <div>
               <SubLabel>Department-wise Leave Approvals</SubLabel>

@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatCard } from "@/components/ui/stat-card";
 import { QueryErrorState } from "@/components/ui/query-error-state";
+import { VBars } from "@/features/hr/analytics/analytics-sections";
+import { monthBars } from "@/lib/hr/month-bars";
 import {
   useHrDashboardMetrics,
   useHrLeaveCalendar,
@@ -474,22 +476,7 @@ function LeaveAnalyticsWidget() {
             </div>
             <div className="space-y-1.5">
               <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Monthly Trend</p>
-              <div className="flex items-end gap-0.5 h-20">
-                {data.monthlyTrend.map((m) => {
-                  const maxM = Math.max(...data.monthlyTrend.map((x) => x.count), 1);
-                  const pct = Math.round((m.count / maxM) * 100);
-                  return (
-                    <div key={m.month} className="flex flex-col items-center gap-0.5 flex-1">
-                      <div
-                        className="w-full rounded-sm bg-brand-soft"
-                        style={{ height: `${Math.max(4, pct)}%`, minHeight: "2px" }}
-                        title={`${m.month}: ${m.count}`}
-                      />
-                      <span className="text-3xs text-muted-foreground">{m.month}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              <VBars data={monthBars(data.monthlyTrend)} height={80} emptyMessage="No approved leave this year" />
             </div>
           </div>
         )}
