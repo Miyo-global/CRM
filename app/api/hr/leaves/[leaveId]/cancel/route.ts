@@ -94,10 +94,16 @@ export async function PATCH(
       return err("Only pending leave requests can be cancelled.", 400);
     }
 
-    await db
+    // Conditional on PENDING: an approval landing between the read and this
+    // write has already deducted the balance, so it must not be overwritten.
+    const [cancelled] = await db
       .update(leaveRequests)
       .set({ status: "CANCELLED" })
-      .where(eq(leaveRequests.id, leaveId));
+      .where(and(eq(leaveRequests.id, leaveId), eq(leaveRequests.status, "PENDING")))
+      .returning({ id: leaveRequests.id });
+    if (!cancelled) {
+      return err("This leave request was just changed by someone else. Refresh to see its current status.", 409);
+    }
 
     await writeAuditLog({
       action: "hr.leave_cancelled",
