@@ -227,7 +227,7 @@ function LeaveApprovalsTable({
             onReject={onReject}
             // Whoever could approve it may cancel it once approved (QA-BUG-36).
             canCancelApproved={(req) =>
-              canActOnLeaveRequest(currentRole, currentUserId, { ...req, status: "PENDING", approverId: null })
+              canActOnLeaveRequest(currentRole, currentUserId, { ...req, status: "PENDING" })
             }
             onCancelApproved={(id) =>
               cancelLeave

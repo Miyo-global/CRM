@@ -18,7 +18,7 @@ type LeaveRow = typeof leaveRequests.$inferSelect;
 async function cancelApprovedLeave(session: AuthSession, existing: LeaveRow) {
   const check = await canApproveLeaveRequest(session, {
     userId: existing.userId,
-    approverId: null,
+    approverId: existing.approverId,
     status: "PENDING",
   });
   if (!check.allowed) {
