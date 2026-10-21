@@ -90,7 +90,13 @@ function TerminationReasonsContent() {
   );
 
   const handleSubmit = useCallback(() => {
-    const parsed = terminationReasonFormSchema.safeParse({ label, description });
+    // A label saved before the 120-character limit stays editable: an unchanged
+    // label is not re-validated or re-sent.
+    const labelUnchanged = !!editing && label.trim() === editing.label.trim();
+    const parsed = terminationReasonFormSchema.safeParse({
+      label: labelUnchanged ? "unchanged" : label,
+      description,
+    });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid reason");
       return;
@@ -102,7 +108,7 @@ function TerminationReasonsContent() {
       updateReason.mutate(
         {
           id: editing.id,
-          label: trimmed,
+          label: labelUnchanged ? undefined : trimmed,
           description: parsed.data.description?.trim() || null,
         },
         {
