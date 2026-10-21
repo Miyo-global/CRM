@@ -49,7 +49,9 @@ export async function GET() {
       total,
       present,
       clockedIn,
-      absent: Math.max(0, total - present),
+      // People on approved leave are not absent (the manager widget shows them as leave).
+      absent: team.filter((m) => m.status === "absent").length,
+      onLeave: team.filter((m) => m.status === "leave").length,
       records: todayAttendance,
     });
   });

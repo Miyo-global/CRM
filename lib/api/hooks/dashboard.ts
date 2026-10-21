@@ -224,6 +224,7 @@ export interface TeamAttendance {
   present: number;
   clockedIn: number;
   absent: number;
+  onLeave: number;
   records: {
     userId: string;
     userName: string | null;

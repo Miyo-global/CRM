@@ -220,10 +220,11 @@ export function TeamAttendanceWidget() {
     <WidgetCard title="Team Attendance" icon={Users} tone="info">
       {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
         <div>
-          <dl className="mb-3 grid grid-cols-3 gap-2 text-center">
+          <dl className="mb-3 grid grid-cols-4 gap-2 text-center">
             {[
               { label: "Present", value: data.present, icon: UserCheck, tone: "success" as const },
               { label: "Absent", value: data.absent, icon: UserX, tone: "danger" as const },
+              { label: "On leave", value: data.onLeave, icon: CalendarOff, tone: "warning" as const },
               { label: "Total", value: data.total, icon: Users, tone: "neutral" as const },
             ].map((s) => (
               <div key={s.label} className="flex flex-col items-center gap-1 rounded-md bg-surface-sunken/40 py-2">
