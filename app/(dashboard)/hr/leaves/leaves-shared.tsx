@@ -698,7 +698,8 @@ export function LeaveRequestTable({
   canCancelApproved?: (request: LeaveRequest) => boolean;
   onCancelApproved?: (id: number) => Promise<unknown>;
   /** The owner saves a new reason for a pending request (QA-BUG-17). */
-  onEditReason?: (id: number, reason: string) => Promise<unknown>;
+  /** Resolves true when saved; the dialog stays open on failure so the draft survives. */
+  onEditReason?: (id: number, reason: string) => Promise<boolean>;
   isMutating?: boolean;
 }) {
   const [detailsRequest, setDetailsRequest] = useState<LeaveRequest | null>(null);
@@ -803,7 +804,11 @@ export function LeaveRequestTable({
         isPending={isMutating}
         confirmDisabled={!draftReason.trim() || draftReason.trim() === (editRequest?.reason ?? "").trim()}
         onConfirm={() => {
-          if (editRequest) void onEditReason?.(editRequest.id, draftReason.trim()).finally(() => setEditRequest(null));
+          if (editRequest) {
+            void onEditReason?.(editRequest.id, draftReason.trim()).then((saved) => {
+              if (saved) setEditRequest(null);
+            });
+          }
         }}
       >
         <Textarea

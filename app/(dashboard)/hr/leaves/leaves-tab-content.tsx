@@ -142,8 +142,14 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
     (id: number, reason: string) =>
       editReasonMutation
         .mutateAsync({ leaveId: id, reason })
-        .then(() => toast.success("Reason updated"))
-        .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to update reason")),
+        .then(() => {
+          toast.success("Reason updated");
+          return true;
+        })
+        .catch((err) => {
+          toast.error(err instanceof Error ? err.message : "Failed to update reason");
+          return false;
+        }),
     [editReasonMutation],
   );
 
