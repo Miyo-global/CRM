@@ -429,7 +429,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             )}
             {employee.isActive === false || (employee as Record<string, unknown>).terminatedAt ? (
               <StatusPill tone="danger" dot>Terminated</StatusPill>
-            ) : employee.role?.toUpperCase() !== "CEO" && (
+            ) : canManage && !isSelf && employee.role?.toUpperCase() !== "CEO" && (
               <Button
                 variant="outline"
                 size="sm"
