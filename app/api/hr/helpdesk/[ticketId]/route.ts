@@ -59,10 +59,12 @@ export async function PATCH(
       return err("Only an administrator can assign tickets.", 403);
     }
 
-    // The creator or an admin may fix the title until the ticket is Done (QA-BUG-17).
+    // The creator or an admin may fix the title until the ticket is resolved (QA-BUG-17).
     if (data.title !== undefined && data.title !== ticket.title) {
       if (!isOwner && !isAdmin) return err("Only the creator or an admin can edit the title.", 403);
-      if (ticket.status === "DONE") return err("A Done ticket's title can't be changed.", 400);
+      if (["DONE", "CLOSED", "CANCELLED"].includes(ticket.status ?? "")) {
+        return err("A resolved ticket's title can't be changed.", 400);
+      }
       const [duplicate] = await db
         .select({ id: helpdeskTickets.id })
         .from(helpdeskTickets)
@@ -71,7 +73,7 @@ export async function PATCH(
             eq(helpdeskTickets.orgId, session.orgId),
             ne(helpdeskTickets.id, ticketId),
             sql`lower(${helpdeskTickets.title}) = ${data.title.toLowerCase()}`,
-            sql`${helpdeskTickets.status} <> 'DONE'`,
+            sql`${helpdeskTickets.status} NOT IN ('DONE', 'CLOSED', 'CANCELLED')`,
           ),
         )
         .limit(1);
