@@ -78,6 +78,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { resolveImageUrl } from "@/lib/utils";
+import { canAccessRoute } from "@/lib/auth/route-access";
 import { format } from "date-fns";
 import type { Employee } from "@/types/hr";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_EXTRA_FIELDS } from "@/lib/hr/hr-letter-tokens";
@@ -208,7 +209,7 @@ function profileCompletenessScore(employee: EmployeeData): { pct: number; missin
 }
 
 
-function DirectReportsSection({ employeeId }: { employeeId: string }) {
+function DirectReportsSection({ employeeId, canOpenHr }: { employeeId: string; canOpenHr: boolean }) {
   const { data: reports, isLoading } = useDirectReports(employeeId);
 
   if (isLoading) {
@@ -237,12 +238,9 @@ function DirectReportsSection({ employeeId }: { employeeId: string }) {
           </h3>
         </div>
         <div className="space-y-2">
-          {reports.map((r) => (
-            <Link
-              key={r.id}
-              href={`/hr/employees/${r.id}`}
-              className="flex items-center gap-2 hover:bg-muted/60 rounded-lg p-1.5 transition-colors"
-            >
+          {reports.map((r) => {
+            const body = (
+              <>
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={resolveImageUrl(r.image)} />
                 <AvatarFallback className="text-xs bg-brand-soft text-brand-soft-foreground font-bold">
@@ -253,8 +251,20 @@ function DirectReportsSection({ employeeId }: { employeeId: string }) {
                 <p className="text-sm font-medium truncate">{r.name ?? r.email}</p>
                 {r.designation && <p className="text-2xs text-muted-foreground truncate">{r.designation}</p>}
               </div>
-            </Link>
-          ))}
+              </>
+            );
+            return canOpenHr ? (
+              <Link
+                key={r.id}
+                href={`/hr/employees/${r.id}`}
+                className="flex items-center gap-2 hover:bg-muted/60 rounded-lg p-1.5 transition-colors"
+              >
+                {body}
+              </Link>
+            ) : (
+              <div key={r.id} className="flex items-center gap-2 p-1.5">{body}</div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
@@ -372,6 +382,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
 
   const e = employee as Record<string, unknown>;
   const canManage = ["CEO", "HR", "ADMIN"].includes(session?.user?.role ?? "");
+  // An employee may open their own record without HR access; links into /hr
+  // from it would land them on /access-restricted.
+  const canOpenHr = canAccessRoute("/hr", session?.user?.role ?? "");
   const canSeeSensitive = e.viewerCanSeeSensitive === true;
   const bank = (e.bankDetails ?? null) as
     | { bankName?: string; accountNumber?: string; ifsc?: string; accountHolder?: string }
@@ -443,7 +456,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               </Button>
             )}
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/hr"><ArrowLeft className="size-4" aria-hidden="true" />Back</Link>
+              <Link href={canOpenHr ? "/hr" : "/dashboard"}><ArrowLeft className="size-4" aria-hidden="true" />Back</Link>
             </Button>
           </div>
         }
@@ -556,7 +569,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     label="Reporting to"
                     value={
                       asStr(e.managerName)
-                        ? employee.reportingTo
+                        ? employee.reportingTo && canOpenHr
                           ? (
                             <Link href={`/hr/employees/${String(employee.reportingTo)}`} className="text-brand-text hover:underline">
                               {asStr(e.managerName)}
@@ -681,7 +694,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
 
               <ManagerScorecardSection employeeId={employee.id} />
 
-              <DirectReportsSection employeeId={employee.id} />
+              <DirectReportsSection employeeId={employee.id} canOpenHr={canOpenHr} />
 
               <div className="grid gap-3 lg:grid-cols-2">
                 <Card>
