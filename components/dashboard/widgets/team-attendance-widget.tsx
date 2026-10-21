@@ -23,15 +23,16 @@ export function TeamAttendanceWidget() {
   const { data, isLoading, error, refetch } = useManagerDashboard();
   const members = data?.teamAttendanceToday ?? [];
 
-  const presentCount = members.filter((m) => m.status === "present").length;
-  const absentCount = members.filter((m) => m.status === "absent").length;
+  const counts = data?.teamAttendanceCounts;
+  const presentCount = counts?.present ?? 0;
+  const absentCount = counts?.absent ?? 0;
 
   return (
     <WidgetCard
       title="Team attendance"
       icon={Users}
       tone="success"
-      count={members.length || undefined}
+      count={counts?.total || undefined}
       actions={<ViewAllLink href="/hr/attendance" ariaLabel="View full attendance" />}
       contentClassName="space-y-2"
     >

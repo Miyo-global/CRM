@@ -653,7 +653,7 @@ export async function getTeamDay(orgId: string) {
 }
 
 export async function getManagerDashboard(orgId: string, userId: string) {
-  const [teamAttendanceToday, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
+  const [teamDay, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
     getTeamDay(orgId),
     db
       .select({ cnt: count() })
@@ -669,8 +669,16 @@ export async function getManagerDashboard(orgId: string, userId: string) {
       .where(and(eq(tickets.orgId, orgId), isNull(tickets.deletedAt), or(eq(tickets.status, "TODO"), eq(tickets.status, "IN_PROGRESS")))),
   ]);
 
+  // Counts cover everyone; the widget lists a handful, so only a page of rows
+  // goes to the client instead of the whole org.
   return {
-    teamAttendanceToday,
+    teamAttendanceToday: teamDay.slice(0, 50),
+    teamAttendanceCounts: {
+      total: teamDay.length,
+      present: teamDay.filter((m) => m.status === "present").length,
+      absent: teamDay.filter((m) => m.status === "absent").length,
+      leave: teamDay.filter((m) => m.status === "leave").length,
+    },
     pendingLeaveApprovals: Number(pendingLeaves[0]?.cnt ?? 0),
     pendingExpenseApprovals: Number(pendingExpenses[0]?.cnt ?? 0),
     teamOverdueTasks: Number(overdueTickets[0]?.cnt ?? 0),
