@@ -110,7 +110,7 @@
     "sharp": "^0.35.5",
     "sonner": "^2.0.7",
     "superjson": "^2.2.6",
-    "tailwind-merge": "^3.4.0",
+    "tailwind-merge": "^3.7.0",
     "web-push": "^3.6.7",
     "zod": "^4.1.13"
   },
