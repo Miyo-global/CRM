@@ -6,9 +6,9 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createNotification } from "@/server/actions/create-notification";
 import { sendHolidayWorkDecisionEmail } from "@/lib/email/hr-attendance";
 import { users } from "@/lib/db/schema";
-import { logger } from "@/lib/logger";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
 
 const rejectSchema = z.object({
   rejectionReason: z.string().min(1),
@@ -59,7 +59,7 @@ export async function PATCH(
     }).catch(() => {});
 
     // MIYO-0241: tell them by email too, not only in the app.
-    void (async () => {
+    afterResponse("hr/holiday-work-requests/[id]/reject", async () => {
       const employee = await db.query.users.findFirst({
         where: eq(users.id, request.userId),
         columns: { email: true },
@@ -70,7 +70,7 @@ export async function PATCH(
         compensation: request.compensationPreference.replace(/_/g, " ").toLowerCase(),
         note: body.rejectionReason,
       });
-    })().catch((error) => logger.error("Holiday work rejection email failed", { error }));
+    });
 
     return ok(updated);
   });

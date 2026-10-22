@@ -6,7 +6,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createPerformanceReviewSchema } from "@/lib/validations/hr";
 import type { NextRequest } from "next/server";
 import { sendReviewAssignedEmail } from "@/lib/email";
-import { logger } from "@/lib/logger";
+import { afterResponse } from "@/lib/after-response";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    void (async () => {
+    afterResponse("hr/performance/reviews", async () => {
       const [employee, reviewer] = await Promise.all([
         db.query.users.findFirst({
           where: eq(users.id, body.userId),
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
           body.periodEnd,
         );
       }
-    })().catch((e) => logger.error("review assigned email failed", { error: e }));
+    });
 
     return ok(review, 201);
   });

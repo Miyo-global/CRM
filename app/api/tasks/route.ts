@@ -6,6 +6,7 @@ import { eq, and, desc, asc, count } from "drizzle-orm";
 import { z } from "zod";
 import { sendTaskAssignedEmail } from "@/lib/email";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { afterResponse } from "@/lib/after-response";
 
 
 const listSchema = z.object({
@@ -101,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     const assigneeId = body.assigneeId ?? session.user.id;
     if (assigneeId !== session.user.id) {
-      void (async () => {
+      afterResponse("tasks", async () => {
         const assignee = await db.query.users.findFirst({
           where: eq(users.id, assigneeId),
           columns: { email: true, name: true },
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
             assignedBy: session.user.name ?? "Team Member",
           });
         }
-      })().catch(() => {});
+      });
     }
 
     return ok(created, 201);

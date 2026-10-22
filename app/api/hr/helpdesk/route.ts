@@ -10,6 +10,7 @@ import { z } from "zod";
 import { sendHelpdeskTicketEmail } from "@/lib/email";
 import { cleanRequiredText } from "@/lib/validations/text-rules";
 import { sql } from "drizzle-orm";
+import { afterResponse } from "@/lib/after-response";
 
 const createTicketSchema = z.object({
   // Free text, kept as typed (QA-BUG-18); the email template escapes it.
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    void (async () => {
+    afterResponse("hr/helpdesk", async () => {
       const hrMembers = await db
         .select({ userId: organizationMembers.userId })
         .from(organizationMembers)
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
           eventSummary: `${session.user.name ?? "An employee"} raised a ${(body.priority ?? "MEDIUM").toLowerCase()} priority ticket.`,
         });
       }
-    })().catch(() => {});
+    });
 
     return ok(ticket);
   });

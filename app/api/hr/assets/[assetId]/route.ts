@@ -12,6 +12,7 @@ import {
 } from "@/lib/hr/asset-assignment-lifecycle";
 import { countAssetAssignments } from "@/server/queries/hr/assets";
 import { assetFormSchema, assetPatchSchema, DUPLICATE_SERIAL_MESSAGE } from "@/lib/validations/hr-assets";
+import { afterResponse } from "@/lib/after-response";
 
 const patchAssetSchema = assetPatchSchema;
 
@@ -178,7 +179,7 @@ export async function PATCH(
         assignedBy: session.user.id,
       });
 
-      void (async () => {
+      afterResponse("hr/assets/[assetId]", async () => {
         const assigner = await db.query.users.findFirst({
           where: eq(users.id, session.user.id),
           columns: { name: true },
@@ -192,7 +193,7 @@ export async function PATCH(
           assetTag: `ASSET-${assetId}`,
           serialNumber: body.serialNumber ?? existing?.serialNumber ?? null,
         });
-      })().catch(() => {});
+      });
     }
 
     return ok({ success: true });

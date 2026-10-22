@@ -7,7 +7,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendWorkLogStatusEmail } from "@/lib/email";
-import { logger } from "@/lib/logger";
+import { afterResponse } from "@/lib/after-response";
 
 const patchWorkLogStatusSchema = z
   .object({
@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest) {
       .returning();
 
     if (existing.userId) {
-      void (async () => {
+      afterResponse("hr/work-logs/status", async () => {
         const employee = await db.query.users.findFirst({
           where: eq(users.id, existing.userId!),
           columns: { email: true, name: true },
@@ -66,8 +66,6 @@ export async function PATCH(req: NextRequest) {
             { hours: existing.hours, rejectionReason: body.rejectionReason },
           );
         }
-      })().catch((error) => {
-        logger.error("Failed to send work-log status email", error);
       });
     }
 

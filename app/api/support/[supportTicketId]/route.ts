@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendSupportTicketStatusEmail, sendSupportTicketCreatedEmail } from "@/lib/email";
 import { isSupportStaff } from "@/lib/constants/support-sla";
+import { afterResponse } from "@/lib/after-response";
 
 const updateSchema = z.object({
   status: z
@@ -120,7 +121,7 @@ export async function PATCH(
       }
 
       if (input.assigneeId && input.assigneeId !== ticket.assigneeId) {
-        void (async () => {
+        afterResponse("support/[supportTicketId]", async () => {
           const assignee = await db.query.users.findFirst({
             where: eq(users.id, input.assigneeId!),
             columns: { name: true },
@@ -131,11 +132,11 @@ export async function PATCH(
             message: `Ticket "${ticket.title}" assigned to ${assignee?.name ?? "a team member"}`,
             person: session.user.name ?? null,
           });
-        })().catch(() => {});
+        });
       }
 
       if (input.status) {
-        void (async () => {
+        afterResponse("support/[supportTicketId]", async () => {
           const creator = await db.query.users.findFirst({
             where: eq(users.id, ticket.createdBy),
             columns: { email: true, name: true },
@@ -148,11 +149,11 @@ export async function PATCH(
               updatedBy: session.user.name ?? "Support",
             });
           }
-        })().catch(() => {});
+        });
       }
 
       if (input.assigneeId && input.assigneeId !== ticket.assigneeId) {
-        void (async () => {
+        afterResponse("support/[supportTicketId]", async () => {
           const assignee = await db.query.users.findFirst({
             where: eq(users.id, input.assigneeId!),
             columns: { email: true, name: true },
@@ -165,7 +166,7 @@ export async function PATCH(
               requesterName: session.user.name ?? "Support",
             });
           }
-        })().catch(() => {});
+        });
       }
 
       return ok({ success: true });

@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { sendRecognitionRecipientEmail, sendRecognitionShoutoutEmail } from "@/lib/email";
 import { HR_EMAIL } from "@/lib/constants/company";
+import { afterResponse } from "@/lib/after-response";
 
 const HR_INBOX = HR_EMAIL;
 
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
       category: body.category,
     }).returning();
 
-    void (async () => {
+    afterResponse("hr/recognition", async () => {
       const [sender, recipient] = await Promise.all([
         db.query.users.findFirst({ where: eq(users.id, session.user.id), columns: { name: true, image: true } }),
         db.query.users.findFirst({ where: eq(users.id, body.toUserId), columns: { name: true, email: true, image: true } }),
@@ -160,7 +161,7 @@ export async function POST(req: NextRequest) {
           HR_INBOX, recipientName, senderName, body.message,
         ).catch(() => {});
       }
-    })();
+    });
 
     return ok(recognition, 201);
   });

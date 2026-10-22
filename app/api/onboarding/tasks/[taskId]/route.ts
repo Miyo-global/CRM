@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { onboardingTasks, users, organizationMembers } from "@/lib/db/schema";
 import { sendOnboardingCompleteEmployeeEmail, sendOnboardingCompleteHrEmail } from "@/lib/email";
 import { formatIST } from "@/lib/date-utils";
+import { afterResponse } from "@/lib/after-response";
 
 const patchSchema = z.object({
   status: z.enum(["COMPLETED", "PENDING"]),
@@ -51,7 +52,7 @@ export async function PATCH(
       .where(eq(onboardingTasks.id, taskIdNum));
 
     if (body.status === "COMPLETED") {
-      void (async () => {
+      afterResponse("onboarding/tasks/[taskId]", async () => {
         const pendingTasks = await db
           .select({ id: onboardingTasks.id })
           .from(onboardingTasks)
@@ -108,7 +109,7 @@ export async function PATCH(
             `${formatIST(now)} IST`,
           );
         }
-      })().catch(() => {});
+      });
     }
 
     return ok({ success: true });

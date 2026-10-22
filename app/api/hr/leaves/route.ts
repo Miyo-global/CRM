@@ -21,6 +21,7 @@ import { resolveLeaveApprovers } from "@/lib/hr/leave-approver-chain";
 import { resolveLeaveApprover } from "@/lib/hr/leave-approvals-server";
 import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { checkLeaveRequest } from "@/lib/hr/leave-request-check";
+import { afterResponse } from "@/lib/after-response";
 
 const createLeaveSchema = z.object({
   leaveTypeId: z.number(),
@@ -211,7 +212,7 @@ export async function POST(req: NextRequest) {
       // Notify once, after the insert succeeded, and only the people who can
       // act on it — the all-HR fan-out sent duplicates, including for requests
       // that were rejected as overlapping (A31).
-      void (async () => {
+      afterResponse("hr/leaves", async () => {
         if (approver.autoApprove) return;
 
         // Exactly one approver email per apply (QA-0010). The HR inbox is a
@@ -272,7 +273,7 @@ export async function POST(req: NextRequest) {
             email: false,
           });
         }
-      })().catch(() => {});
+      });
 
       return ok({ success: true });
     } catch (e) {

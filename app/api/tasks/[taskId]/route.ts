@@ -7,6 +7,7 @@ import { z } from "zod";
 import { sendTaskAssignedEmail } from "@/lib/email";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { afterResponse } from "@/lib/after-response";
 
 
 const updateSchema = z.object({
@@ -68,7 +69,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     if (!updated) return err("Failed to update task", 500);
 
     if (body.assigneeId && body.assigneeId !== existing.assigneeId && body.assigneeId !== session.user.id) {
-      void (async () => {
+      afterResponse("tasks/[taskId]", async () => {
         const assignee = await db.query.users.findFirst({
           where: eq(users.id, body.assigneeId!),
           columns: { email: true, name: true },
@@ -83,7 +84,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
             assignedBy: session.user.name ?? "Team Member",
           });
         }
-      })().catch(() => {});
+      });
     }
 
     return ok(updated);

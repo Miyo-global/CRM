@@ -4,6 +4,7 @@ import { tickets, users } from "@/lib/db/schema";
 import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
 import { sendTicketAssignmentEmail, sendTicketReviewRequestEmail, sendTicketChangesRequestedEmail } from "@/lib/email";
+import { afterResponse } from "@/lib/after-response";
 
 type TicketUpdateNotice = {
   orgId: string;
@@ -59,7 +60,7 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
         logger.error("Failed to create ticket assignment notification", { error: notifErr });
       }
 
-      void (async () => {
+      afterResponse("projects/ticket-update-notifications", async () => {
         const assignee = await db.query.users.findFirst({
           where: eq(users.id, userId),
           columns: { email: true, name: true },
@@ -77,12 +78,12 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
             assignedBy: input.actorName ?? "Team Member",
           });
         }
-      })().catch(() => {});
+      });
     }
   }
 
   if (input.status === "IN_REVIEW" || input.status === "CHANGES_REQUESTED") {
-    void (async () => {
+    afterResponse("projects/ticket-update-notifications", async () => {
       const ticketData = await db.query.tickets.findFirst({
         where: eq(tickets.id, id),
         columns: {
@@ -127,6 +128,6 @@ export async function notifyTicketUpdate(input: TicketUpdateNotice): Promise<voi
           });
         }
       }
-    })().catch(() => {});
+    });
   }
 }

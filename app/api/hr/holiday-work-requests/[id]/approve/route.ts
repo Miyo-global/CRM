@@ -6,8 +6,8 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createNotification } from "@/server/actions/create-notification";
 import { sendHolidayWorkDecisionEmail } from "@/lib/email/hr-attendance";
 import { users } from "@/lib/db/schema";
-import { logger } from "@/lib/logger";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
 
 export async function PATCH(
   _req: NextRequest,
@@ -55,7 +55,7 @@ export async function PATCH(
     }).catch(() => {});
 
     // MIYO-0241: tell them by email too, not only in the app.
-    void (async () => {
+    afterResponse("hr/holiday-work-requests/[id]/approve", async () => {
       const employee = await db.query.users.findFirst({
         where: eq(users.id, request.userId),
         columns: { email: true },
@@ -65,7 +65,7 @@ export async function PATCH(
         date: request.requestDate,
         compensation,
       });
-    })().catch((error) => logger.error("Holiday work approval email failed", { error }));
+    });
 
     return ok(updated);
   });

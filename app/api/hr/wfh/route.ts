@@ -11,9 +11,9 @@ import { sendWfhRequestEmail } from "@/lib/email/hr-leaves";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
-import { logger } from "@/lib/logger";
 import { createWfhRequestSchema, enumerateWorkingDateStrings, resolveWfhMinStartDate } from "@/lib/validations/leave-request";
 import { dateOnlySchema } from "@/lib/validations/date";
+import { afterResponse } from "@/lib/after-response";
 
 const createWfhApiSchema = z.object({
   date: dateOnlySchema,
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         : `${formatDateOnly(workingDays[0]!)} – ${formatDateOnly(workingDays[workingDays.length - 1]!)}`;
     const reasonForEmail = reasonText ?? "No reason provided";
 
-    void (async () => {
+    afterResponse("hr/wfh", async () => {
       const hrMembers = await db
         .select({ userId: organizationMembers.userId })
         .from(organizationMembers)
@@ -162,11 +162,6 @@ export async function POST(req: NextRequest) {
         link: "/hr/leaves",
         excludeUserId: session.user.id,
         metadata: { kind: "wfh", requestId: request.id },
-      });
-    })().catch((error) => {
-      logger.error("Failed to notify HR about WFH request", {
-        error: error instanceof Error ? error.message : "unknown",
-        requestId: request.id,
       });
     });
 

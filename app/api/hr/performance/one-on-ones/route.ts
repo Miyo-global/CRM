@@ -4,9 +4,9 @@ import { oneOnOneMeetings, organizationMembers, users } from "@/lib/db/schema";
 import { eq, and, desc, gte, or, ne, inArray } from "drizzle-orm";
 import { createOneOnOneSchema } from "@/lib/validations/hr";
 import { sendOneOnOneInvite } from "@/lib/hr/one-on-one-invite";
-import { logger } from "@/lib/logger";
 import type { NextRequest } from "next/server";
 import { getFromAddress } from "@/lib/email/config";
+import { afterResponse } from "@/lib/after-response";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    void (async () => {
+    afterResponse("hr/performance/one-on-ones", async () => {
       const [employee, manager] = await Promise.all([
         db.query.users.findFirst({
           where: eq(users.id, body.employeeId),
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
         attendeeEmail: employee.email,
         additionalAttendees,
       });
-    })().catch((e) => logger.error("one-on-one invite failed", e));
+    });
 
     return ok(meeting, 201);
   });

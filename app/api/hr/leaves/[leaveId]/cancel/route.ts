@@ -8,6 +8,7 @@ import { sendLeaveCancellationEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
 import { restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { createNotification } from "@/server/actions/create-notification";
+import { afterResponse } from "@/lib/after-response";
 
 type LeaveRow = typeof leaveRequests.$inferSelect;
 
@@ -113,7 +114,7 @@ export async function PATCH(
       targetType: "leave_request",
     });
 
-    void (async () => {
+    afterResponse("hr/leaves/[leaveId]/cancel", async () => {
       const leaveType = existing.leaveTypeId
         ? await db.query.leaveTypes.findFirst({
             where: eq(leaveTypes.id, existing.leaveTypeId),
@@ -151,7 +152,7 @@ export async function PATCH(
           );
         }
       }
-    })().catch(() => {});
+    });
 
     return ok({ success: true });
   });

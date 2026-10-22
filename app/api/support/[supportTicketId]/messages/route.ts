@@ -7,6 +7,7 @@ import { z } from "zod";
 import { sendSupportTicketReplyEmail } from "@/lib/email";
 import { SUPPORT_STAFF_ROLES } from "@/lib/constants/support-sla";
 import { logSupportActivity } from "@/server/queries/support";
+import { afterResponse } from "@/lib/after-response";
 
 const replySchema = z.object({
   body: z.string().min(1),
@@ -152,7 +153,7 @@ export async function POST(
       }
 
       if (!input.isInternal) {
-        void (async () => {
+        afterResponse("support/[supportTicketId]/messages", async () => {
           const notifyUserId =
             session.user.id === ticket.createdBy
               ? ticket.assigneeId
@@ -179,7 +180,7 @@ export async function POST(
               body: input.body,
             });
           }
-        })().catch(() => {});
+        });
       }
 
       return ok(message, 201);

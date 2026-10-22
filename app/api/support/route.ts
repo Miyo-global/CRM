@@ -9,6 +9,7 @@ import { sendSupportTicketCreatedEmail } from "@/lib/email";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { computeSlaDueAt, isSupportStaff } from "@/lib/constants/support-sla";
+import { afterResponse } from "@/lib/after-response";
 
 const SUPPORT_CATEGORIES = [
   "Technical Issue",
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (input.assigneeId) {
-        void (async () => {
+        afterResponse("support", async () => {
           const assignee = await db.query.users.findFirst({
             where: eq(users.id, input.assigneeId!),
             columns: { email: true, name: true },
@@ -140,7 +141,7 @@ export async function POST(req: NextRequest) {
               requesterName: session.user.name ?? "A user",
             });
           }
-        })().catch(() => {});
+        });
       }
 
       // Route to CUSTOMER_SUPPORT + ADMIN always; include HR/CEO only when created by non-admin
