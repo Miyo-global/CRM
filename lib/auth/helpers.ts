@@ -3,7 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { organizationMembers, organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-// Server actions check revocation, deactivation and MFA too (SEC-0007).
+// Server actions check revocation and deactivation too (SEC-0007).
 import { liveAuth as auth } from "@/lib/auth/live-session";
 import type { AuthResult } from "@/lib/auth/types";
 import { ADMIN_ROLES } from "@/lib/constants/roles";

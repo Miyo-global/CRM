@@ -1,9 +1,8 @@
 /**
  * Failed-authentication cooldown policy (no DB access, so it is testable).
  *
- * Shared by password sign-in and MFA verification: MFA code entry had no
- * counter at all (QA-0038), and a flat 15-minute lock after five wrong
- * password guesses was easy to weaponise (QA-0037).
+ * A flat 15-minute lock after five wrong password guesses was easy to
+ * weaponise (QA-0037).
  */
 export const FAILED_ATTEMPT_LOCK_THRESHOLD = 5;
 

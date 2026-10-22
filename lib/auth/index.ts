@@ -3,7 +3,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { db } from "../db";
-import { accounts, sessions, users, verificationTokens, organizationMembers, organizations, userSessions } from "../db/schema";
+import { accounts, sessions, users, verificationTokens, organizationMembers, userSessions } from "../db/schema";
 import bcrypt from "bcryptjs";
 import { eq, and, ne, sql } from "drizzle-orm";
 import { Adapter } from "next-auth/adapters";
@@ -28,8 +28,6 @@ interface UserSessionCache {
   role: string | null;
   orgId: string | null;
   branchId: number | null;
-  totpEnabled: boolean | null;
-  mfaEnforced: boolean | null;
 }
 
 const USER_SESSION_TTL = 300;
@@ -37,12 +35,6 @@ const USER_SESSION_TTL = 300;
 function userSessionKey(userId: string): string {
   return `user:session:${userId}`;
 }
-
-export function mfaLoginVerifiedKey(sessionId: string): string {
-  return `mfa:verified:${sessionId}`;
-}
-
-export const MFA_LOGIN_VERIFIED_TTL = 300;
 
 export async function invalidateUserSession(userId: string): Promise<void> {
   if (!redis) {
@@ -161,7 +153,7 @@ const credentialsProvider = Credentials({
       );
 
       if (!isValid) {
-        // Escalating cooldown, shared with MFA verification (QA-0037, QA-0038).
+        // Escalating cooldown, (QA-0037).
         const { attempts, lockedUntil } = await recordFailedAttempt(user.id, user.loginAttempts);
         if (lockedUntil) {
           logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, lockedUntil });
@@ -293,7 +285,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.onboardingCompleted = (user as Record<string, unknown>).onboardingCompleted as boolean ?? true;
         token.orgId = null;
         token.sessionId = randomUUID();
-        token.mfaSatisfied = false;
 
         const userAgent = "";
         const ipAddress = "";
@@ -354,7 +345,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 name: true,
                 role: true,
                 branchId: true,
-                totpEnabled: true,
               },
             }).catch(() => db.query.users.findFirst({
               where: eq(users.id, userId),
@@ -368,7 +358,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 name: true,
                 role: true,
                 branchId: true,
-                totpEnabled: true,
               },
             }));
 
@@ -380,23 +369,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               }),
             ]);
 
-            let mfaEnforcedValue = false;
-            if (membership?.orgId) {
-              const orgRow = await db.query.organizations.findFirst({
-                where: eq(organizations.id, membership.orgId),
-                columns: { mfaEnforced: true },
-              });
-              mfaEnforcedValue = orgRow?.mfaEnforced ?? false;
-            }
-
             const cacheValue: UserSessionCache | null = fresh
               ? {
                   ...fresh,
                   onboardingCompleted: (fresh as Record<string, unknown>).onboardingCompleted as boolean ?? true,
                   orgId: membership?.orgId ?? null,
                   branchId: fresh.branchId ?? null,
-                  totpEnabled: fresh.totpEnabled ?? false,
-                  mfaEnforced: mfaEnforcedValue,
                 }
               : null;
             if (cacheValue && redis) {
@@ -414,9 +392,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.image = dbUser.image || null;
             token.orgId = dbUser.orgId ?? null;
             token.branchId = dbUser.branchId ?? null;
-            token.totpEnabled = dbUser.totpEnabled ?? false;
-            token.mfaEnforced = dbUser.mfaEnforced ?? false;
-            token.mfaSatisfied = token.totpEnabled ? token.mfaSatisfied === true : true;
             if (dbUser.firstName && dbUser.lastName) {
               token.name = `${dbUser.firstName} ${dbUser.lastName}`;
             } else if (dbUser.name) {
@@ -440,24 +415,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.forceChangePassword = session.forceChangePassword;
       }
 
-      if (
-        trigger === "update" &&
-        token.totpEnabled &&
-        token.mfaSatisfied !== true &&
-        token.sessionId &&
-        redis
-      ) {
-        try {
-          const marker = await redis.get<boolean>(mfaLoginVerifiedKey(token.sessionId as string));
-          if (marker) {
-            token.mfaSatisfied = true;
-            await redis.del(mfaLoginVerifiedKey(token.sessionId as string));
-          }
-        } catch (e) {
-          logger.error("Auth: mfa login-verify marker read failed", { error: e });
-        }
-      }
-
       return token;
     },
     async session({ session, token }) {
@@ -472,7 +429,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       session.orgId = token.orgId ?? null;
       session.sessionId = token.sessionId;
-      session.mfaSatisfied = (token.mfaSatisfied as boolean | undefined) ?? true;
       return session;
     },
   },

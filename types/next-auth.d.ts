@@ -5,7 +5,6 @@ declare module "next-auth" {
   interface Session {
     orgId?: string | null;
     sessionId?: string;
-    mfaSatisfied?: boolean;
     user: {
       id: string;
       role: string;
@@ -38,8 +37,5 @@ declare module "next-auth/jwt" {
     image?: string | null;
     branchId?: number | null;
     sessionId?: string;
-    totpEnabled?: boolean;
-    mfaEnforced?: boolean;
-    mfaSatisfied?: boolean;
   }
 }

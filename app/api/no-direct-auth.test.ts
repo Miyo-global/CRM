@@ -3,13 +3,11 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 /**
- * Routes that call auth() directly skip the MFA, deactivation and
- * session-revocation checks that live in withAuth (QA-0006). Only the MFA
- * login step and the Google OAuth return leg may do so, and both verify the
- * identity themselves.
+ * Routes that call auth() directly skip the deactivation and
+ * session-revocation checks that live in withAuth (QA-0006). Only the Google
+ * OAuth return leg may do so, and it verifies the identity itself.
  */
 const ALLOWED = new Set([
-  "app/api/auth/mfa/login-verify/route.ts",
   "app/api/integrations/google/callback/route.ts",
 ]);
 

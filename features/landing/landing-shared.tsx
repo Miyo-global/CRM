@@ -59,6 +59,6 @@ export const stats = [
   { value: "Payroll", label: "Monthly, with payslips" },
   { value: "Attendance", label: "Daily, with leave" },
   { value: "Projects", label: "Sprints and tickets" },
-  { value: "MFA", label: "On every account" },
+  { value: "Audit logs", label: "On every change" },
 ];
 

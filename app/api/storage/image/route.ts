@@ -64,7 +64,7 @@ function isValidFileKey(key: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  // withAuth: MFA, deactivation and session-revocation checks (MIYO-0022).
+  // withAuth: deactivation and session-revocation checks (MIYO-0022).
   return withAuth(async (session) => {
     try {
       const key = req.nextUrl.searchParams.get("key");

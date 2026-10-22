@@ -9,7 +9,6 @@ import { z } from "zod";
 import { invalidateUserSession } from "@/lib/auth";
 
 const schema = z.object({
-  mfaEnforced: z.boolean().optional(),
   passwordExpiryDays: z.number().int().min(30).max(365).nullable().optional(),
   allowedEmailDomains: z.array(z.string().min(1)).optional(),
 });
@@ -21,11 +20,9 @@ export async function PATCH(req: NextRequest) {
     const body = await parseBody(req, schema);
 
     const updateData: {
-      mfaEnforced?: boolean;
       passwordExpiryDays?: number | null;
       allowedEmailDomains?: string[];
     } = {};
-    if (body.mfaEnforced !== undefined) updateData.mfaEnforced = body.mfaEnforced;
     if (body.passwordExpiryDays !== undefined) updateData.passwordExpiryDays = body.passwordExpiryDays;
     if (body.allowedEmailDomains !== undefined) updateData.allowedEmailDomains = body.allowedEmailDomains;
 

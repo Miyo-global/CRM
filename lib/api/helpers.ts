@@ -114,10 +114,6 @@ export async function withAuth<T>(
     return NextResponse.json({ error: "Unauthorized" } as T, { status: 401 });
   }
 
-  if ((session as { mfaSatisfied?: boolean }).mfaSatisfied === false) {
-    return NextResponse.json({ error: "MFA verification required", mfaRequired: true } as T, { status: 403 });
-  }
-
   let orgId: string | null | undefined = session.orgId;
   let branchId: number | null = (session as { branchId?: number | null }).branchId ?? null;
 

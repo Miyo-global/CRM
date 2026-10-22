@@ -48,9 +48,7 @@ describe("liveAuth (SEC-0007)", () => {
     expect(findSession).not.toHaveBeenCalled();
   });
 
-  it("rejects pending MFA and deactivated accounts", async () => {
-    authMock.mockResolvedValue(session({ mfaSatisfied: false }));
-    expect(await liveAuth()).toBeNull();
+  it("rejects deactivated accounts", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", isActive: false }, sessionId: "s1" });
     expect(await liveAuth()).toBeNull();
   });

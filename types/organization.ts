@@ -13,7 +13,6 @@ export interface OrgSettings {
   timezone: string | null;
   currency: string | null;
   fiscalYearStart: number | null;
-  mfaEnforced?: boolean;
   passwordExpiryDays?: number | null;
   allowedEmailDomains?: string[] | null;
   settings?: Record<string, unknown> | null;
@@ -36,7 +35,6 @@ export interface OrgMember {
   name: string | null;
   email: string;
   image: string | null;
-  totpEnabled?: boolean;
   hasDashboardAccess?: boolean;
 }
 

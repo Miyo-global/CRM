@@ -18,7 +18,6 @@ const updateSchema = z.object({
   currency: z.enum(["USD", "EUR", "INR", "GBP", "AED"]).optional(),
   fiscalYearStart: z.number().int().min(1).max(12).optional(),
   directoryPublic: z.boolean().optional(),
-  mfaEnforced: z.boolean().optional(),
   allowedEmailDomains: z.array(z.string().min(1)).optional(),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
   loginBgUrl: z.string().url().nullable().optional(),
@@ -113,7 +112,6 @@ export async function PATCH(req: NextRequest) {
         timezone?: string;
         currency?: string;
         fiscalYearStart?: number;
-        mfaEnforced?: boolean;
         allowedEmailDomains?: string[];
         settings?: Record<string, unknown>;
       } = {};
@@ -124,7 +122,6 @@ export async function PATCH(req: NextRequest) {
       if (input.currency !== undefined) updateData.currency = input.currency;
       if (input.fiscalYearStart !== undefined) updateData.fiscalYearStart = input.fiscalYearStart;
       if (input.logo !== undefined) updateData.logo = input.logo;
-      if (input.mfaEnforced !== undefined) updateData.mfaEnforced = input.mfaEnforced;
       if (input.allowedEmailDomains !== undefined) updateData.allowedEmailDomains = input.allowedEmailDomains;
 
       const hasSettingsUpdate =

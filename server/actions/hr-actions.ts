@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { users, organizationMembers, departments, branches } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-// Server actions check revocation, deactivation and MFA too (SEC-0007).
+// Server actions check revocation and deactivation too (SEC-0007).
 import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
 import { sendAccountDeactivationEmail } from "@/lib/email";
@@ -83,8 +83,6 @@ export async function getEmployeeById(userId: string) {
 
   const INTERNAL_FIELDS = [
     "password",
-    "totpSecret",
-    "totpEnabled",
     "googleRefreshToken",
     "googleEmail",
     "loginAttempts",

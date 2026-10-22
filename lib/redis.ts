@@ -2,8 +2,7 @@
  * Key store for session markers, short TTLs and rate helpers.
  *
  * With UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN set, this is a
- * shared Redis, which is what the MFA login marker, the TOTP replay guard,
- * session revocation and rate limits need to work across serverless isolates
+ * shared Redis, which is what session revocation and rate limits need to work across serverless isolates
  * (QA-0068). Without them it falls back to a process-local map, which is fine
  * for a single instance and for tests but is not shared.
  */

@@ -46,7 +46,6 @@ export type AuditAction =
   | "target.updated"
   | "target.deleted"
   | "security_settings.updated"
-  | "mfa.reset"
   | "deal.created"
   | "deal.updated"
   | "deal.deleted"

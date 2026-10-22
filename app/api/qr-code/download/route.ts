@@ -45,7 +45,7 @@ function sanitizeFilename(name: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  // withAuth, not auth(): it is the one place MFA, deactivation and session
+  // withAuth, not auth(): it is the one place deactivation and session
   // revocation are enforced (QA-0006).
   return withAuth(async (session) => {
   try {

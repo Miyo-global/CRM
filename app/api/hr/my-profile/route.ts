@@ -32,7 +32,7 @@ export async function GET() {
       where: eq(users.id, session.user.id),
     });
     if (!user) return err("User not found.", 404);
-    const { password, totpSecret, googleRefreshToken, ...profile } = user;
+    const { password, googleRefreshToken, ...profile } = user;
     return ok(profile);
   });
 }

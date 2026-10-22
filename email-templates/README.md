@@ -22,9 +22,6 @@ One `.html` (table layout, inline styles, gold/ink, logo, one CTA, footer, hidde
 | `auth-password-expiry` | Your password expires on {{expires_on}} | daily job when organizations.passwordExpiryDays is set (to be wired) | the user | getPasswordExpiryWarningEmailTemplate (no production caller) |
 | `auth-account-deactivated` | Your {{org_name}} account has been deactivated | HR deactivates a user / last working day | the user (personal email if available) | getAccountDeactivationEmailTemplate |
 | `auth-invitation` | {{inviter_name}} invited you to {{org_name}} | settings/members invite, project invite (invitations table) | the invitee | getInvitationEmailTemplate (lib/email-templates/organization.ts) |
-| `auth-mfa-enabled` | Two-step verification is on | MFA turned on | the user | NEW (no email today; app/api/auth/mfa/verify) |
-| `auth-mfa-disabled` | Two-step verification was turned off | MFA turned off by the user | the user | NEW (app/api/auth/mfa/disable) |
-| `auth-mfa-reset-by-admin` | Your two-step verification was reset | Admin resets a user's MFA | the user | NEW (app/api/auth/mfa/reset) |
 | `onboarding-welcome` | Your first day at {{org_name}}: {{joining_date}} | onboarding checklist started | the new hire | getOnboardingWelcomeEmailTemplate (notifications.ts) via Inngest initiate-onboarding |
 | `onboarding-tasks-assigned` | Onboarding task for {{employee_name}}: {{task_title}} | onboarding task assigned to HR/IT/manager | task owner | getOnboardingTaskEmailTemplate |
 | `onboarding-reminder` | {{pending_count}} onboarding tasks still open | POST /api/hr/onboarding/reminders | task owners | inline HTML in app/api/hr/onboarding/reminders/route.ts |

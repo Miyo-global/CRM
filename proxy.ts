@@ -219,35 +219,6 @@ export default async function proxy(req: NextRequest) {
 
   if (
     isAuthenticated &&
-    token?.mfaEnforced &&
-    !token?.totpEnabled &&
-    startsWithAny(pathname, PROTECTED_ROUTES) &&
-    !pathname.startsWith("/settings") &&
-    !pathname.startsWith("/onboarding") &&
-    !pathname.startsWith("/api/auth/") &&
-    !pathname.startsWith("/api/auth/mfa/")
-  ) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/settings";
-    url.search = "?tab=security&mfa=required";
-    return NextResponse.redirect(url);
-  }
-
-  if (
-    isAuthenticated &&
-    token?.totpEnabled &&
-    token?.mfaSatisfied !== true &&
-    startsWithAny(pathname, PROTECTED_ROUTES) &&
-    !pathname.startsWith("/mfa")
-  ) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/mfa";
-    url.search = `?callbackUrl=${encodeURIComponent(pathname)}`;
-    return NextResponse.redirect(url);
-  }
-
-  if (
-    isAuthenticated &&
     token?.orgId === null &&
     startsWithAny(pathname, PROTECTED_ROUTES) &&
     !pathname.startsWith("/onboarding")

@@ -2,9 +2,8 @@
  * Upstash Redis over its REST API, used when credentials are configured.
  *
  * The shared store matters for anything that must hold across serverless
- * isolates: the MFA login marker, the TOTP replay guard, session-revocation
- * flags and rate limits were all process-local, so on more than one instance
- * MFA could loop and "log out everywhere" was unreliable (QA-0068).
+ * isolates: session-revocation flags and rate limits were process-local, so
+ * on more than one instance "log out everywhere" was unreliable (QA-0068).
  *
  * Plain fetch, so no extra dependency.
  */

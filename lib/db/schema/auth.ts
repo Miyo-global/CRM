@@ -21,7 +21,6 @@ export const organizations = pgTable("organizations", {
   settings: jsonb("settings").$type<Record<string, unknown>>(),
   billingEmail: text("billing_email"),
   address: jsonb("address").$type<{ line1?: string; line2?: string; city?: string; state?: string; country?: string; postalCode?: string }>(),
-  mfaEnforced: boolean("mfa_enforced").default(false).notNull(),
   allowedEmailDomains: text("allowed_email_domains").array().default([]),
   passwordExpiryDays: integer("password_expiry_days"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -90,8 +89,6 @@ export const users = pgTable("users", {
     phone: string;
     email?: string;
   }>(),
-  totpSecret: text("totp_secret"),
-  totpEnabled: boolean("totp_enabled").default(false).notNull(),
   passwordChangedAt: timestamp("password_changed_at"),
   googleRefreshToken: encryptedText("google_refresh_token"),
   googleEmail: text("google_email"),
@@ -195,16 +192,6 @@ export const apiKeys = pgTable("api_keys", {
 }, (table) => [
   index("idx_api_keys_org_active").on(table.orgId, table.isRevoked),
   uniqueIndex("idx_api_keys_key_prefix").on(table.keyPrefix),
-]);
-
-export const mfaBackupCodes = pgTable("mfa_backup_codes", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  codeHash: text("code_hash").notNull(),
-  usedAt: timestamp("used_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-  index("idx_mfa_backup_codes_user").on(table.userId),
 ]);
 
 export const passwordHistory = pgTable("password_history", {
@@ -359,6 +346,3 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   creator: one(users, { fields: [apiKeys.createdBy], references: [users.id] }),
 }));
 
-export const mfaBackupCodesRelations = relations(mfaBackupCodes, ({ one }) => ({
-  user: one(users, { fields: [mfaBackupCodes.userId], references: [users.id] }),
-}));

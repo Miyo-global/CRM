@@ -9,7 +9,6 @@ export * from "./rbac";
 export * from "./roles";
 export * from "./support";
 export * from "./audit-log";
-export * from "./mfa";
 export * from "./calendar";
 export * from "./ai";
 export * from "./tasks";

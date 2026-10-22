@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { SettingsProfile } from "@/features/settings/settings-profile";
 import { SettingsSecurity } from "@/features/settings/settings-security";
 import { SettingsPreferences } from "@/features/settings/settings-preferences";
-import { MfaSettings } from "@/components/settings/mfa-settings";
 import { SettingsIndexLinks } from "../settings-index-links";
 
 const SECTIONS = [
@@ -64,10 +63,7 @@ export default function SettingsPage() {
 
         <section id="security" className="scroll-mt-24">
           <SectionHeading title="Security" description="Change your password and manage account security." />
-          <div className="space-y-4">
-            <SettingsSecurity />
-            <MfaSettings />
-          </div>
+          <SettingsSecurity />
         </section>
       </div>
     </PageWrapper>

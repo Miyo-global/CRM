@@ -11,9 +11,6 @@ export {
   sendPasswordExpiryWarningEmail,
   sendAccountDeactivationEmail,
   sendInvitationEmail,
-  sendMfaEnabledEmail,
-  sendMfaDisabledEmail,
-  sendMfaResetByAdminEmail,
 } from "./email/auth";
 export { sendLeaveCancellationEmail } from "./email/hr-leaves";
 export { sendWeeklyAttendanceReportEmail } from "./email/hr-reports";

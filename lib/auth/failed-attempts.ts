@@ -12,9 +12,6 @@ export {
 
 /**
  * Records one failed attempt and returns the state after it.
- *
- * Password sign-in and MFA verification share this counter, so unlimited MFA
- * code guessing is no longer possible (QA-0038).
  */
 export async function recordFailedAttempt(
   userId: string,

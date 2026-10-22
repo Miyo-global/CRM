@@ -50,13 +50,12 @@ export async function sessionRevocationState(
 
 /**
  * auth() for server actions: null unless the session is signed in, active,
- * past step-up MFA and not revoked. Server actions used plain auth(), which
+ * and not revoked. Server actions used plain auth(), which
  * only verifies the JWT, so a revoked session kept working until it expired.
  */
 export async function liveAuth(): Promise<Session | null> {
   const session = (await auth()) as Session | null;
   if (!session?.user?.id) return null;
-  if ((session as { mfaSatisfied?: boolean }).mfaSatisfied === false) return null;
   if (session.user.isActive === false) return null;
   return (await sessionRevocationState(session)) === "live" ? session : null;
 }

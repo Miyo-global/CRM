@@ -44,7 +44,6 @@ export default function OrganizationSettingsPage() {
   const [ipInput, setIpInput] = useState("");
   const [ipAllowlistInitialized, setIpAllowlistInitialized] = useState(false);
 
-  const [mfaEnforced, setMfaEnforced] = useState(false);
   const [passwordExpiryDays, setPasswordExpiryDays] = useState<string>("");
   const [allowedEmailDomains, setAllowedEmailDomains] = useState<string[]>([]);
   const [domainInput, setDomainInput] = useState("");
@@ -59,7 +58,6 @@ export default function OrganizationSettingsPage() {
 
   const initSecurity = useCallback(() => {
     if (!securityInitialized && org) {
-      setMfaEnforced(org.mfaEnforced ?? false);
       setPasswordExpiryDays(String(org.passwordExpiryDays ?? ""));
       setAllowedEmailDomains(org.allowedEmailDomains ?? []);
       setSecurityInitialized(true);
@@ -217,13 +215,13 @@ export default function OrganizationSettingsPage() {
       return;
     }
     updateSecurity(
-      { mfaEnforced, passwordExpiryDays: expiryDaysNum, allowedEmailDomains },
+      { passwordExpiryDays: expiryDaysNum, allowedEmailDomains },
       {
         onSuccess: () => toast.success("Security settings saved"),
         onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to save security settings"),
       }
     );
-  }, [mfaEnforced, passwordExpiryDays, allowedEmailDomains, updateSecurity]);
+  }, [passwordExpiryDays, allowedEmailDomains, updateSecurity]);
 
   if (isLoading) {
     return (
@@ -579,23 +577,6 @@ export default function OrganizationSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                <div className="space-y-0.5">
-                  <Label htmlFor="mfa-enforced" className="text-sm font-medium">Require MFA for all members</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Members without MFA enabled will be redirected to set it up on their next login.
-                  </p>
-                </div>
-                <Switch
-                  id="mfa-enforced"
-                  checked={mfaEnforced}
-                  onCheckedChange={setMfaEnforced}
-                  aria-label="Require MFA for all members"
-                />
-              </div>
-
-              <Separator />
-
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />

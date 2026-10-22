@@ -194,7 +194,7 @@ export const useUpdateOrgSecuritySettings = () => {
   return useMutation<
     { success: boolean },
     Error,
-    { mfaEnforced?: boolean; passwordExpiryDays?: number | null; allowedEmailDomains?: string[] }
+    { passwordExpiryDays?: number | null; allowedEmailDomains?: string[] }
   >({
     mutationFn: (data) =>
       apiClient.patch<{ success: boolean }>("/organization/security", data),
@@ -205,3 +205,14 @@ export const useUpdateOrgSecuritySettings = () => {
     },
   });
 };
+
+export function useResendInvitation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { invitationId: string }) =>
+      apiClient.post<{ success: boolean }>("/organization/invitations/resend", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.organization.invitations() });
+    },
+  });
+}

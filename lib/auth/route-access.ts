@@ -95,7 +95,7 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/timesheets/team": HR_TEAM,
   "/support": EVERYONE,
   "/support/inbox": EVERYONE,
-  // /settings itself is the personal account page (profile, security, MFA).
+  // /settings itself is the personal account page (profile, security).
   // Every admin settings page is listed explicitly; ADMIN_SETTINGS_PAGES
   // below is checked against app/(dashboard)/settings/* in the tests.
   "/settings": EVERYONE,

@@ -20,7 +20,7 @@ const whyPoints = [
   {
     icon: Shield,
     title: "Enterprise-grade security",
-    desc: "MFA, audit logs, role-based permissions, and end-to-end encryption.",
+    desc: "Audit logs, role-based permissions, and end-to-end encryption.",
   },
   {
     icon: Zap,

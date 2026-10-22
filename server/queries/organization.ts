@@ -43,7 +43,6 @@ export async function getOrgMembers(
         name: users.name,
         email: users.email,
         image: users.image,
-        totpEnabled: users.totpEnabled,
         hasDashboardAccess: users.hasDashboardAccess,
       })
       .from(organizationMembers)

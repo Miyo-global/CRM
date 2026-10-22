@@ -7,11 +7,11 @@ import {
   useCancelInvitation,
   useUpdateMemberRole,
   useSetPortalAccess,
+  useResendInvitation,
 } from "@/lib/api/hooks/organization";
 import { useRolesList } from "@/lib/api/hooks/roles";
-import { useResetMfa, useResendInvitation } from "@/lib/api/hooks/mfa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -20,17 +20,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useState, useTransition, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -101,7 +90,6 @@ function MembersSettingsContent() {
 
   const currentUserRole = session?.user?.role;
   const currentUserId = session?.user?.id;
-  const canManageMfa = currentUserRole === "CEO" || currentUserRole === "HR";
   const roleOptions = useAssignableRoleOptions(currentUserRole);
 
   const updateParams = useCallback(
@@ -128,7 +116,6 @@ function MembersSettingsContent() {
   const cancelInvitation = useCancelInvitation();
   const updateRole = useUpdateMemberRole();
   const setPortalAccess = useSetPortalAccess();
-  const resetMfa = useResetMfa();
   const resendInvitation = useResendInvitation();
 
   const handleInvite = useCallback((e: React.FormEvent) => {
@@ -202,16 +189,6 @@ function MembersSettingsContent() {
       }
     );
   }, [setPortalAccess]);
-
-  const handleResetMfa = useCallback((userId: string) => {
-    resetMfa.mutate(
-      { userId },
-      {
-        onSuccess: () => toast.success("MFA reset successfully"),
-        onError: (err) => toast.error(getErrorMessage(err)),
-      }
-    );
-  }, [resetMfa]);
 
   const handleToggleInviteForm = useCallback(() => setShowInviteForm((v) => !v), []);
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setInviteEmail(e.target.value), []);
@@ -364,9 +341,6 @@ function MembersSettingsContent() {
                               onPortalAccess={handlePortalAccess}
                               actor={{ userId: currentUserId, role: currentUserRole }}
                               roleOptions={roleOptions}
-                              onResetMfa={handleResetMfa}
-                              canManageMfa={canManageMfa}
-                              isResettingMfa={resetMfa.isPending}
                             />
                           ))
                         )}
@@ -488,21 +462,16 @@ interface MemberTableRowProps {
     image?: string | null;
     role: string;
     joinedAt?: string | Date | null;
-    totpEnabled?: boolean;
     hasDashboardAccess?: boolean;
   };
   actor: { userId: string | undefined; role: string | undefined };
   roleOptions: RoleOption[];
   onUpdateRole: (userId: string, newRole: string, currentRole: string) => void;
   onPortalAccess: (userId: string, enabled: boolean) => void;
-  onResetMfa: (userId: string) => void;
-  canManageMfa: boolean;
-  isResettingMfa: boolean;
 }
 
-function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAccess, onResetMfa, canManageMfa, isResettingMfa }: MemberTableRowProps) {
+function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAccess }: MemberTableRowProps) {
   const handleRoleChange = useCallback((newRole: string) => onUpdateRole(member.userId, newRole, member.role), [member.userId, member.role, onUpdateRole]);
-  const handleResetMfa = useCallback(() => onResetMfa(member.userId), [member.userId, onResetMfa]);
   const portalOn = member.hasDashboardAccess !== false;
   const handlePortalAccess = useCallback(() => onPortalAccess(member.userId, !portalOn), [member.userId, portalOn, onPortalAccess]);
 
@@ -523,12 +492,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
             <AvatarImage src={resolveImageUrl(member.image)} />
             <AvatarFallback className="text-xs bg-brand-soft text-brand-text">{member.name?.charAt(0) || "?"}</AvatarFallback>
           </Avatar>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium">{member.name || "Unknown"}</span>
-            {member.totpEnabled && (
-              <Shield className="size-3.5 text-success-strong" aria-label="MFA enabled" />
-            )}
-          </div>
+          <span className="text-sm font-medium">{member.name || "Unknown"}</span>
         </div>
       </TableCell>
       <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
@@ -540,38 +504,6 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
       </TableCell>
       <TableCell pinned="right" className="px-5 text-right">
         <div className="flex items-center justify-end gap-2">
-          {canManageMfa && member.totpEnabled && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive hover:bg-danger-soft"
-                  disabled={isResettingMfa}
-                >
-                  <ShieldOff aria-hidden />
-                  Reset MFA
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Reset MFA for {member.name || member.email}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will disable two-factor authentication for this user. They will need to re-enable it to regain MFA protection.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className={buttonVariants({ variant: "destructive" })}
-                    onClick={handleResetMfa}
-                  >
-                    Reset MFA
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
           {canChangeRole && (
             <Select value={member.role} onValueChange={handleRoleChange}>
               <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>

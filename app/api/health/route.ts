@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     const redisResult = await redisHealth();
     checks.redis = {
       // A process-local store is a warning, not an error: it works on one
-      // instance but cannot back MFA markers or revocation across several
+      // instance but cannot back session revocation across several
       // (QA-0068).
       status:
         redisResult.status !== "healthy"

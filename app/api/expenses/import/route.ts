@@ -145,7 +145,7 @@ async function readRowsFromFile(file: File): Promise<ParsedImportRow[]> {
 }
 
 export async function POST(req: Request) {
-  // withAuth, not auth(): it is the one place MFA, deactivation and session
+  // withAuth, not auth(): it is the one place deactivation and session
   // revocation are enforced (QA-0006).
   return withAuth<unknown>(async (session) => {
   try {

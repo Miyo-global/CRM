@@ -30,11 +30,6 @@ describe("storage routes use withAuth (MIYO-0022)", () => {
     expect((await image.GET(req("image?key=o/org1/a.png"))).status).toBe(403);
   });
 
-  it("session that has not passed MFA gets 403", async () => {
-    authMock.mockResolvedValue({ user: { id: "u1", isActive: true }, orgId: "org1", mfaSatisfied: false });
-    expect((await download.GET(req("download?key=o/org1/a.pdf"))).status).toBe(403);
-  });
-
   it("active user in the key's org gets a signed URL", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", isActive: true }, orgId: "org1" });
     const res = await download.GET(req("download?key=o/org1/a.pdf"));

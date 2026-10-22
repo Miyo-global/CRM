@@ -17,7 +17,7 @@ const AVATAR_ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as c
 const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
-  // withAuth: MFA, deactivation and session-revocation checks (MIYO-0022).
+  // withAuth: deactivation and session-revocation checks (MIYO-0022).
   return withAuth<unknown>(async (session) => {
     try {
       if (!isStorageConfigured()) {

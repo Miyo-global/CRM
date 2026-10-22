@@ -42,7 +42,7 @@ const serverSchema = z.object({
 
   INNGEST_EVENT_KEY: z.string().optional(),
   INNGEST_SIGNING_KEY: z.string().optional(),
-  // A shared key store, needed for MFA markers, replay guards, session
+  // A shared key store, needed for session
   // revocation and rate limits on more than one instance (QA-0068).
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
