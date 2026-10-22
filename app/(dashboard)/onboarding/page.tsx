@@ -3,8 +3,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { fadeUp } from "@/lib/motion-variants";
 import { User, Landmark, FileText, ClipboardCheck, Check } from "lucide-react";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { PersonalInfoTab } from "@/features/onboarding/personal-info-tab";
@@ -13,7 +11,6 @@ import { DocumentsTab } from "@/features/onboarding/documents-tab";
 import { ReviewTab } from "@/features/onboarding/review-tab";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { cn } from "@/lib/utils";
-import type { Variants } from "framer-motion";
 
 export const STEP_IDS = {
   PERSONAL: "personal",
@@ -48,7 +45,6 @@ export const ONBOARDING_STEPS = [...DATA_STEPS, REVIEW_STEP];
 
 type FormValues = Record<string, string | undefined>;
 
-const fadeUpVariants = fadeUp as Variants;
 
 export default function OnboardingPage() {
   const [activeTab, setActiveTab] = useState<StepId>(STEP_IDS.PERSONAL);
@@ -120,10 +116,7 @@ export default function OnboardingPage() {
         {`Step ${currentStepIndex + 1} of ${ONBOARDING_STEPS.length}: ${ONBOARDING_STEPS[currentStepIndex]?.label}`}
       </div>
 
-      <motion.div
-        variants={fadeUpVariants}
-        initial="hidden"
-        animate="visible"
+      <div
         className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[220px_1fr]"
       >
         <nav aria-label="Onboarding steps" className="lg:sticky lg:top-6 lg:self-start">
@@ -221,7 +214,7 @@ export default function OnboardingPage() {
             </Tabs>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </PageWrapper>
   );
 }
