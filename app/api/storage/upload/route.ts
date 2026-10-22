@@ -27,7 +27,12 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const formData = await req.formData();
+      // A body that is not multipart form data is the caller's mistake, not
+      // a server error (V5-ARCH-014).
+      const formData = await req.formData().catch(() => null);
+      if (!formData) {
+        return NextResponse.json({ error: "Send the file as multipart/form-data" }, { status: 400 });
+      }
       const file = formData.get("file");
       const rawFolder = (formData.get("folder") as string) || "uploads";
       const folder = rawFolder.replace(/[^a-zA-Z0-9_-]/g, "-");
