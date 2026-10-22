@@ -21,7 +21,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <Image src="/logo.svg" alt="Miyo Global" width={32} height={32} className="size-8" />
             <span className="font-display text-base font-bold tracking-tight text-foreground">
               Miyo Global
-              <span className="ml-1 font-sans text-xs font-medium text-muted-foreground">CRM</span>
             </span>
           </Link>
         </header>

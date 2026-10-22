@@ -152,8 +152,10 @@ export function AppSidebar({
   const { data: notifData } = useUnreadNotificationCount();
   const unreadNotifCount = notifData?.count ?? 0;
 
+  // Prefix the unread count onto the page's own title instead of replacing
+  // every title with the product name.
   useEffect(() => {
-    const base = "Miyo Global CRM";
+    const base = document.title.replace(/^\(\d+\+?\) /, "");
     const total = unreadNotifCount;
     document.title = total > 0 ? `(${total > 99 ? "99+" : total}) ${base}` : base;
   }, [unreadNotifCount]);

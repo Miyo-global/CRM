@@ -48,17 +48,18 @@ function resolveMetadataBase(): URL {
 }
 
 export const metadata: Metadata = {
+  // HR and projects, not a sales CRM (MIYO-0302, R3-0029).
   title: {
-    default: "Miyo Global CRM",
-    template: "%s | Miyo Global CRM",
+    default: "Miyo Global",
+    template: "%s | Miyo Global",
   },
-  description: "Advanced HR, Project Management, and CRM platform for modern teams.",
+  description: "Payroll, attendance, leave and onboarding alongside project tracking, in one internal workspace.",
   metadataBase: resolveMetadataBase(),
   openGraph: {
     type: "website",
-    siteName: "Miyo Global CRM",
-    title: "Miyo Global CRM",
-    description: "Advanced HR, Project Management, and CRM platform for modern teams.",
+    siteName: "Miyo Global",
+    title: "Miyo Global",
+    description: "Payroll, attendance, leave and onboarding alongside project tracking, in one internal workspace.",
   },
   robots: {
     index: true,
