@@ -9,7 +9,7 @@ export default function DashboardNotFound() {
       </p>
       <Link
         href="/dashboard"
-        className="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
+        className="mt-4 inline-block text-sm font-medium text-foreground underline underline-offset-4 hover:text-brand-text"
       >
         Go to dashboard
       </Link>

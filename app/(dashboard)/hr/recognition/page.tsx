@@ -48,10 +48,10 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const CATEGORY_DEFS: { value: string; label: string; icon: typeof Heart; tone: Tone }[] = [
-  { value: "KUDOS", label: "Kudos", icon: Heart, tone: "plum" },
+  { value: "KUDOS", label: "Kudos", icon: Heart, tone: "brand" },
   { value: "TEAMWORK", label: "Teamwork", icon: Users, tone: "info" },
   { value: "INNOVATION", label: "Innovation", icon: Lightbulb, tone: "warning" },
-  { value: "LEADERSHIP", label: "Leadership", icon: Award, tone: "brand" },
+  { value: "LEADERSHIP", label: "Leadership", icon: Award, tone: "neutral" },
   { value: "ABOVE_AND_BEYOND", label: "Above & Beyond", icon: Zap, tone: "success" },
 ];
 const CATEGORIES = CATEGORY_DEFS.map((c) => ({ ...c, color: toneText[c.tone], bg: toneSoft[c.tone], bar: toneBar[c.tone] }));
@@ -448,7 +448,7 @@ export default function RecognitionPage() {
   }
 
   const summaryCards = [
-    { label: "Total Kudos", value: stats.total, icon: Heart, tone: "plum" as const },
+    { label: "Total Kudos", value: stats.total, icon: Heart, tone: "brand" as const },
     { label: "This Month", value: stats.thisMonth, icon: TrendingUp, tone: "success" as const },
     { label: "People Recognized", value: stats.topRecognized.length, icon: Users, tone: "info" as const },
     {
@@ -507,7 +507,7 @@ export default function RecognitionPage() {
                                 <AvatarFallback className="bg-brand-soft text-3xs text-brand-soft-foreground">{person.name?.[0] ?? "?"}</AvatarFallback>
                               </Avatar>
                               <span className="flex-1 truncate text-sm">{person.name ?? "Teammate"}</span>
-                              <Badge variant="plum" className="shrink-0 tabular-nums">
+                              <Badge className="shrink-0 tabular-nums">
                                 <Heart className="fill-current" aria-hidden="true" />
                                 {person.count}
                               </Badge>
