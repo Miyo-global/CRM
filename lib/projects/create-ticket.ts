@@ -7,6 +7,7 @@ import { createNotification } from "@/server/actions/create-notification";
 import { logger } from "@/lib/logger";
 import { recordTicketActivity } from "@/lib/projects/record-ticket-activity";
 import { ticketTitleSchema } from "@/lib/validations/project";
+import { afterResponse } from "@/lib/after-response";
 
 export const createTicketSchema = z.object({
   title: ticketTitleSchema,
@@ -117,9 +118,7 @@ export async function createTicket(ctx: CreateContext, input: CreateTicketInput)
   );
 
   if (ctx.notify !== false) {
-    void notifyNewTicket(ctx, input, created, assigneeIds).catch((error) =>
-      logger.error("Failed to send new ticket notifications", { error }),
-    );
+    afterResponse("projects/create-ticket", () => notifyNewTicket(ctx, input, created, assigneeIds));
   }
 
   return created;

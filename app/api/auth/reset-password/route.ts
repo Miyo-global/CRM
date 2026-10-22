@@ -10,6 +10,7 @@ import { sendPasswordChangeConfirmationEmail } from "@/lib/email";
 import { revokeAllUserSessions } from "@/lib/auth";
 import { hashToken } from "@/lib/secret-crypto";
 import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { afterResponse } from "@/lib/after-response";
 
 const schema = z.object({
   token: z.string(),
@@ -73,10 +74,10 @@ export async function POST(req: NextRequest) {
     where: eq(users.email, tokenRecord.email),
     columns: { name: true },
   });
-  void sendPasswordChangeConfirmationEmail(
+  afterResponse("auth/reset-password", () => sendPasswordChangeConfirmationEmail(
     tokenRecord.email,
     user?.name ?? "User"
-  ).catch(() => {});
+  ));
 
   return ok({ success: true });
 }

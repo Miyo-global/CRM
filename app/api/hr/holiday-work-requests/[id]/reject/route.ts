@@ -50,13 +50,13 @@ export async function PATCH(
       .where(eq(holidayWorkRequests.id, requestId))
       .returning();
 
-    void createNotification({
+    afterResponse("hr/holiday-work-requests/[id]/reject", () => createNotification({
       userId: request.userId,
       orgId: session.orgId,
       title: "Holiday work request rejected",
       message: `Your request to work on ${request.requestDate} was rejected. Reason: ${body.rejectionReason}`,
       link: "/hr/attendance",
-    }).catch(() => {});
+    }));
 
     // MIYO-0241: tell them by email too, not only in the app.
     afterResponse("hr/holiday-work-requests/[id]/reject", async () => {

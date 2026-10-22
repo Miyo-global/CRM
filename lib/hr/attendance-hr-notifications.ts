@@ -1,6 +1,7 @@
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { DEFAULT_LOCALE, DEFAULT_TIMEZONE } from "@/lib/constants/locale";
+import { afterResponse } from "@/lib/after-response";
 
 const IST = DEFAULT_TIMEZONE;
 
@@ -38,7 +39,7 @@ export function notifyHrEmployeeCheckIn(params: {
 
   // In-app only: HR was getting an email for every single check-in (A35).
   // The weekly attendance report covers the summary.
-  void notifyByRoles(params.orgId, [ROLES.HR], {
+  afterResponse("hr/attendance-hr-notifications", () => notifyByRoles(params.orgId, [ROLES.HR], {
     email: false,
     type: "INFO",
     title: "Attendance — check-in",
@@ -52,7 +53,7 @@ export function notifyHrEmployeeCheckIn(params: {
       isOrgHoliday: params.isOrgHoliday,
       isSunday: params.isSunday,
     },
-  }).catch(() => {});
+  }));
 }
 
 export function notifyHrEmployeeCheckOut(params: {
@@ -66,7 +67,7 @@ export function notifyHrEmployeeCheckOut(params: {
   const who = employeeLabel(params.employeeName, params.employeeEmail);
   const when = formatIst(params.at);
 
-  void notifyByRoles(params.orgId, [ROLES.HR], {
+  afterResponse("hr/attendance-hr-notifications", () => notifyByRoles(params.orgId, [ROLES.HR], {
     email: false,
     type: "INFO",
     title: "Attendance — check-out",
@@ -78,5 +79,5 @@ export function notifyHrEmployeeCheckOut(params: {
       date: params.date,
       at: params.at.toISOString(),
     },
-  }).catch(() => {});
+  }));
 }

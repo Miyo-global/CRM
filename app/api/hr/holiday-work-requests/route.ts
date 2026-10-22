@@ -11,6 +11,7 @@ import { resolveHolidayWorkRequestType } from "@/lib/hr/holiday-work-request-typ
 import { getTodayString } from "@/lib/date-utils";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
 
 const submitSchema = z.object({
   requestDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -96,12 +97,12 @@ export async function POST(req: NextRequest) {
     const dayLabel =
       type === "HOLIDAY" ? `holiday — ${holiday?.name ?? "holiday"}` : type === "SUNDAY" ? "Sunday" : "Saturday";
 
-    void notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
+    afterResponse("hr/holiday-work-requests", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       title: "Holiday work request submitted",
       message: `${session.user.name ?? session.user.email} requested to work on ${dayLabel} on ${body.requestDate}. Preference: ${body.compensationPreference.replace("_", " ")}.`,
       link: "/hr/attendance",
       metadata: { requestId: request.id, userId: session.user.id },
-    }).catch(() => {});
+    }));
 
     void emailHrAboutHolidayWorkRequest({
       orgId: session.orgId,

@@ -24,6 +24,7 @@ import { logger } from "@/lib/logger";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
+import { afterResponse } from "@/lib/after-response";
 
 export async function POST(req: NextRequest) {
   return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
@@ -200,14 +201,14 @@ export async function POST(req: NextRequest) {
 
     await invalidateHrDashboardCache(session.orgId);
 
-    void notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
+    afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       type: "SUCCESS",
       title: "New Employee Onboarded",
       message: `${body.firstName} ${body.lastName} (${body.designation}) has been onboarded${body.joiningDate ? `, joining ${formatDateOnly(body.joiningDate)}` : ""}.`,
       link: `/hr/employees/${newUser.id}`,
       metadata: { employeeId: newUser.id },
       excludeUserId: session.user.id,
-    }).catch(() => {});
+    }));
 
     // Start the checklist straight away, so a successful hire always shows in
     // Onboarding › Progress (A21). A failure here must not fail the hire.

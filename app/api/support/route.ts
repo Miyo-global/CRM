@@ -150,14 +150,14 @@ export async function POST(req: NextRequest) {
       if (creatorRole !== "CEO" && creatorRole !== "ADMIN") {
         notifyRoles.push(ROLES.CEO, ROLES.HR);
       }
-      void notifyByRoles(session.orgId, notifyRoles, {
+      afterResponse("support", () => notifyByRoles(session.orgId, notifyRoles, {
         type: "INFO",
         title: "New Support Ticket",
         message: `${session.user.name ?? "A user"} raised a ${input.priority} ${input.category} ticket: "${input.title}".`,
         link: "/support",
         metadata: { ticketId: ticket.id },
         excludeUserId: session.user.id,
-      }).catch(() => {});
+      }));
 
       return ok(ticket, 201);
     } catch (error) {

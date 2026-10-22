@@ -8,6 +8,7 @@ import { computePayroll } from "@/lib/payroll/compute";
 import { payrollRowValues } from "@/lib/payroll/to-row";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
+import { afterResponse } from "@/lib/after-response";
 
 export interface GeneratePayrollForOrgOptions {
   orgId: string;
@@ -86,12 +87,12 @@ export async function generatePayrollForOrg(
 
   // MIYO-0125: an EMI that net pay could not cover used to vanish quietly.
   if (emiSkippedFor.length > 0) {
-    void notifyByRoles(orgId, [ROLES.CEO, ROLES.HR], {
+    afterResponse("hr/generate-payroll-for-org", () => notifyByRoles(orgId, [ROLES.CEO, ROLES.HR], {
       type: "WARNING",
       title: "Loan EMI not recovered",
       message: `${emiSkippedFor.length} payslip${emiSkippedFor.length === 1 ? "" : "s"} for ${month} could not cover the loan EMI, so it was not deducted. The loan schedule is unchanged.`,
       link: "/hr/loans",
-    });
+    }));
   }
 
   if (newPayrolls.length === 0) return { generated: 0, payrollIds: [] };

@@ -20,6 +20,7 @@ import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { notifyTicketUpdate } from "@/lib/projects/ticket-update-notifications";
 import { ticketConflict, ticketResponseColumns, userColumns } from "@/lib/projects/ticket-columns";
 import { ticketTitleSchema } from "@/lib/validations/project";
+import { afterResponse } from "@/lib/after-response";
 
 const updateTicketSchema = z.object({
   title: ticketTitleSchema.optional(),
@@ -180,7 +181,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       ),
     );
 
-    void notifyTicketUpdate({
+    afterResponse("projects/[projectId]/tickets/[ticketId]", () => notifyTicketUpdate({
       orgId: session.orgId,
       ticketId: id,
       actorId: session.user.id,
@@ -188,7 +189,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       assigneeId: body.assigneeId,
       assigneeIds: body.assigneeIds,
       status: body.status,
-    }).catch(() => {});
+    }));
 
     return ok({ success: true, ticket: after });
   });

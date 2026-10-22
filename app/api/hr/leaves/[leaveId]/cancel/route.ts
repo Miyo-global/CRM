@@ -55,14 +55,14 @@ async function cancelApprovedLeave(session: AuthSession, existing: LeaveRow) {
     metadata: { previousStatus: "APPROVED", employeeId: existing.userId },
   });
 
-  void createNotification({
+  afterResponse("hr/leaves/[leaveId]/cancel", () => createNotification({
     orgId: session.orgId,
     userId: existing.userId,
     type: "WARNING",
     title: "Approved leave cancelled",
     message: `Your approved leave from ${existing.startDate} to ${existing.endDate} was cancelled by ${session.user.name ?? "an approver"}. The days are back in your balance.`,
     link: "/hr/leaves",
-  }).catch(() => {});
+  }));
 
   return ok({ success: true });
 }

@@ -46,13 +46,13 @@ export async function PATCH(
 
     const compensation = request.compensationPreference.replace(/_/g, " ").toLowerCase();
 
-    void createNotification({
+    afterResponse("hr/holiday-work-requests/[id]/approve", () => createNotification({
       userId: request.userId,
       orgId: session.orgId,
       title: "Holiday work request approved",
       message: `Your request to work on ${request.requestDate} has been approved. Compensation: ${compensation}.`,
       link: "/hr/attendance",
-    }).catch(() => {});
+    }));
 
     // MIYO-0241: tell them by email too, not only in the app.
     afterResponse("hr/holiday-work-requests/[id]/approve", async () => {

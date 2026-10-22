@@ -15,6 +15,7 @@ import {
   getTomorrowDateString,
   isHolidayTomorrow,
 } from "@/lib/hr/holiday-reminders";
+import { afterResponse } from "@/lib/after-response";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -48,7 +49,7 @@ export async function addHoliday(data: {
       .returning({ id: holidays.id });
 
     // MIYO-0146: a holiday added after the day's run still gets its reminder.
-    void sendHolidayReminderIfDue(created.id).catch(() => {});
+    afterResponse("holiday-actions", () => sendHolidayReminderIfDue(created.id));
 
     revalidatePath("/settings");
     return { success: true };
@@ -208,7 +209,7 @@ export async function bulkAddHolidays(holidayList: Array<{
 
     // MIYO-0146: same for an import that lands after the day's run.
     for (const row of created) {
-      void sendHolidayReminderIfDue(row.id).catch(() => {});
+      afterResponse("holiday-actions", () => sendHolidayReminderIfDue(row.id));
     }
 
     revalidatePath("/settings");

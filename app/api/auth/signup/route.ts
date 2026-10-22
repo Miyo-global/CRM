@@ -13,6 +13,7 @@ import { addDays } from "date-fns";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { zodErrorMessage } from "@/lib/api/zod-message";
 import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { afterResponse } from "@/lib/after-response";
 
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    void sendVerificationEmail(normalizedEmail, verificationToken).catch(() => {});
+    afterResponse("auth/signup", () => sendVerificationEmail(normalizedEmail, verificationToken));
 
     void createAuditLog({
       action: "user.signup",

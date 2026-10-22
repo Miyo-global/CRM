@@ -6,6 +6,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createNotification } from "@/server/actions/create-notification";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
 
 const logWarningSchema = z.object({
   userId: z.string(),
@@ -73,13 +74,13 @@ export async function POST(req: NextRequest) {
       notedBy: session.user.id,
     }).returning();
 
-    void createNotification({
+    afterResponse("hr/late-arrival-warnings", () => createNotification({
       userId: body.userId,
       orgId: session.orgId,
       title: `Late arrival warning #${warningNumber}`,
       message: `A late arrival warning has been logged for ${body.date}. (Warning ${warningNumber} — no deduction applied)`,
       link: "/hr/attendance",
-    }).catch(() => {});
+    }));
 
     return ok(warning);
   });

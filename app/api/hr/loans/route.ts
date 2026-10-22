@@ -9,6 +9,7 @@ import { ROLES } from "@/lib/constants/roles";
 import type { NextRequest } from "next/server";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
+import { afterResponse } from "@/lib/after-response";
 
 const MAX_LOAN_AMOUNT = 10_000_000;
 
@@ -54,14 +55,14 @@ export async function POST(req: NextRequest) {
       status: "PENDING",
     }).returning();
 
-    void notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
+    afterResponse("hr/loans", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       type: "INFO",
       title: "Salary Loan Request",
       message: `${session.user.name ?? "An employee"} requested a salary loan of ${CURRENCY_SYMBOL}${body.amount.toLocaleString(DEFAULT_LOCALE)}.`,
       link: "/hr/loans",
       metadata: { loanId: loan.id },
       excludeUserId: session.user.id,
-    }).catch(() => {});
+    }));
 
     return ok(loan, 201);
   });

@@ -9,6 +9,7 @@ import type { NextRequest } from "next/server";
 import { createHolidaySchema } from "@/lib/validations/holidays";
 import { sendHolidayReminderIfDue } from "@/server/actions/holiday-actions";
 import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
+import { afterResponse } from "@/lib/after-response";
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    void sendHolidayReminderIfDue(holiday.id).catch(() => {});
+    afterResponse("hr/holidays", () => sendHolidayReminderIfDue(holiday.id));
 
     return ok({ success: true, holiday });
   });

@@ -13,6 +13,7 @@ import { HOLIDAY_WORK_FULL_DAY_HOURS } from "@/lib/hr/payroll-calculations";
 import { createNotification } from "@/server/actions/create-notification";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
 
 const grantSchema = z.object({
   holidayWorkRequestId: z.number().int().positive(),
@@ -138,13 +139,13 @@ export async function POST(req: NextRequest) {
       return [g];
     });
 
-    void createNotification({
+    afterResponse("hr/comp-off-grants", () => createNotification({
       userId: hwr.userId,
       orgId: session.orgId,
       title: "Comp-off granted",
       message: `${body.grantedDays} comp-off day(s) granted for working on ${hwr.requestDate}. Valid until ${expiryStr}.`,
       link: "/hr/leaves",
-    }).catch(() => {});
+    }));
 
     return ok(grant);
   });

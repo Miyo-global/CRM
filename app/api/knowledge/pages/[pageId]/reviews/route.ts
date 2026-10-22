@@ -10,6 +10,7 @@ import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
 import { sendNotification } from "@/lib/notifications/send";
 import { pageHref } from "@/lib/knowledge/routes";
+import { afterResponse } from "@/lib/after-response";
 
 const createSchema = z
   .object({
@@ -64,17 +65,18 @@ export async function POST(req: NextRequest, context: { params: Promise<{ pageId
           .where(and(eq(kbPages.id, id), eq(kbPages.orgId, session.orgId)));
       }
 
-      if (body.reviewerId) {
-        void sendNotification({
+      const reviewerId = body.reviewerId;
+      if (reviewerId) {
+        afterResponse("knowledge/pages/[pageId]/reviews", () => sendNotification({
           orgId: session.orgId,
-          userId: body.reviewerId,
+          userId: reviewerId,
           type: "INFO",
           title: "A page is waiting for your review",
           message: "You were asked to review a Knowledge Base page.",
           link: pageHref(id),
           channel: "both",
           metadata: { pageId: id, kind: "knowledge.page.review_requested" },
-        });
+        }));
       }
 
       return ok(created, 201);
