@@ -30,6 +30,7 @@ const WITH_RELATIONS = {
       name: true as const,
       firstName: true as const,
       lastName: true as const,
+      isActive: true as const,
     },
   },
 };

@@ -43,16 +43,25 @@ export async function canApproveLeaveRequest(
   }
 
   const role = await resolveLeaveApproverRole(session);
-  const requester = await db.query.users.findFirst({
-    where: eq(users.id, request.userId),
-    columns: { id: true, role: true, reportingTo: true },
-  });
+  const [requester, approver] = await Promise.all([
+    db.query.users.findFirst({
+      where: eq(users.id, request.userId),
+      columns: { id: true, role: true, reportingTo: true },
+    }),
+    request.approverId
+      ? db.query.users.findFirst({
+          where: eq(users.id, request.approverId),
+          columns: { isActive: true },
+        })
+      : undefined,
+  ]);
 
   const allowed = canActOnLeave(
     { id: session.user.id, role },
     {
       status: request.status ?? "PENDING",
       approverId: request.approverId ?? null,
+      approver: approver ?? null,
       user: requester ?? { id: request.userId },
     },
   );

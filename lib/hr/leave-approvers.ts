@@ -42,6 +42,8 @@ export interface LeaveViewer {
 export interface LeaveRequestForApproval {
   status?: string | null;
   approverId?: string | null;
+  /** A deactivated named approver no longer owns the request (V5-0002). */
+  approver?: { isActive?: boolean | null } | null;
   user?: { id?: string | null; role?: string | null; reportingTo?: string | null } | null;
 }
 
@@ -55,11 +57,14 @@ export function canActOnLeave(viewer: LeaveViewer, request: LeaveRequestForAppro
   if (!viewer.id || !viewer.role) return false;
   if (request.user?.id && request.user.id === viewer.id) return false;
 
-  // A named approver owns the request.
-  if (request.approverId) return request.approverId === viewer.id;
-
-  // The requester's own manager can always act.
+  // The requester's own manager can always act, even when the request was
+  // routed to someone else (V5-0003).
   if (request.user?.reportingTo && request.user.reportingTo === viewer.id) return true;
+
+  // A named approver owns the request while they are still active.
+  if (request.approverId && request.approver?.isActive !== false) {
+    return request.approverId === viewer.id;
+  }
 
   return leaveApproverRolesFor(request.user?.role).includes(viewer.role);
 }

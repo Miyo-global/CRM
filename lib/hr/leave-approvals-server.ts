@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { leaveRequests, organizationMembers, users } from "@/lib/db/schema";
 import { and, eq, ne } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { ROLES } from "@/lib/constants/roles";
 import {
   autoApprovesUnroutedLeave,
@@ -11,6 +12,8 @@ import {
   type LeaveViewer,
 } from "./leave-approvers";
 import { resolveLeaveApprovers } from "./leave-approver-chain";
+
+const approvers = alias(users, "approver");
 
 /** Pending requests the viewer may act on, with just the fields the rule needs. */
 export async function listPendingLeaveApprovals(orgId: string, viewer: LeaveViewer) {
@@ -24,15 +27,18 @@ export async function listPendingLeaveApprovals(orgId: string, viewer: LeaveView
       userId: leaveRequests.userId,
       requesterRole: users.role,
       requesterReportsTo: users.reportingTo,
+      approverActive: approvers.isActive,
     })
     .from(leaveRequests)
     .leftJoin(users, eq(users.id, leaveRequests.userId))
+    .leftJoin(approvers, eq(approvers.id, leaveRequests.approverId))
     .where(and(eq(leaveRequests.orgId, orgId), eq(leaveRequests.status, "PENDING")));
 
   return rows.filter((row) =>
     canActOnLeave(viewer, {
       status: row.status,
       approverId: row.approverId,
+      approver: { isActive: row.approverActive },
       user: { id: row.userId, role: row.requesterRole, reportingTo: row.requesterReportsTo },
     }),
   );
@@ -61,8 +67,14 @@ export async function resolveLeaveApprover(
   orgId: string,
   requester: { id: string; role: string | null | undefined; reportingTo?: string | null },
 ): Promise<ResolvedLeaveApprover> {
+  // A deactivated manager is skipped: the request would sit with nobody able to
+  // act on it (V5-0002).
   if (requester.reportingTo && requester.reportingTo !== requester.id) {
-    return { approverId: requester.reportingTo, autoApprove: false };
+    const manager = await db.query.users.findFirst({
+      where: eq(users.id, requester.reportingTo),
+      columns: { isActive: true },
+    });
+    if (manager?.isActive) return { approverId: requester.reportingTo, autoApprove: false };
   }
 
   // Candidates come from the existing chain helper, which already drops the

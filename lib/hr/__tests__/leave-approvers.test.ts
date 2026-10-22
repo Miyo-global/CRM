@@ -65,6 +65,18 @@ describe("canActOnLeave", () => {
     expect(canActOnLeave({ id: "hr-2", role: "HR" }, request)).toBe(true);
   });
 
+  it("lets the manager act even when the request names another approver (V5-0003)", () => {
+    const request = pending({ id: "e1", role: "ENGINEERING", reportingTo: "mgr-1" }, "hr-2");
+    expect(canActOnLeave({ id: "mgr-1", role: "ENGINEERING" }, request)).toBe(true);
+  });
+
+  it("hands a deactivated approver's request back to the approver roles (V5-0002)", () => {
+    const request = { ...pending({ id: "e1", role: "ENGINEERING" }, "hr-gone"), approver: { isActive: false } };
+    expect(canActOnLeave({ id: "hr-1", role: "HR" }, request)).toBe(true);
+    expect(canActOnLeave({ id: "hr-gone", role: "HR" }, request)).toBe(true);
+    expect(canActOnLeave({ id: "e2", role: "ENGINEERING" }, request)).toBe(false);
+  });
+
   it("ignores requests that are not pending", () => {
     expect(
       canActOnLeave(ceo, { ...pending({ id: "e1", role: "HR" }), status: "APPROVED" }),

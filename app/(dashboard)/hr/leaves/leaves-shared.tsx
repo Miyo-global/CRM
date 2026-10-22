@@ -81,7 +81,7 @@ export interface LeaveRequest {
   lopDays?: string | number | null;
   createdAt?: string | Date | null;
   leaveType: { name: string } | null;
-  approver?: { name: string | null } | null;
+  approver?: { name: string | null; isActive?: boolean | null } | null;
   user?: {
     id?: string;
     role?: string | null;

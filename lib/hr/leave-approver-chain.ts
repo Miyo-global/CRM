@@ -52,6 +52,7 @@ export async function resolveLeaveApprovers(
       and(
         eq(organizationMembers.orgId, orgId),
         inArray(organizationMembers.role, [...CHAIN_ROLES]),
+        eq(users.isActive, true),
       ),
     );
 
