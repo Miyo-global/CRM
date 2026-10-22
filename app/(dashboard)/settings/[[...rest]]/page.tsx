@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { notFound, useParams } from "next/navigation";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Card } from "@/components/ui/card";
@@ -28,6 +29,14 @@ export default function SettingsPage() {
   // rather than silently rendering this page (A14).
   const params = useParams<{ rest?: string[] }>();
   if (params?.rest?.length) notFound();
+
+  // Emails link to /settings?tab=security; scroll to that section (R3-0024).
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (tab && SECTIONS.some((section) => section.id === tab)) {
+      document.getElementById(tab)?.scrollIntoView();
+    }
+  }, []);
 
   return (
     <PageWrapper
