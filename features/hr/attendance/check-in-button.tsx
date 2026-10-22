@@ -13,11 +13,13 @@ import {
   useHrToggleBreak,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Coffee, LogIn, LogOut, Play, Pause } from "lucide-react";
 import { formatDuration, formatTimerSegment } from "./attendance-utils";
 import { OvertimeWorklogSheet } from "./overtime-worklog-sheet";
 
 export const TimerCard = memo(function TimerCard() {
+  const router = useRouter();
   const [now, setNow] = useState(new Date());
   const [localCooldown, setLocalCooldown] = useState(0);
   const [otPrompt, setOtPrompt] = useState<{ date: string; hours?: number } | null>(null);
@@ -43,7 +45,12 @@ export const TimerCard = memo(function TimerCard() {
         });
       }
     },
-    onError: (err) => toast.error(err.message),
+    // Clock-out is refused until today's work log is saved; point straight at
+    // it instead of leaving a bare error (V5-0010).
+    onError: (err) =>
+      toast.error(err.message, /work log/i.test(err.message)
+        ? { action: { label: "Open work log", onClick: () => router.push("/hr/work-logs") } }
+        : undefined),
   });
 
   const [localBreakOverride, setLocalBreakOverride] = useState<boolean | null>(null);
