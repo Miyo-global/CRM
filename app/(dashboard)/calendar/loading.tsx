@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <>
       <PageHeaderSkeleton />
-      <div className="px-4 sm:px-6 xl:px-8 pt-4 pb-10" role="status" aria-label="Loading">
+      <div className="mx-auto w-full max-w-[1440px] px-4 lg:px-6 pt-4 pb-10" role="status" aria-label="Loading">
         <div className="mb-3 flex items-center gap-2">
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-9 w-48" />

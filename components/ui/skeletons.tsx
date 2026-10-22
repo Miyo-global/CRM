@@ -11,7 +11,7 @@ const card = "rounded-lg border border-border bg-card shadow-xs";
 /** Mirrors PageWrapper's header: breadcrumbs, title, subtitle, actions. */
 export function PageHeaderSkeleton({ actions = 2, className }: { actions?: number; className?: string }) {
   return (
-    <div className={cn("px-4 sm:px-6 xl:px-8 pt-6 pb-4", className)}>
+    <div className={cn("mx-auto w-full max-w-[1440px] px-4 lg:px-6 pt-6 pb-4", className)}>
       <Skeleton className="mb-3 h-3 w-40" />
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
