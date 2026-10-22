@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { initializeLeaveBalances } from "@/server/actions/leave-actions/leave-balance";
 import {
   departmentMembers,
   onboardingTasks,
@@ -44,6 +45,10 @@ export async function startOnboardingForUser(opts: {
   /** Checklist due dates count from this date (the joining date). */
   joiningDate?: Date | string | null;
 }): Promise<StartOnboardingResult> {
+  // Leave balances exist from the day of hire, not from the employee's own
+  // onboarding submit, so a new joiner can apply on day one (V5-0008).
+  await initializeLeaveBalances(opts.orgId, opts.userId, opts.joiningDate ?? new Date());
+
   const existing = await db
     .select({ id: onboardingTasks.id })
     .from(onboardingTasks)
