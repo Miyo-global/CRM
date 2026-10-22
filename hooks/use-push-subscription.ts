@@ -6,6 +6,15 @@ export function usePushSubscription(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    // Once per browser session, and never after the user said no: every shell
+    // mount re-fetched the VAPID key (responsive QA v5).
+    if (Notification.permission === "denied") return;
+    try {
+      if (sessionStorage.getItem("push-subscribe-checked") === userId) return;
+      sessionStorage.setItem("push-subscribe-checked", userId);
+    } catch {
+      // Storage blocked: fall through and check every time.
+    }
 
     navigator.serviceWorker
       .register("/sw.js")
