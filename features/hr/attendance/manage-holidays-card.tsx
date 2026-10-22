@@ -158,7 +158,7 @@ const HolidayRow = memo(function HolidayRow({
   return (
     <li className="flex items-center justify-between gap-2 py-2.5 px-3">
       <div className="min-w-0">
-        <span className={`font-medium text-sm ${isPast ? "text-muted-foreground" : "text-foreground"}`}>
+        <span className={`wrap-anywhere font-medium text-sm ${isPast ? "text-muted-foreground" : "text-foreground"}`}>
           {holiday.name}
         </span>
         <span className="text-muted-foreground text-xs ml-2">{formatHolidayDate(holiday.date)}</span>
