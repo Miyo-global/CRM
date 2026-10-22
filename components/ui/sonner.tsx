@@ -14,6 +14,9 @@ import { Toaster as Sonner, useSonner, type ToasterProps } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function playNotificationSound(type: "success" | "error" | "other") {
+  // Browsers refuse audio before the first user gesture and log a warning
+  // on every attempt.
+  if (!navigator.userActivation?.hasBeenActive) return;
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();

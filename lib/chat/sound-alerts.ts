@@ -5,6 +5,8 @@ let _unlocked = false;
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
+  // No audio before the first user gesture; the browser would refuse it.
+  if (!navigator.userActivation?.hasBeenActive) return null;
   if (!_ctx) {
     try {
       _ctx = new (window.AudioContext ||
