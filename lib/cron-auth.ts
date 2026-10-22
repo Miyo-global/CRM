@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
+import { getTodayString } from "@/lib/date-utils";
 
 export function verifyCronSecret(authHeader: string | null): NextResponse | null {
   const cronSecret = process.env.CRON_SECRET;
@@ -48,12 +49,19 @@ function computeDateBucket(windowMs: number): string {
   return String(epoch);
 }
 
+/**
+ * Skips a cron run that already happened in this bucket. With no window the
+ * bucket is the IST date, so a daily job runs once per IST day however often
+ * it is retried; a 5-minute window let a retry resend every email
+ * (V5-ARCH-012). Jobs that run more often pass their own window.
+ */
 export async function cronIdempotencyCheck(
   jobName: string,
-  windowMs: number = 5 * 60_000,
+  windowMs?: number,
   bucketOverride?: string
 ): Promise<NextResponse | null> {
-  const bucket = bucketOverride ?? computeDateBucket(windowMs);
+  const bucket = bucketOverride ?? (windowMs ? computeDateBucket(windowMs) : getTodayString());
+  const fallbackWindowMs = windowMs ?? 24 * 60 * 60_000;
   try {
     await ensureCronRunsTable();
     const inserted = await db.execute<{ job_name: string }>(sql`
@@ -75,7 +83,7 @@ export async function cronIdempotencyCheck(
   } catch {
     const now = Date.now();
     const lastRun = cronLastRun.get(`${jobName}:${bucket}`);
-    if (lastRun && now - lastRun < windowMs) {
+    if (lastRun && now - lastRun < fallbackWindowMs) {
       return NextResponse.json(
         { skipped: true, message: `Job "${jobName}" already ran ${Math.round((now - lastRun) / 1000)}s ago` },
         { status: 200 }

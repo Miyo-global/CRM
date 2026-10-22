@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const authError = verifyCronSecret(request.headers.get("authorization"));
   if (authError) return authError;
   if (!ATS_MODULE_ENABLED) return NextResponse.json({ success: true, skipped: "ats off" });
-  const dupeCheck = await cronIdempotencyCheck("ats-interview-reminders");
+  const dupeCheck = await cronIdempotencyCheck("ats-interview-reminders", 5 * 60_000);
   if (dupeCheck) return dupeCheck;
 
   try {

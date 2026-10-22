@@ -6,7 +6,7 @@ import { verifyCronSecret, cronIdempotencyCheck } from "@/lib/cron-auth";
 export async function GET(request: NextRequest) {
   const authError = verifyCronSecret(request.headers.get("authorization"));
   if (authError) return authError;
-  const dupeCheck = await cronIdempotencyCheck("auto-absent-leave", 12 * 60 * 60 * 1000);
+  const dupeCheck = await cronIdempotencyCheck("auto-absent-leave");
   if (dupeCheck) return dupeCheck;
 
   try {
