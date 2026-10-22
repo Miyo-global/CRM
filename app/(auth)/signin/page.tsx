@@ -64,7 +64,7 @@ export default function SignInPage() {
         if (result?.error) {
           // The one case worth naming: the account exists but the first day
           // has not arrived (QA-0070).
-          if (result.error.includes("BEFORE_JOINING_DATE")) {
+          if (result.code === "before_joining_date") {
             throw new Error(
               "Your account opens on your joining date. Contact HR if you need access sooner.",
             );

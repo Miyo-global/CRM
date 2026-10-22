@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -31,6 +31,15 @@ interface UserSessionCache {
 }
 
 const USER_SESSION_TTL = 300;
+
+/**
+ * A plain Error thrown from authorize() reaches the client as
+ * error=Configuration; a CredentialsSignin subclass carries its code through
+ * to signIn()'s result (V5-0009).
+ */
+class BeforeJoiningDateError extends CredentialsSignin {
+  code = "before_joining_date";
+}
 
 function userSessionKey(userId: string): string {
   return `user:session:${userId}`;
@@ -136,7 +145,7 @@ const credentialsProvider = Credentials({
           email: normalizedEmail,
           joiningDate,
         });
-        throw new Error("BEFORE_JOINING_DATE");
+        throw new BeforeJoiningDateError();
       }
 
       if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
