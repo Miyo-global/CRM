@@ -25,6 +25,7 @@ describe("periodStatus (QA-0074, QA-0075)", () => {
 
   it("keeps a planned sprint upcoming until it is started (R2-PRJ-03)", () => {
     expect(periodStatus({ storedStatus: "PLANNED", startDate: today, endDate: "2026-10-30", today })).toBe("upcoming");
+    expect(periodStatus({ storedStatus: "PLANNED", startDate: "2026-09-01", endDate: "2026-09-14", today })).toBe("ended");
   });
 
   it("keeps a cancellation", () => {
