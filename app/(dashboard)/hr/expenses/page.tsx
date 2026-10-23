@@ -380,7 +380,9 @@ export default function ExpensesPage() {
           categories={EXPENSE_CATEGORIES}
           paymentMethods={PAYMENT_METHODS}
           editExpense={editingExpense}
-          employees={employees.filter((e) => e.id !== session?.user?.id)}
+          employees={employees.filter(
+            (e) => e.id !== session?.user?.id && (e as { isActive?: boolean | null }).isActive !== false,
+          )}
         />
         <ImportExpenseSheet
           open={isImportOpen}
@@ -449,13 +451,18 @@ export default function ExpensesPage() {
 
       <CreateExpenseDialog
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        onOpenChange={(v) => {
+          setIsCreateOpen(v);
+          if (!v) setEditingExpense(null);
+        }}
         onSuccess={() => {
           void refetch();
           setIsCreateOpen(false);
+          setEditingExpense(null);
         }}
         categories={EXPENSE_CATEGORIES}
         paymentMethods={PAYMENT_METHODS}
+        editExpense={editingExpense}
       />
     </PageWrapper>
   );

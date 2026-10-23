@@ -63,6 +63,11 @@ export async function POST(req: NextRequest) {
         columns: { userId: true },
       });
       if (!member) return err("Employee not found.", 404);
+      const claimant = await db.query.users.findFirst({
+        where: eq(users.id, claimantId),
+        columns: { isActive: true },
+      });
+      if (claimant?.isActive === false) return err("This employee is no longer active.", 400);
     }
 
     const duplicateCheck = await db.query.expenses.findFirst({
