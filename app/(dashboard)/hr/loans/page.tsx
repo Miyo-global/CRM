@@ -4,7 +4,8 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { formatINR } from "@/lib/format-utils";
 import { isAdminOrOwner } from "@/lib/auth/role-guards";
 import { canDecideRequest } from "@/lib/auth/separation-of-duties";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { createLoanSchema, LOAN_REASON_MAX, MAX_LOAN_AMOUNT, MAX_LOAN_EMIS } from "@/lib/validations/loan";
 import {
   useSalaryLoans, useCreateSalaryLoan, useProcessSalaryLoan,
   type SalaryLoan,
@@ -46,24 +47,43 @@ export default function LoansPage() {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [totalEmis, setTotalEmis] = useState("6");
+  // Inline errors appear after the first submit attempt, then track edits.
+  const [showErrors, setShowErrors] = useState(false);
+
+  const parsed = useMemo(
+    () => createLoanSchema.safeParse({
+      amount: amount.trim() === "" ? undefined : Number(amount),
+      reason,
+      totalEmis: totalEmis.trim() === "" ? undefined : Number(totalEmis),
+    }),
+    [amount, reason, totalEmis],
+  );
+  const fieldErrors = useMemo(() => {
+    const out: Partial<Record<"amount" | "reason" | "totalEmis", string>> = {};
+    if (!showErrors) return out;
+    if (totalEmis.trim() === "") out.totalEmis = `EMIs must be a whole number between 1 and ${MAX_LOAN_EMIS}`;
+    if (parsed.success) return out;
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof typeof out;
+      out[key] ??= issue.message;
+    }
+    return out;
+  }, [parsed, showErrors, totalEmis]);
 
   const handleCreate = useCallback(() => {
-    const amountNum = Number(amount);
-    if (!amount || !Number.isFinite(amountNum) || amountNum <= 0 || amountNum > 100000000) { toast.error("Valid amount is required"); return; }
-    if (!reason.trim()) { toast.error("Reason is required"); return; }
-    const emisNum = Number(totalEmis);
-    if (!Number.isInteger(emisNum) || emisNum < 1 || emisNum > 120) { toast.error("EMIs must be a whole number between 1 and 120"); return; }
+    setShowErrors(true);
+    if (!parsed.success || totalEmis.trim() === "") return;
     create.mutate(
-      { amount: amountNum, reason: reason.trim(), totalEmis: emisNum },
+      parsed.data,
       {
         onSuccess: () => {
           toast.success("Loan request submitted");
-          setSheetOpen(false); setAmount(""); setReason(""); setTotalEmis("6");
+          setSheetOpen(false); setAmount(""); setReason(""); setTotalEmis("6"); setShowErrors(false);
         },
         onError: (e) => toast.error(getErrorMessage(e)),
       },
     );
-  }, [amount, reason, totalEmis, create]);
+  }, [parsed, totalEmis, create]);
 
   const [disburseId, setDisburseId] = useState<number | null>(null);
   const [repaidId, setRepaidId] = useState<number | null>(null);
@@ -196,16 +216,56 @@ export default function LoansPage() {
 
       <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="Request salary loan" onSubmit={handleCreate} submitLabel="Submit" isPending={create.isPending}>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Loan Amount</label>
-          <Input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <label className="text-sm font-medium" htmlFor="loan-amount">Loan Amount</label>
+          <Input
+            id="loan-amount"
+            type="number"
+            min={1}
+            max={MAX_LOAN_AMOUNT}
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            aria-invalid={fieldErrors.amount ? true : undefined}
+            aria-describedby={fieldErrors.amount ? "loan-amount-error" : undefined}
+          />
+          {fieldErrors.amount && <p id="loan-amount-error" className="text-xs text-destructive">{fieldErrors.amount}</p>}
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Reason</label>
-          <Textarea placeholder="Why do you need this loan?" value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium" htmlFor="loan-reason">Reason</label>
+            <span className="text-2xs text-muted-foreground tabular-nums">{reason.length}/{LOAN_REASON_MAX}</span>
+          </div>
+          <Textarea
+            id="loan-reason"
+            placeholder="Why do you need this loan?"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            maxLength={LOAN_REASON_MAX}
+            aria-invalid={fieldErrors.reason ? true : undefined}
+            aria-describedby={fieldErrors.reason ? "loan-reason-error" : undefined}
+          />
+          {fieldErrors.reason && <p id="loan-reason-error" className="text-xs text-destructive">{fieldErrors.reason}</p>}
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Number of EMIs</label>
-          <Input type="number" placeholder="6" value={totalEmis} onChange={(e) => setTotalEmis(e.target.value)} />
+          <label className="text-sm font-medium" htmlFor="loan-emis">Number of EMIs</label>
+          <Input
+            id="loan-emis"
+            type="number"
+            min={1}
+            max={MAX_LOAN_EMIS}
+            step={1}
+            placeholder="6"
+            value={totalEmis}
+            onChange={(e) => setTotalEmis(e.target.value)}
+            aria-invalid={fieldErrors.totalEmis ? true : undefined}
+            aria-describedby={fieldErrors.totalEmis ? "loan-emis-error" : "loan-emis-hint"}
+          />
+          {fieldErrors.totalEmis ? (
+            <p id="loan-emis-error" className="text-xs text-destructive">{fieldErrors.totalEmis}</p>
+          ) : (
+            <p id="loan-emis-hint" className="text-xs text-muted-foreground">Up to {MAX_LOAN_EMIS} monthly instalments.</p>
+          )}
         </div>
       </HrSheet>
 

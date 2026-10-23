@@ -2,25 +2,14 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
 import { salaryLoans } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
-import { z } from "zod";
+import { eq, and, desc, sql } from "drizzle-orm";
+import { createLoanSchema } from "@/lib/validations/loan";
 import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import type { NextRequest } from "next/server";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
 import { afterResponse } from "@/lib/after-response";
-
-const MAX_LOAN_AMOUNT = 10_000_000;
-
-const createSchema = z.object({
-  amount: z
-    .number()
-    .positive("Amount must be positive")
-    .max(MAX_LOAN_AMOUNT, `Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_LOAN_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`),
-  reason: z.string().min(1).max(500),
-  totalEmis: z.number().int().min(1).max(24).optional(),
-});
 
 export async function GET() {
   return withAuth(async (session) => {
@@ -39,9 +28,27 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    const body = createSchema.parse(await req.json());
+    const body = createLoanSchema.parse(await req.json());
     const dup = await rejectDuplicateSubmit("loan", session.user.id, body);
     if (dup) return dup;
+
+    // The submit guard only covers a 10 s window; QA found 20 identical pending loans (R2-HR-06).
+    const [pending] = await db
+      .select({ id: salaryLoans.id })
+      .from(salaryLoans)
+      .where(and(
+        eq(salaryLoans.orgId, session.orgId),
+        eq(salaryLoans.userId, session.user.id),
+        eq(salaryLoans.status, "PENDING"),
+        sql`${salaryLoans.amount} = ${body.amount}`,
+      ))
+      .limit(1);
+    if (pending) {
+      return err(
+        `You already have a pending loan request for ${CURRENCY_SYMBOL}${body.amount.toLocaleString(DEFAULT_LOCALE)}. Wait for a decision on it first.`,
+        409,
+      );
+    }
     const emiAmount = body.totalEmis ? Math.ceil((body.amount / body.totalEmis) * 100) / 100 : body.amount;
 
     const [loan] = await db.insert(salaryLoans).values({
