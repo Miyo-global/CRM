@@ -6,7 +6,6 @@ import { AppSidebar, useRoleNavGroups } from "./app-sidebar";
 import { CommandPalette } from "./command-palette";
 import { Topbar } from "./topbar";
 import { ShortcutsProvider } from "./shortcuts-provider";
-import { NotActivatedPage } from "../auth/not-activated-page";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
@@ -22,7 +21,6 @@ function setSidebarCookie(collapsed: boolean) {
 
 interface DashboardShellProps {
   userId: string;
-  hasDashboardAccess: boolean;
   defaultCollapsed: boolean;
   /** Resolved on the server so the sidebar badge needs no client round trip (A44). */
   pendingLeaveApprovals?: number;
@@ -31,7 +29,6 @@ interface DashboardShellProps {
 
 export function DashboardShell({
   userId,
-  hasDashboardAccess,
   defaultCollapsed,
   pendingLeaveApprovals = 0,
   children,
@@ -65,7 +62,7 @@ export function DashboardShell({
           Skip to content
         </Link>
 
-        {hasDashboardAccess && !isMobile && (
+        {!isMobile && (
           <aside
             aria-label="Sidebar"
             style={{ width: sidebarW }}
@@ -83,30 +80,24 @@ export function DashboardShell({
           id="dashboard-content"
           className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
         >
-          {hasDashboardAccess ? (
-            <>
-              <CommandPalette />
+          <CommandPalette />
 
-              {isMobile && (
-                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} modal>
-                  <SheetContent
-                    side="left"
-                    className="z-modal w-64 gap-0 border-sidebar-border bg-sidebar p-0 [&>button]:text-sidebar-muted [&>button]:hover:bg-sidebar-accent [&>button]:hover:text-sidebar-accent-foreground"
-                  >
-                    <SheetTitle className="sr-only">Navigation</SheetTitle>
-                    <AppSidebar onNavigate={handleCloseMobileMenu} initialPendingLeaves={pendingLeaveApprovals} />
-                  </SheetContent>
-                </Sheet>
-              )}
-
-              <Topbar navGroups={navGroups} onOpenMobileNav={handleOpenMobileMenu} />
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-                {children}
-              </div>
-            </>
-          ) : (
-            <NotActivatedPage />
+          {isMobile && (
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} modal>
+              <SheetContent
+                side="left"
+                className="z-modal w-64 gap-0 border-sidebar-border bg-sidebar p-0 [&>button]:text-sidebar-muted [&>button]:hover:bg-sidebar-accent [&>button]:hover:text-sidebar-accent-foreground"
+              >
+                <SheetTitle className="sr-only">Navigation</SheetTitle>
+                <AppSidebar onNavigate={handleCloseMobileMenu} initialPendingLeaves={pendingLeaveApprovals} />
+              </SheetContent>
+            </Sheet>
           )}
+
+          <Topbar navGroups={navGroups} onOpenMobileNav={handleOpenMobileMenu} />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+            {children}
+          </div>
         </main>
       </div>
     </ShortcutsProvider>

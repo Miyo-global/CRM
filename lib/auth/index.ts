@@ -15,6 +15,7 @@ import { sendAccountLockedEmail, sendNewDeviceLoginEmail } from "../email";
 import { clearFailedAttempts, recordFailedAttempt } from "./failed-attempts";
 import { getTodayString } from "@/lib/date-utils";
 import { createAuditLog } from "../audit-log";
+import { isPortalAccessBlocked } from "./portal-access";
 
 interface UserSessionCache {
   isActive: boolean | null;
@@ -180,6 +181,14 @@ const credentialsProvider = Credentials({
         return null;
       }
 
+      // Portal Access OFF: no session at all, with the same generic failure
+      // as a wrong password, rather than a session that a client page then
+      // blocks (R2-LC-18).
+      if (isPortalAccessBlocked(user.role, user.hasDashboardAccess)) {
+        logger.warn("Auth: login with valid credentials on portal-disabled account", { userId: user.id, email: normalizedEmail });
+        return null;
+      }
+
       logger.info("Auth: successful login", { userId: user.id, email: normalizedEmail });
 
       if (user.loginAttempts && user.loginAttempts > 0) {
@@ -277,6 +286,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
         if (existingUser.lockedUntil && new Date(existingUser.lockedUntil) > new Date()) {
           logger.warn("Auth: google sign-in on locked account", { userId: existingUser.id, email: existingUser.email });
+          return false;
+        }
+        if (isPortalAccessBlocked(existingUser.role, existingUser.hasDashboardAccess)) {
+          logger.warn("Auth: google sign-in on portal-disabled account", { userId: existingUser.id, email: existingUser.email });
           return false;
         }
       }

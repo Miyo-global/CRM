@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import type { NextRequest } from "next/server";
 import { invalidateHrDashboardCache } from "@/lib/hr-cache";
+import { revokeAllUserSessions } from "@/lib/auth";
 
 export async function PATCH(
   _req: NextRequest,
@@ -73,6 +74,8 @@ export async function PATCH(
       }
     });
 
+    // A terminated account must not keep working off an unexpired JWT.
+    await revokeAllUserSessions(existing.userId);
     await invalidateHrDashboardCache(session.orgId);
 
     void writeAuditLog({

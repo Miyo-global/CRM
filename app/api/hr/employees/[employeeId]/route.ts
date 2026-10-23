@@ -16,6 +16,7 @@ import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { getTodayString } from "@/lib/date-utils";
+import { invalidateUserSession, revokeAllUserSessions } from "@/lib/auth";
 
 export async function GET(
   _req: NextRequest,
@@ -262,6 +263,15 @@ export async function PATCH(
 
     if (body.skills !== undefined) {
       await syncEmployeeSkillsFromProfile(session.orgId, targetUserId, body.skills);
+    }
+
+    // R2-LC-17: Portal Access OFF ends every live session now, not when the
+    // cached session row expires; ON (and a role change) drops the cache so
+    // the next request reads the new value.
+    if (body.hasDashboardAccess === false) {
+      await revokeAllUserSessions(targetUserId);
+    } else if (body.hasDashboardAccess === true || updateData.role !== undefined) {
+      await invalidateUserSession(targetUserId);
     }
 
     if (body.isActive === true) {
