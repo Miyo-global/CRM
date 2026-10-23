@@ -29,6 +29,8 @@ import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull
 import { getTodayString } from "@/lib/date-utils";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { teamDayStatuses } from "@/lib/hr/team-day-status";
+import { resolveInitialBalance } from "@/lib/leave-policy";
+import { initializeLeaveBalances } from "@/server/actions/leave-actions/leave-balance";
 
 async function coassignedTicketIdsForUser(userId: string): Promise<number[]> {
   const rows = await db
@@ -493,7 +495,26 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
   const coIds = await coassignedTicketIdsForUser(userId);
   const assignWhere = ticketsVisibleToAssignee(orgId, userId, coIds);
 
-  const [myTasks, timesheetRows, leaveBalanceRows, upcomingEvents, unreadCount] = await Promise.all([
+  const leaveBalanceQuery = () =>
+    db
+      .select({
+        id: leaveBalances.id,
+        balance: leaveBalances.balance,
+        total: leaveTypes.daysPerYear,
+        typeName: leaveTypes.name,
+        year: leaveBalances.year,
+      })
+      .from(leaveBalances)
+      .innerJoin(leaveTypes, eq(leaveBalances.leaveTypeId, leaveTypes.id))
+      .where(
+        and(
+          eq(leaveBalances.userId, userId),
+          eq(leaveBalances.orgId, orgId),
+          eq(leaveBalances.year, now.getFullYear()),
+        ),
+      );
+
+  const [myTasks, timesheetRows, firstBalanceRows, upcomingEvents, unreadCount, me] = await Promise.all([
     db.query.tickets.findMany({
       where: and(
         assignWhere,
@@ -514,17 +535,7 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
       .select({ hours: sum(timesheets.hours) })
       .from(timesheets)
       .where(and(eq(timesheets.userId, userId), gte(timesheets.date, weekStart.toISOString().slice(0, 10)), lt(timesheets.date, weekEnd.toISOString().slice(0, 10)))),
-    db
-      .select({
-        id: leaveBalances.id,
-        balance: leaveBalances.balance,
-        total: leaveTypes.daysPerYear,
-        typeName: leaveTypes.name,
-        year: leaveBalances.year,
-      })
-      .from(leaveBalances)
-      .innerJoin(leaveTypes, eq(leaveBalances.leaveTypeId, leaveTypes.id))
-      .where(and(eq(leaveBalances.userId, userId), eq(leaveBalances.year, now.getFullYear()))),
+    leaveBalanceQuery(),
     db
       .select({ id: calendarEvents.id, title: calendarEvents.title, startDate: calendarEvents.startDate, endDate: calendarEvents.endDate, category: calendarEvents.category })
       .from(calendarEvents)
@@ -535,7 +546,18 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
       .select({ cnt: count() })
       .from(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false))),
+    db.query.users.findFirst({ where: eq(users.id, userId), columns: { joiningDate: true } }),
   ]);
+
+  // The dashboard is a new joiner's first screen: seed this year's balances
+  // here too, so it never says "No leave balances yet" while My Leaves, which
+  // seeds on open, shows them (R2-LC-12).
+  const joinedOn = me?.joiningDate ?? new Date(now.getFullYear(), 0, 1);
+  let leaveBalanceRows = firstBalanceRows;
+  if (leaveBalanceRows.length === 0) {
+    await initializeLeaveBalances(orgId, userId, joinedOn);
+    leaveBalanceRows = await leaveBalanceQuery();
+  }
 
   const hoursLogged = Number(timesheetRows[0]?.hours ?? 0);
   const weekLabel = `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
@@ -557,7 +579,8 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
     leaveBalance: leaveBalanceRows.map((r) => ({
       type: r.typeName ?? "Leave",
       remaining: Number(r.balance),
-      total: r.total ?? 0,
+      // This year's grant, matching My Leaves (R2-EMP-06).
+      total: resolveInitialBalance(r.typeName ?? "", r.total ?? 0, joinedOn, now.getFullYear()),
     })),
     upcomingEvents: upcomingEvents.map((e) => ({
       id: e.id,

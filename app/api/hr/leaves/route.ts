@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, lte, gte, desc, notInArray, sql } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
-import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
+import { ALLOWED_LEAVE_TYPE_NAMES, resolveInitialBalance } from "@/lib/leave-policy";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
 import {
   ensureLeaveTypes,
@@ -80,12 +80,22 @@ export async function GET() {
       db.query.organizationMembers.findFirst({ where: eq(organizationMembers.userId, userId) }),
     ]);
 
+    // "X of Y" counts against what this person was granted this year, not the
+    // full-year figure: a mid-year joiner's prorated casual leave read as days
+    // already used (R2-EMP-06).
+    const balanceYear = Number(getTodayString().slice(0, 4));
+    const joinedOn = user?.joiningDate ?? new Date(balanceYear, 0, 1);
     const seenNames = new Set<string>();
-    const balances = rawBalances.filter((b) => {
-      if (!b.typeName || !ALLOWED_LEAVE_TYPE_NAMES.has(b.typeName) || seenNames.has(b.typeName)) return false;
-      seenNames.add(b.typeName);
-      return true;
-    });
+    const balances = rawBalances
+      .filter((b) => {
+        if (!b.typeName || !ALLOWED_LEAVE_TYPE_NAMES.has(b.typeName) || seenNames.has(b.typeName)) return false;
+        seenNames.add(b.typeName);
+        return true;
+      })
+      .map((b) => ({
+        ...b,
+        entitled: resolveInitialBalance(b.typeName!, b.daysPerYear ?? 0, joinedOn, balanceYear),
+      }));
 
     const seenTypeNames = new Set<string>();
     const types = allTypes.filter((t) => {

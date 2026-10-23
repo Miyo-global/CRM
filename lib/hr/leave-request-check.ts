@@ -1,9 +1,9 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { leaveBalances, leaveTypes } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { leaveBalances, leaveRequests, leaveTypes } from "@/lib/db/schema";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
-import { holidayDatesInRange } from "@/lib/hr/leave-working-days-server";
+import { countLeaveWorkingDays, holidayDatesInRange } from "@/lib/hr/leave-working-days-server";
 import { getCasualMonthlyCapError } from "@/server/actions/leave-actions/leave-balance";
 import { isUnpaidLeaveType, LEAVE_POLICY } from "@/lib/leave-policy";
 import { getTodayString } from "@/lib/date-utils";
@@ -73,23 +73,46 @@ export async function checkLeaveRequest(
     holidays,
   });
 
-  const [balance, leaveType] = await Promise.all([
+  const year = new Date().getFullYear();
+  const [balance, leaveType, pendingRequests] = await Promise.all([
     db.query.leaveBalances.findFirst({
       where: and(
         eq(leaveBalances.userId, input.userId),
         eq(leaveBalances.orgId, input.orgId),
         eq(leaveBalances.leaveTypeId, input.leaveTypeId),
-        eq(leaveBalances.year, new Date().getFullYear()),
+        eq(leaveBalances.year, year),
       ),
     }),
     db.query.leaveTypes.findFirst({
       where: eq(leaveTypes.id, input.leaveTypeId),
       columns: { name: true },
     }),
+    db.query.leaveRequests.findMany({
+      where: and(
+        eq(leaveRequests.userId, input.userId),
+        eq(leaveRequests.orgId, input.orgId),
+        eq(leaveRequests.leaveTypeId, input.leaveTypeId),
+        eq(leaveRequests.status, "PENDING"),
+        gte(leaveRequests.startDate, `${year}-01-01`),
+        lte(leaveRequests.startDate, `${year}-12-31`),
+      ),
+      columns: { startDate: true, endDate: true, isHalfDay: true },
+    }),
   ]);
 
   const isUnpaid = isUnpaidLeaveType(leaveType?.name ?? "");
-  const available = balance ? Number(balance.balance) : 0;
+  // Pending requests are only deducted on approval, so without reserving them
+  // several pending requests could together exceed the balance (R2-EMP-06).
+  const pendingDays = isUnpaid
+    ? 0
+    : (
+        await Promise.all(
+          pendingRequests.map((r) =>
+            countLeaveWorkingDays({ orgId: input.orgId, startDate: r.startDate, endDate: r.endDate, isHalfDay: r.isHalfDay }),
+          ),
+        )
+      ).reduce((sum, days) => sum + days, 0);
+  const available = Math.max(0, (balance ? Number(balance.balance) : 0) - pendingDays);
 
   if (!input.isHalfDay && requestedDays <= 0) {
     return {
@@ -126,7 +149,7 @@ export async function checkLeaveRequest(
       requestedDays,
       available,
       balanceAfter: available,
-      error: `Insufficient leave balance. Available: ${available}, Required: ${requestedDays}`,
+      error: `Insufficient leave balance. Available: ${available}${pendingDays > 0 ? ` (after ${pendingDays} pending)` : ""}, Required: ${requestedDays}`,
       leaveTypeName: leaveType?.name ?? null,
     };
   }

@@ -51,6 +51,8 @@ export interface LeaveBalance {
   balance: string;
   typeName: string | null;
   daysPerYear: number | null;
+  /** This year's grant (prorated for a mid-year joiner). */
+  entitled?: number | null;
 }
 
 export interface LeaveType {
