@@ -70,7 +70,7 @@ describe("createBonusBodySchema", () => {
     }
   });
 
-  it("strips reason when type is not Other", () => {
+  it("keeps an optional reason for any type (R2-CRUD-05)", () => {
     const result = createBonusBodySchema.safeParse({
       userId: "user-1",
       type: "SPOT",
@@ -79,21 +79,18 @@ describe("createBonusBodySchema", () => {
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.reason).toBeUndefined();
+      expect(result.data.reason).toBe("Q4 target");
     }
   });
 
-  it("ignores invalid reason when type is not Other", () => {
+  it("validates an optional reason when one is given", () => {
     const result = createBonusBodySchema.safeParse({
       userId: "user-1",
       type: "SPOT",
       amount: 1_000,
       reason: "Award @#$",
     });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.reason).toBeUndefined();
-    }
+    expect(result.success).toBe(false);
   });
 
   it("normalizes bonus type labels before validation", () => {
@@ -163,7 +160,7 @@ describe("validateCreateBonusForm", () => {
     }
   });
 
-  it("ignores reason for non-Other types", () => {
+  it("keeps the reason for non-Other types", () => {
     const result = validateCreateBonusForm({
       userId: "user-1",
       amount: "5000.50",
@@ -172,7 +169,7 @@ describe("validateCreateBonusForm", () => {
     });
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.reason).toBeUndefined();
+      expect(result.data.reason).toBe("Exceeded targets");
     }
   });
 

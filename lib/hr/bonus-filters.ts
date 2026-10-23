@@ -14,7 +14,7 @@ export interface BonusRow {
   createdAt: string | null;
 }
 
-export type BonusStatusFilter = "ALL" | "PENDING" | "APPROVED" | "PAID";
+export type BonusStatusFilter = "ALL" | "PENDING" | "APPROVED" | "PAID" | "REJECTED" | "CANCELLED";
 export type BonusTypeFilter = "ALL" | BonusType;
 
 export interface BonusListFilters {
@@ -112,14 +112,15 @@ export function computeBonusStats(bonuses: BonusRow[]): BonusStats {
       const amount = Number.parseFloat(bonus.amount || "0") || 0;
       const status = bonus.status ?? "PENDING";
       acc.total += 1;
-      acc.totalAmount += amount;
+      // Rejected and cancelled bonuses are never paid, so they add no money.
+      if (status !== "REJECTED" && status !== "CANCELLED") acc.totalAmount += amount;
       if (status === "PAID") {
         acc.paid += 1;
         acc.paidAmount += amount;
       } else if (status === "APPROVED") {
         acc.approved += 1;
         acc.pendingAmount += amount;
-      } else {
+      } else if (status === "PENDING") {
         acc.pending += 1;
         acc.pendingAmount += amount;
       }

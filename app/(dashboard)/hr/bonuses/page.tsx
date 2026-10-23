@@ -63,6 +63,14 @@ const BONUS_TYPES = BONUS_TYPE_VALUES.map((value) => ({
   label: BONUS_TYPE_LABELS[value],
 }));
 
+type StatusAction = "APPROVED" | "PAID" | "CANCELLED";
+
+const STATUS_ACTIONS: Record<StatusAction, { title: string; description: string; label: string; done: string }> = {
+  APPROVED: { title: "Approve bonus", description: "Approve this bonus for payment?", label: "Approve", done: "Bonus approved." },
+  PAID: { title: "Mark bonus as paid", description: "Confirm that this bonus has been disbursed to the employee?", label: "Mark Paid", done: "Bonus marked as paid." },
+  CANCELLED: { title: "Cancel bonus", description: "Cancel this bonus? It will not be paid.", label: "Cancel bonus", done: "Bonus cancelled." },
+};
+
 const BLOCKED_AMOUNT_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
 function BonusContent() {
@@ -89,19 +97,20 @@ function BonusContent() {
     onSuccess: () => qc.invalidateQueries({ queryKey: bonusKeys.list() }),
   });
 
-  const markPaid = useMutation({
-    mutationFn: (id: number) =>
+  const update = useMutation({
+    mutationFn: ({ id, ...data }: { id: number; status?: StatusAction; amount?: number; type?: BonusType; reason?: string }) =>
       apiClient.patch<{
         employeeEmailSent?: boolean;
         stakeholderEmailsSent?: number;
-      }>(`/hr/bonuses/${id}`, { status: "PAID" }),
+      }>(`/hr/bonuses/${id}`, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: bonusKeys.list() }),
   });
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportTab, setExportTab] = useState<"download" | "email">("download");
-  const [payId, setPayId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ id: number; status: StatusAction } | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [userId, setUserId] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<BonusType>("PERFORMANCE");
@@ -139,6 +148,7 @@ function BonusContent() {
   }, [page, totalPages, setPage]);
 
   const resetForm = useCallback(() => {
+    setEditId(null);
     setUserId("");
     setAmount("");
     setType("PERFORMANCE");
@@ -162,10 +172,10 @@ function BonusContent() {
   }, []);
 
   const amountError = useMemo(() => bonusAmountInputError(amount), [amount]);
-  const reasonFormatError = useMemo(() => {
-    if (type !== "OTHER") return null;
-    return bonusOtherReasonInputError(reason, true);
-  }, [type, reason]);
+  const reasonFormatError = useMemo(
+    () => bonusOtherReasonInputError(reason, type === "OTHER"),
+    [type, reason],
+  );
 
   const canSubmit = useMemo(() => {
     const result = validateCreateBonusForm({ userId, amount, type, reason });
@@ -178,7 +188,6 @@ function BonusContent() {
       return;
     }
     setType(value);
-    if (value !== "OTHER") setReason("");
   }, []);
 
   const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,9 +205,22 @@ function BonusContent() {
       userId: result.data.userId,
       amount: result.data.amount,
       type: result.data.type,
+      reason: result.data.reason ?? "",
     };
-    if (result.data.type === "OTHER" && result.data.reason) {
-      payload.reason = result.data.reason;
+
+    if (editId !== null) {
+      update.mutate(
+        { id: editId, amount: payload.amount, type: payload.type, reason: payload.reason },
+        {
+          onSuccess: () => {
+            toast.success("Bonus updated");
+            setSheetOpen(false);
+            resetForm();
+          },
+          onError: (e) => toast.error(getErrorMessage(e)),
+        },
+      );
+      return;
     }
 
     create.mutate(
@@ -212,22 +234,31 @@ function BonusContent() {
         onError: (e) => toast.error(getErrorMessage(e)),
       },
     );
-  }, [userId, amount, type, reason, create, resetForm]);
+  }, [userId, amount, type, reason, create, update, editId, resetForm]);
 
-  const handleMarkPaid = useCallback(() => {
-    if (!payId) return;
-    markPaid.mutate(payId, {
+  const handleEdit = useCallback((bonus: BonusRow) => {
+    setEditId(bonus.id);
+    setUserId(bonus.userId);
+    setAmount(String(Number(bonus.amount)));
+    setType(isBonusType(bonus.type ?? "") ? (bonus.type as BonusType) : "PERFORMANCE");
+    setReason(bonus.reason ?? "");
+    setSheetOpen(true);
+  }, []);
+
+  const handleConfirmAction = useCallback(() => {
+    if (!pendingAction) return;
+    update.mutate(pendingAction, {
       onSuccess: (data) => {
         const notified =
           data?.employeeEmailSent
             ? " Employee and HR have been notified by email."
             : "";
-        toast.success(`Bonus marked as paid.${notified}`);
-        setPayId(null);
+        toast.success(`${STATUS_ACTIONS[pendingAction.status].done}${pendingAction.status === "PAID" ? notified : ""}`);
+        setPendingAction(null);
       },
       onError: (e) => toast.error(getErrorMessage(e)),
     });
-  }, [payId, markPaid]);
+  }, [pendingAction, update]);
 
   if (isLoading) {
     return (
@@ -284,7 +315,10 @@ function BonusContent() {
           totalPages={totalPages}
           onPageChange={setPage}
           onPageSizeChange={(size) => setPageSize(clampPageSize(size as PageSizeOption))}
-          onMarkPaid={setPayId}
+          onApprove={(id) => setPendingAction({ id, status: "APPROVED" })}
+          onMarkPaid={(id) => setPendingAction({ id, status: "PAID" })}
+          onEdit={handleEdit}
+          onCancel={(id) => setPendingAction({ id, status: "CANCELLED" })}
           hasActiveFilters={activeFilterCount > 0}
         />
       </div>
@@ -293,19 +327,23 @@ function BonusContent() {
       <HrSheet
         open={sheetOpen}
         onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }}
-        title="Add bonus"
+        title={editId !== null ? "Edit bonus" : "Add bonus"}
         onSubmit={handleCreate}
-        submitLabel="Create"
-        isPending={create.isPending}
-        submitDisabled={!canSubmit || create.isPending}
+        submitLabel={editId !== null ? "Save" : "Create"}
+        isPending={create.isPending || update.isPending}
+        submitDisabled={!canSubmit || create.isPending || update.isPending}
       >
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="bonus-employee">Employee <span className="text-destructive">*</span></label>
-          <BonusEmployeePicker
-            employees={employees}
-            value={userId}
-            onValueChange={setUserId}
-          />
+          {editId !== null ? (
+            <Input id="bonus-employee" value={bonuses?.find((b) => b.id === editId)?.employeeName ?? "Employee"} disabled />
+          ) : (
+            <BonusEmployeePicker
+              employees={employees}
+              value={userId}
+              onValueChange={setUserId}
+            />
+          )}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -344,11 +382,10 @@ function BonusContent() {
             </Select>
           </div>
         </div>
-        {type === "OTHER" ? (
-          <div className="space-y-1.5">
+        <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium" htmlFor="bonus-reason">
-                Reason / Notes <span className="text-destructive">*</span>
+                Reason / Notes {type === "OTHER" ? <span className="text-destructive">*</span> : null}
               </label>
               <span className="text-2xs text-muted-foreground">{reason.length}/{BONUS_OTHER_REASON_MAX}</span>
             </div>
@@ -365,11 +402,10 @@ function BonusContent() {
               <p id="bonus-reason-error" className="text-xs text-destructive">{reasonFormatError}</p>
             ) : (
               <p id="bonus-reason-hint" className="text-xs text-muted-foreground">
-                Required. Up to {BONUS_OTHER_REASON_MAX} characters. Letters, numbers, spaces and - . &apos; only.
+                {type === "OTHER" ? "Required" : "Optional"}. Up to {BONUS_OTHER_REASON_MAX} characters. Letters, numbers, spaces and - . &apos; only.
               </p>
             )}
-          </div>
-        ) : null}
+        </div>
       </HrSheet>
 
       <BonusExportSheet
@@ -382,14 +418,14 @@ function BonusContent() {
       />
 
       <ConfirmActionDialog
-        open={payId !== null}
-        onOpenChange={(open) => { if (!open) setPayId(null); }}
-        title="Mark bonus as paid"
-        description="Confirm that this bonus has been disbursed to the employee?"
-        confirmLabel="Mark Paid"
-        variant="default"
-        onConfirm={handleMarkPaid}
-        isPending={markPaid.isPending}
+        open={pendingAction !== null}
+        onOpenChange={(open) => { if (!open) setPendingAction(null); }}
+        title={pendingAction ? STATUS_ACTIONS[pendingAction.status].title : ""}
+        description={pendingAction ? STATUS_ACTIONS[pendingAction.status].description : ""}
+        confirmLabel={pendingAction ? STATUS_ACTIONS[pendingAction.status].label : ""}
+        variant={pendingAction?.status === "CANCELLED" ? "destructive" : "default"}
+        onConfirm={handleConfirmAction}
+        isPending={update.isPending}
       />
     </PageWrapper>
   );

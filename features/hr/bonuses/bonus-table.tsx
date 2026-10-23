@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CheckCircle2 } from "lucide-react";
+import { Ban, Check, CheckCircle2, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,7 @@ function statusTone(status: string | null): Tone {
   if (status === "PAID") return "success";
   if (status === "APPROVED") return "info";
   if (status === "REJECTED") return "danger";
+  if (status === "CANCELLED") return "neutral";
   return "warning";
 }
 
@@ -37,7 +38,10 @@ interface BonusTableProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onApprove: (id: number) => void;
   onMarkPaid: (id: number) => void;
+  onEdit: (bonus: BonusRow) => void;
+  onCancel: (id: number) => void;
   hasActiveFilters: boolean;
   /** Shown as the filtered-empty action when provided. */
   onClearFilters?: () => void;
@@ -51,7 +55,10 @@ export function BonusTable({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  onApprove,
   onMarkPaid,
+  onEdit,
+  onCancel,
   hasActiveFilters,
   onClearFilters,
 }: BonusTableProps) {
@@ -71,7 +78,7 @@ export function BonusTable({
                   <TableHead>Status</TableHead>
                   <TableHead>Reason</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="w-32 text-right">Actions</TableHead>
+                  <TableHead className="w-44 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -109,17 +116,32 @@ export function BonusTable({
                         {bonus.createdAt ? format(new Date(bonus.createdAt), "MMM d, yyyy") : "—"}
                       </TableCell>
                       <TableCell className="text-right">
-                        {bonus.status !== "PAID" ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onMarkPaid(bonus.id)}
-                          >
-                            <CheckCircle2 className="size-4" aria-hidden="true" />
-                            Mark Paid
-                          </Button>
+                        {/* Pending → Approved → Paid; edit or cancel before payment (R2-CRUD-05). */}
+                        {(bonus.status ?? "PENDING") === "PENDING" ? (
+                          <div className="flex justify-end gap-1">
+                            <Button size="sm" variant="outline" onClick={() => onApprove(bonus.id)}>
+                              <Check className="size-4" aria-hidden="true" />
+                              Approve
+                            </Button>
+                            <Button size="icon-sm" variant="ghost" aria-label="Edit bonus" title="Edit" onClick={() => onEdit(bonus)}>
+                              <Pencil className="size-4" aria-hidden="true" />
+                            </Button>
+                            <Button size="icon-sm" variant="ghost" aria-label="Cancel bonus" title="Cancel" onClick={() => onCancel(bonus.id)}>
+                              <Ban className="size-4" aria-hidden="true" />
+                            </Button>
+                          </div>
+                        ) : bonus.status === "APPROVED" ? (
+                          <div className="flex justify-end gap-1">
+                            <Button size="sm" variant="outline" onClick={() => onMarkPaid(bonus.id)}>
+                              <CheckCircle2 className="size-4" aria-hidden="true" />
+                              Mark Paid
+                            </Button>
+                            <Button size="icon-sm" variant="ghost" aria-label="Cancel bonus" title="Cancel" onClick={() => onCancel(bonus.id)}>
+                              <Ban className="size-4" aria-hidden="true" />
+                            </Button>
+                          </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Paid</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </TableCell>
                     </TableRow>

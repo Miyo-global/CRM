@@ -76,8 +76,9 @@ export const createBonusBodySchema = z
     month: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.type !== "OTHER") return;
+    // R2-CRUD-05: any type may carry an optional reason; Other requires one.
     const trimmed = (data.reason ?? "").trim();
+    if (data.type !== "OTHER" && !trimmed) return;
     const result = bonusReasonFormatSchema.safeParse(trimmed);
     if (!result.success) {
       for (const issue of result.error.issues) {
@@ -87,7 +88,7 @@ export const createBonusBodySchema = z
   })
   .transform((data) => ({
     ...data,
-    reason: data.type === "OTHER" ? data.reason?.trim() || undefined : undefined,
+    reason: data.reason?.trim() || undefined,
   }));
 
 export type CreateBonusBody = z.infer<typeof createBonusBodySchema>;

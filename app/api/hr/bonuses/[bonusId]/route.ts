@@ -4,13 +4,21 @@ import { bonuses } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { BONUS_MANAGE_ROLES } from "@/lib/constants/hr";
 import { deliverBonusPaidNotifications } from "@/lib/hr/send-bonus-paid-notifications";
+import { bonusTransitionError } from "@/lib/hr/bonus-status";
+import { createBonusBodySchema } from "@/lib/validations/bonus";
 import { logger } from "@/lib/logger";
 import { z, ZodError } from "zod";
 import type { NextRequest } from "next/server";
 
-const patchSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED", "PAID"]),
-});
+// Either a status change, or (while pending) an edit of amount, type, reason.
+const patchSchema = z.union([
+  z.object({ status: z.enum(["APPROVED", "REJECTED", "PAID", "CANCELLED"]) }),
+  z.object({
+    amount: z.union([z.number(), z.string()]).optional(),
+    type: z.string().optional(),
+    reason: z.string().optional(),
+  }).strict(),
+]);
 
 export async function PATCH(
   req: NextRequest,
@@ -30,18 +38,38 @@ export async function PATCH(
         .where(and(eq(bonuses.id, bonusId), eq(bonuses.orgId, session.orgId)));
 
       if (!existing) return err("Bonus not found.", 404);
-      if (existing.status === "PAID") return err("Bonus has already been paid.", 400);
-      if (existing.status === "REJECTED") return err("Bonus has already been rejected.", 400);
 
-      const now = new Date();
+      if (!("status" in body)) {
+        if ((existing.status ?? "PENDING") !== "PENDING") {
+          return err("Only a pending bonus can be edited.", 400);
+        }
+        const edit = createBonusBodySchema.parse({
+          userId: existing.userId,
+          type: body.type ?? existing.type,
+          amount: body.amount ?? existing.amount,
+          reason: body.reason ?? existing.reason ?? undefined,
+        });
+        const [updated] = await db
+          .update(bonuses)
+          .set({ type: edit.type, amount: edit.amount.toString(), reason: edit.reason ?? null })
+          .where(and(eq(bonuses.id, bonusId), eq(bonuses.orgId, session.orgId)))
+          .returning();
+        return ok(updated);
+      }
+
+      const transitionError = bonusTransitionError(existing.status, body.status);
+      if (transitionError) return err(transitionError, 400);
+
+      // approvedAt doubles as the paid date on My Bonuses; a cancel keeps the
+      // last decision on record.
+      const decided = body.status !== "CANCELLED";
       const [updated] = await db
         .update(bonuses)
         .set({
           status: body.status,
-          approvedBy: session.user.id,
-          approvedAt: now,
+          ...(decided ? { approvedBy: session.user.id, approvedAt: new Date() } : {}),
         })
-        .where(eq(bonuses.id, bonusId))
+        .where(and(eq(bonuses.id, bonusId), eq(bonuses.orgId, session.orgId)))
         .returning();
 
       let notificationResult;

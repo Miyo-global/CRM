@@ -20,6 +20,8 @@ const STATUS_OPTIONS = [
   { value: "PENDING", label: "Pending" },
   { value: "APPROVED", label: "Approved" },
   { value: "PAID", label: "Paid" },
+  { value: "REJECTED", label: "Rejected" },
+  { value: "CANCELLED", label: "Cancelled" },
 ] as const;
 
 interface BonusTypeOption {
