@@ -73,7 +73,8 @@ export async function checkLeaveRequest(
     holidays,
   });
 
-  const year = new Date().getFullYear();
+  // The IST year, as My Leaves reads it, not the server's UTC year.
+  const year = Number(getTodayString().slice(0, 4));
   const [balance, leaveType, pendingRequests] = await Promise.all([
     db.query.leaveBalances.findFirst({
       where: and(
