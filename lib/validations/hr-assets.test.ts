@@ -3,7 +3,6 @@ import {
   assetFormSchema,
   assetCreateSchema,
   deviceFormSchema,
-  sanitizeNameLikeInput,
 } from "./hr-assets";
 
 // ─── Asset ────────────────────────────────────────────────────────────────────
@@ -59,10 +58,6 @@ describe("assetFormSchema", () => {
 
   it("rejects a special-character-only name", () => {
     expect(assetFormSchema.safeParse({ ...validAsset, name: "@#$%^" }).success).toBe(false);
-  });
-
-  it("rejects a name with disallowed characters", () => {
-    expect(assetFormSchema.safeParse({ ...validAsset, name: "Mac@@Book" }).success).toBe(false);
   });
 
   it('rejects a junk serial like "daf" (too short, no digit)', () => {
@@ -124,10 +119,6 @@ describe("assetFormSchema", () => {
   it("rejects purchase cost above ₹1 crore", () => {
     expect(assetFormSchema.safeParse({ ...validAsset, purchaseCost: 10_000_001 }).success).toBe(false);
     expect(assetFormSchema.safeParse({ ...validAsset, purchaseCost: "10000001" }).success).toBe(false);
-  });
-
-  it("rejects a type with invalid characters", () => {
-    expect(assetFormSchema.safeParse({ ...validAsset, type: "Type@@@Here" }).success).toBe(false);
   });
 
   it("rejects a type that is only punctuation", () => {
@@ -215,23 +206,18 @@ describe("assetCreateSchema", () => {
   });
 });
 
-describe("sanitizeNameLikeInput", () => {
-  it("drops symbols like asterisk while keeping letters", () => {
-    expect(sanitizeNameLikeInput("a*b*c", 20)).toBe("abc");
-  });
+describe("asset names are stored as typed (R2-CRUD-03)", () => {
+  it.each(['QA-TEST <b>bold</b> & "quote" (1)/2', "Docking station (Gen 2)", "MacBook PRO"])(
+    "keeps %s unchanged",
+    (name) => {
+      const parsed = assetFormSchema.safeParse({ ...validAsset, name });
+      expect(parsed.success).toBe(true);
+      if (parsed.success) expect(parsed.data.name).toBe(name);
+    },
+  );
 
-  it("removes asterisks from garbage input", () => {
-    const out = sanitizeNameLikeInput("*&(*&(&( *&(**", 64);
-    expect(out).not.toContain("*");
-    expect(out).not.toContain("@");
-  });
-
-  it("preserves allowed punctuation in names", () => {
-    expect(sanitizeNameLikeInput("Docking station (Gen 2)", 64)).toBe("Docking station (Gen 2)");
-  });
-
-  it("preserves mixed casing in names", () => {
-    expect(sanitizeNameLikeInput("MacBook PRO", 64)).toBe("MacBook PRO");
+  it("rejects control characters", () => {
+    expect(assetFormSchema.safeParse({ ...validAsset, name: "Laptop\u0000" }).success).toBe(false);
   });
 });
 
@@ -268,8 +254,8 @@ describe("deviceFormSchema", () => {
     expect(deviceFormSchema.safeParse({ ...validDevice, deviceName: "99999" }).success).toBe(false);
   });
 
-  it("rejects a device name with special characters", () => {
-    expect(deviceFormSchema.safeParse({ ...validDevice, deviceName: "lap@@@top" }).success).toBe(false);
+  it("rejects a device name with control characters", () => {
+    expect(deviceFormSchema.safeParse({ ...validDevice, deviceName: "lap\u0007top" }).success).toBe(false);
   });
 
   it('rejects a junk serial like "daf"', () => {

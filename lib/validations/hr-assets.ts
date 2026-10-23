@@ -4,9 +4,10 @@ import { getTodayString } from "@/lib/date-utils";
 // ─── Reusable strict field validators ────────────────────────────────────────
 
 // Names (asset name, device name, brand, model): must contain at least one
-// letter; reject numeric-only and special-character-only input; allow letters,
-// numbers, spaces and a small set of punctuation.
-const NAME_ALLOWED = /^[\p{L}\p{N}][\p{L}\p{N} .,'/()&+#_-]*$/u;
+// letter and cannot be only numbers. Otherwise stored as typed (R2-CRUD-03):
+// they are plain text everywhere they render, so React and the email
+// renderer escape them. Only control characters are refused.
+const CONTROL_CHARS = /\p{Cc}/u;
 
 export function strictName(label: string, min = 2, max = 120) {
   return z
@@ -16,15 +17,7 @@ export function strictName(label: string, min = 2, max = 120) {
     .max(max, `${label} must be at most ${max} characters`)
     .refine((v) => /\p{L}/u.test(v), `${label} must contain at least one letter`)
     .refine((v) => !/^\d+$/.test(v), `${label} cannot be only numbers`)
-    .refine((v) => NAME_ALLOWED.test(v), `${label} contains invalid characters`);
-}
-
-/** Allowed characters while typing; must still satisfy {@link strictName} on submit. */
-const NAME_LIKE_CHAR = /^[\p{L}\p{N} .,'/()&+#_-]$/u;
-
-/** Strips symbols/emojis etc. from name-like fields (asset name, custom type). */
-export function sanitizeNameLikeInput(value: string, maxLen: number): string {
-  return [...value].filter((c) => NAME_LIKE_CHAR.test(c)).join("").slice(0, maxLen);
+    .refine((v) => !CONTROL_CHARS.test(v), `${label} contains invalid characters`);
 }
 
 // Serial numbers: normalised to upper-case; 4–64 chars of letters/digits/hyphens

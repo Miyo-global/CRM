@@ -74,7 +74,7 @@ const formSchema = z.object({
   categoryOther: cleanOptionalSimpleName("Category", FIELD_LIMITS.categoryOther),
   amount: expenseAmountSchema,
   description: cleanOptionalText("Description", FIELD_LIMITS.description),
-  merchant: cleanOptionalSimpleName("Merchant", FIELD_LIMITS.merchant),
+  merchant: cleanOptionalText("Merchant", FIELD_LIMITS.merchant),
   paymentMethod: z.string().optional(),
   paymentMethodOther: cleanOptionalSimpleName("Payment method", FIELD_LIMITS.paymentMethodOther),
   expenseDate: z.string().min(1, "Date is required"),
@@ -354,7 +354,7 @@ export function CreateExpenseDialog({
             : data.category,
         amount: data.amount,
         description: capitalize(data.description),
-        merchant: capitalize(data.merchant),
+        merchant: data.merchant,
         paymentMethod:
           data.paymentMethod?.trim().toLowerCase() === "other" && data.paymentMethodOther?.trim()
             ? data.paymentMethodOther.trim()
@@ -544,8 +544,6 @@ export function CreateExpenseDialog({
                     placeholder="e.g. Amazon, Uber, Hotel Taj"
                     maxLength={FIELD_LIMITS.merchant}
                     {...field}
-                    onKeyDown={blockNonSimpleNameKey}
-                    onChange={(e) => field.onChange(sanitizeSimpleName(e.target.value))}
                   />
                 </FormControl>
                 <CharCount length={field.value?.length ?? 0} max={FIELD_LIMITS.merchant} />

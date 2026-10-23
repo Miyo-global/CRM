@@ -3,7 +3,6 @@ import { getTodayString } from "@/lib/date-utils";
 import {
   cleanOptionalText,
   cleanOptionalName,
-  cleanOptionalSimpleName,
   cleanRequiredName,
 } from "@/lib/validations/text-rules";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -28,7 +27,8 @@ export const createExpenseBodySchema = z
     description: cleanOptionalText("Description", 500),
     receiptUrl: z.string().optional(),
     receiptFileName: z.string().optional(),
-    merchant: cleanOptionalSimpleName("Merchant", 100),
+    // Plain text, stored as typed and escaped on output (R2-CRUD-03).
+    merchant: cleanOptionalText("Merchant", 100),
     paymentMethod: expensePaymentMethodSchema,
     projectId: z.number().int().optional(),
     expenseDate: z.string(),
@@ -42,7 +42,7 @@ export const updateExpenseDetailsSchema = z
     category: cleanRequiredName("Category", 60).optional(),
     amount: expenseAmountSchema.optional(),
     description: cleanOptionalText("Description", 500).optional(),
-    merchant: cleanOptionalSimpleName("Merchant", 100).optional(),
+    merchant: cleanOptionalText("Merchant", 100).optional(),
     paymentMethod: expensePaymentMethodSchema.optional(),
     expenseDate: z.string().optional(),
     receiptUrl: z.string().optional(),

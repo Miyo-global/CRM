@@ -63,4 +63,16 @@ describe("createExpenseBodySchema", () => {
     });
     expect(r.success).toBe(false);
   });
+
+  it("keeps the merchant as typed (R2-CRUD-03)", () => {
+    const merchant = 'AT&T <b>US</b> "store" (1)/2';
+    const r = createExpenseBodySchema.safeParse({
+      category: "Travel",
+      amount: 100,
+      merchant,
+      expenseDate: "2026-06-01",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.merchant).toBe(merchant);
+  });
 });

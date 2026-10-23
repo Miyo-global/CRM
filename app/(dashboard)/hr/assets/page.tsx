@@ -53,7 +53,6 @@ import { useHrAssets, useCreateAsset, useUpdateAsset, useDeleteAsset, useHrEmplo
 import {
   assetCreateSchema,
   assetFormSchema,
-  sanitizeNameLikeInput,
   DUPLICATE_SERIAL_MESSAGE,
   ASSET_NOTES_MAX_CHARS,
   ASSET_PURCHASE_COST_MAX_INR,
@@ -514,7 +513,7 @@ export default function HrAssetsPage() {
     <>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Asset Name</label>
-            <Input value={name} onChange={(e) => setName(sanitizeNameLikeInput(e.target.value, 120))} placeholder="e.g. MacBook Pro 16-inch" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder="e.g. MacBook Pro 16-inch" />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Type</label>
@@ -532,7 +531,7 @@ export default function HrAssetsPage() {
               <label className="text-sm font-medium">Specify type</label>
               <Input
                 value={customType}
-                onChange={(e) => setCustomType(sanitizeNameLikeInput(e.target.value, 64))}
+                onChange={(e) => setCustomType(e.target.value)}
                 placeholder="e.g. Docking station"
                 maxLength={64}
               />
@@ -544,7 +543,7 @@ export default function HrAssetsPage() {
               <label className="text-sm font-medium">Brand</label>
               <Input
                 value={brand}
-                onChange={(e) => setBrand(sanitizeNameLikeInput(e.target.value, 64))}
+                onChange={(e) => setBrand(e.target.value)}
                 placeholder="e.g. Apple"
                 maxLength={64}
               />
@@ -553,7 +552,7 @@ export default function HrAssetsPage() {
               <label className="text-sm font-medium">Model</label>
               <Input
                 value={model}
-                onChange={(e) => setModel(sanitizeNameLikeInput(e.target.value, 64))}
+                onChange={(e) => setModel(e.target.value)}
                 placeholder="e.g. MacBook Pro M3"
                 maxLength={64}
               />

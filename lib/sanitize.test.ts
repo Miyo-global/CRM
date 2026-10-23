@@ -69,4 +69,11 @@ describe("image and class hardening", () => {
   it("neutralises a url() background", () => {
     expect(sanitizeHtml('<p style="background:url(http://evil.example/b)">hi</p>')).not.toContain("evil.example");
   });
+
+  // R2-CRUD-03: plain-text fields are stored as typed and escaped on output;
+  // rich text still goes through here, and the QA payload stays inert.
+  it("keeps the markup and drops the script in the QA rich-text payload", () => {
+    const out = sanitizeHtml('QA-TEST <b>bold</b> & "quote" <script>alert(1)</script>');
+    expect(out).toBe('QA-TEST <b>bold</b> &amp; "quote" ');
+  });
 });
