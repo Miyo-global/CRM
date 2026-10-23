@@ -1,6 +1,6 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { assets, assetAssignmentHistory, organizationMembers, users } from "@/lib/db/schema";
+import { assets, assetAssignmentHistory, assetReturns, organizationMembers, users } from "@/lib/db/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { formatDateOnly } from "@/lib/date-utils";
@@ -218,9 +218,22 @@ export async function DELETE(
     });
     if (!existing) return err("Asset not found.", 404);
 
-    await db
-      .delete(assets)
-      .where(and(eq(assets.id, assetId), eq(assets.orgId, session.orgId)));
+    // R2-CRUD-01: the assignment history and return records point at the
+    // asset, so deleting it alone hit their foreign keys and 500'd. The history
+    // belongs to the asset and goes with it; a return record is the employee's
+    // offboarding record and keeps its copied asset name.
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(assetAssignmentHistory)
+        .where(and(eq(assetAssignmentHistory.assetId, assetId), eq(assetAssignmentHistory.orgId, session.orgId)));
+      await tx
+        .update(assetReturns)
+        .set({ assetId: null })
+        .where(and(eq(assetReturns.assetId, assetId), eq(assetReturns.orgId, session.orgId)));
+      await tx
+        .delete(assets)
+        .where(and(eq(assets.id, assetId), eq(assets.orgId, session.orgId)));
+    });
 
     return ok({ success: true });
   });
