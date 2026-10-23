@@ -4,7 +4,6 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, startOfDay } from "date-fns";
 import { toast } from "sonner";
 
 import {
@@ -26,7 +25,9 @@ import {
   calculateLeaveWorkingDays,
   createLeaveRequestSchema,
   LEAVE_REASON_MAX,
+  parseLocalDate,
 } from "@/lib/validations/leave-request";
+import { getTodayString } from "@/lib/date-utils";
 import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 import { useLeavePreview } from "@/lib/api/hooks/hr/leave-preview";
 import {
@@ -73,12 +74,13 @@ export function LeaveRequestSheet({
     [leaveTypes, balances, pendingDaysByType],
   );
 
+  // The apply route refuses any start before today (QA-0071), so the picker
+  // offers today onward, or the joining date if that is later. It used to offer
+  // the days since joining, which the server then refused (R2-EMP-07).
   const minDate = (() => {
-    const oneYearAgo = startOfDay(new Date());
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    if (!joiningDate) return format(oneYearAgo, "yyyy-MM-dd");
-    const joining = new Date(joiningDate);
-    return format(joining > oneYearAgo ? joining : oneYearAgo, "yyyy-MM-dd");
+    const today = getTodayString();
+    const joining = joiningDate?.slice(0, 10);
+    return joining && joining > today ? joining : today;
   })();
 
   const form = useForm<LeaveFormValues>({
@@ -236,6 +238,9 @@ export function LeaveRequestSheet({
     >
       <Form {...form}>
         <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Leave type, dates and a reason are required. The attachment is optional.
+          </p>
           <FormField
             control={form.control}
             name="leaveTypeId"
@@ -276,7 +281,7 @@ export function LeaveRequestSheet({
                           form.setValue("endDate", val, { shouldValidate: true });
                         }
                       }}
-                      fromDate={minDate ? new Date(minDate) : undefined}
+                      fromDate={parseLocalDate(minDate)}
                       placeholder="Start date"
                     />
                   </FormControl>
@@ -294,7 +299,7 @@ export function LeaveRequestSheet({
                     <DatePicker
                       value={field.value}
                       onChange={field.onChange}
-                      fromDate={watchedStartDate ? new Date(watchedStartDate) : (minDate ? new Date(minDate) : undefined)}
+                      fromDate={parseLocalDate(watchedStartDate || minDate)}
                       defaultMonth={watchedStartDate ? new Date(watchedStartDate) : undefined}
                       placeholder="End date"
                     />
@@ -304,6 +309,9 @@ export function LeaveRequestSheet({
               )}
             />
           </div>
+          <p className="-mt-2 text-xs text-muted-foreground">
+            Leave can start today or later. For days already gone, ask HR to correct your attendance.
+          </p>
 
           <FormField
             control={form.control}
