@@ -81,6 +81,9 @@ import { format, parseISO } from "date-fns";
 import type { Employee } from "@/types/hr";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_EXTRA_FIELDS } from "@/lib/hr/hr-letter-tokens";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { useMutation } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 function getInitials(first?: string | null, last?: string | null) {
   return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
@@ -394,6 +397,17 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
       ? `${e.experienceYears} ${Number(e.experienceYears) === 1 ? "yr" : "yrs"}`
       : null;
 
+  const setupLinkExpiresAt = typeof e.setupLinkExpiresAt === "string" ? new Date(e.setupLinkExpiresAt) : null;
+  const setupLinkExpired = !setupLinkExpiresAt || setupLinkExpiresAt.getTime() < Date.now();
+  const resendSetupLink = useMutation({
+    mutationFn: () => apiClient.post(`/hr/employees/${employee.id}/setup-link`, {}),
+    onSuccess: () => {
+      toast.success(`A new set-up link was sent to ${employee.email}. Earlier links no longer work.`);
+      router.refresh();
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
   let safeDefaultTab = defaultTab;
   if (safeDefaultTab === "profile" && !canManage) safeDefaultTab = "overview";
   if (safeDefaultTab === "my-profile" && !isSelf) safeDefaultTab = "overview";
@@ -582,6 +596,52 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                       )
                     }
                   />
+                  {/* R2-LC-07: portal and invite status, here rather than only at
+                      the bottom of Edit. */}
+                  {canManage && (
+                    <DetailRow
+                      label="Portal access"
+                      value={
+                        employee.hasDashboardAccess ? (
+                          <StatusPill tone="success" dot>On</StatusPill>
+                        ) : (
+                          <StatusPill tone="neutral" dot>Off</StatusPill>
+                        )
+                      }
+                    />
+                  )}
+                  {canManage && (
+                    <DetailRow
+                      label="Account set-up"
+                      value={
+                        e.setupPending === true ? (
+                          <div className="space-y-1.5">
+                            <StatusPill tone="warning" dot>
+                              {setupLinkExpired ? "Set-up link expired" : "Invite pending"}
+                            </StatusPill>
+                            {setupLinkExpiresAt && !setupLinkExpired && (
+                              <p className="text-2xs text-muted-foreground">
+                                Link valid until {format(setupLinkExpiresAt, "d MMM yyyy, h:mm a")}
+                              </p>
+                            )}
+                            {employee.hasDashboardAccess && employee.isActive !== false && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => resendSetupLink.mutate()}
+                                disabled={resendSetupLink.isPending}
+                              >
+                                <Mail className="size-4" aria-hidden="true" />
+                                {resendSetupLink.isPending ? "Sending…" : "Resend set-up link"}
+                              </Button>
+                            )}
+                          </div>
+                        ) : (
+                          <StatusPill tone="success" dot>Password set</StatusPill>
+                        )
+                      }
+                    />
+                  )}
                 </DetailCard>
 
                 <DetailCard icon={Mail} title="Contact">

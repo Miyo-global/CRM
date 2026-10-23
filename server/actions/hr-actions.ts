@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { users, organizationMembers, departments, branches } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { users, organizationMembers, departments, branches, passwordResetTokens } from "@/lib/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 // Server actions check revocation and deactivation too (SEC-0007).
 import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
@@ -94,8 +94,21 @@ export async function getEmployeeById(userId: string) {
   ];
   const SENSITIVE_FIELDS = ["monthlySalary", "taxId", "bankDetails", "dateOfBirth", "emergencyContact"];
 
+  // R2-LC-06 / R2-LC-07: invite status for the Overview. Onboarding is the
+  // only path that sets isPasswordChangeRequired; the set-up link clears it.
+  const setupPending = canSeeSensitive && user.isPasswordChangeRequired === true;
+  const setupToken = setupPending
+    ? await db.query.passwordResetTokens.findFirst({
+        where: eq(passwordResetTokens.email, user.email),
+        orderBy: [desc(passwordResetTokens.expiresAt)],
+        columns: { expiresAt: true },
+      })
+    : null;
+
   const result: Record<string, unknown> = { ...user };
   for (const k of INTERNAL_FIELDS) delete result[k];
+  result.setupPending = setupPending;
+  result.setupLinkExpiresAt = setupToken?.expiresAt?.toISOString() ?? null;
   if (!canSeeSensitive) for (const k of SENSITIVE_FIELDS) result[k] = null;
 
   result.departmentName = dept?.name ?? null;
