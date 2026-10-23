@@ -19,6 +19,7 @@ import {
   resolveInitialBalance,
 } from "@/lib/leave-policy";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
+import { countLeaveWorkingDays } from "@/lib/hr/leave-working-days-server";
 import {
   casualDaysExpiringFromEarnMonth,
   casualMaxUsableInMonth,
@@ -53,6 +54,37 @@ export async function ensureLeaveTypes(orgId: string) {
   });
 }
 
+/**
+ * Paid days of leave already approved in `year`, by leave type. Approval only
+ * deducts from a balance row that exists, so leave approved before the row was
+ * seeded was never taken off: Who's Out listed it while the balance read
+ * "12 of 12, 0 used" (R2-HR-10). A row seeded late starts net of these.
+ */
+async function approvedPaidDaysByType(
+  orgId: string,
+  userId: string,
+  year: number,
+): Promise<Map<number, number>> {
+  const approved = await db.query.leaveRequests.findMany({
+    where: and(
+      eq(leaveRequests.orgId, orgId),
+      eq(leaveRequests.userId, userId),
+      eq(leaveRequests.status, "APPROVED"),
+      gte(leaveRequests.startDate, `${year}-01-01`),
+      lte(leaveRequests.startDate, `${year}-12-31`),
+    ),
+    columns: { leaveTypeId: true, startDate: true, endDate: true, isHalfDay: true, lopDays: true },
+  });
+  const byType = new Map<number, number>();
+  for (const r of approved) {
+    if (r.leaveTypeId == null) continue;
+    const days = await countLeaveWorkingDays({ orgId, startDate: r.startDate, endDate: r.endDate, isHalfDay: r.isHalfDay });
+    const paid = Math.max(0, days - Number(r.lopDays ?? 0));
+    byType.set(r.leaveTypeId, (byType.get(r.leaveTypeId) ?? 0) + paid);
+  }
+  return byType;
+}
+
 export async function ensureUserBalances(
   orgId: string,
   userId: string,
@@ -74,11 +106,15 @@ export async function ensureUserBalances(
     columns: { joiningDate: true },
   });
   const joiningDate = user?.joiningDate ? new Date(user.joiningDate) : new Date(year, 0, 1);
+  const missingTypes = types.filter((t) => !existingTypeIds.has(t.id));
+  if (missingTypes.length === 0) return;
+  const alreadyTaken = await approvedPaidDaysByType(orgId, userId, year);
 
-  for (const t of types) {
-    if (existingTypeIds.has(t.id)) continue;
-
-    const balance = resolveInitialBalance(t.name, t.daysPerYear, joiningDate, year);
+  for (const t of missingTypes) {
+    const balance = Math.max(
+      0,
+      resolveInitialBalance(t.name, t.daysPerYear, joiningDate, year) - (alreadyTaken.get(t.id) ?? 0),
+    );
 
     await db.insert(leaveBalances).values({
       orgId,
@@ -108,16 +144,20 @@ export async function initializeLeaveBalances(
     ),
   });
   const existingTypeIds = new Set(existingBalances.map((b) => b.leaveTypeId));
+  const missingTypes = types.filter((type) => !existingTypeIds.has(type.id));
+  const alreadyTaken =
+    missingTypes.length > 0 ? await approvedPaidDaysByType(orgId, userId, targetYear) : new Map<number, number>();
 
-  const toInsert = types
-    .filter((type) => !existingTypeIds.has(type.id))
-    .map((type) => ({
-      orgId,
-      userId,
-      leaveTypeId: type.id,
-      year: targetYear,
-      balance: resolveInitialBalance(type.name, type.daysPerYear, joinDate, targetYear).toString(),
-    }));
+  const toInsert = missingTypes.map((type) => ({
+    orgId,
+    userId,
+    leaveTypeId: type.id,
+    year: targetYear,
+    balance: Math.max(
+      0,
+      resolveInitialBalance(type.name, type.daysPerYear, joinDate, targetYear) - (alreadyTaken.get(type.id) ?? 0),
+    ).toString(),
+  }));
 
   if (toInsert.length > 0) {
     try {
