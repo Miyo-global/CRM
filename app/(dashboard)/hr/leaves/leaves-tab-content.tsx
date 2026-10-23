@@ -77,7 +77,7 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
         .filter((bal) => bal.typeName && ALLOWED_LEAVE_TYPE_NAMES.has(bal.typeName))
         .map((bal, index) => {
           const available = parseFloat(bal.balance || "0") || 0;
-          const total = bal.entitled ?? bal.daysPerYear ?? 0;
+          const total = Math.max(available, bal.entitled ?? bal.daysPerYear ?? 0);
           const pending = myLeaveRequests
             .filter(
               (req) =>

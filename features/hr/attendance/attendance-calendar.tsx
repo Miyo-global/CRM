@@ -35,7 +35,9 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
 
   const { data: monthlyLogs, isLoading } = useHrMonthlyAttendance({ userId, year, month });
   const { data: wfhRequests } = useHrWfhRequests();
-  const { data: holidaysList } = useHrHolidaysForCalendar({ year, month });
+  // The holidays route takes a 1-based month; passing getMonth() fetched the
+  // previous month, so this month's holidays never showed (R2-HR-09).
+  const { data: holidaysList } = useHrHolidaysForCalendar({ year, month: month + 1 });
   // Approved leave was never marked, so a day off read as absent (QA-0066).
   const { data: myLeaves } = useHrMyLeaves();
 

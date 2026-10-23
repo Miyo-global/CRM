@@ -580,7 +580,11 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
       type: r.typeName ?? "Leave",
       remaining: Number(r.balance),
       // This year's grant, matching My Leaves (R2-EMP-06).
-      total: resolveInitialBalance(r.typeName ?? "", r.total ?? 0, joinedOn, now.getFullYear()),
+      // Never below what is left: comp-off and HR credits add to the balance.
+      total: Math.max(
+        Number(r.balance),
+        resolveInitialBalance(r.typeName ?? "", r.total ?? 0, joinedOn, now.getFullYear()),
+      ),
     })),
     upcomingEvents: upcomingEvents.map((e) => ({
       id: e.id,

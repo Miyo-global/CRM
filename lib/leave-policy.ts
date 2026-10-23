@@ -83,6 +83,8 @@ export function getSickLeaveAllocation(): number {
   return LEAVE_POLICY.SICK.daysPerYear;
 }
 
+export const COMP_OFF_LEAVE_NAME = "Compensatory Off";
+
 export function resolveInitialBalance(
   typeName: string,
   daysPerYear: number,
@@ -95,6 +97,9 @@ export function resolveInitialBalance(
     case LEAVE_POLICY.SICK.name:
       return getSickLeaveAllocation();
     case LEAVE_POLICY.UNPAID.name:
+    // Comp-off is earned by working a holiday and credited per grant; seeding
+    // its days-per-year figure handed every new joiner free days (R2-HR-09).
+    case COMP_OFF_LEAVE_NAME:
       return 0;
     default:
       return daysPerYear;
