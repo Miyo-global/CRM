@@ -59,7 +59,9 @@ function QRCodeImage({ imageUrl, size = 96 }: { imageUrl: string; size?: number 
   useEffect(() => {
     setError(false);
     setSrc(null);
-    if (!imageUrl?.trim()) { setSrc("/placeholder.png"); return; }
+    // No image: show the icon fallback. /placeholder.png never existed and
+    // 404'd in the console (R2-CORE-01).
+    if (!imageUrl?.trim()) { setError(true); return; }
     const trimmed = imageUrl.trim();
     if (trimmed.startsWith("http") || trimmed.startsWith("/")) {
       setSrc(trimmed);

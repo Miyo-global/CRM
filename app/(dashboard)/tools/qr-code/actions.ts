@@ -238,7 +238,7 @@ export async function getQRCodes(orgId: string) {
 
 function normalizeImageUrl(imageUrl: string): string {
   if (!imageUrl || !imageUrl.trim()) {
-    return "/placeholder.png";
+    return "";
   }
 
   const trimmed = imageUrl.trim();
