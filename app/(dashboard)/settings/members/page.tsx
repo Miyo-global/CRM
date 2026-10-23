@@ -28,6 +28,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -483,6 +484,13 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
   // termination workflow — never for the owner, never for yourself.
   const canManageMember = canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId);
   const currentRoleListed = roleOptions.some((r) => r.value === member.role);
+  // R2-LC-14: where the actor may not change this role, the control stays
+  // visible but disabled and says who can.
+  const lockedReason = !canChangeRole && actor.userId && member.userId !== actor.userId
+    ? member.role === "CEO"
+      ? "The Super Admin's role cannot be changed."
+      : "Only the Super Admin can change Admin and HR roles."
+    : null;
 
   return (
     <TableRow>
@@ -516,6 +524,20 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
                 ))}
               </SelectContent>
             </Select>
+          )}
+          {lockedReason && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="ml-auto rounded-md focus-visible:focus-ring">
+                  <Select value={member.role} disabled>
+                    <SelectTrigger className="h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}: ${lockedReason}`}>
+                      <SelectValue>{getRoleLabel(member.role)}</SelectValue>
+                    </SelectTrigger>
+                  </Select>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{lockedReason}</TooltipContent>
+            </Tooltip>
           )}
           {canManageMember && (
             <DropdownMenu>
