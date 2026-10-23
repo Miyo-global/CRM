@@ -176,6 +176,8 @@ interface AdminExpenseListProps {
   onApprove: (id: number) => void;
   onRejectStart: (id: number) => void;
   onMarkPaid: (id: number) => void;
+  onEdit: (expense: ExpenseToEdit) => void;
+  onWithdraw: (id: number) => void;
   onRejectConfirm: (id: number) => void;
   onRejectCancel: () => void;
   onRejectionReasonChange: (reason: string) => void;
@@ -199,6 +201,8 @@ export function AdminExpenseList({
   onApprove,
   onRejectStart,
   onMarkPaid,
+  onEdit,
+  onWithdraw,
   onRejectConfirm,
   onRejectCancel,
   onRejectionReasonChange,
@@ -238,6 +242,8 @@ export function AdminExpenseList({
                 onApprove={onApprove}
                 onRejectStart={onRejectStart}
                 onMarkPaid={onMarkPaid}
+                onEdit={onEdit}
+                onWithdraw={onWithdraw}
                 onRejectConfirm={onRejectConfirm}
                 onRejectCancel={onRejectCancel}
                 onRejectionReasonChange={onRejectionReasonChange}
@@ -269,6 +275,7 @@ interface MemberExpenseListProps {
   statusFilter: StatusFilter;
   activeFilterCount: number;
   onEdit: (expense: ExpenseToEdit) => void;
+  onWithdraw: (id: number) => void;
   onResubmit: (expense: ExpenseWithRelations) => void;
   onShowAll: () => void;
   onCreateNew: () => void;
@@ -285,6 +292,7 @@ export function MemberExpenseList({
   statusFilter,
   activeFilterCount,
   onEdit,
+  onWithdraw,
   onResubmit,
   onShowAll,
   onCreateNew,
@@ -332,6 +340,7 @@ export function MemberExpenseList({
                       key={expense.id}
                       expense={expense}
                       onEdit={onEdit}
+                      onWithdraw={onWithdraw}
                       onResubmit={onResubmit}
                     />
                   ))}

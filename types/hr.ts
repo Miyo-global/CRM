@@ -533,6 +533,8 @@ export interface CreateExpenseInput {
   paymentMethod?: string;
   projectId?: number;
   expenseDate: Date | string;
+  /** HR/Admin filing for another employee; omitted = self. */
+  userId?: string;
 }
 
 export interface UpdateExpenseStatusInput {

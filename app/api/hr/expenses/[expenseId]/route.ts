@@ -228,6 +228,11 @@ export async function DELETE(
 
     if (!isOwner && !isAdmin) return err("Not authorized to delete this expense.", 403);
     if (expense.status === "PAID") return err("Paid expenses cannot be deleted.", 400);
+    // Withdrawing is for a claim nobody has signed off yet (R2-CRUD-06); an
+    // approved one already sits in Reimbursements.
+    if (!isAdmin && expense.status === "APPROVED") {
+      return err("An approved claim cannot be withdrawn. Ask HR to reject it instead.", 400);
+    }
 
     await db.delete(expenses).where(and(eq(expenses.id, expenseId), eq(expenses.orgId, session.orgId)));
 

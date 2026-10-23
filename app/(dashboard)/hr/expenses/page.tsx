@@ -1,5 +1,6 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useCallback } from "react";
 import { Plus, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -175,12 +176,12 @@ export default function ExpensesPage() {
   const handleDelete = useCallback(
     (expenseId: number) => {
       toast.promise(deleteMutation.mutateAsync(expenseId), {
-        loading: "Deleting expense...",
+        loading: "Withdrawing claim...",
         success: () => {
           void refetch();
-          return "Expense deleted";
+          return "Claim withdrawn";
         },
-        error: "Failed to delete expense",
+        error: (e) => getErrorMessage(e),
       });
     },
     [deleteMutation, refetch],
@@ -343,6 +344,8 @@ export default function ExpensesPage() {
               currentUserRole={session?.user?.role}
               onApprove={handleApprove}
               onMarkPaid={handleMarkPaid}
+              onEdit={handleEdit}
+              onWithdraw={handleDelete}
               onRejectStart={(id) => {
                 setRejectingId(id);
                 setRejectionReason("");
@@ -377,6 +380,7 @@ export default function ExpensesPage() {
           categories={EXPENSE_CATEGORIES}
           paymentMethods={PAYMENT_METHODS}
           editExpense={editingExpense}
+          employees={employees.filter((e) => e.id !== session?.user?.id)}
         />
         <ImportExpenseSheet
           open={isImportOpen}
@@ -430,6 +434,7 @@ export default function ExpensesPage() {
             statusFilter={statusFilter}
             activeFilterCount={activeFilterCount}
             onEdit={handleEdit}
+            onWithdraw={handleDelete}
             onResubmit={handleResubmit}
             onShowAll={() => setStatusFilter("ALL")}
             onCreateNew={() => setIsCreateOpen(true)}

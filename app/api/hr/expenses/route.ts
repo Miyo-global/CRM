@@ -52,10 +52,23 @@ export async function POST(req: NextRequest) {
 
     const isAdminRole = isAdminOrOwner(session.user.role);
 
+    // R2-CRUD-06: HR and Admins may file a claim for another employee; it is
+    // then that employee's claim and routes to their approver.
+    const claimantId = body.userId ?? session.user.id;
+    const onBehalf = claimantId !== session.user.id;
+    if (onBehalf) {
+      if (!isAdminRole) return err("Only HR or an Admin can file an expense for someone else.", 403);
+      const member = await db.query.organizationMembers.findFirst({
+        where: and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.userId, claimantId)),
+        columns: { userId: true },
+      });
+      if (!member) return err("Employee not found.", 404);
+    }
+
     const duplicateCheck = await db.query.expenses.findFirst({
       where: and(
         eq(expenses.orgId, session.orgId),
-        eq(expenses.userId, session.user.id),
+        eq(expenses.userId, claimantId),
         eq(expenses.amount, body.amount.toString()),
         eq(expenses.expenseDate, formatDateOnly(body.expenseDate)),
         ...(body.merchant ? [eq(expenses.merchant, body.merchant)] : []),
@@ -70,20 +83,24 @@ export async function POST(req: NextRequest) {
     }
 
     const requester = await db.query.users.findFirst({
-      where: eq(users.id, session.user.id),
-      columns: { id: true, role: true, reportingTo: true },
+      where: eq(users.id, claimantId),
+      columns: { id: true, name: true, role: true, reportingTo: true },
     });
     const expenseApprover = await resolveLeaveApprover(session.orgId, {
-      id: session.user.id,
-      role: requester?.role ?? session.user.role,
+      id: claimantId,
+      role: requester?.role ?? (onBehalf ? null : session.user.role),
       reportingTo: requester?.reportingTo ?? null,
     });
+    // Whoever filed it does not then approve it: a claim filed on someone's
+    // behalf is left for another approver when the filer would get it.
+    const approverId = onBehalf && expenseApprover.approverId === session.user.id ? null : expenseApprover.approverId;
+    const autoApprove = expenseApprover.autoApprove && !onBehalf;
 
     const [expense] = await db
       .insert(expenses)
       .values({
         orgId: session.orgId,
-        userId: session.user.id,
+        userId: claimantId,
         category: body.category,
         categoryId: body.categoryId,
         amount: body.amount.toString(),
@@ -96,9 +113,9 @@ export async function POST(req: NextRequest) {
         expenseDate: formatDateOnly(body.expenseDate),
         // Nobody approves their own claim, admins included: route it up the
         // same chain leave uses (A41).
-        status: expenseApprover.autoApprove ? "APPROVED" : "PENDING",
-        approverId: expenseApprover.approverId,
-        approvedAt: expenseApprover.autoApprove ? new Date() : null,
+        status: autoApprove ? "APPROVED" : "PENDING",
+        approverId,
+        approvedAt: autoApprove ? new Date() : null,
       })
       .returning();
 
@@ -109,7 +126,7 @@ export async function POST(req: NextRequest) {
         orgId: session.orgId,
         targetId: String(expense.id),
         targetType: "expense",
-        metadata: { category: body.category, amount: body.amount },
+        metadata: { category: body.category, amount: body.amount, ...(onBehalf && { onBehalfOf: claimantId }) },
       });
     } catch {  }
 
@@ -131,7 +148,7 @@ export async function POST(req: NextRequest) {
             .filter((r) => r.email)
             .map((r) =>
               sendExpenseSubmittedEmail(r.email!, {
-                employeeName: session.user.name ?? "Employee",
+                employeeName: requester?.name ?? session.user.name ?? "Employee",
                 category: body.category,
                 amount: body.amount,
                 description: body.description,

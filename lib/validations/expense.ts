@@ -32,6 +32,8 @@ export const createExpenseBodySchema = z
     paymentMethod: expensePaymentMethodSchema,
     projectId: z.number().int().optional(),
     expenseDate: z.string(),
+    /** HR/Admin filing for another employee (R2-CRUD-06); omitted = self. */
+    userId: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
     validateExpenseDateNotFuture(data.expenseDate, ctx, ["expenseDate"]);

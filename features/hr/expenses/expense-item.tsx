@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { parseCalendarDate } from "@/lib/date-utils";
-import { Receipt, Download, Eye, Pencil, CheckCircle2, XCircle, MessageSquare, Mail, Copy } from "lucide-react";
+import { Receipt, Download, Eye, Pencil, Trash2, CheckCircle2, XCircle, MessageSquare, Mail, Copy } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import {
 } from "./expense-constants";
 import { formatExpenseSubmitterLabel } from "@/lib/validations/expense";
 import { canDecideRequest } from "@/lib/auth/separation-of-duties";
+import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 
 function SubmitterContactPopover({
   expense,
@@ -152,6 +154,8 @@ interface AdminExpenseItemProps {
   onRejectionReasonChange: (reason: string) => void;
   /** Records an approved expense as reimbursed (QA-0044). */
   onMarkPaid: (id: number) => void;
+  onEdit: (expense: ExpenseToEdit) => void;
+  onWithdraw: (id: number) => void;
 }
 
 export function AdminExpenseItem({
@@ -167,8 +171,13 @@ export function AdminExpenseItem({
   onRejectCancel,
   onRejectionReasonChange,
   onMarkPaid,
+  onEdit,
+  onWithdraw,
 }: AdminExpenseItemProps) {
   const status = expense.status || "PENDING";
+  // Your own claim waits for another approver, so you can only edit or
+  // withdraw it while it is pending (R2-CRUD-06).
+  const ownPending = !!currentUserId && expense.userId === currentUserId && status === "PENDING";
   // Same rule as the API: no deciding your own claim or an HR/Admin colleague's (QA-AUTH-04).
   const canDecide = canDecideRequest(
     { id: currentUserId, role: currentUserRole },
@@ -336,7 +345,9 @@ export function AdminExpenseItem({
           </div>
         )}
 
-        {!canDecide ? null : isRejecting ? (
+        {ownPending ? (
+          <OwnClaimActions expense={expense} onEdit={onEdit} onWithdraw={onWithdraw} />
+        ) : !canDecide ? null : isRejecting ? (
           <div className="space-y-2 text-left">
             <Input
               placeholder="Reason for rejection (required)..."
@@ -396,21 +407,8 @@ export function AdminExpenseItem({
   );
 }
 
-interface MemberExpenseItemProps {
-  expense: ExpenseWithRelations;
-  onEdit: (expense: ExpenseToEdit) => void;
-  onResubmit: (expense: ExpenseWithRelations) => void;
-}
-
-export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpenseItemProps) {
-  const status = expense.status || "PENDING";
-  const catConfig = getCategoryConfig(expense.category || "Other");
-  const CatIcon = catConfig.icon;
-  const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.PENDING;
-  const canEdit = status === "PENDING";
-  const canResubmit = status === "REJECTED";
-
-  const toEditPayload = (): ExpenseToEdit => ({
+function toEditPayload(expense: ExpenseWithRelations): ExpenseToEdit {
+  return {
     id: expense.id,
     category: expense.category || "",
     amount: expense.amount,
@@ -420,7 +418,69 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
     expenseDate: expense.expenseDate,
     receiptUrl: expense.receiptUrl,
     receiptFileName: expense.receiptFileName,
-  });
+  };
+}
+
+/** Edit and withdraw for a pending claim of your own (R2-CRUD-06). */
+function OwnClaimActions({
+  expense,
+  onEdit,
+  onWithdraw,
+}: {
+  expense: ExpenseWithRelations;
+  onEdit: (expense: ExpenseToEdit) => void;
+  onWithdraw: (id: number) => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <div className="flex justify-end gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-brand-text hover:text-brand-text"
+        onClick={() => onEdit(toEditPayload(expense))}
+        aria-label="Edit claim"
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-danger-strong"
+        onClick={() => setConfirming(true)}
+        aria-label="Withdraw claim"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+      <ConfirmActionDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="Withdraw claim"
+        description="Withdraw this expense claim? It will be removed and not reviewed."
+        confirmLabel="Withdraw"
+        onConfirm={() => {
+          setConfirming(false);
+          onWithdraw(expense.id);
+        }}
+      />
+    </div>
+  );
+}
+
+interface MemberExpenseItemProps {
+  expense: ExpenseWithRelations;
+  onEdit: (expense: ExpenseToEdit) => void;
+  onWithdraw: (id: number) => void;
+  onResubmit: (expense: ExpenseWithRelations) => void;
+}
+
+export function MemberExpenseItem({ expense, onEdit, onWithdraw, onResubmit }: MemberExpenseItemProps) {
+  const status = expense.status || "PENDING";
+  const catConfig = getCategoryConfig(expense.category || "Other");
+  const CatIcon = catConfig.icon;
+  const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.PENDING;
+  const canEdit = status === "PENDING";
+  const canResubmit = status === "REJECTED";
 
   return (
     <TableRow>
@@ -480,15 +540,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
             Resubmit
           </Button>
         ) : canEdit ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-brand-text hover:text-brand-text"
-            onClick={() => onEdit(toEditPayload())}
-            aria-label="Edit"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <OwnClaimActions expense={expense} onEdit={onEdit} onWithdraw={onWithdraw} />
         ) : (
           <Button
             variant="ghost"
@@ -498,7 +550,7 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
               if (expense.receiptUrl) {
                 viewFile(expense.receiptUrl);
               } else {
-                onEdit(toEditPayload());
+                onEdit(toEditPayload(expense));
               }
             }}
             aria-label="View"

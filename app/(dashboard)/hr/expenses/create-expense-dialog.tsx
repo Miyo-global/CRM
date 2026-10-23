@@ -119,7 +119,11 @@ interface CreateExpenseDialogProps {
   categories: string[];
   paymentMethods: string[];
   editExpense?: ExpenseToEdit | null;
+  /** HR/Admin only: offer filing the claim for another employee (R2-CRUD-06). */
+  employees?: { id: string; name?: string | null; firstName?: string | null; lastName?: string | null; email?: string | null }[];
 }
+
+const SELF = "self";
 
 function formatAmountDisplay(amount: number) {
   return amount > 0 ? String(amount) : "";
@@ -211,8 +215,10 @@ export function CreateExpenseDialog({
   categories,
   paymentMethods,
   editExpense,
+  employees,
 }: CreateExpenseDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [claimantId, setClaimantId] = useState(SELF);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -259,6 +265,7 @@ export function CreateExpenseDialog({
 
     sheetSessionRef.current = { open: true, editId };
     reset(buildDefaultValues());
+    setClaimantId(SELF);
     if (editExpense?.receiptUrl) {
       setReceiptPreview(editExpense.receiptUrl);
     } else {
@@ -362,6 +369,7 @@ export function CreateExpenseDialog({
         expenseDate: formatDateOnly(data.expenseDate),
         receiptUrl,
         receiptFileName,
+        ...(claimantId !== SELF && { userId: claimantId }),
       };
 
       if (isEditMode && editExpense) {
@@ -382,6 +390,7 @@ export function CreateExpenseDialog({
     receiptFile,
     isEditMode,
     editExpense,
+    claimantId,
     reset,
     buildDefaultValues,
     onSuccess,
@@ -403,6 +412,24 @@ export function CreateExpenseDialog({
     >
       <Form {...form}>
         <div className="space-y-4">
+          {employees && !isEditMode ? (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium" htmlFor="expense-claimant">Employee</label>
+              <Select value={claimantId} onValueChange={setClaimantId}>
+                <SelectTrigger id="expense-claimant" className="text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  <SelectItem value={SELF}>Myself</SelectItem>
+                  {employees.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {[e.firstName, e.lastName].filter(Boolean).join(" ") || e.name || e.email || "Employee"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
           <div className="grid grid-cols-2 gap-3">
             <FormField
               control={form.control}
