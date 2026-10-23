@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { User } from "lucide-react";
-import { isPersonNameInputCharValid, normalizePersonNameInput } from "@/lib/utils/person-name";
+import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import type { EmployeeFormValues } from "@/app/(dashboard)/hr/employees/[employeeId]/edit-employee-form";
 
 const PERSON_NAME_MAX_LENGTH = 50;
@@ -35,17 +35,13 @@ export function PersonalInfoSection() {
                 <Input
                   maxLength={PERSON_NAME_MAX_LENGTH}
                   value={field.value ?? ""}
-                  onChange={(e) => {
-                    const next = e.target.value;
-                    if (isPersonNameInputCharValid(next)) {
-                      field.onChange(normalizePersonNameInput(next));
-                    }
-                  }}
+                  onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
                 />
               </FormControl>
+              <FormDescription className="text-xs">Use {PERSON_NAME_HINT}.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -60,17 +56,13 @@ export function PersonalInfoSection() {
                 <Input
                   maxLength={PERSON_NAME_MAX_LENGTH}
                   value={field.value ?? ""}
-                  onChange={(e) => {
-                    const next = e.target.value;
-                    if (isPersonNameInputCharValid(next)) {
-                      field.onChange(normalizePersonNameInput(next));
-                    }
-                  }}
+                  onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
                 />
               </FormControl>
+              <FormDescription className="text-xs">Use {PERSON_NAME_HINT}.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

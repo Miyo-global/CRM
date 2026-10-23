@@ -5,7 +5,7 @@ import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { format, subYears } from "date-fns";
-import { isPersonNameInputCharValid, normalizePersonNameInput } from "@/lib/utils/person-name";
+import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -85,14 +85,11 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
                 placeholder="John"
                 maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  if (!isPersonNameInputCharValid(next)) return;
-                  field.onChange(normalizePersonNameInput(next));
-                }}
+                onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
               />
             </FormControl>
+            <FormDescription className="text-xs">Use {PERSON_NAME_HINT}.</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -108,14 +105,11 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
                 placeholder="Doe"
                 maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  if (!isPersonNameInputCharValid(next)) return;
-                  field.onChange(normalizePersonNameInput(next));
-                }}
+                onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
               />
             </FormControl>
+            <FormDescription className="text-xs">Use {PERSON_NAME_HINT}.</FormDescription>
             <FormMessage />
           </FormItem>
         )}
