@@ -11,13 +11,11 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { ExportButton } from "@/components/ui/export-button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
-import { toast } from "sonner";
 import { format } from "date-fns";
 import { useDebouncedValue } from "@/hooks/use-debounce";
 import {
   useHrEmployees,
   useHrDepartments,
-  useTerminateEmployee,
   isPaginatedEmployees,
 } from "@/lib/api/hooks/hr";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
@@ -37,7 +35,6 @@ import { EmployeesLoadingSkeleton } from "@/features/hr/employees/employees-load
 import { HrEmployeeListToolbar } from "@/features/hr/employees/hr-employee-list-toolbar";
 import { HrEmployeePagination, HrEmployeeTable } from "@/features/hr/employees/hr-employee-table";
 import { EmployeeDirectoryCard } from "@/features/hr/employees/employee-directory-card";
-import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getTodayString } from "@/lib/date-utils";
 import { uniqueDepartmentNames } from "@/lib/hr/department-count";
 
@@ -55,9 +52,6 @@ export default function HRDashboardPage() {
   const { page, pageSize, setPage, setPageSize, resetPage, updateParams } = usePaginationParams({
     defaultPageSize: PAGE_SIZE,
   });
-
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
 
   const searchFromUrl = searchParams.get("q") || "";
   const deptFilter = searchParams.get("dept") || "All";
@@ -98,7 +92,6 @@ export default function HRDashboardPage() {
   });
 
   const { data: departmentRows = [] } = useHrDepartments();
-  const terminateMutation = useTerminateEmployee();
 
   const employees = useMemo(() => {
     if (isPaginatedEmployees(employeesResponse)) {
@@ -138,23 +131,6 @@ export default function HRDashboardPage() {
     [departmentRows],
   );
 
-  const handleDelete = useCallback(async () => {
-    if (!employeeToDelete) return;
-    terminateMutation.mutate(employeeToDelete.id, {
-      onSuccess: () => {
-        toast.success("Employee terminated", {
-          action: {
-            label: "View terminated",
-            onClick: () => router.push("/hr/employees/terminated"),
-          },
-        });
-        setDeleteDialogOpen(false);
-        setEmployeeToDelete(null);
-      },
-      onError: () => toast.error("Failed to terminate employee"),
-    });
-  }, [employeeToDelete, terminateMutation, router]);
-
   const employeeExportSheets = useMemo(() => [{
     name: "Employees",
     columns: [
@@ -184,10 +160,13 @@ export default function HRDashboardPage() {
     updateParams({ q: null, dept: null, status: null, role: null, page: null });
   }, [updateParams]);
 
-  const handleRequestDelete = useCallback((employee: Employee) => {
-    setEmployeeToDelete(employee);
-    setDeleteDialogOpen(true);
-  }, []);
+  // R2-TERM-01: terminating goes through the workflow (reason, last working
+  // day, Super Admin approval), not a one-click deactivate the API refuses.
+  const handleRequestDelete = useCallback(
+    (employee: Employee) =>
+      router.push(`/hr/termination?employee=${encodeURIComponent(employee.id)}`),
+    [router],
+  );
 
   if (isLoading) return <EmployeesLoadingSkeleton />;
 
@@ -327,20 +306,6 @@ export default function HRDashboardPage() {
           action={{ label: "Add employee", href: "/hr/onboarding?tab=wizard" }}
         />
       )}
-
-      <ConfirmActionDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Terminate employee"
-        description={
-          employeeToDelete
-            ? `Are you sure you want to terminate ${employeeToDelete.firstName ?? ""} ${employeeToDelete.lastName ?? ""}? This action cannot be undone.`
-            : ""
-        }
-        confirmLabel="Terminate"
-        variant="destructive"
-        onConfirm={handleDelete}
-      />
     </PageWrapper>
   );
 }

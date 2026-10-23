@@ -62,11 +62,12 @@ export default function TerminationPage() {
   const { data: session } = useSession();
 
   const role = session?.user?.role;
-  const isHR = role === "HR";
   const isCEO = role === "CEO";
   // Admins could create a termination through the API but had no button for
   // it; the members table's "Start termination" lands them here (QA-BUG-37).
-  const canStartTermination = isHR || isCEO || role === "ADMIN";
+  // R2-TERM-01: whoever starts one also submits, sends and completes it; only
+  // the Super Admin approves.
+  const canStartTermination = role === "HR" || isCEO || role === "ADMIN";
 
   const { data: terminations, isLoading, isError, error, refetch } = useTerminations();
   const { data: employeesData } = useHrEmployees();
@@ -377,6 +378,7 @@ export default function TerminationPage() {
   return (
     <PageWrapper
       title="Termination management"
+      subtitle="HR or an Admin starts, submits, sends and completes a termination; the Super Admin approves it."
       badge={`${(terminations ?? []).length} records`}
       actions={
         canStartTermination ? (
@@ -430,7 +432,7 @@ export default function TerminationPage() {
             <TerminationCard
               key={record.id}
               record={record}
-              isHR={isHR}
+              isHR={canStartTermination}
               isCEO={isCEO}
               onSubmit={(id) => setSubmitId(id)}
               onApprove={(id) => {

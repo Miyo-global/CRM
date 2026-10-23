@@ -15,6 +15,7 @@ export type AuditAction =
   | "hr.employee_added"
   | "hr.employee_updated"
   | "hr.employee_terminated"
+  | "hr.termination_refused"
   | "hr.employee_onboarded"
   | "hr.salary_changed"
   | "hr.salary_revised"

@@ -96,6 +96,15 @@ export async function PATCH(
     }
 
     if (body.isActive === false) {
+      // R2-TERM-02: the refused shortcut leaves a trace in the audit log.
+      void createAuditLog({
+        action: "hr.termination_refused",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: targetUserId,
+        targetType: "employee",
+        metadata: { reason: "isActive=false outside the termination workflow" },
+      }).catch(() => {});
       return err(
         "Use the termination workflow to deactivate an employee (so CEO approval, full-and-final settlement, and asset returns are recorded).",
         400

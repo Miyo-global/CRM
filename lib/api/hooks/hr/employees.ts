@@ -81,18 +81,6 @@ export function useUpdateProfile() {
   });
 }
 
-export function useTerminateEmployee() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (userId: string) =>
-      apiClient.patch<{ success: boolean }>(`/hr/employees/${userId}`, { isActive: false }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.hr.all });
-      qc.invalidateQueries({ queryKey: queryKeys.hr.terminatedEmployees() });
-    },
-  });
-}
-
 export function useToggleDashboardAccess() {
   const qc = useQueryClient();
   return useMutation({

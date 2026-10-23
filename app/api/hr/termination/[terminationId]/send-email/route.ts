@@ -1,4 +1,5 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
+import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
 import { terminations, organizations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -13,8 +14,9 @@ export async function POST(
   { params }: { params: Promise<{ terminationId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (session.user.role !== "HR" && session.user.role !== "CEO") {
-      return err("Only HR can send termination emails.", 403);
+    // R2-TERM-01: Admins start terminations, so they run the HR steps too.
+    if (!isAdminOrOwner(session.user.role)) {
+      return err("Only HR or an Admin can send termination emails.", 403);
     }
 
     const { terminationId: id } = await params;

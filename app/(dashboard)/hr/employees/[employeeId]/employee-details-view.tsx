@@ -14,7 +14,6 @@ import {
   useHrEmployeeStats,
   useHrEmployeeProjects,
   useHrEmployeeTickets,
-  useTerminateEmployee,
   useDirectReports,
   useManagerScorecard,
   useEmployeeAvailability,
@@ -76,7 +75,6 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { resolveImageUrl } from "@/lib/utils";
 import { canAccessRoute } from "@/lib/auth/route-access";
 import { format } from "date-fns";
@@ -314,10 +312,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
   const { data: stats, isLoading: statsLoading } = useHrEmployeeStats(employee.id);
   const { data: projects } = useHrEmployeeProjects(employee.id);
   const { data: ticketsResult } = useHrEmployeeTickets(employee.id);
-  const terminateMutation = useTerminateEmployee();
   const router = useRouter();
   const { data: session } = useSession();
-  const [terminateOpen, setTerminateOpen] = useState(false);
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "overview";
 
@@ -365,18 +361,6 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
       : [];
 
   const { pct: completeness, missing: missingFields } = profileCompletenessScore(employee);
-
-  const handleTerminateClick = useCallback(() => setTerminateOpen(true), []);
-  const handleTerminateConfirm = useCallback(() => {
-    terminateMutation.mutate(employee.id, {
-      onSuccess: () => {
-        toast.success(`${employeeName} has been terminated.`);
-        setTerminateOpen(false);
-        router.push("/hr");
-      },
-      onError: (err) => toast.error((err as Error).message),
-    });
-  }, [employee.id, employeeName, terminateMutation, router]);
 
   const employeeAsEmployee = employee as unknown as Employee;
 
@@ -443,16 +427,19 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
             {employee.isActive === false || (employee as Record<string, unknown>).terminatedAt ? (
               <StatusPill tone="danger" dot>Terminated</StatusPill>
             ) : canManage && !isSelf && employee.role?.toUpperCase() !== "CEO" && (
+              // R2-TERM-01/02: opens the termination workflow (reason, last
+              // working day, Super Admin approval) for this person.
               <Button
                 variant="outline"
                 size="sm"
                 className="border-destructive/30 text-destructive hover:bg-danger-soft hover:text-destructive"
-                onClick={handleTerminateClick}
-                disabled={terminateMutation.isPending}
-                title="Terminate this employee — revokes access immediately"
+                asChild
+                title="Start a termination for this employee"
               >
-                <UserX className="size-4" aria-hidden="true" />
-                Terminate
+                <Link href={`/hr/termination?employee=${encodeURIComponent(employee.id)}`}>
+                  <UserX className="size-4" aria-hidden="true" />
+                  Terminate
+                </Link>
               </Button>
             )}
             <Button variant="ghost" size="sm" asChild>
@@ -770,16 +757,6 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
           )}
         </Tabs>
       </PageWrapper>
-
-      <ConfirmDialog
-        open={terminateOpen}
-        onOpenChange={setTerminateOpen}
-        title="Terminate employee"
-        description={`Are you sure you want to terminate ${employeeName}? They will lose access immediately.`}
-        confirmLabel="Terminate"
-        destructive
-        onConfirm={handleTerminateConfirm}
-      />
 
       <Sheet open={letterSheetOpen} onOpenChange={(o) => { setLetterSheetOpen(o); if (!o) { setLetterTemplateId(""); setLetterExtraVars({}); } }}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">

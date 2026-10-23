@@ -1,4 +1,5 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
+import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
 import { terminations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -10,8 +11,9 @@ export async function PATCH(
   { params }: { params: Promise<{ terminationId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (session.user.role !== "HR" && session.user.role !== "CEO") {
-      return err("Only HR can submit for CEO approval.", 403);
+    // R2-TERM-01: Admins start terminations, so they run the HR steps too.
+    if (!isAdminOrOwner(session.user.role)) {
+      return err("Only HR or an Admin can submit for Super Admin approval.", 403);
     }
 
     const { terminationId: id } = await params;
