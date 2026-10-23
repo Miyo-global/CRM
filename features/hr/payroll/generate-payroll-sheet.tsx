@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { EmployeeAssignCombobox } from "@/components/hr/employee-assign-combobox";
 import { Separator } from "@/components/ui/separator";
@@ -78,6 +79,19 @@ export function GeneratePayrollSheet({
   onConfirmGenerate,
   isGenerating,
 }: GeneratePayrollSheetProps) {
+  // Say why a minus sign or letter did not go in instead of silently dropping
+  // it, which turned "-500" into 500 with no message (R2-PAY-03).
+  const [rejected, setRejected] = useState<{ bonus?: boolean; deductions?: boolean }>({});
+  const amountHandlers = (field: "bonus" | "deductions", onValue: (value: string) => void) => ({
+    onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
+      blockNonDigitKey(e);
+      if (e.defaultPrevented && e.key.length === 1) setRejected((r) => ({ ...r, [field]: true }));
+    },
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
+      setRejected((r) => ({ ...r, [field]: /\D/.test(e.target.value) }));
+      onValue(sanitizeDigitsOnly(e.target.value, 10));
+    },
+  });
   const monthFirstDay = `${selectedMonth}-01`;
   const monthLastDay = (() => {
     const [y, m] = selectedMonth.split("-").map(Number);
@@ -251,19 +265,33 @@ export function GeneratePayrollSheet({
                 <label className="text-sm font-medium">Bonus / Incentive (₹)</label>
                 <Input
                   {...nonNegativeInputProps}
+                  {...amountHandlers("bonus", onBonusChange)}
                   value={bonus}
-                  onChange={(e) => onBonusChange(sanitizeDigitsOnly(e.target.value, 10))}
                   placeholder="0"
+                  aria-invalid={rejected.bonus || undefined}
+                  aria-describedby={rejected.bonus ? "payroll-bonus-error" : undefined}
                 />
+                {rejected.bonus && (
+                  <p id="payroll-bonus-error" role="alert" className="text-2xs text-destructive">
+                    Enter a whole amount of 0 or more. Minus signs and letters are not allowed.
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Other Deductions (₹)</label>
                 <Input
                   {...nonNegativeInputProps}
+                  {...amountHandlers("deductions", onOtherDeductionsChange)}
                   value={otherDeductions}
-                  onChange={(e) => onOtherDeductionsChange(sanitizeDigitsOnly(e.target.value, 10))}
                   placeholder="0"
+                  aria-invalid={rejected.deductions || undefined}
+                  aria-describedby={rejected.deductions ? "payroll-deductions-error" : undefined}
                 />
+                {rejected.deductions && (
+                  <p id="payroll-deductions-error" role="alert" className="text-2xs text-destructive">
+                    Enter a whole amount of 0 or more. Minus signs and letters are not allowed.
+                  </p>
+                )}
               </div>
             </div>
           </div>
