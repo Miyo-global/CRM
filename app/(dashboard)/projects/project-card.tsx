@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { projectStatusDisplayLabels } from "@/lib/theme-constants";
 import { projectStatusTone } from "./project-status-tone";
 import { format } from "date-fns";
+import { formatDateOnlyUTC, parseCalendarDate } from "@/lib/date-utils";
 
 interface ProjectCardProps {
   project: {
@@ -35,8 +36,8 @@ interface ProjectCardProps {
 // (QA-0055). Show the due date when there is one, and name it either way.
 // The list row uses the same label so the views agree (R2-PRJ-06).
 export function projectDateLabel(project: { startDate: Date | string | null; endDate: Date | string | null }): string | null {
-  if (project.endDate) return `Due ${format(new Date(project.endDate), "MMM d")}`;
-  if (project.startDate) return `Starts ${format(new Date(project.startDate), "MMM d")}`;
+  if (project.endDate) return `Due ${format(parseCalendarDate(formatDateOnlyUTC(project.endDate)), "MMM d")}`;
+  if (project.startDate) return `Starts ${format(parseCalendarDate(formatDateOnlyUTC(project.startDate)), "MMM d")}`;
   return null;
 }
 
