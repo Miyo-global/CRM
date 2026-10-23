@@ -69,7 +69,11 @@ export default function SignInPage() {
               "Your account opens on your joining date. Contact HR if you need access sooner.",
             );
           }
-          throw new Error("Invalid email or password.");
+          // Same text for every failure so it reveals nothing, with a next
+          // step for a deactivated or disabled account (R2-ROLE-1).
+          throw new Error(
+            "Invalid email or password. If you still cannot sign in, contact your administrator.",
+          );
         }
         return result;
       } catch (error) {
