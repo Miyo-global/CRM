@@ -8,6 +8,7 @@ import { sendPasswordResetEmail } from "@/lib/email";
 import { hashToken } from "@/lib/secret-crypto";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { isPortalAccessBlocked } from "@/lib/auth/portal-access";
 
 const schema = z.object({ email: z.string().email() });
 
@@ -25,7 +26,10 @@ export async function POST(req: NextRequest) {
     where: sql`lower(${users.email}) = ${normalizedEmail}`,
   });
 
-  if (!user) {
+  // A deactivated or portal-disabled account cannot sign in, so it gets no
+  // reset mail either, and the same response as an unknown address (R2-LC-19).
+  if (!user || user.isActive === false || isPortalAccessBlocked(user.role, user.hasDashboardAccess)) {
+    if (user) logger.warn("Auth: password reset skipped for a blocked account", { userId: user.id });
     await new Promise((r) => setTimeout(r, 50 + Math.random() * 100));
     return ok({ success: true });
   }
