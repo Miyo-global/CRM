@@ -195,7 +195,10 @@ export default function DocumentsPage() {
 
   const handleFolderSheetChange = (open: boolean) => {
     setIsNewFolderOpen(open);
-    if (!open) setRenameTarget(null);
+    if (!open) {
+      setRenameTarget(null);
+      setNewFolderName("");
+    }
   };
 
   const handleRenameFolder = (name: string) => {
