@@ -19,6 +19,8 @@ import {
   useClearAllNotifications,
 } from "@/lib/api/hooks/notifications";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 const TYPE_CONFIG = {
   INFO: { icon: Info, tone: toneSoft.info },
@@ -105,7 +107,10 @@ export function NotificationBell({ tone = "default", silent = false }: Notificat
               <Button
                 variant="ghost"
                 size="xs"
-                onClick={() => markAllRead.mutate(undefined)}
+                onClick={() => markAllRead.mutate(undefined, {
+                  onSuccess: () => toast.success("All notifications marked as read"),
+                  onError: (e) => toast.error(getErrorMessage(e)),
+                })}
               >
                 <CheckCheck className="size-3.5" />
                 Read all
@@ -164,7 +169,7 @@ export function NotificationBell({ tone = "default", silent = false }: Notificat
                       <Icon className="size-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={cn("text-sm line-clamp-1", !n.isRead && "font-medium")}>
+                      <p className={cn("text-sm line-clamp-1", n.isRead ? "text-muted-foreground" : "font-medium")}>
                         {n.title}
                       </p>
                       <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">

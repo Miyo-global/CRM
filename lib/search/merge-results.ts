@@ -6,7 +6,11 @@ export type SearchResultType =
   | "announcement"
   | "holiday"
   | "helpdesk"
-  | "leave";
+  | "leave"
+  | "asset"
+  | "bonus"
+  | "expense"
+  | "document";
 
 export interface SearchResult {
   id: number | string;

@@ -7,7 +7,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
   UserCheck, Briefcase, Ticket, CalendarDays, Megaphone, PartyPopper, LifeBuoy, Plane,
-  Search, Loader2, ArrowRight, History, Rows3, LogOut,
+  Search, Loader2, ArrowRight, History, Rows3, LogOut, Laptop, Gift, Receipt, FileText,
 } from "lucide-react";
 import {
   CommandEmpty, CommandGroup, CommandInput,
@@ -42,6 +42,10 @@ const ENTITY_ICONS = {
   holiday: PartyPopper,
   helpdesk: LifeBuoy,
   leave: Plane,
+  asset: Laptop,
+  bonus: Gift,
+  expense: Receipt,
+  document: FileText,
 } as const;
 
 const ENTITY_LABELS = {
@@ -53,6 +57,10 @@ const ENTITY_LABELS = {
   holiday: "Holidays",
   helpdesk: "Helpdesk tickets",
   leave: "Leaves",
+  asset: "Assets",
+  bonus: "Bonuses",
+  expense: "Expenses",
+  document: "Documents",
 } as const;
 
 const SEARCH_DEBOUNCE_MS = 400;
@@ -377,7 +385,7 @@ export function CommandPalette() {
                     >
                       <ItemIcon icon={Icon} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium leading-tight">{item.title}</p>
+                        <p className="truncate font-medium leading-tight" title={item.title}>{item.title}</p>
                         <p className="mt-0.5 truncate text-xs leading-tight text-muted-foreground">{item.subtitle}</p>
                       </div>
                       {item.status && (

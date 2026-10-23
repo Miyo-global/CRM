@@ -50,10 +50,19 @@ describe("GET /api/search scoping (QA-BUG-25)", () => {
     expect(paramsOf("calendar_events")).not.toContain("viewer-1");
   });
 
+  it("an employee only searches their own assets, bonuses, expenses and documents (R2-CRUD-10)", async () => {
+    await search("EMPLOYEE");
+    for (const table of ["assets", "bonuses", "expenses", "documents", "rich_documents"]) {
+      expect(paramsOf(table)).toContain("viewer-1");
+    }
+  });
+
   it("an admin searches the whole org", async () => {
     await search("ADMIN");
     expect(paramsOf("leave_requests")).not.toContain("viewer-1");
     expect(paramsOf("helpdesk_tickets")).not.toContain("viewer-1");
+    expect(paramsOf("expenses")).not.toContain("viewer-1");
+    expect(paramsOf("documents")).not.toContain("viewer-1");
   });
 
   it("escapes LIKE wildcards", async () => {

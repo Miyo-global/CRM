@@ -4,9 +4,10 @@ import { withAuth, ok, parseQuery } from "@/lib/api/helpers";
 import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { db } from "@/lib/db";
 import {
-  announcements, calendarEvents, helpdeskTickets, holidays, leaveRequests, leaveTypes,
-  organizationMembers, projects, tickets, users,
+  announcements, assets, bonuses, calendarEvents, documents, expenses, helpdeskTickets, holidays,
+  leaveRequests, leaveTypes, organizationMembers, projects, richDocuments, tickets, users,
 } from "@/lib/db/schema";
+import { formatINR } from "@/lib/format-utils";
 import { eq, and, desc, gt, ilike, isNull, or } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
@@ -185,6 +186,111 @@ async function executeSearch(
         href: "/hr/leaves",
         status: l.status ?? undefined,
       }));
+    },
+    // Assets, bonuses, expenses and documents (R2-CRUD-10): an admin sees the
+    // org's, everyone else only their own, as on My Assets / My Bonuses / My Documents.
+    assets: async () => {
+      const rows = await db
+        .select({ id: assets.id, name: assets.name, type: assets.type, serialNumber: assets.serialNumber, status: assets.status })
+        .from(assets)
+        .where(
+          and(
+            eq(assets.orgId, orgId),
+            viewer.isAdmin ? undefined : eq(assets.assignedTo, viewer.userId),
+            or(ilike(assets.name, pattern), ilike(assets.serialNumber, pattern), ilike(assets.type, pattern)),
+          ),
+        )
+        .limit(maxPer);
+      return rows.map(a => ({
+        id: a.id,
+        type: "asset" as const,
+        title: a.name,
+        subtitle: a.serialNumber ? `${a.type} · ${a.serialNumber}` : a.type,
+        href: viewer.isAdmin ? "/hr/assets" : "/hr/my-assets",
+        status: a.status ?? undefined,
+      }));
+    },
+    bonuses: async () => {
+      const rows = await db
+        .select({ id: bonuses.id, type: bonuses.type, amount: bonuses.amount, reason: bonuses.reason, status: bonuses.status, userName: users.name })
+        .from(bonuses)
+        .innerJoin(users, eq(bonuses.userId, users.id))
+        .where(
+          and(
+            eq(bonuses.orgId, orgId),
+            viewer.isAdmin ? undefined : eq(bonuses.userId, viewer.userId),
+            or(ilike(users.name, pattern), ilike(bonuses.reason, pattern)),
+          ),
+        )
+        .orderBy(desc(bonuses.createdAt))
+        .limit(maxPer);
+      return rows.map(b => ({
+        id: b.id,
+        type: "bonus" as const,
+        title: `${b.reason || b.type} · ${b.userName ?? "Employee"}`,
+        subtitle: `Bonus · ${formatINR(b.amount)}`,
+        href: viewer.isAdmin ? "/hr/bonuses" : "/hr/my-bonuses",
+        status: b.status ?? undefined,
+      }));
+    },
+    expenses: async () => {
+      const rows = await db
+        .select({ id: expenses.id, description: expenses.description, merchant: expenses.merchant, category: expenses.category, amount: expenses.amount, status: expenses.status })
+        .from(expenses)
+        .where(
+          and(
+            eq(expenses.orgId, orgId),
+            viewer.isAdmin ? undefined : eq(expenses.userId, viewer.userId),
+            or(ilike(expenses.description, pattern), ilike(expenses.merchant, pattern), ilike(expenses.category, pattern)),
+          ),
+        )
+        .orderBy(desc(expenses.createdAt))
+        .limit(maxPer);
+      return rows.map(e => ({
+        id: e.id,
+        type: "expense" as const,
+        title: e.description || e.merchant || e.category,
+        subtitle: `${e.category} · ${formatINR(e.amount)}`,
+        href: "/hr/expenses",
+        status: e.status ?? undefined,
+      }));
+    },
+    documents: async () => {
+      const rows = await db
+        .select({ id: documents.id, name: documents.name, category: documents.category })
+        .from(documents)
+        .where(
+          and(
+            eq(documents.orgId, orgId),
+            eq(documents.isActive, true),
+            viewer.isAdmin ? undefined : eq(documents.userId, viewer.userId),
+            or(ilike(documents.name, pattern), ilike(documents.fileName, pattern), ilike(documents.description, pattern)),
+          ),
+        )
+        .orderBy(desc(documents.createdAt))
+        .limit(maxPer);
+      return rows.map(d => ({
+        id: d.id,
+        type: "document" as const,
+        title: d.name,
+        subtitle: d.category ? `Document · ${d.category}` : "Document",
+        href: viewer.isAdmin ? "/hr/documents" : "/hr/my-documents",
+      }));
+    },
+    richDocuments: async () => {
+      const rows = await db
+        .select({ id: richDocuments.id, title: richDocuments.title })
+        .from(richDocuments)
+        .where(
+          and(
+            eq(richDocuments.orgId, orgId),
+            viewer.isAdmin ? undefined : eq(richDocuments.createdBy, viewer.userId),
+            ilike(richDocuments.title, pattern),
+          ),
+        )
+        .orderBy(desc(richDocuments.updatedAt))
+        .limit(maxPer);
+      return rows.map(d => ({ id: `rich-${d.id}`, type: "document" as const, title: d.title, subtitle: "Created document", href: `/hr/documents/editor/${d.id}` }));
     },
   };
 

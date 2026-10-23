@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 type TabFilter = "ALL" | "UNREAD";
@@ -121,7 +122,10 @@ export default function NotificationsPage() {
   }
 
   function handleMarkAllRead() {
-    markAllRead.mutate(undefined);
+    markAllRead.mutate(undefined, {
+      onSuccess: () => toast.success("All notifications marked as read"),
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
   }
 
   async function handleBulkMarkRead() {
