@@ -2,10 +2,11 @@ import { type NextRequest } from "next/server";
 import { withAuth, withRoles, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { bonuses, organizationMembers, users } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { hasRole } from "@/lib/constants/roles";
 import { BONUS_MANAGE_ROLES } from "@/lib/constants/hr";
 import { createBonusBodySchema } from "@/lib/validations/bonus";
+import { OPEN_BONUS_STATUSES } from "@/lib/hr/bonus-status";
 import { ZodError } from "zod";
 
 function zodFieldMessage(error: ZodError): string {
@@ -63,6 +64,22 @@ export async function POST(req: NextRequest) {
         ),
       });
       if (!membership) return err("Employee not found.", 404);
+
+      // R2-HR-06: the same bonus twice for one employee went through silently.
+      // An identical one still open (pending or approved) blocks the second.
+      const duplicate = await db.query.bonuses.findFirst({
+        where: and(
+          eq(bonuses.orgId, session.orgId),
+          eq(bonuses.userId, body.userId),
+          eq(bonuses.type, body.type),
+          eq(bonuses.amount, body.amount.toString()),
+          inArray(bonuses.status, OPEN_BONUS_STATUSES),
+        ),
+        columns: { id: true },
+      });
+      if (duplicate) {
+        return err("This employee already has the same bonus pending or approved. Edit that one instead.", 409);
+      }
 
       const [record] = await db
         .insert(bonuses)
