@@ -15,6 +15,7 @@ import {
 import { eq, and, gte, lte, sql, count, inArray, isNotNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { attritionRate as attritionRateOf, diversityRatio as diversityRatioOf, hiringRate as hiringRateOf, orgHealthScore as orgHealthScoreOf } from "@/lib/hr/executive-kpis";
+import { isNotFromResignation } from "@/lib/hr/resignation-termination";
 
 // Only exits that happened: a pending, withdrawn or rejected resignation (or a
 // draft termination) is not attrition.
@@ -240,6 +241,7 @@ export async function getRetentionAnalytics(filter: AnalyticsFilter): Promise<Re
           and(
             eq(terminations.orgId, orgId),
             inArray(terminations.status, [...EXIT_TERMINATION_STATUSES]),
+            isNotFromResignation,
             gte(terminations.effectiveDate, from),
             lte(terminations.effectiveDate, to),
             filter.departmentId ? eq(users.departmentId, filter.departmentId) : undefined,

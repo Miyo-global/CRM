@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { organizationMembers, users, resignations, terminations } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql, count } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import { isNotFromResignation } from "@/lib/hr/resignation-termination";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ export async function GET(req: NextRequest) {
         .where(
           and(
             eq(terminations.orgId, session.orgId),
+            isNotFromResignation,
             gte(terminations.effectiveDate, from),
             lte(terminations.effectiveDate, to),
           ),

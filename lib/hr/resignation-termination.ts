@@ -1,9 +1,15 @@
 import { db } from "@/lib/db";
 import { terminations } from "@/lib/db/schema";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 
 export const RESIGNATION_TERMINATION_REASON = "Resignation";
+
+/**
+ * Leaves out the termination records made from a resignation: the resignation
+ * is already counted as the exit, so analytics must not count it twice.
+ */
+export const isNotFromResignation = sql`NOT (${terminations.reasons} @> ARRAY[${RESIGNATION_TERMINATION_REASON}]::text[])`;
 
 /**
  * R2-TERM-05: an approved resignation becomes a termination record so HR
