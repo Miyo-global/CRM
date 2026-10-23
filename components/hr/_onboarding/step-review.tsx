@@ -32,7 +32,7 @@ interface StepReviewProps {
   onConfirmedChange: (value: boolean) => void;
 }
 
-const GENDER_LABELS: Record<FormValues["gender"], string> = {
+const GENDER_LABELS: Record<NonNullable<FormValues["gender"]>, string> = {
   MALE: "Male",
   FEMALE: "Female",
   OTHER: "Other",
@@ -129,7 +129,7 @@ export function StepReview({
         <ReviewField label="Email" value={values.email} className="sm:col-span-2" />
         <ReviewField label="Phone" value={values.phone} />
         <ReviewField label="WhatsApp" value={whatsappDisplay} />
-        <ReviewField label="Gender" value={GENDER_LABELS[values.gender]} />
+        <ReviewField label="Gender" value={values.gender ? GENDER_LABELS[values.gender] : undefined} />
         <ReviewField label="Date of birth" value={formatDate(values.dateOfBirth)} />
         <ReviewField label="Password" value="Set by the employee from the welcome email" />
       </ReviewSection>

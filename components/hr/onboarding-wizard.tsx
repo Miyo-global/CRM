@@ -115,7 +115,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     resolver: zodResolver(onboardEmployeeInputSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       firstName: "", lastName: "", email: "", phone: "",
-      whatsappSameAsPhone: true, whatsappNumber: "", gender: "MALE",
+      whatsappSameAsPhone: true, whatsappNumber: "", gender: undefined,
       designation: "", departmentId: undefined, departmentName: "", reportingTo: "",
       role: "EMPLOYEE", employeeId: "", joiningDate: new Date(),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
@@ -239,9 +239,9 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
           firstName: data.firstName.trim(),
           lastName: data.lastName.trim(),
           email: data.email.trim(),
-          phone: data.phone.trim(),
+          phone: data.phone?.trim(),
           whatsappNumber: data.whatsappSameAsPhone
-            ? data.phone.trim()
+            ? data.phone?.trim()
             : data.whatsappNumber?.trim(),
           designation: formatDesignation(data.designation),
           // Send the calendar days as picked, not a UTC instant (R2-LC-02).

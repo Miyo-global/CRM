@@ -120,4 +120,18 @@ export const bankDetailsSchema = z
 
 export type BankDetailsInput = z.infer<typeof bankDetailsSchema>;
 
+const CORE_BANK_FIELDS = ["accountNumber", "bankName", "branch", "ifsc", "accountHolder"] as const;
+
+/**
+ * Banking can be added after onboarding (R2-LC-03). A block with none of the
+ * core account fields filled is treated as absent; once any is filled the
+ * whole account is validated, so a half-entered account is never stored.
+ */
+export const optionalBankDetailsSchema = z.preprocess((val) => {
+  if (!val || typeof val !== "object") return undefined;
+  const v = val as Record<string, unknown>;
+  const hasAccount = CORE_BANK_FIELDS.some((k) => typeof v[k] === "string" && v[k].trim() !== "");
+  return hasAccount ? val : undefined;
+}, bankDetailsSchema.optional());
+
 export const partialBankDetailsSchema = bankDetailsSchema.partial();

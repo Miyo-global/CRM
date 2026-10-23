@@ -128,3 +128,34 @@ describe("onboardEmployeeInputSchema", () => {
     ).toBe(false);
   });
 });
+
+describe("onboarding needs only the essentials (R2-LC-03)", () => {
+  const emptyBank = {
+    accountNumber: "", bankName: "", branch: "", ifsc: "", accountHolder: "",
+    pfUanNumber: "", swiftCode: "", iban: "",
+  };
+
+  it("accepts no phone, gender, date of birth or bank details", () => {
+    const result = onboardEmployeeInputSchema.safeParse({
+      ...validBase,
+      phone: "",
+      gender: undefined,
+      dateOfBirth: undefined,
+      bankDetails: emptyBank,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.bankDetails).toBeUndefined();
+      expect(result.data.dateOfBirth).toBeUndefined();
+    }
+  });
+
+  it("rejects a half-entered bank account", () => {
+    expect(
+      onboardEmployeeInputSchema.safeParse({
+        ...validBase,
+        bankDetails: { ...emptyBank, accountNumber: "1234567890" },
+      }).success,
+    ).toBe(false);
+  });
+});

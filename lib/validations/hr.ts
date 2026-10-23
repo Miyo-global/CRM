@@ -8,7 +8,7 @@ import {
 } from "@/lib/hr/performance-validation";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
-import { bankDetailsSchema } from "@/lib/validations/bank-details";
+import { bankDetailsSchema, optionalBankDetailsSchema } from "@/lib/validations/bank-details";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
@@ -429,6 +429,13 @@ const requiredDateSchema = (label: string) =>
   z.coerce.date({
     message: `${label} is required`,
   });
+
+/** Empty / cleared picker is "not given"; anything else must be a real date. */
+const optionalDateSchema = (label: string) =>
+  z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.coerce.date({ message: `${label} is not a valid date` }).optional(),
+  );
 const fileUrlSchema = storedFileRefSchema;
 
 export const createDepartmentInputSchema = z.object({
@@ -615,8 +622,10 @@ export const onboardEmployeeInputSchema = z
       .min(1, "Email is required")
       .email("Invalid email address")
       .max(EMAIL_MAX_LENGTH, `Email must be at most ${EMAIL_MAX_LENGTH} characters`),
-    gender: z.enum(["MALE", "FEMALE", "OTHER"]),
-    phone: requiredPhoneSchema("Phone number"),
+    // R2-LC-03: only what is needed to create the account and send the set-up
+    // link is required; phone, gender, DOB and banking can be filled in later.
+    gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
+    phone: optionalPhoneSchema("Phone number"),
     whatsappSameAsPhone: z.boolean().default(true),
     whatsappNumber: optionalPhoneSchema("WhatsApp number"),
     /**
@@ -637,7 +646,7 @@ export const onboardEmployeeInputSchema = z
       return trimmed ? trimmed : undefined;
     }),
     joiningDate: requiredDateSchema("Joining date"),
-    dateOfBirth: requiredDateSchema("Date of birth"),
+    dateOfBirth: optionalDateSchema("Date of birth"),
     experienceYears: optionalExperienceYearsSchema(),
     skills: optionalSkillsSchema(),
     taxId: z
@@ -653,7 +662,7 @@ export const onboardEmployeeInputSchema = z
         `Monthly salary cannot exceed ${CURRENCY_SYMBOL}${MONTHLY_SALARY_MAX.toLocaleString(DEFAULT_LOCALE)}`,
       )
       .refine((val) => Number.isInteger(val), "Monthly salary must be a whole number"),
-    bankDetails: bankDetailsSchema,
+    bankDetails: optionalBankDetailsSchema,
   })
   .superRefine((data, ctx) => {
     const today = startOfCalendarDay(new Date());

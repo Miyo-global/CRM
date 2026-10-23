@@ -71,12 +71,16 @@ export function StepBanking({ form }: StepBankingProps) {
 function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
   return (
     <div className="grid gap-5 md:grid-cols-2">
+      <p className="text-xs text-muted-foreground md:col-span-2">
+        Optional. Bank details can be added later from the employee profile; if you enter an
+        account here, fill in all five account fields.
+      </p>
       <FormField
         control={form.control}
         name="bankDetails.accountHolder"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Account Holder Name <span className="text-danger-strong">*</span></FormLabel>
+            <FormLabel>Account Holder Name</FormLabel>
             <FormControl>
               <Input
                 placeholder="Name as per bank records"
@@ -99,7 +103,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.bankName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Bank Name <span className="text-danger-strong">*</span></FormLabel>
+            <FormLabel>Bank Name</FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. HDFC Bank"
@@ -122,7 +126,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.branch"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Branch Name <span className="text-danger-strong">*</span></FormLabel>
+            <FormLabel>Branch Name</FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. Hyderabad Main"
@@ -145,7 +149,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.accountNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Account Number <span className="text-danger-strong">*</span></FormLabel>
+            <FormLabel>Account Number</FormLabel>
             <FormControl>
               <Input
                 placeholder="1234567890"
@@ -171,7 +175,7 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
         name="bankDetails.ifsc"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>IFSC Code <span className="text-danger-strong">*</span></FormLabel>
+            <FormLabel>IFSC Code</FormLabel>
             <FormControl>
               <Input
                 placeholder="e.g. SBIN0001234"
