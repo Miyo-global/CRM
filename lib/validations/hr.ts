@@ -754,7 +754,12 @@ export const editEmployeeFormSchema = z
     lastName: personNameSchema("Last name"),
     role: z.string().min(1, "Role is required"),
     designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number"),
-    departmentId: z.number().int().positive({ message: "Department is required" }),
+    // R2-ROLE-2: a record with no department (e.g. a terminated employee)
+    // showed zod's raw "expected number, received undefined".
+    departmentId: z
+      .number({ message: "Department is required" })
+      .int()
+      .positive({ message: "Department is required" }),
     departmentName: z.string().trim().optional(),
     reportingTo: z.string().optional(),
     phone: z

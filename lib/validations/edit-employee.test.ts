@@ -31,6 +31,13 @@ describe("editEmployeeFormSchema", () => {
     expect(editEmployeeFormSchema.safeParse({ ...validEdit, phone: "123" }).success).toBe(false);
   });
 
+  it("names a missing department instead of zod's raw type error (R2-ROLE-2)", () => {
+    const result = editEmployeeFormSchema.safeParse({ ...validEdit, departmentId: undefined });
+    expect(result.success).toBe(false);
+    const issue = result.error?.issues.find((i) => i.path[0] === "departmentId");
+    expect(issue?.message).toBe("Department is required");
+  });
+
   it("rejects invalid skills, salary, and PAN", () => {
     expect(editEmployeeFormSchema.safeParse({ ...validEdit, skills: "React@" }).success).toBe(false);
     expect(editEmployeeFormSchema.safeParse({ ...validEdit, monthlySalary: 0 }).success).toBe(false);
