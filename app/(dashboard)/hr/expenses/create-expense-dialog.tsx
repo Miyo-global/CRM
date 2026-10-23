@@ -187,7 +187,9 @@ function AmountInput({ value, onChange }: { value: number; onChange: (v: number)
               setHint(
                 raw.includes("-")
                   ? "Amount cannot be negative."
-                  : "Use numbers only, with up to 2 decimal places.",
+                  : /^\d{6,}(\.\d*)?$/.test(raw)
+                    ? `Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}.`
+                    : "Use numbers only, with up to 2 decimal places.",
               );
               return;
             }
