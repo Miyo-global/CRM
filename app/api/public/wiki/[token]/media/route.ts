@@ -7,7 +7,7 @@ import { hashPublicToken } from "@/lib/knowledge/public-token";
 import { getFileUrl, isStorageConfigured } from "@/lib/storage";
 
 /** A signed URL for an image on a shared page, good for five minutes. */
-export const KB_PUBLIC_MEDIA_URL_TTL_SECONDS = 300;
+const KB_PUBLIC_MEDIA_URL_TTL_SECONDS = 300;
 
 /**
  * KB-0048: serve a shared page's media without making the bucket public.

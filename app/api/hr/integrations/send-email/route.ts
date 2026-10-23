@@ -58,7 +58,7 @@ const sendSchema = z
     }
   });
 
-export function replaceTemplateVariables(text: string, vars: Record<string, string>): string {
+function replaceTemplateVariables(text: string, vars: Record<string, string>): string {
   return text.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, rawKey: string) => {
     const key = rawKey.trim();
     return vars[key] ?? "";

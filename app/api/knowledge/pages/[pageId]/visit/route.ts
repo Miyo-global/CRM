@@ -7,9 +7,8 @@ import { kbPageVisits } from "@/lib/db/schema";
 import { kbContext } from "@/lib/knowledge/actor";
 import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
+import { VISIT_DEDUPE_MS } from "@/lib/knowledge/page-limits";
 
-/** A reopen inside this window is the same visit, not a new one. */
-export const VISIT_DEDUPE_MS = 5 * 60 * 1000;
 
 /**
  * KB-0040: record that this person opened the page.

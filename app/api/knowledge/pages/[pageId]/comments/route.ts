@@ -10,7 +10,7 @@ import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
 import { deliverMentions } from "@/lib/knowledge/mentions";
 
-export const COMMENT_PAGE_SIZE = 50;
+const COMMENT_PAGE_SIZE = 50;
 
 const createSchema = z
   .object({

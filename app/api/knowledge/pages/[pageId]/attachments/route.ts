@@ -10,7 +10,7 @@ import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
 import { getFileUrl, isStorageConfigured } from "@/lib/storage";
 
 /** Signed for five minutes: long enough to open, short enough not to forward. */
-export const ATTACHMENT_URL_TTL_SECONDS = 300;
+const ATTACHMENT_URL_TTL_SECONDS = 300;
 
 /** KB-0058: a page's attachments, with short-lived download URLs. */
 export async function GET(req: NextRequest, context: { params: Promise<{ pageId: string }> }) {

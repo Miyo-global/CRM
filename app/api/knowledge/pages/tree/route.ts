@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { kbPages } from "@/lib/db/schema";
 import { kbContext } from "@/lib/knowledge/actor";
 import { visiblePagesPredicate } from "@/lib/knowledge/authorization";
+import { TREE_NODE_CAP } from "@/lib/knowledge/page-limits";
 
 /**
  * KB-0040: a flat list the client assembles into a tree.
@@ -15,7 +16,6 @@ import { visiblePagesPredicate } from "@/lib/knowledge/authorization";
  * nodes; `hasChildren` is what lets the client fetch the rest a branch at a
  * time.
  */
-export const TREE_NODE_CAP = 500;
 
 export async function GET(req: NextRequest) {
   return withAuth(async (session) => {

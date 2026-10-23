@@ -8,8 +8,8 @@ import { kbContext } from "@/lib/knowledge/actor";
 import { resolvePageAccess } from "@/lib/knowledge/authorization";
 import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
 
-export const VERSION_PAGE_SIZE = 50;
-export const VERSION_PAGE_SIZE_CAP = 100;
+const VERSION_PAGE_SIZE = 50;
+const VERSION_PAGE_SIZE_CAP = 100;
 
 /**
  * KB-0046: the history list.

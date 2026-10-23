@@ -8,7 +8,7 @@ import { atsApplicationQuestions } from "@/lib/db/schema";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { canOnJob } from "@/lib/ats/access";
 
-export const QUESTION_TYPES = [
+const QUESTION_TYPES = [
   "TEXT",
   "TEXTAREA",
   "SELECT",

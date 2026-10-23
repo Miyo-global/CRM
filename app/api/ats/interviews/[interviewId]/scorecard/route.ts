@@ -14,7 +14,7 @@ import {
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { canOnJob } from "@/lib/ats/access";
 
-export const RECOMMENDATIONS = [
+const RECOMMENDATIONS = [
   "STRONG_NO",
   "NO",
   "MAYBE",

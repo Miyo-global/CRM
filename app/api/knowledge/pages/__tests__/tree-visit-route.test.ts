@@ -21,8 +21,9 @@ vi.mock("@/lib/knowledge/authorization", async (importOriginal) => {
   };
 });
 
-const { GET: TREE, TREE_NODE_CAP } = await import("../tree/route");
-const { POST: VISIT, VISIT_DEDUPE_MS } = await import("../[pageId]/visit/route");
+const { GET: TREE } = await import("../tree/route");
+const { POST: VISIT } = await import("../[pageId]/visit/route");
+const { TREE_NODE_CAP, VISIT_DEDUPE_MS } = await import("@/lib/knowledge/page-limits");
 const { POST: FAVORITE, DELETE: UNFAVORITE } = await import("../[pageId]/favorite/route");
 
 const params = (pageId: string) => ({ params: Promise.resolve({ pageId }) });
