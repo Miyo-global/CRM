@@ -689,10 +689,11 @@ export default function DocumentReviewPage() {
                             {displayName(emp.userName)}
                           </p>
                           <p className="text-2xs text-muted-foreground truncate">
-                            {getRoleLabel(emp.role)}
-                            {emp.departmentName ? ` · ${emp.departmentName}` : ""}
-                            {emp.designation ? ` · ${emp.designation}` : ""}
-                            {emp.employeeId ? ` · ${emp.employeeId}` : ""}
+                            {/* Role and department often share a name ("Engineering"); show each label once. */}
+                            {[getRoleLabel(emp.role), emp.departmentName, emp.designation, emp.employeeId]
+                              .filter((v, i, arr): v is string =>
+                                !!v && arr.findIndex((o) => o?.toLowerCase() === v.toLowerCase()) === i)
+                              .join(" · ")}
                           </p>
                         </div>
                       </div>
@@ -809,6 +810,7 @@ export default function DocumentReviewPage() {
                 <EmptyState
                   title="No document types configured"
                   description="Configure document types and role requirements in Document Types before reviewing submissions."
+                  action={{ label: "Set up document types", href: "/hr/document-types" }}
                   compact
                 />
               ) : (
