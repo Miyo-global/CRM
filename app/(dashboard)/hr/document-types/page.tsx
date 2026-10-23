@@ -39,7 +39,7 @@ import {
   sanitizeDocTypeNameInput,
   DOC_TYPE_NAME_HINT,
 } from "@/lib/validations/document-types";
-import { SYSTEM_ROLES, ROLE_LABELS, getRoleLabel } from "@/lib/rbac/roles";
+import { ACTIVE_SYSTEM_ROLES, ROLE_LABELS, getRoleLabel } from "@/lib/rbac/roles";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import {
   Tooltip,
@@ -586,7 +586,7 @@ export default function DocumentTypesPage() {
             </span>
           </Label>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {SYSTEM_ROLES.map((r) => (
+            {ACTIVE_SYSTEM_ROLES.map((r) => (
               <div key={r} className="flex items-center gap-2">
                 <Checkbox
                   id={`role-${r}`}

@@ -46,7 +46,6 @@ const RESOURCE_GROUPS: Record<string, string> = {
   "reports": "Reports",
   "settings": "Settings",
   "settings:rbac": "RBAC Management",
-  "dashboard:customer-executive": "Dashboard - Customer Executive",
   "dashboard:support": "Dashboard - Support",
   "self": "Self-Service",
 };

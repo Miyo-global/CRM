@@ -28,19 +28,8 @@ export type SortOption = "relevance" | "name" | "experience" | "level";
 
 export type ViewMode = "list" | "grid";
 
-/** Role slugs shown in Find Expert filters (matches org member job roles). */
-export const FIND_EXPERT_ROLE_SLUGS = [
-  "CEO",
-  "ADMIN",
-  "HR",
-  "EMPLOYEE",
-  "SALES",
-  "CUSTOMER_SUPPORT",
-  "ENGINEERING",
-  "DESIGN",
-  "VIDEO_EDITOR",
-  "DIGITAL_MARKETING",
-] as const;
+/** Role slugs shown in Find Expert filters; job titles live in the designation (QA-ROLE-01). */
+export const FIND_EXPERT_ROLE_SLUGS = ["CEO", "ADMIN", "HR", "EMPLOYEE"] as const;
 
 export { getInitials } from "@/lib/format-utils";
 

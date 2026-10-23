@@ -7,10 +7,10 @@ import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Info, CheckCircle2, XCircle, Lock } from "lucide-react";
-import { PERMISSIONS, ROLE_DEFAULT_PERMISSIONS, SYSTEM_ROLES } from "@/lib/rbac/permissions";
+import { PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import type { SystemRole } from "@/lib/rbac/permissions";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { ROLE_LABELS } from "@/lib/rbac/roles";
+import { ACTIVE_SYSTEM_ROLES, ROLE_LABELS } from "@/lib/rbac/roles";
 import { cn } from "@/lib/utils";
 
 
@@ -52,7 +52,7 @@ function PermissionsContent() {
 
   const rolePermSets = useMemo(() => {
     const result: Record<string, Set<string>> = {};
-    for (const r of SYSTEM_ROLES) {
+    for (const r of ACTIVE_SYSTEM_ROLES) {
       result[r] = new Set(ROLE_DEFAULT_PERMISSIONS[r] ?? []);
     }
     return result;
@@ -90,7 +90,7 @@ function PermissionsContent() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {SYSTEM_ROLES.map((r) => (
+          {ACTIVE_SYSTEM_ROLES.map((r) => (
             <StatusPill key={r} tone={r === role ? "brand" : "neutral"} dot={r === role}>
               {ROLE_LABELS[r]}
             </StatusPill>
@@ -114,7 +114,7 @@ function PermissionsContent() {
                   >
                     Permission
                   </th>
-                  {SYSTEM_ROLES.map((r) => (
+                  {ACTIVE_SYSTEM_ROLES.map((r) => (
                     <th
                       key={r}
                       scope="col"
@@ -136,7 +136,7 @@ function PermissionsContent() {
                   <tr>
                     <th
                       scope="rowgroup"
-                      colSpan={SYSTEM_ROLES.length + 1}
+                      colSpan={ACTIVE_SYSTEM_ROLES.length + 1}
                       className="border-b border-border bg-surface-sunken p-0 text-left"
                     >
                       <span className="sticky left-0 inline-block px-4 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -184,7 +184,7 @@ function PermissionRow({ perm, rolePermSets, onHoverRole, colTone }: PermissionR
         </p>
       </th>
 
-      {SYSTEM_ROLES.map((r) => {
+      {ACTIVE_SYSTEM_ROLES.map((r) => {
         const hasPermission = r === "CEO" || (rolePermSets[r]?.has(perm.name) ?? false);
         return (
           <td

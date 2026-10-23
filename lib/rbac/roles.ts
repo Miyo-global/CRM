@@ -47,12 +47,18 @@ export function isAssignableSystemRole(role: string): boolean {
 export const ASSIGNABLE_ROLE_OPTIONS: ReadonlyArray<{ value: SystemRole; label: string }> =
   ROLE_OPTIONS.filter((option) => isAssignableSystemRole(option.value));
 
+/**
+ * The roles in use: Super Admin plus the assignable ones. Permission matrices
+ * and role filters list exactly these, never a retired job title.
+ */
+export const ACTIVE_SYSTEM_ROLES: readonly SystemRole[] = SYSTEM_ROLES.filter(
+  (role) => role === "CEO" || isAssignableSystemRole(role),
+);
+
 /** Org roles from the roles API, minus Super Admin and the retired job titles. */
 export function filterAssignableOrgRoles<T extends { slug: string }>(orgRoles: readonly T[]): T[] {
   return orgRoles.filter((role) => !isSystemRole(role.slug) || isAssignableSystemRole(role.slug));
 }
-
-export const CRM_ROLES: ReadonlyArray<SystemRole> = ["CEO", "HR", "SALES"] as const;
 
 export function isSystemRole(role: string | undefined | null): role is SystemRole {
   return SYSTEM_ROLES.includes(role as SystemRole);

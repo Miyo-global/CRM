@@ -95,7 +95,7 @@ async function main() {
   // ─── Departments (clean + re-insert to avoid duplicates) ───
   await db.delete(departments).where(eq(departments.orgId, orgId));
   const departmentList = [
-    "Engineering", "Design", "Digital Marketing", "Sales",
+    "Engineering", "Design", "Digital Marketing",
     "Finance", "Operations", "Customer Support", "Administration",
   ];
   for (const deptName of departmentList) {
@@ -105,14 +105,10 @@ async function main() {
   // ─── System Roles (clean + re-insert to avoid duplicates) ───
   await db.delete(roles).where(eq(roles.orgId, orgId));
   const systemRoles = [
-    { name: "CEO", slug: "CEO" },
+    { name: "Super Admin", slug: "CEO" },
+    { name: "Admin", slug: "ADMIN" },
     { name: "HR", slug: "HR" },
-    { name: "Sales", slug: "SALES" },
-    { name: "Customer Support", slug: "CUSTOMER_SUPPORT" },
-    { name: "Engineering", slug: "ENGINEERING" },
-    { name: "Design", slug: "DESIGN" },
-    { name: "Video Editor", slug: "VIDEO_EDITOR" },
-    { name: "Digital Marketing", slug: "DIGITAL_MARKETING" },
+    { name: "Employee", slug: "EMPLOYEE" },
   ];
   for (const role of systemRoles) {
     await db.insert(roles).values({

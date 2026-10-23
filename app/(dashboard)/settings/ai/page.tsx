@@ -14,9 +14,8 @@ import {
   useAiUsage,
   type OrgFeatureFlags,
 } from "@/lib/api/hooks/ai";
-import { Bot, Zap, TrendingUp, BarChart3, BrainCircuit, type LucideIcon } from "lucide-react";
+import { Bot, BarChart3, BrainCircuit, type LucideIcon } from "lucide-react";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 
 const FLAG_META: {
   key: keyof OrgFeatureFlags;
@@ -30,24 +29,6 @@ const FLAG_META: {
     description: "Context-aware chat that can answer questions about your team, projects, and tasks.",
     icon: Bot,
   },
-  // Lead scoring and lead email drafts only act on CRM data, so they are not
-  // offered while the CRM module is off.
-  ...(CRM_MODULE_ENABLED
-    ? [
-        {
-          key: "aiLeadScoring" as const,
-          label: "AI Lead Scoring",
-          description: "Automatically score leads using AI based on their profile and activity.",
-          icon: TrendingUp,
-        },
-        {
-          key: "aiEmailDraft" as const,
-          label: "AI Email Draft",
-          description: "Generate follow-up email drafts from lead context with one click.",
-          icon: Zap,
-        },
-      ]
-    : []),
   {
     key: "aiSmartNotifications",
     label: "Smart Notifications",
@@ -102,7 +83,7 @@ export default function AiSettingsPage() {
           description="Enable or disable AI features for your organization. Changes take effect immediately."
         >
           {flagsLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
+            Array.from({ length: FLAG_META.length }).map((_, i) => (
               <div key={i} className="flex items-center justify-between px-5 py-4">
                 <div className="flex items-center gap-3">
                   <Skeleton className="size-9 rounded-full" />

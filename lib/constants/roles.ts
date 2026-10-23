@@ -88,13 +88,9 @@ export const ALL_EMPLOYEE_ROLES: readonly string[] = Object.values(ROLES);
 
 export const HR_ROLES: readonly string[] = [ROLES.HR];
 
-export const INVOICE_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR, ROLES.SALES];
-
 export const BILLING_VIEW_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN, ROLES.HR];
 
 export const BILLING_MANAGE_ROLES: readonly string[] = [ROLES.CEO, ROLES.ADMIN];
-
-export const EXPORT_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.SALES];
 
 export const CHURN_ALERT_ROLES: readonly string[] = [ROLES.CEO, ROLES.HR, ROLES.ADMIN, ROLES.CUSTOMER_SUPPORT];
 

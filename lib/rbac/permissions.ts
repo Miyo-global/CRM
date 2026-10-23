@@ -272,16 +272,10 @@ export const PERMISSIONS: Permission[] = [
   },
 
   {
-    name: "dashboard:customer-executive:view",
-    resource: "dashboard:customer-executive",
-    action: "view",
-    description: "View Customer Executive dashboard",
-  },
-  {
     name: "dashboard:support:view",
     resource: "dashboard:support",
     action: "view",
-    description: "View Support CRM dashboard",
+    description: "View Support dashboard",
   },
 
   {
@@ -308,22 +302,6 @@ export const PERMISSIONS: Permission[] = [
     action: "payslips",
     description: "View own payslips",
   },
-
-  { name: "dm:leads:create", resource: "dm:leads", action: "create", description: "Capture DM leads" },
-  { name: "dm:leads:read", resource: "dm:leads", action: "read", description: "View DM leads" },
-  { name: "dm:leads:update", resource: "dm:leads", action: "update", description: "Update DM leads" },
-  { name: "dm:leads:delete", resource: "dm:leads", action: "delete", description: "Delete DM leads" },
-  { name: "dm:leads:export", resource: "dm:leads", action: "export", description: "Export DM leads" },
-  { name: "dm:campaigns:create", resource: "dm:campaigns", action: "create", description: "Create campaigns" },
-  { name: "dm:campaigns:read", resource: "dm:campaigns", action: "read", description: "View campaigns" },
-  { name: "dm:campaigns:update", resource: "dm:campaigns", action: "update", description: "Update campaigns" },
-  { name: "dm:social:read", resource: "dm:social", action: "read", description: "View social stats" },
-  { name: "dm:social:create", resource: "dm:social", action: "create", description: "Enter social stats" },
-
-
-  { name: "crm:incentives:read", resource: "crm:incentives", action: "read", description: "View incentives" },
-  { name: "crm:incentives:approve", resource: "crm:incentives", action: "approve", description: "Approve incentives" },
-  { name: "crm:incentives:config", resource: "crm:incentives", action: "config", description: "Configure incentive rates" },
 
   { name: "branch:create", resource: "branch", action: "create", description: "Create branches" },
   { name: "branch:read", resource: "branch", action: "read", description: "View branches" },
@@ -497,7 +475,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "reports:export",
     "settings:view",
     "settings:manage",
-    "dashboard:customer-executive:view",
     "dashboard:support:view",
   ],
 

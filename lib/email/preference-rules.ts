@@ -9,8 +9,6 @@ export type EmailCategory =
   | "expenses"
   | "payroll"
   | "attendance"
-  | "deals"
-  | "leads"
   | "tasks"
   | "hr"
   | "system";

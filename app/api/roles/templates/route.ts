@@ -10,12 +10,6 @@ import { z } from "zod";
 
 const ROLE_TEMPLATES = [
   {
-    id: "sales_rep",
-    name: "Sales Representative",
-    slug: "SALES_REP",
-    permissions: ["LEADS:READ", "LEADS:WRITE", "DEALS:READ", "DEALS:WRITE", "TASKS:READ", "TASKS:WRITE"],
-  },
-  {
     id: "hr_admin",
     name: "HR Administrator",
     slug: "HR_ADMIN",
@@ -31,7 +25,7 @@ const ROLE_TEMPLATES = [
     id: "viewer",
     name: "Read-Only Viewer",
     slug: "VIEWER",
-    permissions: ["LEADS:READ", "DEALS:READ", "PROJECTS:READ", "HR:READ", "REPORTS:READ"],
+    permissions: ["PROJECTS:READ", "HR:READ", "REPORTS:READ"],
   },
 ] as const;
 
