@@ -46,11 +46,19 @@ export async function PATCH(
         isActive: false,
       }).where(eq(users.id, existing.userId));
 
-      await tx.insert(fnfSettlements).values({
-        orgId: session.orgId,
-        userId: existing.userId,
-        status: "DRAFT",
-      }).onConflictDoNothing();
+      // fnf_settlements has no unique key, so a resignation approved through
+      // the exit flow (which opens its own F&F) must not get a second one.
+      const existingFnf = await tx.query.fnfSettlements.findFirst({
+        where: and(eq(fnfSettlements.orgId, session.orgId), eq(fnfSettlements.userId, existing.userId)),
+        columns: { id: true },
+      });
+      if (!existingFnf) {
+        await tx.insert(fnfSettlements).values({
+          orgId: session.orgId,
+          userId: existing.userId,
+          status: "DRAFT",
+        });
+      }
 
       if (assignedAssets.length > 0) {
         const existingReturns = await tx.query.assetReturns.findMany({
