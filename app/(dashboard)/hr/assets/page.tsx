@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { format } from "date-fns";
+import { parseCalendarDate } from "@/lib/date-utils";
 import {
   Laptop,
   Plus,
@@ -728,7 +729,7 @@ export default function HrAssetsPage() {
                         </TableCell>
                         <TableCell className="text-right text-sm tabular-nums">{fmt(a.purchaseCost)}</TableCell>
                         <TableCell className="text-xs tabular-nums text-muted-foreground">
-                          {a.purchaseDate ? format(new Date(a.purchaseDate), "dd MMM yyyy") : ""}
+                          {a.purchaseDate ? format(parseCalendarDate(a.purchaseDate), "dd MMM yyyy") : ""}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">

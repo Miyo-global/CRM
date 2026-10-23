@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         brand: body.brand,
         model: body.model,
         assignedTo: null,
-        purchaseDate: formatDateOnly(new Date(body.purchaseDate)),
+        purchaseDate: formatDateOnly(body.purchaseDate),
         purchaseCost: body.purchaseCost.toString(),
         location: body.location || null,
         notes: body.notes || null,

@@ -84,7 +84,7 @@ export async function PATCH(
     }
     if (body.purchaseDate !== undefined) {
       updatePayload.purchaseDate = body.purchaseDate
-        ? formatDateOnly(new Date(body.purchaseDate))
+        ? formatDateOnly(body.purchaseDate)
         : null;
     }
     updatePayload.updatedAt = new Date();

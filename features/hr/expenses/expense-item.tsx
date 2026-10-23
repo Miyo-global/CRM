@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { parseCalendarDate } from "@/lib/date-utils";
 import { Receipt, Download, Eye, Pencil, CheckCircle2, XCircle, MessageSquare, Mail, Copy } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ function SubmitterContactPopover({
     expense.status === "REJECTED" && !!expense.rejectionReason?.trim();
   if (!email && !hasNote && !hasRejection) return null;
 
-  const idLabel = `#EXP-${new Date(expense.expenseDate).getFullYear()}-${String(expense.id).padStart(3, "0")}`;
+  const idLabel = `#EXP-${parseCalendarDate(expense.expenseDate).getFullYear()}-${String(expense.id).padStart(3, "0")}`;
   const subject = `Re: Expense ${idLabel}`;
   const body = [
     `Hi ${first || displayName},`,
@@ -56,7 +57,7 @@ function SubmitterContactPopover({
     `About your expense ${idLabel}:`,
     `- ${expense.merchant || expense.description || "Claim"}`,
     `- Amount: ${formatINR(expense.amount)}`,
-    `- Date: ${format(new Date(expense.expenseDate), "dd MMM yyyy")}`,
+    `- Date: ${format(parseCalendarDate(expense.expenseDate), "dd MMM yyyy")}`,
     "",
   ].join("\n");
 
@@ -261,7 +262,7 @@ export function AdminExpenseItem({
             </Tooltip>
           </TooltipProvider>
           <span className="text-xs text-muted-foreground">
-            #EXP-{new Date(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
+            #EXP-{parseCalendarDate(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
           </span>
         </div>
         <h4 className="font-semibold text-base text-foreground mb-0.5">
@@ -284,7 +285,7 @@ export function AdminExpenseItem({
           <span className="text-muted-foreground text-sm">{expense.category || "General"}</span>
           <span className="text-muted-foreground">•</span>
           <span className="text-muted-foreground text-sm">
-            {format(new Date(expense.expenseDate), "MMM dd, yyyy")}
+            {format(parseCalendarDate(expense.expenseDate), "MMM dd, yyyy")}
           </span>
         </div>
       </div>
@@ -319,7 +320,7 @@ export function AdminExpenseItem({
                 )}
                 <p>
                   <span className="text-muted-foreground">Date: </span>
-                  <span className="font-medium">{format(new Date(expense.expenseDate), "dd MMM yyyy")}</span>
+                  <span className="font-medium">{format(parseCalendarDate(expense.expenseDate), "dd MMM yyyy")}</span>
                 </p>
               </div>
             </TooltipContent>
@@ -424,10 +425,10 @@ export function MemberExpenseItem({ expense, onEdit, onResubmit }: MemberExpense
   return (
     <TableRow>
       <TableCell className="px-6 py-4 text-sm font-medium">
-        #EXP-{new Date(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
+        #EXP-{parseCalendarDate(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
       </TableCell>
       <TableCell className="px-6 py-4 text-sm text-muted-foreground">
-        {format(new Date(expense.expenseDate), "MMM dd, yyyy")}
+        {format(parseCalendarDate(expense.expenseDate), "MMM dd, yyyy")}
       </TableCell>
       <TableCell className="px-6 py-4">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${catConfig.bg} ${catConfig.text}`}>

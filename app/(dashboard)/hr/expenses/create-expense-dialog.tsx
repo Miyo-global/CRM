@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { formatDateOnly } from "@/lib/date-utils";
+import { formatDateOnly, parseCalendarDate } from "@/lib/date-utils";
 import Image from "next/image";
 import { Upload, Receipt, X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -231,7 +231,7 @@ export function CreateExpenseDialog({
       paymentMethod: editExpense?.paymentMethod || "",
       paymentMethodOther: "",
       expenseDate: editExpense?.expenseDate
-        ? format(new Date(editExpense.expenseDate), "yyyy-MM-dd")
+        ? format(parseCalendarDate(editExpense.expenseDate), "yyyy-MM-dd")
         : format(new Date(), "yyyy-MM-dd"),
     }),
     [editExpense],
@@ -359,7 +359,7 @@ export function CreateExpenseDialog({
           data.paymentMethod?.trim().toLowerCase() === "other" && data.paymentMethodOther?.trim()
             ? data.paymentMethodOther.trim()
             : data.paymentMethod,
-        expenseDate: formatDateOnly(new Date(data.expenseDate)),
+        expenseDate: formatDateOnly(data.expenseDate),
         receiptUrl,
         receiptFileName,
       };
