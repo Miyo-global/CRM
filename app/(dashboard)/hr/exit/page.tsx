@@ -41,6 +41,7 @@ import { downloadResignationLetterTemplate } from "@/lib/hr/resignation-letter-t
 import { ResignationCard } from "@/features/hr/exit/resignation-card";
 import { RESIGNATION_REASONS } from "@/lib/constants/hr-separation";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import Link from "next/link";
 
 const NOTICE_PERIOD_DAYS = 60;
 
@@ -70,7 +71,6 @@ export default function ExitManagementPage() {
   const role = session?.user?.role;
   const userId = session?.user?.id;
   const isAdmin = isAdminOrOwner(role);
-  const isHR = role === "HR";
   const isCEO = checkIsCEO(role);
 
   const hasActiveResignation = useMemo(
@@ -97,6 +97,7 @@ export default function ExitManagementPage() {
   const [companyFeedback, setCompanyFeedback] = useState(EMPTY_RESIGNATION_FORM.companyFeedback);
 
   const [hrApproveId, setHrApproveId] = useState<number | null>(null);
+  const [hrApproveLwd, setHrApproveLwd] = useState("");
 
   const [ceoApproveId, setCeoApproveId] = useState<number | null>(null);
 
@@ -209,16 +210,25 @@ export default function ExitManagementPage() {
   const handleHrApprove = useCallback(() => {
     if (!hrApproveId) return;
     hrReview.mutate(
-      { id: hrApproveId, action: "approve" },
+      { id: hrApproveId, action: "approve", lastWorkingDate: hrApproveLwd || undefined },
       {
         onSuccess: () => {
-          toast.success("Resignation approved by HR");
+          toast.success("Resignation accepted and sent for final sign-off");
           setHrApproveId(null);
         },
         onError: (e) => toast.error(getErrorMessage(e)),
       }
     );
-  }, [hrApproveId, hrReview]);
+  }, [hrApproveId, hrApproveLwd, hrReview]);
+
+  const openHrApprove = useCallback(
+    (id: number) => {
+      const lwd = resignations?.find((r) => r.id === id)?.lastWorkingDate;
+      setHrApproveLwd(lwd ? String(lwd).slice(0, 10) : "");
+      setHrApproveId(id);
+    },
+    [resignations],
+  );
 
   const handleCeoApprove = useCallback(() => {
     if (!ceoApproveId) return;
@@ -226,7 +236,7 @@ export default function ExitManagementPage() {
       { id: ceoApproveId, action: "approve" },
       {
         onSuccess: () => {
-          toast.success("Resignation approved by CEO");
+          toast.success("Resignation approved. Complete the exit on Termination.");
           setCeoApproveId(null);
         },
         onError: (e) => toast.error(getErrorMessage(e)),
@@ -242,6 +252,10 @@ export default function ExitManagementPage() {
 
   const handleRejectConfirm = useCallback(() => {
     if (!rejectDialog) return;
+    if (!rejectRemarks.trim()) {
+      toast.error("Remarks are required when rejecting");
+      return;
+    }
     const mutate = rejectDialog.type === "hr" ? hrReview.mutate : ceoReview.mutate;
     mutate(
       { id: rejectDialog.id, action: "reject", remarks: rejectRemarks.trim() || undefined },
@@ -296,6 +310,17 @@ export default function ExitManagementPage() {
         ) : null
       }
     >
+      {isAdmin && (
+        <p className="mb-4 text-xs text-muted-foreground">
+          HR review (accept, set the last working day, or reject): HR or an Admin. Final sign-off: the
+          Super Admin or an Admin. Approved exits are completed on{" "}
+          <Link href="/hr/termination" className="font-medium text-brand-text underline-offset-2 hover:underline">
+            Termination
+          </Link>
+          . Nobody reviews their own resignation.
+        </p>
+      )}
+
       {!isCEO && hasActiveResignation && (
         <div role="status" className="mb-4 rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-strong">
           You already have an active resignation request in progress. Withdraw it before submitting a new one.
@@ -322,11 +347,10 @@ export default function ExitManagementPage() {
               resignation={r}
               isExpanded={expandedIds.has(r.id)}
               isAdmin={isAdmin}
-              isHR={isHR}
               isCEO={isExitFinalApprover(role)}
               userId={userId}
               onToggleExpand={toggleExpand}
-              onHrApprove={setHrApproveId}
+              onHrApprove={openHrApprove}
               onHrReject={(id) => handleOpenRejectDialog(id, "hr")}
               onCeoApprove={setCeoApproveId}
               onCeoReject={(id) => handleOpenRejectDialog(id, "ceo")}
@@ -461,21 +485,33 @@ export default function ExitManagementPage() {
         onOpenChange={(open) => {
           if (!open) setHrApproveId(null);
         }}
-        title="Approve resignation (HR)"
-        description="Are you sure you want to approve this resignation? It will be forwarded to the CEO for final approval."
-        confirmLabel="Approve"
+        title="Accept resignation (HR review)"
+        description="Accept this resignation and forward it to the Super Admin or an Admin for final sign-off."
+        confirmLabel="Accept"
         variant="default"
         onConfirm={handleHrApprove}
         isPending={hrReview.isPending}
-      />
+      >
+        <div className="space-y-1.5">
+          <label htmlFor="hr-approve-lwd" className="text-sm font-medium">
+            Last working day
+          </label>
+          <Input
+            id="hr-approve-lwd"
+            type="date"
+            value={hrApproveLwd}
+            onChange={(e) => setHrApproveLwd(e.target.value)}
+          />
+        </div>
+      </ConfirmActionDialog>
 
       <ConfirmActionDialog
         open={ceoApproveId !== null}
         onOpenChange={(open) => {
           if (!open) setCeoApproveId(null);
         }}
-        title="Approve resignation (CEO)"
-        description="Are you sure you want to give final approval for this resignation?"
+        title="Final sign-off"
+        description="Give final approval for this resignation? A termination record opens on Termination, where HR completes the exit (deactivation, full-and-final, asset returns)."
         confirmLabel="Approve"
         variant="default"
         onConfirm={handleCeoApprove}
@@ -501,7 +537,7 @@ export default function ExitManagementPage() {
         </p>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">
-            Remarks <span className="text-muted-foreground font-normal">(optional)</span>
+            Remarks <span className="text-destructive">*</span>
           </label>
           <Textarea
             placeholder="Enter your rejection remarks..."

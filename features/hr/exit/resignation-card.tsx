@@ -35,7 +35,6 @@ interface ResignationCardProps {
   resignation: Resignation;
   isExpanded: boolean;
   isAdmin: boolean;
-  isHR: boolean;
   isCEO: boolean;
   userId: string | undefined;
   onToggleExpand: (id: number) => void;
@@ -50,7 +49,6 @@ export function ResignationCard({
   resignation: r,
   isExpanded,
   isAdmin,
-  isHR,
   isCEO,
   userId,
   onToggleExpand,
@@ -69,10 +67,13 @@ export function ResignationCard({
     !isAdmin &&
     isOwnRecord &&
     (r.status === "SUBMITTED" || r.status === "PENDING_HR");
+  // R2-TERM-05: any admin role (HR, Admin, Super Admin) does HR review; the
+  // Super Admin or an Admin signs off. Nobody acts on their own resignation.
   const hrCanAct =
-    isHR &&
+    isAdmin &&
+    !isOwnRecord &&
     (r.status === "SUBMITTED" || r.status === "PENDING_HR");
-  const ceoCanAct = isCEO && r.status === "HR_APPROVED";
+  const ceoCanAct = isCEO && !isOwnRecord && r.status === "HR_APPROVED";
 
   const handleToggle = useCallback(() => onToggleExpand(r.id), [r.id, onToggleExpand]);
   const handleWithdraw = useCallback(() => onWithdraw(r.id), [r.id, onWithdraw]);

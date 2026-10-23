@@ -9,6 +9,7 @@ import { isExitFinalApprover } from "@/lib/constants/roles";
 import { after } from "next/server";
 import { format } from "date-fns";
 import { sendResignationApprovedEmail } from "@/lib/email";
+import { createTerminationFromResignation } from "@/lib/hr/resignation-termination";
 
 const ceoReviewSchema = z.object({
   decision: z.enum(["approve", "reject"]),
@@ -52,6 +53,7 @@ export async function PATCH(
     // The employee hears about the final decision by email too, not only
     // through Inngest's in-app notice (R3-0009).
     if (approved) {
+      await createTerminationFromResignation(record, session.user.id);
       const employee = await db.query.users.findFirst({
         where: eq(users.id, record.userId),
         columns: { email: true, name: true },

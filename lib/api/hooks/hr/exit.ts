@@ -140,12 +140,15 @@ export function useUpdateResignation() {
   });
 }
 
+// R2-TERM-05: the review routes read `decision`; sending `action` failed
+// validation, so no resignation could ever be approved or rejected.
 export function useHrReviewResignation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, action, remarks }: { id: number; action: "approve" | "reject"; remarks?: string }) =>
-      apiClient.patch<{ success: boolean }>(`/hr/exit/${id}/hr-review`, { action, remarks }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: exitKeys.list() }),
+    mutationFn: ({ id, action, remarks, lastWorkingDate }: { id: number; action: "approve" | "reject"; remarks?: string; lastWorkingDate?: string }) =>
+      apiClient.patch<{ success: boolean }>(`/hr/exit/${id}/hr-review`, { decision: action, remarks, lastWorkingDate }),
+    // .all, so the expanded progress timeline refreshes with the list.
+    onSuccess: () => qc.invalidateQueries({ queryKey: exitKeys.all }),
   });
 }
 
@@ -153,8 +156,12 @@ export function useCeoReviewResignation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, action, remarks }: { id: number; action: "approve" | "reject"; remarks?: string }) =>
-      apiClient.patch<{ success: boolean }>(`/hr/exit/${id}/ceo-review`, { action, remarks }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: exitKeys.list() }),
+      apiClient.patch<{ success: boolean }>(`/hr/exit/${id}/ceo-review`, { decision: action, remarks }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: exitKeys.all });
+      // Final approval opens a record on /hr/termination.
+      qc.invalidateQueries({ queryKey: queryKeys.hr.terminations() });
+    },
   });
 }
 

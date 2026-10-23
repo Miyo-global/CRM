@@ -5,6 +5,8 @@ import { resignations, exitChecklists, users, fnfSettlements } from "@/lib/db/sc
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendResignationApprovedEmail } from "@/lib/email";
+import { isExitFinalApprover } from "@/lib/constants/roles";
+import { createTerminationFromResignation } from "@/lib/hr/resignation-termination";
 import { after } from "next/server";
 import { format } from "date-fns";
 import type { NextRequest } from "next/server";
@@ -64,7 +66,8 @@ export async function PATCH(
     const role = session.user.role;
 
     if (body.status === "HR_APPROVED") {
-      if (role !== "HR" && role !== "CEO") return err("Only HR can perform HR review.", 403);
+      if (!isAdminOrOwner(role)) return err("Only HR or an Admin can perform HR review.", 403);
+      if (existing.userId === session.user.id) return err("You cannot review your own resignation.", 403);
       if (existing.status !== "PENDING_HR" && existing.status !== "SUBMITTED") {
         return err("Resignation is not pending HR review.", 400);
       }
@@ -80,7 +83,9 @@ export async function PATCH(
     }
 
     if (body.status === "CEO_APPROVED") {
-      if (role !== "CEO") return err("Only CEO can approve at this stage.", 403);
+      // Same rule as the ceo-review route (R3-0002).
+      if (!isExitFinalApprover(role)) return err("Only the Super Admin or an Admin can give the final sign-off.", 403);
+      if (existing.userId === session.user.id) return err("You cannot sign off your own resignation.", 403);
       if (existing.status !== "HR_APPROVED") {
         return err("Resignation must be HR-approved first.", 400);
       }
@@ -100,6 +105,8 @@ export async function PATCH(
         resignationId,
         status: "DRAFT",
       }).onConflictDoNothing();
+
+      await createTerminationFromResignation(existing, session.user.id);
 
       const employee = await db.query.users.findFirst({
         where: eq(users.id, existing.userId),
