@@ -208,6 +208,11 @@ export default function PayrollPage() {
       toast.error("Please select an employee");
       return;
     }
+    // Warn before the preview, not only at Confirm (R2-PAY-04).
+    if (allPayrolls?.some((p) => p.userId === selectedEmployee && p.month === selectedMonth)) {
+      toast.error("Payroll already generated", { description: `A payslip for this employee in ${format(monthKeyToDate(selectedMonth), "MMMM yyyy")} already exists. Delete it first to regenerate.` });
+      return;
+    }
     const monthly = parseFloat(selectedEmployeeData?.monthlySalary || "0");
     const targetCtc = resolvePayrollMonthlyCtc({
       picked: pickedStructureForMonth,
@@ -221,7 +226,7 @@ export default function PayrollPage() {
       return;
     }
     setShowPreview(true);
-  }, [selectedEmployee, selectedEmployeeData, pickedStructureForMonth, activeSalary]);
+  }, [selectedEmployee, selectedEmployeeData, pickedStructureForMonth, activeSalary, allPayrolls, selectedMonth]);
 
   const handleGenerateForEmployee = useCallback(() => {
     if (!selectedEmployee) return;
