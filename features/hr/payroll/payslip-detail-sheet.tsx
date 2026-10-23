@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calculator, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { format, getDaysInMonth } from "date-fns";
+import { monthKeyToDate } from "@/lib/date-utils";
 import { isoDateInTimezone } from "@/lib/constants/locale";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import type { Employee } from "@/types/hr";
@@ -61,7 +62,7 @@ export function PayslipDetailSheet({
   // A5: a run for a month that has not ended yet assumes the remaining days
   // are worked. Block it until the user says so explicitly.
   const today = isoDateInTimezone();
-  const monthEnded = today > `${selectedMonth}-${getDaysInMonth(new Date(`${selectedMonth}-01`))}`;
+  const monthEnded = today > `${selectedMonth}-${getDaysInMonth(monthKeyToDate(selectedMonth))}`;
   const [overrideIncompleteMonth, setOverrideIncompleteMonth] = useState(false);
   useEffect(() => {
     setOverrideIncompleteMonth(false);
@@ -93,7 +94,7 @@ export function PayslipDetailSheet({
       {!monthEnded && (
         <div className="rounded-md border border-border p-3 space-y-2">
           <p className="text-sm font-medium">
-            {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")} has not ended
+            {format(monthKeyToDate(selectedMonth), "MMMM yyyy")} has not ended
           </p>
           <p className="text-xs text-muted-foreground">
             Attendance is counted to {format(new Date(`${today}T00:00:00`), "dd MMM yyyy")} only.
@@ -123,11 +124,11 @@ export function PayslipDetailSheet({
             </div>
             <div className="shrink-0 flex flex-col items-end gap-1">
               <Badge variant="outline">
-                {format(new Date(selectedMonth + "-01"), "MMMM yyyy")}
+                {format(monthKeyToDate(selectedMonth), "MMMM yyyy")}
               </Badge>
               <p className="text-2xs text-muted-foreground tabular-nums">
                 {(() => {
-                  const start = new Date(selectedMonth + "-01");
+                  const start = monthKeyToDate(selectedMonth);
                   const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
                   return `${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`;
                 })()}

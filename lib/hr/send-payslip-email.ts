@@ -3,7 +3,7 @@ import { users, organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
 import { sendTemplateEmail } from "@/lib/email/sender";
-import { formatIST } from "@/lib/date-utils";
+import { formatIST, monthKeyToDate } from "@/lib/date-utils";
 import { buildPayslipPdfDataFromPayroll, generatePayslipPdf } from "@/lib/payslip-pdf";
 import { countApprovedLeaveDaysInMonth } from "@/server/queries/hr/payslip-leave-days";
 import { logger } from "@/lib/logger";
@@ -71,7 +71,7 @@ export async function sendPayslipEmailForPayroll(
     }
 
     const monthLabel = payroll.month
-      ? format(new Date(payroll.month + "-01"), "MMMM yyyy")
+      ? format(monthKeyToDate(payroll.month), "MMMM yyyy")
       : "Unknown Month";
 
     const leaveDays =

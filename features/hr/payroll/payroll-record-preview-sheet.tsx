@@ -1,6 +1,6 @@
 "use client";
 
-import { formatIST } from "@/lib/date-utils";
+import { formatIST, monthKeyToDate } from "@/lib/date-utils";
 
 import {
   Card,
@@ -101,11 +101,11 @@ export function PayrollRecordPreviewSheet({
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
               <Badge variant="outline" className="tabular-nums">
-                {format(new Date(monthKey + "-01"), "MMMM yyyy")}
+                {format(monthKeyToDate(monthKey), "MMMM yyyy")}
               </Badge>
               <p className="text-2xs text-muted-foreground tabular-nums">
                 {(() => {
-                  const start = new Date(monthKey + "-01");
+                  const start = monthKeyToDate(monthKey);
                   const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
                   return `${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`;
                 })()}

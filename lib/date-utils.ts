@@ -79,6 +79,15 @@ export function fromISODateString(str: string): Date {
   return new Date(year, month - 1, day);
 }
 
+/**
+ * First day of a "YYYY-MM" month key as a local date. `new Date("2026-10-01")`
+ * is UTC midnight, which is still 30 September in any timezone west of UTC, so
+ * the payroll picker said October while the title said September (R2-PAY-01).
+ */
+export function monthKeyToDate(month: string): Date {
+  return fromISODateString(`${month.slice(0, 7)}-01`);
+}
+
 export function parseDateString(dateString: string): Date {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);

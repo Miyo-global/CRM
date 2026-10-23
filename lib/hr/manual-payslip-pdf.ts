@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { monthKeyToDate } from "@/lib/date-utils";
 import { professionalTax } from "@/lib/payroll/rules";
 import { z } from "zod";
 import type { PayslipPdfData } from "@/lib/payslip-pdf-core";
@@ -53,7 +54,7 @@ export type ManualPayslipPdfBody = z.infer<typeof manualPayslipPdfBodySchema>;
 export function manualPayslipBodyToPdfData(body: ManualPayslipPdfBody): PayslipPdfData {
   const monthLabel =
     body.monthLabel ??
-    (body.month ? format(new Date(body.month + "-01"), "MMMM yyyy") : "Unknown Month");
+    (body.month ? format(monthKeyToDate(body.month), "MMMM yyyy") : "Unknown Month");
 
   let calendarDays = body.calendarDaysInMonth;
   if (calendarDays == null && body.month) {

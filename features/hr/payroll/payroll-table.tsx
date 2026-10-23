@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { monthKeyToDate } from "@/lib/date-utils";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Tone } from "@/lib/design/tones";
@@ -129,7 +130,7 @@ export function PayrollTable({
     const fullName = `${p.user?.firstName ?? ""} ${p.user?.lastName ?? ""}`.trim();
     return fullName === employeeFilter;
   });
-  const selectedMonthDate = new Date(`${selectedMonthKey}-01`);
+  const selectedMonthDate = monthKeyToDate(selectedMonthKey);
   const selectedMonthLabel = Number.isNaN(selectedMonthDate.getTime())
     ? selectedMonth
     : format(selectedMonthDate, "MMMM yyyy");

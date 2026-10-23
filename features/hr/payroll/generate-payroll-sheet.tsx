@@ -12,6 +12,7 @@ import {
   sanitizeDigitsOnly,
 } from "@/lib/numeric-input";
 import { format } from "date-fns";
+import { monthKeyToDate } from "@/lib/date-utils";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const nonNegativeInputProps = {
@@ -139,7 +140,7 @@ export function GeneratePayrollSheet({
         </div>
 
         {periodMode === "month" ? (
-          <p className="text-sm font-semibold">{format(new Date(selectedMonth + "-01"), "MMMM yyyy")}</p>
+          <p className="text-sm font-semibold">{format(monthKeyToDate(selectedMonth), "MMMM yyyy")}</p>
         ) : (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">

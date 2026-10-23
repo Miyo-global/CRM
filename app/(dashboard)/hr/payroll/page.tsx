@@ -38,6 +38,7 @@ import { PayrollRunStepper } from "@/features/hr/payroll/payroll-run-stepper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { monthKeyToDate } from "@/lib/date-utils";
 import { toast } from "sonner";
 import { Users, IndianRupee, CreditCard, Plus, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -243,7 +244,7 @@ export default function PayrollPage() {
         onError: (error) => {
           const msg = getErrorMessage(error);
           if (msg.toLowerCase().includes("already exists")) {
-            toast.error("Payroll already generated", { description: `A payslip for this employee in ${format(new Date(selectedMonth + "-01"), "MMMM yyyy")} already exists. Delete it first to regenerate.` });
+            toast.error("Payroll already generated", { description: `A payslip for this employee in ${format(monthKeyToDate(selectedMonth), "MMMM yyyy")} already exists. Delete it first to regenerate.` });
           } else {
             toast.error(msg);
           }
@@ -504,7 +505,7 @@ export default function PayrollPage() {
                   ? `Runs on the ${ordinalDay(payrollSchedule.dayOfMonth)} of each month${payrollSchedule.autoApprove ? " · auto-approved" : ""}.`
                   : "Generate payroll automatically each month on a fixed day."}
                 {payrollSchedule?.lastRunPeriod
-                  ? ` Last run: ${format(new Date(payrollSchedule.lastRunPeriod + "-01"), "MMM yyyy")}.`
+                  ? ` Last run: ${format(monthKeyToDate(payrollSchedule.lastRunPeriod), "MMM yyyy")}.`
                   : ""}
               </p>
             </div>
@@ -540,7 +541,7 @@ export default function PayrollPage() {
           <QueryErrorState title="Couldn't load payroll" error={error} onRetry={() => refetch()} />
         ) : (allPayrolls?.length ?? 0) === 0 ? (
           <EmptyState
-            title={`No payroll for ${format(new Date(selectedMonth + "-01"), "MMMM yyyy")}.`}
+            title={`No payroll for ${format(monthKeyToDate(selectedMonth), "MMMM yyyy")}.`}
             action={{ label: "Generate payroll", onClick: () => setGenerateSheetOpen(true) }}
           />
         ) : (

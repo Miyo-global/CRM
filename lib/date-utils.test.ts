@@ -1,5 +1,29 @@
-import { describe, expect, it } from "vitest";
-import { formatCalendarDate, formatIST, parseDbTimestamp } from "./date-utils";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { format, getDaysInMonth } from "date-fns";
+import { formatCalendarDate, formatIST, monthKeyToDate, parseDbTimestamp } from "./date-utils";
+
+describe("monthKeyToDate (R2-PAY-01)", () => {
+  // West of UTC `new Date("2026-10-01")` is still 30 September locally, which
+  // put the payroll title and drawer one month behind the picker.
+  const originalTz = process.env.TZ;
+  beforeAll(() => {
+    process.env.TZ = "America/New_York";
+  });
+  afterAll(() => {
+    process.env.TZ = originalTz;
+  });
+
+  it.each([
+    ["2026-09", "September 2026", "01 Sep 2026 – 30 Sep 2026"],
+    ["2026-10", "October 2026", "01 Oct 2026 – 31 Oct 2026"],
+    ["2026-11", "November 2026", "01 Nov 2026 – 30 Nov 2026"],
+  ])("%s labels and spans the picked month", (month, label, period) => {
+    const start = monthKeyToDate(month);
+    const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
+    expect(format(start, "MMMM yyyy")).toBe(label);
+    expect(`${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`).toBe(period);
+  });
+});
 
 describe("formatCalendarDate", () => {
   it("never shifts a bare calendar date", () => {
