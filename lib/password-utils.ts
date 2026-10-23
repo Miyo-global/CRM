@@ -1,5 +1,5 @@
 import { toneBar } from "@/lib/design/tones";
-import { passwordChecks } from "@/lib/utils/password-validation";
+import { PASSWORD_RULES, passwordChecks } from "@/lib/utils/password-validation";
 
 export function getPasswordStrength(password: string) {
   const checks = passwordChecks(password);
@@ -17,7 +17,7 @@ export type PasswordStrength = ReturnType<typeof getPasswordStrength>;
 export { PASSWORD_REGEX } from "@/lib/utils/password-validation";
 
 export const PASSWORD_REQUIREMENTS = [
-  { key: "length" as const, label: "8+ characters" },
+  { key: "length" as const, label: `${PASSWORD_RULES.minLength}+ characters` },
   { key: "uppercase" as const, label: "Uppercase" },
   { key: "lowercase" as const, label: "Lowercase" },
   { key: "number" as const, label: "Number" },
