@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   assetFormSchema,
   assetCreateSchema,
+  assetPatchSchema,
   deviceFormSchema,
 } from "./hr-assets";
+import { getTodayString } from "@/lib/date-utils";
 
 // ─── Asset ────────────────────────────────────────────────────────────────────
 
@@ -270,5 +272,16 @@ describe("deviceFormSchema", () => {
     const parsed = deviceFormSchema.safeParse({ ...validDevice, serialNumber: "abc12345" });
     expect(parsed.success).toBe(true);
     if (parsed.success) expect(parsed.data.serialNumber).toBe("ABC12345");
+  });
+});
+
+describe("asset purchase date (R2-HR-10)", () => {
+  it("rejects a purchase date after today, on create and on edit", () => {
+    const [y, m, d] = getTodayString().split("-").map(Number);
+    const tomorrow = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+    const { status: _status, assignedTo: _assignedTo, ...createBody } = validAsset;
+    expect(assetCreateSchema.safeParse({ ...createBody, purchaseDate: tomorrow }).success).toBe(false);
+    expect(assetPatchSchema.safeParse({ purchaseDate: tomorrow }).success).toBe(false);
+    expect(assetCreateSchema.safeParse({ ...createBody, purchaseDate: getTodayString() }).success).toBe(true);
   });
 });

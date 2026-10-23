@@ -577,6 +577,8 @@ export default function HrAssetsPage() {
                 onChange={setPurchaseDate}
                 placeholder="Pick date"
                 fromDate={ASSET_PURCHASE_FROM_DATE}
+                // Purchased today at the latest; the schema rejects a future date too (R2-HR-10).
+                toDate={new Date()}
                 fromYear={2025}
               />
             </div>
