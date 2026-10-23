@@ -1,7 +1,7 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { onboardingTasks, users } from "@/lib/db/schema";
-import { eq, count, inArray, sql } from "drizzle-orm";
+import { eq, and, count, inArray, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,10 @@ export async function GET() {
         completed: sql<number>`SUM(CASE WHEN ${onboardingTasks.status} = 'COMPLETED' THEN 1 ELSE 0 END)`,
       })
       .from(onboardingTasks)
-      .where(eq(onboardingTasks.orgId, orgId))
+      // Active employees only: tasks left behind by someone who has since left
+      // counted 36 "in progress" against a headcount of 10 (R2-HR-02).
+      .innerJoin(users, eq(onboardingTasks.userId, users.id))
+      .where(and(eq(onboardingTasks.orgId, orgId), eq(users.isActive, true)))
       .groupBy(onboardingTasks.userId);
 
     if (taskStats.length === 0) {

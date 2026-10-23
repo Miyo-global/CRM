@@ -88,6 +88,9 @@ export async function GET() {
             .where(
               and(
                 eq(organizationMembers.orgId, orgId),
+                // Active only, as on /hr: someone hired and let go this month
+                // is not a new hire (R2-HR-02).
+                eq(users.isActive, true),
                 gte(users.joiningDate, monthStart),
                 lte(users.joiningDate, monthEnd),
               ),

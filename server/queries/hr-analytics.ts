@@ -14,6 +14,12 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql, count, inArray, isNotNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";
+import { attritionRate as attritionRateOf, diversityRatio as diversityRatioOf, hiringRate as hiringRateOf, orgHealthScore as orgHealthScoreOf } from "@/lib/hr/executive-kpis";
+
+// Only exits that happened: a pending, withdrawn or rejected resignation (or a
+// draft termination) is not attrition.
+const EXIT_RESIGNATION_STATUSES = ["HR_APPROVED", "CEO_APPROVED", "IN_PROGRESS", "APPROVED", "COMPLETED"] as const;
+const EXIT_TERMINATION_STATUSES = ["PENDING_CEO", "APPROVED", "SENT", "COMPLETED"] as const;
 
 export interface AnalyticsFilter {
   orgId: string;
@@ -214,6 +220,7 @@ export async function getRetentionAnalytics(filter: AnalyticsFilter): Promise<Re
         .where(
           and(
             eq(resignations.orgId, orgId),
+            inArray(resignations.status, [...EXIT_RESIGNATION_STATUSES]),
             gte(resignations.createdAt, fromTs),
             lte(resignations.createdAt, toTs),
             filter.departmentId ? eq(users.departmentId, filter.departmentId) : undefined,
@@ -232,6 +239,7 @@ export async function getRetentionAnalytics(filter: AnalyticsFilter): Promise<Re
         .where(
           and(
             eq(terminations.orgId, orgId),
+            inArray(terminations.status, [...EXIT_TERMINATION_STATUSES]),
             gte(terminations.effectiveDate, from),
             lte(terminations.effectiveDate, to),
             filter.departmentId ? eq(users.departmentId, filter.departmentId) : undefined,
@@ -246,8 +254,7 @@ export async function getRetentionAnalytics(filter: AnalyticsFilter): Promise<Re
     const involuntaryExits = terminationRows.reduce((s, r) => s + Number(r.count), 0);
     const totalExits = voluntaryExits + involuntaryExits;
     const activeHeadcount = Number(activeRows[0]?.count ?? 0);
-    const denominator = activeHeadcount + totalExits;
-    const attritionRate = denominator > 0 ? Number(((totalExits / denominator) * 100).toFixed(1)) : 0;
+    const attritionRate = attritionRateOf(activeHeadcount, totalExits);
 
     const trendMap = new Map<string, { voluntary: number; involuntary: number }>();
     for (const r of resignationRows) {
@@ -491,14 +498,7 @@ export async function getExecutiveKpis(filter: AnalyticsFilter): Promise<Executi
         .select({ count: count() })
         .from(organizationMembers)
         .innerJoin(users, eq(organizationMembers.userId, users.id))
-        .where(
-          and(
-            eq(organizationMembers.orgId, orgId),
-            gte(users.joiningDate, from),
-            lte(users.joiningDate, to),
-            filter.departmentId ? eq(users.departmentId, filter.departmentId) : undefined,
-          ),
-        ),
+        .where(and(baseWhere, gte(users.joiningDate, from), lte(users.joiningDate, to))),
     ]);
 
     headcount = Number(hcRows[0]?.count ?? 0);
@@ -506,9 +506,7 @@ export async function getExecutiveKpis(filter: AnalyticsFilter): Promise<Executi
     avgTenureMonths = tenureRaw != null ? Number(Number(tenureRaw).toFixed(1)) : null;
     hires = Number(hireRows[0]?.count ?? 0);
 
-    const totalGendered = genderRows.reduce((s, g) => s + Number(g.count), 0);
-    const female = genderRows.find((g) => g.gender === "FEMALE");
-    diversityRatio = totalGendered > 0 ? Number(((Number(female?.count ?? 0) / totalGendered) * 100).toFixed(1)) : null;
+    diversityRatio = diversityRatioOf(genderRows.map((g) => ({ gender: g.gender, count: Number(g.count) })));
   } catch (e) {
     logger.error("getExecutiveKpis: headcount block failed", { orgId, error: e });
   }
@@ -524,12 +522,8 @@ export async function getExecutiveKpis(filter: AnalyticsFilter): Promise<Executi
     logger.error("getExecutiveKpis: recruitment block failed", { orgId, error: e });
   }
 
-  const hiringRate = headcount > 0 ? Number(((hires / headcount) * 100).toFixed(1)) : 0;
-
-  const attritionScore = Math.max(0, 100 - retention.attritionRate * 2);
-  const diversityScore = diversityRatio != null ? Math.min(100, diversityRatio * 2) : 50;
-  const tenureScore = avgTenureMonths != null ? Math.min(100, (avgTenureMonths / 36) * 100) : 50;
-  const orgHealthScore = Math.round(attritionScore * 0.4 + diversityScore * 0.3 + tenureScore * 0.3);
+  const hiringRate = hiringRateOf(headcount, hires);
+  const orgHealthScore = orgHealthScoreOf(retention.attritionRate, diversityRatio, avgTenureMonths);
 
   return {
     headcount,

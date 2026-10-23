@@ -23,7 +23,7 @@ import {
 } from "@/lib/api/hooks/hr/dashboard";
 import { useHrLeaveAnalytics } from "@/lib/api/hooks/hr/leaves-expenses";
 import { useAnniversaryFeed } from "@/lib/api/hooks/hr";
-import { Users, UserCheck, CalendarOff, ClipboardList, Briefcase, UserPlus, Cake, CheckCircle2, Clock, TrendingUp, TrendingDown, Wallet, Timer, PieChart, BarChart3, ShieldCheck, Download, PartyPopper, Award } from "lucide-react";
+import { Users, UserX, CalendarOff, ClipboardList, Briefcase, UserPlus, Cake, CheckCircle2, Clock, TrendingUp, TrendingDown, Wallet, Timer, PieChart, BarChart3, ShieldCheck, Download, PartyPopper, Award } from "lucide-react";
 import Link from "next/link";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { getInitials } from "@/lib/format-utils";
@@ -673,18 +673,21 @@ export function HrDashboardOverview() {
   return (
     <div className="mb-6 space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Headcount is the active roster /hr lists; the roster total also
+            holds everyone who has left, so it read 46 against 10 (R2-HR-02). */}
         <StatCard
-          label="Total Employees"
-          value={isLoading ? "" : (metrics?.totalEmployees ?? 0)}
+          label="Headcount"
+          value={isLoading ? "" : (metrics?.activeEmployees ?? 0)}
           icon={Users}
           index={0}
           href="/hr"
         />
         <StatCard
-          label="Active"
-          value={isLoading ? "" : (metrics?.activeEmployees ?? 0)}
-          icon={UserCheck}
+          label="Exited"
+          value={isLoading ? "" : Math.max(0, (metrics?.totalEmployees ?? 0) - (metrics?.activeEmployees ?? 0))}
+          icon={UserX}
           index={1}
+          href="/hr/employees/terminated"
         />
         <StatCard
           label="On Leave Today"
