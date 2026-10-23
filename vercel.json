@@ -49,24 +49,8 @@
       "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/cron/deactivate-exited-employees",
-      "schedule": "0 2 * * *"
-    },
-    {
       "path": "/api/cron/expiry-reminders",
       "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/close-expired-jobs",
-      "schedule": "15 1 * * *"
-    },
-    {
-      "path": "/api/cron/ats-interview-reminders",
-      "schedule": "30 2 * * *"
-    },
-    {
-      "path": "/api/cron/ats-retention",
-      "schedule": "40 1 * * *"
     }
   ]
 }
