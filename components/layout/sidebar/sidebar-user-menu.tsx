@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn, resolveImageUrl } from "@/lib/utils";
+import { getRoleLabel } from "@/lib/rbac/roles";
 import { THEME_OPTIONS, useMountedTheme, type ThemeValue } from "../theme-toggle";
 import { useShortcuts } from "../shortcuts-provider";
 
@@ -35,7 +36,8 @@ export function SidebarUserMenu({ isCollapsed }: SidebarUserMenuProps) {
   const email = session?.user?.email || "";
   const image = resolveImageUrl(session?.user?.image);
   const initials = name.charAt(0).toUpperCase();
-  const role = session?.user?.role || "";
+  // The role name, never the raw enum (R2-LC-13).
+  const role = session?.user?.role ? getRoleLabel(session.user.role) : "";
 
   return (
     <DropdownMenu>
