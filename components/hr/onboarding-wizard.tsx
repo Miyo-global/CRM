@@ -246,7 +246,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
           designation: formatDesignation(data.designation),
           // Send the calendar days as picked, not a UTC instant (R2-LC-02).
           joiningDate: format(data.joiningDate, "yyyy-MM-dd"),
-          dateOfBirth: format(data.dateOfBirth, "yyyy-MM-dd"),
+          dateOfBirth: data.dateOfBirth ? format(data.dateOfBirth, "yyyy-MM-dd") : undefined,
         } as import("@/types/hr").OnboardEmployeeInput,
         {
           onSuccess: async (result) => {
