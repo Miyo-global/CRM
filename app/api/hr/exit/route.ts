@@ -8,8 +8,9 @@ import { z } from "zod";
 import { sendResignationSubmittedEmail } from "@/lib/email";
 import { after } from "next/server";
 import { inngest } from "@/lib/inngest/client";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import type { NextRequest } from "next/server";
+import { isoDateInTimezone } from "@/lib/constants/locale";
 
 import { RESIGNATION_REASONS } from "@/lib/constants/hr-separation";
 
@@ -20,7 +21,10 @@ const createSchema = z
     reason: z.string().min(50, "Detailed reason must be at least 50 characters").max(2000),
     reasonCategory: z.enum(REASON_CATEGORIES),
     reasonCategoryOther: z.string().trim().max(200).optional(),
-    lastWorkingDate: z.string().min(1, "Last working date is required"),
+    lastWorkingDate: z
+      .string()
+      .min(1, "Last working date is required")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Last working date must be YYYY-MM-DD"),
     noticePeriodDays: z.number().int().min(0).max(180).optional().default(30),
     willingForExitInterview: z.boolean().optional().default(true),
     companyFeedback: z.string().max(2000).optional(),
@@ -31,6 +35,17 @@ const createSchema = z
         code: z.ZodIssueCode.custom,
         message: "Please specify your reason when selecting Other",
         path: ["reasonCategoryOther"],
+      });
+    }
+    // A requested last working day must fall inside the notice period (R2-EMP-04).
+    const today = isoDateInTimezone();
+    const [y, m, d] = today.split("-").map(Number);
+    const latest = new Date(Date.UTC(y, m - 1, d + data.noticePeriodDays)).toISOString().slice(0, 10);
+    if (data.lastWorkingDate <= today || data.lastWorkingDate > latest) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Last working date must be after today and no later than ${latest}`,
+        path: ["lastWorkingDate"],
       });
     }
   });
@@ -103,7 +118,7 @@ export async function POST(req: NextRequest) {
     });
 
     const submissionDate = format(new Date(), "dd MMM yyyy");
-    const lastWorkingDate = format(new Date(body.lastWorkingDate), "dd MMM yyyy");
+    const lastWorkingDate = format(parseISO(body.lastWorkingDate), "dd MMM yyyy");
 
     // after(): an un-awaited send can be cut off once the response is sent
     // on serverless (R3-0009).

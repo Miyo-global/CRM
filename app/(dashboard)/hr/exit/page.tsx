@@ -27,7 +27,8 @@ import {
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
-import { format, addDays } from "date-fns";
+import { format, addDays, parseISO } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Plus,
   FileText,
@@ -109,9 +110,14 @@ export default function ExitManagementPage() {
 
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
-  const autoLwd = format(addDays(new Date(), NOTICE_PERIOD_DAYS), "yyyy-MM-dd");
+  // The policy date is the default; the employee may ask for an earlier last
+  // working day inside the notice period, which HR then reviews (R2-EMP-04).
+  const policyLwd = format(addDays(new Date(), NOTICE_PERIOD_DAYS), "yyyy-MM-dd");
+  const [requestedLwd, setRequestedLwd] = useState("");
+  const autoLwd = requestedLwd || policyLwd;
 
   const resetResignationForm = useCallback(() => {
+    setRequestedLwd("");
     setReason(EMPTY_RESIGNATION_FORM.reason);
     setReasonCategory(EMPTY_RESIGNATION_FORM.reasonCategory);
     setReasonCategoryOther(EMPTY_RESIGNATION_FORM.reasonCategoryOther);
@@ -139,10 +145,10 @@ export default function ExitManagementPage() {
     downloadResignationLetterTemplate({
       date: format(new Date(), "dd MMM yyyy"),
       employeeName: session?.user?.name ?? "[Your Full Name]",
-      lastWorkingDate: format(addDays(new Date(), NOTICE_PERIOD_DAYS), "dd MMM yyyy"),
+      lastWorkingDate: format(parseISO(autoLwd), "dd MMM yyyy"),
       reason: reason.trim() || reasonSummary,
     });
-  }, [reason, reasonCategory, reasonCategoryOther, session?.user?.name]);
+  }, [reason, reasonCategory, reasonCategoryOther, session?.user?.name, autoLwd]);
 
   const toggleExpand = useCallback((id: number) => {
     setExpandedIds((prev) => {
@@ -378,12 +384,23 @@ export default function ExitManagementPage() {
           <FileText className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>
             Notice period is <strong className="text-foreground">60 days</strong> as per
-            company policy. Your last working date will be{" "}
+            company policy, so your last working date is{" "}
             <strong className="tabular-nums text-foreground">
-              {format(addDays(new Date(), NOTICE_PERIOD_DAYS), "dd MMM yyyy")}
+              {format(parseISO(policyLwd), "dd MMM yyyy")}
             </strong>
-            .
+            . You can request an earlier date for HR to review.
           </span>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="requested-lwd" className="text-sm font-medium">Last working date</label>
+          <DatePicker
+            id="requested-lwd"
+            value={autoLwd}
+            onChange={setRequestedLwd}
+            fromDate={addDays(new Date(), 1)}
+            toDate={parseISO(policyLwd)}
+          />
         </div>
 
         <div className="space-y-1.5">

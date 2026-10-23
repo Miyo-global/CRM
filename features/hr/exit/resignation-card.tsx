@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInCalendarDays, parseISO } from "date-fns";
 import { resolveImageUrl } from "@/lib/utils";
 import {
   CheckCircle2,
@@ -58,9 +58,11 @@ export function ResignationCard({
   onCeoReject,
   onWithdraw,
 }: ResignationCardProps) {
+  // parseISO keeps a "YYYY-MM-DD" LWD on its own day; new Date() read it as
+  // UTC and showed the day before west of UTC (R2-EMP-04).
   const daysLeft =
     r.lastWorkingDate
-      ? differenceInDays(new Date(r.lastWorkingDate), new Date())
+      ? differenceInCalendarDays(parseISO(r.lastWorkingDate), new Date())
       : null;
   const isOwnRecord = r.userId === userId;
   const canWithdraw =
@@ -108,7 +110,7 @@ export function ResignationCard({
             {r.lastWorkingDate && (
               <span className="flex items-center gap-1">
                 <Calendar className="size-3.5" aria-hidden="true" />
-                LWD: {format(new Date(r.lastWorkingDate), "MMM d, yyyy")}
+                LWD: {format(parseISO(r.lastWorkingDate), "MMM d, yyyy")}
               </span>
             )}
             {daysLeft !== null && daysLeft > 0 && (
