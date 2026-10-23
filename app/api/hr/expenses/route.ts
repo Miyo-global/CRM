@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
       .values({
         orgId: session.orgId,
         userId: claimantId,
+        filedBy: onBehalf ? session.user.id : null,
         category: body.category,
         categoryId: body.categoryId,
         amount: body.amount.toString(),

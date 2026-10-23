@@ -90,7 +90,7 @@ export async function PATCH(
     const body = parsedStatus.data;
 
     const owner = await db
-      .select({ id: users.id, role: users.role })
+      .select({ id: users.id, role: users.role, filedBy: expenses.filedBy })
       .from(expenses)
       .innerJoin(users, eq(users.id, expenses.userId))
       .where(and(eq(expenses.id, expenseId), eq(expenses.orgId, session.orgId)))
@@ -98,6 +98,10 @@ export async function PATCH(
     if (!owner[0]) return err("Expense not found.", 404);
     const duty = canDecideRequest(session.user, owner[0]);
     if (!duty.allowed) return err(duty.message, 403);
+    // A claim filed on someone's behalf needs a second person (R2-CRUD-06).
+    if (body.status === "APPROVED" && owner[0].filedBy === session.user.id) {
+      return err("You filed this claim, so another approver must approve it.", 403);
+    }
 
     await db.transaction(async (tx) => {
       const [expense] = await tx

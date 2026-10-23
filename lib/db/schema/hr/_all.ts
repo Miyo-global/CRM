@@ -237,6 +237,8 @@ export const expenses = pgTable("expenses", {
   projectId: integer("project_id").references(() => projects.id),
   status: expenseStatusEnum("status").default("PENDING"),
   approverId: text("approver_id").references(() => users.id),
+  /** Set when HR or an Admin filed the claim for the employee (R2-CRUD-06). */
+  filedBy: text("filed_by").references(() => users.id, { onDelete: "set null" }),
   approvedAt: timestamp("approved_at"),
   rejectionReason: text("rejection_reason"),
   paidAt: timestamp("paid_at"),
