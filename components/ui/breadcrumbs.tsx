@@ -92,12 +92,20 @@ function titleCase(segment: string): string {
     .join(" ");
 }
 
+/**
+ * Section roots whose nav entry names one page, not the section: /hr is the
+ * "Employees" item, so every HR page read "Employees > Leaves" (R2-HR-01).
+ * Used only when the root is a parent crumb.
+ */
+const SECTION_LABELS: Record<string, string> = { "/hr": "HR" };
+
 /** Crumbs for a pathname: nav label when the prefix is a nav route, else title-cased segment. */
 export function buildBreadcrumbs(pathname: string, labels: Map<string, string> = getNavLabels()): Crumb[] {
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = segments.map((segment, i) => {
     const href = `/${segments.slice(0, i + 1).join("/")}`;
-    const label = labels.get(href) ?? (isIdSegment(segment) ? "Details" : titleCase(segment));
+    const section = i < segments.length - 1 ? SECTION_LABELS[href] : undefined;
+    const label = section ?? labels.get(href) ?? (isIdSegment(segment) ? "Details" : titleCase(segment));
     return i === segments.length - 1 ? { label } : { label, href };
   });
   // Collapse adjacent duplicates (e.g. /hr "Employees" → /hr/employees): keep the nav parent, or the current page if last.
