@@ -33,6 +33,7 @@ import {
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
 import { formatIST } from "@/lib/date-utils";
+import { auditActionLabel } from "@/lib/audit-action-label";
 import {
   PAGE_SIZE_OPTIONS,
   parsePaginationFromSearchParams,
@@ -94,8 +95,8 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
         </div>
       </TableCell>
       <TableCell className="whitespace-nowrap">
-        <StatusPill tone={actionTone(log.action)} className="font-mono">
-          {log.action}
+        <StatusPill tone={actionTone(log.action)}>
+          {auditActionLabel(log.action)}
         </StatusPill>
       </TableCell>
       <TableCell className="text-xs text-muted-foreground capitalize whitespace-nowrap">
@@ -136,9 +137,10 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
         </SheetHeader>
         <div className="flex-1 min-h-0 px-4 py-3 space-y-4 overflow-hidden">
           <DetailField label="Action">
-            <StatusPill tone={actionTone(log.action)} className="font-mono">
-              {log.action}
+            <StatusPill tone={actionTone(log.action)}>
+              {auditActionLabel(log.action)}
             </StatusPill>
+            <p className="mt-1 font-mono text-2xs text-muted-foreground">{log.action}</p>
           </DetailField>
           <DetailField label="User">
             <div className="flex items-center gap-2.5">
@@ -287,7 +289,7 @@ function AuditLogContent() {
           <SelectContent>
             <SelectItem value="all">All Actions</SelectItem>
             {actions?.map((a) => (
-              <SelectItem key={a} value={a}>{a}</SelectItem>
+              <SelectItem key={a} value={a}>{auditActionLabel(a)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -382,8 +384,8 @@ function AuditLogContent() {
                           </span>
                         </span>
                         <span className="flex flex-wrap items-center gap-2">
-                          <StatusPill tone={actionTone(log.action)} className="max-w-full truncate font-mono">
-                            {log.action}
+                          <StatusPill tone={actionTone(log.action)} className="max-w-full truncate">
+                            {auditActionLabel(log.action)}
                           </StatusPill>
                           {log.targetType && (
                             <span className="text-xs capitalize text-muted-foreground">

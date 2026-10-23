@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { auditLogs } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
+import { requestIp } from "@/lib/audit-log";
 
 interface AuditParams {
   action: string;
@@ -21,7 +22,7 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
       targetId: params.targetId ?? null,
       targetType: params.targetType ?? null,
       metadata: params.metadata ?? null,
-      ipAddress: params.ipAddress ?? null,
+      ipAddress: params.ipAddress ?? (await requestIp()),
     });
   } catch (error) {
     logger.error("Failed to write audit log", { action: params.action, error });

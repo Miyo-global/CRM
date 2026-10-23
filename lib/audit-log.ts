@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { db } from "./db";
 import { auditLogs } from "./db/schema";
 import { logger } from "./logger";
@@ -134,6 +135,19 @@ interface AuditLogEntry {
   ipAddress?: string;
 }
 
+/**
+ * The caller's IP from the proxy headers, so no route has to pass it
+ * (R2-SYS-04). Null outside a request (cron, scripts) or when no proxy set it.
+ */
+export async function requestIp(): Promise<string | null> {
+  try {
+    const h = await headers();
+    return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createAuditLog(entry: AuditLogEntry): Promise<void> {
   try {
     await db.insert(auditLogs).values({
@@ -143,7 +157,7 @@ export async function createAuditLog(entry: AuditLogEntry): Promise<void> {
       targetId: entry.targetId ?? null,
       targetType: entry.targetType ?? null,
       metadata: entry.metadata ?? null,
-      ipAddress: entry.ipAddress ?? null,
+      ipAddress: entry.ipAddress ?? (await requestIp()),
     });
   } catch (error) {
 
