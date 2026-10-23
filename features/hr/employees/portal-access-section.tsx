@@ -6,12 +6,15 @@ import { Shield } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToggleDashboardAccess } from "@/lib/api/hooks/hr";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 interface PortalAccessSectionProps {
   employeeId: string;
   employeeName: string;
   employeeRole: string;
   initialHasAccess: boolean;
+  /** False for a terminated / deactivated account: access cannot be turned on. */
+  isAccountActive?: boolean;
   currentUserId?: string;
 }
 
@@ -20,11 +23,14 @@ export function PortalAccessSection({
   employeeName,
   employeeRole,
   initialHasAccess,
+  isAccountActive = true,
   currentUserId,
 }: PortalAccessSectionProps) {
   const toggleAccess = useToggleDashboardAccess();
   const [hasAccess, setHasAccess] = useState(initialHasAccess);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  // The access value the open confirm dialog would apply (R2-ROLE-3: ON is
+  // confirmed too, not applied on the first click).
+  const [confirmNext, setConfirmNext] = useState<boolean | null>(null);
 
   const isLocked = employeeRole === "CEO" || employeeId === currentUserId;
 
@@ -37,23 +43,15 @@ export function PortalAccessSection({
             setHasAccess(next);
             toast.success(`Portal access ${next ? "enabled" : "disabled"}`);
           },
-          onError: () => toast.error("Failed to update portal access"),
+          onError: (error) => toast.error(getErrorMessage(error)),
         },
       );
     },
     [employeeId, toggleAccess],
   );
 
-  const handleToggle = useCallback(
-    (next: boolean) => {
-      if (!next) {
-        setConfirmOpen(true);
-        return;
-      }
-      applyChange(true);
-    },
-    [applyChange],
-  );
+  // R2-HRROLE-01: a terminated / inactive account cannot get access back.
+  const cannotEnable = !isAccountActive && !hasAccess;
 
   return (
     <div className="space-y-4">
@@ -70,28 +68,33 @@ export function PortalAccessSection({
           <p className="text-xs text-muted-foreground">
             Controls whether {employeeName} can sign in and use the application.
             {isLocked ? " This account always retains access." : ""}
+            {cannotEnable ? " This account is deactivated, so access cannot be turned on." : ""}
           </p>
         </div>
         <Switch
           checked={hasAccess}
-          disabled={isLocked || toggleAccess.isPending}
-          onCheckedChange={handleToggle}
+          disabled={isLocked || cannotEnable || toggleAccess.isPending}
+          onCheckedChange={setConfirmNext}
           aria-label={`Toggle portal access for ${employeeName}`}
         />
       </div>
 
       <ConfirmActionDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title="Disable Portal Access"
-        description={`Disabling portal access for ${employeeName} will block their access to the entire application. They will be signed out on their next page load and cannot log in until access is re-enabled.`}
-        confirmLabel="Disable Access"
+        open={confirmNext !== null}
+        onOpenChange={(open) => !open && setConfirmNext(null)}
+        title={confirmNext ? "Enable Portal Access" : "Disable Portal Access"}
+        description={
+          confirmNext
+            ? `${employeeName} will be able to sign in and use the application again.`
+            : `Disabling portal access for ${employeeName} will block their access to the entire application. They will be signed out on their next page load and cannot log in until access is re-enabled.`
+        }
+        confirmLabel={confirmNext ? "Enable Access" : "Disable Access"}
         cancelLabel="Cancel"
-        variant="destructive"
+        variant={confirmNext ? "default" : "destructive"}
         isPending={toggleAccess.isPending}
         onConfirm={() => {
-          applyChange(false);
-          setConfirmOpen(false);
+          if (confirmNext !== null) applyChange(confirmNext);
+          setConfirmNext(null);
         }}
       />
     </div>

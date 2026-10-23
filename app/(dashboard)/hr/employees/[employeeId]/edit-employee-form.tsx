@@ -214,6 +214,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
             employeeName={`${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim() || employee.email}
             employeeRole={(employee.role || "EMPLOYEE").trim().toUpperCase()}
             initialHasAccess={employee.hasDashboardAccess !== false}
+            isAccountActive={employee.isActive !== false}
             currentUserId={session?.user?.id}
           />
         </div>

@@ -80,6 +80,21 @@ export async function PATCH(
       );
     }
 
+    // R2-HRROLE-01: switching access on for a terminated / deactivated
+    // account left it in an inconsistent state (Terminated + access ON).
+    if (body.hasDashboardAccess === true) {
+      const target = await db.query.users.findFirst({
+        where: eq(users.id, targetUserId),
+        columns: { isActive: true },
+      });
+      if (target?.isActive === false) {
+        return err(
+          "This account is deactivated. Portal access cannot be turned on for a terminated or inactive employee.",
+          400,
+        );
+      }
+    }
+
     if (body.isActive === false) {
       return err(
         "Use the termination workflow to deactivate an employee (so CEO approval, full-and-final settlement, and asset returns are recorded).",
