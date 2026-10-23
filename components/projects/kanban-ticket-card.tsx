@@ -80,7 +80,7 @@ export const KanbanTicketCard = memo(function KanbanTicketCard({
         )}
       </div>
 
-      <p className="line-clamp-2 text-sm font-medium leading-snug">
+      <p className="line-clamp-2 text-sm font-medium leading-snug wrap-anywhere">
         {ticket.title}
       </p>
 

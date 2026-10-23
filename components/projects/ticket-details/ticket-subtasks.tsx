@@ -34,6 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { TICKET_TITLE_MAX } from "@/lib/validations/project";
 
 interface Subtask {
   id: number;
@@ -206,6 +207,7 @@ export function TicketSubtasks({
                   <Input
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
+                    maxLength={TICKET_TITLE_MAX}
                     className="h-8 text-sm flex-1"
                     autoFocus
                     onKeyDown={(e) => {
@@ -311,6 +313,7 @@ export function TicketSubtasks({
           <Input
             value={subtaskTitle}
             onChange={(e) => setSubtaskTitle(e.target.value)}
+            maxLength={TICKET_TITLE_MAX}
             placeholder="Add subtask..."
             className="h-8 text-sm flex-1"
             onKeyDown={(e) => {

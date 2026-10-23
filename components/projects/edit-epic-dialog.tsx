@@ -36,9 +36,10 @@ import { queryKeys } from "@/lib/query-keys";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { useQueryClient } from "@tanstack/react-query";
+import { TICKET_TITLE_MAX, ticketTitleSchema } from "@/lib/validations/project";
 
 const editEpicSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  title: ticketTitleSchema,
   description: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]),
@@ -126,7 +127,7 @@ export function EditEpicDialog({ epic, projectId, trigger }: EditEpicDialogProps
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
+                  <FormControl><Input maxLength={TICKET_TITLE_MAX} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}

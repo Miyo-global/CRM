@@ -7,9 +7,10 @@ import { tickets } from "@/lib/db/schema";
 import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
+import { ticketTitleSchema } from "@/lib/validations/project";
 
 const createEpicSchema = z.object({
-  title: z.string().min(1),
+  title: ticketTitleSchema,
   description: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   assigneeId: z.string().optional(),

@@ -35,9 +35,10 @@ import {
 import { useCreateTicket } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { TICKET_TITLE_MAX, ticketTitleSchema } from "@/lib/validations/project";
 
 const createEpicSchema = z.object({
-  title: z.string().min(1, "Epic title is required"),
+  title: ticketTitleSchema,
   description: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
 });
@@ -110,7 +111,7 @@ export function CreateEpicDialog({ projectId, trigger }: CreateEpicDialogProps) 
                 <FormItem>
                   <FormLabel>Epic Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., User Authentication System" {...field} />
+                    <Input placeholder="e.g., User Authentication System" maxLength={TICKET_TITLE_MAX} {...field} />
                   </FormControl>
                   <FormDescription>
                     A high-level feature or initiative that contains multiple stories
