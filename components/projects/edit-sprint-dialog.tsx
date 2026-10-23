@@ -28,7 +28,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { useUpdateSprint } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { format } from "date-fns";
+import { formatDateOnlyUTC } from "@/lib/date-utils";
 
 const editSprintSchema = z.object({
   name: z.string().min(1, "Sprint name is required"),
@@ -58,8 +58,8 @@ export function EditSprintDialog({ sprint, projectId, trigger }: EditSprintDialo
     resolver: zodResolver(editSprintSchema),
     defaultValues: {
       name: sprint.name,
-      startDate: format(new Date(sprint.startDate), "yyyy-MM-dd"),
-      endDate: format(new Date(sprint.endDate), "yyyy-MM-dd"),
+      startDate: formatDateOnlyUTC(sprint.startDate),
+      endDate: formatDateOnlyUTC(sprint.endDate),
       goal: sprint.goal || "",
     },
   });
@@ -68,8 +68,8 @@ export function EditSprintDialog({ sprint, projectId, trigger }: EditSprintDialo
     if (open) {
       form.reset({
         name: sprint.name,
-        startDate: format(new Date(sprint.startDate), "yyyy-MM-dd"),
-        endDate: format(new Date(sprint.endDate), "yyyy-MM-dd"),
+        startDate: formatDateOnlyUTC(sprint.startDate),
+        endDate: formatDateOnlyUTC(sprint.endDate),
         goal: sprint.goal || "",
       });
     }

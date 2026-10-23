@@ -23,6 +23,10 @@ describe("periodStatus (QA-0074, QA-0075)", () => {
     expect(periodStatus({ storedStatus: "completed", startDate: "2026-09-01", endDate: "2026-09-30", today })).toBe("completed");
   });
 
+  it("keeps a planned sprint upcoming until it is started (R2-PRJ-03)", () => {
+    expect(periodStatus({ storedStatus: "PLANNED", startDate: today, endDate: "2026-10-30", today })).toBe("upcoming");
+  });
+
   it("keeps a cancellation", () => {
     expect(periodStatus({ storedStatus: "CANCELLED", startDate: "2026-10-01", endDate: "2026-10-30", today })).toBe("cancelled");
   });

@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { format, differenceInDays, startOfDay } from "date-fns";
+import { formatDateOnlyUTC, parseCalendarDate } from "@/lib/date-utils";
 import {
   ArrowRightLeft, CalendarDays, Gauge, ListChecks, MoreHorizontal, Pencil, Play, Square, Target, Timer,
 } from "lucide-react";
@@ -79,8 +80,10 @@ export function SprintCard({ sprint, projectId, onStart, onComplete, onPlan, isU
   const completedPoints = tickets.filter((t) => t.status === "DONE").reduce((sum, t) => sum + (t.points || 0), 0);
   const progress = totalPoints > 0 ? (completedPoints / totalPoints) * 100 : 0;
 
-  const endDate = new Date(sprint.endDate);
-  const startDate = new Date(sprint.startDate);
+  // Stored as UTC midnight of the picked day; read back the UTC day, or the
+  // card showed the day before west of UTC (R2-PRJ-03).
+  const endDate = parseCalendarDate(formatDateOnlyUTC(sprint.endDate));
+  const startDate = parseCalendarDate(formatDateOnlyUTC(sprint.startDate));
   const daysRemaining = differenceInDays(startOfDay(endDate), startOfDay(new Date()));
   const totalDays = differenceInDays(startOfDay(endDate), startOfDay(startDate));
 

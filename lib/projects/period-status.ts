@@ -24,6 +24,10 @@ export function periodStatus(input: {
   const end = ymd(input.endDate);
 
   if (CANCELLED.has(stored)) return "cancelled";
+  // A sprint stays PLANNED until someone starts it, so it is not running yet
+  // even once its start date arrives; it sat under "Planned Sprints" with an
+  // "Active" badge (R2-PRJ-03). Cycles use "draft" and still follow the dates.
+  if (stored === "PLANNED") return "upcoming";
 
   // A period cannot be complete before it has ended, whatever the row says.
   if (COMPLETED.has(stored)) {
