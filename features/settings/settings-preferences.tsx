@@ -1,13 +1,10 @@
 "use client";
 
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
+import Link from "next/link";
 import { useState, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Monitor, Mail, Bell, BellOff, Smartphone, Moon, Rows3 } from "lucide-react";
-import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/lib/api/hooks/hr";
-import { Input } from "@/components/ui/input";
+import { Bell, ChevronRight, Rows3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioCard } from "@/components/ui/radio-group";
 import { THEME_OPTIONS, useMountedTheme, type ThemeValue } from "@/components/layout/theme-toggle";
@@ -21,29 +18,9 @@ interface PrefRowProps {
   description: string;
   checked: boolean;
   onCheckedChange: (v: boolean) => void;
-  disabled?: boolean;
 }
 
-const ALL_NOTIFICATION_CATEGORIES = [
-  { key: "lead_assigned", label: "Lead assigned", description: "When a lead is assigned to you." },
-  { key: "lead_converted", label: "Lead converted", description: "When a lead you own is converted." },
-  { key: "deal_stage_change", label: "Deal stage changes", description: "When a deal moves to a new pipeline stage." },
-  { key: "sla_breach", label: "SLA breach warnings", description: CRM_MODULE_ENABLED ? "When a lead or ticket is about to breach SLA." : "When a ticket is about to breach SLA." },
-  { key: "leave_request", label: "Leave requests", description: "When someone submits a leave request for your approval." },
-  { key: "leave_decision", label: "Leave approved/rejected", description: "When your leave request is approved or rejected." },
-  { key: "expense_approved", label: "Expense approved", description: "When your expense claim is approved or rejected." },
-  { key: "payslip_generated", label: "Payslip generated", description: "When your monthly payslip is ready." },
-  { key: "holiday_reminder", label: "Holiday reminders", description: "Reminders about upcoming holidays." },
-  { key: "target_achieved", label: "Target achieved", description: "When you hit a performance target." },
-];
-
-// Lead and deal alerts only exist with the CRM module on.
-const CRM_PREF_KEYS = new Set(["lead_assigned", "lead_converted", "deal_stage_change"]);
-const NOTIFICATION_CATEGORIES = ALL_NOTIFICATION_CATEGORIES.filter(
-  (c) => CRM_MODULE_ENABLED || !CRM_PREF_KEYS.has(c.key),
-);
-
-function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange, disabled }: PrefRowProps) {
+function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange }: PrefRowProps) {
   return (
     <SettingRow
       htmlFor={id}
@@ -59,7 +36,6 @@ function PrefRow({ id, icon: Icon, label, description, checked, onCheckedChange,
           id={id}
           checked={checked}
           onCheckedChange={onCheckedChange}
-          disabled={disabled}
           aria-label={label}
         />
       }
@@ -101,60 +77,11 @@ export function SettingsPreferences() {
   const [compactView, setCompactView] = useState(false);
   const { theme, setTheme } = useMountedTheme();
 
-  const { data: prefs } = useNotificationPreferences();
-  const updatePrefs = useUpdateNotificationPreferences();
-
-  const isPending = updatePrefs.isPending;
-
   const handleCompactToggle = useCallback((checked: boolean) => {
     setCompactView(checked);
     document.documentElement.classList.toggle("compact", checked);
     toast.success(checked ? "Compact view enabled" : "Compact view disabled");
   }, []);
-
-  const handlePrefUpdate = useCallback((field: string, value: boolean | string | null) => {
-    updatePrefs.mutate(
-      { [field]: value } as Parameters<typeof updatePrefs.mutate>[0],
-      { onError: () => toast.error("Failed to save preference") }
-    );
-  }, [updatePrefs]);
-
-  const handleInAppChange = useCallback((v: boolean) => handlePrefUpdate("inAppEnabled", v), [handlePrefUpdate]);
-  const handleEmailChange = useCallback((v: boolean) => handlePrefUpdate("emailEnabled", v), [handlePrefUpdate]);
-  const handlePushChange = useCallback((v: boolean) => handlePrefUpdate("pushEnabled", v), [handlePrefUpdate]);
-  const handleSmsChange = useCallback((v: boolean) => handlePrefUpdate("smsEnabled", v), [handlePrefUpdate]);
-
-  const [qhStart, setQhStart] = useState(prefs?.quietHoursStart ?? "");
-  const [qhEnd, setQhEnd] = useState(prefs?.quietHoursEnd ?? "");
-
-  const handleQhStartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setQhStart(e.target.value), []);
-  const handleQhEndChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setQhEnd(e.target.value), []);
-
-  const saveQuietHours = useCallback(() => {
-    updatePrefs.mutate(
-      { quietHoursStart: qhStart || null, quietHoursEnd: qhEnd || null },
-      {
-        onSuccess: () => toast.success("Quiet hours saved"),
-        onError: () => toast.error("Failed to save quiet hours"),
-      }
-    );
-  }, [updatePrefs, qhStart, qhEnd]);
-
-  const handleClearQuietHours = useCallback(() => {
-    setQhStart("");
-    setQhEnd("");
-    updatePrefs.mutate(
-      { quietHoursStart: null, quietHoursEnd: null },
-      { onSuccess: () => toast.success("Quiet hours cleared") }
-    );
-  }, [updatePrefs]);
-
-  const handleCategoryUpdate = useCallback((key: string, value: boolean) => {
-    updatePrefs.mutate(
-      { categories: { ...(prefs?.categories ?? {}), [key]: value } },
-      { onError: () => toast.error("Failed to save") }
-    );
-  }, [updatePrefs, prefs?.categories]);
 
   return (
     <div className="space-y-6">
@@ -189,127 +116,27 @@ export function SettingsPreferences() {
         />
       </SettingsSection>
 
-      <SettingsSection title="Notification Channels">
-        <PrefRow
-          id="in-app-notifications"
-          icon={Bell}
-          label="In-app notifications"
-          description="Show notifications in the notification bell."
-          checked={prefs?.inAppEnabled ?? true}
-          onCheckedChange={handleInAppChange}
-          disabled={isPending}
-        />
-        <PrefRow
-          id="email-notifications"
-          icon={Mail}
-          label="Email notifications"
-          description="Receive important updates and alerts via email."
-          checked={prefs?.emailEnabled ?? true}
-          onCheckedChange={handleEmailChange}
-          disabled={isPending}
-        />
-        <PrefRow
-          id="push-notifications"
-          icon={Monitor}
-          label="Desktop push notifications"
-          description="Receive browser push notifications even when the tab is inactive."
-          checked={prefs?.pushEnabled ?? true}
-          onCheckedChange={handlePushChange}
-          disabled={isPending}
-        />
-        <PrefRow
-          id="sms-notifications"
-          icon={Smartphone}
-          label="SMS notifications"
-          description="Receive critical alerts via SMS (charges may apply)."
-          checked={prefs?.smsEnabled ?? false}
-          onCheckedChange={handleSmsChange}
-          disabled={isPending}
-        />
-      </SettingsSection>
-
-      <SettingsSection title="Do Not Disturb">
+      {/* Notification preferences live on one page, with the categories
+          the mailer honours (R2-SYS-02). */}
+      <SettingsSection title="Notifications">
         <SettingRow
-          title="Quiet hours"
-          description="Push and SMS notifications are silenced during these hours."
+          title="Notification preferences"
+          description="Channels, quiet hours and which updates you receive."
           icon={
             <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <Moon className="size-4" aria-hidden />
+              <Bell className="size-4" aria-hidden />
             </span>
           }
-        >
-          <div className="mt-3 flex flex-wrap items-center gap-3 sm:pl-11">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="qh-start" className="text-xs text-muted-foreground whitespace-nowrap">From</Label>
-              <Input
-                id="qh-start"
-                type="time"
-                value={qhStart}
-                onChange={handleQhStartChange}
-                className="h-8 w-28 text-xs tabular-nums"
-                aria-label="Quiet hours start time"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="qh-end" className="text-xs text-muted-foreground whitespace-nowrap">To</Label>
-              <Input
-                id="qh-end"
-                type="time"
-                value={qhEnd}
-                onChange={handleQhEndChange}
-                className="h-8 w-28 text-xs tabular-nums"
-                aria-label="Quiet hours end time"
-              />
-            </div>
-            <Button size="sm" onClick={saveQuietHours} disabled={isPending} loading={isPending}>
-              Save
+          control={
+            <Button asChild variant="outline" size="sm">
+              <Link href="/settings/notifications">
+                Manage
+                <ChevronRight aria-hidden />
+              </Link>
             </Button>
-            {(qhStart || qhEnd) && (
-              <Button size="sm" variant="outline" onClick={handleClearQuietHours} disabled={isPending}>
-                Clear
-              </Button>
-            )}
-          </div>
-        </SettingRow>
-      </SettingsSection>
-
-      <SettingsSection title="Notification Categories" description="Toggle specific event types">
-        {NOTIFICATION_CATEGORIES.map(({ key, label, description }) => (
-          <CategoryPrefRow
-            key={key}
-            categoryKey={key}
-            label={label}
-            description={description}
-            checked={prefs?.categories?.[key] !== false}
-            onUpdate={handleCategoryUpdate}
-            disabled={isPending}
-          />
-        ))}
+          }
+        />
       </SettingsSection>
     </div>
-  );
-}
-
-interface CategoryPrefRowProps {
-  categoryKey: string;
-  label: string;
-  description: string;
-  checked: boolean;
-  onUpdate: (key: string, value: boolean) => void;
-  disabled: boolean;
-}
-
-function CategoryPrefRow({ categoryKey, label, description, checked, onUpdate, disabled }: CategoryPrefRowProps) {
-  const handleChange = useCallback((v: boolean) => onUpdate(categoryKey, v), [categoryKey, onUpdate]);
-  return (
-    <PrefRow
-      id={`cat-${categoryKey}`}
-      icon={BellOff}
-      label={label}
-      description={description}
-      checked={checked}
-      onCheckedChange={handleChange}
-      disabled={disabled}
-    />
   );
 }
