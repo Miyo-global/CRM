@@ -1,7 +1,7 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { careerEvaluations, careerLadders, users, careerAuditLogs } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, sql, type SQL, type AnyColumn } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { isAdminOrOwner } from "@/lib/constants/roles";
@@ -59,6 +59,27 @@ export async function POST(req: NextRequest) {
     if (!isAdminOrOwner(role)) return err("Forbidden", 403);
 
     const body = createSchema.parse(await req.json());
+
+    // Refuse a same-day copy of an existing evaluation (R2-HR-06: QA found identical pairs).
+    const same = (col: AnyColumn, value: unknown): SQL => sql`${col} IS NOT DISTINCT FROM ${value ?? null}`;
+    const [duplicate] = await db
+      .select({ id: careerEvaluations.id })
+      .from(careerEvaluations)
+      .where(and(
+        eq(careerEvaluations.orgId, session.orgId),
+        eq(careerEvaluations.employeeUserId, body.employeeUserId),
+        eq(careerEvaluations.readinessStatus, body.readinessStatus),
+        same(careerEvaluations.ladderId, body.ladderId),
+        same(careerEvaluations.level, body.level),
+        same(careerEvaluations.strengths, body.strengths),
+        same(careerEvaluations.areasToGrow, body.areasToGrow),
+        same(careerEvaluations.notes, body.notes),
+        sql`${careerEvaluations.createdAt} > now() - interval '1 day'`,
+      ))
+      .limit(1);
+    if (duplicate) {
+      return err("An identical evaluation for this employee was already recorded today.", 409);
+    }
 
     const [evaluation] = await db
       .insert(careerEvaluations)
