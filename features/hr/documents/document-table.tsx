@@ -139,6 +139,8 @@ export interface DocumentTableProps {
   enableAssign?: boolean;
   /** When provided, an empty result renders the filtered-empty state with a "Clear filters" action. */
   onClearFilters?: () => void;
+  /** Extra controls in the header, e.g. rename/delete for the open custom folder. */
+  headerActions?: React.ReactNode;
 }
 
 
@@ -372,6 +374,7 @@ export function DocumentTable({
   onMove,
   enableAssign = false,
   onClearFilters,
+  headerActions,
 }: DocumentTableProps) {
   const [moveTarget, setMoveTarget] = useState<Document | null>(null);
   const [assignTarget, setAssignTarget] = useState<Document | null>(null);
@@ -394,11 +397,14 @@ export function DocumentTable({
               : `${totalFiltered} document${totalFiltered === 1 ? "" : "s"} in this view`}
           </p>
         </div>
-        {selectedCategory !== "All Files" && onFolderSelect && (
-          <Button variant="ghost" size="xs" onClick={() => onFolderSelect("All Files")}>
-            View all files
-          </Button>
-        )}
+        <div className="flex items-center gap-1.5">
+          {headerActions}
+          {selectedCategory !== "All Files" && onFolderSelect && (
+            <Button variant="ghost" size="xs" onClick={() => onFolderSelect("All Files")}>
+              View all files
+            </Button>
+          )}
+        </div>
       </div>
       <CardContent className="p-0" aria-live="polite">
         <ScrollArea className="w-full max-h-[60vh]" type="auto">

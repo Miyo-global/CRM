@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
-import { FolderPlus, Upload, FilePlus2, FileText, Eye, Trash2, Globe, FolderOpen, Star, LayoutTemplate } from "lucide-react";
+import { FolderPlus, Upload, FilePlus2, FileText, Eye, Trash2, Globe, FolderOpen, Star, LayoutTemplate, Pencil } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -20,6 +20,9 @@ import {
   useDeleteRichDocument,
   useDocumentFolders,
   useCreateDocumentFolder,
+  useRenameDocumentFolder,
+  useDeleteDocumentFolder,
+  type DocumentFolder,
 } from "@/lib/api/hooks/hr";
 import { BUILT_IN_CATEGORY_TABS, isCustomFolderTab } from "@/lib/hr/document-library-constants";
 import { UploadDocumentDialog } from "./upload-document-dialog";
@@ -32,6 +35,7 @@ import { DocumentFilters, DOCUMENT_TYPES } from "@/features/hr/documents/documen
 import { DocumentExportSheet } from "@/features/hr/documents/document-export-sheet";
 import { DocumentTable, type FolderItem } from "@/features/hr/documents/document-table";
 import { NewFolderDialog } from "@/features/hr/documents/new-folder-dialog";
+import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { formatIST } from "@/lib/date-utils";
 import { pluralise } from "@/lib/format-utils";
@@ -57,6 +61,9 @@ export default function DocumentsPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [renameTarget, setRenameTarget] = useState<DocumentFolder | null>(null);
+  const [deleteFolderTarget, setDeleteFolderTarget] = useState<DocumentFolder | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const isAdmin = session?.user?.role === "CEO" || session?.user?.role === "ADMIN" || session?.user?.role === "HR";
 
@@ -64,6 +71,8 @@ export default function DocumentsPage() {
 
   const { data: folderRows = [], refetch: refetchFolders } = useDocumentFolders();
   const createFolderMutation = useCreateDocumentFolder();
+  const renameFolderMutation = useRenameDocumentFolder();
+  const deleteFolderMutation = useDeleteDocumentFolder();
   const customFolderNames = useMemo(
     () => folderRows.map((f) => f.name),
     [folderRows],
@@ -72,6 +81,8 @@ export default function DocumentsPage() {
   const { data: rawDocuments = [], isLoading, isError, error, refetch } = useHrDocuments(undefined, typeFilter);
   const { data: rawPolicies = [] } = useHrDocuments(undefined, "POLICY");
   const { data: statsData } = useHrDocumentStats();
+  // Same query as RichDocumentsSection (shared cache) so the total counts created documents too.
+  const { data: richDocs = [] } = useRichDocuments();
   const deleteMutation = useDeleteDocument();
   const updateMutation = useUpdateDocument();
 
@@ -142,15 +153,17 @@ export default function DocumentsPage() {
   const storagePercent = Math.min(100, Math.round((usedGB / maxStorageGB) * 100));
 
   const handleDelete = useCallback(async (documentId: number) => {
-    await toast.promise(
-      deleteMutation.mutateAsync(documentId),
-      {
-        loading: "Deleting document...",
-        success: "Document deleted",
-        error: "Failed to delete document",
-      }
-    );
-  }, [deleteMutation]);
+    setPendingDeleteId(documentId);
+  }, []);
+
+  const confirmDelete = () => {
+    if (pendingDeleteId === null) return;
+    deleteMutation.mutate(pendingDeleteId, {
+      onSuccess: () => { setPendingDeleteId(null); toast.success("Document deleted"); },
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
+  };
+  const pendingDeleteDoc = documents.find((d) => d.id === pendingDeleteId);
 
   const folderOptions = useMemo(
     () =>
@@ -176,6 +189,41 @@ export default function DocumentsPage() {
     setSelectedType("all");
     setSelectedCategory("All Files");
     resetPage();
+  };
+
+  const selectedFolder = folderRows.find((f) => f.name.toLowerCase() === selectedCategory.toLowerCase());
+
+  const handleFolderSheetChange = (open: boolean) => {
+    setIsNewFolderOpen(open);
+    if (!open) setRenameTarget(null);
+  };
+
+  const handleRenameFolder = (name: string) => {
+    if (!renameTarget) return;
+    renameFolderMutation.mutate(
+      { id: renameTarget.id, name },
+      {
+        onSuccess: (folder) => {
+          setSelectedCategory(folder.name);
+          setNewFolderName("");
+          handleFolderSheetChange(false);
+          toast.success(`Folder renamed to "${folder.name}"`);
+        },
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
+    );
+  };
+
+  const confirmDeleteFolder = () => {
+    if (!deleteFolderTarget) return;
+    deleteFolderMutation.mutate(deleteFolderTarget.id, {
+      onSuccess: () => {
+        toast.success(`Folder "${deleteFolderTarget.name}" deleted`);
+        setDeleteFolderTarget(null);
+        setSelectedCategory("All Files");
+      },
+      onError: (e) => { toast.error(getErrorMessage(e)); setDeleteFolderTarget(null); },
+    });
   };
 
   const handleNewFolder = useCallback(
@@ -268,7 +316,7 @@ export default function DocumentsPage() {
       <div className="space-y-4">
         <StatsStrip
           items={[
-            { label: "Total Documents", value: documents.length, icon: FileText },
+            { label: "Total Documents", value: documents.length + richDocs.length, icon: FileText },
             { label: "Folders", value: folders.length, icon: FolderOpen },
             { label: "Public Documents", value: documents.filter((d) => d.isPublic).length, icon: Star },
           ]}
@@ -294,6 +342,27 @@ export default function DocumentsPage() {
           onMove={handleMove}
           enableAssign
           onClearFilters={hasActiveFilters ? handleClearFilters : undefined}
+          headerActions={isAdmin && selectedFolder ? (
+            <>
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => { setNewFolderName(selectedFolder.name); setRenameTarget(selectedFolder); }}
+              >
+                <Pencil className="size-3.5" aria-hidden />
+                Rename
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
+                onClick={() => setDeleteFolderTarget(selectedFolder)}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Delete folder
+              </Button>
+            </>
+          ) : undefined}
         />
         )}
 
@@ -309,12 +378,33 @@ export default function DocumentsPage() {
           isAdmin={isAdmin}
         />
         <NewFolderDialog
-          open={isNewFolderOpen}
-          onOpenChange={setIsNewFolderOpen}
+          open={isNewFolderOpen || !!renameTarget}
+          onOpenChange={handleFolderSheetChange}
           folderName={newFolderName}
           onFolderNameChange={setNewFolderName}
-          existingTabs={[...BUILT_IN_CATEGORY_TABS, ...customFolderNames]}
-          onConfirm={handleNewFolder}
+          existingTabs={[...BUILT_IN_CATEGORY_TABS, ...customFolderNames].filter(
+            (t) => t.toLowerCase() !== renameTarget?.name.toLowerCase(),
+          )}
+          onConfirm={renameTarget ? handleRenameFolder : handleNewFolder}
+          renaming={renameTarget?.name}
+        />
+        <ConfirmActionDialog
+          open={pendingDeleteId !== null}
+          onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}
+          title="Delete document?"
+          description={`"${pendingDeleteDoc?.fileName || pendingDeleteDoc?.name || "This document"}" will be removed from the library.`}
+          confirmLabel="Delete"
+          isPending={deleteMutation.isPending}
+          onConfirm={confirmDelete}
+        />
+        <ConfirmActionDialog
+          open={!!deleteFolderTarget}
+          onOpenChange={(open) => { if (!open) setDeleteFolderTarget(null); }}
+          title="Delete folder?"
+          description={`"${deleteFolderTarget?.name}" will be deleted. Only empty folders can be deleted; move its documents out first.`}
+          confirmLabel="Delete folder"
+          isPending={deleteFolderMutation.isPending}
+          onConfirm={confirmDeleteFolder}
         />
       </div>
     </PageWrapper>
@@ -326,13 +416,15 @@ function RichDocumentsSection() {
   const canDelete = canDeleteHrRecord(session?.user?.role);
   const { data: richDocs, isLoading } = useRichDocuments();
   const deleteMutation = useDeleteRichDocument();
+  const [pendingDelete, setPendingDelete] = useState<{ id: number; title: string } | null>(null);
 
-  const handleDelete = useCallback((id: number) => {
-    deleteMutation.mutate(id, {
-      onSuccess: () => toast.success("Document deleted"),
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    deleteMutation.mutate(pendingDelete.id, {
+      onSuccess: () => { setPendingDelete(null); toast.success("Document deleted"); },
       onError: (e) => toast.error(getErrorMessage(e)),
     });
-  }, [deleteMutation]);
+  };
 
   if (isLoading) {
     return (
@@ -403,7 +495,7 @@ function RichDocumentsSection() {
                     variant="outline"
                     size="sm"
                     className="text-danger-strong hover:bg-danger-soft hover:text-danger-strong"
-                    onClick={() => handleDelete(doc.id)}
+                    onClick={() => setPendingDelete({ id: doc.id, title: doc.title })}
                     disabled={deleteMutation.isPending}
                     aria-label={`Delete ${doc.title}`}
                   >
@@ -415,6 +507,15 @@ function RichDocumentsSection() {
             </div>
           ))}
         </div>
+        <ConfirmActionDialog
+          open={!!pendingDelete}
+          onOpenChange={(open) => { if (!open) setPendingDelete(null); }}
+          title="Delete document?"
+          description={`"${pendingDelete?.title}" will be permanently deleted.`}
+          confirmLabel="Delete"
+          isPending={deleteMutation.isPending}
+          onConfirm={confirmDelete}
+        />
       </CardContent>
     </Card>
   );

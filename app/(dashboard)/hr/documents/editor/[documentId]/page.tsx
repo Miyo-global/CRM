@@ -4,7 +4,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRichDocument, useUpdateRichDocument, usePublishRichDocument } from "@/lib/api/hooks/hr";
-import { TiptapEditor } from "@/components/editor/tiptap-editor";
+import dynamic from "next/dynamic";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Save, Globe, GlobeLock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+
+// Tiptap/ProseMirror is the heaviest chunk on this route; loading it lazily lets
+// the page shell paint immediately instead of waiting on the editor bundle (R2-CRUD-11).
+const TiptapEditor = dynamic(
+  () => import("@/components/editor/tiptap-editor").then((m) => ({ default: m.TiptapEditor })),
+  { ssr: false, loading: () => <Skeleton className="h-96 w-full rounded-lg" /> },
+);
 
 export default function DocumentEditorPage() {
   const params = useParams<{ documentId: string }>();

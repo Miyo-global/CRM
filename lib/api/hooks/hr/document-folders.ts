@@ -40,3 +40,16 @@ export function useDeleteDocumentFolder() {
     },
   });
 }
+
+export function useRenameDocumentFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) =>
+      apiClient.patch<DocumentFolder>(`/hr/documents/folders/${id}`, { name }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.hr.documentFolders() });
+      // Documents in the folder are re-labelled with the new name.
+      qc.invalidateQueries({ queryKey: queryKeys.hr.documents() });
+    },
+  });
+}

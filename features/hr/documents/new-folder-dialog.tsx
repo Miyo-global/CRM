@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { documentFolderNameSchema } from "@/lib/validations/hr-documents";
+import { documentFolderNameSchema, DOCUMENT_FOLDER_NAME_MAX } from "@/lib/validations/hr-documents";
 
 export interface NewFolderDialogProps {
   open: boolean;
@@ -23,6 +23,8 @@ export interface NewFolderDialogProps {
   onFolderNameChange: (name: string) => void;
   existingTabs: string[];
   onConfirm: (name: string) => void;
+  /** Set to the current name to reuse the sheet for renaming that folder. */
+  renaming?: string;
 }
 
 export function NewFolderDialog({
@@ -32,6 +34,7 @@ export function NewFolderDialog({
   onFolderNameChange,
   existingTabs,
   onConfirm,
+  renaming,
 }: NewFolderDialogProps) {
   function handleCreate() {
     const parsed = documentFolderNameSchema.safeParse(folderName);
@@ -55,11 +58,12 @@ export function NewFolderDialog({
             <span className="flex size-8 items-center justify-center rounded-full bg-brand-soft text-brand-soft-foreground">
               <FolderPlus className="size-4" aria-hidden />
             </span>
-            Create New Folder
+            {renaming ? "Rename Folder" : "Create New Folder"}
           </SheetTitle>
           <SheetDescription>
-            Create a folder to organize your documents. Documents can be assigned to this folder
-            by category or tag.
+            {renaming
+              ? `Documents in "${renaming}" move with the folder.`
+              : "Create a folder to organize your documents. Documents can be assigned to this folder by category or tag."}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-2">
@@ -69,6 +73,7 @@ export function NewFolderDialog({
               id="folder-name"
               placeholder="e.g., Onboarding, Compliance 2026..."
               value={folderName}
+              maxLength={DOCUMENT_FOLDER_NAME_MAX}
               onChange={(e) => onFolderNameChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -90,7 +95,7 @@ export function NewFolderDialog({
             Cancel
           </Button>
           <Button disabled={!folderName.trim()} onClick={handleCreate}>
-            Create Folder
+            {renaming ? "Save" : "Create Folder"}
           </Button>
         </SheetFooter>
       </SheetContent>
