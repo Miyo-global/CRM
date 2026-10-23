@@ -28,7 +28,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -526,6 +526,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
             </Select>
           )}
           {lockedReason && (
+            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span tabIndex={0} className="ml-auto rounded-md focus-visible:focus-ring">
@@ -538,6 +539,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
               </TooltipTrigger>
               <TooltipContent>{lockedReason}</TooltipContent>
             </Tooltip>
+            </TooltipProvider>
           )}
           {canManageMember && (
             <DropdownMenu>
