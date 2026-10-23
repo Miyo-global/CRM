@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { useDebouncedValue } from "@/hooks/use-expense-filters";
 
-type KeyCheck = { key?: string; valid?: boolean; available?: boolean; message?: string; suggestion?: string | null };
+type KeyCheck = { key?: string; valid?: boolean; available?: boolean; message?: string; suggestion?: string | null; nameTaken?: boolean };
 
 export function useKeyAvailability(key: string) {
   const debounced = useDebouncedValue(key.trim().toUpperCase(), 300);
@@ -20,4 +20,9 @@ export function useKeyAvailability(key: string) {
 export async function suggestKey(name: string): Promise<string | null> {
   const res = await apiClient.get<KeyCheck>("/projects/key-available", { name });
   return res.suggestion ?? null;
+}
+
+export async function isNameTaken(name: string): Promise<boolean> {
+  const res = await apiClient.get<KeyCheck>("/projects/key-available", { name });
+  return !!res.nameTaken;
 }

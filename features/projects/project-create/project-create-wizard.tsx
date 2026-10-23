@@ -27,7 +27,7 @@ import { projectCreateSchema, STEP_FIELDS, type ProjectCreateValues } from "./pr
 import { BasicsStep } from "./basics-step";
 import { SetupStep } from "./setup-step";
 import { TeamPicker } from "./team-picker";
-import { useKeyAvailability } from "./use-key-availability";
+import { isNameTaken, useKeyAvailability } from "./use-key-availability";
 
 const STEPS = ["Basics", "Team", "Setup", "Review"];
 const DEFAULTS: ProjectCreateValues = {
@@ -77,6 +77,11 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
     if (!valid) return;
     if (step === 0 && keyCheck.data && !keyCheck.data.available) {
       form.setError("key", { message: "That key is already in use" });
+      return;
+    }
+    // Names are unique per org, ignoring case; say so here rather than at Create (R2-PRJ-01).
+    if (step === 0 && (await isNameTaken(form.getValues("name").trim()).catch(() => false))) {
+      form.setError("name", { message: DUPLICATE_PROJECT_NAME });
       return;
     }
     setStep((s) => s + 1);

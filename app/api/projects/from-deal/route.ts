@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { deals, projects, projectMembers, projectStatuses } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
+import { DUPLICATE_PROJECT_NAME, isProjectNameTaken } from "@/lib/projects/project-key-availability";
 import { z } from "zod";
 
 const fromDealSchema = z.object({
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!deal) return err("Deal not found", 404);
+    if (await isProjectNameTaken(session.orgId, body.name)) return err(DUPLICATE_PROJECT_NAME, 409);
 
     const namePart = body.name.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase();
     const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, "0");

@@ -3,7 +3,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projects, projectMembers, projectStatuses } from "@/lib/db/schema";
 import { findTemplate, copyTemplateTickets } from "@/lib/projects/apply-template";
-import { firstFreeProjectKey } from "@/lib/projects/project-key-availability";
+import { DUPLICATE_PROJECT_NAME, firstFreeProjectKey, isProjectNameTaken } from "@/lib/projects/project-key-availability";
 import { z } from "zod";
 import { parseIdParam } from "@/lib/projects/require-project-access";
 
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     const template = await findTemplate(session.orgId, templateId);
     if (!template) return err("Template not found", 404);
+    if (await isProjectNameTaken(session.orgId, input.name)) return err(DUPLICATE_PROJECT_NAME, 409);
 
     const key = await firstFreeProjectKey(input.name);
     if (!key) return err("Could not generate a free project key", 409);
