@@ -99,6 +99,10 @@ export async function PATCH(
         brand: true,
         model: true,
         status: true,
+        purchaseDate: true,
+        purchaseCost: true,
+        location: true,
+        notes: true,
       },
     });
     if (!existing) return err("Asset not found.", 404);
@@ -130,24 +134,34 @@ export async function PATCH(
           ? String(body.assignedTo ?? existing.assignedTo ?? "").trim()
           : existing.assignedTo ?? "";
 
-    const mergedValidation = assetFormSchema.safeParse({
-      name: body.name ?? existing.name ?? "",
-      type: mergedType,
-      status: mergedStatus,
-      serialNumber: mergedSerial,
-      brand: mergedBrand,
-      model: mergedModel,
-      assignedTo: mergedStatus === "ASSIGNED" ? mergedAssignedTo : "",
-      purchaseDate: body.purchaseDate,
-      purchaseCost: body.purchaseCost,
-      location: body.location,
-      notes: body.notes,
-    });
-    if (!mergedValidation.success) {
-      return err(mergedValidation.error.issues[0]?.message ?? "Invalid input", 400);
+    // R2-CRUD-02: "Return to inventory" sends only status and assignee, and the
+    // whole-record check below read the missing purchase date as undefined
+    // ("expected string, received undefined"). A status/assignee-only change
+    // edits no inventory field, so only the patch itself (validated above)
+    // applies; any other edit is checked against the record merged with what
+    // is already stored.
+    const STATUS_ONLY_KEYS = new Set(["status", "assignedTo", "reassignmentReason"]);
+    const statusOnly = Object.entries(body).every(([k, v]) => v === undefined || STATUS_ONLY_KEYS.has(k));
+    const mergedValidation = statusOnly
+      ? null
+      : assetFormSchema.safeParse({
+          name: body.name ?? existing.name ?? "",
+          type: mergedType,
+          status: mergedStatus,
+          serialNumber: mergedSerial,
+          brand: mergedBrand,
+          model: mergedModel,
+          assignedTo: mergedStatus === "ASSIGNED" ? mergedAssignedTo : "",
+          purchaseDate: body.purchaseDate ?? existing.purchaseDate ?? "",
+          purchaseCost: body.purchaseCost ?? existing.purchaseCost ?? "",
+          location: body.location ?? existing.location ?? "",
+          notes: body.notes ?? existing.notes ?? "",
+        });
+    if (mergedValidation && !mergedValidation.success) {
+      return err(mergedValidation.error.issues[0]?.message ?? "Some details are missing or invalid.", 400);
     }
 
-    const serialToCheck = mergedValidation.data.serialNumber?.trim();
+    const serialToCheck = mergedValidation?.data.serialNumber?.trim();
     if (serialToCheck) {
       const duplicate = await db.query.assets.findFirst({
         where: and(
