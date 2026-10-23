@@ -2,10 +2,11 @@
  * Applies drizzle SQL migrations that are not yet recorded in
  * drizzle.__drizzle_migrations (idempotent SQL with IF NOT EXISTS is safe).
  *
- * `--deploy` (pnpm db:migrate:deploy, run by the Vercel build) reads only
- * DATABASE_URL_MIGRATE, never DATABASE_URL, and skips preview builds. A
- * production build without DATABASE_URL_MIGRATE fails, as does any failing
- * migration, so code never ships ahead of its schema (MIYO-0002).
+ * `--deploy` (pnpm db:migrate:deploy, run by the Vercel build) reads
+ * DATABASE_URL_MIGRATE, or the app's DATABASE_URL (direct host) when that is
+ * not set, and skips preview builds. A production build with neither fails,
+ * as does any failing migration, so code never ships ahead of its schema
+ * (MIYO-0002).
  * A pg advisory lock stops two concurrent deploys migrating at once.
  *
  * Applied set: the explicit PENDING_TAGS baseline plus every drizzle/*.sql
@@ -22,7 +23,27 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
 const DEPLOY = process.argv.includes("--deploy");
-const DATABASE_URL = DEPLOY ? process.env.DATABASE_URL_MIGRATE : process.env.DATABASE_URL;
+
+/**
+ * Neon's pooled host ("ep-x-pooler.…") runs PgBouncer in transaction mode,
+ * which does not keep a session advisory lock; migrations use the direct host.
+ */
+function directNeonUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    u.hostname = u.hostname.replace(/-pooler(?=\.)/, "");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+// The deploy uses DATABASE_URL_MIGRATE when set, else the app's own
+// DATABASE_URL (the production database the app already connects to).
+const DATABASE_URL = DEPLOY
+  ? process.env.DATABASE_URL_MIGRATE || directNeonUrl(process.env.DATABASE_URL)
+  : process.env.DATABASE_URL;
 const MIGRATION_LOCK_ID = 727_001; // arbitrary, shared by every deploy
 
 if (DEPLOY && process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
@@ -31,10 +52,10 @@ if (DEPLOY && process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production")
 }
 if (DEPLOY && !DATABASE_URL) {
   if (process.env.VERCEL_ENV === "production") {
-    console.error("DATABASE_URL_MIGRATE is not set for this production build; refusing to ship code ahead of its schema.");
+    console.error("Neither DATABASE_URL_MIGRATE nor DATABASE_URL is set for this production build; refusing to ship code ahead of its schema.");
     process.exit(1);
   }
-  console.log("skip migrations: DATABASE_URL_MIGRATE is not set");
+  console.log("skip migrations: no database URL is set");
   process.exit(0);
 }
 if (!DATABASE_URL) throw new Error("DATABASE_URL is required in .env");
