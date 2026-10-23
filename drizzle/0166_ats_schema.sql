@@ -235,6 +235,13 @@ CREATE INDEX IF NOT EXISTS "idx_ats_stages_job" ON "ats_stages" USING btree ("jo
 CREATE UNIQUE INDEX IF NOT EXISTS "uniq_job_postings_org_slug" ON "job_postings" USING btree ("org_id","slug");
 -- MIYO-0630: full-text search over the candidate's own words. Generated, so
 -- it cannot drift from the columns it summarises.
+-- A generated column needs an IMMUTABLE expression and array_to_string is only
+-- STABLE, so the ALTER failed and every production deploy with it (R2 QA).
+-- text[] to text with a fixed separator is deterministic, so the wrapper is safe.
+CREATE OR REPLACE FUNCTION "ats_skills_text"(text[]) RETURNS text
+  LANGUAGE sql IMMUTABLE PARALLEL SAFE
+  AS $fn$ SELECT array_to_string($1, ' ') $fn$;
+--> statement-breakpoint
 ALTER TABLE IF EXISTS "candidates" ADD COLUMN IF NOT EXISTS "search" tsvector
   GENERATED ALWAYS AS (
     to_tsvector(
@@ -242,7 +249,7 @@ ALTER TABLE IF EXISTS "candidates" ADD COLUMN IF NOT EXISTS "search" tsvector
       coalesce("first_name", '') || ' ' ||
       coalesce("last_name", '') || ' ' ||
       coalesce("email", '') || ' ' ||
-      coalesce(array_to_string("skills", ' '), '') || ' ' ||
+      coalesce("ats_skills_text"("skills"), '') || ' ' ||
       coalesce("resume_text", '')
     )
   ) STORED;
