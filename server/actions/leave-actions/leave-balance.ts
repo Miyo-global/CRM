@@ -21,7 +21,6 @@ import {
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { countLeaveWorkingDays } from "@/lib/hr/leave-working-days-server";
 import {
-  casualDaysExpiringFromEarnMonth,
   casualMaxUsableInMonth,
   monthBoundsYyyyMm,
   monthsSpannedByDateRange,
@@ -175,117 +174,6 @@ export async function initializeLeaveBalances(
   }
 }
 
-function addUsedDaysForMonthClip(
-  usedDaysMap: Map<string, number>,
-  rows: {
-    userId: string;
-    leaveTypeId: number | null;
-    startDate: string;
-    endDate: string;
-    isHalfDay: boolean | null;
-  }[],
-  monthStartStr: string,
-  monthEndStr: string,
-) {
-  for (const r of rows) {
-    if (r.leaveTypeId == null) continue;
-    const reqStart = r.startDate.slice(0, 10);
-    const reqEnd = r.endDate.slice(0, 10);
-    const clipStart = reqStart > monthStartStr ? reqStart : monthStartStr;
-    const clipEnd = reqEnd < monthEndStr ? reqEnd : monthEndStr;
-    if (clipStart > clipEnd) continue;
-    const days = calculateLeaveWorkingDays({
-      startDate: clipStart,
-      endDate: clipEnd,
-      isHalfDay: r.isHalfDay ?? false,
-    });
-    if (days <= 0) continue;
-    const key = `${r.userId}:${r.leaveTypeId}`;
-    usedDaysMap.set(key, (usedDaysMap.get(key) ?? 0) + days);
-  }
-}
-
-/**
- * On the 1st of month M, expire casual accrual earned in month M-2 that was still
- * unused after the one-month carry window (month M-1). Unused M-1 accrual remains
- * available during M (max usable = 2).
- */
-export async function expireUnusedMonthlyCasualLeaves() {
-  const now = new Date();
-  const carry = previousCalendarMonth(now.getFullYear(), now.getMonth());
-  const earn = previousCalendarMonth(carry.year, carry.monthIndex0);
-  const earnBounds = monthBoundsYyyyMm(earn.yyyyMm);
-  const carryBounds = monthBoundsYyyyMm(carry.yyyyMm);
-
-  let expiredCount = 0;
-
-  const casualTypes = await db.query.leaveTypes.findMany({
-    where: eq(leaveTypes.name, LEAVE_POLICY.CASUAL.name),
-  });
-
-  if (casualTypes.length === 0) return { expiredCount: 0 };
-
-  const orgCasualMap = new Map(casualTypes.map((ct) => [ct.orgId, ct]));
-  const casualTypeIds = casualTypes.map((ct) => ct.id);
-
-  const allBalances = await db.query.leaveBalances.findMany({
-    where: and(
-      inArray(leaveBalances.leaveTypeId, casualTypeIds),
-      eq(leaveBalances.year, earn.year),
-    ),
-  });
-
-  const positiveBalances = allBalances.filter((b) => Number(b.balance) > 0);
-  if (positiveBalances.length === 0) return { expiredCount: 0 };
-
-  const rangeStart = earnBounds.start < carryBounds.start ? earnBounds.start : carryBounds.start;
-  const rangeEnd = earnBounds.end > carryBounds.end ? earnBounds.end : carryBounds.end;
-
-  const usedRequests = await db
-    .select({
-      userId: leaveRequests.userId,
-      leaveTypeId: leaveRequests.leaveTypeId,
-      startDate: leaveRequests.startDate,
-      endDate: leaveRequests.endDate,
-      isHalfDay: leaveRequests.isHalfDay,
-    })
-    .from(leaveRequests)
-    .where(
-      and(
-        inArray(leaveRequests.leaveTypeId, casualTypeIds),
-        eq(leaveRequests.status, "APPROVED"),
-        lte(leaveRequests.startDate, rangeEnd),
-        gte(leaveRequests.endDate, rangeStart),
-      ),
-    );
-
-  const usedInEarn = new Map<string, number>();
-  const usedInCarry = new Map<string, number>();
-  addUsedDaysForMonthClip(usedInEarn, usedRequests, earnBounds.start, earnBounds.end);
-  addUsedDaysForMonthClip(usedInCarry, usedRequests, carryBounds.start, carryBounds.end);
-
-  for (const bal of positiveBalances) {
-    const casualType = orgCasualMap.get(bal.orgId);
-    if (!casualType || bal.leaveTypeId !== casualType.id) continue;
-
-    const key = `${bal.userId}:${bal.leaveTypeId}`;
-    const expiring = casualDaysExpiringFromEarnMonth(
-      usedInEarn.get(key) ?? 0,
-      usedInCarry.get(key) ?? 0,
-    );
-    if (expiring <= 0) continue;
-
-    const newBalance = Math.max(0, Number(bal.balance) - expiring);
-    await db
-      .update(leaveBalances)
-      .set({ balance: newBalance.toString() })
-      .where(eq(leaveBalances.id, bal.id));
-    expiredCount++;
-  }
-
-  return { expiredCount };
-}
-
 /** Sum approved/pending casual working days for a user clipped to a YYYY-MM month. */
 export async function countCasualLeaveDaysInMonth(params: {
   orgId: string;
@@ -391,63 +279,6 @@ export async function getCasualMonthlyCapError(params: {
   }
 
   return null;
-}
-
-export async function resetYearlyLeaveBalances() {
-  const newYear = new Date().getFullYear();
-
-  const orgs = await db
-    .selectDistinct({ orgId: leaveTypes.orgId })
-    .from(leaveTypes);
-
-  let resetCount = 0;
-
-  for (const { orgId } of orgs) {
-    const types = await ensureLeaveTypes(orgId);
-    const members = await db.query.organizationMembers.findMany({
-      where: eq(organizationMembers.orgId, orgId),
-      with: { user: { columns: { id: true, joiningDate: true, isActive: true } } },
-    });
-
-    const activeMembers = members.filter((m) => m.user?.isActive);
-    if (activeMembers.length === 0 || types.length === 0) continue;
-
-    const existingBalances = await db.query.leaveBalances.findMany({
-      where: and(
-        eq(leaveBalances.orgId, orgId),
-        eq(leaveBalances.year, newYear),
-      ),
-    });
-    const existingSet = new Set(
-      existingBalances.map((b) => `${b.userId}:${b.leaveTypeId}`)
-    );
-
-    const toInsert: typeof leaveBalances.$inferInsert[] = [];
-    for (const member of activeMembers) {
-      const joiningDate = member.user?.joiningDate
-        ? new Date(member.user.joiningDate)
-        : new Date();
-
-      for (const type of types) {
-        if (existingSet.has(`${member.userId}:${type.id}`)) continue;
-        const balance = resolveInitialBalance(type.name, type.daysPerYear, joiningDate, newYear);
-        toInsert.push({
-          orgId,
-          userId: member.userId,
-          leaveTypeId: type.id,
-          year: newYear,
-          balance: balance.toString(),
-        });
-      }
-    }
-
-    if (toInsert.length > 0) {
-      await db.insert(leaveBalances).values(toInsert).onConflictDoNothing();
-      resetCount += toInsert.length;
-    }
-  }
-
-  return { resetCount };
 }
 
 export async function getLeaveContext() {

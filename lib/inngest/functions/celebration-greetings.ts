@@ -4,8 +4,8 @@ import { sendCelebrationGreetings } from "@/lib/hr/send-celebration-greetings";
 /**
  * Daily 08:00 IST greetings for birthdays and work anniversaries (A34).
  *
- * The work lives in sendCelebrationGreetings, shared with the
- * daily-notifications cron, and is idempotent per person, per kind, per year.
+ * The work lives in sendCelebrationGreetings, which is idempotent per person,
+ * per kind, per year.
  */
 export const celebrationGreetings = inngest.createFunction(
   {

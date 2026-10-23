@@ -2,7 +2,7 @@ import { sendTemplateEmail } from "@/lib/email/sender";
 import { appUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import { appraisals, appraisalStages, organizationMembers, performanceImprovementPlans, pipCheckIns, users } from "@/lib/db/schema";
-import { and, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 const base = appUrl;
@@ -163,119 +163,6 @@ export async function notifyPIPOutcome(pipId: number, outcome: "SUCCESS" | "FAIL
     to: row.user.email,
     vars: { end_date: String(row.endDate), pip_url: pipUrl },
   });
-}
-
-export async function sendAppraisalDueRemindersForTomorrow(): Promise<{ sent: number }> {
-  const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-  const istNow = new Date(Date.now() + IST_OFFSET_MS);
-  const tomorrow = new Date(
-    Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate() + 1, 0, 0, 0, 0) - IST_OFFSET_MS
-  );
-  const end = new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000 - 1);
-
-  const rows = await db
-    .select({
-      id: appraisalStages.id,
-      assigneeId: appraisalStages.assigneeId,
-      stage: appraisalStages.stage,
-      employeeName: users.name,
-    })
-    .from(appraisalStages)
-    .innerJoin(appraisals, eq(appraisals.id, appraisalStages.appraisalId))
-    .leftJoin(users, eq(users.id, appraisals.userId))
-    .where(
-      and(
-        eq(appraisalStages.status, "PENDING"),
-        gte(appraisalStages.dueAt, tomorrow),
-        lte(appraisalStages.dueAt, end)
-      )
-    );
-
-  let sent = 0;
-  const url = `${base}/hr/performance?tab=appraisals`;
-  const ymd = new Date(tomorrow.getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
-  for (const r of rows) {
-    if (!r.assigneeId) continue;
-    try {
-      const u = await db.query.users.findFirst({
-        where: eq(users.id, r.assigneeId),
-        columns: { email: true, name: true },
-      });
-      if (!u?.email) continue;
-      // MIYO-0264: the hand-written perf-appraisal-due-reminder template.
-      await sendTemplateEmail("perf-appraisal-due-reminder", {
-        to: u.email,
-        category: "hr",
-        vars: {
-          employee_name: r.employeeName ?? "an employee",
-          stage_label: stageLabel(r.stage),
-          due_date: ymd,
-          appraisal_url: url,
-        },
-      });
-      sent += 1;
-    } catch (e) {
-      logger.error("appraisal reminder email failed", { stageId: r.id, error: e });
-    }
-  }
-  return { sent };
-}
-
-export async function sendPIPCheckInDueRemindersForTomorrow(): Promise<{ sent: number }> {
-  const tomorrow = new Date();
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  tomorrow.setUTCHours(0, 0, 0, 0);
-  const ymd = tomorrow.toISOString().slice(0, 10);
-  const url = `${base}/hr/performance?tab=pip`;
-
-  const rows = await db
-    .select({
-      checkInId: pipCheckIns.id,
-      pipId: pipCheckIns.pipId,
-      userId: performanceImprovementPlans.userId,
-      managerId: performanceImprovementPlans.managerId,
-      employeeName: users.name,
-    })
-    .from(pipCheckIns)
-    .innerJoin(performanceImprovementPlans, eq(pipCheckIns.pipId, performanceImprovementPlans.id))
-    .leftJoin(users, eq(users.id, performanceImprovementPlans.userId))
-    .where(
-      and(
-        inArray(performanceImprovementPlans.status, ["ACTIVE", "EXTENDED"]),
-        or(eq(pipCheckIns.periodEnd, ymd), eq(pipCheckIns.checkInDate, ymd)),
-        or(isNull(pipCheckIns.managerAckAt), isNull(pipCheckIns.employeeAckAt))
-      )
-    );
-
-  let sent = 0;
-  const emailed = new Set<string>();
-  for (const r of rows) {
-    for (const uid of [r.userId, r.managerId]) {
-      const key = `${r.checkInId}:${uid}`;
-      if (emailed.has(key)) continue;
-      try {
-        const u = await db.query.users.findFirst({
-          where: eq(users.id, uid),
-          columns: { email: true, name: true },
-        });
-        if (!u?.email) continue;
-        // MIYO-0268: the hand-written perf-pip-checkin-reminder template.
-        await sendTemplateEmail("perf-pip-checkin-reminder", {
-          to: u.email,
-          vars: {
-            employee_name: r.employeeName ?? "the employee",
-            due_date: ymd,
-            pip_url: url,
-          },
-        });
-        emailed.add(key);
-        sent += 1;
-      } catch (e) {
-        logger.error("pip check-in reminder email failed", { checkInId: r.checkInId, uid, error: e });
-      }
-    }
-  }
-  return { sent };
 }
 
 export function scheduleAppraisalPipEmails(fn: () => Promise<void>): void {

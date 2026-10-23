@@ -48,10 +48,9 @@ export interface CelebrationGreetingResult {
  * Greets today's birthdays and work anniversaries: one in-app notification and
  * one personal email, to the person celebrating only.
  *
- * Shared by the Inngest schedule and the daily-notifications cron so a birthday
- * produces the same personal mail either way, instead of a company-wide
- * announcement blast (QA-0012). Idempotent per person, per kind, per year via
- * the celebrationKey on the notification, so both schedulers can run.
+ * Run by the Inngest schedule. A birthday gets a personal mail, not a
+ * company-wide announcement blast (QA-0012). Idempotent per person, per kind,
+ * per year via the celebrationKey on the notification.
  */
 export async function sendCelebrationGreetings(
   today = isoDateInTimezone(),

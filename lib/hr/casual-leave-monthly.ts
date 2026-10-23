@@ -16,19 +16,6 @@ export function casualMaxUsableInMonth(usedInPrevMonth: number): number {
   return PER_MONTH + casualCarryFromPreviousMonth(usedInPrevMonth);
 }
 
-/**
- * Days from the earn-month accrual that expire after the one-month carry window.
- * FIFO: usage in the earn month, then usage in the carry month, consume the earn bucket.
- */
-export function casualDaysExpiringFromEarnMonth(
-  usedInEarnMonth: number,
-  usedInCarryMonth: number,
-): number {
-  const earnUsed = Math.max(0, usedInEarnMonth);
-  const carryUsed = Math.max(0, usedInCarryMonth);
-  return Math.max(0, PER_MONTH - earnUsed - carryUsed);
-}
-
 export function previousCalendarMonth(year: number, monthIndex0: number): {
   year: number;
   monthIndex0: number;

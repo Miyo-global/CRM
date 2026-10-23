@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   casualCarryFromPreviousMonth,
-  casualDaysExpiringFromEarnMonth,
   casualMaxUsableInMonth,
   monthsSpannedByDateRange,
   previousCalendarMonth,
@@ -29,26 +28,6 @@ describe("casualMaxUsableInMonth", () => {
 
   it("allows 1 when prior month already used", () => {
     expect(casualMaxUsableInMonth(1)).toBe(1);
-  });
-});
-
-describe("casualDaysExpiringFromEarnMonth", () => {
-  it("expires unused earn-month day when also unused in carry month", () => {
-    expect(casualDaysExpiringFromEarnMonth(0, 0)).toBe(1);
-  });
-
-  it("does not expire when used in earn month", () => {
-    expect(casualDaysExpiringFromEarnMonth(1, 0)).toBe(0);
-  });
-
-  it("does not expire when carried and used next month", () => {
-    expect(casualDaysExpiringFromEarnMonth(0, 1)).toBe(0);
-    expect(casualDaysExpiringFromEarnMonth(0, 2)).toBe(0);
-  });
-
-  it("expires leftover when only partly used across the window", () => {
-    expect(casualDaysExpiringFromEarnMonth(0, 0.5)).toBe(0.5);
-    expect(casualDaysExpiringFromEarnMonth(0.5, 0)).toBe(0.5);
   });
 });
 
