@@ -27,6 +27,7 @@ import { projectCreateSchema, STEP_FIELDS, type ProjectCreateValues } from "./pr
 import { BasicsStep } from "./basics-step";
 import { SetupStep } from "./setup-step";
 import { TeamPicker } from "./team-picker";
+import { priorityLabel } from "@/features/projects/project-list/project-options";
 import { isNameTaken, useKeyAvailability } from "./use-key-availability";
 
 const STEPS = ["Basics", "Team", "Setup", "Review"];
@@ -178,6 +179,10 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
                   <dd className="font-medium">{values.name}</dd>
                   <dt className="text-muted-foreground">Key</dt>
                   <dd className="font-mono">{values.key}</dd>
+                  <dt className="text-muted-foreground">Priority</dt>
+                  <dd>{priorityLabel(values.priority === "NONE" ? null : (values.priority as ProjectPriority))}</dd>
+                  <dt className="text-muted-foreground">Description</dt>
+                  <dd className="whitespace-pre-line wrap-anywhere">{values.description?.trim() || "None"}</dd>
                   <dt className="text-muted-foreground">Manager</dt>
                   <dd>{managerName}</dd>
                   <dt className="text-muted-foreground">Members</dt>

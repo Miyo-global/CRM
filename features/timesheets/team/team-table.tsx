@@ -64,7 +64,8 @@ const EntryRow = memo(function EntryRow({ entry, onEntryClick }: EntryRowProps) 
         {entry.ticket?.project?.name ? (
           <Badge variant="secondary">{entry.ticket.project.name}</Badge>
         ) : (
-          <span className="text-sm text-muted-foreground">N/A</span>
+          // A daily work log has no ticket, so no project (R2-PRJ-06).
+          <span className="text-sm text-muted-foreground">No project</span>
         )}
       </TableCell>
       <TableCell className="max-w-xs px-4 sm:px-6">

@@ -3,8 +3,8 @@
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { timesheets } from "@/lib/db/schema";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { tickets, timesheets } from "@/lib/db/schema";
+import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
 export async function GET(req: NextRequest) {
@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate") ?? undefined;
     const endDate = searchParams.get("endDate") ?? undefined;
     const status = searchParams.get("status") ?? undefined;
+    const projectId = toNumber(searchParams.get("projectId"));
 
     const limit = Math.min(Math.max(toNumber(searchParams.get("limit")) ?? 100, 1), 500);
     const offset = Math.max(toNumber(searchParams.get("offset")) ?? 0, 0);
@@ -28,6 +29,15 @@ export async function GET(req: NextRequest) {
     if (startDate) conditions.push(gte(timesheets.date, startDate));
     if (endDate) conditions.push(lte(timesheets.date, endDate));
     if (status) conditions.push(eq(timesheets.status, status));
+    // The page's project filter was sent but never applied (R2-PRJ-06).
+    if (projectId) {
+      conditions.push(
+        inArray(
+          timesheets.ticketId,
+          db.select({ id: tickets.id }).from(tickets).where(and(eq(tickets.orgId, session.orgId!), eq(tickets.projectId, projectId))),
+        ),
+      );
+    }
 
     const entries = await db.query.timesheets.findMany({
       where: and(...conditions),

@@ -31,17 +31,20 @@ interface ProjectCardProps {
   };
 }
 
+// An unlabelled date read as the due date when it was the start date
+// (QA-0055). Show the due date when there is one, and name it either way.
+// The list row uses the same label so the views agree (R2-PRJ-06).
+export function projectDateLabel(project: { startDate: Date | string | null; endDate: Date | string | null }): string | null {
+  if (project.endDate) return `Due ${format(new Date(project.endDate), "MMM d")}`;
+  if (project.startDate) return `Starts ${format(new Date(project.startDate), "MMM d")}`;
+  return null;
+}
+
 export const ProjectCard = React.memo(function ProjectCard({ project }: ProjectCardProps) {
   const status = project.status ?? "ACTIVE";
   const displayLabel = projectStatusDisplayLabels[status] ?? status;
   const statusTone = projectStatusTone[status] ?? "neutral";
-  // An unlabelled date read as the due date when it was the start date
-  // (QA-0055). Show the due date when there is one, and name it either way.
-  const dateLabel = project.endDate
-    ? `Due ${format(new Date(project.endDate), "MMM d")}`
-    : project.startDate
-      ? `Starts ${format(new Date(project.startDate), "MMM d")}`
-      : null;
+  const dateLabel = projectDateLabel(project);
 
   return (
     <Link

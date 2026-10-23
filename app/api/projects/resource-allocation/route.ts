@@ -1,6 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { projects, tickets, ticketAssignees, users } from "@/lib/db/schema";
+import { projects, projectMembers, tickets, ticketAssignees, users } from "@/lib/db/schema";
 import { eq, and, inArray, isNull, sql } from "drizzle-orm";
 
 export async function GET() {
@@ -14,7 +14,7 @@ export async function GET() {
 
     const projectIds = activeProjects.map((p) => p.id);
 
-    const [primaryAllocation, multiAllocation] = await Promise.all([
+    const [primaryAllocation, multiAllocation, memberRows] = await Promise.all([
       db
         .select({
           assigneeId: tickets.assigneeId,
@@ -46,6 +46,11 @@ export async function GET() {
             sql`${tickets.status} NOT IN ('DONE', 'CANCELLED', 'CLOSED')`,
           ),
         ),
+      // Members with no open work are listed too, at 0 open (R2-PRJ-06).
+      db
+        .select({ assigneeId: projectMembers.userId, projectId: projectMembers.projectId })
+        .from(projectMembers)
+        .where(inArray(projectMembers.projectId, projectIds)),
     ]);
 
     const allAssigneeIds = new Set<string>();
@@ -55,6 +60,7 @@ export async function GET() {
     for (const r of multiAllocation) {
       if (r.assigneeId) allAssigneeIds.add(r.assigneeId);
     }
+    for (const r of memberRows) allAssigneeIds.add(r.assigneeId);
 
     if (allAssigneeIds.size === 0) return ok([]);
 
@@ -68,7 +74,7 @@ export async function GET() {
 
     const userProjectTickets = new Map<string, Map<number, Set<number>>>();
 
-    const addTicket = (userId: string, projectId: number, ticketId: number) => {
+    const addTicket = (userId: string, projectId: number, ticketId?: number) => {
       if (!userProjectTickets.has(userId)) {
         userProjectTickets.set(userId, new Map());
       }
@@ -76,7 +82,7 @@ export async function GET() {
       if (!projMap.has(projectId)) {
         projMap.set(projectId, new Set());
       }
-      projMap.get(projectId)!.add(ticketId);
+      if (ticketId !== undefined) projMap.get(projectId)!.add(ticketId);
     };
 
     for (const r of primaryAllocation) {
@@ -89,6 +95,7 @@ export async function GET() {
         addTicket(r.assigneeId, r.projectId, r.ticketId);
       }
     }
+    for (const r of memberRows) addTicket(r.assigneeId, r.projectId);
 
     const result = [];
     for (const [userId, projMap] of userProjectTickets.entries()) {

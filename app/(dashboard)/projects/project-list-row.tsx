@@ -9,7 +9,7 @@ import { AvatarStack } from "@/components/ui/avatar-stack";
 import { Progress } from "@/components/ui/progress";
 import { projectStatusDisplayLabels } from "@/lib/theme-constants";
 import { projectStatusTone } from "./project-status-tone";
-import { format } from "date-fns";
+import { projectDateLabel } from "./project-card";
 
 interface ProjectListRowProps {
   project: {
@@ -18,6 +18,7 @@ interface ProjectListRowProps {
     key: string;
     status: string | null;
     startDate: Date | string | null;
+    endDate: Date | string | null;
     progress: { total: number; done: number; percentage: number };
     members: { id: string; firstName: string | null; lastName: string | null; image: string | null }[];
   };
@@ -29,9 +30,7 @@ export const ProjectListRow = React.memo(function ProjectListRow({
   const status = project.status ?? "ACTIVE";
   const displayLabel = projectStatusDisplayLabels[status] ?? status;
   const statusTone = projectStatusTone[status] ?? "neutral";
-  const dateStr = project.startDate
-    ? format(new Date(project.startDate), "MMM d")
-    : null;
+  const dateStr = projectDateLabel(project);
 
   return (
     <Link
