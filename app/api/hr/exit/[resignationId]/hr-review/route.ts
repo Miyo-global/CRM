@@ -4,6 +4,7 @@ import { resignations, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { inngest } from "@/lib/inngest/client";
 import { z } from "zod";
+import { getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 
 const hrReviewSchema = z.object({
@@ -27,6 +28,10 @@ export async function PATCH(
     const body = await parseBody(req, hrReviewSchema);
     if (!body.decision) return err("decision is required.", 400);
     if (body.decision === "reject" && !body.remarks) return err("Remarks required for rejection.", 400);
+    // A past day would let the daily job lock the employee out at once.
+    if (body.lastWorkingDate && body.lastWorkingDate <= getTodayString()) {
+      return err("Last working day must be after today.", 400);
+    }
 
     const record = await db.query.resignations.findFirst({
       where: and(eq(resignations.id, resignationId), eq(resignations.orgId, session.orgId)),

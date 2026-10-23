@@ -28,6 +28,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { toast } from "sonner";
 import { format, addDays, parseISO } from "date-fns";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Plus,
@@ -112,7 +113,10 @@ export default function ExitManagementPage() {
 
   // The policy date is the default; the employee may ask for an earlier last
   // working day inside the notice period, which HR then reviews (R2-EMP-04).
-  const policyLwd = format(addDays(new Date(), NOTICE_PERIOD_DAYS), "yyyy-MM-dd");
+  // Counted from today in IST, the day the server checks against.
+  const todayDate = parseCalendarDate(getTodayString());
+  const tomorrow = format(addDays(todayDate, 1), "yyyy-MM-dd");
+  const policyLwd = format(addDays(todayDate, NOTICE_PERIOD_DAYS), "yyyy-MM-dd");
   const [requestedLwd, setRequestedLwd] = useState("");
   const autoLwd = requestedLwd || policyLwd;
 
@@ -398,7 +402,7 @@ export default function ExitManagementPage() {
             id="requested-lwd"
             value={autoLwd}
             onChange={setRequestedLwd}
-            fromDate={addDays(new Date(), 1)}
+            fromDate={parseISO(tomorrow)}
             toDate={parseISO(policyLwd)}
           />
         </div>
@@ -516,6 +520,7 @@ export default function ExitManagementPage() {
           <Input
             id="hr-approve-lwd"
             type="date"
+            min={tomorrow}
             value={hrApproveLwd}
             onChange={(e) => setHrApproveLwd(e.target.value)}
           />
