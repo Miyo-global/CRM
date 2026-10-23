@@ -36,8 +36,9 @@ export default function ProjectBoardPage({ params }: PageProps) {
 
   const view = (searchParams.get("view") as ViewType) ?? "board";
   // BUG-21: the switch was labelled "Done" but ON meant hidden. It now says
-  // "Show done" and ON shows the Done tickets.
-  const [showDone, setShowDone] = useState(false);
+  // "Show done" and ON shows the Done tickets. It starts ON so a ticket moved
+  // to Done stays in the Done column with its count (R2-PRJ-04).
+  const [showDone, setShowDone] = useState(true);
   const hideCompleted = !showDone;
   const ticketParam = searchParams.get("ticket");
   const selectedTicketId = ticketParam ? parseInt(ticketParam) : null;
