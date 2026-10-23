@@ -88,6 +88,16 @@ export function monthKeyToDate(month: string): Date {
   return fromISODateString(`${month.slice(0, 7)}-01`);
 }
 
+/**
+ * A calendar date as a local Date: "YYYY-MM-DD" is read as that local day
+ * (not UTC midnight, which is the day before west of UTC); anything else is
+ * parsed as usual.
+ */
+export function parseCalendarDate(value: Date | string): Date {
+  if (typeof value !== "string") return value;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? fromISODateString(value) : new Date(value);
+}
+
 export function parseDateString(dateString: string): Date {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);

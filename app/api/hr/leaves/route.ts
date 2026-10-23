@@ -125,8 +125,9 @@ export async function POST(req: NextRequest) {
         return err("leaveTypeId, startDate, and endDate are required.", 400);
       }
 
-      const normalizedStart = formatDateOnly(new Date(body.startDate));
-      const normalizedEnd = formatDateOnly(new Date(body.endDate));
+      // A "YYYY-MM-DD" string passes through as-is; no UTC round trip (R2-EMP-05).
+      const normalizedStart = formatDateOnly(body.startDate);
+      const normalizedEnd = formatDateOnly(body.endDate);
 
       if (normalizedStart > normalizedEnd) {
         return err("Start date must be before or equal to end date.", 400);

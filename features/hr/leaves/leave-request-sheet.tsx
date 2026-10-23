@@ -300,7 +300,7 @@ export function LeaveRequestSheet({
                       value={field.value}
                       onChange={field.onChange}
                       fromDate={parseLocalDate(watchedStartDate || minDate)}
-                      defaultMonth={watchedStartDate ? new Date(watchedStartDate) : undefined}
+                      defaultMonth={watchedStartDate ? parseLocalDate(watchedStartDate) : undefined}
                       placeholder="End date"
                     />
                   </FormControl>

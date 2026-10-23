@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { format, differenceInCalendarDays } from "date-fns";
+import { format, differenceInCalendarDays, parseISO } from "date-fns";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -213,7 +214,7 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
               </p>
             )}
             <p className={`tabular-nums ${showUser ? "mt-0.5 text-xs text-muted-foreground" : "text-sm text-foreground"}`}>
-              {format(new Date(request.date), "EEEE, MMM dd, yyyy")}
+              {format(parseISO(request.date), "EEEE, MMM dd, yyyy")}
             </p>
             {request.reason && (
               <p
@@ -329,8 +330,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
   const Icon = leaveTypeIcon(typeName);
-  const start = new Date(request.startDate);
-  const end = new Date(request.endDate);
+  const start = parseCalendarDate(request.startDate);
+  const end = parseCalendarDate(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
 
@@ -506,8 +507,8 @@ export function LeaveRequestDetailsSheet({
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
   const Icon = leaveTypeIcon(typeName);
-  const start = new Date(request.startDate);
-  const end = new Date(request.endDate);
+  const start = parseCalendarDate(request.startDate);
+  const end = parseCalendarDate(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
   const periodStr = request.isHalfDay

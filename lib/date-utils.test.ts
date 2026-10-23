@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { format, getDaysInMonth } from "date-fns";
-import { formatCalendarDate, formatIST, monthKeyToDate, parseDbTimestamp } from "./date-utils";
+import { formatCalendarDate, formatIST, monthKeyToDate, parseCalendarDate, parseDbTimestamp } from "./date-utils";
 
 describe("monthKeyToDate (R2-PAY-01)", () => {
   // West of UTC `new Date("2026-10-01")` is still 30 September locally, which
@@ -22,6 +22,10 @@ describe("monthKeyToDate (R2-PAY-01)", () => {
     const end = new Date(start.getFullYear(), start.getMonth(), getDaysInMonth(start));
     expect(format(start, "MMMM yyyy")).toBe(label);
     expect(`${format(start, "dd MMM yyyy")} – ${format(end, "dd MMM yyyy")}`).toBe(period);
+  });
+
+  it("parseCalendarDate keeps a YYYY-MM-DD date on its day (R2-EMP-05)", () => {
+    expect(format(parseCalendarDate("2026-10-24"), "MMM d")).toBe("Oct 24");
   });
 });
 
