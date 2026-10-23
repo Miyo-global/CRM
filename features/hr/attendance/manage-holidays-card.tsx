@@ -17,7 +17,7 @@ import {
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { createHolidaySchema, HOLIDAY_MESSAGE_MAX } from "@/lib/validations/holidays";
+import { createHolidaySchema, HOLIDAY_MESSAGE_MAX, HOLIDAY_NAME_MAX } from "@/lib/validations/holidays";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -358,7 +358,14 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-background"
+                  maxLength={HOLIDAY_NAME_MAX}
                 />
+                <p
+                  className={`text-2xs text-right tabular-nums ${name.length >= HOLIDAY_NAME_MAX ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {name.length >= HOLIDAY_NAME_MAX && `Maximum ${HOLIDAY_NAME_MAX} characters. `}
+                  {name.length}/{HOLIDAY_NAME_MAX}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="holiday-date">Date</Label>

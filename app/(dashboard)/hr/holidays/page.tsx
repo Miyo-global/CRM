@@ -460,6 +460,16 @@ export default function HolidaysPage() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={HOLIDAY_NAME_MAX}
               />
+              {/* R2-CRUD-08: the cap is visible, not a silent cut-off. */}
+              <p
+                className={cn(
+                  "text-2xs tabular-nums text-right",
+                  name.length >= HOLIDAY_NAME_MAX ? "text-destructive" : "text-muted-foreground",
+                )}
+              >
+                {name.length >= HOLIDAY_NAME_MAX && `Maximum ${HOLIDAY_NAME_MAX} characters. `}
+                {name.length}/{HOLIDAY_NAME_MAX}
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -467,6 +477,11 @@ export default function HolidaysPage() {
                 Date <span className="text-destructive">*</span>
               </label>
               <DatePicker value={date} onChange={setDate} placeholder="Select date" />
+              {date && date <= getTodayString() && (
+                <p className="text-2xs text-muted-foreground">
+                  Reminders go out the day before, so no reminder email is sent for {date === getTodayString() ? "today" : "a past date"}.
+                </p>
+              )}
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
