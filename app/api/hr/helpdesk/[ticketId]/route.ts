@@ -4,6 +4,7 @@ import {
   helpdeskTickets,
   helpdeskTicketComments,
   organizationMembers,
+  users,
 } from "@/lib/db/schema";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
@@ -80,19 +81,21 @@ export async function PATCH(
       if (duplicate) return err("An open ticket with this title already exists.", 409);
     }
 
+    let assigneeName: string | null = null;
     if (data.assigneeId) {
-      const member = await db.query.organizationMembers.findFirst({
-        where: and(
-          eq(organizationMembers.orgId, session.orgId),
-          eq(organizationMembers.userId, data.assigneeId),
-        ),
-        columns: { userId: true },
-      });
+      const [member] = await db
+        .select({ name: users.name, email: users.email })
+        .from(organizationMembers)
+        .innerJoin(users, eq(users.id, organizationMembers.userId))
+        .where(and(eq(organizationMembers.orgId, session.orgId), eq(organizationMembers.userId, data.assigneeId)))
+        .limit(1);
       if (!member) return err("Assignee must be a member of this organization.", 400);
+      assigneeName = member.name ?? member.email;
     }
 
     const updates: Partial<typeof helpdeskTickets.$inferInsert> = { updatedAt: new Date() };
     const statusChanged = data.status !== undefined && data.status !== ticket.status;
+    const assigneeChanged = data.assigneeId !== undefined && data.assigneeId !== ticket.assigneeId;
 
     if (data.status !== undefined) updates.status = data.status;
     if (data.assigneeId !== undefined) updates.assigneeId = data.assigneeId;
@@ -119,6 +122,18 @@ export async function PATCH(
         kind: "status_change",
         body: null,
         metadata: { from: ticket.status, to: data.status },
+      });
+    }
+
+    // Assignment goes in the activity trail too (R2-HD-01).
+    if (assigneeChanged) {
+      await db.insert(helpdeskTicketComments).values({
+        orgId: session.orgId,
+        ticketId,
+        authorId: session.user.id,
+        kind: "assignment",
+        body: null,
+        metadata: { from: ticket.assigneeId, to: data.assigneeId ?? null, toName: assigneeName },
       });
     }
 

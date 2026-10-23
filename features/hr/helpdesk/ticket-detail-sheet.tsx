@@ -38,6 +38,15 @@ import { isAdminOrOwner } from "@/lib/constants/roles";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
 import { getRoleLabel } from "@/lib/rbac/roles";
 import {
@@ -115,6 +124,24 @@ function initials(name: string | null): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+function AssignmentEntry({ comment }: { comment: HelpdeskTicketComment }) {
+  const to = comment.metadata?.to ?? null;
+  return (
+    <div className="flex items-center gap-2 py-1.5 text-xs text-muted-foreground">
+      <span className="flex flex-wrap items-center gap-1.5">
+        <span className="font-medium text-foreground">{comment.authorName ?? "Someone"}</span>
+        <span>{to ? "assigned the ticket to" : "unassigned the ticket"}</span>
+        {to && <span className="font-medium text-foreground">{comment.metadata?.toName ?? "a teammate"}</span>}
+        {comment.createdAt && (
+          <span className="text-subtle-foreground">
+            &middot; {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+          </span>
+        )}
+      </span>
+    </div>
+  );
 }
 
 function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
@@ -219,6 +246,9 @@ export function TicketDetailSheet({
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Moving to Done or Closed asks for an optional resolution note (R2-HD-01).
+  const [resolving, setResolving] = useState<TicketStatus | null>(null);
+  const [resolutionDraft, setResolutionDraft] = useState("");
   const deleteTicket = useDeleteHelpdeskTicket();
   // Title editing (QA-BUG-17): null while not editing. savedTitle shows the
   // new title at once; the ticket prop is a snapshot from the list.
@@ -284,9 +314,26 @@ export function TicketDetailSheet({
 
   const handleStatusChange = (value: string) => {
     if (value === ticket.status) return;
+    if ((value === "DONE" || value === "CLOSED") && !isResolved) {
+      setResolutionDraft(ticket.resolution ?? "");
+      setResolving(value as TicketStatus);
+      return;
+    }
     updateTicket.mutate(
       { status: value as TicketStatus },
       { onError: (e) => toast.error(getErrorMessage(e)) },
+    );
+  };
+
+  const confirmResolve = () => {
+    if (!resolving) return;
+    const resolution = resolutionDraft.trim();
+    updateTicket.mutate(
+      { status: resolving, ...(resolution ? { resolution } : {}) },
+      {
+        onSuccess: () => setResolving(null),
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
     );
   };
 
@@ -497,6 +544,8 @@ export function TicketDetailSheet({
                   {comments.map((c) =>
                     c.kind === "status_change" ? (
                       <StatusChangeEntry key={c.id} comment={c} />
+                    ) : c.kind === "assignment" ? (
+                      <AssignmentEntry key={c.id} comment={c} />
                     ) : (
                       <CommentEntry key={c.id} comment={c} />
                     ),
@@ -570,6 +619,33 @@ export function TicketDetailSheet({
             })
           }
         />
+        <AlertDialog open={!!resolving} onOpenChange={(next) => !next && setResolving(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Mark as {resolving ? STATUS_LABELS[resolving] ?? resolving : ""}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Add a resolution note so the requester knows what was done. It is optional.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="grid gap-1.5">
+              <Label htmlFor="resolution-note">Resolution note (optional)</Label>
+              <Textarea
+                id="resolution-note"
+                value={resolutionDraft}
+                onChange={(e) => setResolutionDraft(e.target.value)}
+                maxLength={5000}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button onClick={confirmResolve} loading={updateTicket.isPending}>
+                Mark as {resolving ? STATUS_LABELS[resolving] ?? resolving : ""}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SheetContent>
     </Sheet>
   );

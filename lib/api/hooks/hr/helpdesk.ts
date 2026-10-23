@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
 
-export type HelpdeskCommentKind = "comment" | "internal_note" | "status_change";
+export type HelpdeskCommentKind = "comment" | "internal_note" | "status_change" | "assignment";
 
 export interface HelpdeskTicketComment {
   id: number;
@@ -13,7 +13,7 @@ export interface HelpdeskTicketComment {
   authorId: string | null;
   kind: HelpdeskCommentKind;
   body: string | null;
-  metadata: { from?: string | null; to?: string | null } | null;
+  metadata: { from?: string | null; to?: string | null; toName?: string | null } | null;
   createdAt: string | null;
   authorName: string | null;
   authorImage: string | null;
