@@ -120,7 +120,9 @@ export const bankDetailsSchema = z
 
 export type BankDetailsInput = z.infer<typeof bankDetailsSchema>;
 
-const CORE_BANK_FIELDS = ["accountNumber", "bankName", "branch", "ifsc", "accountHolder"] as const;
+// Any banking field counts, so a PF UAN or IBAN typed alone is validated
+// rather than silently dropped.
+const CORE_BANK_FIELDS = ["accountNumber", "bankName", "branch", "ifsc", "accountHolder", "pfUanNumber", "swiftCode", "iban"] as const;
 
 /**
  * Banking can be added after onboarding (R2-LC-03). A block with none of the
