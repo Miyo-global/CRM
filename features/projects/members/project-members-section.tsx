@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRemoveProjectMember, useUpdateProjectMemberRole } from "@/lib/api/hooks/projects";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { resolveImageUrl } from "@/lib/utils";
-import type { ProjectRoleValue, ProjectWithDetails } from "@/types/projects";
+import type { ProjectMember, ProjectRoleValue, ProjectWithDetails } from "@/types/projects";
 import { AddMemberForm } from "./add-member-form";
 
 export const ROLE_OPTIONS: { value: ProjectRoleValue; label: string; hint: string }[] = [
@@ -34,20 +34,24 @@ export function ProjectMembersSection({ project }: { project: ProjectWithDetails
   const updateRole = useUpdateProjectMemberRole(project.id);
   const remove = useRemoveProjectMember();
 
-  const members = useMemo(
-    () =>
-      (project.members ?? [])
-        .filter((m) => !!m.user)
-        .map((m) => ({
-          userId: m.userId,
-          role: roleOf(m.role),
-          name: m.user?.name || [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ") || m.user?.email || "Unnamed",
-          email: m.user?.email ?? "",
-          image: m.user?.image ?? null,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [project.members],
-  );
+  const manager = (project as ProjectWithDetails & { manager?: ProjectMember["user"] | null }).manager;
+  const members = useMemo(() => {
+    const toRow = (userId: string, user: ProjectMember["user"], role: ProjectRoleValue, isManager = false) => ({
+      userId,
+      role,
+      isManager,
+      name: user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Unnamed",
+      email: user?.email ?? "",
+      image: user?.image ?? null,
+    });
+    const rows = (project.members ?? [])
+      .filter((m) => !!m.user)
+      .map((m) => toRow(m.userId, m.user, roleOf(m.role)))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    // The manager is set on the project, not as a member row; list them first (R2-PRJ-05).
+    if (manager && !rows.some((r) => r.userId === manager.id)) rows.unshift(toRow(manager.id, manager, "MANAGER", true));
+    return rows;
+  }, [project.members, manager]);
 
   const confirmRemove = () => {
     if (!removing) return;
@@ -95,7 +99,9 @@ export function ProjectMembersSection({ project }: { project: ProjectWithDetails
                 <p className="truncate text-sm font-medium">{m.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{m.email}</p>
               </div>
-              {canManage ? (
+              {m.isManager ? (
+                <span className="text-sm text-muted-foreground">Project manager</span>
+              ) : canManage ? (
                 <>
                   <Select
                     value={m.role}

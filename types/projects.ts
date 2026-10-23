@@ -674,7 +674,8 @@ export interface ProjectFilters {
   page?: number;
   limit?: number;
   search?: string;
-  status?: "ALL" | ProjectStatusValue;
+  /** UNARCHIVED: everything but archived, the list page's "All" tab (R2-PRJ-05). */
+  status?: "ALL" | "UNARCHIVED" | ProjectStatusValue;
   priority?: ProjectPriority;
   sort?: "newest" | "name" | "key" | "startDate" | "endDate";
   dir?: "asc" | "desc";

@@ -101,7 +101,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (statusParam !== "ALL" && PROJECT_STATUSES.has(statusParam)) {
+    // The list page's "All" tab; callers that send no status still get every project.
+    if (statusParam === "UNARCHIVED") {
+      conditions.push(sql`${projects.status} is distinct from 'ARCHIVED'`);
+    } else if (PROJECT_STATUSES.has(statusParam)) {
       conditions.push(
         eq(
           projects.status,

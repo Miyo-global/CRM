@@ -95,7 +95,8 @@ export default function ProjectsPage() {
     page,
     limit: 12,
     search: apiSearch || undefined,
-    status,
+    // Archived projects live under the Archived tab only (R2-PRJ-05).
+    status: status === "ALL" ? "UNARCHIVED" : status,
     priority: (priority as ProjectFilters["priority"]) || undefined,
     sort: sort as ProjectFilters["sort"],
     dir: sort === "newest" ? "desc" : "asc",
