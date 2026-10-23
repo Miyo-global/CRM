@@ -231,7 +231,7 @@ function roleNavGroups(role: string): NavGroup[] {
             ...(CRM_MODULE_ENABLED
               ? [{ label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true }]
               : []),
-            { label: "Data Hub", icon: FileText, href: "/settings/data-hub" },
+            { label: "Data Export", icon: FileText, href: "/settings/data-hub" },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
@@ -372,7 +372,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Settings", icon: Settings, href: "/settings" },
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
-            { label: "Data Hub", icon: FileText, href: "/settings/data-hub", isSubItem: true },
+            { label: "Data Export", icon: FileText, href: "/settings/data-hub", isSubItem: true },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
