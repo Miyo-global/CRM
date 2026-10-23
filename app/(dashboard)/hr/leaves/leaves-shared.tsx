@@ -490,11 +490,14 @@ export function LeaveRequestDetailsSheet({
   showEmployee = false,
   open,
   onOpenChange,
+  actions,
 }: {
   request: LeaveRequest | null;
   showEmployee?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Approve / Reject / Cancel for a viewer allowed to act (R2-LV-01). */
+  actions?: React.ReactNode;
 }) {
   if (!request) return null;
 
@@ -580,10 +583,16 @@ export function LeaveRequestDetailsSheet({
             </div>
           )}
 
+          {/* On a pending request the approver is who it is routed to, not who
+              processed it (R2-LV-02). */}
           {request.approver?.name && (
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">
-                {status === "APPROVED" ? "Approved by" : "Processed by"}
+                {status === "APPROVED"
+                  ? "Approved by"
+                  : status === "PENDING"
+                  ? "Waiting on"
+                  : "Processed by"}
               </span>
               <span className="font-medium">{request.approver.name}</span>
             </div>
@@ -609,6 +618,7 @@ export function LeaveRequestDetailsSheet({
         </div>
         <SheetFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          {actions}
         </SheetFooter>
       </SheetContent>
     </Sheet>
@@ -708,6 +718,19 @@ export function LeaveRequestTable({
   const [editRequest, setEditRequest] = useState<LeaveRequest | null>(null);
   const [draftReason, setDraftReason] = useState("");
 
+  const detailsStatus = detailsRequest?.status ?? "PENDING";
+  const detailsCanDecide =
+    !!detailsRequest &&
+    isAdmin &&
+    !isSelf &&
+    detailsStatus === "PENDING" &&
+    (canManage ? canManage(detailsRequest) : true);
+  const detailsCanCancel =
+    !!detailsRequest &&
+    detailsStatus === "APPROVED" &&
+    !!onCancelApproved &&
+    !!canCancelApproved?.(detailsRequest);
+
   const handleRejectConfirm = (reason: string) => {
     if (!rejectRequest) return;
     onReject?.(rejectRequest.id, reason || undefined);
@@ -772,6 +795,44 @@ export function LeaveRequestTable({
         showEmployee={showEmployee}
         open={detailsRequest !== null}
         onOpenChange={(open) => { if (!open) setDetailsRequest(null); }}
+        actions={
+          detailsRequest && (detailsCanDecide || detailsCanCancel) ? (
+            <>
+              {detailsCanDecide && (
+                <>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      setRejectRequest(detailsRequest);
+                      setDetailsRequest(null);
+                    }}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      onApprove?.(detailsRequest.id);
+                      setDetailsRequest(null);
+                    }}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              {detailsCanCancel && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    setCancelRequest(detailsRequest);
+                    setDetailsRequest(null);
+                  }}
+                >
+                  Cancel leave
+                </Button>
+              )}
+            </>
+          ) : undefined
+        }
       />
       <LeaveRequestRejectSheet
         open={rejectRequest !== null}

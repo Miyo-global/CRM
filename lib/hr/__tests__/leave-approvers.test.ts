@@ -59,10 +59,23 @@ describe("canActOnLeave", () => {
     expect(canActOnLeave({ id: "mgr-1", role: "ENGINEERING" }, request)).toBe(true);
   });
 
-  it("honours a named approver", () => {
+  it("lets a named approver act even without an approver role", () => {
+    const request = pending({ id: "e1", role: "ENGINEERING" }, "lead-1");
+    expect(canActOnLeave({ id: "lead-1", role: "ENGINEERING" }, request)).toBe(true);
+    expect(canActOnLeave({ id: "e2", role: "ENGINEERING" }, request)).toBe(false);
+  });
+
+  it("lets Admin, HR and the CEO act on a request routed to someone else (R2-LV-01)", () => {
     const request = pending({ id: "e1", role: "ENGINEERING" }, "hr-2");
-    expect(canActOnLeave({ id: "hr-1", role: "HR" }, request)).toBe(false);
+    expect(canActOnLeave(admin, request)).toBe(true);
+    expect(canActOnLeave(ceo, request)).toBe(true);
+    expect(canActOnLeave({ id: "hr-1", role: "HR" }, request)).toBe(true);
     expect(canActOnLeave({ id: "hr-2", role: "HR" }, request)).toBe(true);
+  });
+
+  it("still keeps HR off an Admin's request routed to the CEO", () => {
+    const request = pending({ id: "admin-1", role: "ADMIN" }, "ceo-1");
+    expect(canActOnLeave({ id: "hr-1", role: "HR" }, request)).toBe(false);
   });
 
   it("lets the manager act even when the request names another approver (V5-0003)", () => {

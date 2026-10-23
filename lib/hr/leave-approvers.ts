@@ -61,11 +61,13 @@ export function canActOnLeave(viewer: LeaveViewer, request: LeaveRequestForAppro
   // routed to someone else (V5-0003).
   if (request.user?.reportingTo && request.user.reportingTo === viewer.id) return true;
 
-  // A named approver owns the request while they are still active.
-  if (request.approverId && request.approver?.isActive !== false) {
-    return request.approverId === viewer.id;
+  // The routed approver can act while they are still active.
+  if (request.approverId && request.approver?.isActive !== false && request.approverId === viewer.id) {
+    return true;
   }
 
+  // Routing names who is asked first, not who alone may decide: a request
+  // routed to one HR user locked out Admin and every other HR (R2-LV-01).
   return leaveApproverRolesFor(request.user?.role).includes(viewer.role);
 }
 
