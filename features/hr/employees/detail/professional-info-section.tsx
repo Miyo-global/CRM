@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
+import { format, parseISO } from "date-fns";
 import {
   FormControl,
   FormDescription,
@@ -39,7 +40,7 @@ interface ProfessionalInfoSectionProps {
 
 export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: ProfessionalInfoSectionProps) {
   const { control, watch, setValue, getValues, clearErrors } = useFormContext<EmployeeFormValues>();
-  const minJoiningDate = useMemo(() => getCompanyEstablishedDate().toISOString().split("T")[0], []);
+  const minJoiningDate = useMemo(() => getCompanyEstablishedDate(), []);
 
   const { data: departments = [], isLoading: departmentsLoading } = useHrDepartments();
   const selectedDepartmentId = watch("departmentId");
@@ -264,9 +265,9 @@ export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: 
               <FormLabel>Joining Date</FormLabel>
               <FormControl>
                 <DatePicker
-                  value={field.value ? new Date(field.value).toISOString().split("T")[0] : ""}
-                  onChange={(v) => field.onChange(v ? new Date(v) : undefined)}
-                  fromDate={new Date(minJoiningDate)}
+                  value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                  onChange={(v) => field.onChange(v ? parseISO(v) : undefined)}
+                  fromDate={minJoiningDate}
                 />
               </FormControl>
               <FormMessage />

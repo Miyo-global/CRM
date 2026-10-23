@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useForm, type FieldPath, type DefaultValues, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { format, parseISO } from "date-fns";
 import { onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -146,7 +147,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       designation: prefill.designation ?? "",
       departmentId: prefill.departmentId ?? undefined,
       departmentName: prefill.departmentName ?? "",
-      joiningDate: prefill.joiningDate ? new Date(prefill.joiningDate) : new Date(),
+      joiningDate: prefill.joiningDate ? parseISO(prefill.joiningDate) : new Date(),
       monthlySalary: prefill.monthlySalary ? Number(prefill.monthlySalary) : undefined,
     } as DefaultValues<FormValues> as FormValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,6 +244,9 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
             ? data.phone.trim()
             : data.whatsappNumber?.trim(),
           designation: formatDesignation(data.designation),
+          // Send the calendar days as picked, not a UTC instant (R2-LC-02).
+          joiningDate: format(data.joiningDate, "yyyy-MM-dd"),
+          dateOfBirth: format(data.dateOfBirth, "yyyy-MM-dd"),
         } as import("@/types/hr").OnboardEmployeeInput,
         {
           onSuccess: async (result) => {

@@ -77,7 +77,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { resolveImageUrl } from "@/lib/utils";
 import { canAccessRoute } from "@/lib/auth/route-access";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import type { Employee } from "@/types/hr";
 import { HR_LETTER_DOCUMENT_TYPES, HR_LETTER_EXTRA_FIELDS } from "@/lib/hr/hr-letter-tokens";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -377,9 +377,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
     | { name?: string; relation?: string; phone?: string }
     | null;
   const joinedFull = employee.joiningDate
-    ? format(new Date(String(employee.joiningDate)), "d MMM yyyy")
+    ? format(parseISO(String(employee.joiningDate)), "d MMM yyyy")
     : null;
-  const dob = e.dateOfBirth ? format(new Date(String(e.dateOfBirth)), "d MMM yyyy") : null;
+  const dob = e.dateOfBirth ? format(parseISO(String(e.dateOfBirth)), "d MMM yyyy") : null;
   const monthly = formatMoney(e.monthlySalary);
   const annual =
     e.monthlySalary != null && !Number.isNaN(Number(e.monthlySalary))

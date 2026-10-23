@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { format, parseISO } from "date-fns";
 import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -93,7 +94,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       phone: employee.phone || "",
       personalEmail: employee.personalEmail || "",
       gender: employee.gender || "MALE",
-      joiningDate: employee.joiningDate ? new Date(employee.joiningDate) : undefined,
+      joiningDate: employee.joiningDate ? parseISO(String(employee.joiningDate)) : undefined,
       experienceYears:
         employee.experienceYears != null && employee.experienceYears !== ""
           ? Number(employee.experienceYears)
@@ -130,7 +131,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
           phone: values.phone?.trim() || undefined,
           personalEmail: values.personalEmail?.trim() ?? "",
           gender: values.gender,
-          joiningDate: values.joiningDate?.toISOString().slice(0, 10),
+          // The calendar day as picked; toISOString() is UTC and moved an
+          // IST date one day back (R2-LC-02).
+          joiningDate: values.joiningDate ? format(values.joiningDate, "yyyy-MM-dd") : undefined,
           experienceYears: values.experienceYears,
           skills: skillsArray,
           taxId: values.taxId?.trim().toUpperCase() || undefined,

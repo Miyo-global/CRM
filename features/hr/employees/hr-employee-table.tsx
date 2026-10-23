@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,8 @@ import {
 
 function formatJoiningDate(value: string | null | undefined): string {
   if (!value) return "—";
-  const parsed = new Date(value);
+  // parseISO keeps "2026-10-23" on the 23rd; new Date() read it as UTC (R2-LC-02).
+  const parsed = parseISO(value);
   if (Number.isNaN(parsed.getTime())) return "—";
   return format(parsed, "MMM d, yyyy");
 }
