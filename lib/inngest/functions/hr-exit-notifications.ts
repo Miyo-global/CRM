@@ -82,7 +82,7 @@ export const onResignationCeoApproved = inngest.createFunction(
           title: approved ? "Resignation Approved" : "Resignation Rejected",
           message: approved
             ? "Your resignation has been approved. Please ensure a smooth handover."
-            : "Your resignation request has been reviewed and rejected by the CEO.",
+            : "Your resignation request has been reviewed and rejected at final sign-off.",
           link: "/hr/exit",
           channels: ["in_app"],
         },
@@ -134,10 +134,10 @@ export const onTerminationCeoApproved = inngest.createFunction(
           data: {
             userId,
             type: approved ? "success" : "info",
-            title: approved ? "Termination Approved — Ready to Send" : "Termination Rejected by CEO",
+            title: approved ? "Termination Approved — Ready to Send" : "Termination Rejected by Super Admin",
             message: approved
-              ? `CEO approved the termination of ${employeeName}. You can now send the termination letter.`
-              : `CEO rejected the termination request for ${employeeName}.`,
+              ? `The Super Admin approved the termination of ${employeeName}. You can now send the termination letter.`
+              : `The Super Admin rejected the termination request for ${employeeName}.`,
             link: "/hr/termination",
             channels: ["in_app"],
           },

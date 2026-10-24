@@ -1,4 +1,5 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { HELPDESK_COMMENT_MAX } from "@/lib/validations/common-forms";
 import { db } from "@/lib/db";
 import { helpdeskTickets, helpdeskTicketComments, users } from "@/lib/db/schema";
 import { and, asc, eq } from "drizzle-orm";
@@ -7,7 +8,11 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 const createCommentSchema = z.object({
-  body: z.string().trim().min(1, "Comment cannot be empty").max(5000),
+  body: z
+    .string()
+    .trim()
+    .min(1, "Comment cannot be empty")
+    .max(HELPDESK_COMMENT_MAX, `Reply must be at most ${HELPDESK_COMMENT_MAX} characters`),
   kind: z.enum(["comment", "internal_note"]).optional(),
 });
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getTodayString } from "@/lib/date-utils";
+import { amountSchema, optionalAmountSchema, type AmountRules } from "@/lib/numeric-input";
 
 // ─── Reusable strict field validators ────────────────────────────────────────
 
@@ -59,62 +60,15 @@ export const ASSET_LOCATION_MAX_CHARS = 200;
 /** Maximum purchase cost in INR (1 crore). */
 export const ASSET_PURCHASE_COST_MAX_INR = 10_000_000;
 
-function preprocessPurchaseCost(val: unknown, emptyValue: undefined | typeof NaN) {
-  if (val === undefined || val === null || val === "") return emptyValue;
-  if (typeof val === "number") {
-    if (!Number.isFinite(val)) return NaN;
-    if (val < 0) return NaN;
-    if (val > ASSET_PURCHASE_COST_MAX_INR) return NaN;
-    return val;
-  }
-  const s = String(val).trim().replace(/,/g, "");
-  if (!s) return emptyValue;
-  if (!/^\d+(\.\d*)?$/.test(s)) return NaN;
-  const n = Number(s);
-  if (!Number.isFinite(n) || n < 0) return NaN;
-  if (n > ASSET_PURCHASE_COST_MAX_INR) return NaN;
-  return n;
-}
+/** Form and API share these; typed text is never trimmed to fit (R3-EMP-03). */
+export const ASSET_PURCHASE_COST_RULES: AmountRules = {
+  label: "Purchase cost",
+  max: ASSET_PURCHASE_COST_MAX_INR,
+  allowZero: true,
+};
 
-const purchaseCostNumber = z
-  .number()
-  .min(0, "Cost cannot be negative")
-  .max(ASSET_PURCHASE_COST_MAX_INR, "Amount cannot exceed ₹1 crore");
-
-const optionalPurchaseCost = z.preprocess(
-  (val) => preprocessPurchaseCost(val, undefined),
-  purchaseCostNumber.optional(),
-);
-
-const requiredPurchaseCost = z
-  .union([z.string(), z.number()])
-  .superRefine((val, ctx) => {
-    const processed = preprocessPurchaseCost(val, undefined);
-    if (processed === undefined) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Purchase cost is required",
-      });
-      return;
-    }
-    if (Number.isNaN(processed)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Enter a valid purchase cost",
-      });
-      return;
-    }
-    const check = purchaseCostNumber.safeParse(processed);
-    if (!check.success) {
-      for (const issue of check.error.issues) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: issue.message,
-        });
-      }
-    }
-  })
-  .transform((val) => preprocessPurchaseCost(val, undefined) as number);
+const optionalPurchaseCost = optionalAmountSchema(ASSET_PURCHASE_COST_RULES);
+const requiredPurchaseCost = amountSchema(ASSET_PURCHASE_COST_RULES);
 
 const optionalText = (max: number) => z.string().trim().max(max, `Must be at most ${max} characters`).optional().or(z.literal(""));
 

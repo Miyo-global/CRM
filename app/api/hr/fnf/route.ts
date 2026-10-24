@@ -1,36 +1,77 @@
 import { withAuth, withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { fnfSettlements } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { fnfSettlements, resignations, terminations, users } from "@/lib/db/schema";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { fnfTotals } from "@/lib/hr/fnf-figures";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+
+const amount = z.number().nonnegative("Amounts cannot be negative").optional();
 
 const createSchema = z.object({
   userId: z.string().min(1),
   resignationId: z.number().int().positive().optional(),
-  basicDues: z.number().optional(),
-  leaveEncashment: z.number().optional(),
-  bonusDue: z.number().optional(),
-  deductions: z.number().optional(),
-  loanRecovery: z.number().optional(),
+  basicDues: amount,
+  leaveEncashment: amount,
+  bonusDue: amount,
+  deductions: amount,
+  loanRecovery: amount,
+  notes: z.string().max(2000).optional(),
 });
 
 export async function GET() {
   return withAuth(async (session) => {
     const isAdmin = isAdminOrOwner(session.user.role);
 
-    const data = await db
-      .select()
+    // R3-SA-04: the list showed "Employee" and dashes; join the person and
+    // derive the last working day from the resignation or termination.
+    const rows = await db
+      .select({
+        fnf: fnfSettlements,
+        employeeName: users.name,
+        resignationLwd: resignations.lastWorkingDate,
+      })
       .from(fnfSettlements)
+      .leftJoin(users, eq(users.id, fnfSettlements.userId))
+      .leftJoin(resignations, eq(resignations.id, fnfSettlements.resignationId))
       .where(
         isAdmin
           ? eq(fnfSettlements.orgId, session.orgId)
-          : eq(fnfSettlements.userId, session.user.id)
+          : and(eq(fnfSettlements.orgId, session.orgId), eq(fnfSettlements.userId, session.user.id))
       )
       .orderBy(desc(fnfSettlements.createdAt));
 
-    return ok(data);
+    const userIds = [...new Set(rows.map((r) => r.fnf.userId))];
+    const terms = userIds.length
+      ? await db
+          .select({ userId: terminations.userId, effectiveDate: terminations.effectiveDate })
+          .from(terminations)
+          .where(
+            and(
+              eq(terminations.orgId, session.orgId),
+              inArray(terminations.userId, userIds),
+              inArray(terminations.status, ["SENT", "COMPLETED"]),
+            ),
+          )
+          .orderBy(desc(terminations.updatedAt))
+      : [];
+    const terminationLwd = new Map<string, string>();
+    for (const t of terms) if (!terminationLwd.has(t.userId)) terminationLwd.set(t.userId, String(t.effectiveDate));
+
+    return ok(
+      rows.map(({ fnf, employeeName, resignationLwd }) => {
+        const totals = fnfTotals(fnf);
+        return {
+          ...fnf,
+          employeeName,
+          lastWorkingDate: resignationLwd ?? terminationLwd.get(fnf.userId) ?? null,
+          grossPay: totals.gross.toFixed(2),
+          totalDeductions: totals.deductions.toFixed(2),
+          netPay: totals.net.toFixed(2),
+        };
+      }),
+    );
   });
 }
 
@@ -57,6 +98,7 @@ export async function POST(req: NextRequest) {
         deductions: deductions.toString(),
         loanRecovery: loanRecovery.toString(),
         netPayable: netPayable.toString(),
+        notes: body.notes ?? null,
         status: "DRAFT",
       })
       .returning();

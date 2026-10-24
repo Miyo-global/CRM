@@ -83,6 +83,12 @@ function fmt(amount: string | number | null) {
   return `${CURRENCY_SYMBOL}${Number(amount).toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: 0 })}`;
 }
 
+/** R3-SA-08: a name, never the raw user id. */
+function assigneeName(a: Asset, employeeList: Array<{ id: string; name: string }>): string {
+  if (!a.assignedTo) return "";
+  return a.assignedUser?.name ?? employeeList.find((e) => e.id === a.assignedTo)?.name ?? "Unknown employee";
+}
+
 function assetsToExportRows(
   list: Asset[],
   employeeList: Array<{ id: string; name: string }>
@@ -92,9 +98,7 @@ function assetsToExportRows(
     type: a.type ?? "",
     serialNumber: a.serialNumber ?? "",
     status: a.status ?? "",
-    assignedToName: a.assignedTo
-      ? employeeList.find((e) => e.id === a.assignedTo)?.name ?? a.assignedTo
-      : "",
+    assignedToName: assigneeName(a, employeeList),
     purchaseCost: a.purchaseCost != null ? String(a.purchaseCost) : "",
     purchaseDate: a.purchaseDate ?? "",
     notes: a.notes ?? "",
@@ -146,30 +150,6 @@ function findDuplicateSerial(items: Asset[], serial: string, excludeId?: number)
 
 function sanitizeAssetSerialInput(value: string) {
   return value.replace(/[^A-Za-z0-9-]/g, "").toUpperCase().slice(0, 64);
-}
-
-/** Digits and at most one decimal point; up to 2 fractional digits (₹); capped at 1 crore. */
-function sanitizePurchaseCostInput(value: string) {
-  let s = value.replace(/[^\d.]/g, "");
-  const firstDot = s.indexOf(".");
-  if (firstDot === -1) {
-    s = s.slice(0, 12);
-  } else {
-    const whole = s.slice(0, firstDot).slice(0, 12);
-    const frac = s.slice(firstDot + 1).replace(/\./g, "").slice(0, 2);
-    if (whole === "") {
-      s = frac.length > 0 ? `0.${frac}` : "";
-    } else {
-      s = frac.length > 0 ? `${whole}.${frac}` : `${whole}.`;
-    }
-  }
-  const forParse = s.endsWith(".") ? s.slice(0, -1) : s;
-  if (forParse === "") return s;
-  const n = Number(forParse);
-  if (Number.isFinite(n) && n > ASSET_PURCHASE_COST_MAX_INR) {
-    return String(ASSET_PURCHASE_COST_MAX_INR);
-  }
-  return s;
 }
 
 export default function HrAssetsPage() {
@@ -229,9 +209,7 @@ export default function HrAssetsPage() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((a) => {
-      const assignee = a.assignedTo
-        ? employeeList.find((e) => e.id === a.assignedTo)?.name ?? a.assignedTo
-        : "";
+      const assignee = assigneeName(a, employeeList);
       const statusLabel = STATUS_BADGE[a.status ?? "AVAILABLE"]?.label ?? a.status ?? "";
       return (
         a.name?.toLowerCase().includes(q) ||
@@ -586,7 +564,7 @@ export default function HrAssetsPage() {
               <label className="text-sm font-medium">Purchase Cost (₹)</label>
               <Input
                 value={purchaseCost}
-                onChange={(e) => setPurchaseCost(sanitizePurchaseCostInput(e.target.value))}
+                onChange={(e) => setPurchaseCost(e.target.value)}
                 type="text"
                 inputMode="decimal"
                 placeholder="Enter amount"
@@ -726,7 +704,7 @@ export default function HrAssetsPage() {
                         <TableCell className="font-mono text-xs text-muted-foreground">{a.serialNumber ?? ""}</TableCell>
                         <TableCell><StatusPill tone={badge.tone} dot>{badge.label}</StatusPill></TableCell>
                         <TableCell className="text-sm">
-                          {a.assignedTo ? employeeList.find((e) => e.id === a.assignedTo)?.name ?? a.assignedTo : ""}
+                          {assigneeName(a, employeeList)}
                         </TableCell>
                         <TableCell className="text-right text-sm tabular-nums">{fmt(a.purchaseCost)}</TableCell>
                         <TableCell className="text-xs tabular-nums text-muted-foreground">

@@ -19,23 +19,37 @@ import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, Pencil } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatINRWhole } from "@/lib/format-utils";
-import { DatePicker } from "@/components/ui/date-picker";
 import { parseCalendarDate } from "@/lib/date-utils";
+import { fnfHasFigures } from "@/lib/hr/fnf-figures";
 
 interface FnfSettlement {
   id: number; userId: string; employeeName: string | null; lastWorkingDate: string | null;
-  grossPay: string | null; deductions: string | null; netPay: string | null;
+  basicDues: string | null; leaveEncashment: string | null; bonusDue: string | null;
+  deductions: string | null; loanRecovery: string | null;
+  grossPay: string | null; totalDeductions: string | null; netPay: string | null;
   status: string | null; notes: string | null; createdAt: string | null;
 }
+
+type Figures = { basicDues: string; leaveEncashment: string; bonusDue: string; deductions: string; loanRecovery: string };
+const EMPTY_FIGURES: Figures = { basicDues: "", leaveEncashment: "", bonusDue: "", deductions: "", loanRecovery: "" };
+const FIGURE_FIELDS: { key: keyof Figures; label: string }[] = [
+  { key: "basicDues", label: "Salary dues" },
+  { key: "leaveEncashment", label: "Leave encashment" },
+  { key: "bonusDue", label: "Bonus due" },
+  { key: "deductions", label: "Deductions" },
+  { key: "loanRecovery", label: "Loan recovery" },
+];
+const toNumbers = (f: Figures) =>
+  Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v === "" ? undefined : Number(v)])) as Record<keyof Figures, number | undefined>;
 
 const fnfKeys = { all: [...queryKeys.hr.all, "fnf"] as const, list: () => [...fnfKeys.all, "list"] as const };
 
 function statusTone(s: string | null): Tone {
-  if (s === "COMPLETED") return "success";
-  if (s === "IN_PROGRESS") return "info";
+  if (s === "PAID") return "success";
+  if (s === "APPROVED" || s === "PENDING_APPROVAL") return "info";
   return "warning";
 }
 
@@ -51,37 +65,59 @@ function FnfContent() {
   });
 
   const create = useMutation({
-    mutationFn: (data: { userId: string; lastWorkingDate?: string; grossPay?: number; deductions?: number; notes?: string }) =>
+    mutationFn: (data: { userId: string; notes?: string } & Record<keyof Figures, number | undefined>) =>
       apiClient.post<FnfSettlement>("/hr/fnf", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: fnfKeys.list() }),
   });
 
+  // The enum has no COMPLETED; PAID is the final state (the old call 400'd).
   const complete = useMutation({
-    mutationFn: (id: number) => apiClient.patch<{ success: boolean }>(`/hr/fnf/${id}`, { status: "COMPLETED" }),
+    mutationFn: (id: number) => apiClient.patch<{ success: boolean }>(`/hr/fnf/${id}`, { status: "PAID" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: fnfKeys.list() }),
+  });
+
+  const saveFigures = useMutation({
+    mutationFn: ({ id, ...data }: { id: number; notes?: string } & Record<keyof Figures, number | undefined>) =>
+      apiClient.patch<FnfSettlement>(`/hr/fnf/${id}`, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: fnfKeys.list() }),
   });
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editing, setEditing] = useState<FnfSettlement | null>(null);
   const [completeId, setCompleteId] = useState<number | null>(null);
   const [userId, setUserId] = useState("");
-  const [lwd, setLwd] = useState("");
-  const [grossPay, setGrossPay] = useState("");
-  const [deductions, setDeductions] = useState("");
+  const [figures, setFigures] = useState<Figures>(EMPTY_FIGURES);
   const [notes, setNotes] = useState("");
 
-  const handleCreate = useCallback(() => {
+  const closeSheet = useCallback(() => {
+    setSheetOpen(false); setEditing(null);
+    setUserId(""); setFigures(EMPTY_FIGURES); setNotes("");
+  }, []);
+
+  const openEdit = useCallback((f: FnfSettlement) => {
+    const v = (x: string | null) => (x && Number(x) !== 0 ? String(Number(x)) : "");
+    setEditing(f);
+    setFigures({ basicDues: v(f.basicDues), leaveEncashment: v(f.leaveEncashment), bonusDue: v(f.bonusDue), deductions: v(f.deductions), loanRecovery: v(f.loanRecovery) });
+    setNotes(f.notes ?? "");
+    setSheetOpen(true);
+  }, []);
+
+  const handleSave = useCallback(() => {
+    const nums = toNumbers(figures);
+    if (Object.values(nums).some((x) => x !== undefined && (!Number.isFinite(x) || x < 0))) {
+      toast.error("Amounts must be zero or more"); return;
+    }
+    const handlers = {
+      onSuccess: () => { toast.success(editing ? "Settlement figures saved" : "FnF settlement created"); closeSheet(); },
+      onError: (e: unknown) => toast.error(getErrorMessage(e)),
+    };
+    if (editing) {
+      saveFigures.mutate({ id: editing.id, ...nums, notes: notes || undefined }, handlers);
+      return;
+    }
     if (!userId.trim()) { toast.error("Employee ID is required"); return; }
-    create.mutate(
-      { userId: userId.trim(), lastWorkingDate: lwd || undefined, grossPay: Number(grossPay) || undefined, deductions: Number(deductions) || undefined, notes: notes || undefined },
-      {
-        onSuccess: () => {
-          toast.success("FnF settlement created"); setSheetOpen(false);
-          setUserId(""); setLwd(""); setGrossPay(""); setDeductions(""); setNotes("");
-        },
-        onError: (e) => toast.error(getErrorMessage(e)),
-      },
-    );
-  }, [userId, lwd, grossPay, deductions, notes, create]);
+    create.mutate({ userId: userId.trim(), ...nums, notes: notes || undefined }, handlers);
+  }, [editing, userId, figures, notes, create, saveFigures, closeSheet]);
 
   const handleComplete = useCallback(() => {
     if (!completeId) return;
@@ -140,17 +176,30 @@ function FnfContent() {
                     {f.lastWorkingDate ? format(parseCalendarDate(f.lastWorkingDate), "MMM d, yyyy") : "—"}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">{money(f.grossPay)}</TableCell>
-                  <TableCell className="text-right text-danger-strong">{money(f.deductions)}</TableCell>
+                  <TableCell className="text-right text-danger-strong">{money(f.totalDeductions)}</TableCell>
                   <TableCell className="text-right font-semibold">{money(f.netPay)}</TableCell>
                   <TableCell>
                     <StatusPill tone={statusTone(f.status)} dot>{f.status ?? "PENDING"}</StatusPill>
                   </TableCell>
                   <TableCell className="text-right">
-                    {f.status !== "COMPLETED" && (
-                      <Button size="sm" variant="outline" onClick={() => setCompleteId(f.id)}>
-                        <CheckCircle2 className="size-4" aria-hidden="true" />Complete
-                      </Button>
-                    )}
+                    <div className="flex justify-end gap-1.5">
+                      {f.status === "DRAFT" && (
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(f)}>
+                          <Pencil className="size-4" aria-hidden="true" />Figures
+                        </Button>
+                      )}
+                      {f.status !== "PAID" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setCompleteId(f.id)}
+                          disabled={!fnfHasFigures(f)}
+                          title={fnfHasFigures(f) ? undefined : "Enter the settlement figures first"}
+                        >
+                          <CheckCircle2 className="size-4" aria-hidden="true" />Complete
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -159,24 +208,34 @@ function FnfContent() {
         </div>
       )}
 
-      <HrSheet open={sheetOpen} onOpenChange={setSheetOpen} title="New FnF settlement" onSubmit={handleCreate} submitLabel="Create" isPending={create.isPending}>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Employee User ID</label>
-          <Input placeholder="User ID" value={userId} onChange={(e) => setUserId(e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Last Working Date</label>
-          <DatePicker value={lwd} onChange={setLwd} />
-        </div>
+      <HrSheet
+        open={sheetOpen}
+        onOpenChange={(open) => { if (!open) closeSheet(); else setSheetOpen(true); }}
+        title={editing ? `Settlement figures: ${editing.employeeName ?? "Employee"}` : "New FnF settlement"}
+        onSubmit={handleSave}
+        submitLabel={editing ? "Save" : "Create"}
+        isPending={create.isPending || saveFigures.isPending}
+      >
+        {!editing && (
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Employee User ID</label>
+            <Input placeholder="User ID" value={userId} onChange={(e) => setUserId(e.target.value)} />
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Gross Pay</label>
-            <Input type="number" placeholder="0.00" value={grossPay} onChange={(e) => setGrossPay(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Deductions</label>
-            <Input type="number" placeholder="0.00" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
-          </div>
+          {FIGURE_FIELDS.map(({ key, label }) => (
+            <div key={key} className="space-y-1.5">
+              <label htmlFor={`fnf-${key}`} className="text-sm font-medium">{label}</label>
+              <Input
+                id={`fnf-${key}`}
+                type="number"
+                min="0"
+                placeholder="0.00"
+                value={figures[key]}
+                onChange={(e) => setFigures((prev) => ({ ...prev, [key]: e.target.value }))}
+              />
+            </div>
+          ))}
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Notes</label>
@@ -188,7 +247,7 @@ function FnfContent() {
         open={completeId !== null}
         onOpenChange={(open) => { if (!open) setCompleteId(null); }}
         title="Complete settlement"
-        description="Mark this FnF settlement as completed? This action cannot be undone."
+        description="Mark this FnF settlement as paid and completed? This action cannot be undone."
         confirmLabel="Complete"
         variant="default"
         onConfirm={handleComplete}

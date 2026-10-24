@@ -377,7 +377,7 @@ export function DocumentExportSheet({
             </TabsContent>
             <TabsContent value="email" className="mt-4">
               {!canEmailPack ? (
-                <p className="text-sm text-muted-foreground">Only CEO, HR, or Admin can email document packs.</p>
+                <p className="text-sm text-muted-foreground">Only the Super Admin, HR or Admin can email document packs.</p>
               ) : (
                 <ExportMailFields
                   people={people}

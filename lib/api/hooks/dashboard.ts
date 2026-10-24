@@ -346,12 +346,8 @@ export interface PersonalDashboard {
 }
 
 export interface ExecutiveDashboard {
-  mrr: number;
-  pipelineValue: number;
   headcount: number;
-  newLeadsThisWeek: number;
   activeProjects: number;
-  conversionRate: number;
 }
 
 export interface ManagerDashboard {

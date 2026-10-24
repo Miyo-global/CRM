@@ -44,7 +44,6 @@ import {
   bonusAmountInputError,
   bonusOtherReasonInputError,
   isBonusType,
-  sanitizeBonusAmountInput,
   sanitizeBonusOtherReasonInput,
   validateCreateBonusForm,
 } from "@/lib/validations/bonus";
@@ -71,7 +70,6 @@ const STATUS_ACTIONS: Record<StatusAction, { title: string; description: string;
   CANCELLED: { title: "Cancel bonus", description: "Cancel this bonus? It will not be paid.", label: "Cancel bonus", done: "Bonus cancelled." },
 };
 
-const BLOCKED_AMOUNT_KEYS = new Set(["e", "E", "+", "-", "Subtract", "Add", ","]);
 
 function BonusContent() {
   const qc = useQueryClient();
@@ -155,20 +153,9 @@ function BonusContent() {
     setReason("");
   }, []);
 
-  const handleAmountKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "." && !e.currentTarget.value.includes(".")) return;
-    if (BLOCKED_AMOUNT_KEYS.has(e.key) || e.key === "-" || e.key === "Minus") {
-      e.preventDefault();
-    }
-  }, []);
-
+  // Kept as typed; the message below says what is wrong (R3-EMP-03).
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(sanitizeBonusAmountInput(e.target.value));
-  }, []);
-
-  const handleAmountPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setAmount(sanitizeBonusAmountInput(e.clipboardData.getData("text")));
+    setAmount(e.target.value);
   }, []);
 
   const amountError = useMemo(() => bonusAmountInputError(amount), [amount]);
@@ -355,8 +342,6 @@ function BonusContent() {
               placeholder="0.00"
               value={amount}
               onChange={handleAmountChange}
-              onKeyDown={handleAmountKeyDown}
-              onPaste={handleAmountPaste}
               aria-invalid={amountError ? true : undefined}
               aria-describedby={amountError ? "bonus-amount-error" : "bonus-amount-hint"}
             />

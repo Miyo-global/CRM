@@ -7,6 +7,7 @@ import { deactivateAccountsInTx, afterAccountsDeactivated } from "@/lib/hr/deact
 import { logger } from "@/lib/logger";
 import { getTodayString, formatDisplayDate, fromISODateString } from "@/lib/date-utils";
 import { sendTemplateEmail } from "@/lib/email/sender";
+import { createAuditLog } from "@/lib/audit-log";
 
 /**
  * R3-SA-02: someone re-hired after leaving keeps the old exit record; the
@@ -87,6 +88,23 @@ export async function deactivateAfterLastWorkingDay(): Promise<{
   // shared helper also turns Portal Access off and revokes every session.
   const { sessionIds } = await db.transaction((tx) => deactivateAccountsInTx(tx, userIds));
   await afterAccountsDeactivated(userIds, sessionIds);
+
+  // R3-ADM-12: no human actor; the leaver is recorded as the subject and actor.
+  await Promise.all(
+    leavers.map((l) =>
+      createAuditLog({
+        action: "user.deactivated",
+        userId: l.userId,
+        orgId: l.orgId,
+        targetId: l.userId,
+        targetType: "user",
+        metadata: {
+          via: "scheduled_last_working_day",
+          changes: { isActive: { from: true, to: false }, hasDashboardAccess: { from: true, to: false } },
+        },
+      }),
+    ),
+  );
 
   const orgIds = [...new Set(leavers.map((l) => l.orgId))];
   const orgRows = await db

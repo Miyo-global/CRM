@@ -12,6 +12,7 @@ import { bankDetailsSchema, optionalBankDetailsSchema } from "@/lib/validations/
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
+import { amountSchema, optionalAmountSchema, type AmountRules } from "@/lib/numeric-input";
 import { getTodayString, isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 
 /**
@@ -118,6 +119,16 @@ export function isRoleAllowedForDepartment(
   return allowed.has(slug);
 }
 
+/** Job title ("designation" in the DB), worded the way the form labels it (R3-ONB-01). */
+const JOB_TITLE_MAX_LENGTH = 120;
+const jobTitleSchema = z
+  .string({ error: "Job title is required" })
+  .trim()
+  .min(1, "Job title is required")
+  .min(2, "Job title must be at least 2 characters")
+  .max(JOB_TITLE_MAX_LENGTH, `Job title must be at most ${JOB_TITLE_MAX_LENGTH} characters`)
+  .refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number");
+
 export const DEPARTMENT_ROLE_MISMATCH_MESSAGE =
   "This system role is not compatible with the selected department. Pick a role that fits the team, or choose a generic role.";
 
@@ -136,7 +147,6 @@ const MAX_SKILLS_COUNT = 30;
 const SKILL_ITEM_PATTERN = /^[A-Za-z0-9+#.\-\s]+$/;
 const EXPERIENCE_MIN_YEARS = 0;
 const EXPERIENCE_MAX_YEARS = 60;
-const MONTHLY_SALARY_MIN = 1;
 const MONTHLY_SALARY_MAX = 100_000_000;
 
 /**
@@ -304,16 +314,18 @@ function optionalPanSchema() {
     .or(z.literal(""));
 }
 
+/**
+ * One salary rule for the wizard, the Edit form and the PATCH route
+ * (R3-HR-03): a whole number from 1 to 10 crore. -5000 is an error, never 5000.
+ */
+export const MONTHLY_SALARY_RULES: AmountRules = {
+  label: "Monthly salary",
+  max: MONTHLY_SALARY_MAX,
+  decimals: 0,
+};
+
 function optionalMonthlySalaryForEditSchema() {
-  return z
-    .number({ message: "Monthly salary must be a number" })
-    .min(MONTHLY_SALARY_MIN, "Monthly salary must be greater than 0")
-    .max(
-      MONTHLY_SALARY_MAX,
-      `Monthly salary cannot exceed ${CURRENCY_SYMBOL}${MONTHLY_SALARY_MAX.toLocaleString(DEFAULT_LOCALE)}`,
-    )
-    .refine((val) => Number.isInteger(val), "Monthly salary must be a whole number")
-    .optional();
+  return optionalAmountSchema(MONTHLY_SALARY_RULES);
 }
 
 function refineJoiningDateOptional(
@@ -640,10 +652,13 @@ export const onboardEmployeeInputSchema = z
      * emailed set-up link, which also verifies their address — an admin-set
      * password left the account unverified and unable to sign in (A15).
      */
-    designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number"),
-    departmentId: z.coerce.number().int().refine((val) => val !== 0 && !isNaN(val), {
-      message: "Department is required",
-    }),
+    designation: jobTitleSchema,
+    // An unpicked Select is undefined -> NaN; Zod's default said "expected
+    // number, received NaN" (R3-ONB-01).
+    departmentId: z.coerce
+      .number({ error: "Department is required" })
+      .int({ error: "Department is required" })
+      .positive({ error: "Department is required" }),
     departmentName: z.string().trim().optional(),
     /** Reporting manager, settable during onboarding (QA-0021). */
     reportingTo: z.string().trim().optional(),
@@ -661,14 +676,7 @@ export const onboardEmployeeInputSchema = z
       .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Invalid PAN format (e.g. ABCDE1234F)")
       .optional()
       .or(z.literal("")),
-    monthlySalary: z.coerce
-      .number({ message: "Monthly salary is required" })
-      .min(MONTHLY_SALARY_MIN, "Monthly salary must be greater than 0")
-      .max(
-        MONTHLY_SALARY_MAX,
-        `Monthly salary cannot exceed ${CURRENCY_SYMBOL}${MONTHLY_SALARY_MAX.toLocaleString(DEFAULT_LOCALE)}`,
-      )
-      .refine((val) => Number.isInteger(val), "Monthly salary must be a whole number"),
+    monthlySalary: amountSchema(MONTHLY_SALARY_RULES),
     bankDetails: optionalBankDetailsSchema,
   })
   .superRefine((data, ctx) => {
@@ -771,7 +779,7 @@ export const editEmployeeFormSchema = z
     firstName: personNameSchema("First name"),
     lastName: personNameSchema("Last name"),
     role: z.string().min(1, "Role is required"),
-    designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number"),
+    designation: jobTitleSchema,
     // R2-ROLE-2: a record with no department (e.g. a terminated employee)
     // showed zod's raw "expected number, received undefined".
     departmentId: z
@@ -834,7 +842,7 @@ export const updateEmployeeProfileBodySchema = z
     name: z.string().trim().min(1).max(200).optional(),
     firstName: personNameSchema("First name").optional(),
     lastName: personNameSchema("Last name").optional(),
-    designation: z.string().trim().min(2, "Designation must be at least 2 characters").max(120, "Designation must be at most 120 characters").refine((v) => /[A-Za-z0-9]/.test(v), "Job title must contain at least one letter or number").optional(),
+    designation: jobTitleSchema.optional(),
     departmentId: z.number().int().positive().optional(),
     phone: optionalPhoneSchema("Phone number").optional(),
     personalEmail: z.union([z.literal(""), z.string().trim().email()]).optional(),

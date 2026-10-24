@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { addDaysToDateString, getTodayString } from "@/lib/date-utils";
 
 /**
  * R3-HR-02, R3-HR-05, R3-ADM-08, R3-ROLE-01: the API rejects what the UI hides.
@@ -72,7 +73,7 @@ describe("POST /api/hr/termination: Admin and HR cannot start one for Admin/HR (
     userId: "target",
     reasons: ["Misconduct"],
     detailedExplanation: "QA-TEST",
-    effectiveDate: "2026-11-01",
+    effectiveDate: addDaysToDateString(getTodayString(), 7),
   };
 
   it.each([
@@ -114,5 +115,20 @@ describe("creating custom roles needs roles:manage (R3-ROLE-01)", () => {
     const templates = await import("@/app/api/roles/templates/route");
     expect((await roles.POST(post({ name: "QA", slug: "QA" }))).status).toBe(403);
     expect((await templates.POST(post({ templateId: "x" }))).status).toBe(403);
+  });
+});
+
+describe("editing and deleting roles needs roles:manage (R3-ROLE-01 follow-up)", () => {
+  const params = { params: Promise.resolve({ roleId: "9" }) };
+  it.each(["ADMIN", "HR"])("%s gets 403 on PATCH and DELETE /api/roles/[roleId]", async (role) => {
+    signIn(role);
+    const route = await import("@/app/api/roles/[roleId]/route");
+    const patchReq = new NextRequest("http://localhost/x", {
+      method: "PATCH",
+      body: JSON.stringify({ permissions: ["roles:manage"] }),
+      headers: { "content-type": "application/json" },
+    });
+    expect((await route.PATCH(patchReq, params)).status).toBe(403);
+    expect((await route.DELETE(new NextRequest("http://localhost/x", { method: "DELETE" }), params)).status).toBe(403);
   });
 });

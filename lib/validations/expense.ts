@@ -5,17 +5,17 @@ import {
   cleanOptionalName,
   cleanRequiredName,
 } from "@/lib/validations/text-rules";
-import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { amountSchema, type AmountRules } from "@/lib/numeric-input";
 
 export const MAX_EXPENSE_AMOUNT = 99_999;
 
-export const expenseAmountSchema = z
-  .number()
-  .positive("Amount must be greater than 0")
-  .max(
-    MAX_EXPENSE_AMOUNT,
-    `Amount must be at most ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`,
-  );
+/** Shared by the claim form and the API (R3-EMP-03, R3-EMP-04). */
+export const EXPENSE_AMOUNT_RULES: AmountRules = {
+  max: MAX_EXPENSE_AMOUNT,
+  maxSuffix: " per claim",
+};
+
+export const expenseAmountSchema = amountSchema(EXPENSE_AMOUNT_RULES);
 
 export const expensePaymentMethodSchema = cleanOptionalName("Payment method", 60);
 

@@ -19,7 +19,7 @@ import { resetPassword } from "@/server/actions/auth-actions";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useUrlToken } from "@/lib/hooks/use-url-token";
-import { PASSWORD_REGEX, passwordChecks } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordChecks, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { cn } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
 import { apiClient } from "@/lib/api-client";
@@ -43,14 +43,8 @@ function ArrowRight({ className }: { className?: string }) {
 
 const formSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must be at most 128 characters")
-      .regex(
-        PASSWORD_REGEX,
-        "Must include uppercase, lowercase, number, and special character"
-      ),
+    // The shared policy, so each failed rule shows its own message (R3-ACC-01).
+    password: PASSWORD_ZOD_SCHEMA,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -80,7 +74,7 @@ function getPasswordStrength(password: string): {
 }
 
 function ResetPasswordContent() {
-  const { update } = useSession();
+  const { update, data: session } = useSession();
   const router = useRouter();
   const token = useUrlToken();
   const [loading, setLoading] = useState(false);
@@ -93,6 +87,13 @@ function ResetPasswordContent() {
   const strength = password ? getPasswordStrength(password) : null;
 
   async function onSubmit(values: FormValues) {
+    // Signed-in forced change: we know who this is (R3-SET-01). The token
+    // flow is checked by the server.
+    const identityIssue = token ? null : passwordIdentityIssue(values.password, { email: session?.user?.email, name: session?.user?.name });
+    if (identityIssue) {
+      form.setError("password", { message: identityIssue });
+      return;
+    }
     setLoading(true);
     try {
       if (token) {

@@ -4,6 +4,8 @@ import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-qu
 import { toast } from "sonner";
 import { queryErrorToast } from "@/lib/query-error-toast";
 import { useState } from "react";
+// Installs the app's Zod error map for every client form (R3-ONB-01).
+import "@/lib/api/zod-message";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

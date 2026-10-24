@@ -24,6 +24,8 @@ export function statusTone(status: TerminationStatus | null): Tone {
       return "info";
     case "COMPLETED":
       return "success";
+    case "CANCELLED":
+      return "neutral";
     default:
       return "neutral";
   }

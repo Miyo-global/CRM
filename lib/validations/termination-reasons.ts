@@ -20,3 +20,8 @@ export const terminationReasonFormSchema = z.object({
 });
 
 export type TerminationReasonFormValues = z.infer<typeof terminationReasonFormSchema>;
+
+/** Free-text caps on a termination (R3-LEN-01); the form shows n/max. */
+export const TERMINATION_EXPLANATION_MAX = 5000;
+export const TERMINATION_NOTES_MAX = 2000;
+export const TERMINATION_REMARKS_MAX = 1000;

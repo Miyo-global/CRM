@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { resignations, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { inngest } from "@/lib/inngest/client";
+import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import { getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
@@ -56,6 +57,24 @@ export async function PATCH(
         updatedAt: new Date(),
       })
       .where(eq(resignations.id, resignationId));
+
+    const lwdChanged =
+      body.decision === "approve" && body.lastWorkingDate && body.lastWorkingDate !== record.lastWorkingDate;
+    void createAuditLog({
+      action: "hr.resignation_reviewed",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(resignationId),
+      targetType: "resignation",
+      metadata: {
+        employeeId: record.userId,
+        decision: body.decision,
+        from: record.status,
+        to: newStatus,
+        remarks: body.remarks,
+        ...(lwdChanged ? { lastWorkingDate: { from: record.lastWorkingDate, to: body.lastWorkingDate } } : {}),
+      },
+    }).catch(() => undefined);
 
     if (newStatus === "HR_APPROVED") {
       const employee = await db.query.users.findFirst({

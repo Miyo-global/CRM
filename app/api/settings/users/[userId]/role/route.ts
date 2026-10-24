@@ -18,7 +18,7 @@ export async function POST(
 ) {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only CEO or Admin can change user roles", 403);
+      return err("Only the Super Admin or an Admin can change user roles", 403);
     }
 
     const { userId } = await params;

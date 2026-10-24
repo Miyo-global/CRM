@@ -12,6 +12,9 @@ import {
   Check,
   Paperclip,
   Clock,
+  Pencil,
+  Trash2,
+  Ban,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,6 +38,9 @@ interface TerminationCardProps {
   onReject: (id: number) => void;
   onSendEmail: (record: Termination) => void;
   onComplete: (id: number) => void;
+  onEdit: (record: Termination) => void;
+  onDelete: (record: Termination) => void;
+  onCancel: (record: Termination) => void;
   isSubmitting: boolean;
   isCompleting: boolean;
 }
@@ -48,6 +54,9 @@ export function TerminationCard({
   onReject,
   onSendEmail,
   onComplete,
+  onEdit,
+  onDelete,
+  onCancel,
   isSubmitting,
   isCompleting,
 }: TerminationCardProps) {
@@ -116,7 +125,7 @@ export function TerminationCard({
 
             {status === "REJECTED" && record.ceoRemarks && (
               <p className="mt-1 line-clamp-2 text-xs text-danger-strong">
-                CEO: {record.ceoRemarks}
+                Super Admin: {record.ceoRemarks}
               </p>
             )}
 
@@ -138,6 +147,43 @@ export function TerminationCard({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
+            {isHR && status === "DRAFT" && (
+              <>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => onEdit(record)}
+                  aria-label={`Edit draft termination for ${employee?.name ?? "employee"}`}
+                >
+                  <Pencil aria-hidden="true" />
+                  Edit
+                </Button>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => onDelete(record)}
+                  aria-label={`Delete draft termination for ${employee?.name ?? "employee"}`}
+                >
+                  <Trash2 aria-hidden="true" />
+                  Delete
+                </Button>
+              </>
+            )}
+
+            {isHR && (status === "PENDING_CEO" || status === "APPROVED") && (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => onCancel(record)}
+                aria-label={`Cancel termination for ${employee?.name ?? "employee"}`}
+              >
+                <Ban aria-hidden="true" />
+                Cancel
+              </Button>
+            )}
+
             {isHR && status === "DRAFT" && (
               <Button
                 size="xs"

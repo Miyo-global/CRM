@@ -9,6 +9,7 @@ import { z } from "zod";
 import { sendResignationSubmittedEmail } from "@/lib/email";
 import { after } from "next/server";
 import { inngest } from "@/lib/inngest/client";
+import { createAuditLog } from "@/lib/audit-log";
 import { format, parseISO } from "date-fns";
 import type { NextRequest } from "next/server";
 import { isoDateInTimezone } from "@/lib/constants/locale";
@@ -105,6 +106,15 @@ export async function POST(req: NextRequest) {
       companyFeedback: body.companyFeedback || null,
       status: "PENDING_HR",
     }).returning();
+
+    void createAuditLog({
+      action: "hr.resignation_submitted",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(resignation.id),
+      targetType: "resignation",
+      metadata: { lastWorkingDate: body.lastWorkingDate, noticePeriodDays: body.noticePeriodDays },
+    }).catch(() => undefined);
 
     const adminMembers = await db.query.organizationMembers.findMany({
       where: and(

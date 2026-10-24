@@ -53,6 +53,7 @@ import { Plus, Upload, Link as LinkIcon, ChevronsUpDown, Check } from "lucide-re
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { createTicketInputSchema, TICKET_TITLE_MAX } from "@/lib/validations/project";
+import { CharCount } from "@/components/ui/char-count";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -325,6 +326,7 @@ export function CreateTicketDialog({
                   <FormControl>
                     <Input placeholder="E.g. Implement login page" maxLength={TICKET_TITLE_MAX} {...field} className="text-base font-medium" />
                   </FormControl>
+                  <CharCount length={field.value?.length ?? 0} max={TICKET_TITLE_MAX} />
                   <FormMessage />
                 </FormItem>
               )}

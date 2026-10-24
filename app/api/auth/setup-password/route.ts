@@ -4,7 +4,7 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { revokeAllUserSessions } from "@/lib/auth";
 import type { NextRequest } from "next/server";
 
@@ -17,6 +17,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as unknown;
     const parsed = schema.safeParse(body);
     if (!parsed.success) return err(parsed.error.issues[0]?.message ?? "Invalid input", 400);
+
+    const me = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { email: true, firstName: true, lastName: true, name: true },
+    });
+    const identityIssue = passwordIdentityIssue(parsed.data.password, me ?? {});
+    if (identityIssue) return err(identityIssue, 400);
 
     const hashed = await bcrypt.hash(parsed.data.password, 12);
 

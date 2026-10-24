@@ -10,7 +10,8 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { generateNextEmployeeId } from "@/lib/hr/generate-employee-id";
 import { hashToken } from "@/lib/secret-crypto";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
+import { ACCOUNT_EXISTS_MESSAGE, findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
 
 const schema = z.object({
   token: z.string(),
@@ -47,11 +48,15 @@ export async function POST(req: NextRequest) {
 
   if (!invitation) return err("Invalid or expired invitation", 400);
 
-  const existingUser = await db.query.users.findFirst({
-    where: eq(users.email, invitation.email),
-  });
+  // R3-ONB-07: the person may have been onboarded another way since the
+  // invite went out. Say so, and retire the stale link(s) for this address.
+  if (await findAccountByEmail(invitation.email)) {
+    await revokePendingInvitations(invitation.orgId, invitation.email);
+    return err(ACCOUNT_EXISTS_MESSAGE, 409);
+  }
 
-  if (existingUser) return err("Invalid or expired invitation", 400);
+  const identityIssue = passwordIdentityIssue(input.password, { email: invitation.email, firstName: input.firstName, lastName: input.lastName });
+  if (identityIssue) return err(identityIssue, 400);
 
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const userId = nanoid();

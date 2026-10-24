@@ -1,5 +1,5 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
-import { getAssets } from "@/server/queries/hr";
+import { getAssets } from "@/server/queries/hr/assets";
 import { db } from "@/lib/db";
 import { assets } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";

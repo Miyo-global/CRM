@@ -12,6 +12,7 @@ import type { SystemRole } from "@/lib/rbac/permissions";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { ACTIVE_SYSTEM_ROLES, ROLE_LABELS } from "@/lib/rbac/roles";
 import { cn } from "@/lib/utils";
+import { permissionActionLabel, permissionGroupLabel } from "@/lib/labels";
 
 
 
@@ -25,16 +26,6 @@ function groupByResource(permissions: typeof PERMISSIONS) {
   return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
 }
 
-function formatResource(resource: string) {
-  return resource
-    .replace(/:/g, " › ")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatAction(action: string) {
-  return action.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export default function PermissionsPage() {
   return (
@@ -140,7 +131,7 @@ function PermissionsContent() {
                       className="border-b border-border bg-surface-sunken p-0 text-left"
                     >
                       <span className="sticky left-0 inline-block px-4 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {formatResource(resource)}
+                        {permissionGroupLabel(resource)}
                       </span>
                     </th>
                   </tr>
@@ -180,7 +171,7 @@ function PermissionRow({ perm, rolePermSets, onHoverRole, colTone }: PermissionR
       >
         <p className="text-xs font-medium leading-snug">{perm.description}</p>
         <p className="text-2xs text-muted-foreground font-mono mt-0.5">
-          {formatAction(perm.action)}
+          {permissionActionLabel(perm.action)}
         </p>
       </th>
 

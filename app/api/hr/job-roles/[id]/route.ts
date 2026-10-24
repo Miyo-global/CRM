@@ -7,6 +7,7 @@ import { and, eq, isNull, ne } from "drizzle-orm";
 // only, here and in the Add-employee wizard (same rule as /settings/job-roles).
 import { canManageJobRoles } from "@/lib/constants/roles";
 import { z } from "zod";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 
 const JOB_ROLE_TITLE_MIN = 2;
 const JOB_ROLE_TITLE_MAX = 120;
@@ -88,6 +89,18 @@ export async function PATCH(
       .set(updateData)
       .where(and(eq(jobRoles.id, id), eq(jobRoles.orgId, session.orgId)));
 
+    const changes = diffFields(existing, updateData);
+    if (Object.keys(changes).length > 0) {
+      void createAuditLog({
+        action: "hr.job_role_updated",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(id),
+        targetType: "job_role",
+        metadata: { title: existing.title, changes },
+      }).catch(() => undefined);
+    }
+
     return ok({ success: true });
   });
 }
@@ -107,13 +120,22 @@ export async function DELETE(
 
     const existing = await db.query.jobRoles.findFirst({
       where: and(eq(jobRoles.id, id), eq(jobRoles.orgId, session.orgId)),
-      columns: { id: true },
+      columns: { id: true, title: true, departmentId: true },
     });
     if (!existing) return err("Job role not found.", 404);
 
     // Job roles are referenced by free-text `users.designation` (not an FK), so
     // a hard delete never orphans an employee record. Remove the catalog entry.
     await db.delete(jobRoles).where(and(eq(jobRoles.id, id), eq(jobRoles.orgId, session.orgId)));
+
+    void createAuditLog({
+      action: "hr.job_role_deleted",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(id),
+      targetType: "job_role",
+      metadata: { title: existing.title, departmentId: existing.departmentId },
+    }).catch(() => undefined);
 
     return ok({ success: true });
   });

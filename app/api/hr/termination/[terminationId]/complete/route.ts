@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { terminations, fnfSettlements, assetReturns, assets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
+import { createAuditLog } from "@/lib/audit-log";
 import type { NextRequest } from "next/server";
 import { invalidateHrDashboardCache } from "@/lib/hr-cache";
 import { deactivateAccountsInTx, afterAccountsDeactivated } from "@/lib/hr/deactivate-account";
@@ -110,6 +111,23 @@ export async function PATCH(
         assetsToReturn: assignedAssets.length,
       },
     }).catch(() => undefined);
+
+    // R3-ADM-12: the account closing is its own event, findable by the user.
+    if (deactivateNow) {
+      void createAuditLog({
+        action: "user.deactivated",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: existing.userId,
+        targetType: "user",
+        metadata: {
+          via: "termination",
+          terminationId,
+          changes: { isActive: { from: true, to: false }, hasDashboardAccess: { from: true, to: false } },
+          sessionsRevoked: sessionIds.length,
+        },
+      }).catch(() => undefined);
+    }
 
     return ok({ success: true, deactivated: deactivateNow, effectiveDate: existing.effectiveDate });
   });

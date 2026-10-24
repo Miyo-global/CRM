@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok, err, isUniqueViolation } from "@/lib/api/helpers";
 import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
 import { canManage } from "@/lib/auth/role-change-rules";
 import { db } from "@/lib/db";
@@ -10,33 +10,13 @@ import {
   ensureTerminationReasonsForOrg,
   isAllowedTerminationReason,
 } from "@/lib/hr/termination-reasons";
-import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
+import { requireExplanationForOther, terminationFieldsSchema } from "@/lib/hr/termination-rules";
+import { checkTerminationDate, terminationConflict } from "@/lib/hr/termination-guards";
 import type { NextRequest } from "next/server";
 
-const createSchema = z
-  .object({
-    userId: z.string().min(1, "Employee is required"),
-    reasons: z.array(z.string().min(1)).min(1, "At least one reason is required"),
-    detailedExplanation: z.string().min(1, "Detailed explanation is required"),
-    effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Effective date is required"),
-    severanceAmount: z.number().nonnegative().optional(),
-    noticePeriodWaived: z.boolean().optional().default(false),
-    internalNotes: z.string().optional(),
-    evidenceUrls: z.array(z.string().url()).max(20, "Too many evidence files").optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (
-      data.reasons.includes(OTHER_TERMINATION_REASON) &&
-      data.detailedExplanation.trim().length < 50
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["detailedExplanation"],
-        message:
-          "A detailed explanation (min 50 characters) is required when 'Other' is selected.",
-      });
-    }
-  });
+const createSchema = terminationFieldsSchema
+  .extend({ userId: z.string().min(1, "Employee is required") })
+  .superRefine(requireExplanationForOther);
 
 export async function GET(_req: NextRequest) {
   return withAuth(async (session) => {
@@ -132,6 +112,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // R3-ADM-02 / R3-ADM-07: sane effective date, one open termination per
+    // person, nobody already terminated.
+    const dateError = checkTerminationDate(body.effectiveDate, session.user.role);
+    if (dateError) return err(dateError, 400);
+    const conflict = await terminationConflict(session.orgId, body.userId);
+    if (conflict) return err(conflict, 409);
+
     const [record] = await db
       .insert(terminations)
       .values({
@@ -147,7 +134,13 @@ export async function POST(req: NextRequest) {
         status: "DRAFT",
         initiatedBy: session.user.id,
       })
-      .returning();
+      .returning()
+      .catch((e: unknown) => {
+        // Two saves racing past the check above meet the partial unique index.
+        if (isUniqueViolation(e)) return [null];
+        throw e;
+      });
+    if (!record) return err("This employee already has an open termination.", 409);
 
     void writeAuditLog({
       action: "TERMINATION_CREATED",

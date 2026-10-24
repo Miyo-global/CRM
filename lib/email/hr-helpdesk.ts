@@ -1,4 +1,5 @@
 import { sendTemplateEmail } from "./sender";
+import { ticketStatusLabel } from "@/lib/labels";
 
 /** MIYO-0287: the hand-written helpdesk-ticket template. */
 export async function sendHelpdeskTicketEmail(
@@ -18,7 +19,7 @@ export async function sendHelpdeskTicketEmail(
       ticket_id: ticket.id,
       ticket_subject: ticket.subject,
       category: ticket.category,
-      status: ticket.status.replace(/_/g, " ").toLowerCase(),
+      status: ticketStatusLabel(ticket.status).toLowerCase(),
       event_summary: ticket.eventSummary,
     },
   });

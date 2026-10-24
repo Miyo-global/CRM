@@ -18,6 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
+import { CharCount } from "@/components/ui/char-count";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -45,7 +47,6 @@ import {
   isSimpleNameChar,
 } from "@/lib/validations/text-rules";
 import { expenseAmountSchema, MAX_EXPENSE_AMOUNT } from "@/lib/validations/expense";
-import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const FIELD_LIMITS = {
   categoryOther: 50,
@@ -54,14 +55,6 @@ const FIELD_LIMITS = {
   description: 500,
 } as const;
 
-function CharCount({ length, max }: { length: number; max: number }) {
-  const atMax = length >= max;
-  return (
-    <p className={`text-xs text-right ${atMax ? "text-destructive font-medium" : "text-muted-foreground"}`}>
-      {length}/{max}
-    </p>
-  );
-}
 
 function blockNonSimpleNameKey(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.nativeEvent.isComposing) return;
@@ -126,111 +119,57 @@ interface CreateExpenseDialogProps {
 
 const SELF = "self";
 
-function formatAmountDisplay(amount: number) {
-  return amount > 0 ? String(amount) : "";
-}
-
-/** R2-EMP-02: the steppers move by ₹1 and a rejected keystroke says why. */
+/** R2-EMP-02: the steppers move by ₹1. */
 const AMOUNT_STEP = 1;
 
-function AmountInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [display, setDisplay] = useState(() => formatAmountDisplay(value));
-  const [hint, setHint] = useState<string | null>(null);
-  const isFocusedRef = useRef(false);
-
-  useEffect(() => {
-    if (!isFocusedRef.current) {
-      setDisplay(formatAmountDisplay(value));
-    }
-  }, [value]);
-
+/**
+ * Typed text is kept as typed ("-5" stays "-5", "12abc" stays "12abc") and the
+ * schema says what is wrong; it used to drop the "-" and save ₹5 (R3-EMP-03).
+ */
+function AmountInput({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: number | undefined;
+  onChange: (v: number | undefined) => void;
+  onBlur: () => void;
+}) {
   const adjustAmount = (delta: number) => {
-    const next = Math.min(MAX_EXPENSE_AMOUNT, Math.max(0, Number((value + delta).toFixed(2))));
-    onChange(next);
-    setDisplay(formatAmountDisplay(next));
-    setHint(null);
+    const base = typeof value === "number" && Number.isFinite(value) ? value : 0;
+    onChange(Math.min(MAX_EXPENSE_AMOUNT, Math.max(0, Number((base + delta).toFixed(2)))));
   };
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-9 w-9 shrink-0"
-          onClick={() => adjustAmount(-AMOUNT_STEP)}
-          aria-label="Decrease amount by ₹1"
-        >
-          <Minus className="h-3.5 w-3.5" />
-        </Button>
-        <Input
-          type="text"
-          inputMode="decimal"
-          placeholder="0.00"
-          aria-label="Expense amount in rupees"
-          aria-invalid={hint ? true : undefined}
-          aria-describedby={hint ? "expense-amount-hint" : undefined}
-          value={display}
-          onFocus={() => {
-            isFocusedRef.current = true;
-          }}
-          onChange={(e) => {
-            const raw = e.target.value;
-            if (raw === "") {
-              setDisplay("");
-              setHint(null);
-              onChange(0);
-              return;
-            }
-            if (!/^\d{0,5}(\.\d{0,2})?$/.test(raw)) {
-              setHint(
-                raw.includes("-")
-                  ? "Amount cannot be negative."
-                  : /^\d{6,}(\.\d*)?$/.test(raw)
-                    ? `Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}.`
-                    : "Use numbers only, with up to 2 decimal places.",
-              );
-              return;
-            }
-            const num = parseFloat(raw);
-            if (!isNaN(num) && num > MAX_EXPENSE_AMOUNT) {
-              setHint(`Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_EXPENSE_AMOUNT.toLocaleString(DEFAULT_LOCALE)}.`);
-              return;
-            }
-            setHint(null);
-            setDisplay(raw);
-            if (raw.endsWith(".")) return;
-            onChange(isNaN(num) ? 0 : num);
-          }}
-          onBlur={() => {
-            isFocusedRef.current = false;
-            const num = parseFloat(display);
-            if (!isNaN(num) && num > 0) {
-              const formatted = num % 1 === 0 ? String(num) : num.toFixed(2);
-              setDisplay(formatted);
-              onChange(num);
-              return;
-            }
-            setDisplay("");
-            onChange(0);
-          }}
-          className="text-right font-semibold"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-9 w-9 shrink-0"
-          onClick={() => adjustAmount(AMOUNT_STEP)}
-          aria-label="Increase amount by ₹1"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-      {hint ? (
-        <p id="expense-amount-hint" role="alert" className="text-xs text-destructive">{hint}</p>
-      ) : null}
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 shrink-0"
+        onClick={() => adjustAmount(-AMOUNT_STEP)}
+        aria-label="Decrease amount by ₹1"
+      >
+        <Minus className="h-3.5 w-3.5" />
+      </Button>
+      <MoneyInput
+        placeholder="0.00"
+        aria-label="Expense amount in rupees"
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        className="text-right font-semibold"
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 shrink-0"
+        onClick={() => adjustAmount(AMOUNT_STEP)}
+        aria-label="Increase amount by ₹1"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </Button>
     </div>
   );
 }
@@ -511,7 +450,7 @@ export function CreateExpenseDialog({
                 <FormItem>
                   <FormLabel className="text-xs font-medium">Amount (₹)</FormLabel>
                   <FormControl>
-                    <AmountInput value={field.value} onChange={field.onChange} />
+                    <AmountInput value={field.value as number | undefined} onChange={field.onChange} onBlur={field.onBlur} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

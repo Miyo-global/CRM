@@ -28,19 +28,10 @@ export type RoleFilter =
   | "VIDEO_EDITOR"
   | "DIGITAL_MARKETING";
 
-export const ROLE_LABELS: Record<string, string> = {
-  CEO: "Super Admin",
-  HR: "HR",
-  EMPLOYEE: "Employee",
-  SALES: "Sales",
-  CUSTOMER_SUPPORT: "Customer Support",
-  ENGINEERING: "Engineering",
-  DESIGN: "Design",
-  VIDEO_EDITOR: "Video Editor",
-  DIGITAL_MARKETING: "Digital Marketing",
-  ADMIN: "Admin",
-};
+// R3-LBL-01: one role map (lib/rbac/roles), widened for lookups by any string.
+export const ROLE_LABELS: Record<string, string> = SYSTEM_ROLE_LABELS;
 
+import { ROLE_LABELS as SYSTEM_ROLE_LABELS } from "@/lib/rbac/roles";
 import {
   DEFAULT_PAGE_SIZE,
   PAGE_SIZE_OPTIONS,

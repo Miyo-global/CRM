@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/hooks/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { terminationReasonFormSchema, TERMINATION_REASON_LABEL_MAX } from "@/lib/validations/termination-reasons";
+import { CharCount } from "@/components/ui/char-count";
 import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
 
 export default function TerminationReasonsSettingsPage() {
@@ -277,6 +278,7 @@ function TerminationReasonsContent() {
             placeholder="e.g. Repeated policy violations"
             onChange={(e) => setLabel(e.target.value)}
           />
+          <CharCount length={label.length} max={TERMINATION_REASON_LABEL_MAX} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="reason-description" className="text-sm font-medium">

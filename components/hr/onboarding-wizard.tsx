@@ -53,16 +53,6 @@ const STEP_FIELDS: Record<number, FieldPath<FormValues>[]> = {
 // QA-SALES-01: no Sales department is suggested; there is no sales function.
 const COMMON_DEPARTMENTS = ["HR", "Customer Support", "Engineering", "Design", "Video Editing"];
 
-const KNOWN_ACRONYMS = new Set(["CEO", "CTO", "CFO", "COO", "CMO", "CIO", "CHRO", "VP", "SVP", "EVP", "AVP", "HR", "IT", "QA", "UI", "UX"]);
-
-
-function formatDesignation(str: string) {
-  return str.trim().replace(/\s+/g, " ").split(" ").map((word) => {
-    const upper = word.toUpperCase();
-    return KNOWN_ACRONYMS.has(upper) ? upper : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }).join(" ");
-}
-
 /**
  * MIYO-0663: a hire that came through the ATS arrives with the candidate's
  * details already filled in, and the application is closed once the
@@ -255,7 +245,8 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
           whatsappNumber: data.whatsappSameAsPhone
             ? data.phone?.trim()
             : data.whatsappNumber?.trim(),
-          designation: formatDesignation(data.designation),
+          // Stored as typed (R3-ONB-03): "QA-TEST Engineer" must not become "Qa-test Engineer".
+          designation: data.designation.trim().replace(/\s+/g, " "),
           // Send the calendar days as picked, not a UTC instant (R2-LC-02).
           joiningDate: format(data.joiningDate, "yyyy-MM-dd"),
           dateOfBirth: data.dateOfBirth ? format(data.dateOfBirth, "yyyy-MM-dd") : undefined,

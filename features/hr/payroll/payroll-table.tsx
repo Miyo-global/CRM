@@ -174,7 +174,7 @@ export function PayrollTable({
           <CardTitle>
             Payroll for {selectedMonthLabel}
           </CardTitle>
-          <CardDescription>Only the CEO or an Admin can approve a payroll, and never their own.</CardDescription>
+          <CardDescription>Only the Super Admin or an Admin can approve a payroll, and never their own.</CardDescription>
           <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
             <Select value={year} onValueChange={onYearChange}>
               <SelectTrigger className="h-9" aria-label="Year">
@@ -287,7 +287,7 @@ export function PayrollTable({
                                   variant="outline"
                                   className="gap-1"
                                   onClick={() => onPreview(payroll)}
-                                  title="Only the CEO or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it."
+                                  title="Only the Super Admin or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it."
                                 >
                                   <Eye className="size-3.5 shrink-0" aria-hidden />
                                   Preview

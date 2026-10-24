@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ListTodo } from "lucide-react";
+import { ticketStatusLabel } from "@/lib/labels";
 
 type Ticket = {
   id: number;
@@ -89,7 +90,7 @@ export function EmployeeTicketsList({ tickets }: EmployeeTicketsListProps) {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <Badge variant="outline">
-                  {ticket.status.replace(/_/g, " ")}
+                  {ticketStatusLabel(ticket.status)}
                 </Badge>
                 <span
                   className={cn(

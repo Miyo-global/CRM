@@ -4,9 +4,10 @@ import { getOrgMembers } from "@/server/queries/organization";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createOrgInvitation } from "@/lib/org/create-invitation";
 import { z } from "zod";
+import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
 
 const inviteSchema = z.object({
-  email: z.string().email(),
+  email: EMAIL_ADDRESS_SCHEMA,
   role: z.string().min(1),
 });
 

@@ -6,6 +6,8 @@ import { sendInvitationEmail } from "@/lib/email";
 import { createAuditLog } from "@/lib/audit-log";
 import { hashToken } from "@/lib/secret-crypto";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
+import { ACCOUNT_EXISTS_MESSAGE, findAccountByEmail } from "@/lib/org/email-identity";
+import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
 
 type InviteInput = {
   orgId: string;
@@ -21,7 +23,13 @@ type InviteInput = {
 export type InviteResult = { ok: true; invitationId: string } | { ok: false; status: 400 | 403 | 409; message: string };
 
 export async function createOrgInvitation(input: InviteInput): Promise<InviteResult> {
-  const email = input.email.trim().toLowerCase();
+  // Every caller routes through here, so the address rule lives here too
+  // (R3-INV-10): 'a@b' or a 257-character address never becomes an invite.
+  const parsedEmail = EMAIL_ADDRESS_SCHEMA.safeParse(input.email);
+  if (!parsedEmail.success) {
+    return { ok: false, status: 400, message: parsedEmail.error.issues[0]?.message ?? "Enter a valid email address" };
+  }
+  const email = parsedEmail.data;
   const roleError = await checkRoleAssignment({
     orgId: input.orgId,
     actorRole: input.actorRole,
@@ -30,13 +38,15 @@ export async function createOrgInvitation(input: InviteInput): Promise<InviteRes
   });
   if (roleError) return { ok: false, status: roleError.status, message: roleError.message };
   const role = input.role.trim().toUpperCase();
-  const existingUser = await db.query.users.findFirst({ where: eq(users.email, email), columns: { id: true } });
+  // Accepting creates a new user, so an invite for any existing account could
+  // never be used (R3-ONB-07); say so now instead of at the invitee's end.
+  const existingUser = await findAccountByEmail(email);
   if (existingUser) {
     const existingMember = await db.query.organizationMembers.findFirst({
       where: and(eq(organizationMembers.userId, existingUser.id), eq(organizationMembers.orgId, input.orgId)),
       columns: { id: true },
     });
-    if (existingMember) return { ok: false, status: 409, message: "User is already a member" };
+    return { ok: false, status: 409, message: existingMember ? "User is already a member" : ACCOUNT_EXISTS_MESSAGE };
   }
 
   const pending = await db.query.invitations.findFirst({

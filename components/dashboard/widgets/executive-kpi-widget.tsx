@@ -52,13 +52,13 @@ export function ExecutiveKpiWidget() {
       {error ? (
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : isLoading || !data ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {[0, 1, 2].map((i) => (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[0, 1].map((i) => (
             <Skeleton key={i} className="h-16 rounded-md" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
           {kpis.map((k) => (
             <KpiTile key={k.label} {...k} />
           ))}

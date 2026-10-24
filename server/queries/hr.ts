@@ -11,7 +11,6 @@ import {
   payrolls,
   salaryStructures,
   expenses,
-  assets,
   documents,
   performanceReviews,
   goals,
@@ -42,7 +41,6 @@ import type {
   PayrollWithUser,
   SalaryStructure,
   Expense,
-  Asset,
   Document,
   PerformanceReview,
   Goal,
@@ -574,13 +572,6 @@ export async function getExpenses(
     limit,
     totalPages: Math.ceil(total / limit),
   };
-}
-
-export async function getAssets(orgId: string): Promise<Asset[]> {
-  return db.query.assets.findMany({
-    where: eq(assets.orgId, orgId),
-    orderBy: [desc(assets.createdAt)],
-  }) as unknown as Promise<Asset[]>;
 }
 
 export async function getDocuments(

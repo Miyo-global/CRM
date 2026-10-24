@@ -10,6 +10,8 @@ const insertValues = vi.fn();
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/redis", () => ({ redis: null }));
 vi.mock("@/lib/auth", () => ({ auth: () => authMock() }));
+const auditLog = vi.fn();
+vi.mock("@/lib/audit-log", () => ({ createAuditLog: (...a: unknown[]) => (auditLog(...a), Promise.resolve()) }));
 vi.mock("@/lib/inngest/client", () => ({ inngest: { send: () => Promise.resolve() } }));
 vi.mock("@/lib/email", () => ({ sendResignationApprovedEmail: () => Promise.resolve() }));
 vi.mock("next/server", async (orig) => ({
@@ -110,5 +112,34 @@ describe("R2-TERM-05: final sign-off opens a termination record", () => {
     const { PATCH } = await load();
     expect((await PATCH(patch({ decision: "approve" }), params)).status).toBe(200);
     expect(insertValues).not.toHaveBeenCalled();
+  });
+});
+
+describe("R3-ADM-12: resignation steps are audit-logged", () => {
+  it("HR review logs hr.resignation_reviewed with the LWD change", async () => {
+    signIn("ADMIN");
+    findResignation.mockResolvedValue(resignation("PENDING_HR"));
+    const { PATCH } = await import("@/app/api/hr/exit/[resignationId]/hr-review/route");
+    await PATCH(patch({ decision: "approve", lastWorkingDate: "2026-11-30" }), params);
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "hr.resignation_reviewed",
+        metadata: expect.objectContaining({
+          to: "HR_APPROVED",
+          lastWorkingDate: { from: "2026-12-21", to: "2026-11-30" },
+        }),
+      }),
+    );
+  });
+
+  it("final sign-off logs hr.resignation_signed_off", async () => {
+    signIn("CEO");
+    findResignation.mockResolvedValue(resignation("HR_APPROVED"));
+    findTermination.mockResolvedValue({ id: 3 });
+    const { PATCH } = await import("@/app/api/hr/exit/[resignationId]/ceo-review/route");
+    await PATCH(patch({ decision: "approve" }), params);
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "hr.resignation_signed_off", targetId: "5" }),
+    );
   });
 });

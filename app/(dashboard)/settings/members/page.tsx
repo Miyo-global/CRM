@@ -10,6 +10,7 @@ import {
   useResendInvitation,
 } from "@/lib/api/hooks/organization";
 import { useRolesList } from "@/lib/api/hooks/roles";
+import { EMAIL_ADDRESS_SCHEMA, EMAIL_MAX_LENGTH } from "@/lib/utils/email-validation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -121,15 +122,17 @@ function MembersSettingsContent() {
     // `required` alone did nothing here: the browser skips it on a form
     // submitted from a button inside a card, so an empty invite was a silent
     // no-op (QA-0069).
-    const email = inviteEmail.trim();
-    if (!email) {
+    if (!inviteEmail.trim()) {
       setInviteError("Enter the email address to invite.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setInviteError("Enter a valid email address.");
+    // Same rule as the API (R3-INV-10): domain + TLD, 254 total, 64 before @.
+    const parsed = EMAIL_ADDRESS_SCHEMA.safeParse(inviteEmail);
+    if (!parsed.success) {
+      setInviteError(parsed.error.issues[0]?.message ?? "Enter a valid email address");
       return;
     }
+    const email = parsed.data;
     setInviteError(null);
     inviteUser.mutate(
       { email, role: inviteRole },
@@ -189,7 +192,7 @@ function MembersSettingsContent() {
   }, [setPortalAccess]);
 
   const handleToggleInviteForm = useCallback(() => setShowInviteForm((v) => !v), []);
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setInviteEmail(e.target.value), []);
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setInviteEmail(e.target.value); setInviteError(null); }, []);
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     updateParams({ q: e.target.value || null, page: null });
   }, [updateParams]);
@@ -231,7 +234,7 @@ function MembersSettingsContent() {
                   <CardDescription>Send an invitation to join your organization</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleInvite} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                  <form onSubmit={handleInvite} noValidate className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                     <div className="flex-1 space-y-1.5">
                       <Label htmlFor="email" className="text-sm">Email</Label>
                       <Input
@@ -240,6 +243,7 @@ function MembersSettingsContent() {
                         placeholder="user@example.com"
                         value={inviteEmail}
                         onChange={handleEmailChange}
+                      maxLength={EMAIL_MAX_LENGTH}
                         aria-invalid={inviteError ? true : undefined}
                         aria-describedby={inviteError ? "email-error" : undefined}
                         required
@@ -369,7 +373,7 @@ function MembersSettingsContent() {
                 <CardDescription>Send an invitation to join your organization</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleInvite} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                <form onSubmit={handleInvite} noValidate className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                   <div className="flex-1 space-y-1.5">
                     <Label htmlFor="inv-tab-email" className="text-sm">Email</Label>
                     <Input
@@ -378,6 +382,7 @@ function MembersSettingsContent() {
                       placeholder="user@example.com"
                       value={inviteEmail}
                       onChange={handleEmailChange}
+                      maxLength={EMAIL_MAX_LENGTH}
                       aria-invalid={inviteError ? true : undefined}
                       aria-describedby={inviteError ? "inv-tab-email-error" : undefined}
                       required

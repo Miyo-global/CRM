@@ -5,6 +5,7 @@ import { z } from "zod";
 import { onboardEmployeeInputSchema } from "../../../lib/validations/hr";
 
 import { Input } from "../../ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import {
   FormControl,
   FormDescription,
@@ -130,24 +131,11 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
-                  <Input
-                    type="number"
+                  <MoneyInput
                     inputMode="numeric"
-                    min={1}
-                    max={100_000_000}
-                    step={1}
                     placeholder="25000"
-                    value={field.value ?? ""}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === "") {
-                        field.onChange(undefined);
-                        return;
-                      }
-                      const digitsOnly = raw.replace(/\D/g, "");
-                      if (!digitsOnly) return;
-                      field.onChange(Number(digitsOnly));
-                    }}
+                    value={field.value as number | undefined}
+                    onChange={field.onChange}
                     onBlur={field.onBlur}
                     name={field.name}
                     ref={field.ref}

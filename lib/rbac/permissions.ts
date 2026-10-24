@@ -1,3 +1,5 @@
+import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
+
 export type Permission = {
   name: string;
   resource: string;
@@ -362,7 +364,10 @@ const ATS_PERMISSIONS: Permission[] = [
   { name: "ats:settings:manage", resource: "ats:settings", action: "manage", description: "Stages, refuse reasons, templates and retention" },
 ];
 
-PERMISSIONS.push(...ATS_PERMISSIONS);
+// R3-INV-01: with the ATS off (the default) its permissions are not in the
+// catalogue, so the roles page and matrix never list an "ATS" group and no role
+// is granted them. Migration 0190 drops the names already stored on roles.
+if (ATS_MODULE_ENABLED) PERMISSIONS.push(...ATS_PERMISSIONS);
 
 /** Everything a recruiter does day to day. */
 export const ATS_RECRUITER_PERMISSIONS: string[] = ATS_PERMISSIONS.map((p) => p.name).filter(
@@ -452,13 +457,13 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   RECRUITER: [
     ...EMPLOYEE_SELF_SERVICE,
-    ...ATS_RECRUITER_PERMISSIONS,
+    ...(ATS_MODULE_ENABLED ? ATS_RECRUITER_PERMISSIONS : []),
     "hr:employees:view",
   ],
 
   HR: [
     ...EMPLOYEE_SELF_SERVICE,
-    ...ATS_PERMISSIONS.map((p) => p.name),
+    ...(ATS_MODULE_ENABLED ? ATS_PERMISSIONS.map((p) => p.name) : []),
     ...KB_FULL_EXCEPT_PURGE,
     "hr:employees:view",
     "hr:employees:create",

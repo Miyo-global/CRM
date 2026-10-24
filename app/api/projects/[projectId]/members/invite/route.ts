@@ -8,9 +8,10 @@ import { isAdminOrOwner } from "@/lib/constants/roles";
 import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { projectRoleSchema } from "@/lib/projects/project-roles";
 import { createOrgInvitation } from "@/lib/org/create-invitation";
+import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
 
 const inviteSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  email: EMAIL_ADDRESS_SCHEMA,
   role: projectRoleSchema.default("CONTRIBUTOR"),
 }).strict();
 

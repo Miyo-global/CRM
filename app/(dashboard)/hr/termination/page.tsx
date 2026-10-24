@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CharCount } from "@/components/ui/char-count";
+import {
+  TERMINATION_EXPLANATION_MAX,
+  TERMINATION_NOTES_MAX,
+  TERMINATION_REMARKS_MAX,
+} from "@/lib/validations/termination-reasons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +37,9 @@ import { FileUpload } from "@/components/storage/file-upload";
 import {
   useTerminations,
   useCreateTermination,
+  useUpdateTermination,
+  useDeleteTermination,
+  useCancelTermination,
   useSubmitTermination,
   useCompleteTermination,
   useCeoReviewTermination,
@@ -44,7 +53,12 @@ import type { Employee } from "@/types/hr";
 
 import { getErrorMessage } from "@/lib/get-error-message";
 import { isCEO as isCeoRole } from "@/lib/constants/roles";
-import { canManage } from "@/lib/auth/role-change-rules";
+import { canManage, roleHasPermission } from "@/lib/auth/role-change-rules";
+import {
+  blocksNewTermination,
+  MAX_TERMINATION_LEAD_DAYS,
+  terminationDateError,
+} from "@/lib/hr/termination-rules";
 import {
   TERMINATION_STATUSES,
   TERMINATION_STATUS_LABELS,
@@ -58,7 +72,7 @@ import {
   type StatusFilter,
 } from "./_lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
-import { parseCalendarDate } from "@/lib/date-utils";
+import { addDaysToDateString, getTodayString, parseCalendarDate } from "@/lib/date-utils";
 
 export default function TerminationPage() {
   const { data: session } = useSession();
@@ -79,6 +93,13 @@ export default function TerminationPage() {
   const ceoReview = useCeoReviewTermination();
   const sendEmail = useSendTerminationEmail();
   const completeTermination = useCompleteTermination();
+  const updateTermination = useUpdateTermination();
+  const deleteTermination = useDeleteTermination();
+  const cancelTermination = useCancelTermination();
+  // R3-ADM-02: only the termination approver (Super Admin) may backdate.
+  const canBackdate = roleHasPermission(role, "hr:termination:approve");
+  const today = getTodayString();
+  const latestEffectiveDate = addDaysToDateString(today, MAX_TERMINATION_LEAD_DAYS);
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
@@ -96,6 +117,11 @@ export default function TerminationPage() {
   const [evidenceUrls, setEvidenceUrls] = useState<string[]>([]);
 
   const [submitId, setSubmitId] = useState<number | null>(null);
+  // R3-ADM-07: the draft being edited in the create sheet, if any.
+  const [editingRecord, setEditingRecord] = useState<Termination | null>(null);
+  const [deleteRecord, setDeleteRecord] = useState<Termination | null>(null);
+  const [cancelRecord, setCancelRecord] = useState<Termination | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   const [reviewRecord, setReviewRecord] = useState<Termination | null>(null);
   const [reviewDecision, setReviewDecision] = useState<"approve" | "reject" | null>(null);
@@ -114,18 +140,30 @@ export default function TerminationPage() {
 
   const currentUserId = session?.user?.id;
 
+  // R3-ADM-07: nobody with an open termination, or one completed but not yet
+  // effective, is offered again (the API refuses them too).
+  const blockedUserIds = useMemo(
+    () => new Set((terminations ?? []).filter((t) => blocksNewTermination(t, today)).map((t) => t.userId)),
+    [terminations, today],
+  );
+
   const terminableEmployees = useMemo(
     () =>
       employees.filter(
         // R3-ADM-08: same rule the API enforces on create.
-        (emp) => canManage({ userId: currentUserId, role }, { userId: emp.id, role: emp.role }),
+        (emp) =>
+          !blockedUserIds.has(emp.id) &&
+          canManage({ userId: currentUserId, role }, { userId: emp.id, role: emp.role }),
       ),
-    [employees, currentUserId, role],
+    [employees, currentUserId, role, blockedUserIds],
   );
 
   const selectedEmployee = useMemo(
-    () => terminableEmployees.find((e) => e.id === selectedUserId) ?? null,
-    [terminableEmployees, selectedUserId],
+    () =>
+      editingRecord
+        ? { name: editingRecord.employee?.name ?? null, designation: editingRecord.employee?.designation ?? null, role: undefined }
+        : terminableEmployees.find((e) => e.id === selectedUserId) ?? null,
+    [editingRecord, terminableEmployees, selectedUserId],
   );
 
   const employeeOptions = useMemo(
@@ -191,6 +229,7 @@ export default function TerminationPage() {
   }, [terminations]);
 
   const resetCreateForm = useCallback(() => {
+    setEditingRecord(null);
     setSelectedUserId("");
     setSelectedReasons([]);
     setExplanation("");
@@ -213,6 +252,19 @@ export default function TerminationPage() {
     setSelectedReasons((prev) =>
       prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]
     );
+  }, []);
+
+  const openEdit = useCallback((record: Termination) => {
+    setEditingRecord(record);
+    setSelectedUserId(record.userId);
+    setSelectedReasons(record.reasons ?? []);
+    setExplanation(record.detailedExplanation ?? "");
+    setEffectiveDate(String(record.effectiveDate ?? "").slice(0, 10));
+    setNoticePeriodWaived(!!record.noticePeriodWaived);
+    setSeveranceAmount(record.severanceAmount && Number(record.severanceAmount) > 0 ? String(Number(record.severanceAmount)) : "");
+    setInternalNotes(record.internalNotes ?? "");
+    setEvidenceUrls(record.evidenceUrls ?? []);
+    setCreateOpen(true);
   }, []);
 
   const handleCreateSubmit = useCallback(() => {
@@ -242,6 +294,35 @@ export default function TerminationPage() {
     }
     if (!effectiveDate) {
       toast.error("Please set an effective date");
+      return;
+    }
+    const dateError = terminationDateError(effectiveDate, { canBackdate, today });
+    if (dateError) {
+      toast.error(dateError);
+      return;
+    }
+
+    const fields = {
+      reasons: selectedReasons,
+      detailedExplanation: explanation.trim(),
+      effectiveDate,
+      severanceAmount: severanceAmount ? Number(severanceAmount) : undefined,
+      noticePeriodWaived,
+      internalNotes: internalNotes.trim() || undefined,
+      evidenceUrls: evidenceUrls.length > 0 ? evidenceUrls : undefined,
+    };
+    if (editingRecord) {
+      updateTermination.mutate(
+        { id: editingRecord.id, ...fields },
+        {
+          onSuccess: (res) => {
+            toast.success(res.changed?.length ? "Draft updated" : "No changes to save");
+            setCreateOpen(false);
+            resetCreateForm();
+          },
+          onError: (e) => toast.error(getErrorMessage(e)),
+        }
+      );
       return;
     }
 
@@ -279,7 +360,37 @@ export default function TerminationPage() {
     isOtherSelected,
     createTermination,
     resetCreateForm,
+    canBackdate,
+    today,
+    editingRecord,
+    updateTermination,
   ]);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deleteRecord) return;
+    deleteTermination.mutate(deleteRecord.id, {
+      onSuccess: () => {
+        toast.success("Draft deleted");
+        setDeleteRecord(null);
+      },
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
+  }, [deleteRecord, deleteTermination]);
+
+  const handleCancelConfirm = useCallback(() => {
+    if (!cancelRecord) return;
+    cancelTermination.mutate(
+      { id: cancelRecord.id, reason: cancelReason.trim() },
+      {
+        onSuccess: () => {
+          toast.success("Termination cancelled");
+          setCancelRecord(null);
+          setCancelReason("");
+        },
+        onError: (e) => toast.error(getErrorMessage(e)),
+      }
+    );
+  }, [cancelRecord, cancelReason, cancelTermination]);
 
   const handleSubmitForApproval = useCallback(() => {
     if (!submitId) return;
@@ -448,6 +559,12 @@ export default function TerminationPage() {
               }}
               onSendEmail={handleSendEmailOpen}
               onComplete={(id) => setCompleteId(id)}
+              onEdit={openEdit}
+              onDelete={setDeleteRecord}
+              onCancel={(r) => {
+                setCancelReason("");
+                setCancelRecord(r);
+              }}
               isSubmitting={submitTermination.isPending}
               isCompleting={completeTermination.isPending}
             />
@@ -461,16 +578,25 @@ export default function TerminationPage() {
           setCreateOpen(open);
           if (!open) resetCreateForm();
         }}
-        title="New termination"
-        description="Create a termination record. It will be saved as a draft."
+        title={editingRecord ? "Edit draft termination" : "New termination"}
+        description={
+          editingRecord
+            ? "Change the draft before submitting it for approval."
+            : "Create a termination record. It will be saved as a draft."
+        }
         onSubmit={handleCreateSubmit}
-        submitLabel="Save as Draft"
-        isPending={createTermination.isPending}
+        submitLabel={editingRecord ? "Save Changes" : "Save as Draft"}
+        isPending={createTermination.isPending || updateTermination.isPending}
       >
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">
             Employee <span className="text-destructive">*</span>
           </Label>
+          {editingRecord ? (
+            <p className="rounded-md border border-border bg-surface-sunken/60 px-3 py-2 text-sm">
+              {editingRecord.employee?.name ?? "Employee"}
+            </p>
+          ) : (
           <EmployeeAssignCombobox
             employees={employeeOptions}
             value={selectedUserId}
@@ -480,6 +606,7 @@ export default function TerminationPage() {
             ariaLabel="Select employee"
             showUnassigned={false}
           />
+          )}
         </div>
 
         <Separator />
@@ -550,10 +677,11 @@ export default function TerminationPage() {
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={4}
+            maxLength={TERMINATION_EXPLANATION_MAX}
             aria-label="Detailed explanation"
           />
           <p className="text-2xs text-muted-foreground">
-            {explanation.length} / 50 min characters
+            {explanation.length} / 50 min characters (max {TERMINATION_EXPLANATION_MAX})
           </p>
         </div>
 
@@ -565,8 +693,15 @@ export default function TerminationPage() {
             type="date"
             value={effectiveDate}
             onChange={(e) => setEffectiveDate(e.target.value)}
+            min={canBackdate ? undefined : today}
+            max={latestEffectiveDate}
             aria-label="Effective date"
           />
+          <p className="text-2xs text-muted-foreground">
+            {canBackdate
+              ? "Up to one year ahead. As Super Admin you may backdate."
+              : "From today up to one year ahead."}
+          </p>
         </div>
 
         <Separator />
@@ -617,8 +752,10 @@ export default function TerminationPage() {
             value={internalNotes}
             onChange={(e) => setInternalNotes(e.target.value)}
             rows={3}
+            maxLength={TERMINATION_NOTES_MAX}
             aria-label="Internal notes"
           />
+          <CharCount length={internalNotes.length} max={TERMINATION_NOTES_MAX} className="text-2xs" />
         </div>
 
         <Separator />
@@ -687,6 +824,48 @@ export default function TerminationPage() {
           </p>
         </div>
       </HrSheet>
+
+      <ConfirmActionDialog
+        open={deleteRecord !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteRecord(null);
+        }}
+        title="Delete draft termination"
+        description={`Delete the draft termination for ${deleteRecord?.employee?.name ?? "this employee"}? This cannot be undone.`}
+        confirmLabel="Delete Draft"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteTermination.isPending}
+      />
+
+      <ConfirmActionDialog
+        open={cancelRecord !== null}
+        onOpenChange={(open) => {
+          if (!open) setCancelRecord(null);
+        }}
+        title="Cancel termination"
+        description={`Withdraw the termination for ${cancelRecord?.employee?.name ?? "this employee"}? It stays on record as Cancelled and a new one can be started later.`}
+        confirmLabel="Cancel Termination"
+        cancelLabel="Keep"
+        variant="destructive"
+        onConfirm={handleCancelConfirm}
+        isPending={cancelTermination.isPending}
+        confirmDisabled={cancelReason.trim().length < 3}
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="termination-cancel-reason" className="text-sm font-medium">
+            Reason <span className="text-destructive">*</span>
+          </Label>
+          <Textarea
+            id="termination-cancel-reason"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="Why is this termination withdrawn?"
+          />
+        </div>
+      </ConfirmActionDialog>
 
       <ConfirmActionDialog
         open={submitId !== null}
@@ -850,8 +1029,10 @@ export default function TerminationPage() {
                 value={ceoRemarks}
                 onChange={(e) => setCeoRemarks(e.target.value)}
                 rows={3}
+                maxLength={TERMINATION_REMARKS_MAX}
                 aria-label="Super Admin remarks"
               />
+              <CharCount length={ceoRemarks.length} max={TERMINATION_REMARKS_MAX} className="text-2xs" />
             </div>
           </>
         )}

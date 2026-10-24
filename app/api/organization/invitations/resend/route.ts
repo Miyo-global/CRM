@@ -8,6 +8,7 @@ import { sendInvitationEmail } from "@/lib/email";
 import { hashToken } from "@/lib/secret-crypto";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { createAuditLog } from "@/lib/audit-log";
 
 const schema = z.object({ invitationId: z.string().min(1) });
 
@@ -56,6 +57,15 @@ export async function POST(req: NextRequest) {
       role: invitation.role,
       expiresOn: newExpiresAt,
     });
+
+    void createAuditLog({
+      action: "org.invitation_resent",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: invitation.id,
+      targetType: "invitation",
+      metadata: { email: invitation.email, role: invitation.role, expiresAt: newExpiresAt.toISOString() },
+    }).catch(() => undefined);
 
     return ok({ success: true });
   });

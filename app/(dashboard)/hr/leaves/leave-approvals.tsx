@@ -500,7 +500,7 @@ export function LeaveApprovalsContent({
                   You have {ownPendingRequests.length} pending leave request{ownPendingRequests.length === 1 ? "" : "s"} awaiting another approver.
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  HR cannot approve their own leave — another HR member or the CEO must action those.
+                  HR cannot approve their own leave — another HR member or the Super Admin must action those.
                 </p>
               </div>
             )}

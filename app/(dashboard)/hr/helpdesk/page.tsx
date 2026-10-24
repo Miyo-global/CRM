@@ -55,15 +55,11 @@ import { Plus, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-reac
 import { formatDistanceToNow } from "date-fns";
 import type { TicketPriority, TicketStatus, HelpdeskTicket } from "@/types/hr";
 import { formatIST } from "@/lib/date-utils";
+import { TICKET_STATUSES, TICKET_STATUS_LABELS, ticketStatusLabel } from "@/lib/labels";
 
 const STATUS_OPTIONS: { value: TicketStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Status" },
-  { value: "TODO", label: "To Do" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "IN_REVIEW", label: "In Review" },
-  { value: "DONE", label: "Done" },
-  { value: "CLOSED", label: "Closed" },
-  { value: "CANCELLED", label: "Cancelled" },
+  ...TICKET_STATUSES.map((value) => ({ value, label: TICKET_STATUS_LABELS[value] })),
 ];
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
@@ -306,7 +302,7 @@ export default function HelpdeskPage() {
         <StatsStrip
           items={[
             { label: "Total", value: stats.total, icon: Ticket },
-            { label: "Open", value: stats.open, icon: AlertCircle, tone: "warning" },
+            { label: TICKET_STATUS_LABELS.TODO, value: stats.open, icon: AlertCircle, tone: "warning" },
             { label: "In Progress", value: stats.inProgress, icon: Clock, tone: "info" },
             { label: "Resolved", value: stats.resolved, icon: CheckCircle2, tone: "success" },
           ]}
@@ -376,7 +372,7 @@ export default function HelpdeskPage() {
                           </TableCell>
                           <TableCell>
                             <StatusPill tone={statusTone(ticket.status)} dot>
-                              {(ticket.status ?? "TODO").replace("_", " ")}
+                              {ticketStatusLabel(ticket.status)}
                             </StatusPill>
                           </TableCell>
                           <TableCell>

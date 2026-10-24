@@ -598,20 +598,9 @@ export async function getPersonalDashboard(orgId: string, userId: string) {
 }
 
 export async function getExecutiveDashboard(orgId: string) {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - 7);
-
-  const [mrrRows, pipelineRows, headcountRows, newLeadsRows, activeProjectsRows, totalLeadsRows, wonLeadsRows] = await Promise.all([
-    db
-      .select({ total: sum(deals.value) })
-      .from(deals)
-      .where(and(eq(deals.orgId, orgId), eq(deals.stage, "WON"), gte(deals.updatedAt, monthStart))),
-    db
-      .select({ total: sum(deals.value) })
-      .from(deals)
-      .where(and(eq(deals.orgId, orgId), or(eq(deals.stage, "LEAD"), eq(deals.stage, "CONTACTED"), eq(deals.stage, "PROPOSAL"), eq(deals.stage, "NEGOTIATION")))),
+  // R3-INV-01: the sales figures (MRR, pipeline, new leads, conversion) were
+  // computed here for tiles that no longer exist; only these two are shown.
+  const [headcountRows, activeProjectsRows] = await Promise.all([
     db
       .select({ cnt: count() })
       .from(organizationMembers)
@@ -619,26 +608,13 @@ export async function getExecutiveDashboard(orgId: string) {
       .where(and(eq(organizationMembers.orgId, orgId), eq(users.isActive, true))),
     db
       .select({ cnt: count() })
-      .from(leads)
-      .where(and(eq(leads.orgId, orgId), gte(leads.createdAt, weekStart))),
-    db
-      .select({ cnt: count() })
       .from(projects)
       .where(and(eq(projects.orgId, orgId), eq(projects.status, "ACTIVE"), isNull(projects.deletedAt))),
-    db.select({ cnt: count() }).from(leads).where(eq(leads.orgId, orgId)),
-    db.select({ cnt: count() }).from(leads).where(and(eq(leads.orgId, orgId), eq(leads.status, "CONVERTED"))),
   ]);
 
-  const total = Number(totalLeadsRows[0]?.cnt ?? 0);
-  const won = Number(wonLeadsRows[0]?.cnt ?? 0);
-
   return {
-    mrr: Number(mrrRows[0]?.total ?? 0),
-    pipelineValue: Number(pipelineRows[0]?.total ?? 0),
     headcount: Number(headcountRows[0]?.cnt ?? 0),
-    newLeadsThisWeek: Number(newLeadsRows[0]?.cnt ?? 0),
     activeProjects: Number(activeProjectsRows[0]?.cnt ?? 0),
-    conversionRate: total > 0 ? Math.round((won / total) * 100) : 0,
   };
 }
 

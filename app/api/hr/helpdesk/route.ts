@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
           id: ticket.id,
           subject: body.title,
           category: body.category ?? "General",
-          status: "OPEN",
+          status: "TODO",
           eventSummary: `${session.user.name ?? "An employee"} raised a ${(body.priority ?? "MEDIUM").toLowerCase()} priority ticket.`,
         });
       }

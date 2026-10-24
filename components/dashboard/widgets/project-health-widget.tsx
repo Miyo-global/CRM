@@ -17,24 +17,15 @@ export function ProjectHealthWidget() {
       actions={<ViewAllLink href="/projects" ariaLabel="View all projects" />}
     >
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-20 w-full rounded-md" />
-          <Skeleton className="h-20 w-full rounded-md" />
-        </div>
+        <Skeleton className="h-20 w-full rounded-md" />
       ) : error ? (
         <WidgetError error={error} onRetry={() => refetch()} />
       ) : (
-        <dl className="grid grid-cols-2 gap-3">
+        <dl>
           <div className="rounded-md bg-brand-soft p-4">
             <dt className="text-xs text-muted-foreground">Active Projects</dt>
             <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-foreground">
               {data?.activeProjects ?? 0}
-            </dd>
-          </div>
-          <div className="rounded-md bg-surface-sunken p-4">
-            <dt className="text-xs text-muted-foreground">New Leads (7d)</dt>
-            <dd className="mt-1 font-display text-3xl font-extrabold tabular-nums text-foreground">
-              {data?.newLeadsThisWeek ?? 0}
             </dd>
           </div>
         </dl>

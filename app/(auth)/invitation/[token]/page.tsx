@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { useAcceptInvitation } from "@/lib/hooks/auth-hooks";
-import { getPasswordStrength, PASSWORD_REGEX } from "@/lib/password-utils";
+import { getPasswordStrength } from "@/lib/password-utils";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
 import { PasswordConfirmField } from "@/components/auth/password-confirm-field";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, X, Shield } from "lucide-react";
@@ -23,9 +24,8 @@ import { getRoleLabel } from "@/lib/rbac/roles";
 const invitationSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(PASSWORD_REGEX, "Must include uppercase, lowercase, number, and special character"),
+  // The shared policy, so each failed rule shows its own message (R3-ACC-01).
+  password: PASSWORD_ZOD_SCHEMA,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -68,6 +68,11 @@ export default function InvitationPage() {
   const onSubmit = (values: InvitationFormValues) => {
     if (!token || !invitation) {
       toast.error("Invalid invitation");
+      return;
+    }
+    const identityIssue = passwordIdentityIssue(values.password, { email: invitation.email, firstName: values.firstName, lastName: values.lastName });
+    if (identityIssue) {
+      form.setError("password", { message: identityIssue });
       return;
     }
     acceptInvitation.mutate(

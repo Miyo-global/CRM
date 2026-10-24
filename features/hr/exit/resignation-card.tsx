@@ -21,6 +21,7 @@ import { ProgressTimeline } from "./progress-timeline";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
 import { daysBetweenDateStrings, getTodayString } from "@/lib/date-utils";
+import { resignationStatusLabel } from "@/lib/labels";
 
 function statusTone(status: string | null): Tone {
   if (!status) return "neutral";
@@ -98,7 +99,7 @@ export function ResignationCard({
               {r.user?.name ?? "Employee"}
             </p>
             <StatusPill tone={statusTone(r.status)} dot>
-              {r.status}
+              {resignationStatusLabel(r.status)}
             </StatusPill>
             {r.reasonCategory && (
               <Badge variant="outline" className="hidden sm:inline-flex">

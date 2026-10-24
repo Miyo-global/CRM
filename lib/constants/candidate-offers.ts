@@ -16,8 +16,8 @@ export type CandidateOfferStatus = (typeof CANDIDATE_OFFER_STATUSES)[number];
 export const OFFER_STATUS_LABELS: Record<CandidateOfferStatus, string> = {
   DRAFT: "Draft",
   PENDING_CEO: "Pending Super Admin",
-  CEO_APPROVED: "CEO Approved",
-  CEO_REJECTED: "CEO Rejected",
+  CEO_APPROVED: "Approved by Super Admin",
+  CEO_REJECTED: "Rejected by Super Admin",
   SENT: "Sent",
   VIEWED: "Viewed",
   ACCEPTED: "Accepted",

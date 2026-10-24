@@ -42,7 +42,7 @@ export async function generateQRCode(formData: FormData) {
       });
 
       if (!canAccess(user?.role, QR_MANAGER_ROLES)) {
-        return { success: false, error: "Access Denied: Only CEO, HR and Admin can generate QR codes." };
+        return { success: false, error: "Access Denied: Only the Super Admin, HR and Admin can generate QR codes." };
       }
     }
 
@@ -149,7 +149,7 @@ export async function deleteQRCode(id: number) {
       });
 
       if (!canAccess(user?.role, QR_MANAGER_ROLES)) {
-        return { success: false, error: "Access Denied: Only CEO, HR and Admin can delete QR codes." };
+        return { success: false, error: "Access Denied: Only the Super Admin, HR and Admin can delete QR codes." };
       }
     }
 

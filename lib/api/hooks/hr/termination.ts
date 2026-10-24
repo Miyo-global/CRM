@@ -18,7 +18,8 @@ export type TerminationStatus =
   | "APPROVED"
   | "REJECTED"
   | "SENT"
-  | "COMPLETED";
+  | "COMPLETED"
+  | "CANCELLED";
 
 export interface Termination {
   id: number;
@@ -162,5 +163,32 @@ export function useCompleteTermination() {
       void qc.invalidateQueries({ queryKey: terminationKeys.all });
       void qc.invalidateQueries({ queryKey: terminationKeys.detail(id) });
     },
+  });
+}
+
+/** R3-ADM-07: edit a draft; every editable field is sent. */
+export function useUpdateTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: Omit<CreateTerminationInput, "userId"> & { id: number }) =>
+      apiClient.patch<{ success: boolean; changed: string[] }>(`/hr/termination/${id}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
+  });
+}
+
+export function useDeleteTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete<{ success: boolean }>(`/hr/termination/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
+  });
+}
+
+export function useCancelTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
+      apiClient.patch<{ success: boolean }>(`/hr/termination/${id}/cancel`, { reason }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
   });
 }

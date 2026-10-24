@@ -174,7 +174,7 @@ export function RecognitionExportSheet({
 
             <TabsContent value="email" className="mt-4">
               {!canEmailExport ? (
-                <p className="text-sm text-muted-foreground">Only CEO, HR, or Admin can email recognition reports.</p>
+                <p className="text-sm text-muted-foreground">Only the Super Admin, HR or Admin can email recognition reports.</p>
               ) : (
                 <ExportMailFields
                   people={people}

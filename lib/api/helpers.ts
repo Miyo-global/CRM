@@ -15,7 +15,7 @@ import { checkPermission } from "@/lib/rbac/middleware";
 import type { Session } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { z, type ZodSchema } from "zod";
-import { zodErrorMessage } from "./zod-message";
+import { formatZodError } from "./zod-message";
 
 export type AuthSession = Omit<Session, "orgId"> & {
   user: NonNullable<Session["user"]>;
@@ -67,7 +67,7 @@ export function serverError(
   message = GENERIC_ERROR,
 ): NextResponse<never> {
   if (error instanceof z.ZodError) {
-    return err(zodErrorMessage(error), 400);
+    return NextResponse.json(formatZodError(error), { status: 400 }) as NextResponse<never>;
   }
   const errorId = crypto.randomUUID().slice(0, 8);
   logger.error(`${ctx.route} failed`, { errorId, ...ctx, error: error instanceof Error ? { message: error.message, stack: error.stack } : error });
@@ -211,7 +211,7 @@ export async function withAuth<T>(
   } catch (e) {
     if (e instanceof z.ZodError) {
       // Plain words, not Zod's own "expected number, received NaN" (QA-D005).
-      return NextResponse.json({ error: zodErrorMessage(e) }, { status: 400 }) as NextResponse<T>;
+      return NextResponse.json(formatZodError(e), { status: 400 }) as NextResponse<T>;
     }
     throw e;
   }

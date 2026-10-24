@@ -285,18 +285,16 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
             <FormControl>
               <Input
                 placeholder="Auto-generated if blank"
-                maxLength={20}
                 value={field.value ?? ""}
-                onChange={(e) => {
-                  const next = e.target.value.replace(/[^A-Za-z0-9]/g, "").slice(0, 20);
-                  field.onChange(next || undefined);
-                }}
+                // Kept as typed; the schema names the allowed characters. Stripping
+                // symbols here showed "Auto-generated" on Confirm (R3-EMP-04).
+                onChange={(e) => field.onChange(e.target.value || undefined)}
                 onBlur={field.onBlur}
                 name={field.name}
                 ref={field.ref}
               />
             </FormControl>
-            <FormDescription className="text-xs">Leave blank to auto-generate</FormDescription>
+            <FormDescription className="text-xs">Leave blank to auto-generate. 2–20 letters or numbers.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

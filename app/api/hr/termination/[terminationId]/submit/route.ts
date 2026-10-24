@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { terminations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
+import { checkTerminationDate, terminationConflict } from "@/lib/hr/termination-guards";
 import type { NextRequest } from "next/server";
 
 export async function PATCH(
@@ -26,6 +27,16 @@ export async function PATCH(
     if (!existing) return err("Termination not found.", 404);
     if (existing.status !== "DRAFT" && existing.status !== "REJECTED") {
       return err("Only draft or rejected terminations can be submitted.", 400);
+    }
+
+    // R3-ADM-02 / R3-ADM-07: a draft saved earlier (or a rejected one being
+    // resubmitted) is checked again: the date may have passed, and a rejected
+    // one may now sit beside another open termination.
+    const dateError = checkTerminationDate(String(existing.effectiveDate).slice(0, 10), session.user.role);
+    if (dateError) return err(`${dateError} Edit the date first.`, 400);
+    if (existing.status === "REJECTED") {
+      const conflict = await terminationConflict(session.orgId, existing.userId, existing.id);
+      if (conflict) return err(conflict, 409);
     }
 
     const previousStatus = existing.status;

@@ -7,17 +7,19 @@ import { invalidateUserSession } from "@/lib/auth";
 import { requireAuth } from "@/lib/auth/require-auth";
 import bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
-import { PASSWORD_RULES, validatePasswordStrength } from "@/lib/utils/password-validation";
+import { passwordIssue } from "@/lib/utils/password-validation";
 
 export async function resetPassword(password: string) {
   const ctx = await requireAuth();
   if ("error" in ctx) return ctx;
   const session = ctx.session;
 
-  const strength = validatePasswordStrength(password ?? "");
-  if (!strength.valid || (password ?? "").length > PASSWORD_RULES.maxLength) {
-    return { error: strength.missing[0] ?? `Password must be at most ${PASSWORD_RULES.maxLength} characters` };
-  }
+  const me = await db.query.users.findFirst({
+    where: eq(users.id, session.user.id),
+    columns: { email: true, firstName: true, lastName: true, name: true },
+  });
+  const issue = passwordIssue(password ?? "", me ?? {});
+  if (issue) return { error: issue };
 
   try {
      const hashedPassword = await bcrypt.hash(password, 12);

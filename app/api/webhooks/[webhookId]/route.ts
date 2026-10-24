@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { webhookEndpoints } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 
 const updateSchema = z.object({
   url: z.string().url().optional(),
@@ -40,6 +41,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   return withAdmin(async (session) => {
     const input = await parseBody(req, updateSchema);
+    const before = await db.query.webhookEndpoints.findFirst({
+      where: and(eq(webhookEndpoints.id, webhookId), eq(webhookEndpoints.orgId, session.orgId)),
+    });
+    if (!before) return err("Webhook endpoint not found", 404);
     const [updated] = await db
       .update(webhookEndpoints)
       .set({ ...input, updatedAt: new Date() })
@@ -52,6 +57,17 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       .returning();
 
     if (!updated) return err("Webhook endpoint not found", 404);
+    const changes = diffFields(before, input);
+    if (Object.keys(changes).length > 0) {
+      void createAuditLog({
+        action: "webhook.updated",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(webhookId),
+        targetType: "webhook",
+        metadata: { changes },
+      }).catch(() => undefined);
+    }
     const { secret: _secret, ...safe } = updated;
     return ok(safe);
   });
@@ -71,9 +87,17 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
           eq(webhookEndpoints.orgId, session.orgId)
         )
       )
-      .returning({ id: webhookEndpoints.id });
+      .returning({ id: webhookEndpoints.id, url: webhookEndpoints.url });
 
     if (!deleted) return err("Webhook endpoint not found", 404);
+    void createAuditLog({
+      action: "webhook.deleted",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(deleted.id),
+      targetType: "webhook",
+      metadata: { url: deleted.url },
+    }).catch(() => undefined);
     return ok({ success: true });
   });
 }

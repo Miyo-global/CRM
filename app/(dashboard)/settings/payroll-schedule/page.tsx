@@ -219,7 +219,7 @@ export default function PayrollSchedulePage() {
 
         {!canEdit && (
           <p className="text-xs text-muted-foreground">
-            Only CEO or Admin can change the payroll schedule.
+            Only the Super Admin or an Admin can change the payroll schedule.
           </p>
         )}
       </div>

@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { createAuditLog } from "@/lib/audit-log";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { z } from "zod";
 import { redis } from "@/lib/redis";
 import { jobOfficeLocationPresetEntrySchema } from "@/lib/validations/text-rules";
@@ -89,6 +89,20 @@ export async function PATCH(req: NextRequest) {
       }
 
       const input = await parseBody(req, updateSchema);
+
+      // R3-ADM-12: snapshot before any write so the audit entry records only
+      // fields that really changed, with old and new values.
+      const beforeOrg = await db.query.organizations.findFirst({
+        where: eq(organizations.id, session.orgId),
+      });
+      const beforeSettings = (beforeOrg?.settings as Record<string, unknown> | null) ?? {};
+      const before: Record<string, unknown> = {};
+      for (const key of Object.keys(input)) {
+        before[key] =
+          beforeOrg && key in beforeOrg
+            ? (beforeOrg as Record<string, unknown>)[key]
+            : beforeSettings[key];
+      }
 
       if (input.slug) {
         const existing = await db.query.organizations.findFirst({
@@ -200,18 +214,19 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
-      const changedFields = Object.keys(input).filter(
-        (k) => input[k as keyof typeof input] !== undefined
-      );
+      const changes = diffFields(before, input);
+      const changedFields = Object.keys(changes);
 
-      await createAuditLog({
-        action: "settings.updated",
-        userId: session.user.id,
-        orgId: session.orgId,
-        targetId: session.orgId,
-        targetType: "organization",
-        metadata: { changedFields },
-      });
+      if (changedFields.length > 0) {
+        await createAuditLog({
+          action: "settings.updated",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetId: session.orgId,
+          targetType: "organization",
+          metadata: { changedFields, changes },
+        });
+      }
 
       return ok({ success: true });
     } catch (error) {

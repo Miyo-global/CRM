@@ -8,12 +8,9 @@ import {
   bonusOtherReasonInputError,
   bonusOtherReasonSchema,
   createBonusBodySchema,
-  isBonusAmountWithinLimit,
   isBonusType,
   normalizeBonusType,
-  parseBonusAmount,
   validateCreateBonusForm,
-  sanitizeBonusAmountInput,
   sanitizeBonusOtherReasonInput,
 } from "./bonus";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
@@ -202,26 +199,14 @@ describe("bonusOtherReasonSchema", () => {
 });
 
 describe("bonus amount input helpers", () => {
-  it("sanitizes invalid pasted values", () => {
-    expect(sanitizeBonusAmountInput("12e5")).toBe("125");
-    expect(sanitizeBonusAmountInput("--500")).toBe("500");
-    expect(sanitizeBonusAmountInput("99.999")).toBe("99.99");
-    expect(sanitizeBonusAmountInput("100001")).toBe(String(BONUS_MAX_AMOUNT));
-  });
-
-  it("detects over-limit typed values", () => {
-    expect(isBonusAmountWithinLimit("100000")).toBe(true);
-    expect(isBonusAmountWithinLimit("100001")).toBe(false);
-    expect(isBonusAmountWithinLimit("213712313123123")).toBe(false);
-    expect(isBonusAmountWithinLimit("")).toBe(true);
-  });
-
-  it("returns user-facing amount errors", () => {
+  it("returns user-facing amount errors and never rewrites the text (R3-EMP-03)", () => {
     expect(bonusAmountInputError("100001")).toBe(`Amount cannot exceed ${CURRENCY_SYMBOL}${BONUS_MAX_AMOUNT.toLocaleString(DEFAULT_LOCALE)}`);
-    expect(bonusAmountInputError("1e5")).toContain("exponential");
-    expect(bonusAmountInputError("-10")).toContain("exponential");
+    expect(bonusAmountInputError("1e5")).toBe("Amount must be a number, e.g. 1500");
+    expect(bonusAmountInputError("-10")).toBe("Amount must be greater than 0");
+    expect(bonusAmountInputError("--500")).toBe("Amount must be a number, e.g. 1500");
+    expect(bonusAmountInputError("99.999")).toBe("Amount can have at most 2 decimal places");
     expect(bonusAmountInputError("50000")).toBeNull();
-    expect(parseBonusAmount("50000.25")).toBe(50000.25);
+    expect(bonusAmountInputError("")).toBeNull();
   });
 });
 

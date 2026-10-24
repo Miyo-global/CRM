@@ -49,6 +49,7 @@ export const TERMINATION_STATUSES = [
   "REJECTED",
   "SENT",
   "COMPLETED",
+  "CANCELLED",
 ] as const;
 
 export type TerminationStatusValue = (typeof TERMINATION_STATUSES)[number];
@@ -60,4 +61,5 @@ export const TERMINATION_STATUS_LABELS: Record<TerminationStatusValue, string> =
   REJECTED: "Rejected",
   SENT: "Email Sent",
   COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };

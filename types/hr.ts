@@ -261,6 +261,7 @@ export interface Asset {
   location: string | null;
   notes: string | null;
   assignmentCount?: number;
+  assignedUser?: { id: string; name: string | null } | null;
   createdAt: Date | string | null;
   updatedAt: Date | string | null;
 }

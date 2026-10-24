@@ -23,14 +23,13 @@ import { notifyByRoles } from "@/server/actions/create-notification";
 import { ROLES } from "@/lib/constants/roles";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { afterResponse } from "@/lib/after-response";
+import { findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
 
 export async function POST(req: NextRequest) {
   return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
     const body = await parseBody(req, onboardEmployeeInputSchema);
 
-    const existing = await db.query.users.findFirst({
-      where: (u, { eq }) => eq(u.email, body.email.toLowerCase()),
-    });
+    const existing = await findAccountByEmail(body.email);
     if (existing) {
       return err("A user with this email already exists.", 409);
     }
@@ -131,6 +130,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let revokedInvitations = 0;
     const newUser = await db.transaction(async (tx) => {
       const [u] = await tx
         .insert(users)
@@ -167,6 +167,10 @@ export async function POST(req: NextRequest) {
         userId: u.id,
         role: body.role || "EMPLOYEE",
       });
+
+      // R3-ONB-07: the wizard consumes any pending invite for this address,
+      // so the old "Join Organization" link cannot create a second account.
+      revokedInvitations = await revokePendingInvitations(session.orgId, u.email, tx);
 
       // Keep the department_members join table in sync with users.departmentId
       // so the department delete-guard and headcount stay accurate (D18).
@@ -250,7 +254,7 @@ export async function POST(req: NextRequest) {
         orgId: session.orgId,
         targetId: newUser.id,
         targetType: "employee",
-        metadata: { email: body.email, name: `${body.firstName} ${body.lastName}`, role: body.role, designation: body.designation },
+        metadata: { email: body.email, name: `${body.firstName} ${body.lastName}`, role: body.role, designation: body.designation, revokedInvitations },
       });
     } catch (auditErr) {
       logger.error("Failed to write onboard audit log", { userId: newUser.id, error: auditErr instanceof Error ? auditErr.message : "Unknown" });
@@ -271,6 +275,6 @@ export async function POST(req: NextRequest) {
     }
 
     // MIYO-0663: the ATS needs the new user id to close the application.
-    return ok({ success: true, userId: newUser.id });
+    return ok({ success: true, userId: newUser.id, revokedInvitations });
   }, req);
 }

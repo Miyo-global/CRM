@@ -48,6 +48,7 @@ interface PermissionGroupRowProps {
   isExpanded: boolean;
   enabledCount: number;
   isCEO: boolean;
+  readOnly: boolean;
   builtIn: Set<string>;
   rolePermissions: Set<string>;
   onToggleGroup: (name: string) => void;
@@ -55,7 +56,7 @@ interface PermissionGroupRowProps {
   onTogglePermission: (name: string) => void;
 }
 
-function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO, builtIn, rolePermissions, onToggleGroup, onToggleAll, onTogglePermission }: PermissionGroupRowProps) {
+function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO, readOnly, builtIn, rolePermissions, onToggleGroup, onToggleAll, onTogglePermission }: PermissionGroupRowProps) {
   const allEnabled = enabledCount === perms.length;
   const someEnabled = enabledCount > 0 && !allEnabled;
   const handleToggleGroup = useCallback(() => onToggleGroup(groupName), [groupName, onToggleGroup]);
@@ -80,7 +81,7 @@ function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO,
           </button>
         </th>
         <td className="w-28 px-3 py-2 text-center">
-          {!isCEO && (
+          {!isCEO && !readOnly && (
             <Checkbox
               checked={allEnabled ? true : someEnabled ? "indeterminate" : false}
               onCheckedChange={handleToggleAll}
@@ -96,7 +97,7 @@ function PermissionGroupRow({ groupName, perms, isExpanded, enabledCount, isCEO,
             key={perm.name}
             perm={perm}
             enabled={isCEO || rolePermissions.has(perm.name)}
-            isCEO={isCEO || builtIn.has(perm.name)}
+            isCEO={isCEO || readOnly || builtIn.has(perm.name)}
             onToggle={onTogglePermission}
           />
         ))}
@@ -109,9 +110,11 @@ interface PermissionMatrixProps {
   role: Role;
   permissionGroups: [string, Permission[]][];
   onUpdate: (updated: Role) => void;
+  /** Without roles:manage the matrix is view-only; PATCH /api/roles/[id] refuses too. */
+  readOnly?: boolean;
 }
 
-export function PermissionMatrix({ role, permissionGroups, onUpdate }: PermissionMatrixProps) {
+export function PermissionMatrix({ role, permissionGroups, onUpdate, readOnly = false }: PermissionMatrixProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const updateRole = useUpdateRole();
 
@@ -212,6 +215,7 @@ export function PermissionMatrix({ role, permissionGroups, onUpdate }: Permissio
               builtIn={builtIn}
               enabledCount={perms.filter((p) => rolePermissions.has(p.name)).length}
               isCEO={isCEO}
+              readOnly={readOnly}
               rolePermissions={rolePermissions}
               onToggleGroup={toggleGroup}
               onToggleAll={toggleAllInGroup}

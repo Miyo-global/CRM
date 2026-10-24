@@ -328,7 +328,7 @@ export function getLeaveCeoDelegateEscalationEmailTemplate(
       pending at <strong>${sOrg}</strong> after more than <strong>2 days</strong>.
     </p>
     <p class="email-text">
-      As CEO, you also have permission to approve and reject leave requests. Would you please review
+      As Super Admin, you also have permission to approve and reject leave requests. Would you please review
       ${count > 1 ? "them" : "it"} if you are available?
     </p>
     ${buildLeaveEscalationTable(rows)}

@@ -5,7 +5,7 @@ import { createAuditLog } from "@/lib/audit-log";
 import { db } from "@/lib/db";
 import { rolePermissions, roles } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -38,8 +38,9 @@ export async function PATCH(
 ) {
   return withAuth(async (session) => {
     try {
-      if (!isAdminOrOwner(session.user.role)) {
-        return err("Only CEO or Admin can update roles", 403);
+      // Same gate as creating a role (R3-ROLE-01): only roles:manage edits one.
+      if (!roleHasPermission(session.user.role, "roles:manage")) {
+        return err("Only the Super Admin can edit roles.", 403);
       }
 
       const { roleId: id } = await params;
@@ -84,8 +85,8 @@ export async function DELETE(
 ) {
   return withAuth(async (session) => {
     try {
-      if (!isAdminOrOwner(session.user.role)) {
-        return err("Only CEO or Admin can delete roles", 403);
+      if (!roleHasPermission(session.user.role, "roles:manage")) {
+        return err("Only the Super Admin can delete roles.", 403);
       }
 
       const { roleId: id } = await params;

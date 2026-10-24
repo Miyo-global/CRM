@@ -34,6 +34,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
 import { formatIST } from "@/lib/date-utils";
 import { auditActionLabel } from "@/lib/audit-action-label";
+import { auditTargetTypeLabel } from "@/lib/labels";
 import {
   PAGE_SIZE_OPTIONS,
   parsePaginationFromSearchParams,
@@ -99,8 +100,8 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
           {auditActionLabel(log.action)}
         </StatusPill>
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground capitalize whitespace-nowrap">
-        {log.targetType ?? ""}
+      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+        {log.targetType ? auditTargetTypeLabel(log.targetType) : ""}
         {log.targetId && (
           <span className="text-2xs text-subtle-foreground tabular-nums"> #{log.targetId}</span>
         )}
@@ -157,7 +158,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
           {log.targetType && (
             <DetailField label="Target">
               <p className="text-sm">
-                <span className="font-medium capitalize">{log.targetType}</span>
+                <span className="font-medium">{auditTargetTypeLabel(log.targetType)}</span>
                 {log.targetId && <span className="text-muted-foreground"> #{log.targetId}</span>}
               </p>
             </DetailField>
@@ -303,7 +304,7 @@ function AuditLogContent() {
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
             {targetTypes?.map((t) => (
-              <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+              <SelectItem key={t} value={t}>{auditTargetTypeLabel(t)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -388,8 +389,8 @@ function AuditLogContent() {
                             {auditActionLabel(log.action)}
                           </StatusPill>
                           {log.targetType && (
-                            <span className="text-xs capitalize text-muted-foreground">
-                              {log.targetType}
+                            <span className="text-xs text-muted-foreground">
+                              {auditTargetTypeLabel(log.targetType)}
                               {log.targetId && <span className="tabular-nums"> #{log.targetId}</span>}
                             </span>
                           )}

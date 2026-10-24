@@ -239,7 +239,7 @@ export function RequisitionForm({
             onValueChange={(v) => set("approverId", v)}
           >
             <SelectTrigger id="approver">
-              <SelectValue placeholder="The CEO, unless you choose" />
+              <SelectValue placeholder="The Super Admin, unless you choose" />
             </SelectTrigger>
             <SelectContent>
               {people.map((p) => (

@@ -106,7 +106,7 @@ export async function PATCH(
         metadata: { reason: "isActive=false outside the termination workflow" },
       }).catch(() => {});
       return err(
-        "Use the termination workflow to deactivate an employee (so CEO approval, full-and-final settlement, and asset returns are recorded).",
+        "Use the termination workflow to deactivate an employee (so Super Admin approval, full-and-final settlement, and asset returns are recorded).",
         400
       );
     }
