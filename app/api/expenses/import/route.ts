@@ -165,7 +165,7 @@ export async function POST(req: Request) {
 
     const isAdmin = member.role === "CEO" || member.role === "HR" || member.role === "ADMIN";
     if (!isAdmin) {
-      return NextResponse.json({ error: "Only HR and CEO can import expenses" }, { status: 403 });
+      return NextResponse.json({ error: "Only HR, Admin or the Super Admin can import expenses" }, { status: 403 });
     }
 
     const formData = await req.formData();

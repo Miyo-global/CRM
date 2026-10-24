@@ -42,7 +42,8 @@ export const useMyIssues = (
   return useQuery<MyIssue[], Error>({
     queryKey: queryKeys.dashboard.myIssues(userId),
     queryFn: () =>
-      apiClient.get<MyIssue[]>("/dashboard/my-issues", { userId, limit: "20" }),
+      // The server reads the user from the session (R3-NET-03); userId only keys the cache.
+      apiClient.get<MyIssue[]>("/dashboard/my-issues", { limit: "20" }),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     ...options,
@@ -345,16 +346,12 @@ export interface PersonalDashboard {
 }
 
 export interface ExecutiveDashboard {
-  mrr: number;
-  pipelineValue: number;
   headcount: number;
-  newLeadsThisWeek: number;
   activeProjects: number;
-  conversionRate: number;
 }
 
 export interface ManagerDashboard {
-  teamAttendanceToday: { userId: string; name: string; status: "present" | "absent" | "leave" }[];
+  teamAttendanceToday: { userId: string; name: string; status: "present" | "absent" | "leave" | "off" }[];
   teamAttendanceCounts: { total: number; present: number; absent: number; leave: number };
   pendingLeaveApprovals: number;
   pendingExpenseApprovals: number;

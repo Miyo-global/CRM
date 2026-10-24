@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo, memo } from "react";
 import { useSession } from "next-auth/react";
-import { format } from "date-fns";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
@@ -21,7 +20,7 @@ import {
   useDeleteHoliday,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
-import { getTodayString, formatDisplayDate, fromISODateString } from "@/lib/date-utils";
+import { formatDisplayDate, fromISODateString, getTodayString } from "@/lib/date-utils";
 import { createHolidaySchema, HOLIDAY_MESSAGE_MAX, HOLIDAY_NAME_MAX } from "@/lib/validations/holidays";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { cn } from "@/lib/utils";
@@ -191,14 +190,14 @@ export default function HolidaysPage() {
   const [createConfirmOpen, setCreateConfirmOpen] = useState(false);
 
   const [name, setName]           = useState("");
-  const [date, setDate]           = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate]           = useState(getTodayString());
   const [type, setType]           = useState<HolidayType>("PUBLIC");
   const [message, setMessage]     = useState("");
   const [isHalfDay, setIsHalfDay] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
-    setName(""); setDate(format(new Date(), "yyyy-MM-dd"));
+    setName(""); setDate(getTodayString());
     setType("PUBLIC"); setMessage(""); setIsHalfDay(false);
     setFormError(null);
   }, []);

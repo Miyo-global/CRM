@@ -12,6 +12,7 @@ import { useUpdateProfile } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { resolveImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 
 export function SettingsProfile() {
   const { data: session, update: updateSession } = useSession();
@@ -24,6 +25,7 @@ export function SettingsProfile() {
 
   const [editName, setEditName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const updateProfile = useUpdateProfile();
 
@@ -32,6 +34,10 @@ export function SettingsProfile() {
   const name = session?.user?.name || "";
   const email = session?.user?.email || "";
   const initials = name.charAt(0).toUpperCase() || "U";
+  // R3-EMP-06: the name is HR record data (payslips, letters). Only a role that
+  // may edit employee records (the same permission PATCH /api/hr/employees/:id
+  // enforces) gets the editor; everyone else sees it read-only.
+  const canEditName = roleHasPermission(session?.user?.role, "hr:employees:update");
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,7 +130,11 @@ export function SettingsProfile() {
   }, [session, updateProfile, updateSession]);
 
   const handleSaveName = useCallback(() => {
-    if (!session?.user?.id || !editName.trim()) return;
+    if (!session?.user?.id) return;
+    if (!editName.trim()) {
+      setNameError("Name is required");
+      return;
+    }
     updateProfile.mutate(
       { userId: session.user.id, name: editName.trim() },
       {
@@ -146,6 +156,7 @@ export function SettingsProfile() {
 
   const handleEditNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEditName(e.target.value);
+    setNameError(null);
   }, []);
 
   const handleNameKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -153,10 +164,14 @@ export function SettingsProfile() {
     if (e.key === "Escape") setIsEditingName(false);
   }, [handleSaveName]);
 
-  const handleCancelEditName = useCallback(() => setIsEditingName(false), []);
+  const handleCancelEditName = useCallback(() => {
+    setIsEditingName(false);
+    setNameError(null);
+  }, []);
 
   const handleStartEditName = useCallback(() => {
     setEditName(name);
+    setNameError(null);
     setIsEditingName(true);
   }, [name]);
 
@@ -234,7 +249,13 @@ export function SettingsProfile() {
 
         <div className="space-y-1.5">
           <Label htmlFor="display-name" className="text-sm font-medium">Display name</Label>
-          {isEditingName ? (
+          {!canEditName ? (
+            <>
+              <Input id="display-name" value={name} disabled className="bg-muted/40" />
+              <p className="text-xs text-muted-foreground">Contact HR to change your name.</p>
+            </>
+          ) : isEditingName ? (
+            <>
             <div className="flex gap-1.5">
               <Input
                 id="display-name"
@@ -244,12 +265,14 @@ export function SettingsProfile() {
                 placeholder="Your full name"
                 autoFocus
                 className="flex-1"
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? "display-name-error" : undefined}
               />
               <Button
                 size="icon"
                 className="shrink-0"
                 onClick={handleSaveName}
-                disabled={updateProfile.isPending || !editName.trim()}
+                disabled={updateProfile.isPending}
                 loading={updateProfile.isPending}
                 aria-label="Save name"
               >
@@ -265,6 +288,10 @@ export function SettingsProfile() {
                 <X aria-hidden />
               </Button>
             </div>
+            {nameError && (
+              <p id="display-name-error" role="alert" className="text-xs text-destructive">{nameError}</p>
+            )}
+            </>
           ) : (
             <button
               type="button"

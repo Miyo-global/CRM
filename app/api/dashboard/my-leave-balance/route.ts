@@ -2,6 +2,7 @@ import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveBalances, leaveTypes } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { uniqueLeaveBalances } from "@/lib/hr/unique-leave-balances";
 
 export async function GET() {
   return withAuth(async (session) => {
@@ -10,6 +11,7 @@ export async function GET() {
     const data = await db
       .select({
         id: leaveBalances.id,
+        leaveTypeId: leaveBalances.leaveTypeId,
         balance: leaveBalances.balance,
         year: leaveBalances.year,
         leaveTypeName: leaveTypes.name,
@@ -25,6 +27,6 @@ export async function GET() {
         )
       );
 
-    return ok(data);
+    return ok(uniqueLeaveBalances(data));
   });
 }

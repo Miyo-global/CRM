@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 import {
   Sheet,
   SheetContent,
@@ -137,7 +137,7 @@ export function LogTimeDialog({ trigger, defaultOpen = false }: LogTimeDialogPro
       ticketId: undefined as unknown as number,
       hours: 0,
       description: "",
-      date: new Date(),
+      date: getTodayString(),
       workLink: "",
     },
   });
@@ -266,8 +266,9 @@ export function LogTimeDialog({ trigger, defaultOpen = false }: LogTimeDialogPro
                         <FormLabel>Date</FormLabel>
                         <FormControl>
                           <DatePicker
-                            value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                            onChange={(v) => field.onChange(v ? new Date(v) : new Date())}
+                            value={field.value}
+                            toDate={parseCalendarDate(getTodayString())}
+                            onChange={(v) => field.onChange(v || getTodayString())}
                           />
                         </FormControl>
                         <FormMessage />

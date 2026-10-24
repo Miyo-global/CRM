@@ -77,6 +77,7 @@ import {
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
 import { plural } from "@/lib/format-utils";
 import { DatePicker } from "@/components/ui/date-picker";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 const REVIEW_TONE: Record<string, Tone> = { COMPLETED: "success", IN_PROGRESS: "info" };
 const CYCLE_TONE: Record<string, Tone> = { ACTIVE: "success", COMPLETED: "neutral" };
@@ -463,7 +464,7 @@ function GoalsTab() {
                   </DropdownMenu>
                 </div>
                 <p className="line-clamp-2 break-words text-sm font-semibold leading-tight text-foreground" title={goal.title}>{goal.title}</p>
-                {goal.endDate && <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums"><Calendar className="size-3.5" />Due {format(new Date(goal.endDate), "MMM d, yyyy")}</p>}
+                {goal.endDate && <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums"><Calendar className="size-3.5" />Due {format(parseCalendarDate(goal.endDate), "MMM d, yyyy")}</p>}
                 <div className="mt-auto space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Progress</span>

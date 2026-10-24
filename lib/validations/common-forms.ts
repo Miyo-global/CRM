@@ -50,6 +50,9 @@ export const positiveAmount = z.coerce
   .positive("Amount must be greater than zero")
   .max(999_999_999, "Amount is too large");
 
+/** Helpdesk reply / internal note (R3-LEN-01). */
+export const HELPDESK_COMMENT_MAX = 5000;
+
 export const helpdeskTicketSchema = z.object({
   title: cleanRequiredText("Title", 200, 3),
   description: z

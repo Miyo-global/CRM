@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
@@ -24,7 +25,7 @@ export async function GET() {
 
     const data = await db.query.policyAcknowledgments.findMany({
       where: and(...conditions),
-      with: { document: true, user: true },
+      with: { document: true, user: USER_CARD },
       orderBy: [desc(policyAcknowledgments.createdAt)],
     });
     return ok(data);

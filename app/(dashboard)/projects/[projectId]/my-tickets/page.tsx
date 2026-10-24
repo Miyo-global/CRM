@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ticketKey } from "@/lib/projects/ticket-key";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -203,7 +204,7 @@ export default function MyTicketsPage({ params }: PageProps) {
                     </TableCell>
                     <TableCell className="text-xs tabular-nums text-muted-foreground">
                       {ticket.dueDate
-                        ? format(new Date(ticket.dueDate), "MMM d")
+                        ? format(parseCalendarDate(ticket.dueDate), "MMM d")
                         : ""}
                     </TableCell>
                   </TableRow>

@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DepartmentCombobox } from "@/components/hr/department-combobox";
 import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
@@ -109,7 +110,7 @@ export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: 
     clearErrors,
   ]);
 
-  const { data: employeesData } = useHrEmployees();
+  const { data: employeesData } = useHrEmployees({ fields: "picker" });
   const managerOptions = useMemo(() => {
     const list: Employee[] = Array.isArray(employeesData)
       ? employeesData
@@ -281,24 +282,11 @@ export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: 
             <FormItem>
               <FormLabel>Monthly Salary (₹)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
+                <MoneyInput
                   inputMode="numeric"
-                  min={1}
-                  max={100_000_000}
-                  step={1}
                   placeholder="25000"
-                  value={field.value ?? ""}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    if (raw === "") {
-                      field.onChange(undefined);
-                      return;
-                    }
-                    const digitsOnly = raw.replace(/\D/g, "");
-                    if (!digitsOnly) return;
-                    field.onChange(Number(digitsOnly));
-                  }}
+                  value={field.value as number | undefined}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}

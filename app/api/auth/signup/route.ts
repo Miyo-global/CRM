@@ -12,7 +12,7 @@ import { hashToken } from "@/lib/secret-crypto";
 import { addDays } from "date-fns";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { zodErrorMessage } from "@/lib/api/zod-message";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { afterResponse } from "@/lib/after-response";
 
 const signupSchema = z.object({
@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const input = signupSchema.parse(body);
+    const identityIssue = passwordIdentityIssue(input.password, input);
+    if (identityIssue) return NextResponse.json({ error: identityIssue }, { status: 400 });
 
     const existing = await db.query.users.findFirst({
       where: (u, { eq }) => eq(u.email, input.email.toLowerCase()),

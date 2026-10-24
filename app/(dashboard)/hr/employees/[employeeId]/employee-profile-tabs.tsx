@@ -13,6 +13,7 @@ import {
 import { useHrDocuments, useHrLeaveApprovals } from "@/lib/api/hooks/hr";
 import { useHrEmployeePayslips } from "@/lib/api/hooks/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 /**
  * The Documents, Leave and Payslips tabs on an employee profile (B7). Each one
@@ -37,7 +38,8 @@ function TabShell({
 
 function dateText(value: string | Date | null | undefined): string {
   if (!value) return "—";
-  const date = typeof value === "string" ? new Date(value) : value;
+  // A "YYYY-MM-DD" leave date stays on its day west of UTC (R3-HR-07).
+  const date = parseCalendarDate(value);
   return Number.isNaN(date.getTime()) ? "—" : format(date, "d MMM yyyy");
 }
 

@@ -1,9 +1,12 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody, parseQuery } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit-log";
 import { jobRoles, departments } from "@/lib/db/schema";
 import { and, asc, eq, or, isNull } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+// R3-HR-05: the job-role catalog is managed by Admins and the Super Admin
+// only, here and in the Add-employee wizard (same rule as /settings/job-roles).
+import { canManageJobRoles } from "@/lib/constants/roles";
 import { z } from "zod";
 
 const JOB_ROLE_TITLE_MIN = 2;
@@ -77,8 +80,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
-      return err("Only Admins and Owners can create job roles.", 403);
+    if (!canManageJobRoles(session.user.role)) {
+      return err("Only Admins and the Super Admin can create job roles.", 403);
     }
 
     const body = await parseBody(req, createSchema);
@@ -111,6 +114,14 @@ export async function POST(req: NextRequest) {
           .update(jobRoles)
           .set({ isActive: true, title })
           .where(and(eq(jobRoles.id, match.id), eq(jobRoles.orgId, session.orgId)));
+        void createAuditLog({
+          action: "hr.job_role_created",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetId: String(match.id),
+          targetType: "job_role",
+          metadata: { title, departmentId, reactivated: true },
+        }).catch(() => undefined);
         return ok({ success: true, id: match.id, reactivated: true });
       }
       return err("A job role with this name already exists for this scope.", 409);
@@ -126,6 +137,15 @@ export async function POST(req: NextRequest) {
         createdById: session.user.id,
       })
       .returning({ id: jobRoles.id });
+
+    void createAuditLog({
+      action: "hr.job_role_created",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(created?.id),
+      targetType: "job_role",
+      metadata: { title, departmentId },
+    }).catch(() => undefined);
 
     return ok({ success: true, id: created?.id });
   });

@@ -5,7 +5,6 @@ import {
   FileText,
   LayoutTemplate,
   Library,
-  Search,
   Share2,
   Star,
   Trash2,
@@ -15,7 +14,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   KB_PRIVATE,
-  KB_SEARCH,
   KB_SHARED,
   KB_SPACES,
   KB_TEMPLATES,
@@ -32,10 +30,12 @@ interface WikiNavItem {
   view?: string;
 }
 
-/** KB-0068: the fixed part of the wiki sidebar, above the page tree. */
+/**
+ * KB-0068: the fixed part of the wiki sidebar, above the page tree. Search is
+ * the Quick find button in the chrome above (⌘K), not a page (R3-KB-01).
+ */
 const ITEMS: WikiNavItem[] = [
   { label: "Wiki home", href: KNOWLEDGE_BASE, icon: FileText },
-  { label: "Search", href: KB_SEARCH, icon: Search },
   { label: "Recent", href: `${KNOWLEDGE_BASE}?view=recent`, icon: Clock, view: "recent" },
   {
     label: "Favourites",

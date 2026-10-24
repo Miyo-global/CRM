@@ -59,6 +59,15 @@ export const kbPageSchema = kbPageSummarySchema.extend({
 });
 export type KbPage = z.infer<typeof kbPageSchema>;
 
+/** GET /api/knowledge/pages/:id wraps the page with what the caller may do. */
+export const kbPageDetailSchema = z.object({
+  page: kbPageSchema,
+  capabilities: z.object({ comment: z.boolean(), edit: z.boolean(), manage: z.boolean() }),
+  spaceArchived: z.boolean().optional(),
+  isFavorite: z.boolean().optional(),
+});
+export type KbPageDetail = z.infer<typeof kbPageDetailSchema>;
+
 /** Every list endpoint pages with a cursor, never an offset. */
 export function kbCollection<T extends z.ZodTypeAny>(item: T) {
   return z.object({

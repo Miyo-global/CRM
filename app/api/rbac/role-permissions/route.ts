@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { rolePermissions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { checkPermission } from "@/lib/rbac/middleware";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -56,6 +57,10 @@ export async function POST(req: NextRequest) {
       );
 
       if (!hasAccess) return err("Permission denied", 403);
+      // Granting a permission to a role is a role edit: Super Admin only (R3-ROLE-01).
+      if (!roleHasPermission(user?.role ?? session.user.role, "roles:manage")) {
+        return err("Only the Super Admin can edit role permissions.", 403);
+      }
 
       const body = await req.json();
       const input = updateSchema.parse(body);

@@ -15,6 +15,8 @@ import { comboboxTriggerClassName } from "@/components/ui/searchable-select";
 import { apiClient } from "@/lib/api-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { canManageJobRoles } from "@/lib/constants/roles";
 
 export interface JobRole {
   id: number;
@@ -118,12 +120,18 @@ export function JobRoleCombobox({
     return active.filter((r) => r.title.toLowerCase().includes(q));
   }, [roles, search]);
 
+  // R3-INV-05: a new org starts with no titles; say so instead of a bare "not found".
+  const catalogEmpty = !roles.some((r) => r.isActive !== false);
+
   const exactMatch = useMemo(
     () => roles.some((r) => r.title.toLowerCase() === search.trim().toLowerCase()),
     [roles, search],
   );
 
-  const canAdd = allowCreate && search.trim().length >= 2 && !exactMatch && !createRole.isPending;
+  // R3-HR-05: same permission as /settings/job-roles; the API enforces it too.
+  const actorRole = useSession().data?.user?.role;
+  const mayCreate = allowCreate && canManageJobRoles(actorRole);
+  const canAdd = mayCreate && search.trim().length >= 2 && !exactMatch && !createRole.isPending;
 
   useEffect(() => {
     if (open) {
@@ -200,7 +208,7 @@ export function JobRoleCombobox({
         <div className="flex flex-col gap-1 border-b border-border p-2">
           <Input
             ref={inputRef}
-            placeholder="Search or add job title..."
+            placeholder={mayCreate ? "Search or add job title..." : "Search job titles..."}
             value={search}
             onChange={handleSearchChange}
             onKeyDown={handleSearchKeyDown}
@@ -231,7 +239,13 @@ export function JobRoleCombobox({
               <p className="py-6 text-center text-sm text-muted-foreground">
                 {search.trim().length === 1
                   ? "Type at least 2 characters."
-                  : "No job role found. Type to search or add a new one."}
+                  : catalogEmpty
+                    ? mayCreate
+                      ? "No job titles in the catalog yet. Type a title above to add the first one; it is saved for everyone."
+                      : "No job titles in the catalog yet. Ask an Admin to add them in Settings > Job Roles."
+                  : mayCreate
+                    ? "No job role found. Type to search or add a new one."
+                    : "No job role found. Ask an Admin to add this title in Settings > Job Roles."}
               </p>
             )}
           </div>

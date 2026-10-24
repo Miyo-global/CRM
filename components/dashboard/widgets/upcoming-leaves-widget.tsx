@@ -15,6 +15,7 @@ import {
   startOfDay,
 } from "date-fns";
 import { resolveImageUrl } from "@/lib/utils";
+import { getTodayString } from "@/lib/date-utils";
 
 function formatRange(startIso: string, endIso: string) {
   const start = parseISO(startIso);
@@ -29,7 +30,8 @@ function formatRange(startIso: string, endIso: string) {
 }
 
 function leaveTimingLabel(startDate: string, endDate: string) {
-  const today = startOfDay(new Date());
+  // Org-timezone today, so "Starts today" matches the dashboard clock (R3-TZ-01).
+  const today = parseISO(getTodayString());
   const start = startOfDay(parseISO(startDate));
   const end = startOfDay(parseISO(endDate));
   if (start < today) {

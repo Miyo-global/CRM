@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
@@ -34,7 +35,7 @@ export async function GET(
 
     const data = await db.query.resignations.findFirst({
       where: and(eq(resignations.id, resignationId), eq(resignations.orgId, session.orgId)),
-      with: { user: true, checklists: true, hrReviewer: true, ceoReviewer: true },
+      with: { user: USER_CARD, checklists: true, hrReviewer: USER_CARD, ceoReviewer: USER_CARD },
     });
     if (!data) return err("Resignation not found.", 404);
 

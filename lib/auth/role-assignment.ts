@@ -1,11 +1,11 @@
 import { db } from "@/lib/db";
-import { roles } from "@/lib/db/schema";
+import { roles, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { ROLES, isLegacyJobTitleRole } from "@/lib/constants/roles";
 import { SYSTEM_ROLES } from "@/lib/rbac/permissions";
-import { ELEVATED_ROLES } from "./role-change-rules";
+import { ELEVATED_ROLES, canGrantRole, roleHasPermission } from "./role-change-rules";
 
-export { canChangeRoleOf } from "./role-change-rules";
+export { canChangeRoleOf, canGrantRole, canManage } from "./role-change-rules";
 
 export interface RoleAssignmentCheck {
   orgId: string;
@@ -52,6 +52,17 @@ export async function checkRoleAssignment(
     return { message: "You cannot change your own system role.", status: 403 };
   }
 
+  // R3-SA-07: a terminated or deactivated account keeps the role it left with.
+  if (input.targetUserId) {
+    const target = await db.query.users.findFirst({
+      where: eq(users.id, input.targetUserId),
+      columns: { isActive: true },
+    });
+    if (target?.isActive === false) {
+      return { message: "This account is terminated or inactive. Its role cannot be changed.", status: 400 };
+    }
+  }
+
   // QA-AUTH-02: there is exactly one Super Admin, the owner. The role is
   // never handed out or taken away through a role change.
   if (currentRole === ROLES.CEO) {
@@ -67,12 +78,18 @@ export async function checkRoleAssignment(
     return { message: `"${input.newRole}" is retired. Assign Employee and set the designation instead.`, status: 400 };
   }
 
-  const actorIsSuperAdmin = input.actorRole === ROLES.CEO;
-  if (
-    !actorIsSuperAdmin &&
-    (ELEVATED_ROLES.includes(newRole) || (currentRole && ELEVATED_ROLES.includes(currentRole)))
-  ) {
+  const actorManagesRoles = roleHasPermission(input.actorRole, "roles:manage");
+  if (!actorManagesRoles && currentRole && ELEVATED_ROLES.includes(currentRole)) {
     return { message: "Only the Super Admin can grant or remove the Admin and HR roles.", status: 403 };
+  }
+  // R3-HR-02: the same rule the role pickers filter with.
+  if (!canGrantRole(input.actorRole, newRole)) {
+    return {
+      message: ELEVATED_ROLES.includes(newRole)
+        ? "Only the Super Admin can grant or remove the Admin and HR roles."
+        : "You can only assign the Employee role.",
+      status: 403,
+    };
   }
 
   return null;

@@ -25,7 +25,7 @@ export async function PATCH(
 
     if (!isPayrollApprover(session.user.role)) {
       return err(
-        "Only the CEO or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it.",
+        "Only the Super Admin or an Admin can approve payrolls. This payroll stays in DRAFT until one of them approves it.",
         403,
       );
     }

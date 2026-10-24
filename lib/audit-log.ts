@@ -17,6 +17,24 @@ export type AuditAction =
   | "hr.employee_updated"
   | "hr.employee_terminated"
   | "hr.termination_refused"
+  | "hr.employee_rehired"
+  // R3-ADM-12: lifecycle and admin changes that were not logged.
+  | "hr.resignation_submitted"
+  | "hr.resignation_reviewed"
+  | "hr.resignation_signed_off"
+  | "hr.resignation_withdrawn"
+  | "hr.termination_updated"
+  | "hr.termination_deleted"
+  | "hr.termination_cancelled"
+  | "hr.job_role_created"
+  | "hr.job_role_updated"
+  | "hr.job_role_deleted"
+  | "org.invitation_resent"
+  | "org.invitation_revoked"
+  | "webhook.created"
+  | "webhook.updated"
+  | "webhook.deleted"
+  | "user.login_blocked"
   | "hr.employee_onboarded"
   | "hr.salary_changed"
   | "hr.salary_revised"
@@ -124,6 +142,50 @@ export type AuditAction =
   | "kb.settings.updated"
   | "kb.share_link.created"
   | "kb.share_link.revoked";
+
+/**
+ * R3-ADM-12: listed in the audit-log Action filter even before the first
+ * event of that kind exists, so a reviewer can see they are tracked.
+ */
+export const ALWAYS_LISTED_AUDIT_ACTIONS: readonly AuditAction[] = [
+  "hr.resignation_submitted",
+  "hr.resignation_reviewed",
+  "hr.resignation_signed_off",
+  "hr.resignation_withdrawn",
+  "hr.termination_updated",
+  "hr.termination_deleted",
+  "hr.termination_cancelled",
+  "hr.job_role_created",
+  "hr.job_role_updated",
+  "hr.job_role_deleted",
+  "org.invitation_resent",
+  "org.invitation_revoked",
+  "webhook.created",
+  "webhook.updated",
+  "webhook.deleted",
+  "user.deactivated",
+];
+
+/**
+ * Only the fields whose value really changed, with old and new values
+ * (R3-ADM-12). Values of keys that look secret are redacted.
+ */
+export function diffFields(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): Record<string, { from: unknown; to: unknown }> {
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+  for (const key of Object.keys(after)) {
+    if (after[key] === undefined) continue;
+    const from = before[key] ?? null;
+    const to = after[key] ?? null;
+    if (JSON.stringify(from) === JSON.stringify(to)) continue;
+    changes[key] = /secret|password|token|key$/i.test(key)
+      ? { from: "[redacted]", to: "[redacted]" }
+      : { from, to };
+  }
+  return changes;
+}
 
 interface AuditLogEntry {
   action: AuditAction;

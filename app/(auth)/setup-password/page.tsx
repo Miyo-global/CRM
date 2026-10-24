@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { getPasswordStrength } from "@/lib/password-utils";
-import { PASSWORD_RULES, PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_RULES, PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
 import { PasswordInput } from "@/components/auth/password-input";
 import Link from "next/link";
@@ -80,6 +80,12 @@ function SetupPasswordContent() {
   });
 
   const handleSubmit = useCallback(async (values: FormValues) => {
+    // R3-SET-01: the server re-checks; this saves a round trip.
+    const identityIssue = passwordIdentityIssue(values.password, { email: tokenInfo?.email, name: tokenInfo?.name });
+    if (identityIssue) {
+      form.setError("password", { message: identityIssue });
+      return;
+    }
     setIsSubmitting(true);
     try {
       await apiClient.post("/auth/reset-password", {
@@ -93,7 +99,7 @@ function SetupPasswordContent() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [token, router]);
+  }, [token, router, tokenInfo, form]);
 
   if (!token) {
     return (

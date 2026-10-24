@@ -653,21 +653,28 @@ export function LeaveRequestRejectSheet({
           <SheetTitle className="font-display text-lg font-bold">Rejection reason</SheetTitle>
         </SheetHeader>
         <div className="flex-1 px-6 py-5">
+          {/* Required, as for expenses: the API refuses an empty one (R3-HR-06). */}
           <Textarea
-            placeholder="Reason (optional)"
+            placeholder="E.g. Insufficient leave balance, conflicting schedule..."
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             className="min-h-20"
             aria-label="Rejection reason"
+            aria-required="true"
+            maxLength={500}
           />
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Required. The employee sees this reason on their request.
+          </p>
         </div>
         <SheetFooter>
           <Button variant="ghost" onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button
             variant="destructive"
             loading={isPending}
+            disabled={isPending || rejectReason.trim().length === 0}
             onClick={() => {
-              onConfirm(rejectReason);
+              onConfirm(rejectReason.trim());
               setRejectReason("");
             }}
           >

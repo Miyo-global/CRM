@@ -18,7 +18,7 @@ import { sendDataExportEmail } from "@/lib/hr/send-export-email";
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only CEO, HR, or Admin can email attendance reports.", 403);
+      return err("Only the Super Admin, HR or Admin can email attendance reports.", 403);
     }
 
     let body;

@@ -173,13 +173,15 @@ function EmployeeTableBody({
           ))}
         </ul>
         <div className="hidden min-h-0 flex-1 overflow-y-auto md:block" role="region" aria-label="Employee directory table">
+            {/* 768-1279px: ID, Role and Email give way so Department, Joining date,
+                Status and Actions stay on screen (R3-RSP-02). */}
             <Table>
               <TableHeader className="sticky top-0 z-sticky bg-card">
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Name</TableHead>
-                  <TableHead>Employee ID</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead hideBelow="xl">Employee ID</TableHead>
+                  <TableHead hideBelow="2xl">Email</TableHead>
+                  <TableHead hideBelow="xl">Role</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Joining Date</TableHead>
                   <TableHead>Status</TableHead>
@@ -225,7 +227,7 @@ function EmployeeTableBody({
                         </Link>
                       </TableCell>
 
-                      <TableCell className="whitespace-nowrap font-mono text-sm text-muted-foreground">
+                      <TableCell hideBelow="xl" className="whitespace-nowrap font-mono text-sm text-muted-foreground">
                         {user.employeeId?.trim() ? (
                           user.employeeId
                         ) : (
@@ -233,11 +235,11 @@ function EmployeeTableBody({
                         )}
                       </TableCell>
 
-                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      <TableCell hideBelow="2xl" className="whitespace-nowrap text-sm text-muted-foreground">
                         {user.email}
                       </TableCell>
 
-                      <TableCell>
+                      <TableCell hideBelow="xl">
                         <Badge variant="outline" className="whitespace-nowrap">
                           {roleLabel}
                         </Badge>

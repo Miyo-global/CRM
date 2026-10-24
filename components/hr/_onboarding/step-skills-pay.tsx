@@ -5,6 +5,7 @@ import { z } from "zod";
 import { onboardEmployeeInputSchema } from "../../../lib/validations/hr";
 
 import { Input } from "../../ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import {
   FormControl,
   FormDescription,
@@ -130,24 +131,11 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
-                  <Input
-                    type="number"
+                  <MoneyInput
                     inputMode="numeric"
-                    min={1}
-                    max={100_000_000}
-                    step={1}
                     placeholder="25000"
-                    value={field.value ?? ""}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === "") {
-                        field.onChange(undefined);
-                        return;
-                      }
-                      const digitsOnly = raw.replace(/\D/g, "");
-                      if (!digitsOnly) return;
-                      field.onChange(Number(digitsOnly));
-                    }}
+                    value={field.value as number | undefined}
+                    onChange={field.onChange}
                     onBlur={field.onBlur}
                     name={field.name}
                     ref={field.ref}
@@ -164,7 +152,9 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
             </FormItem>
           )}
         />
-        {salaryEntered > 0 && (
+        {/* Hidden while the amount is invalid: an out-of-range salary rendered a
+            nonsense breakdown with negative tax (R3-ONB-08). */}
+        {salaryEntered > 0 && !form.formState.errors.monthlySalary && (
           <div className="mt-4 rounded-lg border bg-surface-sunken/40 p-4 text-sm tabular-nums">
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <span className="text-muted-foreground">Basic Pay:</span>

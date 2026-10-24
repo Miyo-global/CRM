@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getDisplayName, getInitials, ROLE_LABELS } from "./hr-types";
 import type { TerminatedEmployee } from "@/types/hr/employees";
+import { formatCalendarDate, formatIST } from "@/lib/date-utils";
 
 interface TerminatedEmployeeTableProps {
   employees: TerminatedEmployee[];
@@ -28,7 +28,7 @@ export function TerminatedEmployeeTable({ employees }: TerminatedEmployeeTablePr
   return (
     <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="overflow-x-auto p-0">
-        <Table className="min-w-[760px]">
+        <Table className="min-w-[880px]">
           <caption className="sr-only">Terminated employees</caption>
           <TableHeader>
             <TableRow>
@@ -36,7 +36,8 @@ export function TerminatedEmployeeTable({ employees }: TerminatedEmployeeTablePr
               <TableHead scope="col" className="w-36">Employee ID</TableHead>
               <TableHead scope="col" className="w-40">Department</TableHead>
               <TableHead scope="col" className="w-36">Role</TableHead>
-              <TableHead scope="col" className="w-40">Terminated</TableHead>
+              <TableHead scope="col" className="w-40">Effective date</TableHead>
+              <TableHead scope="col" className="w-40">Deactivated</TableHead>
               <TableHead scope="col" className="w-20 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -64,9 +65,10 @@ export function TerminatedEmployeeTable({ employees }: TerminatedEmployeeTablePr
                     {employee.designation ?? ROLE_LABELS[employee.role] ?? employee.role}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-                    {employee.terminatedAt
-                      ? format(new Date(employee.terminatedAt), "MMM d, yyyy")
-                      : ""}
+                    {formatCalendarDate(employee.effectiveDate)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
+                    {formatIST(employee.terminatedAt, { hour: undefined, minute: undefined })}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" asChild>

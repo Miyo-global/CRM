@@ -105,8 +105,10 @@ export async function GET(req: NextRequest) {
           columns: { id: true },
         }),
       ]);
+      // Not a manager: nothing to approve. An empty list, not a 403, so the
+      // Leaves page loads cleanly for every employee (R3-EMP-07).
       if (!directReport && !routedRequest) {
-        return err("Only managers and admins can access team leave requests.", 403);
+        return ok({ pending: [], all: [] });
       }
     }
 

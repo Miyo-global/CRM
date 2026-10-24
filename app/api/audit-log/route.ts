@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAdmin, ok, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
-import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
+import { eq, desc, and, gte, lte, or, ilike, sql } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   return withAdmin(async (session) => {
@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const targetType = params.get("targetType") ?? undefined;
     const dateFrom = params.get("dateFrom") ?? undefined;
     const dateTo = params.get("dateTo") ?? undefined;
+    const q = params.get("q")?.trim().slice(0, 200) || undefined;
     const offset = (page - 1) * pageSize;
 
     const conditions = [eq(auditLogs.orgId, session.orgId)];
@@ -23,6 +24,24 @@ export async function GET(req: NextRequest) {
       const end = new Date(dateTo);
       end.setHours(23, 59, 59, 999);
       conditions.push(lte(auditLogs.createdAt, end));
+    }
+
+    // R3-ADM-09: free-text search over actor, action, entity and metadata.
+    if (q) {
+      const escaped = q.replace(/[\\%_]/g, (c) => `\\${c}`);
+      const pattern = `%${escaped}%`;
+      // "leave approved" (the shown label) also finds the code hr.leave_approved.
+      const actionPattern = `%${escaped.replace(/\s+/g, "\\_")}%`;
+      conditions.push(
+        or(
+          ilike(users.name, pattern),
+          ilike(users.email, pattern),
+          ilike(auditLogs.action, actionPattern),
+          ilike(auditLogs.targetType, pattern),
+          ilike(auditLogs.targetId, pattern),
+          sql`${auditLogs.metadata}::text ILIKE ${pattern}`,
+        )!,
+      );
     }
 
     const where = and(...conditions);
@@ -51,6 +70,7 @@ export async function GET(req: NextRequest) {
       db
         .select({ count: sql<number>`count(*)::int` })
         .from(auditLogs)
+        .leftJoin(users, eq(auditLogs.userId, users.id))
         .where(where),
     ]);
 

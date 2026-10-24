@@ -21,6 +21,13 @@ _axios.interceptors.response.use(
       const data = error.response?.data as { error?: string; errorId?: string } | undefined;
       if (data?.error) {
         error.message = data.errorId ? `${data.error} (ref ${data.errorId})` : data.error;
+      } else {
+        // Never show Axios' "Request failed with status code 500" (R3-PRJ-04).
+        error.message = !error.response
+          ? "Could not reach the server. Check your connection and try again."
+          : error.response.status >= 500
+            ? "Something went wrong. Please try again."
+            : "The request could not be completed.";
       }
     }
     return Promise.reject(error);

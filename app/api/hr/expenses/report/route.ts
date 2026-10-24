@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { expenses, users } from "@/lib/db/schema";
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
         .groupBy(expenses.status),
       db.query.expenses.findMany({
         where: and(...conditions, or(eq(expenses.status, "APPROVED"), eq(expenses.status, "PAID"))),
-        with: { user: true },
+        with: { user: USER_CARD },
         orderBy: [desc(sql`CAST(${expenses.amount} AS DECIMAL)`)],
         limit: 10,
       }),

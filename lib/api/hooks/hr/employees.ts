@@ -34,6 +34,8 @@ export function useCreateDepartment() {
 }
 
 export type HrEmployeesQueryParams = {
+  /** "picker": id, name, image, department only (R3-NET-01). */
+  fields?: "picker";
   page?: number;
   limit?: number;
   search?: string;
@@ -98,10 +100,10 @@ export function useToggleDashboardAccess() {
 export function useSetEmployeeActive() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
-      apiClient.patch<{ success: boolean; isActive: boolean }>(
+    mutationFn: ({ userId, isActive, reason }: { userId: string; isActive: boolean; reason?: string }) =>
+      apiClient.patch<{ success: boolean; isActive: boolean; rehired?: boolean }>(
         `/hr/employees/${userId}/active`,
-        { isActive },
+        { isActive, reason },
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hr.all });
@@ -148,7 +150,7 @@ export function useOnboardEmployee() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: OnboardEmployeeInput) =>
-      apiClient.post<{ success: boolean; userId?: string }>("/hr/employees/onboard", data),
+      apiClient.post<{ success: boolean; userId?: string; employeeId?: string; welcomeEmailSent?: boolean }>("/hr/employees/onboard", data),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
   });

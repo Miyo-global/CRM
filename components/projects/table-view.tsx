@@ -16,6 +16,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import type { Tone } from "@/lib/design/tones";
 import { TicketTypeIcon } from "./shared/ticket-type-icon";
 import { PriorityBadge } from "./shared/priority-badge";
+import { formatCalendarDate } from "@/lib/date-utils";
 
 interface Ticket {
   id: number;
@@ -112,7 +113,7 @@ export function TableView({ tickets, onTicketClick }: TableViewProps) {
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {ticket.dueDate
-                    ? new Date(ticket.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                    ? formatCalendarDate(ticket.dueDate, { month: "short", day: "numeric" }, "en-US")
                     : ""}
                 </TableCell>
               </TableRow>

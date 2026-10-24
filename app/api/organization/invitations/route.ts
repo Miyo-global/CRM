@@ -6,6 +6,7 @@ import { invitations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { z } from "zod";
+import { createAuditLog } from "@/lib/audit-log";
 
 const cancelSchema = z.object({
   invitationId: z.string(),
@@ -35,12 +36,21 @@ export async function DELETE(req: NextRequest) {
       const body = await req.json();
       const { invitationId } = cancelSchema.parse(body);
 
-      await db.delete(invitations).where(
-        and(
-          eq(invitations.id, invitationId),
-          eq(invitations.orgId, session.orgId)
-        )
-      );
+      const [revoked] = await db
+        .delete(invitations)
+        .where(and(eq(invitations.id, invitationId), eq(invitations.orgId, session.orgId)))
+        .returning({ id: invitations.id, email: invitations.email, role: invitations.role });
+
+      if (revoked) {
+        void createAuditLog({
+          action: "org.invitation_revoked",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetId: revoked.id,
+          targetType: "invitation",
+          metadata: { email: revoked.email, role: revoked.role },
+        }).catch(() => undefined);
+      }
 
       return ok({ success: true });
     } catch (error) {

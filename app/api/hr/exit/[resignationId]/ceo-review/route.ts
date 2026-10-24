@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { resignations, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { inngest } from "@/lib/inngest/client";
+import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { isExitFinalApprover } from "@/lib/constants/roles";
@@ -49,6 +50,21 @@ export async function PATCH(
         updatedAt: new Date(),
       })
       .where(eq(resignations.id, resignationId));
+
+    void createAuditLog({
+      action: "hr.resignation_signed_off",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(resignationId),
+      targetType: "resignation",
+      metadata: {
+        employeeId: record.userId,
+        decision: body.decision,
+        from: record.status,
+        to: approved ? "CEO_APPROVED" : "REJECTED",
+        remarks: body.remarks,
+      },
+    }).catch(() => undefined);
 
     // The employee hears about the final decision by email too, not only
     // through Inngest's in-app notice (R3-0009).

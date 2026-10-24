@@ -16,6 +16,7 @@ import {
   type LeaveToday, type UpcomingLeave, type UpcomingHoliday,
   type LeaveBalance, type PendingRequest, type BirthdayEntry,
 } from "@/lib/api/hooks/dashboard";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 const MAX_ROWS = 6;
 
@@ -61,7 +62,7 @@ export function LeavesTodayWidget() {
               <WidgetListRow
                 leading={<PersonAvatar src={l.employeeImage} name={l.employeeName} />}
                 title={l.employeeName}
-                meta={<span className="tabular-nums">Leave · back {format(new Date(l.endDate), "MMM d")}</span>}
+                meta={<span className="tabular-nums">Leave · back {format(parseCalendarDate(l.endDate), "MMM d")}</span>}
               />
             </li>
           ))}
@@ -84,7 +85,7 @@ export function UpcomingLeavesWidget() {
                 title={l.userName}
                 meta={
                   <span className="tabular-nums">
-                    {l.leaveType} · {format(new Date(l.startDate), "MMM d")} – {format(new Date(l.endDate), "MMM d")}
+                    {l.leaveType} · {format(parseCalendarDate(l.startDate), "MMM d")} – {format(parseCalendarDate(l.endDate), "MMM d")}
                   </span>
                 }
               />
@@ -106,7 +107,7 @@ export function UpcomingHolidaysWidget() {
             <li key={h.id}>
               <WidgetListRow
                 title={h.name}
-                meta={<span className="tabular-nums">{format(new Date(h.date), "EEEE, MMM d")}</span>}
+                meta={<span className="tabular-nums">{format(parseCalendarDate(h.date), "EEEE, MMM d")}</span>}
               />
             </li>
           ))}
@@ -149,7 +150,7 @@ export function PendingRequestsWidget() {
                 title={r.leaveTypeName ?? "Leave"}
                 meta={
                   <span className="tabular-nums">
-                    {format(new Date(r.startDate), "MMM d")} – {format(new Date(r.endDate), "MMM d")}
+                    {format(parseCalendarDate(r.startDate), "MMM d")} – {format(parseCalendarDate(r.endDate), "MMM d")}
                   </span>
                 }
                 trailing={<StatusPill tone="warning" dot>Pending</StatusPill>}
@@ -176,7 +177,7 @@ export function BirthdaysWidget() {
                 meta={
                   b.type === "birthday" ? (
                     <span className="inline-flex items-center gap-1">
-                      <Cake className="size-3" aria-hidden="true" /> Birthday {b.date ? format(new Date(b.date), "MMM d") : ""}
+                      <Cake className="size-3" aria-hidden="true" /> Birthday {b.date ? format(parseCalendarDate(b.date), "MMM d") : ""}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1">

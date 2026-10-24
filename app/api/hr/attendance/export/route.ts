@@ -17,7 +17,7 @@ import { buildAttendanceXlsxBuffer } from "@/lib/hr/build-attendance-xlsx";
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only CEO, HR, or Admin can export attendance.", 403);
+      return err("Only the Super Admin, HR or Admin can export attendance.", 403);
     }
 
     let filters;

@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getPasswordStrength } from "@/lib/password-utils";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { PasswordStrengthIndicator } from "@/components/auth/password-strength-indicator";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +67,9 @@ const signupSchema = z.object({
   password: PASSWORD_ZOD_SCHEMA,
   companyName: z.string().min(1, "Company name is required"),
   phone: optionalPhoneSchema,
+}).superRefine((data, ctx) => {
+  const message = passwordIdentityIssue(data.password, data);
+  if (message) ctx.addIssue({ code: "custom", message, path: ["password"] });
 });
 
 type FormValues = z.infer<typeof signupSchema>;

@@ -69,6 +69,7 @@ export async function PUT(
     // The rejection mail states the balance that is still available (QA-0011).
     const balanceRow = existing.leaveTypeId
       ? await db.query.leaveBalances.findFirst({
+          orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
           where: and(
             eq(leaveBalances.userId, existing.userId),
             eq(leaveBalances.leaveTypeId, existing.leaveTypeId),

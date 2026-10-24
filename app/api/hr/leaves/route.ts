@@ -76,7 +76,7 @@ export async function GET() {
         orderBy: [desc(leaveRequests.createdAt)],
         limit: 200,
       }),
-      db.query.users.findFirst({ where: eq(users.id, userId), columns: { joiningDate: true } }),
+      db.query.users.findFirst({ where: eq(users.id, userId), columns: { joiningDate: true, createdAt: true } }),
       db.query.organizationMembers.findFirst({ where: eq(organizationMembers.userId, userId) }),
     ]);
 
@@ -110,7 +110,10 @@ export async function GET() {
       balances,
       types,
       requests,
-      joiningDate: user?.joiningDate ?? null,
+      // No joining date on file (e.g. an invited account): the account's
+      // creation day, so the attendance calendar does not mark the days
+      // before it Absent (R3-EMP-10).
+      joiningDate: user?.joiningDate ?? (user?.createdAt ? formatDateOnly(user.createdAt) : null),
       approvers,
     });
   });

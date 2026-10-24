@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
 import { notInArray } from "drizzle-orm";
@@ -8,6 +9,7 @@ import { z } from "zod";
 import { sendResignationSubmittedEmail } from "@/lib/email";
 import { after } from "next/server";
 import { inngest } from "@/lib/inngest/client";
+import { createAuditLog } from "@/lib/audit-log";
 import { format, parseISO } from "date-fns";
 import type { NextRequest } from "next/server";
 import { isoDateInTimezone } from "@/lib/constants/locale";
@@ -58,7 +60,7 @@ export async function GET() {
 
     const data = await db.query.resignations.findMany({
       where: and(...conditions),
-      with: { user: true, checklists: true, hrReviewer: true, ceoReviewer: true },
+      with: { user: USER_CARD, checklists: true, hrReviewer: USER_CARD, ceoReviewer: USER_CARD },
       orderBy: [desc(resignations.createdAt)],
     });
     return ok(data);
@@ -105,12 +107,21 @@ export async function POST(req: NextRequest) {
       status: "PENDING_HR",
     }).returning();
 
+    void createAuditLog({
+      action: "hr.resignation_submitted",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(resignation.id),
+      targetType: "resignation",
+      metadata: { lastWorkingDate: body.lastWorkingDate, noticePeriodDays: body.noticePeriodDays },
+    }).catch(() => undefined);
+
     const adminMembers = await db.query.organizationMembers.findMany({
       where: and(
         eq(organizationMembers.orgId, session.orgId),
         inArray(organizationMembers.role, ["CEO", "HR"])
       ),
-      with: { user: true },
+      with: { user: USER_CARD },
     });
 
     const submittingUser = await db.query.users.findFirst({

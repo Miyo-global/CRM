@@ -1,21 +1,23 @@
 
 
 import { NextRequest } from "next/server";
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, err, parseBody, isUniqueViolation } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { tickets, timesheets } from "@/lib/db/schema";
 import { eq, and, desc, sql, isNull } from "drizzle-orm";
-import { formatDateOnly } from "@/lib/date-utils";
+import { getTodayString, isDateOnly } from "@/lib/date-utils";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
 
 const logTimeSchema = z.object({
+  // A calendar date, compared with the org-timezone today. `new Date(s) <=
+  // new Date()` read "2026-10-24" as UTC midnight, which is still in the
+  // future at 15:55 New York on the 23rd, so every ticket-panel log failed
+  // (R3-PRJ-01).
   date: z
     .string()
-    .refine((s) => {
-      const d = new Date(s);
-      return !Number.isNaN(d.getTime()) && d <= new Date();
-    }, "Cannot log time for a future date"),
+    .refine(isDateOnly, "Date must be a calendar date (YYYY-MM-DD)")
+    .refine((s) => s <= getTodayString(), "Cannot log time for a future date"),
   hours: z.number().positive().max(24, "Cannot log more than 24 hours per entry"),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
@@ -84,41 +86,54 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const body = await parseBody(req, logTimeSchema);
 
-    const entry = await db.transaction(async (tx) => {
-      await tx
-        .select({ id: tickets.id })
-        .from(tickets)
-        .where(eq(tickets.id, id))
-        .for("update");
+    let entry;
+    try {
+      entry = await db.transaction(async (tx) => {
+        await tx
+          .select({ id: tickets.id })
+          .from(tickets)
+          .where(eq(tickets.id, id))
+          .for("update");
 
-      const [inserted] = await tx
-        .insert(timesheets)
-        .values({
-          orgId: session.orgId!,
-          userId: session.user.id,
-          ticketId: id,
-          date: formatDateOnly(new Date(body.date)),
-          hours: body.hours.toString(),
-          description: body.description ?? null,
-          imageUrl: body.imageUrl?.trim() || null,
-          workLink: body.workLink?.trim() || null,
-        })
-        .returning();
+        const [inserted] = await tx
+          .insert(timesheets)
+          .values({
+            orgId: session.orgId!,
+            userId: session.user.id,
+            ticketId: id,
+            date: body.date,
+            hours: body.hours.toString(),
+            description: body.description ?? null,
+            imageUrl: body.imageUrl?.trim() || null,
+            workLink: body.workLink?.trim() || null,
+          })
+          .returning();
 
-      const totalHours = await tx
-        .select({
-          total: sql<number>`COALESCE(SUM(${timesheets.hours}::numeric), 0)`,
-        })
-        .from(timesheets)
-        .where(eq(timesheets.ticketId, id));
+        const totalHours = await tx
+          .select({
+            total: sql<number>`COALESCE(SUM(${timesheets.hours}::numeric), 0)`,
+          })
+          .from(timesheets)
+          .where(eq(timesheets.ticketId, id));
 
-      await tx
-        .update(tickets)
-        .set({ timeSpent: totalHours[0]?.total?.toString() ?? "0" })
-        .where(eq(tickets.id, id));
+        await tx
+          .update(tickets)
+          .set({ timeSpent: totalHours[0]?.total?.toString() ?? "0" })
+          .where(eq(tickets.id, id));
 
-      return inserted;
-    });
+        return inserted;
+      });
+    } catch (e) {
+      // One work log per person per day (timesheets_org_user_date_unique).
+      // This used to surface as an empty 500 (R3-PRJ-04).
+      if (isUniqueViolation(e)) {
+        return err(
+          `You already logged time for ${body.date}. Edit that entry on Timesheets instead.`,
+          409,
+        );
+      }
+      throw e;
+    }
 
     return ok(entry, 201);
   });

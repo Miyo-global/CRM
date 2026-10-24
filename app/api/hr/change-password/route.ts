@@ -5,7 +5,7 @@ import { users, passwordHistory } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
+import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { revokeAllUserSessions } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
@@ -20,16 +20,18 @@ export async function PATCH(req: NextRequest) {
   return withAuth(async (session) => {
     const body = await req.json() as unknown;
     const parsed = schema.safeParse(body);
-    if (!parsed.success) return err("Invalid input", 400);
+    if (!parsed.success) return err(parsed.error.issues[0]?.message ?? "Invalid input", 400);
 
     const { currentPassword, newPassword } = parsed.data;
 
     const user = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
-      columns: { id: true, password: true },
+      columns: { id: true, password: true, email: true, firstName: true, lastName: true, name: true },
     });
 
     if (!user?.password) return err("User not found", 404);
+    const identityIssue = passwordIdentityIssue(newPassword, user);
+    if (identityIssue) return err(identityIssue, 400);
 
     const isCurrentValid = await bcrypt.compare(currentPassword, user.password);
     if (!isCurrentValid) return err("Current password is incorrect", 400);

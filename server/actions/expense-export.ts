@@ -650,7 +650,7 @@ export async function emailExpenseReport(
   if (isAuthError(authResult)) return { success: false, error: authResult.error };
 
   const { isAdmin, userId, orgId } = authResult;
-  if (!isAdmin) return { success: false, error: "Only HR and CEO can send expense reports" };
+  if (!isAdmin) return { success: false, error: "Only HR, Admin or the Super Admin can send expense reports" };
 
   if (mail.to.length === 0) {
     return { success: false, error: "Add at least one recipient in the To field" };

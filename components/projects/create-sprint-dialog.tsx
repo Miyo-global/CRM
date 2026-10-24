@@ -29,6 +29,7 @@ import { useCreateSprint } from "@/lib/api/hooks/projects";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { addDays, format } from "date-fns";
+import { getTodayString } from "@/lib/date-utils";
 
 const createSprintSchema = z.object({
   name: z.string().min(1, "Sprint name is required"),
@@ -51,7 +52,7 @@ export function CreateSprintDialog({ projectId, trigger }: CreateSprintDialogPro
     resolver: zodResolver(createSprintSchema),
     defaultValues: {
       name: "",
-      startDate: format(new Date(), "yyyy-MM-dd"),
+      startDate: getTodayString(),
       endDate: format(addDays(new Date(), 14), "yyyy-MM-dd"),
       goal: "",
     },

@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil, Plus, Settings, UserX } from "lucide-react";
+import { Pencil, Plus, Settings, Trash2, UserX } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,12 @@ import {
   useTerminationReasons,
   useCreateTerminationReason,
   useUpdateTerminationReason,
+  useDeleteTerminationReason,
   type TerminationReason,
 } from "@/lib/api/hooks/hr";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { terminationReasonFormSchema, TERMINATION_REASON_LABEL_MAX } from "@/lib/validations/termination-reasons";
+import { CharCount } from "@/components/ui/char-count";
 import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
 
 export default function TerminationReasonsSettingsPage() {
@@ -41,6 +44,8 @@ function TerminationReasonsContent() {
   const { data: reasons, isLoading } = useTerminationReasons();
   const createReason = useCreateTerminationReason();
   const updateReason = useUpdateTerminationReason();
+  const deleteReason = useDeleteTerminationReason();
+  const [deleting, setDeleting] = useState<TerminationReason | null>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<TerminationReason | null>(null);
@@ -88,6 +93,16 @@ function TerminationReasonsContent() {
     },
     [updateReason]
   );
+
+  const handleDelete = useCallback(() => {
+    if (!deleting) return;
+    deleteReason.mutate(deleting.id, {
+      onSuccess: () => toast.success("Reason deleted"),
+      // A reason already on a termination comes back 409: deactivate instead.
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
+    setDeleting(null);
+  }, [deleting, deleteReason]);
 
   const handleSubmit = useCallback(() => {
     // A label saved before the 120-character limit stays editable: an unchanged
@@ -165,7 +180,7 @@ function TerminationReasonsContent() {
                 Termination Management
               </Link>
               . Deactivated reasons are hidden from new terminations but kept for
-              historical records.
+              historical records. A reason no termination has used can be deleted.
             </p>
           </div>
           {!isLoading && sorted.length > 0 && (
@@ -229,6 +244,19 @@ function TerminationReasonsContent() {
                       >
                         <Pencil aria-hidden />
                       </Button>
+                      {reason.label !== OTHER_TERMINATION_REASON && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleting(reason)}
+                          disabled={deleteReason.isPending}
+                          aria-label={`Delete ${reason.label}`}
+                        >
+                          <Trash2 aria-hidden />
+                        </Button>
+                      )}
                       <Switch
                         checked={!!reason.isActive}
                         onCheckedChange={(next) =>
@@ -245,6 +273,16 @@ function TerminationReasonsContent() {
           </Table>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title="Delete reason?"
+        description={`"${deleting?.label ?? ""}" will be removed. Reasons already used on a termination cannot be deleted; deactivate them instead.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+      />
 
       <HrSheet
         open={sheetOpen}
@@ -277,6 +315,7 @@ function TerminationReasonsContent() {
             placeholder="e.g. Repeated policy violations"
             onChange={(e) => setLabel(e.target.value)}
           />
+          <CharCount length={label.length} max={TERMINATION_REASON_LABEL_MAX} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="reason-description" className="text-sm font-medium">

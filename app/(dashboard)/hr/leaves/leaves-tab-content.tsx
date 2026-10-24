@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { differenceInCalendarDays, format } from "date-fns";
+import { format } from "date-fns";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useSession } from "next-auth/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,9 +31,10 @@ import { cn } from "@/lib/utils";
 
 import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared";
 import { LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
-import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
+import { ALLOWED_LEAVE_TYPE_NAMES, leaveBalanceRow } from "@/lib/leave-policy";
 import { ExportButton } from "@/components/ui/export-button";
 import { pluralise } from "@/lib/format-utils";
+import { getTodayString } from "@/lib/date-utils";
 
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
@@ -54,9 +56,13 @@ interface LeavesTabContentProps {
   balances: LeaveBalance[];
   myLeaveRequests: LeaveRequest[];
   approvedLeavesThisWeek?: ApprovedLeave[];
+  /** Working days awaiting approval, per leave type name. */
+  pendingDaysByType?: Record<string, number>;
 }
 
-export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContentProps) {
+const NO_PENDING: Record<string, number> = {};
+
+export function LeavesTabContent({ balances, myLeaveRequests, pendingDaysByType = NO_PENDING }: LeavesTabContentProps) {
   const { data: session } = useSession();
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
@@ -75,33 +81,17 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
     () =>
       balances
         .filter((bal) => bal.typeName && ALLOWED_LEAVE_TYPE_NAMES.has(bal.typeName))
-        .map((bal, index) => {
-          const available = parseFloat(bal.balance || "0") || 0;
-          const total = Math.max(available, bal.entitled ?? bal.daysPerYear ?? 0);
-          const pending = myLeaveRequests
-            .filter(
-              (req) =>
-                (req.status ?? "PENDING") === "PENDING" &&
-                req.leaveType?.name === bal.typeName,
-            )
-            .reduce((sum, req) => {
-              const start = new Date(req.startDate);
-              const end = new Date(req.endDate);
-              const days = req.isHalfDay
-                ? 0.5
-                : differenceInCalendarDays(end, start) + 1;
-              return sum + Math.max(days, 0);
-            }, 0);
-          return {
-            key: `${bal.leaveTypeId}-${index}`,
-            name: bal.typeName ?? "Leave",
-            available,
-            total,
-            used: Math.max(total - available, 0),
-            pending,
-          };
-        }),
-    [balances, myLeaveRequests],
+        .map((bal, index) => ({
+          key: `${bal.leaveTypeId}-${index}`,
+          name: bal.typeName ?? "Leave",
+          // Working days, the same count the request dialog uses.
+          ...leaveBalanceRow(
+            parseFloat(bal.balance || "0") || 0,
+            bal.entitled ?? bal.daysPerYear ?? 0,
+            pendingDaysByType[bal.typeName ?? ""] ?? 0,
+          ),
+        })),
+    [balances, pendingDaysByType],
   );
 
   const leaveTypeOptions = useMemo(() => {
@@ -180,12 +170,18 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
     });
   }, [revertMutation]);
 
-  const handleCancelRequest = useCallback((id: number) => {
+  // Cancelling asks first (R3-UX-01): it used to fire straight from the menu.
+  const [cancelId, setCancelId] = useState<number | null>(null);
+  const handleCancelRequest = useCallback((id: number) => setCancelId(id), []);
+  const confirmCancelRequest = useCallback(() => {
+    if (cancelId == null) return;
+    const id = cancelId;
+    setCancelId(null);
     cancelMutation.mutate(id, {
       onSuccess: () => toast.success("Leave request cancelled"),
       onError: (err) => toast.error(err.message || "Failed to cancel"),
     });
-  }, [cancelMutation]);
+  }, [cancelId, cancelMutation]);
 
   // R3-D005: one export control, the same one the rest of the product uses,
   // so the file is named for what it holds and both formats are offered.
@@ -337,7 +333,7 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
                 </PopoverContent>
               </Popover>
               <ExportButton
-                filename={`leave-requests-${format(new Date(), "yyyy-MM-dd")}`}
+                filename={`leave-requests-${getTodayString()}`}
                 sheets={exportSheets}
               />
             </div>
@@ -366,11 +362,21 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
               onRevert={handleRevertRequest}
               onCancel={handleCancelRequest}
               onEditReason={handleEditReason}
-              isMutating={editReasonMutation.isPending}
+              isMutating={editReasonMutation.isPending || cancelMutation.isPending}
             />
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={cancelId != null}
+        onOpenChange={(open) => { if (!open) setCancelId(null); }}
+        title="Cancel leave request"
+        description="This withdraws the request before it is reviewed. You can submit a new one later."
+        confirmLabel="Cancel request"
+        cancelLabel="Keep request"
+        destructive
+        onConfirm={confirmCancelRequest}
+      />
     </div>
   );
 }

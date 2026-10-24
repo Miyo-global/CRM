@@ -59,16 +59,16 @@ export async function GET(
         ? await db.query.users.findFirst({ where: eq(users.id, record.ceoReviewedBy) })
         : null;
       steps.push({
-        label: "CEO Approval",
+        label: "Final sign-off",
         status: record.status === "REJECTED" ? "rejected" : "completed",
-        actor: ceoUser?.name ?? "CEO",
+        actor: ceoUser?.name ?? "Super Admin",
         timestamp: format(new Date(record.ceoReviewedAt), "dd MMM yyyy, HH:mm"),
         remarks: record.ceoRemarks ?? undefined,
       });
     } else if (record.status === "HR_APPROVED") {
-      steps.push({ label: "CEO Approval", status: "active" });
+      steps.push({ label: "Final sign-off", status: "active" });
     } else {
-      steps.push({ label: "CEO Approval", status: "pending" });
+      steps.push({ label: "Final sign-off", status: "pending" });
     }
 
     steps.push({

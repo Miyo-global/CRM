@@ -164,6 +164,9 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
     DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label || "Other";
   const typeTone = TYPE_TONES[doc.type] ?? "neutral";
   const folderLabel = doc.category?.trim() || "Uncategorized";
+  // Upload also stores the folder as a tag; it already shows in the Folder
+  // column, so "#personal documents" next to the name was noise (R3-HR-12).
+  const visibleTags = (doc.tags ?? []).filter((tag) => tag.toLowerCase() !== doc.category?.trim().toLowerCase());
   const isUncategorized = !doc.category?.trim();
   const ownerLabel = getOwnerLabel(doc);
   const ext = (doc.fileName || doc.name).split(".").pop()?.toUpperCase() || "";
@@ -229,8 +232,9 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
             <FileIcon className={`size-4 ${fileConfig.text}`} aria-hidden />
           </div>
           <div className="min-w-0">
+            {/* The name HR typed; the file name is the tooltip (R3-HR-12). */}
             <p className="font-medium text-sm text-foreground truncate" title={doc.fileName || doc.name}>
-              {doc.fileName || doc.name}
+              {doc.name || doc.fileName}
             </p>
             <div className="flex items-center gap-1.5 mt-0.5 text-2xs text-muted-foreground">
               {ext && <span className="font-mono uppercase">{ext}</span>}
@@ -250,9 +254,9 @@ const DocumentRow = memo(function DocumentRow({ doc, assignedCount = 0, onDelete
                 </>
               )}
             </div>
-            {doc.tags && doc.tags.length > 0 && (
+            {visibleTags.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
-                {doc.tags.slice(0, 3).map((tag) => (
+                {visibleTags.slice(0, 3).map((tag) => (
                   <StatusPill
                     key={tag}
                     tone={tag.toLowerCase().includes("confidential") ? "danger" : "neutral"}
@@ -636,7 +640,7 @@ function MoveToFolderSheet({
         <SheetHeader>
           <SheetTitle>Move to folder</SheetTitle>
           <SheetDescription className="truncate">
-            {doc ? doc.fileName || doc.name : ""}
+            {doc ? doc.name || doc.fileName : ""}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-2 py-4">
@@ -780,7 +784,7 @@ function AssignDocumentSheet({
         <SheetHeader>
           <SheetTitle>Assign / Share</SheetTitle>
           <SheetDescription className="truncate">
-            Share {doc ? `"${doc.fileName || doc.name}"` : "this document"} with employees.
+            Share {doc ? `"${doc.name || doc.fileName}"` : "this document"} with employees.
           </SheetDescription>
         </SheetHeader>
         <div className="relative mt-4">

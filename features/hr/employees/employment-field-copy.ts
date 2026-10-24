@@ -4,7 +4,7 @@ export const EMPLOYMENT_FIELD_COPY = {
     label: "Department (Team)",
     placeholder: "Select department",
     description:
-      "The organizational team this person belongs to (e.g. Engineering, Sales). Used for org chart, filters, and reporting—not app permissions.",
+      "The organizational team this person belongs to (e.g. Engineering, Design). Used for org chart, filters, and reporting—not app permissions.",
   },
   designation: {
     label: "Job Title (Designation)",

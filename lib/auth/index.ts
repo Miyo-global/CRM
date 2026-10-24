@@ -93,6 +93,24 @@ export async function revokeAllUserSessions(
   await invalidateUserSession(userId);
 }
 
+/**
+ * R3-SA-15: a deactivated / portal-off account still sees the generic
+ * sign-in failure, but support can tell it apart in the audit log.
+ */
+async function auditLoginBlocked(userId: string, reason: "deactivated" | "portal_off", provider: string): Promise<void> {
+  const membership = await db.query.organizationMembers
+    .findFirst({ where: eq(organizationMembers.userId, userId), columns: { orgId: true } })
+    .catch(() => undefined);
+  await createAuditLog({
+    action: "user.login_blocked",
+    userId,
+    orgId: membership?.orgId,
+    targetId: userId,
+    targetType: "user",
+    metadata: { reason: reason === "deactivated" ? "terminated/deactivated" : "portal off", provider },
+  });
+}
+
 const credentialsProvider = Credentials({
   credentials: {
     email: { label: "Email", type: "email" },
@@ -134,6 +152,7 @@ const credentialsProvider = Credentials({
 
       if (user.isActive === false) {
         logger.warn("Auth: login attempt on deactivated account", { userId: user.id, email: normalizedEmail });
+        await auditLoginBlocked(user.id, "deactivated", "credentials");
         return null;
       }
 
@@ -186,6 +205,7 @@ const credentialsProvider = Credentials({
       // blocks (R2-LC-18).
       if (isPortalAccessBlocked(user.role, user.hasDashboardAccess)) {
         logger.warn("Auth: login with valid credentials on portal-disabled account", { userId: user.id, email: normalizedEmail });
+        await auditLoginBlocked(user.id, "portal_off", "credentials");
         return null;
       }
 
@@ -278,6 +298,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
         if (existingUser.isActive === false) {
           logger.warn("Auth: google sign-in on deactivated account", { userId: existingUser.id, email: existingUser.email });
+          await auditLoginBlocked(existingUser.id, "deactivated", "google");
           return false;
         }
         if (!existingUser.emailVerified) {
@@ -290,6 +311,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
         if (isPortalAccessBlocked(existingUser.role, existingUser.hasDashboardAccess)) {
           logger.warn("Auth: google sign-in on portal-disabled account", { userId: existingUser.id, email: existingUser.email });
+          await auditLoginBlocked(existingUser.id, "portal_off", "google");
           return false;
         }
       }

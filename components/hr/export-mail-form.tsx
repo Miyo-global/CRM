@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import { getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
 import { Loader2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -39,9 +40,10 @@ export function formatExportEmployeeLabel(e: Employee): string {
 }
 
 export function formatExportRole(role: string): string {
+  if (isSystemRole(role)) return getRoleLabel(role);
   return role
     .split("_")
-    .map((t) => (t === "HR" || t === "CEO" ? t : t.charAt(0) + t.slice(1).toLowerCase()))
+    .map((t) => (t === "HR" ? t : t.charAt(0) + t.slice(1).toLowerCase()))
     .join(" ");
 }
 

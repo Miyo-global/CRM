@@ -35,7 +35,7 @@ import { EmployeesLoadingSkeleton } from "@/features/hr/employees/employees-load
 import { HrEmployeeListToolbar } from "@/features/hr/employees/hr-employee-list-toolbar";
 import { HrEmployeePagination, HrEmployeeTable } from "@/features/hr/employees/hr-employee-table";
 import { EmployeeDirectoryCard } from "@/features/hr/employees/employee-directory-card";
-import { getTodayString } from "@/lib/date-utils";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 import { uniqueDepartmentNames } from "@/lib/hr/department-count";
 
 const MIN_SEARCH_LENGTH = 3;
@@ -149,7 +149,7 @@ export default function HRDashboardPage() {
       role: ROLE_LABELS[e.role] ?? e.role,
       department: e.department?.name ?? "Unassigned",
       joiningDate: e.joiningDate
-        ? format(new Date(e.joiningDate), "yyyy-MM-dd")
+        ? format(parseCalendarDate(e.joiningDate), "yyyy-MM-dd")
         : "",
       status: e.isActive !== false ? "Active" : "Inactive",
     })),

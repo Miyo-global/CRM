@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import type { ProjectOverview } from "@/lib/api/hooks/projects/activity";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 type Item = ProjectOverview["attention"]["overdue"][number];
 
@@ -40,7 +41,7 @@ export function AttentionList({
                   <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>
                   {t.dueDate && (
                     <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                      Due {format(new Date(t.dueDate), "MMM d")}
+                      Due {format(parseCalendarDate(t.dueDate), "MMM d")}
                     </span>
                   )}
                 </Link>

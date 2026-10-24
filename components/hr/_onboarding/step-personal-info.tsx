@@ -4,7 +4,7 @@ import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
-import { format, subYears } from "date-fns";
+import { format } from "date-fns";
 import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api-client";
+import { getTodayString, parseCalendarDate, subtractYearsFromDateString } from "@/lib/date-utils";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -25,12 +26,16 @@ interface StepPersonalInfoProps {
 }
 
 const EMAIL_MAX_LENGTH = 254;
-const PERSON_NAME_MAX_LENGTH = 50;
 
 export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
-  const maxDateOfBirth = useMemo(() => subYears(new Date(), MIN_EMPLOYEE_AGE_YEARS), []);
-  const minDateOfBirth = useMemo(() => subYears(new Date(), 100), []);
+  // Org-timezone today: someone turning 18 today is selectable (R3-ONB-06).
+  const maxDateOfBirth = useMemo(
+    () => parseCalendarDate(subtractYearsFromDateString(getTodayString(), MIN_EMPLOYEE_AGE_YEARS)),
+    [],
+  );
+  const minDateOfBirth = useMemo(() => parseCalendarDate(subtractYearsFromDateString(getTodayString(), 100)), []);
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [pendingInvitation, setPendingInvitation] = useState(false);
   const inFlight = useRef<AbortController | null>(null);
 
   // MIYO-0148: a slow check left "Checking email…" on screen for half a
@@ -50,8 +55,9 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
       const timeout = setTimeout(() => controller.abort(), 5000);
 
       setCheckingEmail(true);
+      setPendingInvitation(false);
       try {
-        const res = await apiClient.get<{ exists: boolean }>(
+        const res = await apiClient.get<{ exists: boolean; pendingInvitation?: boolean }>(
           `/hr/employees/check-email?email=${encodeURIComponent(trimmed)}`,
           undefined,
           { signal: controller.signal },
@@ -59,6 +65,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
         if (res.exists) {
           form.setError("email", { message: "This email is already registered in your organisation" });
         }
+        setPendingInvitation(!!res.pendingInvitation);
       } catch {
         // Timed out, cancelled, or offline: let the person carry on.
       } finally {
@@ -83,7 +90,6 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="John"
-                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
@@ -103,7 +109,6 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="Doe"
-                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
@@ -138,6 +143,11 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             </FormControl>
             {checkingEmail && (
               <p id="email-checking" className="text-xs text-muted-foreground">Checking email…</p>
+            )}
+            {pendingInvitation && !checkingEmail && (
+              <p role="status" className="text-xs text-warning-strong">
+                This email has a pending invitation. Onboarding here cancels that invitation.
+              </p>
             )}
             <FormMessage />
           </FormItem>
@@ -185,7 +195,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <DatePicker
                 value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                onChange={(v) => field.onChange(v ? new Date(v) : undefined)}
+                onChange={(v) => field.onChange(v ? parseCalendarDate(v) : undefined)}
                 fromDate={minDateOfBirth}
                 toDate={maxDateOfBirth}
                 fromYear={minDateOfBirth.getFullYear()}

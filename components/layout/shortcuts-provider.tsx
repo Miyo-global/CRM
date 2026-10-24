@@ -9,8 +9,6 @@ import { OPEN_COMMAND_PALETTE_EVENT } from "./command-palette";
 /** `g` + letter targets. First candidate present in the role's nav wins; none present → shortcut does nothing. */
 export const GO_SHORTCUTS: Record<string, { label: string; hrefs: string[] }> = {
   d: { label: "Dashboard", hrefs: ["/dashboard"] },
-  l: { label: "Leads", hrefs: ["/crm/leads"] },
-  p: { label: "Deals (pipeline)", hrefs: ["/crm/deals"] },
   e: { label: "Employees", hrefs: ["/hr"] },
   j: { label: "Projects", hrefs: ["/projects"] },
   c: { label: "Calendar", hrefs: ["/calendar"] },
@@ -96,12 +94,18 @@ export function ShortcutsProvider({ navGroups, onToggleSidebar, children }: Shor
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [navPaths, onToggleSidebar, router]);
 
+  // R3-PRJ-09: the sheet lists only the shortcuts that go somewhere for this role.
+  const availableGoShortcuts = useMemo(
+    () => Object.fromEntries(Object.entries(GO_SHORTCUTS).filter(([, v]) => v.hrefs.some((h) => navPaths.has(h)))),
+    [navPaths],
+  );
+
   const ctx = useMemo(() => ({ openShortcuts: () => setDialogOpen(true) }), []);
 
   return (
     <ShortcutsContext.Provider value={ctx}>
       {children}
-      <ShortcutsDialog open={dialogOpen} onOpenChange={setDialogOpen} goShortcuts={GO_SHORTCUTS} />
+      <ShortcutsDialog open={dialogOpen} onOpenChange={setDialogOpen} goShortcuts={availableGoShortcuts} />
     </ShortcutsContext.Provider>
   );
 }

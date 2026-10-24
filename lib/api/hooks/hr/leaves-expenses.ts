@@ -644,10 +644,11 @@ export function useHrWfhRequests() {
   });
 }
 
-export function useHrPendingWfhRequests() {
+export function useHrPendingWfhRequests(enabled = true) {
   return useQuery({
     queryKey: queryKeys.hr.pendingWfhRequests(),
     queryFn: () => apiClient.get<WfhRequest[]>("/hr/wfh/pending"),
+    enabled,
   });
 }
 

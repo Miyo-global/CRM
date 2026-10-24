@@ -269,7 +269,7 @@ export default function PayrollPage() {
         onError: (error) => {
           if (isAxiosError(error) && error.response?.status === 403) {
             toast.error(getErrorMessage(error), {
-              description: "Only the CEO or an Admin can approve payrolls. It stays in DRAFT until one of them approves it.",
+              description: "Only the Super Admin or an Admin can approve payrolls. It stays in DRAFT until one of them approves it.",
             });
             return;
           }

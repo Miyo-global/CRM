@@ -10,6 +10,7 @@ import {
   useResendInvitation,
 } from "@/lib/api/hooks/organization";
 import { useRolesList } from "@/lib/api/hooks/roles";
+import { EMAIL_ADDRESS_SCHEMA, EMAIL_MAX_LENGTH } from "@/lib/utils/email-validation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -28,8 +29,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn } from "lucide-react";
+import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn, Copy } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -43,7 +45,7 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 import { ASSIGNABLE_ROLE_OPTIONS, getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
-import { canChangeRoleOf } from "@/lib/auth/role-change-rules";
+import { canChangeRoleOf, canGrantRole } from "@/lib/auth/role-change-rules";
 
 type RoleOption = { value: string; label: string };
 
@@ -57,10 +59,7 @@ function useAssignableRoleOptions(actorRole: string | undefined): RoleOption[] {
   const custom = (orgRoles ?? [])
     .filter((role) => !isSystemRole(role.slug))
     .map((role) => ({ value: role.slug, label: role.name }));
-  const system = ASSIGNABLE_ROLE_OPTIONS.filter(
-    (option) => actorRole === "CEO" || (option.value !== "ADMIN" && option.value !== "HR"),
-  );
-  return [...system, ...custom];
+  return [...ASSIGNABLE_ROLE_OPTIONS, ...custom].filter((option) => canGrantRole(actorRole, option.value));
 }
 
 const countPill = "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-soft px-1.5 text-2xs font-semibold tabular-nums text-neutral-strong";
@@ -124,21 +123,23 @@ function MembersSettingsContent() {
     // `required` alone did nothing here: the browser skips it on a form
     // submitted from a button inside a card, so an empty invite was a silent
     // no-op (QA-0069).
-    const email = inviteEmail.trim();
-    if (!email) {
+    if (!inviteEmail.trim()) {
       setInviteError("Enter the email address to invite.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setInviteError("Enter a valid email address.");
+    // Same rule as the API (R3-INV-10): domain + TLD, 254 total, 64 before @.
+    const parsed = EMAIL_ADDRESS_SCHEMA.safeParse(inviteEmail);
+    if (!parsed.success) {
+      setInviteError(parsed.error.issues[0]?.message ?? "Enter a valid email address");
       return;
     }
+    const email = parsed.data;
     setInviteError(null);
     inviteUser.mutate(
       { email, role: inviteRole },
       {
         onSuccess: () => {
-          toast.success("Invitation sent!");
+          toast.success(`Invitation sent to ${email} as ${getRoleLabel(inviteRole)}`);
           setInviteEmail("");
           setShowInviteForm(false);
         },
@@ -149,12 +150,42 @@ function MembersSettingsContent() {
     );
   }, [inviteUser, inviteEmail, inviteRole]);
 
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; email: string } | null>(null);
   const handleCancelInvitation = useCallback((invitationId: string) => {
+    const inv = invitations?.find((i) => i.id === invitationId);
+    setCancelTarget({ id: invitationId, email: inv?.email ?? "this address" });
+  }, [invitations]);
+  const confirmCancelInvitation = useCallback(() => {
+    if (!cancelTarget) return;
+    const { id, email } = cancelTarget;
+    setCancelTarget(null);
     cancelInvitation.mutate(
-      { invitationId },
-      { onError: (err) => toast.error(getErrorMessage(err)) }
+      { invitationId: id },
+      {
+        onSuccess: () => toast.success(`Invitation to ${email} cancelled`),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      }
     );
-  }, [cancelInvitation]);
+  }, [cancelInvitation, cancelTarget]);
+
+  // Only the token hash is stored, so copying mints a fresh link (R3-INV-12).
+  const handleCopyInviteLink = useCallback((invitationId: string) => {
+    resendInvitation.mutate(
+      { invitationId, deliver: "link" },
+      {
+        onSuccess: async (res) => {
+          if (!res.url) return;
+          try {
+            await navigator.clipboard.writeText(res.url);
+            toast.success("Invitation link copied. The link in the earlier email no longer works.");
+          } catch {
+            toast.error("Could not copy the link. Use Resend to email it instead.");
+          }
+        },
+        onError: (err) => toast.error(getErrorMessage(err)),
+      }
+    );
+  }, [resendInvitation]);
 
   const handleResendInvitation = useCallback((invitationId: string) => {
     resendInvitation.mutate(
@@ -192,7 +223,7 @@ function MembersSettingsContent() {
   }, [setPortalAccess]);
 
   const handleToggleInviteForm = useCallback(() => setShowInviteForm((v) => !v), []);
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setInviteEmail(e.target.value), []);
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setInviteEmail(e.target.value); setInviteError(null); }, []);
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     updateParams({ q: e.target.value || null, page: null });
   }, [updateParams]);
@@ -234,7 +265,7 @@ function MembersSettingsContent() {
                   <CardDescription>Send an invitation to join your organization</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleInvite} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                  <form onSubmit={handleInvite} noValidate className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                     <div className="flex-1 space-y-1.5">
                       <Label htmlFor="email" className="text-sm">Email</Label>
                       <Input
@@ -243,6 +274,7 @@ function MembersSettingsContent() {
                         placeholder="user@example.com"
                         value={inviteEmail}
                         onChange={handleEmailChange}
+                      maxLength={EMAIL_MAX_LENGTH}
                         aria-invalid={inviteError ? true : undefined}
                         aria-describedby={inviteError ? "email-error" : undefined}
                         required
@@ -308,13 +340,15 @@ function MembersSettingsContent() {
                     {/* The card clipped a table wider than it, cutting off the
                         last columns with no way to reach them (QA-D008). */}
                     <div className="overflow-x-auto">
-                    <Table className="min-w-225">
+                    {/* No forced min width: under md the email moves under the name and
+                        Joined drops, so Role and Actions fit; Actions stay pinned (R3-RSP-02). */}
+                    <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="px-5">Member</TableHead>
-                          <TableHead className="px-5">Email</TableHead>
+                          <TableHead hideBelow="md" className="px-5">Email</TableHead>
                           <TableHead className="px-5">Role</TableHead>
-                          <TableHead className="px-5">Joined</TableHead>
+                          <TableHead hideBelow="sm" className="px-5">Joined</TableHead>
                           <TableHead pinned="right" className="px-5 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -372,7 +406,7 @@ function MembersSettingsContent() {
                 <CardDescription>Send an invitation to join your organization</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleInvite} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                <form onSubmit={handleInvite} noValidate className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                   <div className="flex-1 space-y-1.5">
                     <Label htmlFor="inv-tab-email" className="text-sm">Email</Label>
                     <Input
@@ -381,6 +415,7 @@ function MembersSettingsContent() {
                       placeholder="user@example.com"
                       value={inviteEmail}
                       onChange={handleEmailChange}
+                      maxLength={EMAIL_MAX_LENGTH}
                       aria-invalid={inviteError ? true : undefined}
                       aria-describedby={inviteError ? "inv-tab-email-error" : undefined}
                       required
@@ -434,6 +469,7 @@ function MembersSettingsContent() {
                         inv={inv}
                         onCancel={handleCancelInvitation}
                         onResend={handleResendInvitation}
+                        onCopyLink={handleCopyInviteLink}
                         isResending={resendInvitation.isPending}
                       />
                     ))}
@@ -451,6 +487,16 @@ function MembersSettingsContent() {
             </Card>
           </TabsContent>
         </Tabs>
+        <ConfirmDialog
+          open={!!cancelTarget}
+          onOpenChange={(open) => { if (!open) setCancelTarget(null); }}
+          title="Cancel invitation"
+          description={`The invitation to ${cancelTarget?.email ?? "this address"} will stop working. You can invite them again later.`}
+          confirmLabel="Cancel invitation"
+          cancelLabel="Keep invitation"
+          destructive
+          onConfirm={confirmCancelInvitation}
+        />
     </PageWrapper>
   );
 }
@@ -464,6 +510,7 @@ interface MemberTableRowProps {
     role: string;
     joinedAt?: string | Date | null;
     hasDashboardAccess?: boolean;
+    isActive?: boolean | null;
   };
   actor: { userId: string | undefined; role: string | undefined };
   roleOptions: RoleOption[];
@@ -479,15 +526,20 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
   // QA-AUTH-01: no role control on the Super Admin's row, on your own row, or
   // on an Admin-level row unless you are the Super Admin. The server applies
   // the same rule.
-  const canChangeRole = canChangeRoleOf(actor, { userId: member.userId, role: member.role });
+  // R3-SA-07: a terminated / deactivated account is flagged and read-only;
+  // the server refuses a role change for it too.
+  const isTerminated = member.isActive === false;
+  const canChangeRole = !isTerminated && canChangeRoleOf(actor, { userId: member.userId, role: member.role });
   // QA-BUG-37: the same people can switch off portal access or start the
   // termination workflow — never for the owner, never for yourself.
-  const canManageMember = canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId);
+  const canManageMember = !isTerminated && (canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId));
   const currentRoleListed = roleOptions.some((r) => r.value === member.role);
   // R2-LC-14: where the actor may not change this role, the control stays
   // visible but disabled and says who can.
   const lockedReason = !canChangeRole && actor.userId && member.userId !== actor.userId
-    ? member.role === "CEO"
+    ? isTerminated
+      ? "This account is terminated or inactive. Its role cannot be changed."
+      : member.role === "CEO"
       ? "The Super Admin's role cannot be changed."
       : "Only the Super Admin can change Admin and HR roles."
     : null;
@@ -500,21 +552,27 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
             <AvatarImage src={resolveImageUrl(member.image)} />
             <AvatarFallback className="text-xs bg-brand-soft text-brand-text">{member.name?.charAt(0) || "?"}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">{member.name || "Unknown"}</span>
+          <div className="min-w-0">
+            <span className="block text-sm font-medium">{member.name || "Unknown"}</span>
+            <span className="block max-w-44 truncate text-xs text-muted-foreground md:hidden" title={member.email}>{member.email}</span>
+          </div>
         </div>
       </TableCell>
-      <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
+      <TableCell hideBelow="md" className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
       <TableCell className="px-5">
-        <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
+          {isTerminated && <StatusPill tone="danger">Terminated</StatusPill>}
+        </div>
       </TableCell>
-      <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
+      <TableCell hideBelow="sm" className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
       </TableCell>
       <TableCell pinned="right" className="px-5 text-right">
         <div className="flex items-center justify-end gap-2">
           {canChangeRole && (
             <Select value={member.role} onValueChange={handleRoleChange}>
-              <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
+              <SelectTrigger className="ml-auto h-8 w-32 text-xs sm:w-40" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
               <SelectContent>
                 {!currentRoleListed && (
                   <SelectItem value={member.role} className="text-xs" disabled>{getRoleLabel(member.role)}</SelectItem>
@@ -531,7 +589,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
               <TooltipTrigger asChild>
                 <span tabIndex={0} className="ml-auto rounded-md focus-visible:focus-ring">
                   <Select value={member.role} disabled>
-                    <SelectTrigger className="h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}: ${lockedReason}`}>
+                    <SelectTrigger className="h-8 w-32 text-xs sm:w-40" aria-label={`Role for ${member.name || member.email}: ${lockedReason}`}>
                       <SelectValue>{getRoleLabel(member.role)}</SelectValue>
                     </SelectTrigger>
                   </Select>
@@ -573,12 +631,14 @@ interface InvitationRowProps {
   inv: { id: string; email: string; role: string };
   onCancel: (id: string) => void;
   onResend: (id: string) => void;
+  onCopyLink: (id: string) => void;
   isResending: boolean;
 }
 
-function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowProps) {
+function InvitationRow({ inv, onCancel, onResend, onCopyLink, isResending }: InvitationRowProps) {
   const handleCancel = useCallback(() => onCancel(inv.id), [inv.id, onCancel]);
   const handleResend = useCallback(() => onResend(inv.id), [inv.id, onResend]);
+  const handleCopy = useCallback(() => onCopyLink(inv.id), [inv.id, onCopyLink]);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
@@ -596,6 +656,10 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
         >
           <RefreshCw aria-hidden />
           Resend
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleCopy} disabled={isResending} aria-label={`Copy invitation link for ${inv.email}`}>
+          <Copy aria-hidden />
+          Copy link
         </Button>
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={handleCancel}>Cancel</Button>
       </div>

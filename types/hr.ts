@@ -61,7 +61,10 @@ export interface PaginatedEmployees {
 }
 
 export interface TerminatedEmployee extends Employee {
+  /** When the account was deactivated (timestamp). */
   terminatedAt: string | null;
+  /** Effective date of the completed termination, "YYYY-MM-DD" (R3-SA-09). */
+  effectiveDate: string | null;
 }
 
 export interface BreakEntry {
@@ -258,6 +261,7 @@ export interface Asset {
   location: string | null;
   notes: string | null;
   assignmentCount?: number;
+  assignedUser?: { id: string; name: string | null } | null;
   createdAt: Date | string | null;
   updatedAt: Date | string | null;
 }

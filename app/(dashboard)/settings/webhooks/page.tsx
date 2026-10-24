@@ -20,6 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
@@ -139,8 +140,16 @@ function WebhooksContent() {
   const [description, setDescription] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
+  const [createError, setCreateError] = useState<string | null>(null);
+  const createBlocker = !url.trim()
+    ? "Enter the endpoint URL to create the webhook."
+    : selectedEvents.length === 0
+      ? "Select at least one event to create the webhook."
+      : null;
+
   const handleCreate = useCallback(async () => {
-    if (!url.trim()) { toast.error("URL is required"); return; }
+    if (createBlocker) { toast.error(createBlocker); return; }
+    setCreateError(null);
     createWebhook.mutate(
       { url: url.trim(), description: description.trim() || undefined, events: selectedEvents },
       {
@@ -149,15 +158,19 @@ function WebhooksContent() {
           setSheetOpen(false);
           setUrl(""); setDescription(""); setSelectedEvents([]);
         },
-        onError: () => toast.error("Failed to create webhook"),
+        onError: (e) => {
+          const msg = getErrorMessage(e);
+          setCreateError(msg);
+          toast.error(msg);
+        },
       }
     );
-  }, [url, description, selectedEvents, createWebhook]);
+  }, [url, description, selectedEvents, createWebhook, createBlocker]);
 
   const handleToggle = useCallback((id: number, isActive: boolean) => {
     toggleWebhook.mutate({ id, isActive: !isActive }, {
       onSuccess: () => toast.success(isActive ? "Webhook disabled" : "Webhook enabled"),
-      onError: () => toast.error("Failed to update webhook"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   }, [toggleWebhook]);
 
@@ -165,7 +178,7 @@ function WebhooksContent() {
     if (!deleteId) return;
     deleteWebhook.mutate(deleteId, {
       onSuccess: () => { toast.success("Webhook deleted"); setDeleteId(null); },
-      onError: () => toast.error("Failed to delete webhook"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   }, [deleteId, deleteWebhook]);
 
@@ -318,9 +331,14 @@ function WebhooksContent() {
                   className="pl-9"
                   placeholder="https://your-server.com/webhook"
                   value={url}
-                  onChange={e => setUrl(e.target.value)}
+                  onChange={e => { setUrl(e.target.value); setCreateError(null); }}
+                  aria-invalid={!!createError}
+                  aria-describedby={createError ? "webhook-create-error" : undefined}
                 />
               </div>
+              {createError && (
+                <p id="webhook-create-error" role="alert" className="text-xs text-destructive">{createError}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="webhook-desc">Description (optional)</Label>
@@ -332,7 +350,7 @@ function WebhooksContent() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Events to send</Label>
+              <Label>Events to send *</Label>
               <div className="grid grid-cols-1 gap-1 rounded-md border border-border p-1">
                 {AVAILABLE_EVENTS.map(ev => (
                   <div key={ev.id} className="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent">
@@ -351,10 +369,14 @@ function WebhooksContent() {
             </div>
           </div>
           <SheetFooter>
+            {createBlocker && (
+              <p id="webhook-create-hint" className="text-xs text-muted-foreground">{createBlocker}</p>
+            )}
             <Button variant="ghost" onClick={() => setSheetOpen(false)}>Cancel</Button>
             <Button
               onClick={handleCreate}
-              disabled={createWebhook.isPending || !url.trim()}
+              disabled={createWebhook.isPending || !!createBlocker}
+              aria-describedby={createBlocker ? "webhook-create-hint" : undefined}
               loading={createWebhook.isPending}
             >
               {createWebhook.isPending ? "Creating..." : "Create Webhook"}

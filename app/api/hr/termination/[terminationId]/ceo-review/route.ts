@@ -1,14 +1,16 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { db } from "@/lib/db";
 import { terminations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { writeAuditLog } from "@/lib/db/audit";
+import { TERMINATION_REMARKS_MAX } from "@/lib/validations/termination-reasons";
 import type { NextRequest } from "next/server";
 
 const reviewSchema = z.object({
   decision: z.enum(["approve", "reject"]),
-  remarks: z.string().optional(),
+  remarks: z.string().max(TERMINATION_REMARKS_MAX, `Remarks must be at most ${TERMINATION_REMARKS_MAX} characters`).optional(),
 });
 
 export async function PATCH(
@@ -16,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ terminationId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (session.user.role !== "CEO") {
+    if (!roleHasPermission(session.user.role, "hr:termination:approve")) {
       return err("Only CEO can review terminations.", 403);
     }
 

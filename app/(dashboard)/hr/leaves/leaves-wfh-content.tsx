@@ -23,6 +23,7 @@ import { Plus, Home } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { hasLeaveApproverRole, countActionableLeaveRequests } from "@/lib/auth/leave-approval-roles";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
 import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 
@@ -35,6 +36,7 @@ import type {
 import { LeavesTabContent } from "./leaves-tab-content";
 import { WfhTabContent } from "./wfh-tab-content";
 import { LeaveApprovalsContent } from "./leave-approvals";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 export function LeavesWfhContent() {
   const { data: session } = useSession();
@@ -44,10 +46,11 @@ export function LeavesWfhContent() {
   const { data: myData, isLoading: myLoading } = useHrMyLeaveRequests();
   const { data: approvalsData, isLoading: approvalsLoading, isError: approvalsError, error: approvalsErrorObj, refetch: refetchApprovals } =
     // Managers approve their reports' leave too (MIYO-0084), so everyone asks;
-    // the API answers 403 for someone with no team and no routed requests.
+    // the API answers an empty list for someone with no team (R3-EMP-07).
     useHrLeaveApprovals(true);
   const { data: thisWeekData } = useHrLeavesThisWeek();
-  const { data: pendingWfhRequests } = useHrPendingWfhRequests();
+  // Admin-only endpoint; employees would get a 403 on every load (R3-EMP-07).
+  const { data: pendingWfhRequests } = useHrPendingWfhRequests(isAdminOrOwner(session?.user?.role));
 
   // The Global Create menu links here with ?apply=leave (QA-0039).
   const [leaveSheetOpen, setLeaveSheetOpen] = useState(
@@ -176,8 +179,8 @@ export function LeavesWfhContent() {
                           {leave.user?.firstName} {leave.user?.lastName}
                         </p>
                         <p className="text-2xs tabular-nums text-muted-foreground">
-                          {format(new Date(leave.startDate), "MMM dd")} –{" "}
-                          {format(new Date(leave.endDate), "MMM dd")}
+                          {format(parseCalendarDate(leave.startDate), "MMM dd")} –{" "}
+                          {format(parseCalendarDate(leave.endDate), "MMM dd")}
                           {leave.leaveType && (
                             <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}
@@ -224,6 +227,7 @@ export function LeavesWfhContent() {
                 balances={balances}
                 myLeaveRequests={myLeaveRequests}
                 approvedLeavesThisWeek={approvedLeavesThisWeek}
+                pendingDaysByType={pendingDaysByType}
               />
             </TabsContent>
 

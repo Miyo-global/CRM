@@ -4,8 +4,9 @@ import { expenses, reimbursements, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { canDecideRequest } from "@/lib/auth/separation-of-duties";
-import { z } from "zod";
-import type { NextRequest } from "next/server";
+import { zodErrorMessage } from "@/lib/api/zod-message";
+import { expenseStatusUpdateSchema, expenseTransitionError } from "@/lib/hr/expense-status";
+import { NextResponse, type NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendExpenseApprovedEmail, sendExpenseRejectedEmail, sendExpensePaidEmail } from "@/lib/email";
 import { updateExpenseDetailsSchema } from "@/lib/validations/expense";
@@ -17,11 +18,6 @@ import { formatIST } from "@/lib/date-utils";
  */
 const REIMBURSEMENT_CYCLE =
   process.env.NEXT_PUBLIC_REIMBURSEMENT_CYCLE || "with the next monthly payroll";
-
-const updateStatusSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED", "PAID"]),
-  rejectionReason: z.string().optional(),
-});
 
 const updateDetailsSchema = updateExpenseDetailsSchema;
 
@@ -83,9 +79,12 @@ export async function PATCH(
       return err("Only admins can update expense status.", 403);
     }
 
-    const parsedStatus = updateStatusSchema.safeParse(rawBody);
+    const parsedStatus = expenseStatusUpdateSchema.safeParse(rawBody);
     if (!parsedStatus.success) {
-      return err("status must be APPROVED, REJECTED, or PAID.", 400);
+      return NextResponse.json(
+        { error: zodErrorMessage(parsedStatus.error), fieldErrors: parsedStatus.error.flatten().fieldErrors },
+        { status: 400 },
+      ) as NextResponse<never>;
     }
     const body = parsedStatus.data;
 
@@ -103,7 +102,9 @@ export async function PATCH(
       return err("You filed this claim, so another approver must approve it.", 403);
     }
 
-    await db.transaction(async (tx) => {
+    // R3-HR-01: a wrong-state request used to throw inside the transaction and
+    // surface as a 500; it is a 409 with a message now.
+    const conflict = await db.transaction(async (tx) => {
       const [expense] = await tx
         .select()
         .from(expenses)
@@ -115,19 +116,47 @@ export async function PATCH(
         )
         .for("update");
 
-      if (!expense) throw new Error("Expense not found");
-      if (expense.status !== "PENDING") throw new Error("Expense has already been processed");
+      if (!expense) return { status: 404, message: "Expense not found." };
+      const transitionError = expenseTransitionError(expense.status, body.status);
+      if (transitionError) return { status: 409, message: transitionError };
 
+      // Paying out keeps the approver and reason the claim was decided with.
       await tx
         .update(expenses)
         .set({
           status: body.status,
-          approverId: session.user.id,
-          rejectionReason: body.rejectionReason ?? null,
+          ...(body.status === "PAID"
+            ? { paidAt: new Date() }
+            : { approverId: session.user.id, rejectionReason: body.rejectionReason ?? null }),
           ...(body.status === "APPROVED" && { approvedAt: new Date() }),
-          ...(body.status === "PAID" && { paidAt: new Date() }),
+          updatedAt: new Date(),
         })
         .where(eq(expenses.id, expenseId));
+
+      // The employee's Reimbursements page reads this row, so it follows the
+      // payout; a claim approved before A41 has no row yet and gets one.
+      if (body.status === "PAID") {
+        const paidAt = new Date();
+        await tx
+          .insert(reimbursements)
+          .values({
+            orgId: session.orgId,
+            userId: expense.userId,
+            expenseId,
+            category: expense.category ?? "Expense",
+            amount: expense.amount ?? "0",
+            description: expense.description,
+            receiptUrl: expense.receiptUrl,
+            status: "PAID",
+            approvedBy: expense.approverId,
+            approvedAt: expense.approvedAt,
+            paidAt,
+          })
+          .onConflictDoUpdate({
+            target: reimbursements.expenseId,
+            set: { status: "PAID", paidAt, updatedAt: paidAt },
+          });
+      }
 
       // An approved claim is money owed, so it shows up in Reimbursements
       // ready to pay (A41). The unique expense_id makes this idempotent.
@@ -148,7 +177,9 @@ export async function PATCH(
           })
           .onConflictDoNothing();
       }
+      return null;
     });
+    if (conflict) return err(conflict.message, conflict.status);
 
     const auditAction = body.status === "APPROVED" ? "expense.approved" : body.status === "PAID" ? "expense.paid" : "expense.rejected";
     try {

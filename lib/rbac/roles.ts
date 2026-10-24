@@ -72,3 +72,14 @@ export function getRoleLabel(role: string | undefined | null): string {
   if (!role || !isSystemRole(role)) return role ?? "Unknown";
   return ROLE_LABELS[role];
 }
+
+/** What accepting an invite grants, worded per role for the invitation page (R3-ACC-03). */
+export function invitationScopeText(role: string): string {
+  if (role === "ADMIN" || role === "CEO") {
+    return `As ${getRoleLabel(role)} you help run this organization: members and invitations, employee records, leave, attendance and payroll, organization settings, and Projects and Time.`;
+  }
+  if (role === "HR") {
+    return "As HR you manage this organization's people: employee records and onboarding, leave, attendance and payroll, plus your own profile and the projects you are added to.";
+  }
+  return "By accepting this invitation, you join this organization's HR, Projects and Time workspace: your profile, leave and attendance, and the projects you are added to.";
+}

@@ -18,7 +18,8 @@ export type TerminationStatus =
   | "APPROVED"
   | "REJECTED"
   | "SENT"
-  | "COMPLETED";
+  | "COMPLETED"
+  | "CANCELLED";
 
 export interface Termination {
   id: number;
@@ -60,7 +61,7 @@ export interface CreateTerminationInput {
 }
 
 const terminationKeys = {
-  all: [...queryKeys.hr.all, "termination"] as const,
+  all: queryKeys.hr.terminations(),
   list: () => [...terminationKeys.all, "list"] as const,
   detail: (id: number) => [...terminationKeys.all, "detail", id] as const,
   letter: (id: number) => [...terminationKeys.all, "letter", id] as const,
@@ -111,10 +112,8 @@ export function useSubmitTermination() {
   return useMutation({
     mutationFn: (id: number) =>
       apiClient.patch<{ success: boolean }>(`/hr/termination/${id}/submit`),
-    onSuccess: (_data, id) => {
-      void qc.invalidateQueries({ queryKey: terminationKeys.all });
-      void qc.invalidateQueries({ queryKey: terminationKeys.detail(id) });
-    },
+    // Awaited: the caller's toast fires once the card shows the new status (R3-ADM-04).
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
   });
 }
 
@@ -134,10 +133,7 @@ export function useCeoReviewTermination() {
         decision,
         remarks,
       }),
-    onSuccess: (_data, { id }) => {
-      void qc.invalidateQueries({ queryKey: terminationKeys.all });
-      void qc.invalidateQueries({ queryKey: terminationKeys.detail(id) });
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
   });
 }
 
@@ -146,10 +142,8 @@ export function useSendTerminationEmail() {
   return useMutation({
     mutationFn: (id: number) =>
       apiClient.post<{ success: boolean }>(`/hr/termination/${id}/send-email`, {}),
-    onSuccess: (_data, id) => {
-      void qc.invalidateQueries({ queryKey: terminationKeys.all });
-      void qc.invalidateQueries({ queryKey: terminationKeys.detail(id) });
-    },
+    // Awaited: the caller's toast fires once the card shows the new status (R3-ADM-04).
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
   });
 }
 
@@ -158,9 +152,35 @@ export function useCompleteTermination() {
   return useMutation({
     mutationFn: (id: number) =>
       apiClient.patch<{ success: boolean }>(`/hr/termination/${id}/complete`),
-    onSuccess: (_data, id) => {
-      void qc.invalidateQueries({ queryKey: terminationKeys.all });
-      void qc.invalidateQueries({ queryKey: terminationKeys.detail(id) });
-    },
+    // The whole HR cache: completion also changes the employee's status, the
+    // directory and the terminated list.
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+  });
+}
+
+/** R3-ADM-07: edit a draft; every editable field is sent. */
+export function useUpdateTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: Omit<CreateTerminationInput, "userId"> & { id: number }) =>
+      apiClient.patch<{ success: boolean; changed: string[] }>(`/hr/termination/${id}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
+  });
+}
+
+export function useDeleteTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete<{ success: boolean }>(`/hr/termination/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
+  });
+}
+
+export function useCancelTermination() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
+      apiClient.patch<{ success: boolean }>(`/hr/termination/${id}/cancel`, { reason }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: terminationKeys.all }),
   });
 }

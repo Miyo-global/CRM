@@ -19,7 +19,7 @@ import { FileUpload } from "@/components/storage/file-upload";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import { AlertCircle } from "lucide-react";
 import { useRequestLeave } from "@/lib/api/hooks/hr";
-import { LEAVE_MAX_DAYS, isUnpaidLeaveType } from "@/lib/leave-policy";
+import { LEAVE_MAX_DAYS, isUnpaidLeaveType, leaveTypeLimitHint } from "@/lib/leave-policy";
 import type { LeaveType, LeaveBalance } from "@/app/(dashboard)/hr/leaves/leaves-shared";
 import {
   calculateLeaveWorkingDays,
@@ -27,7 +27,7 @@ import {
   LEAVE_REASON_MAX,
   parseLocalDate,
 } from "@/lib/validations/leave-request";
-import { getTodayString } from "@/lib/date-utils";
+import { getTodayString, subtractYearsFromDateString } from "@/lib/date-utils";
 import { useHolidayDates } from "@/lib/api/hooks/hr/holiday-dates";
 import { useLeavePreview } from "@/lib/api/hooks/hr/leave-preview";
 import {
@@ -82,6 +82,8 @@ export function LeaveRequestSheet({
     const joining = joiningDate?.slice(0, 10);
     return joining && joining > today ? joining : today;
   })();
+  // Same bound as the schema: an end date at most a year out.
+  const maxDate = subtractYearsFromDateString(getTodayString(), -1);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -234,6 +236,16 @@ export function LeaveRequestSheet({
         previewLoading ||
         !!serverPreview?.error
       }
+      submitDisabledReason={
+        leaveDayLimitError ??
+        serverPreview?.error ??
+        (previewLoading
+          ? "Checking your balance..."
+          : !form.formState.isValid
+            ? (Object.values(form.formState.errors).find((e) => e?.message)?.message as string | undefined) ??
+              "Choose a leave type, the dates and a reason to submit."
+            : null)
+      }
       isPending={requestLeaveMutation.isPending}
     >
       <Form {...form}>
@@ -259,6 +271,10 @@ export function LeaveRequestSheet({
                     ))}
                   </SelectContent>
                 </Select>
+                {(() => {
+                  const hint = leaveTypeLimitHint(leaveTypes.find((t) => t.id.toString() === field.value)?.name);
+                  return hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null;
+                })()}
                 <FormMessage />
               </FormItem>
             )}
@@ -282,6 +298,7 @@ export function LeaveRequestSheet({
                         }
                       }}
                       fromDate={parseLocalDate(minDate)}
+                      toDate={parseLocalDate(maxDate)}
                       placeholder="Start date"
                     />
                   </FormControl>
@@ -300,6 +317,7 @@ export function LeaveRequestSheet({
                       value={field.value}
                       onChange={field.onChange}
                       fromDate={parseLocalDate(watchedStartDate || minDate)}
+                      toDate={parseLocalDate(maxDate)}
                       defaultMonth={watchedStartDate ? parseLocalDate(watchedStartDate) : undefined}
                       placeholder="End date"
                     />

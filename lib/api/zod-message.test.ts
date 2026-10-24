@@ -11,12 +11,12 @@ function messageFor(schema: z.ZodType, value: unknown): string {
 describe("zodErrorMessage (QA-D005)", () => {
   it("names the field and says what is wrong", () => {
     const schema = z.object({ points: z.number().min(0) });
-    expect(messageFor(schema, { points: -5 })).toBe("Points: Use 0 or more.");
+    expect(messageFor(schema, { points: -5 })).toBe("Points must be at least 0");
   });
 
   it("reports a missing value as required", () => {
     const schema = z.object({ startDate: z.string() });
-    expect(messageFor(schema, {})).toBe("Start date: This is required.");
+    expect(messageFor(schema, {})).toBe("Start date is required");
   });
 
   it("keeps a message written in the schema", () => {

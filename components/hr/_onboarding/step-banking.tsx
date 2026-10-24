@@ -5,7 +5,6 @@ import { z } from "zod";
 import { onboardEmployeeInputSchema } from "../../../lib/validations/hr";
 import {
   ACCOUNT_HOLDER_MAX,
-  BANK_ACCOUNT_NUMBER_MAX,
   BANK_NAME_MAX,
   BRANCH_NAME_MAX,
   IBAN_MAX_LENGTH,
@@ -154,13 +153,10 @@ function StepBankingFields({ form }: { form: UseFormReturn<FormValues> }) {
               <Input
                 placeholder="1234567890"
                 inputMode="numeric"
-                maxLength={BANK_ACCOUNT_NUMBER_MAX}
                 value={field.value ?? ""}
-                onChange={(e) => {
-                  field.onChange(
-                    e.target.value.replace(/\D/g, "").slice(0, BANK_ACCOUNT_NUMBER_MAX),
-                  );
-                }}
+                // As typed: the schema says "only digits" / "at most 18 digits"
+                // instead of cutting 40 digits to 18 (R3-EMP-04).
+                onChange={(e) => field.onChange(e.target.value)}
                 onBlur={field.onBlur}
                 name={field.name}
                 ref={field.ref}

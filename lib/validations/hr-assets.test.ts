@@ -102,7 +102,7 @@ describe("assetFormSchema", () => {
     const parsed = assetFormSchema.safeParse({ ...validAsset, purchaseCost: "abc" });
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
-      expect(parsed.error.issues.some((i) => i.message === "Enter a valid purchase cost")).toBe(true);
+      expect(parsed.error.issues.some((i) => i.message === "Purchase cost must be a number, e.g. 1500")).toBe(true);
     }
   });
 

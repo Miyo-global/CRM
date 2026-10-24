@@ -7,6 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 
 import {
   kbCollection,
+  kbPageDetailSchema,
   kbPageSchema,
   kbPageSummarySchema,
   kbPageTreeSchema,
@@ -41,10 +42,12 @@ export function useKbPages(filters: KbPageFilters = {}) {
   });
 }
 
+/** The page plus the caller's capabilities; the route wraps them (R3-PRJ-05). */
 export function useKbPage(pageId: number | undefined) {
   return useQuery({
     queryKey: queryKeys.knowledge.page(pageId ?? 0),
-    queryFn: async () => kbPageSchema.parse(await apiClient.get(`/knowledge/pages/${pageId}`)),
+    queryFn: async () =>
+      kbPageDetailSchema.parse(await apiClient.get(`/knowledge/pages/${pageId}`)),
     enabled: !!pageId,
   });
 }
@@ -116,10 +119,12 @@ export interface UpdateKbPageInput {
 export function useUpdateKbPage(pageId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: UpdateKbPageInput) =>
-      kbPageSchema.parse(await apiClient.patch(`/knowledge/pages/${pageId}`, input)),
-    onSuccess: (page: KbPage) => {
-      queryClient.setQueryData(queryKeys.knowledge.page(pageId), page);
+    // PATCH answers with the new revision, not the page, so the page is
+    // refetched rather than overwritten with the wrong shape (R3-PRJ-05).
+    mutationFn: (input: UpdateKbPageInput) =>
+      apiClient.patch<{ id: number; contentRevision: number }>(`/knowledge/pages/${pageId}`, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.page(pageId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.pagesAll() });
       void queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.pageTreeAll() });
     },

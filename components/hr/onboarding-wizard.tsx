@@ -1,25 +1,28 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useForm, type FieldPath, type DefaultValues, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, CircleCheck } from "lucide-react";
 import { useHrDepartments, useOnboardEmployee, useCheckEmailExists, useHrEmployees, isPaginatedEmployees } from "@/lib/api/hooks/hr";
 import { useRolesList } from "@/lib/api/hooks/roles";
-import { useRouter } from "next/navigation";
 import { StepPersonalInfo } from "./_onboarding/step-personal-info";
 import { StepEmployment } from "./_onboarding/step-employment";
 import { StepSkillsPay } from "./_onboarding/step-skills-pay";
 import { StepBanking } from "./_onboarding/step-banking";
 import { StepReview } from "./_onboarding/step-review";
-import { filterAssignableOrgRoles } from "@/lib/rbac/roles";
+import { ASSIGNABLE_ROLE_OPTIONS, filterAssignableOrgRoles } from "@/lib/rbac/roles";
+import { canGrantRole } from "@/lib/auth/role-change-rules";
+import { useSession } from "next-auth/react";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -50,16 +53,6 @@ const STEP_FIELDS: Record<number, FieldPath<FormValues>[]> = {
 // QA-SALES-01: no Sales department is suggested; there is no sales function.
 const COMMON_DEPARTMENTS = ["HR", "Customer Support", "Engineering", "Design", "Video Editing"];
 
-const KNOWN_ACRONYMS = new Set(["CEO", "CTO", "CFO", "COO", "CMO", "CIO", "CHRO", "VP", "SVP", "EVP", "AVP", "HR", "IT", "QA", "UI", "UX"]);
-
-
-function formatDesignation(str: string) {
-  return str.trim().replace(/\s+/g, " ").split(" ").map((word) => {
-    const upper = word.toUpperCase();
-    return KNOWN_ACRONYMS.has(upper) ? upper : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }).join(" ");
-}
-
 /**
  * MIYO-0663: a hire that came through the ATS arrives with the candidate's
  * details already filled in, and the application is closed once the
@@ -81,7 +74,17 @@ export interface OnboardingPrefill {
 export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
-  const router = useRouter();
+  // One click advances: the button stays busy for the whole validate + email
+  // check, and a second click meanwhile is ignored (R3-INV-05).
+  const [advancing, setAdvancing] = useState(false);
+  const advancingRef = useRef(false);
+  const [onboarded, setOnboarded] = useState<{
+    userId?: string;
+    employeeId?: string;
+    name: string;
+    email: string;
+    welcomeEmailSent?: boolean;
+  } | null>(null);
   const { data: departments } = useHrDepartments();
   const { data: orgRoles } = useRolesList();
   const onboardEmployee = useOnboardEmployee();
@@ -98,9 +101,18 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     }));
   }, [employeesData]);
 
+  // R3-HR-02: offer only what the actor may grant; the onboard API enforces
+  // the same rule.
+  const actorRole = useSession().data?.user?.role;
   const assignableRoles = useMemo(
-    () => filterAssignableOrgRoles(orgRoles ?? []),
-    [orgRoles]
+    () => {
+      const fromOrg: Array<{ slug: string; name: string }> = filterAssignableOrgRoles(orgRoles ?? []);
+      const list = fromOrg.length > 0
+        ? fromOrg
+        : ASSIGNABLE_ROLE_OPTIONS.map((r) => ({ slug: r.value, name: r.label }));
+      return list.filter((r) => canGrantRole(actorRole, r.slug));
+    },
+    [orgRoles, actorRole]
   );
 
   const allDepartmentOptions = useMemo(() => {
@@ -117,7 +129,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       firstName: "", lastName: "", email: "", phone: "",
       whatsappSameAsPhone: true, whatsappNumber: "", gender: undefined,
       designation: "", departmentId: undefined, departmentName: "", reportingTo: "",
-      role: "EMPLOYEE", employeeId: "", joiningDate: new Date(),
+      role: "EMPLOYEE", employeeId: "", joiningDate: parseCalendarDate(getTodayString()),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
       taxId: "", monthlySalary: undefined,
       bankDetails: {
@@ -147,7 +159,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       designation: prefill.designation ?? "",
       departmentId: prefill.departmentId ?? undefined,
       departmentName: prefill.departmentName ?? "",
-      joiningDate: prefill.joiningDate ? parseISO(prefill.joiningDate) : new Date(),
+      joiningDate: parseCalendarDate(prefill.joiningDate || getTodayString()),
       monthlySalary: prefill.monthlySalary ? Number(prefill.monthlySalary) : undefined,
     } as DefaultValues<FormValues> as FormValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -188,9 +200,10 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     return true;
   }, [form, stepOfField, currentStep]);
 
-  const handleNext = useCallback(async () => {
+  const advance = useCallback(async () => {
     // Check for a known duplicate error before form.trigger() clears it
     if (currentStep === 1 && form.formState.errors.email?.message?.includes("already registered")) {
+      toast.error("This email is already registered. Use a different address.");
       return;
     }
 
@@ -225,6 +238,18 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     setCurrentStep((prev) => Math.min(STEPS.length, prev + 1));
   }, [currentStep, form, checkEmailExists, goToFirstError]);
 
+  const handleNext = useCallback(async () => {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
+    setAdvancing(true);
+    try {
+      await advance();
+    } finally {
+      advancingRef.current = false;
+      setAdvancing(false);
+    }
+  }, [advance]);
+
   const handlePrev = useCallback(() => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   }, []);
@@ -243,7 +268,8 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
           whatsappNumber: data.whatsappSameAsPhone
             ? data.phone?.trim()
             : data.whatsappNumber?.trim(),
-          designation: formatDesignation(data.designation),
+          // Stored as typed (R3-ONB-03): "QA-TEST Engineer" must not become "Qa-test Engineer".
+          designation: data.designation.trim().replace(/\s+/g, " "),
           // Send the calendar days as picked, not a UTC instant (R2-LC-02).
           joiningDate: format(data.joiningDate, "yyyy-MM-dd"),
           dateOfBirth: data.dateOfBirth ? format(data.dateOfBirth, "yyyy-MM-dd") : undefined,
@@ -251,6 +277,13 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
         {
           onSuccess: async (result) => {
             toast.success("Employee onboarded successfully");
+            setOnboarded({
+              userId: result?.userId,
+              employeeId: result?.employeeId,
+              name: `${data.firstName.trim()} ${data.lastName.trim()}`,
+              email: data.email.trim(),
+              welcomeEmailSent: result?.welcomeEmailSent,
+            });
             // Close the application this hire came from. A failure here
             // leaves the employee in place; the recruiter can mark it later.
             if (prefill?.applicationId && result?.userId) {
@@ -264,14 +297,51 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
                 toast.error("Employee created, but the application stayed open.");
               }
             }
-            router.push("/hr/onboarding?tab=workflow");
           },
           onError: (err) => toast.error(err.message || "Failed to onboard employee"),
         }
       );
     },
-    [onboardEmployee, router, currentStep, prefill?.applicationId]
+    [onboardEmployee, currentStep, prefill?.applicationId]
   );
+
+  const startAnother = useCallback(() => {
+    form.reset();
+    setOnboarded(null);
+    setCurrentStep(1);
+  }, [form]);
+
+  // Success step (R3-ONB-09): ID, welcome-email status and a link to the profile
+  // instead of a toast and a redirect.
+  if (onboarded) {
+    return (
+      <div role="status" className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 rounded-lg border bg-card p-6 text-center shadow-xs">
+        <CircleCheck className="size-10 text-success-strong" aria-hidden="true" />
+        <h2 className="text-lg font-semibold">{onboarded.name} has been onboarded</h2>
+        <dl className="grid w-full grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-left text-sm">
+          <dt className="text-muted-foreground">Employee ID</dt>
+          <dd className="font-medium tabular-nums">{onboarded.employeeId ?? "Not assigned"}</dd>
+          <dt className="text-muted-foreground">Welcome email</dt>
+          <dd className="font-medium">
+            {onboarded.welcomeEmailSent
+              ? `Sent to ${onboarded.email}`
+              : "Not sent. Resend the set-up link from the employee's profile."}
+          </dd>
+        </dl>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+          {onboarded.userId && (
+            <Button asChild>
+              <Link href={`/hr/employees/${onboarded.userId}`}>View profile</Link>
+            </Button>
+          )}
+          <Button variant="outline" asChild>
+            <Link href="/hr/onboarding?tab=workflow">Onboarding progress</Link>
+          </Button>
+          <Button variant="ghost" onClick={startAnother}>Onboard another</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6 lg:grid-cols-[200px_1fr]">
@@ -370,10 +440,11 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
               <Button
                 type="button"
                 onClick={handleNext}
-                loading={checkEmailExists.isPending}
+                loading={advancing}
+                aria-busy={advancing}
               >
-                {checkEmailExists.isPending ? (
-                  <>Checking...</>
+                {advancing ? (
+                  <>{currentStep === 1 ? "Checking..." : "Validating..."}</>
                 ) : (
                   <>Next<ChevronRight className="size-4" aria-hidden="true" /></>
                 )}

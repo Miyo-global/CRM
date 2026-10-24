@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { getOrgFeatureFlags, setOrgFeatureFlag, type OrgFeatureFlags } from "@/lib/org-features";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { isAIConfigured } from "@/lib/ai/openai";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -23,7 +24,9 @@ const updateSchema = z.object({
 export async function GET() {
   return withAuth(async (session) => {
     const flags = await getOrgFeatureFlags(session.orgId);
-    return ok(flags);
+    // Whether an AI provider key is set at all, so the UI can hide AI buttons
+    // the API would refuse with 403 (R3-HR-09).
+    return ok({ ...flags, aiConfigured: isAIConfigured() });
   });
 }
 

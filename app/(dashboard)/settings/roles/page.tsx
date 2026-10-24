@@ -22,38 +22,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { useSession } from "next-auth/react";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import type { Permission } from "@/lib/rbac/permissions";
 import type { Role } from "@/types/organization";
 import { PermissionMatrix } from "@/features/settings/roles/permission-matrix";
 import { CreateRoleDialog, RoleTemplateDialog } from "@/features/settings/roles/role-dialogs";
-
-const RESOURCE_GROUPS: Record<string, string> = {
-  "hr:employees": "HR - Employees",
-  "hr:attendance": "HR - Attendance",
-  "hr:leaves": "HR - Leaves",
-  "hr:payroll": "HR - Payroll",
-  "hr:salary": "HR - Salary",
-  "hr:expenses": "HR - Expenses",
-  "hr:assets": "HR - Assets",
-  "hr:documents": "HR - Documents",
-  "hr:performance": "HR - Performance",
-  "hr:goals": "HR - Goals",
-  "projects": "Projects",
-  "projects:tickets": "Project Tickets",
-  "projects:sprints": "Project Sprints",
-  "projects:timesheets": "Timesheets",
-  "reports": "Reports",
-  "settings": "Settings",
-  "settings:rbac": "RBAC Management",
-  "dashboard:support": "Dashboard - Support",
-  "self": "Self-Service",
-};
+import { permissionGroupLabel } from "@/lib/labels";
 
 function groupPermissions(permissions: Permission[]) {
   const groups: Record<string, Permission[]> = {};
   for (const perm of permissions) {
-    const group = RESOURCE_GROUPS[perm.resource] || perm.resource;
+    const group = permissionGroupLabel(perm.resource);
     if (!groups[group]) groups[group] = [];
     groups[group].push(perm);
   }
@@ -75,6 +56,9 @@ function RolesContent() {
   const [templateOpen, setTemplateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
   const deleteRole = useDeleteRole();
+  // R3-ROLE-01: there is no "custom roles enabled" setting, so New Role and
+  // Use Template follow roles:manage (Super Admin only); POST /api/roles too.
+  const canCreateRoles = roleHasPermission(useSession().data?.user?.role, "roles:manage");
 
   const handleDeleteRole = () => {
     if (!deleteTarget) return;
@@ -106,6 +90,7 @@ function RolesContent() {
       title="Roles & permissions"
       noInternalScroll
       actions={
+        canCreateRoles && (
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setTemplateOpen(true)}>
             <Copy aria-hidden /> Use Template
@@ -114,6 +99,7 @@ function RolesContent() {
             <Plus aria-hidden /> New Role
           </Button>
         </div>
+        )
       }
     >
       <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:h-full lg:min-h-0">
@@ -141,7 +127,7 @@ function RolesContent() {
                       role={role}
                       isSelected={selectedRole?.id === role.id}
                       onSelect={handleSelectRole}
-                      onDelete={setDeleteTarget}
+                      onDelete={canCreateRoles ? setDeleteTarget : undefined}
                     />
                   ))}
                 </div>
@@ -156,6 +142,7 @@ function RolesContent() {
             role={selectedRole}
             permissionGroups={permissionGroups}
             onUpdate={handleUpdateRole}
+            readOnly={!canCreateRoles}
           />
           </div>
         ) : (
@@ -188,12 +175,12 @@ interface RoleListItemProps {
   role: Role;
   isSelected: boolean;
   onSelect: (role: Role) => void;
-  onDelete: (role: Role) => void;
+  onDelete?: (role: Role) => void;
 }
 
 function RoleListItem({ role, isSelected, onSelect, onDelete }: RoleListItemProps) {
   const handleSelect = useCallback(() => onSelect(role), [role, onSelect]);
-  const handleDelete = useCallback((e: React.MouseEvent) => { e.stopPropagation(); onDelete(role); }, [role, onDelete]);
+  const handleDelete = useCallback((e: React.MouseEvent) => { e.stopPropagation(); onDelete?.(role); }, [role, onDelete]);
 
   return (
     <div
@@ -213,7 +200,7 @@ function RoleListItem({ role, isSelected, onSelect, onDelete }: RoleListItemProp
         <p className="text-xs text-muted-foreground tabular-nums">{role.permissions?.length ?? 0} permissions</p>
       </button>
       {role.isSystem && <StatusPill tone="neutral">System</StatusPill>}
-      {!role.isSystem && (
+      {!role.isSystem && onDelete && (
         <Button
           variant="ghost"
           size="icon-xs"

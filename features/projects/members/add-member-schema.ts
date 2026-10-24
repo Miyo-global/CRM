@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
 
 export const addMemberSchema = z.object({
-  person: z.string().trim().toLowerCase().email("Enter a work email address"),
+  person: EMAIL_ADDRESS_SCHEMA,
   role: z.enum(["OWNER", "MANAGER", "CONTRIBUTOR", "VIEWER"]),
 });
 

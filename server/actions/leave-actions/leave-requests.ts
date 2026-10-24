@@ -1,5 +1,6 @@
 "use server";
 
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { db } from "@/lib/db";
 import {
   leaveRequests,
@@ -41,7 +42,7 @@ export async function getApprovers() {
       eq(organizationMembers.orgId, member.orgId),
       inArray(organizationMembers.role, targetRoles),
     ),
-    with: { user: true },
+    with: { user: USER_CARD },
   });
 
   return approvers
@@ -110,6 +111,7 @@ export async function processLeaveRequest(data: {
             }
           }
           const balanceRecord = await tx.query.leaveBalances.findFirst({
+            orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
             where: and(
               eq(leaveBalances.userId, request.userId),
               eq(leaveBalances.leaveTypeId, request.leaveTypeId),
@@ -145,6 +147,7 @@ export async function processLeaveRequest(data: {
           }
 
           const balanceRecord = await tx.query.leaveBalances.findFirst({
+            orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
             where: and(
               eq(leaveBalances.userId, request.userId),
               eq(leaveBalances.leaveTypeId, request.leaveTypeId),
@@ -245,7 +248,7 @@ export async function getMyRequests() {
     ),
     with: {
       leaveType: true,
-      approver: true,
+      approver: USER_CARD,
     },
     orderBy: [desc(leaveRequests.createdAt)],
   });
@@ -272,7 +275,7 @@ export async function getIncomingRequests() {
       eq(leaveRequests.status, "PENDING"),
     ),
     with: {
-      user: true,
+      user: USER_CARD,
       leaveType: true,
     },
     orderBy: [desc(leaveRequests.createdAt)],
@@ -314,9 +317,9 @@ export async function getAllIncomingRequests() {
       ),
     ),
     with: {
-      user: true,
+      user: USER_CARD,
       leaveType: true,
-      approver: true,
+      approver: USER_CARD,
     },
     orderBy: [desc(leaveRequests.createdAt)],
   });
@@ -379,7 +382,7 @@ export async function getApprovedLeavesThisWeek() {
       gte(leaveRequests.endDate, weekStart.toISOString()),
     ),
     with: {
-      user: true,
+      user: USER_CARD,
       leaveType: true,
     },
     orderBy: [desc(leaveRequests.startDate)],

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { addDaysToDateString, getTodayString } from "@/lib/date-utils";
 
 const authMock = vi.fn();
 const findTermination = vi.fn();
@@ -58,7 +59,7 @@ describe("R2-TERM-01: an Admin can run the termination they started", () => {
 
   it("lets an Admin submit a draft for Super Admin approval", async () => {
     signIn("ADMIN");
-    findTermination.mockResolvedValue({ id: 7, status: "DRAFT", userId: "u2" });
+    findTermination.mockResolvedValue({ id: 7, status: "DRAFT", userId: "u2", effectiveDate: addDaysToDateString(getTodayString(), 7) });
     const { PATCH } = await load();
     expect((await PATCH(patch({}), params)).status).toBe(200);
     expect(update).toHaveBeenCalled();

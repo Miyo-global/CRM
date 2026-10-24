@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
 
     await db.transaction(async (tx) => {
       const existing = await tx.query.leaveBalances.findFirst({
+        orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
         where: and(
           eq(leaveBalances.orgId, session.orgId),
           eq(leaveBalances.userId, input.userId),

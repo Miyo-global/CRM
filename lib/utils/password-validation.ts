@@ -37,25 +37,32 @@ export function validatePasswordStrength(password: string): {
   score: number;
   missing: string[];
 } {
+  // One specific message per failed rule, in the order a person fixes them
+  // (R3-ACC-01): the first entry is what every form and API shows.
   const missing: string[] = [];
   const checks = passwordChecks(password);
 
   if (password.length < PASSWORD_RULES.minLength) {
-    missing.push(`At least ${PASSWORD_RULES.minLength} characters`);
+    missing.push(`Password must be at least ${PASSWORD_RULES.minLength} characters`);
   } else if (!checks.length) {
-    missing.push(`At most ${PASSWORD_RULES.maxLength} characters`);
+    missing.push(`Maximum ${PASSWORD_RULES.maxLength} characters`);
+  }
+  // A space counts as a symbol, so eight spaces used to fail only on
+  // "uppercase" (R3-SET-04).
+  if (!/\S/.test(password)) {
+    missing.push("Password must contain a non-space character");
   }
   if (!checks.uppercase) {
-    missing.push("At least one uppercase letter");
+    missing.push("Password must contain an uppercase letter");
   }
   if (!checks.lowercase) {
-    missing.push("At least one lowercase letter");
+    missing.push("Password must contain a lowercase letter");
   }
   if (!checks.number) {
-    missing.push("At least one number");
+    missing.push("Password must contain a number");
   }
   if (!checks.special) {
-    missing.push("At least one special character or space");
+    missing.push("Password must contain a symbol or space");
   }
 
   const passed = Object.values(checks).filter(Boolean).length;
@@ -68,16 +75,48 @@ export function validatePasswordStrength(password: string): {
   };
 }
 
-export const PASSWORD_ZOD_SCHEMA = z
-  .string()
-  .min(PASSWORD_RULES.minLength, `Password must be at least ${PASSWORD_RULES.minLength} characters`)
-  .max(PASSWORD_RULES.maxLength, `Password must not exceed ${PASSWORD_RULES.maxLength} characters`)
-  .superRefine((val, ctx) => {
-    const result = validatePasswordStrength(val);
-    if (!result.valid) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: result.missing[0] ?? "Password does not meet requirements",
-      });
-    }
+export type PasswordIdentity = {
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  /** Full display name; split into words when first/last are not known. */
+  name?: string | null;
+};
+
+export const PASSWORD_IDENTITY_MESSAGE = "Password must not contain your email or name";
+
+/**
+ * R3-SET-01: a password must not contain the account's email, its local part,
+ * or the person's first or last name (case-insensitive). Parts shorter than
+ * three characters are ignored so "Al" or "jo@x.com" do not block half the
+ * alphabet.
+ */
+export function passwordIdentityIssue(password: string, identity: PasswordIdentity): string | null {
+  const email = identity.email?.trim().toLowerCase() ?? "";
+  const parts = [
+    email,
+    email.split("@")[0],
+    identity.firstName,
+    identity.lastName,
+    ...(identity.name ?? "").split(/\s+/),
+  ]
+    .map((p) => (p ?? "").trim().toLowerCase())
+    .filter((p) => p.length >= 3);
+  const pw = password.toLowerCase();
+  return parts.some((p) => pw.includes(p)) ? PASSWORD_IDENTITY_MESSAGE : null;
+}
+
+/** Strength rules plus the identity rule; the first failing rule's message. */
+export function passwordIssue(password: string, identity?: PasswordIdentity): string | null {
+  return validatePasswordStrength(password).missing[0] ?? (identity ? passwordIdentityIssue(password, identity) : null);
+}
+
+/** The shared password field. Pass the identity when the form knows it. */
+export function passwordSchema(identity?: PasswordIdentity) {
+  return z.string().superRefine((val, ctx) => {
+    const message = passwordIssue(val, identity);
+    if (message) ctx.addIssue({ code: "custom", message });
   });
+}
+
+export const PASSWORD_ZOD_SCHEMA = passwordSchema();

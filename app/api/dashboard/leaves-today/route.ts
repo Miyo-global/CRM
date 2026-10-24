@@ -27,6 +27,8 @@ export async function GET(_req: NextRequest) {
         and(
           eq(leaveRequests.orgId, session.orgId),
           eq(leaveRequests.status, "APPROVED"),
+          // R3-SA-10: terminated / inactive people are not "out", they are gone.
+          eq(users.isActive, true),
           lte(leaveRequests.startDate, today),
           gte(leaveRequests.endDate, today)
         )

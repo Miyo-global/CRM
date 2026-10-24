@@ -54,6 +54,9 @@ const CREATE_ITEMS = [
   { label: "Apply for leave", navHref: "/hr/leaves", href: "/hr/leaves?apply=leave", icon: CalendarCheck },
 ] as const;
 
+/** Modules shown inline below 2xl; the rest sit in the More menu. */
+const INLINE_MODULES = 3;
+
 interface TopbarProps {
   navGroups: NavGroup[];
   onOpenMobileNav: () => void;
@@ -70,6 +73,9 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
     () => getActiveModule(pathname, navGroups),
     [pathname, navGroups],
   );
+
+  const overflowModules = modules.slice(INLINE_MODULES);
+  const activeOverflow = overflowModules.find((m) => m.label === activeModule);
 
   const createItems = useMemo(() => {
     const paths = new Set(navGroups.flatMap((g) => g.routes.map((r) => navHrefPath(r.href))));
@@ -96,15 +102,17 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
         <span className="font-display text-sm font-bold text-foreground">Miyo Global</span>
       </Link>
 
-      {/* Desktop */}
-      <nav aria-label="Modules" className="hidden items-center gap-1 lg:flex">
-        {modules.map((mod) => (
+      {/* Desktop. Under 2xl only the first modules fit next to search and
+          Create; the rest go in a More menu instead of wrapping (R3-RSP-01). */}
+      <nav aria-label="Modules" className="hidden shrink-0 items-center gap-1 lg:flex">
+        {modules.map((mod, i) => (
           <Link
             key={mod.label}
             href={mod.href}
             aria-current={mod.label === activeModule ? "page" : undefined}
             className={cn(
-              "rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:focus-ring",
+              "whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:focus-ring",
+              i >= INLINE_MODULES && "hidden 2xl:inline-block",
               mod.label === activeModule
                 ? "font-semibold text-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -113,6 +121,32 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
             {mod.label}
           </Link>
         ))}
+        {overflowModules.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:focus-ring 2xl:hidden",
+                activeOverflow ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {activeOverflow?.label ?? "More"}
+              <ChevronDown className="size-3.5 opacity-70" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-44">
+              {overflowModules.map((mod) => (
+                <DropdownMenuItem
+                  key={mod.label}
+                  asChild
+                  className={cn(mod.label === activeModule && "bg-accent font-medium")}
+                >
+                  <Link href={mod.href} aria-current={mod.label === activeModule ? "page" : undefined}>
+                    {mod.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
 
       <Breadcrumbs items={crumbs} className="hidden xl:block" />
@@ -131,7 +165,7 @@ export function Topbar({ navGroups, onOpenMobileNav }: TopbarProps) {
       <button
         type="button"
         onClick={openCommandPalette}
-        className="hidden h-9 w-72 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm text-subtle-foreground shadow-xs transition-colors hover:border-border-strong hover:text-muted-foreground outline-none focus-visible:focus-ring lg:flex"
+        className="hidden h-9 w-48 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm text-subtle-foreground shadow-xs transition-colors hover:border-border-strong hover:text-muted-foreground outline-none focus-visible:focus-ring lg:flex xl:w-72"
       >
         <Search aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.75} />
         <span className="flex-1 truncate text-left">Search or jump to…</span>

@@ -242,7 +242,7 @@ export function PayrollRecordPreviewSheet({
             {!payroll.approvedAt && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status</span>
-                <span>Waiting for CEO or Admin approval</span>
+                <span>Waiting for Super Admin or Admin approval</span>
               </div>
             )}
             {payroll.approvedAt && !payroll.paidAt && (

@@ -6,11 +6,12 @@ import { toast } from "sonner";
 
 import {
   useCreateKbPage,
+  useDeleteKbPage,
   useKbPageTree,
   useMoveKbPage,
   type KbPageTreeNode,
 } from "@/lib/api/hooks/knowledge";
-import { pageHref } from "@/lib/knowledge/routes";
+import { KB_TRASH, pageHref } from "@/lib/knowledge/routes";
 
 import { isWithinSubtree, readExpanded, writeExpanded } from "../lib/page-tree-state";
 import { PageTreeItem } from "./page-tree-item";
@@ -53,6 +54,7 @@ export function PageTree({
   const { data, isLoading } = useKbPageTree({ spaceId, projectId });
   const createPage = useCreateKbPage();
   const movePage = useMoveKbPage(dragging ?? 0);
+  const deletePage = useDeleteKbPage();
 
   const { childrenOf, roots, parentOf } = useMemo(() => {
     const nodes = data?.nodes ?? [];
@@ -90,6 +92,17 @@ export function PageTree({
     );
   }
 
+  // Trash is recoverable, so the row's Delete needs no confirm (R3-PRJ-05).
+  function remove(pageId: number) {
+    deletePage.mutate(pageId, {
+      onSuccess: () => {
+        toast.success("Page moved to Trash");
+        if (activeId === pageId) router.push(KB_TRASH);
+      },
+      onError: () => toast.error("Couldn't delete the page."),
+    });
+  }
+
   function drop(targetId: number) {
     if (dragging == null) return;
     movePage.mutate(
@@ -124,6 +137,7 @@ export function PageTree({
           dropDisabled={dropDisabled}
           onToggle={() => toggle(node.id)}
           onAddChild={() => addChild(node.id)}
+          onDelete={() => remove(node.id)}
           onDragStart={() => setDragging(node.id)}
           onDropOn={() => drop(node.id)}
           onKeyDown={(event) => {

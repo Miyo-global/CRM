@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { terminations } from "@/lib/db/schema";
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, notInArray, sql } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 
 export const RESIGNATION_TERMINATION_REASON = "Resignation";
@@ -32,7 +32,7 @@ export async function createTerminationFromResignation(
     where: and(
       eq(terminations.orgId, resignation.orgId),
       eq(terminations.userId, resignation.userId),
-      ne(terminations.status, "REJECTED"),
+      notInArray(terminations.status, ["REJECTED", "CANCELLED"]),
     ),
     columns: { id: true },
   });

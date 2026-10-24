@@ -32,6 +32,7 @@ import { DEFAULT_PAGE_SIZE, type PageSizeOption } from "@/lib/pagination-constan
 import type { LeaveRequest, WfhRequest } from "./leaves-shared";
 import { LeaveRequestTable, WfhRequestItem, formatUserDisplayName } from "./leaves-shared";
 import { canActOnLeaveRequest } from "@/lib/auth/leave-approval-roles";
+import { isAdminOrOwner } from "@/lib/constants/roles";
 import { pluralise } from "@/lib/format-utils";
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
@@ -361,7 +362,8 @@ export function LeaveApprovalsContent({
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [approvingId, setApprovingId] = useState<number | null>(null);
 
-  const { data: pendingWfhRequests } = useHrPendingWfhRequests();
+  // /hr/wfh/pending is admin-only; don't fire it for managers (R3-EMP-07).
+  const { data: pendingWfhRequests } = useHrPendingWfhRequests(isAdminOrOwner(currentRole));
   const processWfhRequestMutation = useProcessWfhRequest();
   const approveMutation = useApproveLeaveDedicated();
   const rejectMutation = useRejectLeaveDedicated();
@@ -500,7 +502,7 @@ export function LeaveApprovalsContent({
                   You have {ownPendingRequests.length} pending leave request{ownPendingRequests.length === 1 ? "" : "s"} awaiting another approver.
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  HR cannot approve their own leave — another HR member or the CEO must action those.
+                  HR cannot approve their own leave — another HR member or the Super Admin must action those.
                 </p>
               </div>
             )}
@@ -630,7 +632,9 @@ export function LeaveApprovalsContent({
           </SheetHeader>
           <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Rejection reason</label>
+              <label className="text-sm font-medium">
+                Rejection reason <span className="text-destructive">*</span>
+              </label>
               <Textarea
                 placeholder="E.g. Insufficient leave balance, conflicting schedule..."
                 value={leaveRejectionReason}

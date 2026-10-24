@@ -1,3 +1,5 @@
+import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
+
 export type Permission = {
   name: string;
   resource: string;
@@ -313,6 +315,23 @@ export const PERMISSIONS: Permission[] = [
 
 ];
 
+/**
+ * R3-ROLE-01: what used to be hard-coded "Super Admin only" checks, named so
+ * the permission matrix shows the real difference between Super Admin and
+ * Admin. The routes check these names (lib/auth/role-change-rules.ts).
+ */
+const SUPER_ADMIN_ONLY_PERMISSIONS: Permission[] = [
+  { name: "roles:manage", resource: "roles", action: "manage", description: "Grant or remove the Admin and HR roles; create custom roles (Super Admin only)" },
+  { name: "hr:termination:approve", resource: "hr:termination", action: "approve", description: "Approve or reject a termination (Super Admin only)" },
+];
+
+PERMISSIONS.push(
+  ...SUPER_ADMIN_ONLY_PERMISSIONS,
+  { name: "hr:termination:complete", resource: "hr:termination", action: "complete", description: "Complete an approved termination (deactivate, F&F, asset return)" },
+);
+
+export const SUPER_ADMIN_ONLY_PERMISSION_NAMES: readonly string[] = SUPER_ADMIN_ONLY_PERMISSIONS.map((p) => p.name);
+
 const EMPLOYEE_SELF_SERVICE = [
   "self:attendance",
   "self:leaves",
@@ -345,7 +364,10 @@ const ATS_PERMISSIONS: Permission[] = [
   { name: "ats:settings:manage", resource: "ats:settings", action: "manage", description: "Stages, refuse reasons, templates and retention" },
 ];
 
-PERMISSIONS.push(...ATS_PERMISSIONS);
+// R3-INV-01: with the ATS off (the default) its permissions are not in the
+// catalogue, so the roles page and matrix never list an "ATS" group and no role
+// is granted them. Migration 0190 drops the names already stored on roles.
+if (ATS_MODULE_ENABLED) PERMISSIONS.push(...ATS_PERMISSIONS);
 
 /** Everything a recruiter does day to day. */
 export const ATS_RECRUITER_PERMISSIONS: string[] = ATS_PERMISSIONS.map((p) => p.name).filter(
@@ -431,17 +453,17 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
 
   CEO: PERMISSIONS.map((p) => p.name),
 
-  ADMIN: PERMISSIONS.map((p) => p.name),
+  ADMIN: PERMISSIONS.map((p) => p.name).filter((name) => !SUPER_ADMIN_ONLY_PERMISSION_NAMES.includes(name)),
 
   RECRUITER: [
     ...EMPLOYEE_SELF_SERVICE,
-    ...ATS_RECRUITER_PERMISSIONS,
+    ...(ATS_MODULE_ENABLED ? ATS_RECRUITER_PERMISSIONS : []),
     "hr:employees:view",
   ],
 
   HR: [
     ...EMPLOYEE_SELF_SERVICE,
-    ...ATS_PERMISSIONS.map((p) => p.name),
+    ...(ATS_MODULE_ENABLED ? ATS_PERMISSIONS.map((p) => p.name) : []),
     ...KB_FULL_EXCEPT_PURGE,
     "hr:employees:view",
     "hr:employees:create",
@@ -476,6 +498,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "settings:view",
     "settings:manage",
     "dashboard:support:view",
+    "hr:termination:complete",
   ],
 
   SALES: [

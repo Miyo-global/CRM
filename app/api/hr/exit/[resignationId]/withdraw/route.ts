@@ -4,6 +4,7 @@ import { resignations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { createAuditLog } from "@/lib/audit-log";
 
 export async function PATCH(
   _req: NextRequest,
@@ -32,6 +33,15 @@ export async function PATCH(
     await db.update(resignations)
       .set({ status: "WITHDRAWN", updatedAt: new Date() })
       .where(eq(resignations.id, resignationId));
+
+    void createAuditLog({
+      action: "hr.resignation_withdrawn",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(resignationId),
+      targetType: "resignation",
+      metadata: { employeeId: record.userId, from: record.status, to: "WITHDRAWN" },
+    }).catch(() => undefined);
 
     return ok({ success: true });
   });

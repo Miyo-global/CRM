@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from "react";
-import { format } from "date-fns";
+import { formatISTTime, getTodayString } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,12 +35,12 @@ export const TimerCard = memo(function TimerCard() {
   });
 
   const checkOutMutation = useHrCheckOut({
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       toast.success("Clocked out successfully");
       setLocalCooldown(120);
       if (data?.shouldLogOvertime) {
         setOtPrompt({
-          date: data.date ?? variables.localDate ?? format(new Date(), "yyyy-MM-dd"),
+          date: data.date ?? getTodayString(),
           hours: data.totalWorkHours,
         });
       }
@@ -140,15 +140,15 @@ export const TimerCard = memo(function TimerCard() {
   }, [now, statusData?.todayLog, localExtraBreakMs, isOnBreak]);
 
   const handleCheckIn = useCallback(() => {
-    checkInMutation.mutate({ location: undefined, localDate: format(new Date(), "yyyy-MM-dd") });
+    checkInMutation.mutate({ location: undefined });
   }, [checkInMutation]);
 
   const handleClockAction = useCallback(() => {
-    const localDate = format(new Date(), "yyyy-MM-dd");
+    // The server dates the punch in the org timezone (R3-EMP-01).
     if (isActive) {
-      checkOutMutation.mutate({ localDate });
+      checkOutMutation.mutate({});
     } else if (!isInCooldown) {
-      checkInMutation.mutate({ location: undefined, localDate });
+      checkInMutation.mutate({ location: undefined });
     }
   }, [isActive, isInCooldown, checkInMutation, checkOutMutation]);
 
@@ -238,7 +238,7 @@ export const TimerCard = memo(function TimerCard() {
 
         <p className="text-center text-sm tabular-nums text-muted-foreground">
           {isOnBreak && "On break"}
-          {!isOnBreak && isCheckedIn && checkInTime && `Checked in at ${format(new Date(checkInTime), "hh:mm a")}`}
+          {!isOnBreak && isCheckedIn && checkInTime && `Checked in at ${formatISTTime(checkInTime)} IST`}
           {!isOnBreak && !isCheckedIn && !isActive && !isInCooldown && "Not clocked in"}
           {!isOnBreak && !isActive && isInCooldown && `Cooldown: ${Math.floor(localCooldown / 60)}:${String(localCooldown % 60).padStart(2, "0")}`}
         </p>

@@ -49,6 +49,8 @@ function balanceFor(tx: Tx, leave: LeaveForDeduction) {
       eq(leaveBalances.leaveTypeId, leave.leaveTypeId!),
       eq(leaveBalances.year, Number(leave.startDate.slice(0, 4))),
     ),
+    // The oldest row, the one uniqueLeaveBalances shows (R3-PRJ-08).
+    orderBy: (b, { asc }) => [asc(b.id)],
   });
 }
 

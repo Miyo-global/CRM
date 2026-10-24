@@ -33,6 +33,9 @@ export async function getAssets(orgId: string): Promise<Asset[]> {
   const rows = await db.query.assets.findMany({
     where: eq(assets.orgId, orgId),
     orderBy: (table, { desc }) => [desc(table.createdAt)],
+    // R3-SA-08: the list shows the assignee's name, also for someone no longer
+    // in the active employee list (e.g. a terminated employee returning kit).
+    with: { assignedUser: { columns: { id: true, name: true } } },
   });
 
   const counts = await getAssetAssignmentCounts(

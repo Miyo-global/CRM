@@ -15,6 +15,7 @@ import { useHrMonthlyAttendance, useHrWfhRequests, useHrHolidaysForCalendar } fr
 
 import { WEEKDAY_LABELS, CalendarDay, statusConfig } from "./attendance-utils";
 import { useHrMyLeaves } from "@/lib/api/hooks/hr/leaves-expenses";
+import { parseCalendarDate, getTodayString } from "@/lib/date-utils";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -45,7 +46,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start, end });
-    const today = new Date();
+    // Org-tz today, so "future" and "today" match the server (R3-TZ-01).
+    const todayStr = getTodayString();
 
     const attendanceMap = new Map<string, string>();
     if (monthlyLogs) {
@@ -58,7 +60,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
     if (wfhRequests) {
       for (const req of wfhRequests) {
         if (req.status === "APPROVED") {
-          wfhMap.add(typeof req.date === "string" ? req.date : format(new Date(req.date), "yyyy-MM-dd"));
+          wfhMap.add(typeof req.date === "string" ? req.date : format(parseCalendarDate(req.date), "yyyy-MM-dd"));
         }
       }
     }
@@ -99,7 +101,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
       // Approved leave is marked whether it is past or still to come.
       if (approvedLeaveDates.has(dateStr)) return { date, status: "leave" };
 
-      if (date > today) return { date, status: "future" };
+      if (dateStr > todayStr) return { date, status: "future" };
       if (isWeekend(date)) return { date, status: "weekend" };
 
       if (wfhMap.has(dateStr)) return { date, status: "wfh" };
@@ -109,7 +111,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
         return { date, status: "present" };
       }
 
-      if (isToday(date)) return { date, status: "none" };
+      if (dateStr === todayStr) return { date, status: "none" };
 
       return { date, status: "absent" };
     });

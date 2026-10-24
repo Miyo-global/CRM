@@ -28,6 +28,8 @@ interface HrSheetProps {
   side?: "right" | "left";
   showSubmit?: boolean;
   submitDisabled?: boolean;
+  /** Shown next to a disabled submit so it never fails silently (R3-UX-01). */
+  submitDisabledReason?: string | null;
 }
 
 export function HrSheet({
@@ -46,7 +48,9 @@ export function HrSheet({
   side = "right",
   showSubmit = true,
   submitDisabled = false,
+  submitDisabledReason,
 }: HrSheetProps) {
+  const disabledHint = submitDisabled && !isPending ? submitDisabledReason : null;
   const handleSubmit = () => {
     if (onSubmit) onSubmit();
   };
@@ -83,6 +87,11 @@ export function HrSheet({
 
         {showSubmit && (
           <SheetFooter className="shrink-0 bg-surface-raised">
+            {disabledHint && (
+              <p id="hr-sheet-submit-hint" className="text-xs text-muted-foreground sm:mr-auto sm:self-center">
+                {disabledHint}
+              </p>
+            )}
             <Button
               variant="ghost"
               onClick={handleCancel}
@@ -90,7 +99,12 @@ export function HrSheet({
             >
               {cancelLabel}
             </Button>
-            <Button onClick={handleSubmit} loading={isPending} disabled={!onSubmit || submitDisabled}>
+            <Button
+              onClick={handleSubmit}
+              loading={isPending}
+              disabled={!onSubmit || submitDisabled}
+              aria-describedby={disabledHint ? "hr-sheet-submit-hint" : undefined}
+            >
               {submitLabel}
             </Button>
           </SheetFooter>

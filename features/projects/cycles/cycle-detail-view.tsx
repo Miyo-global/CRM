@@ -13,6 +13,7 @@ import { useCycleDetail } from "@/lib/api/hooks/projects/cycle-detail";
 import { isDoneStatus } from "@/lib/projects/project-health";
 import { CompleteCycleDialog } from "./complete-cycle-dialog";
 import { canCompletePeriod, PERIOD_STATUS_LABEL, periodStatus } from "@/lib/projects/period-status";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 export function CycleDetailView({ projectId, cycleId, canEdit }: { projectId: number; cycleId: number; canEdit: boolean }) {
   const { data, isLoading, isError } = useCycleDetail(projectId, cycleId);
@@ -55,7 +56,7 @@ export function CycleDetailView({ projectId, cycleId, canEdit }: { projectId: nu
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">
-            {format(new Date(cycle.startDate), "MMM d")} to {format(new Date(cycle.endDate), "MMM d, yyyy")} ·{" "}
+            {format(parseCalendarDate(cycle.startDate), "MMM d")} to {format(parseCalendarDate(cycle.endDate), "MMM d, yyyy")} ·{" "}
             {PERIOD_STATUS_LABEL[derivedStatus]}
           </p>
           <div className="mt-2 flex items-center gap-2">

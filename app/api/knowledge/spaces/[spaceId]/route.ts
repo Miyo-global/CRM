@@ -3,7 +3,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { z, ZodError } from "zod";
 
 import { err, ok, parseBody, withAuth } from "@/lib/api/helpers";
-import { createAuditLog } from "@/lib/audit-log";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { db } from "@/lib/db";
 import { kbSpaces } from "@/lib/db/schema";
 import { kbContext, requireKbPermission } from "@/lib/knowledge/actor";
@@ -100,14 +100,18 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ space
         await bumpSpaceAclRevision(session.orgId);
       }
 
-      await createAuditLog({
-        action: "kb.space.updated",
-        userId: session.user.id,
-        orgId: session.orgId,
-        targetId: String(space.id),
-        targetType: "kb_space",
-        metadata: body,
-      });
+      // R3-ADM-09: only values that really changed, with old and new.
+      const changes = diffFields(space, body);
+      if (Object.keys(changes).length > 0) {
+        await createAuditLog({
+          action: "kb.space.updated",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetId: String(space.id),
+          targetType: "kb_space",
+          metadata: { changedFields: Object.keys(changes), changes },
+        });
+      }
 
       return ok(updated);
     } catch (error) {

@@ -1,6 +1,7 @@
 "server-only";
 
 import { db } from "@/lib/db";
+import { uniqueLeaveBalances } from "@/lib/hr/unique-leave-balances";
 import {
   departments,
   organizationMembers,
@@ -11,7 +12,6 @@ import {
   payrolls,
   salaryStructures,
   expenses,
-  assets,
   documents,
   performanceReviews,
   goals,
@@ -19,6 +19,7 @@ import {
   users,
   holidays,
   wfhRequests,
+  terminations,
 } from "@/lib/db/schema";
 import { timesheets, projectMembers, projects, tickets } from "@/lib/db/schema/projects";
 import { incentives, incentiveConfig } from "@/lib/db/schema/crm";
@@ -41,7 +42,6 @@ import type {
   PayrollWithUser,
   SalaryStructure,
   Expense,
-  Asset,
   Document,
   PerformanceReview,
   Goal,
@@ -139,14 +139,25 @@ export async function getEmployees(
 export async function getTerminatedEmployees(
   orgId: string,
 ): Promise<TerminatedEmployee[]> {
-  const [members, deptRows] = await Promise.all([
+  const [members, deptRows, completed] = await Promise.all([
     db.query.organizationMembers.findMany({
       where: eq(organizationMembers.orgId, orgId),
       with: { user: true },
     }),
     getDepartments(orgId),
+    db
+      .select({ userId: terminations.userId, effectiveDate: terminations.effectiveDate })
+      .from(terminations)
+      .where(and(eq(terminations.orgId, orgId), eq(terminations.status, "COMPLETED")))
+      .orderBy(desc(terminations.effectiveDate)),
   ]);
   const deptNameById = new Map(deptRows.map((d) => [d.id, d.name]));
+  // Latest completed termination per person: the list shows its effective
+  // date, not the day the record was completed (R3-SA-09).
+  const effectiveDateByUser = new Map<string, string>();
+  for (const t of completed) {
+    if (!effectiveDateByUser.has(t.userId)) effectiveDateByUser.set(t.userId, t.effectiveDate);
+  }
 
   const seenTerminatedIds = new Set<string>();
   const uniqueTerminated = members
@@ -188,6 +199,7 @@ export async function getTerminatedEmployees(
       skills: u.skills ?? null,
       phone: u.phone ?? null,
       terminatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
+      effectiveDate: effectiveDateByUser.get(u.id) ?? null,
     }))
     .sort((a, b) => {
       const aTime = a.terminatedAt ? Date.parse(a.terminatedAt) : 0;
@@ -474,13 +486,14 @@ export async function getLeaves(orgId: string, userId: string): Promise<LeavesRe
 }
 
 export async function getLeaveBalance(orgId: string, userId: string): Promise<LeaveBalance[]> {
-  return db.query.leaveBalances.findMany({
+  const rows = await db.query.leaveBalances.findMany({
     where: and(
       eq(leaveBalances.userId, userId),
       eq(leaveBalances.orgId, orgId),
       eq(leaveBalances.year, new Date().getFullYear())
     ),
-  }) as unknown as Promise<LeaveBalance[]>;
+  });
+  return uniqueLeaveBalances(rows) as unknown as LeaveBalance[];
 }
 
 export async function getPayrolls(orgId: string, userId: string): Promise<Payroll[]> {
@@ -561,13 +574,6 @@ export async function getExpenses(
     limit,
     totalPages: Math.ceil(total / limit),
   };
-}
-
-export async function getAssets(orgId: string): Promise<Asset[]> {
-  return db.query.assets.findMany({
-    where: eq(assets.orgId, orgId),
-    orderBy: [desc(assets.createdAt)],
-  }) as unknown as Promise<Asset[]>;
 }
 
 export async function getDocuments(

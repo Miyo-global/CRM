@@ -33,6 +33,7 @@ interface AuditLogFilters {
   targetType?: string;
   dateFrom?: string;
   dateTo?: string;
+  q?: string;
 }
 
 export const useAuditLogs = (
@@ -52,6 +53,7 @@ export const useAuditLogs = (
         ...(filters?.targetType ? { targetType: filters.targetType } : {}),
         ...(filters?.dateFrom ? { dateFrom: filters.dateFrom } : {}),
         ...(filters?.dateTo ? { dateTo: filters.dateTo } : {}),
+        ...(filters?.q ? { q: filters.q } : {}),
       }),
     ...options,
   });

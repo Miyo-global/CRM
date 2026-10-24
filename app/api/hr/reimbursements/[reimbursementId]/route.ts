@@ -2,7 +2,7 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { db } from "@/lib/db";
-import { reimbursements } from "@/lib/db/schema";
+import { expenses, reimbursements } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
@@ -38,6 +38,13 @@ export async function PATCH(
       ...(body.rejectionReason && { rejectionReason: body.rejectionReason }),
       updatedAt: new Date(),
     }).where(eq(reimbursements.id, reimbursementId));
+
+    // Paying from Reimbursements closes the expense claim it came from too, so
+    // the two pages never disagree (R3-HR-01).
+    if (body.status === "PAID" && existing.expenseId) {
+      await db.update(expenses).set({ status: "PAID", paidAt: new Date(), updatedAt: new Date() })
+        .where(and(eq(expenses.id, existing.expenseId), eq(expenses.orgId, session.orgId), eq(expenses.status, "APPROVED")));
+    }
 
     return ok({ success: true });
   });

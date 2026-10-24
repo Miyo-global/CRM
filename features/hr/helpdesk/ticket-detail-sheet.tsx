@@ -20,6 +20,8 @@ import { PropertyList } from "@/components/shared/property-list";
 import type { Tone } from "@/lib/design/tones";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CharCount } from "@/components/ui/char-count";
+import { HELPDESK_COMMENT_MAX } from "@/lib/validations/common-forms";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,8 +49,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
+import type { HelpdeskTicket, TicketPriority, TicketStatus } from "@/types/hr";
+import { PRIORITY_OPTIONS } from "@/features/hr/helpdesk/helpdesk-create-ticket-form";
 import { getRoleLabel } from "@/lib/rbac/roles";
+import { TICKET_STATUSES, TICKET_STATUS_LABELS, ticketStatusLabel } from "@/lib/labels";
 import {
   useHelpdeskTicketComments,
   useAddHelpdeskTicketComment,
@@ -58,14 +62,6 @@ import {
   type HelpdeskTicketComment,
 } from "@/lib/api/hooks/hr/helpdesk";
 
-const STATUS_LABELS: Record<string, string> = {
-  TODO: "To Do",
-  IN_PROGRESS: "In Progress",
-  IN_REVIEW: "In Review",
-  DONE: "Done",
-  CLOSED: "Closed",
-  CANCELLED: "Cancelled",
-};
 
 const CATEGORY_ROUTING: Record<string, string> = {
   "IT Support": "IT & Operations team",
@@ -77,14 +73,10 @@ const CATEGORY_ROUTING: Record<string, string> = {
   Other: "HR triage queue",
 };
 
-const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
-  { value: "TODO", label: "To Do" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "IN_REVIEW", label: "In Review" },
-  { value: "DONE", label: "Done" },
-  { value: "CLOSED", label: "Closed" },
-  { value: "CANCELLED", label: "Cancelled" },
-];
+const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = TICKET_STATUSES.map((value) => ({
+  value,
+  label: TICKET_STATUS_LABELS[value],
+}));
 
 function statusTone(status: string | null): Tone {
   switch (status) {
@@ -158,13 +150,13 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
           <>
             <span>from</span>{" "}
             <StatusPill tone={statusTone(from)}>
-              {STATUS_LABELS[from] ?? from}
+              {ticketStatusLabel(from)}
             </StatusPill>
           </>
         )}
         to{" "}
         <StatusPill tone={statusTone(to)}>
-          {to ? STATUS_LABELS[to] ?? to : ""}
+          {to ? ticketStatusLabel(to) : ""}
         </StatusPill>
         {comment.createdAt && (
           <span className="text-subtle-foreground">
@@ -426,15 +418,42 @@ export function TicketDetailSheet({
                       </Select>
                     ) : (
                       <StatusPill tone={statusTone(ticket.status)} dot>
-                        {STATUS_LABELS[ticket.status ?? "TODO"] ?? ticket.status ?? "To Do"}
+                        {ticketStatusLabel(ticket.status)}
                       </StatusPill>
                     ),
                 },
                 {
                   label: "Priority",
-                  value: (
+                  // Admins (HR included) can triage priority; the API allows the
+                  // same people who can assign (R3-HR-09).
+                  value: isAdmin && !isResolved ? (
+                    <Select
+                      value={ticket.priority ?? "MEDIUM"}
+                      onValueChange={(value) => {
+                        if (value === ticket.priority) return;
+                        updateTicket.mutate(
+                          { priority: value as TicketPriority },
+                          {
+                            onSuccess: () => toast.success("Priority updated"),
+                            onError: (e) => toast.error(getErrorMessage(e)),
+                          },
+                        );
+                      }}
+                    >
+                      <SelectTrigger size="sm" className="w-40" aria-label="Priority">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((p) => (
+                          <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
                     <StatusPill tone={priorityTone(ticket.priority)}>
-                      {ticket.priority ?? "MEDIUM"}
+                      {PRIORITY_OPTIONS.find((p) => p.value === ticket.priority)?.label ?? "Medium"}
                     </StatusPill>
                   ),
                 },
@@ -562,12 +581,15 @@ export function TicketDetailSheet({
             onChange={(e) => setBody(e.target.value)}
             placeholder={internal ? "Add an internal note (only support staff can see this)…" : "Write a reply…"}
             rows={3}
+            maxLength={HELPDESK_COMMENT_MAX}
+            // Capped so Send stays on screen for a long reply (R3-HR-08).
             className={
               internal
-                ? "resize-none border-warning-500/40 bg-warning-soft/40"
-                : "resize-none"
+                ? "max-h-48 resize-none border-warning-500/40 bg-warning-soft/40"
+                : "max-h-48 resize-none"
             }
           />
+          <CharCount length={body.length} max={HELPDESK_COMMENT_MAX} />
           <div className="flex flex-wrap items-center justify-between gap-2">
             {canAddInternal ? (
               <div className="flex items-center gap-2">
@@ -622,7 +644,7 @@ export function TicketDetailSheet({
         <AlertDialog open={!!resolving} onOpenChange={(next) => !next && setResolving(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Mark as {resolving ? STATUS_LABELS[resolving] ?? resolving : ""}?</AlertDialogTitle>
+              <AlertDialogTitle>Mark as {resolving ? ticketStatusLabel(resolving) : ""}?</AlertDialogTitle>
               <AlertDialogDescription>
                 Add a resolution note so the requester knows what was done. It is optional.
               </AlertDialogDescription>
@@ -641,7 +663,7 @@ export function TicketDetailSheet({
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <Button onClick={confirmResolve} loading={updateTicket.isPending}>
-                Mark as {resolving ? STATUS_LABELS[resolving] ?? resolving : ""}
+                Mark as {resolving ? ticketStatusLabel(resolving) : ""}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

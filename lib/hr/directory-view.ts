@@ -33,3 +33,22 @@ export function toDirectoryEntry<T extends { id: string }>(
   }
   return entry as Partial<T>;
 }
+
+/**
+ * What a people picker needs (R3-NET-01): `?fields=picker`. Built on the
+ * directory card, so a colleague still never gets the work email; admins and
+ * the viewer's own row keep it for the email-based pickers.
+ */
+const PICKER_FIELDS = ["id", "name", "firstName", "lastName", "image", "designation", "department", "email"] as const;
+
+export function toPickerEntry<T extends { id: string }>(
+  row: T,
+  viewer: { id: string; role?: string | null },
+): Partial<T> {
+  const card = toDirectoryEntry(row, viewer) as Record<string, unknown>;
+  const entry: Record<string, unknown> = {};
+  for (const field of PICKER_FIELDS) {
+    if (field in card) entry[field] = card[field];
+  }
+  return entry as Partial<T>;
+}

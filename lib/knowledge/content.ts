@@ -169,3 +169,30 @@ export function extractMentions(content: unknown): string[] {
   });
   return [...ids];
 }
+
+const SLATE_HEADINGS: Record<string, number> = { h1: 1, h2: 2, h3: 3 };
+
+/**
+ * R3-PRJ-05: what the page editor (Tiptap) can open. A Tiptap doc passes
+ * through; Plate/Slate blocks (starter templates) become headings, quotes and
+ * paragraphs. Inline marks on Plate text are not carried over.
+ */
+export function toTiptapDoc(content: unknown): { type: "doc"; content: Json[] } {
+  if (isObject(content) && content.type === "doc" && Array.isArray(content.content)) {
+    return content as { type: "doc"; content: Json[] };
+  }
+  const blocks = Array.isArray(content) ? content.slice(0, MAX_BLOCKS) : [];
+  const paragraph = (text: string): Json => (text ? { type: "paragraph", content: [{ type: "text", text }] } : { type: "paragraph" });
+
+  const converted = blocks.filter(isObject).map((block) => {
+    const text = nodeText(block).trim();
+    const type = typeof block.type === "string" ? block.type : "p";
+    if (SLATE_HEADINGS[type]) {
+      return { type: "heading", attrs: { level: SLATE_HEADINGS[type] }, ...(text && { content: [{ type: "text", text }] }) };
+    }
+    if (type === "blockquote") return { type: "blockquote", content: [paragraph(text)] };
+    return paragraph(text);
+  });
+  // ProseMirror needs at least one block in a doc.
+  return { type: "doc", content: converted.length > 0 ? converted : [paragraph("")] };
+}

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, differenceInCalendarDays, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { resolveImageUrl } from "@/lib/utils";
 import {
   CheckCircle2,
@@ -20,6 +20,8 @@ import {
 import { ProgressTimeline } from "./progress-timeline";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
+import { daysBetweenDateStrings, getTodayString } from "@/lib/date-utils";
+import { resignationStatusLabel } from "@/lib/labels";
 
 function statusTone(status: string | null): Tone {
   if (!status) return "neutral";
@@ -62,7 +64,7 @@ export function ResignationCard({
   // UTC and showed the day before west of UTC (R2-EMP-04).
   const daysLeft =
     r.lastWorkingDate
-      ? differenceInCalendarDays(parseISO(r.lastWorkingDate), new Date())
+      ? daysBetweenDateStrings(getTodayString(), String(r.lastWorkingDate).slice(0, 10)) // org-tz today (R3-EMP-13)
       : null;
   const isOwnRecord = r.userId === userId;
   const canWithdraw =
@@ -97,7 +99,7 @@ export function ResignationCard({
               {r.user?.name ?? "Employee"}
             </p>
             <StatusPill tone={statusTone(r.status)} dot>
-              {r.status}
+              {resignationStatusLabel(r.status)}
             </StatusPill>
             {r.reasonCategory && (
               <Badge variant="outline" className="hidden sm:inline-flex">
