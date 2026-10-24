@@ -2,7 +2,6 @@ import { withAuth, err, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { resignations, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
@@ -66,8 +65,7 @@ export async function PATCH(
       },
     }).catch(() => undefined);
 
-    // The employee hears about the final decision by email too, not only
-    // through Inngest's in-app notice (R3-0009).
+    // The employee hears about the final decision by email (R3-0009).
     if (approved) {
       await createTerminationFromResignation(record, session.user.id);
       const employee = await db.query.users.findFirst({
@@ -82,11 +80,6 @@ export async function PATCH(
         after(() => sendResignationApprovedEmail(to, lastWorkingDay).catch(() => undefined));
       }
     }
-
-    void inngest.send({
-      name: "hr/resignation.ceo_approved",
-      data: { resignationId, orgId: session.orgId, employeeId: record.userId, approved },
-    });
 
     return ok({ success: true });
   });

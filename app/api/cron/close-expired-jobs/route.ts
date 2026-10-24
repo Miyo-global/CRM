@@ -10,8 +10,7 @@ import { logger } from "@/lib/logger";
 
 /**
  * MIYO-0634: close published jobs whose closing date has passed, once a day.
- * Inngest is not connected on production, so this runs from vercel.json like
- * every other scheduled job here.
+ * Runs from vercel.json like every other scheduled job here.
  */
 export async function GET(request: NextRequest) {
   const authError = verifyCronSecret(request.headers.get("authorization"));

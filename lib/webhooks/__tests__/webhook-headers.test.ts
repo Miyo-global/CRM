@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/db", () => ({ db: {} }));
-vi.mock("../../client", () => ({ inngest: { createFunction: () => ({}) } }));
 
-const { webhookHeaders } = await import("../webhook-dispatcher");
+
+const { webhookHeaders } = await import("../deliver");
 
 describe("webhookHeaders", () => {
   it("builds headers fetch accepts, with X-Miyo-Signature", () => {

@@ -22,8 +22,6 @@ export interface KbCapabilities {
   embeddings: boolean;
   /** R2: uploads, attachments, export zips. */
   storage: boolean;
-  /** Inngest. Without it, small jobs run inline and the cron sweeper drains the rest. */
-  jobs: boolean;
   /** ZeptoMail. Without it, notifications stay in-app. */
   email: boolean;
   /** The kb_chunks table exists, so vector rows have somewhere to live. */
@@ -42,10 +40,6 @@ export function isKbEmbeddingsConfigured(): boolean {
 
 export function isKbStorageConfigured(): boolean {
   return isStorageConfigured();
-}
-
-export function isKbJobsConfigured(): boolean {
-  return !!process.env.INNGEST_EVENT_KEY;
 }
 
 export function isKbEmailConfigured(): boolean {
@@ -78,7 +72,6 @@ export async function getKbCapabilities(orgId: string | null | undefined): Promi
     ai: isKbAiConfigured(),
     embeddings: isKbEmbeddingsConfigured(),
     storage: isKbStorageConfigured(),
-    jobs: isKbJobsConfigured(),
     email: isKbEmailConfigured(),
     vector,
     helpCentre:

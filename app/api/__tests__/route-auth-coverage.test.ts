@@ -17,7 +17,6 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "auth/invitation/route.ts": "token-verified invitation lookup",
   "auth/validate-setup-token/route.ts": "token-verified setup",
   "health/route.ts": "health probe",
-  "inngest/route.ts": "Inngest serve() verifies its signing key",
   "public/intake/[token]/route.ts": "public project intake form",
   "public/ats/booking/route.ts": "candidate picking an interview slot (MIYO-0660): identified by a random link token, rate limited",
   "public/ats/offer-response/route.ts": "candidate accepting or declining an offer (MIYO-0662): identified by a hashed one-time token, rate limited",

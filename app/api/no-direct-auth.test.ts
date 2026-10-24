@@ -29,7 +29,6 @@ describe("API routes", () => {
   // or verify the caller themselves.
   it("are guarded unless deliberately public", () => {
     const PUBLIC = new Set([
-      "app/api/inngest/route.ts", // Inngest signing key
       "app/api/webhooks/esign/route.ts", // provider signature
       "app/api/push/vapid-public-key/route.ts", // public key only
       "app/api/hr/integrations/biometric/route.ts", // device API key

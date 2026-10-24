@@ -5,7 +5,6 @@ const authMock = vi.fn();
 const getMyIssues = vi.fn(async (_org: string, _userId: string) => [] as unknown[]);
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/inngest/client", () => ({ inngest: { send: vi.fn() } }));
 vi.mock("@/lib/auth", () => ({ auth: () => authMock() }));
 vi.mock("@/lib/db", () => ({
   db: {

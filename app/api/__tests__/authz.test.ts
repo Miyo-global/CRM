@@ -4,7 +4,6 @@ import { NextRequest } from "next/server";
 const authMock = vi.fn();
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/inngest/client", () => ({ inngest: { send: vi.fn() } }));
 
 vi.mock("@/lib/auth", () => ({ auth: () => authMock() }));
 vi.mock("@/lib/db", () => ({

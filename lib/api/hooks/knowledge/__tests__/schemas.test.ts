@@ -69,7 +69,6 @@ describe("knowledge response schemas", () => {
       ai: false,
       embeddings: false,
       storage: true,
-      jobs: false,
       email: true,
       vector: false,
       helpCentre: false,

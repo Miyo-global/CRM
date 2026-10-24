@@ -104,7 +104,7 @@ export async function createTicket(ctx: CreateContext, input: CreateTicketInput)
   );
 
   // MIYO-0122: let the org's webhook endpoints hear about new tickets.
-  void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+  void import("@/lib/webhooks/dispatch").then(({ dispatchWebhook }) =>
     dispatchWebhook(ctx.orgId, "ticket.created", {
       ticketId: created.id,
       projectId: ctx.projectId,

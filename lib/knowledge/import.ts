@@ -22,8 +22,6 @@ import { kbPages } from "@/lib/db/schema";
 import { buildExcerpt, extractContentText } from "./content";
 
 export const IMPORT_MAX_ITEMS = 100;
-/** Past this many, the job is queued rather than run in the request. */
-export const IMPORT_INLINE_LIMIT = 20;
 
 export const importItemSchema = z
   .object({

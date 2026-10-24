@@ -12,7 +12,6 @@ vi.mock("@/lib/redis", () => ({ redis: null }));
 vi.mock("@/lib/auth", () => ({ auth: () => authMock() }));
 const auditLog = vi.fn();
 vi.mock("@/lib/audit-log", () => ({ createAuditLog: (...a: unknown[]) => (auditLog(...a), Promise.resolve()) }));
-vi.mock("@/lib/inngest/client", () => ({ inngest: { send: () => Promise.resolve() } }));
 vi.mock("@/lib/email", () => ({ sendResignationApprovedEmail: () => Promise.resolve() }));
 vi.mock("next/server", async (orig) => ({
   ...(await orig<typeof import("next/server")>()),

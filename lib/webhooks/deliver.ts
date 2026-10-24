@@ -43,8 +43,7 @@ export async function endpointsForEvent(
 /**
  * Signs and POSTs one delivery, logging the attempt.
  *
- * Throws on failure so the caller (Inngest step, or the direct retry loop) can
- * retry it.
+ * Throws on failure so the direct retry loop can retry it.
  */
 export async function deliverToEndpoint(
   orgId: string,
@@ -110,9 +109,7 @@ export async function deliverToEndpoint(
 /**
  * Delivers an event to every subscribed endpoint, in this process.
  *
- * Used when Inngest is not configured, where enqueueing silently went nowhere
- * and nothing was ever delivered (QA-0054). Three attempts with a short
- * backoff; every attempt is logged.
+ * Three attempts with a short backoff; every attempt is logged.
  */
 export async function deliverWebhookEventDirect(
   orgId: string,

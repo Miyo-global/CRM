@@ -82,8 +82,6 @@ export async function GET(req: NextRequest) {
 
   checks.email = isEmailConfigured() ? { status: "ok" } : { status: "warning" };
 
-  checks.inngest = process.env.INNGEST_EVENT_KEY ? { status: "ok" } : { status: "warning" };
-
   const allHealthy = Object.values(checks).every((c) => c.status !== "error");
   const totalLatencyMs = Date.now() - startTime;
 

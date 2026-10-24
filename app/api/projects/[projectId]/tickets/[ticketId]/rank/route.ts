@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             [{ action: "status_changed", field: "status", fromValue: outcome.fromStatus, toValue: outcome.ticket.status }],
           );
           // MIYO-0122: dragging a card between columns is a move too.
-          void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+          void import("@/lib/webhooks/dispatch").then(({ dispatchWebhook }) =>
             dispatchWebhook(session.orgId, "ticket.moved", {
               ticketId: id,
               projectId: guard.projectId,

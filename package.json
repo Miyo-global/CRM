@@ -81,7 +81,6 @@
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.25",
     "html2canvas": "^1.4.1",
-    "inngest": "^4.1.1",
     "jspdf": "^4.2.0",
     "jszip": "^3.10.1",
     "libphonenumber-js": "^1.13.2",
