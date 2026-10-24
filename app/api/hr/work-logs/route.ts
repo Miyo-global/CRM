@@ -2,7 +2,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { getWorkLogs } from "@/server/queries/hr";
 import { db } from "@/lib/db";
 import { timesheets } from "@/lib/db/schema/projects";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
@@ -73,7 +73,9 @@ export async function POST(req: NextRequest) {
       where: and(
         eq(timesheets.orgId, session.orgId),
         eq(timesheets.userId, session.user.id),
-        eq(timesheets.date, dateStr)
+        eq(timesheets.date, dateStr),
+        // The free-form daily log, never a ticket's time entry (drizzle/0194).
+        isNull(timesheets.ticketId),
       ),
     });
 

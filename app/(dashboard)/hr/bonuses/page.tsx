@@ -164,10 +164,11 @@ function BonusContent() {
     [type, reason],
   );
 
-  const canSubmit = useMemo(() => {
-    const result = validateCreateBonusForm({ userId, amount, type, reason });
-    return result.ok;
-  }, [userId, amount, type, reason]);
+  const formCheck = useMemo(
+    () => validateCreateBonusForm({ userId, amount, type, reason }),
+    [userId, amount, type, reason],
+  );
+  const canSubmit = formCheck.ok;
 
   const handleTypeChange = useCallback((value: string) => {
     if (!isBonusType(value)) {
@@ -319,6 +320,7 @@ function BonusContent() {
         submitLabel={editId !== null ? "Save" : "Create"}
         isPending={create.isPending || update.isPending}
         submitDisabled={!canSubmit || create.isPending || update.isPending}
+        submitDisabledReason={formCheck.ok ? null : formCheck.message}
       >
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="bonus-employee">Employee <span className="text-destructive">*</span></label>

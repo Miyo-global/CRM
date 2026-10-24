@@ -27,7 +27,7 @@ export const formSchema = z.object({
     .string()
     .max(DOCUMENT_DESCRIPTION_MAX, `Description must be at most ${DOCUMENT_DESCRIPTION_MAX} characters`)
     .optional(),
-  type: z.enum(["CONTRACT", "CERTIFICATE", "ID_PROOF", "PAYSLIP", "POLICY", "OFFER_LETTER", "RESUME", "OTHER"]).or(z.literal("")).refine((v) => v !== "", { message: "Document type is required" }),
+  type: z.enum(["CONTRACT", "CERTIFICATE", "ID_PROOF", "PAYSLIP", "POLICY", "OFFER_LETTER", "RESUME", "OTHER"]).or(z.literal("")).refine((v): boolean => v !== "", { message: "Document type is required" }),
   category: z.string().trim().min(1, "Folder is required — choose where this document is stored"),
   userId: z.string().optional(),
   isPublic: z.boolean(),

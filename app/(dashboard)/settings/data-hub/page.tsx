@@ -56,7 +56,7 @@ const ENTITIES: ExportEntity[] = [
 
 export default function DataHubPage() {
   return (
-    <DashboardGate allowedRoles={["CEO", "HR"]}>
+    <DashboardGate allowedRoles={["CEO", "ADMIN"]}>
       <DataHubContent />
     </DashboardGate>
   );

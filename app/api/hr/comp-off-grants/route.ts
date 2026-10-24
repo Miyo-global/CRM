@@ -5,8 +5,8 @@ import {
   holidayWorkRequests,
   attendance,
   leaveTypes,
-  leaveBalances,
 } from "@/lib/db/schema";
+import { creditLeaveBalance } from "@/lib/hr/credit-leave-balance";
 import { eq, and, desc } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { HOLIDAY_WORK_FULL_DAY_HOURS } from "@/lib/hr/payroll-calculations";
@@ -111,29 +111,13 @@ export async function POST(req: NextRequest) {
       });
 
       if (compOffType) {
-        const currentYear = new Date().getFullYear();
-        const existingBalance = await tx.query.leaveBalances.findFirst({
-          where: and(
-            eq(leaveBalances.userId, hwr.userId),
-            eq(leaveBalances.orgId, session.orgId),
-            eq(leaveBalances.leaveTypeId, compOffType.id),
-            eq(leaveBalances.year, currentYear)
-          ),
+        await creditLeaveBalance(tx, {
+          orgId: session.orgId,
+          userId: hwr.userId,
+          leaveTypeId: compOffType.id,
+          year: new Date().getFullYear(),
+          days: body.grantedDays,
         });
-
-        if (existingBalance) {
-          await tx.update(leaveBalances).set({
-            balance: (parseFloat(existingBalance.balance) + body.grantedDays).toString(),
-          }).where(eq(leaveBalances.id, existingBalance.id));
-        } else {
-          await tx.insert(leaveBalances).values({
-            orgId: session.orgId,
-            userId: hwr.userId,
-            leaveTypeId: compOffType.id,
-            balance: body.grantedDays.toString(),
-            year: currentYear,
-          });
-        }
       }
 
       return [g];

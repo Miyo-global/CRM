@@ -54,6 +54,7 @@ import type { PayrollWithUser } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { isPayrollApprover } from "@/lib/constants/roles";
 import { canDeleteHrRecord } from "@/lib/auth/separation-of-duties";
+import { payrollStatusLabel } from "@/lib/labels";
 
 const PAYROLL_STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -263,7 +264,7 @@ export function PayrollTable({
                         </TableCell>
                         <TableCell>
                           <StatusPill tone={PAYROLL_STATUS_TONE[payroll.status ?? "DRAFT"] ?? "neutral"} dot>
-                            {payroll.status}
+                            {payrollStatusLabel(payroll.status)}
                           </StatusPill>
                         </TableCell>
                         {/* R3-0201: up to four buttons used to stack into a

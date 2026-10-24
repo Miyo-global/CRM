@@ -12,6 +12,7 @@ import {
   parseCalendarDate,
   parseDbTimestamp,
   subtractYearsFromDateString,
+  zonedDayStartUtc,
 } from "./date-utils";
 
 describe("monthKeyToDate (R2-PAY-01)", () => {
@@ -127,5 +128,24 @@ describe.each(["America/New_York", "Asia/Calcutta", "UTC"])("date-only helpers w
     expect(isDateOnly("2026-02-30")).toBe(false);
     expect(isDateOnly("2026-10-24T00:00:00Z")).toBe(false);
     expect(isDateOnly(undefined)).toBe(false);
+  });
+});
+
+describe("zonedDayStartUtc (audit log From/To in IST)", () => {
+  it("starts an IST day at 18:30 UTC the evening before, whatever the server clock", () => {
+    expect(zonedDayStartUtc("2026-10-24").toISOString()).toBe("2026-10-23T18:30:00.000Z");
+    expect(zonedDayStartUtc("2026-01-01", "Asia/Kolkata").toISOString()).toBe("2025-12-31T18:30:00.000Z");
+  });
+
+  it("an event at 00:10 IST on the 24th falls inside the 24th, not the 23rd", () => {
+    const event = new Date("2026-10-23T18:40:00Z"); // 00:10 IST, 24 Oct
+    expect(event >= zonedDayStartUtc("2026-10-24")).toBe(true);
+    expect(event < zonedDayStartUtc(addDaysToDateString("2026-10-24", 1))).toBe(true);
+    expect(event < zonedDayStartUtc(addDaysToDateString("2026-10-23", 1))).toBe(false);
+  });
+
+  it("handles a timezone with DST", () => {
+    expect(zonedDayStartUtc("2026-07-01", "America/New_York").toISOString()).toBe("2026-07-01T04:00:00.000Z");
+    expect(zonedDayStartUtc("2026-01-01", "America/New_York").toISOString()).toBe("2026-01-01T05:00:00.000Z");
   });
 });

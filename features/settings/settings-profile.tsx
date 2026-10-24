@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AvatarCropDialog } from "@/components/ui/avatar-crop-dialog";
 import { Camera, Loader2, Trash2, Check, X } from "lucide-react";
-import { useUpdateProfile } from "@/lib/api/hooks/hr";
+import { useUpdateOwnPhoto, useUpdateProfile } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { resolveImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -28,8 +28,9 @@ export function SettingsProfile() {
   const [nameError, setNameError] = useState<string | null>(null);
 
   const updateProfile = useUpdateProfile();
+  const updatePhoto = useUpdateOwnPhoto();
 
-  const isBusy = uploading || updateProfile.isPending;
+  const isBusy = uploading || updateProfile.isPending || updatePhoto.isPending;
   const displayImage = previewUrl || resolveImageUrl(session?.user?.image);
   const name = session?.user?.name || "";
   const email = session?.user?.email || "";
@@ -81,8 +82,8 @@ export function SettingsProfile() {
       const imageValue = url || key;
 
       await new Promise<void>((resolve, reject) => {
-        updateProfile.mutate(
-          { userId: session.user.id, image: imageValue },
+        updatePhoto.mutate(
+          imageValue,
           {
             onSuccess: async () => {
               await updateSession({});
@@ -106,15 +107,15 @@ export function SettingsProfile() {
     } finally {
       setUploading(false);
     }
-  }, [session, updateProfile, updateSession]);
+  }, [session, updatePhoto, updateSession]);
 
   const handleRemovePhoto = useCallback(async () => {
     if (!session?.user?.id) return;
     setUploading(true);
     try {
       await new Promise<void>((resolve, reject) => {
-        updateProfile.mutate(
-          { userId: session.user.id, image: "" },
+        updatePhoto.mutate(
+          "",
           {
             onSuccess: async () => { await updateSession({}); setPreviewUrl(null); resolve(); },
             onError: (err) => reject(err),
@@ -127,7 +128,7 @@ export function SettingsProfile() {
     } finally {
       setUploading(false);
     }
-  }, [session, updateProfile, updateSession]);
+  }, [session, updatePhoto, updateSession]);
 
   const handleSaveName = useCallback(() => {
     if (!session?.user?.id) return;

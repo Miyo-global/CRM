@@ -1,9 +1,10 @@
-import { withAuth, withAdmin, ok } from "@/lib/api/helpers";
+import { withAuth, withAdmin, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { fnfSettlements, resignations, terminations, users } from "@/lib/db/schema";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { fnfTotals } from "@/lib/hr/fnf-figures";
+import { fnfEligibleUsers } from "@/lib/hr/fnf-eligible";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 
@@ -79,6 +80,13 @@ export async function POST(req: NextRequest) {
   return withAdmin(async (session) => {
     const body = createSchema.parse(await req.json());
 
+    // Only someone in this org with a live resignation or termination, and no
+    // settlement yet; this also stops a user id from another org.
+    const eligible = await fnfEligibleUsers(session.orgId);
+    if (!eligible.has(body.userId)) {
+      return err("Pick an employee with a resignation or termination and no settlement yet.", 400);
+    }
+
     const basicDues = body.basicDues ?? 0;
     const leaveEncashment = body.leaveEncashment ?? 0;
     const bonusDue = body.bonusDue ?? 0;
@@ -91,7 +99,7 @@ export async function POST(req: NextRequest) {
       .values({
         orgId: session.orgId,
         userId: body.userId,
-        resignationId: body.resignationId ?? null,
+        resignationId: body.resignationId ?? eligible.get(body.userId) ?? null,
         basicDues: basicDues.toString(),
         leaveEncashment: leaveEncashment.toString(),
         bonusDue: bonusDue.toString(),

@@ -41,6 +41,14 @@ describe("onboardEmployeeInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("uses the shared email rule: 64 characters before the @", () => {
+    const at64 = onboardEmployeeInputSchema.safeParse({ ...validBase, email: `${"a".repeat(64)}@test.com` });
+    expect(at64.success).toBe(true);
+    const at65 = onboardEmployeeInputSchema.safeParse({ ...validBase, email: `${"a".repeat(65)}@test.com` });
+    expect(at65.success).toBe(false);
+    expect(at65.error?.issues[0]?.message).toMatch(/before @/);
+  });
+
   it("rejects invalid phone numbers", () => {
     expect(onboardEmployeeInputSchema.safeParse({ ...validBase, phone: "123" }).success).toBe(false);
     expect(

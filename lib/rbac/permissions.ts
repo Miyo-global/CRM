@@ -305,11 +305,6 @@ export const PERMISSIONS: Permission[] = [
     description: "View own payslips",
   },
 
-  { name: "branch:create", resource: "branch", action: "create", description: "Create branches" },
-  { name: "branch:read", resource: "branch", action: "read", description: "View branches" },
-  { name: "branch:update", resource: "branch", action: "update", description: "Update branches" },
-  { name: "branch:manage_targets", resource: "branch", action: "manage_targets", description: "Manage branch targets" },
-
   { name: "reports:generate", resource: "reports", action: "generate", description: "Generate reports" },
   { name: "reports:schedule", resource: "reports", action: "schedule", description: "Schedule reports" },
 

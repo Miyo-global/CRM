@@ -386,6 +386,7 @@ export default function CareerLaddersPage() {
         submitLabel="Create Ladder"
         isPending={create.isPending}
         submitDisabled={!isFormValid}
+        submitDisabledReason={titleError ?? descError}
       >
         <div className="space-y-4">
           <div className="space-y-1.5">

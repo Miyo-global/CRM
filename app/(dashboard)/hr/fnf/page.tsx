@@ -12,6 +12,7 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Tone } from "@/lib/design/tones";
 import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HrSheet } from "@/features/hr/hr-sheet";
@@ -45,7 +46,19 @@ const FIGURE_FIELDS: { key: keyof Figures; label: string }[] = [
 const toNumbers = (f: Figures) =>
   Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v === "" ? undefined : Number(v)])) as Record<keyof Figures, number | undefined>;
 
-const fnfKeys = { all: [...queryKeys.hr.all, "fnf"] as const, list: () => [...fnfKeys.all, "list"] as const };
+const fnfKeys = {
+  all: [...queryKeys.hr.all, "fnf"] as const,
+  list: () => [...fnfKeys.all, "list"] as const,
+  eligible: () => [...fnfKeys.all, "eligible"] as const,
+};
+
+/** A `?fields=picker`-shaped person (lib/hr/directory-view.ts toPickerEntry). */
+interface PickerPerson {
+  id: string; name: string | null; firstName?: string | null; lastName?: string | null;
+  designation?: string | null; department?: string | null; email?: string | null;
+}
+const personLabel = (p: PickerPerson) =>
+  p.name || [p.firstName, p.lastName].filter(Boolean).join(" ") || p.email || "Employee";
 
 function statusTone(s: string | null): Tone {
   if (s === "PAID") return "success";
@@ -67,7 +80,7 @@ function FnfContent() {
   const create = useMutation({
     mutationFn: (data: { userId: string; notes?: string } & Record<keyof Figures, number | undefined>) =>
       apiClient.post<FnfSettlement>("/hr/fnf", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: fnfKeys.list() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: fnfKeys.all }),
   });
 
   // The enum has no COMPLETED; PAID is the final state (the old call 400'd).
@@ -84,6 +97,12 @@ function FnfContent() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<FnfSettlement | null>(null);
+  // Only people with a resignation or termination and no settlement yet.
+  const eligible = useQuery({
+    queryKey: fnfKeys.eligible(),
+    queryFn: () => apiClient.get<PickerPerson[]>("/hr/fnf/eligible"),
+    enabled: sheetOpen && !editing,
+  });
   const [completeId, setCompleteId] = useState<number | null>(null);
   const [userId, setUserId] = useState("");
   const [figures, setFigures] = useState<Figures>(EMPTY_FIGURES);
@@ -115,8 +134,8 @@ function FnfContent() {
       saveFigures.mutate({ id: editing.id, ...nums, notes: notes || undefined }, handlers);
       return;
     }
-    if (!userId.trim()) { toast.error("Employee ID is required"); return; }
-    create.mutate({ userId: userId.trim(), ...nums, notes: notes || undefined }, handlers);
+    if (!userId) { toast.error("Select an employee"); return; }
+    create.mutate({ userId, ...nums, notes: notes || undefined }, handlers);
   }, [editing, userId, figures, notes, create, saveFigures, closeSheet]);
 
   const handleComplete = useCallback(() => {
@@ -218,8 +237,21 @@ function FnfContent() {
       >
         {!editing && (
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Employee User ID</label>
-            <Input placeholder="User ID" value={userId} onChange={(e) => setUserId(e.target.value)} />
+            <label className="text-sm font-medium">Employee <span className="text-destructive">*</span></label>
+            <SearchableSelect
+              aria-label="Employee"
+              options={(eligible.data ?? []).map((p) => ({
+                value: p.id,
+                label: personLabel(p),
+                keywords: [p.email, p.designation, p.department].filter(Boolean).join(" "),
+              }))}
+              value={userId}
+              onValueChange={setUserId}
+              disabled={eligible.isLoading}
+              placeholder={eligible.isLoading ? "Loading…" : "Select employee"}
+              searchPlaceholder="Search employees…"
+              emptyText="No one with a resignation or termination is awaiting settlement."
+            />
           </div>
         )}
         <div className="grid gap-3 sm:grid-cols-2">

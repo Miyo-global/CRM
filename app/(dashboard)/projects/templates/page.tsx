@@ -62,7 +62,7 @@ interface TicketDraft {
   order: number;
 }
 
-const CATEGORIES = ["GENERAL", "SOFTWARE", "ONBOARDING", "MARKETING", "SALES", "HR"] as const;
+const CATEGORIES = ["GENERAL", "SOFTWARE", "ONBOARDING", "MARKETING", "HR"] as const;
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"] as const;
 const TICKET_TYPES = ["TASK", "STORY", "BUG", "EPIC"] as const;
 

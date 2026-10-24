@@ -2,7 +2,8 @@ import { type NextRequest } from "next/server";
 import { withAdmin, ok, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
-import { eq, desc, and, gte, lte, or, ilike, sql } from "drizzle-orm";
+import { eq, desc, and, gte, lt, or, ilike, sql } from "drizzle-orm";
+import { addDaysToDateString, isDateOnly, zonedDayStartUtc } from "@/lib/date-utils";
 
 export async function GET(req: NextRequest) {
   return withAdmin(async (session) => {
@@ -19,11 +20,10 @@ export async function GET(req: NextRequest) {
     const conditions = [eq(auditLogs.orgId, session.orgId)];
     if (action) conditions.push(eq(auditLogs.action, action));
     if (targetType) conditions.push(eq(auditLogs.targetType, targetType));
-    if (dateFrom) conditions.push(gte(auditLogs.createdAt, new Date(dateFrom)));
-    if (dateTo) {
-      const end = new Date(dateTo);
-      end.setHours(23, 59, 59, 999);
-      conditions.push(lte(auditLogs.createdAt, end));
+    // From/To are calendar days in the org timezone, not the server's (R3 follow-up).
+    if (dateFrom && isDateOnly(dateFrom)) conditions.push(gte(auditLogs.createdAt, zonedDayStartUtc(dateFrom)));
+    if (dateTo && isDateOnly(dateTo)) {
+      conditions.push(lt(auditLogs.createdAt, zonedDayStartUtc(addDaysToDateString(dateTo, 1))));
     }
 
     // R3-ADM-09: free-text search over actor, action, entity and metadata.

@@ -1,3 +1,4 @@
+import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { hasFullAccess } from "@/lib/constants/roles";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import { SYSTEM_ROLES } from "@/lib/rbac/roles";
@@ -13,9 +14,7 @@ const HR_TEAM: string[] = ["CEO", "HR"];
  */
 export const HR_SETTINGS_PAGES = [
   "members",
-  "organization",
   "custom-fields",
-  "data-hub",
   "email-templates",
   "job-roles",
   "payroll-schedule",
@@ -34,6 +33,10 @@ export const ORG_ADMIN_SETTINGS_PAGES = [
   "webhooks",
   "audit-log",
   "ai",
+  // Organization profile and the data export hub are org-wide controls, not
+  // people-team tools.
+  "organization",
+  "data-hub",
 ] as const;
 
 /** Every admin-only page under /settings, checked against the app router in the tests. */
@@ -109,7 +112,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/tools": HR_TEAM,
 
   "/ai": HR_TEAM,
-  "/dashboard/admin-health": HR_TEAM,
+  // System health is a Super Admin / Admin page.
+  "/dashboard/admin-health": [],
 
   // Pages that had no entry and so opened for every role (QA-0065).
   "/reports": HR_TEAM,
@@ -151,4 +155,17 @@ export function isOwnEmployeeRecord(pathname: string, userId: string | null | un
   if (!userId) return false;
   const path = pathname.replace(/\/+$/, "");
   return path === `/hr/employees/${userId}`;
+}
+
+/** Path prefixes of the ATS module, staff pages and their APIs. */
+const ATS_PREFIXES = ["/ats", "/api/ats", "/api/public/ats"];
+
+/**
+ * The ATS ships off (NEXT_PUBLIC_ATS_MODULE). The middleware turns every ATS
+ * page and API away centrally while it is off, so a route that forgot its own
+ * flag check is still unreachable. The module code itself stays.
+ */
+export function isDisabledModuleRoute(pathname: string, atsEnabled = ATS_MODULE_ENABLED): boolean {
+  if (atsEnabled) return false;
+  return ATS_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }

@@ -24,6 +24,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import type { PayrollWithUser } from "@/types/hr";
 import { calendarDaysInMonth } from "@/lib/hr/payroll-calculations";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { payrollStatusLabel } from "@/lib/labels";
 
 function n(v: string | null | undefined): number {
   return Math.round(parseFloat(String(v ?? "0")) || 0);
@@ -111,7 +112,7 @@ export function PayrollRecordPreviewSheet({
                 })()}
               </p>
               <StatusPill tone={STATUS_TONE[payroll.status ?? ""] ?? "neutral"} dot>
-                {payroll.status ?? ""}
+                {payrollStatusLabel(payroll.status)}
               </StatusPill>
             </div>
           </div>

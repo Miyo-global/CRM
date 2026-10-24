@@ -8,6 +8,17 @@
  */
 import { TERMINATION_STATUS_LABELS } from "@/lib/constants/hr-separation";
 import { ROLE_LABELS, getRoleLabel } from "@/lib/rbac/roles";
+// Type-only: the enums give the maps their keys without bundling drizzle.
+import type {
+  ackStatusEnum,
+  leaveStatusEnum,
+  payrollStatusEnum,
+  pipProgressStatusEnum,
+  pipStatusEnum,
+  reimbursementStatusEnum,
+} from "@/lib/db/schema/enums";
+
+type EnumValue<E extends { enumValues: readonly string[] }> = E["enumValues"][number];
 
 export { TERMINATION_STATUS_LABELS, ROLE_LABELS, getRoleLabel };
 
@@ -79,7 +90,6 @@ export const PERMISSION_GROUP_LABELS: Record<string, string> = {
   roles: "Roles",
   "dashboard:support": "Dashboard › Support",
   self: "Self-service",
-  branch: "Branches",
   "kb:articles": "Knowledge › Articles",
   "kb:categories": "Knowledge › Categories",
   "kb:spaces": "Knowledge › Spaces",
@@ -128,3 +138,93 @@ function lookup<T extends string>(map: Record<T, string>, value: string | null |
 
 export const resignationStatusLabel = (s: string | null | undefined) => lookup(RESIGNATION_STATUS_LABELS, s, "Unknown");
 export const ticketStatusLabel = (s: string | null | undefined) => lookup(TICKET_STATUS_LABELS, s, TICKET_STATUS_LABELS.TODO);
+
+/*
+ * HR statuses (R3 follow-up). Each map is keyed by its DB enum's values, so
+ * labels.test.ts fails when the enum gains a value the map does not have.
+ * Handbook and attendance status are text columns; their lists mirror every
+ * value the app writes.
+ */
+export const PAYROLL_STATUS_LABELS: Record<EnumValue<typeof payrollStatusEnum>, string> = {
+  DRAFT: "Draft",
+  PENDING_APPROVAL: "Pending approval",
+  APPROVED: "Approved",
+  PAID: "Paid",
+};
+
+/** Leave and WFH requests (leave_status; wfh_request_status is a subset). */
+export const LEAVE_STATUS_LABELS: Record<EnumValue<typeof leaveStatusEnum>, string> = {
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  CANCELLED: "Cancelled",
+};
+
+export const REIMBURSEMENT_STATUS_LABELS: Record<EnumValue<typeof reimbursementStatusEnum>, string> = {
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  PAID: "Paid",
+};
+
+/** Policy acknowledgements on the compliance page (ack_status). */
+export const ACK_STATUS_LABELS: Record<EnumValue<typeof ackStatusEnum>, string> = {
+  PENDING: "Pending",
+  ACKNOWLEDGED: "Acknowledged",
+  DECLINED: "Declined",
+};
+
+export const PIP_STATUS_LABELS: Record<EnumValue<typeof pipStatusEnum>, string> = {
+  DRAFT: "Draft",
+  ACTIVE: "Active",
+  EXTENDED: "Extended",
+  COMPLETED: "Completed",
+  TERMINATED: "Terminated",
+};
+
+export const PIP_PROGRESS_STATUS_LABELS: Record<EnumValue<typeof pipProgressStatusEnum>, string> = {
+  ON_TRACK: "On track",
+  AT_RISK: "At risk",
+  NOT_MEETING: "Not meeting expectations",
+};
+
+export const HANDBOOK_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+export const HANDBOOK_STATUS_LABELS: Record<(typeof HANDBOOK_STATUSES)[number], string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  ARCHIVED: "Archived",
+};
+
+export const ATTENDANCE_STATUSES = [
+  "PRESENT",
+  "CHECKED_OUT",
+  "ON_BREAK",
+  "OFFLINE",
+  "LATE",
+  "HALF_DAY",
+  "WORK_FROM_HOME",
+  "ON_LEAVE",
+  "HOLIDAY",
+  "ABSENT",
+] as const;
+export const ATTENDANCE_STATUS_LABELS: Record<(typeof ATTENDANCE_STATUSES)[number], string> = {
+  PRESENT: "Present",
+  CHECKED_OUT: "Checked out",
+  ON_BREAK: "On break",
+  OFFLINE: "Not checked in",
+  LATE: "Late",
+  HALF_DAY: "Half day",
+  WORK_FROM_HOME: "Work from home",
+  ON_LEAVE: "On leave",
+  HOLIDAY: "Holiday",
+  ABSENT: "Absent",
+};
+
+export const payrollStatusLabel = (s: string | null | undefined) => lookup(PAYROLL_STATUS_LABELS, s, PAYROLL_STATUS_LABELS.DRAFT);
+export const leaveStatusLabel = (s: string | null | undefined) => lookup(LEAVE_STATUS_LABELS, s, LEAVE_STATUS_LABELS.PENDING);
+export const reimbursementStatusLabel = (s: string | null | undefined) => lookup(REIMBURSEMENT_STATUS_LABELS, s, REIMBURSEMENT_STATUS_LABELS.PENDING);
+export const ackStatusLabel = (s: string | null | undefined) => lookup(ACK_STATUS_LABELS, s, ACK_STATUS_LABELS.PENDING);
+export const pipStatusLabel = (s: string | null | undefined) => lookup(PIP_STATUS_LABELS, s, PIP_STATUS_LABELS.DRAFT);
+export const pipProgressStatusLabel = (s: string | null | undefined) => lookup(PIP_PROGRESS_STATUS_LABELS, s, "Not set");
+export const handbookStatusLabel = (s: string | null | undefined) => lookup(HANDBOOK_STATUS_LABELS, s, HANDBOOK_STATUS_LABELS.DRAFT);
+export const attendanceStatusLabel = (s: string | null | undefined) => lookup(ATTENDANCE_STATUS_LABELS, s, "Not recorded");

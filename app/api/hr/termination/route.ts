@@ -76,7 +76,7 @@ export async function GET(_req: NextRequest) {
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only HR or CEO can initiate terminations.", 403);
+      return err("Only HR or the Super Admin can initiate terminations.", 403);
     }
 
     const body = createSchema.parse(await req.json());
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     });
     if (!membership) return err("Employee not found.", 404);
     if (isCEO(membership.role)) {
-      return err("The CEO cannot be terminated through this process.", 400);
+      return err("The Super Admin cannot be terminated through this process.", 400);
     }
     if (body.userId === session.user.id) return err("You cannot terminate yourself.", 400);
     // R3-ADM-08: the same rank rule as role changes. Only the Super Admin

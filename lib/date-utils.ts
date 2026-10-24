@@ -149,6 +149,26 @@ function utcToDateOnly(d: Date): string {
   return d.toISOString().slice(0, 10); // UTC midnight, so the slice is the calendar day.
 }
 
+/**
+ * The UTC instant at which calendar day `value` ("YYYY-MM-DD") starts in
+ * `timeZone` (IST by default): 2026-10-24 in IST starts 2026-10-23T18:30Z.
+ * Server-side day filters use this instead of the server's own midnight.
+ */
+export function zonedDayStartUtc(value: string, timeZone: string = DEFAULT_TIMEZONE): Date {
+  const guess = dateOnlyToUtc(value).getTime();
+  const offsetAt = (t: number) => {
+    const p = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+      }).formatToParts(new Date(t)).map((x) => [x.type, Number(x.value)]),
+    );
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - t;
+  };
+  const first = guess - offsetAt(guess);
+  return new Date(guess - offsetAt(first)); // second pass settles a DST change between the two
+}
+
 /** "YYYY-MM-DD" plus `days` (may be negative); pure calendar arithmetic, no timezone. */
 export function addDaysToDateString(value: string, days: number): string {
   const d = dateOnlyToUtc(value);

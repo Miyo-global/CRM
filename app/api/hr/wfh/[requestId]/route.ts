@@ -6,10 +6,16 @@ import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-const updateWfhSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED"]),
-  rejectionReason: z.string().max(1000).optional(),
-});
+// Same rule as leave and expense rejection: the employee is told why (QA-0071).
+const updateWfhSchema = z
+  .object({
+    status: z.enum(["APPROVED", "REJECTED"]),
+    rejectionReason: z.string().trim().max(500, "Keep the reason to 500 characters.").optional(),
+  })
+  .refine((b) => b.status !== "REJECTED" || !!b.rejectionReason, {
+    message: "Give a reason for the rejection.",
+    path: ["rejectionReason"],
+  });
 
 export async function PATCH(
   req: NextRequest,

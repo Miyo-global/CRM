@@ -344,7 +344,7 @@ function WebhooksContent() {
               <Label htmlFor="webhook-desc">Description (optional)</Label>
               <Input
                 id="webhook-desc"
-                placeholder="e.g. Notify Slack on deal won"
+                placeholder="e.g. Notify Slack on new hire"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
               />

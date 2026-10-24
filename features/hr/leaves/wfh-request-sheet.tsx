@@ -107,6 +107,11 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
   const watchedStartDate = form.watch("startDate");
   const watchedReason = form.watch("reason");
   const notesRequired = watchedReason === WFH_OTHER_REASON;
+  // R3-UX-01: say why Submit is off, from the same schema that disables it.
+  const parsedValues = wfhFormSchema.safeParse(form.watch());
+  const submitDisabledReason = parsedValues.success
+    ? null
+    : (parsedValues.error.issues[0]?.message ?? "Complete the form to submit.");
 
   const endDateMin = useMemo(() => {
     const start = watchedStartDate ? parseLocalDate(watchedStartDate) : minSelectableDate;
@@ -175,6 +180,7 @@ export function WfhRequestSheet({ open, onOpenChange, joiningDate = null }: WfhR
       onCancel={handleCancel}
       submitLabel="Submit Request"
       submitDisabled={!form.formState.isValid || createWfhRequest.isPending}
+      submitDisabledReason={submitDisabledReason}
       isPending={createWfhRequest.isPending}
     >
       <Form {...form}>

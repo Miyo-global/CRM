@@ -28,7 +28,7 @@ export async function POST(
       with: { user: true },
     });
     if (!existing) return err("Termination not found.", 404);
-    if (existing.status !== "APPROVED") return err("Termination must be CEO-approved before sending.", 400);
+    if (existing.status !== "APPROVED") return err("Termination must be approved by the Super Admin before sending.", 400);
 
     if (existing.emailSentAt && existing.emailStatus === "sent") {
       return err("Termination email has already been sent.", 409);

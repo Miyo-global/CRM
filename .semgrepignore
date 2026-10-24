@@ -1,0 +1,11 @@
+# A .semgrepignore replaces semgrep's defaults, so keep the usual excludes.
+:include .gitignore
+node_modules/
+.next/
+.pnpm-store/
+graphify-out/
+
+# var-in-href: these are static email templates. lib/email-templates/render.ts
+# HTML-escapes every value and blanks any *_url value that is not an absolute
+# http(s) URL, so a template variable cannot inject a javascript:/data: href.
+email-templates/

@@ -25,7 +25,7 @@ export async function POST() {
       return err("Seeding test data is disabled in production.", 403);
     }
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only HR or CEO can seed test data.", 403);
+      return err("Only HR or the Super Admin can seed test data.", 403);
     }
 
     const seeded: string[] = [];

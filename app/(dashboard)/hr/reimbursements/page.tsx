@@ -26,6 +26,7 @@ import { isAdminOrOwner } from "@/lib/constants/roles";
 import { formatINRWhole } from "@/lib/format-utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { reimbursementStatusLabel } from "@/lib/labels";
 
 function statusTone(s: string | null): Tone {
   if (s === "APPROVED" || s === "PAID") return "success";
@@ -144,7 +145,7 @@ export default function ReimbursementsPage() {
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold tabular-nums">{formatINRWhole(r.amount)}</TableCell>
                   <TableCell>
-                    <StatusPill tone={statusTone(r.status)} dot>{r.status}</StatusPill>
+                    <StatusPill tone={statusTone(r.status)} dot>{reimbursementStatusLabel(r.status)}</StatusPill>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {r.createdAt ? format(new Date(r.createdAt), "MMM d, yyyy") : "—"}

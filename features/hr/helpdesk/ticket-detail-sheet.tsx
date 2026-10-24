@@ -168,6 +168,33 @@ function StatusChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
   );
 }
 
+function PriorityChangeEntry({ comment }: { comment: HelpdeskTicketComment }) {
+  const from = comment.metadata?.from ?? null;
+  const to = comment.metadata?.to ?? null;
+  const label = (p: string | null) => PRIORITY_OPTIONS.find((o) => o.value === p)?.label ?? "Medium";
+  return (
+    <div className="flex items-center gap-2 py-1.5 text-xs text-muted-foreground">
+      <span className="flex flex-wrap items-center gap-1.5">
+        <span className="font-medium text-foreground">{comment.authorName ?? "Someone"}</span>
+        <span>changed priority</span>
+        {from && (
+          <>
+            <span>from</span>{" "}
+            <StatusPill tone={priorityTone(from)}>{label(from)}</StatusPill>
+          </>
+        )}
+        to{" "}
+        <StatusPill tone={priorityTone(to)}>{label(to)}</StatusPill>
+        {comment.createdAt && (
+          <span className="text-subtle-foreground">
+            &middot; {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 function CommentEntry({ comment }: { comment: HelpdeskTicketComment }) {
   const isInternal = comment.kind === "internal_note";
   return (
@@ -565,6 +592,8 @@ export function TicketDetailSheet({
                       <StatusChangeEntry key={c.id} comment={c} />
                     ) : c.kind === "assignment" ? (
                       <AssignmentEntry key={c.id} comment={c} />
+                    ) : c.kind === "priority_change" ? (
+                      <PriorityChangeEntry key={c.id} comment={c} />
                     ) : (
                       <CommentEntry key={c.id} comment={c} />
                     ),

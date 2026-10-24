@@ -28,6 +28,7 @@ import Link from "next/link";
 import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { getInitials } from "@/lib/format-utils";
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { leaveStatusLabel } from "@/lib/labels";
 
 const HR_ADMIN_ROLES = ["CEO", "HR", "ADMIN"];
 
@@ -96,7 +97,7 @@ function LeaveCalendarWidget() {
                   </p>
                 </div>
                 <Badge variant="secondary" className="text-2xs shrink-0">
-                  {leave.status}
+                  {leaveStatusLabel(leave.status)}
                 </Badge>
               </div>
             ))}

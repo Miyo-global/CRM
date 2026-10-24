@@ -1,7 +1,6 @@
 "server-only";
 
 import { db } from "@/lib/db";
-import { uniqueLeaveBalances } from "@/lib/hr/unique-leave-balances";
 import {
   departments,
   organizationMembers,
@@ -493,7 +492,7 @@ export async function getLeaveBalance(orgId: string, userId: string): Promise<Le
       eq(leaveBalances.year, new Date().getFullYear())
     ),
   });
-  return uniqueLeaveBalances(rows) as unknown as LeaveBalance[];
+  return rows as unknown as LeaveBalance[];
 }
 
 export async function getPayrolls(orgId: string, userId: string): Promise<Payroll[]> {

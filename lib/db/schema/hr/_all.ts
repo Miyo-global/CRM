@@ -87,6 +87,8 @@ export const leaveBalances = pgTable("leave_balances", {
   index("idx_leave_balances_user_year").on(table.userId, table.year),
   index("idx_leave_balances_org_year").on(table.orgId, table.year),
   index("idx_leave_balances_type_org").on(table.leaveTypeId, table.orgId),
+  // drizzle/0193: one row per leave type and year (R3-PRJ-08).
+  uniqueIndex("uq_leave_balances_org_user_type_year").on(table.orgId, table.userId, table.leaveTypeId, table.year),
 ]);
 
 export const leaveRequests = pgTable("leave_requests", {

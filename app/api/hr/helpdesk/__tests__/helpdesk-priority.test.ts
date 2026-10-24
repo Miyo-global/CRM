@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 /** R3-HR-09: HR/Admin can change a ticket's priority; the creator cannot. */
 const authMock = vi.fn();
 const updates: Record<string, unknown>[] = [];
+const inserts: Record<string, unknown>[] = [];
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/redis", () => ({ redis: null }));
@@ -14,9 +15,14 @@ vi.mock("@/lib/db", () => ({
       userSessions: { findFirst: async () => null },
       organizationMembers: { findFirst: async () => ({ orgId: "org1" }) },
       helpdeskTickets: {
-        findFirst: async () => ({ id: 9, orgId: "org1", userId: "creator", assigneeId: null, status: "TODO", title: "T" }),
+        findFirst: async () => ({ id: 9, orgId: "org1", userId: "creator", assigneeId: null, status: "TODO", title: "T", priority: "MEDIUM" }),
       },
     },
+    insert: () => ({
+      values: async (values: Record<string, unknown>) => {
+        inserts.push(values);
+      },
+    }),
     update: () => ({
       set: (values: Record<string, unknown>) => {
         updates.push(values);
@@ -44,6 +50,7 @@ const patch = async (body: unknown) => {
 
 beforeEach(() => {
   updates.length = 0;
+  inserts.length = 0;
 });
 
 describe("helpdesk ticket priority (R3-HR-09)", () => {
@@ -51,6 +58,16 @@ describe("helpdesk ticket priority (R3-HR-09)", () => {
     signIn("hr1", "HR");
     expect((await patch({ priority: "URGENT" })).status).toBe(200);
     expect(updates[0]).toMatchObject({ priority: "URGENT" });
+    // The change is in the ticket's activity trail.
+    expect(inserts).toEqual([
+      expect.objectContaining({ kind: "priority_change", metadata: { from: "MEDIUM", to: "URGENT" } }),
+    ]);
+  });
+
+  it("an unchanged priority adds no trail entry", async () => {
+    signIn("hr1", "HR");
+    expect((await patch({ priority: "MEDIUM" })).status).toBe(200);
+    expect(inserts).toHaveLength(0);
   });
 
   it("the creator cannot", async () => {

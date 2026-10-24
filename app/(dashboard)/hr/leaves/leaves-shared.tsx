@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusPill } from "@/components/ui/status-pill";
 import { PropertyList } from "@/components/shared/property-list";
 import type { Tone } from "@/lib/design/tones";
+import { leaveStatusLabel } from "@/lib/labels";
 
 export interface LeaveBalance {
   id: number;
@@ -160,7 +161,7 @@ export function leaveStatusTone(status: string): Tone {
 function LeaveStatusPill({ status }: { status: string }) {
   return (
     <StatusPill tone={leaveStatusTone(status)} dot>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {leaveStatusLabel(status)}
     </StatusPill>
   );
 }
@@ -236,7 +237,7 @@ export const WfhRequestItem = React.memo(function WfhRequestItem({
             {showStatusBadge && (
               <StatusPill tone={leaveStatusTone(status)} className="gap-1">
                 <StatusIcon className="size-3" aria-hidden="true" />
-                {status}
+                {leaveStatusLabel(status)}
               </StatusPill>
             )}
             {actions}

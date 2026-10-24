@@ -14,6 +14,7 @@ import { useHrDocuments, useHrLeaveApprovals } from "@/lib/api/hooks/hr";
 import { useHrEmployeePayslips } from "@/lib/api/hooks/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { parseCalendarDate } from "@/lib/date-utils";
+import { payrollStatusLabel } from "@/lib/labels";
 
 /**
  * The Documents, Leave and Payslips tabs on an employee profile (B7). Each one
@@ -145,7 +146,7 @@ export function EmployeePayslipsTab({ userId }: { userId: string }) {
               <TableCell className="whitespace-nowrap font-medium">
                 {format(parseISO(`${payslip.month}-01`), "MMMM yyyy")}
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">{payslip.status}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{payrollStatusLabel(payslip.status)}</TableCell>
               <TableCell className="text-right font-mono">
                 ₹{parseFloat(payslip.netSalary || "0").toLocaleString(DEFAULT_LOCALE)}
               </TableCell>

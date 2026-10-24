@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { X, Plus, Linkedin, Twitter, Github, Upload, Loader2 } from "lucide-react";
-import { useUpdateProfile } from "@/lib/api/hooks/hr";
+import { useUpdateOwnPhoto, useUpdateProfile } from "@/lib/api/hooks/hr";
 import { resolveImageUrl } from "@/lib/utils";
 import type { Employee } from "@/types/hr";
 
@@ -62,6 +62,7 @@ interface SelfEditProfileFormProps {
 
 export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormProps) {
   const updateProfile = useUpdateProfile();
+  const updatePhoto = useUpdateOwnPhoto();
   const [skills, setSkills] = useState<string[]>(employee.skills ?? []);
   const [imageUrl, setImageUrl] = useState<string>(employee.image ?? "");
   const [uploading, setUploading] = useState(false);
@@ -144,7 +145,7 @@ export function SelfEditProfileForm({ employee, onSaved }: SelfEditProfileFormPr
 
       const newUrl = json.url;
       setImageUrl(newUrl);
-      await updateProfile.mutateAsync({ userId: employee.id, image: newUrl });
+      await updatePhoto.mutateAsync(newUrl);
       toast.success("Profile photo updated");
       onSaved?.();
     } catch (err) {

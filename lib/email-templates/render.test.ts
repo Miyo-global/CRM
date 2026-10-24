@@ -15,7 +15,7 @@ describe("email template catalog (MIYO-0097..0100)", () => {
   });
 
   it.each(ids)("%s renders every placeholder with a text part", (id) => {
-    const vars = Object.fromEntries(templatePlaceholders(id).map((k) => [k, `v_${k}`]));
+    const vars = Object.fromEntries(templatePlaceholders(id).map((k) => [k, k.endsWith("_url") ? `https://x.test/v_${k}` : `v_${k}`]));
     const out = renderEmail(id, vars);
     for (const part of [out.subject, out.preheader, out.html, out.text]) expect(part).not.toMatch(/\{\{/);
     expect(out.text.length).toBeGreaterThan(20);
@@ -32,6 +32,13 @@ describe("email template catalog (MIYO-0097..0100)", () => {
     expect(out.text).toContain("A & B");
     const s = renderEmail("auth-invitation", { inviter_name: "O'Neil", org_name: "A & B" });
     expect(s.subject).toBe("O'Neil invited you to A & B");
+  });
+
+  it("drops non-http(s) *_url values from the HTML part", () => {
+    const bad = renderEmail("one-on-one-invite", { meeting_url: "javascript:alert(1)" });
+    expect(bad.html).not.toContain("javascript:");
+    const good = renderEmail("one-on-one-invite", { meeting_url: "https://meet.google.com/abc" });
+    expect(good.html).toContain('href="https://meet.google.com/abc"');
   });
 
   it("the invitation names the role and the inviter, and does not assume an account (QA-BUG-05)", () => {

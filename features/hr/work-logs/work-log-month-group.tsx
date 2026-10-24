@@ -4,10 +4,12 @@ import { format, isWeekend } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { WorkLogEntryRow } from "./work-log-entry-row";
+import { logForDay } from "@/lib/hr/work-log-view";
 
 interface WorkLog {
   id: number;
   date: string;
+  ticketId?: number | null;
   description?: string | null;
   workLink?: string | null;
   status?: string | null;
@@ -94,7 +96,7 @@ export function WorkLogMonthGroup({
           <div className="space-y-2 sm:space-y-4">
             {displayDays.map((date) => {
               const dateStr = format(date, "yyyy-MM-dd");
-              const log = logs?.find((l) => l.date === dateStr);
+              const log = logForDay(logs, dateStr);
               return (
                 <WorkLogEntryRow
                   key={dateStr}

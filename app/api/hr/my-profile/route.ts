@@ -5,9 +5,9 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 
+// The name is HR record data (payslips, letters) and is changed only through
+// PATCH /api/hr/employees/:id (R3-EMP-06).
 const updateSchema = z.object({
-  firstName: z.string().min(1).max(50).optional(),
-  lastName: z.string().min(1).max(50).optional(),
   phone: z.string().max(15).optional(),
   whatsappNumber: z.string().max(15).optional(),
   emergencyContact: z.object({
@@ -41,9 +41,6 @@ export async function PATCH(req: NextRequest) {
   return withAuth(async (session) => {
     const body = updateSchema.parse(await req.json());
     await db.update(users).set({
-      ...(body.firstName && { firstName: body.firstName }),
-      ...(body.lastName && { lastName: body.lastName }),
-      ...(body.firstName && body.lastName && { name: `${body.firstName} ${body.lastName}` }),
       ...(body.phone !== undefined && { phone: body.phone }),
       ...(body.whatsappNumber !== undefined && { whatsappNumber: body.whatsappNumber }),
       ...(body.emergencyContact && { emergencyContact: body.emergencyContact }),

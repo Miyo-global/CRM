@@ -1,9 +1,10 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { leaveBalances, leaveTypes, organizationMembers } from "@/lib/db/schema";
+import { leaveTypes, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { creditLeaveBalance } from "@/lib/hr/credit-leave-balance";
 
 export const dynamic = "force-dynamic";
 
@@ -55,32 +56,12 @@ export async function POST(req: NextRequest) {
     const leaveTypeId = compOffType.id;
     const year = new Date().getFullYear();
 
-    await db.transaction(async (tx) => {
-      const existing = await tx.query.leaveBalances.findFirst({
-        orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
-        where: and(
-          eq(leaveBalances.orgId, session.orgId),
-          eq(leaveBalances.userId, input.userId),
-          eq(leaveBalances.leaveTypeId, leaveTypeId),
-          eq(leaveBalances.year, year),
-        ),
-      });
-
-      if (existing) {
-        const newBalance = Number(existing.balance ?? 0) + input.days;
-        await tx
-          .update(leaveBalances)
-          .set({ balance: String(newBalance) })
-          .where(eq(leaveBalances.id, existing.id));
-      } else {
-        await tx.insert(leaveBalances).values({
-          orgId: session.orgId,
-          userId: input.userId,
-          leaveTypeId,
-          balance: String(input.days),
-          year,
-        });
-      }
+    await creditLeaveBalance(db, {
+      orgId: session.orgId,
+      userId: input.userId,
+      leaveTypeId,
+      year,
+      days: input.days,
     });
 
     return ok({

@@ -392,6 +392,7 @@ export default function IncentivesPage() {
         submitLabel="Set Rate"
         isPending={setConfigMutation.isPending}
         submitDisabled={!canSetRate}
+        submitDisabledReason={rateError ?? (newRate.trim() ? "Enter a valid rate." : "Enter the new rate.")}
       >
         {currentConfig && (
           <div className="rounded-lg bg-surface-sunken p-3">

@@ -383,7 +383,13 @@ export const timesheets = pgTable("timesheets", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_timesheets_user_date").on(table.userId, table.date),
-  unique("timesheets_org_user_date_unique").on(table.orgId, table.userId, table.date),
+  // drizzle/0194: one entry per ticket per day, one free-form work log per day.
+  uniqueIndex("uq_timesheets_org_user_date_ticket")
+    .on(table.orgId, table.userId, table.date, table.ticketId)
+    .where(sql`ticket_id IS NOT NULL`),
+  uniqueIndex("uq_timesheets_org_user_date_daily_log")
+    .on(table.orgId, table.userId, table.date)
+    .where(sql`ticket_id IS NULL`),
 ]);
 
 export const reports = pgTable("reports", {

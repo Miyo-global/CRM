@@ -81,6 +81,8 @@ export function amountSchema(rules: AmountRules): z.ZodType<number, number> {
 
 /** Same as amountSchema, but blank is allowed and comes out as undefined. */
 export function optionalAmountSchema(rules: AmountRules): z.ZodType<number | undefined, number | undefined> {
+  // .optional(): zod >=4.6 reports a missing key as "expected nonoptional"
+  // unless the transform's output is marked optional.
   return z.unknown().transform((raw, ctx): number | undefined => {
     const value = raw === "" ? undefined : toAmount(raw);
     const message = amountError(value, { ...rules, required: false });
@@ -89,5 +91,5 @@ export function optionalAmountSchema(rules: AmountRules): z.ZodType<number | und
       return z.NEVER;
     }
     return value;
-  }) as unknown as z.ZodType<number | undefined, number | undefined>;
+  }).optional() as unknown as z.ZodType<number | undefined, number | undefined>;
 }

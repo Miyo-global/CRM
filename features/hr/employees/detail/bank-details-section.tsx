@@ -7,14 +7,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { CreditCard } from "lucide-react";
 import type { EmployeeFormValues } from "@/app/(dashboard)/hr/employees/[employeeId]/edit-employee-form";
+// Account number, IFSC, SWIFT and holder name are kept as typed; the form
+// schema says what is wrong instead of silently dropping characters.
 import {
-  ACCOUNT_HOLDER_MAX,
-  BANK_ACCOUNT_NUMBER_MAX,
   BANK_NAME_MAX,
   BRANCH_NAME_MAX,
   IBAN_MAX_LENGTH,
-  IFSC_LENGTH,
-  SWIFT_CODE_MAX,
 } from "@/lib/validations/bank-details";
 
 export function BankDetailsSection() {
@@ -35,9 +33,9 @@ export function BankDetailsSection() {
               <FormLabel>Account Holder Name</FormLabel>
               <FormControl>
                 <Input
-                  maxLength={ACCOUNT_HOLDER_MAX}
+                  autoComplete="off"
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value.replace(/[^A-Za-z\s.'-]/g, ""))}
+                  onChange={(e) => field.onChange(e.target.value)}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -56,11 +54,9 @@ export function BankDetailsSection() {
               <FormControl>
                 <Input
                   inputMode="numeric"
-                  maxLength={BANK_ACCOUNT_NUMBER_MAX}
+                  autoComplete="off"
                   value={field.value ?? ""}
-                  onChange={(e) =>
-                    field.onChange(e.target.value.replace(/\D/g, "").slice(0, BANK_ACCOUNT_NUMBER_MAX))
-                  }
+                  onChange={(e) => field.onChange(e.target.value)}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -99,13 +95,9 @@ export function BankDetailsSection() {
               <FormControl>
                 <Input
                   className="uppercase"
-                  maxLength={IFSC_LENGTH}
+                  placeholder="SBIN0001234"
                   value={field.value ?? ""}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, IFSC_LENGTH),
-                    )
-                  }
+                  onChange={(e) => field.onChange(e.target.value)}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -144,13 +136,9 @@ export function BankDetailsSection() {
               <FormControl>
                 <Input
                   className="uppercase"
-                  maxLength={SWIFT_CODE_MAX}
+                  placeholder="HDFCINBB"
                   value={field.value ?? ""}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, SWIFT_CODE_MAX),
-                    )
-                  }
+                  onChange={(e) => field.onChange(e.target.value)}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}

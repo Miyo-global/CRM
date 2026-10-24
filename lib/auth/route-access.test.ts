@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync } from "fs";
 import { join } from "path";
-import { ADMIN_SETTINGS_PAGES, HR_SETTINGS_PAGES, ORG_ADMIN_SETTINGS_PAGES, canAccessRoute } from "./route-access";
+import { ADMIN_SETTINGS_PAGES, HR_SETTINGS_PAGES, ORG_ADMIN_SETTINGS_PAGES, canAccessRoute, isDisabledModuleRoute } from "./route-access";
+import { getNavGroupsForRole } from "@/components/layout/sidebar/sidebar-nav-items";
 import { SYSTEM_ROLES } from "@/lib/rbac/permissions";
 import { ROLE_LABELS } from "@/lib/rbac/roles";
 import { ALL_ROLES } from "@/lib/constants/roles";
@@ -156,5 +157,45 @@ describe("own employee record (QA-AUTH-09)", () => {
     expect(isOwnEmployeeRecord("/hr/employees/u2", "u1")).toBe(false);
     expect(isOwnEmployeeRecord("/hr/employees/u1/edit", "u1")).toBe(false);
     expect(isOwnEmployeeRecord("/hr/employees/u1", undefined)).toBe(false);
+  });
+});
+
+describe("HR is kept out of Organization, Data Export and System Health", () => {
+  const ORG_ONLY = ["/settings/organization", "/settings/data-hub", "/dashboard/admin-health"];
+
+  it.each([
+    ["CEO", true],
+    ["ADMIN", true],
+    ["HR", false],
+    ["EMPLOYEE", false],
+  ])("%s reaching the org-wide pages: %s", (role, allowed) => {
+    for (const path of ORG_ONLY) expect(canAccessRoute(path, role)).toBe(allowed);
+  });
+
+  it("HR keeps Members", () => {
+    expect(canAccessRoute("/settings/members", "HR")).toBe(true);
+  });
+
+  it("the HR menu does not link them, the admin menu does", () => {
+    const hrefs = (role: string) =>
+      getNavGroupsForRole(role).flatMap((g) => g.routes.map((r) => r.href));
+    for (const path of ORG_ONLY) expect(hrefs("HR")).not.toContain(path);
+    expect(hrefs("HR")).toContain("/settings/members");
+    expect(hrefs("ADMIN")).toEqual(expect.arrayContaining(ORG_ONLY));
+  });
+});
+
+describe("isDisabledModuleRoute (ATS off)", () => {
+  it("turns every ATS page and API away while the module is off", () => {
+    for (const path of ["/ats", "/ats/jobs/1", "/api/ats", "/api/ats/candidates", "/api/public/ats/apply"]) {
+      expect(isDisabledModuleRoute(path, false)).toBe(true);
+      expect(isDisabledModuleRoute(path, true)).toBe(false);
+    }
+  });
+
+  it("leaves look-alike paths alone", () => {
+    for (const path of ["/atsx", "/api/atsx", "/hr", "/api/hr/employees"]) {
+      expect(isDisabledModuleRoute(path, false)).toBe(false);
+    }
   });
 });

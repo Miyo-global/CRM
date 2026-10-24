@@ -27,9 +27,14 @@ export function sharedEmailVars(): Record<string, string> {
   };
 }
 
+// *_url values land in href="": escaping alone lets javascript:/data: through,
+// and meeting_url is user-entered, so only absolute http(s) links render.
+const SAFE_URL = /^https?:\/\//i;
+
 function fill(template: string, vars: Record<string, string>, escape: boolean): string {
   return template.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/g, (_m, key: string) => {
-    const value = vars[key] ?? "";
+    let value = vars[key] ?? "";
+    if (escape && key.endsWith("_url") && !SAFE_URL.test(value.trim())) value = "";
     return escape ? escapeHtml(value) : value;
   });
 }
