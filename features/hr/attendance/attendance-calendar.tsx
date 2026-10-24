@@ -15,6 +15,7 @@ import { useHrMonthlyAttendance, useHrWfhRequests, useHrHolidaysForCalendar } fr
 
 import { WEEKDAY_LABELS, CalendarDay, statusConfig } from "./attendance-utils";
 import { useHrMyLeaves } from "@/lib/api/hooks/hr/leaves-expenses";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -58,7 +59,7 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
     if (wfhRequests) {
       for (const req of wfhRequests) {
         if (req.status === "APPROVED") {
-          wfhMap.add(typeof req.date === "string" ? req.date : format(new Date(req.date), "yyyy-MM-dd"));
+          wfhMap.add(typeof req.date === "string" ? req.date : format(parseCalendarDate(req.date), "yyyy-MM-dd"));
         }
       }
     }

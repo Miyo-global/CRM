@@ -1,5 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
+import { canManage } from "@/lib/auth/role-change-rules";
 import { db } from "@/lib/db";
 import { terminations, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, desc, aliasedTable } from "drizzle-orm";
@@ -111,6 +112,11 @@ export async function POST(req: NextRequest) {
       return err("The CEO cannot be terminated through this process.", 400);
     }
     if (body.userId === session.user.id) return err("You cannot terminate yourself.", 400);
+    // R3-ADM-08: the same rank rule as role changes. Only the Super Admin
+    // starts a termination for an Admin or HR account.
+    if (!canManage({ userId: session.user.id, role: session.user.role }, { userId: body.userId, role: membership.role })) {
+      return err("Only the Super Admin can start a termination for an Admin or HR account.", 403);
+    }
 
     const configuredReasons = await ensureTerminationReasonsForOrg(
       session.orgId,

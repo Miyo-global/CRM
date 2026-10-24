@@ -6,6 +6,7 @@ import {
 import type { TerminationStatus } from "@/lib/api/hooks/hr";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import type { Tone } from "@/lib/design/tones";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 export { getInitials } from "@/lib/format-utils";
 
@@ -55,7 +56,7 @@ export function buildLetterPreview(params: {
   } = params;
 
   const dateStr = effectiveDate
-    ? format(new Date(effectiveDate), "MMMM d, yyyy")
+    ? format(parseCalendarDate(effectiveDate), "MMMM d, yyyy")
     : "[Date not set]";
   const reasonList =
     reasons.length > 0 ? reasons.join(", ") : "[No reasons selected]";

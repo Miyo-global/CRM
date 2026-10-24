@@ -20,6 +20,7 @@ import {
   type JobRoleRow,
 } from "./_lib/use-job-roles";
 import { JobRoleSheet } from "./_components/job-role-sheet";
+import { canManageJobRoles } from "@/lib/constants/roles";
 
 interface RoleGroup {
   key: string;
@@ -31,7 +32,7 @@ interface RoleGroup {
 export default function JobRolesSettingsPage() {
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const canEdit = role === "CEO" || role === "ADMIN";
+  const canEdit = canManageJobRoles(role);
 
   const { data: roles = [], isLoading } = useJobRolesAdmin();
   const { data: departments = [] } = useHrDepartments();
@@ -114,7 +115,7 @@ export default function JobRolesSettingsPage() {
       <PageWrapper title="Job roles">
         <EmptyState
           title="Access restricted"
-          description="Only Owners and Admins can manage job roles."
+          description="Only Admins and the Super Admin can manage job roles."
         />
       </PageWrapper>
     );

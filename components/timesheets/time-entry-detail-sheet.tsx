@@ -27,6 +27,7 @@ import {
   useRejectTimesheet,
 } from "@/lib/api/hooks/projects";
 import type { TimeEntryWithUser } from "@/types/projects";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 interface TimeEntryDetailSheetProps {
   entry: TimeEntryWithUser | null;
@@ -99,7 +100,7 @@ export function TimeEntryDetailSheet({ entry, open, onOpenChange }: TimeEntryDet
   const statusTone: Tone = statusKey === "APPROVED" ? "success" : statusKey === "REJECTED" ? "danger" : "warning";
 
   const properties: { label: string; value: React.ReactNode }[] = [
-    { label: "Date", value: <span className="tabular-nums">{format(new Date(entry.date), "MMMM d, yyyy")}</span> },
+    { label: "Date", value: <span className="tabular-nums">{format(parseCalendarDate(entry.date), "MMMM d, yyyy")}</span> },
     { label: "Hours", value: <span className="font-medium tabular-nums">{entry.hours || "0"}h</span> },
   ];
   if (entry.ticket?.project) {

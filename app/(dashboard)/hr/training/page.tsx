@@ -31,6 +31,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
 import { isAdminOrOwner } from "@/lib/constants/roles";
 import { DatePicker } from "@/components/ui/date-picker";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 function statusTone(status: string | null): Tone {
   if (status === "PUBLISHED") return "success";
@@ -170,7 +171,7 @@ export default function TrainingPage() {
                   <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
                     {program.category && <span className="flex items-center gap-1"><BookOpen className="size-3.5" aria-hidden="true" />{program.category}</span>}
                     {program.duration && <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{program.duration}</span>}
-                    {program.startDate && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />{format(new Date(program.startDate), "MMM d")}</span>}
+                    {program.startDate && <span className="flex items-center gap-1"><Calendar className="size-3.5" aria-hidden="true" />{format(parseCalendarDate(program.startDate), "MMM d")}</span>}
                     <span className="flex items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{enrolled} enrolled</span>
                   </div>
 

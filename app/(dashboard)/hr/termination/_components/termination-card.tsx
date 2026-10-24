@@ -24,6 +24,7 @@ import type { Termination } from "@/lib/api/hooks/hr";
 import { statusTone, statusLabel, getInitials } from "../_lib/utils";
 import { StatusPill } from "@/components/ui/status-pill";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { formatIST, parseCalendarDate } from "@/lib/date-utils";
 
 interface TerminationCardProps {
   record: Termination;
@@ -93,7 +94,7 @@ export function TerminationCard({
               {effectiveDate && (
                 <span className="flex items-center gap-1">
                   <Calendar className="size-3.5" aria-hidden="true" />
-                  Effective: {format(new Date(effectiveDate), "MMM d, yyyy")}
+                  Effective: {format(parseCalendarDate(effectiveDate), "MMM d, yyyy")}
                 </span>
               )}
               {severanceAmount && Number(severanceAmount) > 0 && (
@@ -224,19 +225,19 @@ export function TerminationCard({
           {record.initiator?.name && record.createdAt && (
             <span className="flex items-center gap-1">
               <Clock className="size-3" aria-hidden="true" />
-              Initiated by <span className="font-medium text-foreground">{record.initiator.name}</span> on {format(new Date(record.createdAt), "d MMM yyyy")}
+              Initiated by <span className="font-medium text-foreground">{record.initiator.name}</span> on {formatIST(record.createdAt, { hour: undefined, minute: undefined })}
             </span>
           )}
           {record.ceoReviewer?.name && record.ceoReviewedAt && (
             <span className="flex items-center gap-1">
               <Check className="size-3" aria-hidden="true" />
-              {status === "REJECTED" ? "Rejected" : "Reviewed"} by <span className="font-medium text-foreground">{record.ceoReviewer.name}</span> on {format(new Date(record.ceoReviewedAt), "d MMM yyyy")}
+              {status === "REJECTED" ? "Rejected" : "Reviewed"} by <span className="font-medium text-foreground">{record.ceoReviewer.name}</span> on {formatIST(record.ceoReviewedAt, { hour: undefined, minute: undefined })}
             </span>
           )}
           {record.emailSentAt && (
             <span className="flex items-center gap-1">
               <Mail className="size-3" aria-hidden="true" />
-              Email sent {format(new Date(record.emailSentAt), "d MMM yyyy")}
+              Email sent {formatIST(record.emailSentAt, { hour: undefined, minute: undefined })}
             </span>
           )}
         </div>

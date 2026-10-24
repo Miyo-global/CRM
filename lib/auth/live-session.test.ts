@@ -53,6 +53,12 @@ describe("liveAuth (SEC-0007)", () => {
     expect(await liveAuth()).toBeNull();
   });
 
+  it("rejects a non-admin session once Portal Access is off (R3-SA-01)", async () => {
+    authMock.mockResolvedValue({ user: { id: "u1", role: "EMPLOYEE", isActive: true, hasDashboardAccess: false }, sessionId: "s1" });
+    findSession.mockResolvedValue({ isRevoked: false, userId: "u1" });
+    expect(await liveAuth()).toBeNull();
+  });
+
   it("fails closed when the session store is unreachable", async () => {
     authMock.mockResolvedValue(session());
     findSession.mockRejectedValue(new Error("db down"));

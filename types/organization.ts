@@ -36,6 +36,7 @@ export interface OrgMember {
   email: string;
   image: string | null;
   hasDashboardAccess?: boolean;
+  isActive?: boolean | null;
 }
 
 export interface Invitation {

@@ -23,6 +23,7 @@ import { TicketFilterBar } from "@/components/projects/shared/ticket-filter-bar"
 import { ticketKey } from "@/lib/projects/ticket-key";
 import { useMyWork } from "@/lib/hooks/trpc-hooks";
 import { useSearchParams } from "next/navigation";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 /**
  * MIYO-0113: one list of everything assigned to me, across projects. Rows
@@ -152,7 +153,7 @@ export default function MyWorkPage() {
                           <PriorityBadge priority={ticket.priority} showLabel />
                         </TableCell>
                         <TableCell className="text-xs tabular-nums text-muted-foreground">
-                          {ticket.dueDate ? format(new Date(ticket.dueDate), "MMM d") : ""}
+                          {ticket.dueDate ? format(parseCalendarDate(ticket.dueDate), "MMM d") : ""}
                         </TableCell>
                       </TableRow>
                     );

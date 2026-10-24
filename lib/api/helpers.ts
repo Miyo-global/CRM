@@ -5,6 +5,7 @@ import { redis } from "@/lib/redis";
 import { db } from "@/lib/db";
 import { organizationMembers } from "@/lib/db/schema";
 import { sessionRevocationState } from "@/lib/auth/live-session";
+import { isPortalAccessBlocked } from "@/lib/auth/portal-access";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getErrorMessage } from "@/lib/get-error-message";
@@ -47,6 +48,12 @@ export function err(message: string, status = 400): NextResponse<never> {
 
 
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
+
+/** Postgres unique-constraint violation (23505), as thrown by drizzle/pg. */
+export function isUniqueViolation(e: unknown): boolean {
+  const code = (x: unknown) => (x as { code?: unknown } | null)?.code;
+  return code(e) === "23505" || code((e as { cause?: unknown } | null)?.cause) === "23505";
+}
 
 /**
  * 500 response that never leaks the underlying error (SQL text, org ids,
@@ -117,7 +124,9 @@ export async function withAuth<T>(
   let orgId: string | null | undefined = session.orgId;
   let branchId: number | null = (session as { branchId?: number | null }).branchId ?? null;
 
-  if (session.user.isActive === false) {
+  // R2-LC-17 / R3-SA-01: Portal Access OFF ends API access too, not only
+  // page loads (the jwt callback refreshes both flags from the database).
+  if (session.user.isActive === false || isPortalAccessBlocked(session.user.role, session.user.hasDashboardAccess)) {
     return NextResponse.json({ error: "Account deactivated" } as T, { status: 403 });
   }
 
@@ -194,6 +203,10 @@ export async function withAuth<T>(
     const res = await handler(authSession);
     lap("handler");
     res.headers?.set("Server-Timing", timing.join(", "));
+    // Per-user data must never sit in a shared cache; Vercel's default is
+    // `public, max-age=0, must-revalidate` (R3-NET-02). A route that sets its
+    // own policy (e.g. image proxy) keeps it.
+    if (!res.headers?.has("Cache-Control")) res.headers?.set("Cache-Control", "private, no-store");
     return res;
   } catch (e) {
     if (e instanceof z.ZodError) {

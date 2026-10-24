@@ -68,6 +68,13 @@ describe("withAuth session revocation", () => {
     expect((await withAuth(handler)).status).toBe(403);
   });
 
+  it("rejects a non-admin whose Portal Access is off, keeps admins in (R3-SA-01)", async () => {
+    signIn({ user: { id: "u1", role: "EMPLOYEE", isActive: true, hasDashboardAccess: false } });
+    expect((await withAuth(handler)).status).toBe(403);
+    signIn({ user: { id: "u1", role: "ADMIN", isActive: true, hasDashboardAccess: false } });
+    expect((await withAuth(handler)).status).toBe(200);
+  });
+
   it("allows a live session", async () => {
     signIn();
     expect((await withAuth(handler)).status).toBe(200);

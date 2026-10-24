@@ -1,5 +1,6 @@
 "use server";
 
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { db } from "@/lib/db";
 import { documents, organizationMembers } from "@/lib/db/schema";
 import { eq, and, desc, or, lte } from "drizzle-orm";
@@ -115,8 +116,8 @@ export async function getDocuments(filters?: {
   return await db.query.documents.findMany({
     where: and(...conditions),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [desc(documents.createdAt)],
   });
@@ -139,8 +140,8 @@ export async function getMyDocuments() {
       eq(documents.isActive, true)
     ),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [desc(documents.createdAt)],
   });
@@ -168,8 +169,8 @@ export async function getEmployeeDocuments(employeeId: string) {
       eq(documents.isActive, true)
     ),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [desc(documents.createdAt)],
   });
@@ -193,8 +194,8 @@ export async function getCompanyPolicies() {
       eq(documents.isPublic, true)
     ),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [desc(documents.createdAt)],
   });
@@ -217,8 +218,8 @@ export async function getPublicDocuments(limit: number = 6) {
       eq(documents.isPublic, true)
     ),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [desc(documents.createdAt)],
     limit,
@@ -247,8 +248,8 @@ export async function getExpiringDocuments(daysAhead: number = 30) {
       lte(documents.expiryDate, futureDate.toISOString().split('T')[0])
     ),
     with: {
-      user: true,
-      uploader: true,
+      user: USER_CARD,
+      uploader: USER_CARD,
     },
     orderBy: [documents.expiryDate],
   });

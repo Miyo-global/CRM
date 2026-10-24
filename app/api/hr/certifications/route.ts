@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { certifications, organizationMembers } from "@/lib/db/schema";
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
 
     const data = await db.query.certifications.findMany({
       where: and(...conditions),
-      with: { user: true },
+      with: { user: USER_CARD },
       orderBy: [desc(certifications.createdAt)],
     });
     return ok(data);

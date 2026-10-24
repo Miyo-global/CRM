@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
@@ -18,7 +19,7 @@ export async function GET(
 
     const data = await db.query.terminations.findFirst({
       where: and(eq(terminations.id, terminationId), eq(terminations.orgId, session.orgId)),
-      with: { user: true, initiator: true, ceoReviewer: true },
+      with: { user: USER_CARD, initiator: USER_CARD, ceoReviewer: USER_CARD },
     });
     if (!data) return err("Termination not found.", 404);
 

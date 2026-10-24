@@ -44,6 +44,7 @@ import type { Employee } from "@/types/hr";
 
 import { getErrorMessage } from "@/lib/get-error-message";
 import { isCEO as isCeoRole } from "@/lib/constants/roles";
+import { canManage } from "@/lib/auth/role-change-rules";
 import {
   TERMINATION_STATUSES,
   TERMINATION_STATUS_LABELS,
@@ -57,6 +58,7 @@ import {
   type StatusFilter,
 } from "./_lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 export default function TerminationPage() {
   const { data: session } = useSession();
@@ -115,9 +117,10 @@ export default function TerminationPage() {
   const terminableEmployees = useMemo(
     () =>
       employees.filter(
-        (emp) => !isCeoRole(emp.role) && emp.id !== currentUserId,
+        // R3-ADM-08: same rule the API enforces on create.
+        (emp) => canManage({ userId: currentUserId, role }, { userId: emp.id, role: emp.role }),
       ),
-    [employees, currentUserId],
+    [employees, currentUserId, role],
   );
 
   const selectedEmployee = useMemo(
@@ -757,7 +760,7 @@ export default function TerminationPage() {
               </Label>
               <p className="text-sm">
                 {reviewRecord.effectiveDate
-                  ? format(new Date(reviewRecord.effectiveDate), "MMMM d, yyyy")
+                  ? format(parseCalendarDate(reviewRecord.effectiveDate), "MMMM d, yyyy")
                   : ""}
               </p>
             </div>
@@ -873,7 +876,7 @@ export default function TerminationPage() {
           if (!open) setCompleteId(null);
         }}
         title="Complete termination"
-        description="This will deactivate the employee's account, initiate Full & Final settlement, and create asset return records. This action cannot be undone."
+        description="This will initiate Full & Final settlement and create asset return records. The employee's account, portal access and open sessions are closed now, or on the day after the effective date if that is still ahead. This action cannot be undone."
         confirmLabel="Complete Termination"
         variant="destructive"
         onConfirm={handleCompleteConfirm}

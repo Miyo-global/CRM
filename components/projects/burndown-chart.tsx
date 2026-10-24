@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSprintBurndown } from "@/lib/api/hooks/projects";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 interface BurndownChartProps {
   sprintId: number;
@@ -118,7 +119,7 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
 
             {actualBurndown.length > 0 && actualBurndown.map((point, index) => {
               const dateIndex = idealBurndown.findIndex(
-                (d) => format(d.date, "yyyy-MM-dd") === format(new Date(point.date), "yyyy-MM-dd")
+                (d) => format(d.date, "yyyy-MM-dd") === format(parseCalendarDate(point.date), "yyyy-MM-dd")
               );
               if (dateIndex === -1) return null;
 
@@ -126,7 +127,7 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
               const nextPoint = actualBurndown[index + 1];
               const nextDateIndex = nextPoint
                 ? idealBurndown.findIndex(
-                    (d) => format(d.date, "yyyy-MM-dd") === format(new Date(nextPoint.date), "yyyy-MM-dd")
+                    (d) => format(d.date, "yyyy-MM-dd") === format(parseCalendarDate(nextPoint.date), "yyyy-MM-dd")
                   )
                 : -1;
 
@@ -164,7 +165,7 @@ export function BurndownChart({ sprintId, projectId }: BurndownChartProps) {
                       setHoveredPoint({
                         x: rect.left,
                         y: rect.top,
-                        date: format(new Date(point.date), "MMM dd"),
+                        date: format(parseCalendarDate(point.date), "MMM dd"),
                         points: Number(point.points),
                       });
                     }}

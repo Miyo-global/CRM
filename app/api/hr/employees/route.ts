@@ -1,6 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { redactSalary } from "@/lib/hr/redact-salary";
-import { toDirectoryEntry } from "@/lib/hr/directory-view";
+import { toDirectoryEntry, toPickerEntry } from "@/lib/hr/directory-view";
 import { getEmployees, getEmployeesPaginated } from "@/server/queries/hr";
 import { clampPageSize, DEFAULT_PAGE_SIZE } from "@/lib/pagination-constants";
 import type { EmployeeListFilters } from "@/server/queries/hr/employees";
@@ -25,7 +25,12 @@ export async function GET(req: NextRequest) {
     const dept = searchParams.get("dept") ?? undefined;
     const role = searchParams.get("role") ?? undefined;
     const status = searchParams.get("status");
-
+    // Pickers ask for ?fields=picker and get {id, name, image, department...}
+    // only, whatever the viewer's role (R3-NET-01).
+    const shape = (row: Employee) =>
+      (searchParams.get("fields") === "picker"
+        ? toPickerEntry(row, session.user)
+        : toDirectoryEntry(redactSalary(row, session.user), session.user)) as Employee;
 
     const wantsPaginated =
       page != null ||
@@ -51,17 +56,11 @@ export async function GET(req: NextRequest) {
       return ok({
         ...data,
         // Non-admins get a directory card, not the HR record (QA-0062).
-        data: data.data.map(
-          (row) => toDirectoryEntry(redactSalary(row, session.user), session.user) as Employee,
-        ),
+        data: data.data.map(shape),
       });
     }
 
     const data = await getEmployees(session.orgId);
-    return ok(
-      data.map(
-        (row) => toDirectoryEntry(redactSalary(row, session.user), session.user) as Employee,
-      ),
-    );
+    return ok(data.map(shape));
   });
 }

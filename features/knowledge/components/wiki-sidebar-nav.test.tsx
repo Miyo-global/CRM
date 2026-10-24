@@ -28,11 +28,10 @@ const activeHrefs = (html: string) =>
     .map(({ href }) => href);
 
 describe("KB-0068: the wiki sidebar", () => {
-  it("links the eight everyday destinations", () => {
+  it("links the everyday destinations", () => {
     const html = render("/knowledge/wiki");
     for (const href of [
       "/knowledge/wiki",
-      "/knowledge/wiki/search",
       "/knowledge/wiki/private",
       "/knowledge/wiki/shared",
       "/knowledge/wiki/spaces",
@@ -40,6 +39,10 @@ describe("KB-0068: the wiki sidebar", () => {
     ]) {
       expect(html).toContain(`href="${href}"`);
     }
+  });
+
+  it("has no Search link, so no wiki page prefetches a 404 (R3-KB-01)", () => {
+    expect(render("/knowledge/wiki")).not.toContain("/knowledge/wiki/search");
   });
 
   it("marks only wiki home active on wiki home", () => {

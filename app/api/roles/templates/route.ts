@@ -3,7 +3,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { roles } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 
@@ -45,8 +45,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
-      return err("Only CEO or Admin can create roles", 403);
+    // R3-ROLE-01: custom roles are a Super Admin decision (roles:manage).
+    if (!roleHasPermission(session.user.role, "roles:manage")) {
+      return err("Only the Super Admin can create custom roles.", 403);
     }
 
     const input = await parseBody(req, cloneSchema);

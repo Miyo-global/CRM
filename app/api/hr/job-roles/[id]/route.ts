@@ -3,7 +3,9 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { jobRoles, departments } from "@/lib/db/schema";
 import { and, eq, isNull, ne } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+// R3-HR-05: the job-role catalog is managed by Admins and the Super Admin
+// only, here and in the Add-employee wizard (same rule as /settings/job-roles).
+import { canManageJobRoles } from "@/lib/constants/roles";
 import { z } from "zod";
 
 const JOB_ROLE_TITLE_MIN = 2;
@@ -32,8 +34,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
-      return err("Only Admins and Owners can edit job roles.", 403);
+    if (!canManageJobRoles(session.user.role)) {
+      return err("Only Admins and the Super Admin can edit job roles.", 403);
     }
 
     const { id: idParam } = await params;
@@ -95,8 +97,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
-      return err("Only Admins and Owners can delete job roles.", 403);
+    if (!canManageJobRoles(session.user.role)) {
+      return err("Only Admins and the Super Admin can delete job roles.", 403);
     }
 
     const { id: idParam } = await params;

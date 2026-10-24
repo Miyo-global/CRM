@@ -44,6 +44,16 @@ export async function POST(req: NextRequest) {
 
   if (!tokenRecord) return err("Invalid or expired reset token", 400);
 
+  // R3-SA-11: a link issued before the account was closed does not reopen it.
+  // (Portal Access is not checked here: set-up links post to this route too.)
+  const owner = await db.query.users.findFirst({
+    where: eq(users.email, tokenRecord.email),
+    columns: { isActive: true },
+  });
+  if (!owner || owner.isActive === false) {
+    return err("Invalid or expired reset token", 400);
+  }
+
   const hashedPassword = await bcrypt.hash(input.password, 12);
 
   const updatedUser = await db.transaction(async (tx) => {

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatHoursMinutes } from "@/lib/format-utils";
 import type { TimeEntryWithUser } from "@/types/projects";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 type TimesheetEntry = TimeEntryWithUser;
 
@@ -27,7 +28,7 @@ export const WeeklyProductivityChart = memo(function WeeklyProductivityChart({
 
     if (timesheets) {
       timesheets.forEach((entry) => {
-        const dayName = format(new Date(entry.date), "EEE");
+        const dayName = format(parseCalendarDate(entry.date), "EEE");
         const shortDay = dayName.slice(0, 3);
         if (dayMap.has(shortDay)) {
           dayMap.set(shortDay, (dayMap.get(shortDay) || 0) + parseFloat(entry.hours || "0"));

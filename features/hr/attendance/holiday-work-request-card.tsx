@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format, parseISO, startOfDay } from "date-fns";
+import { parseISO, startOfDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ import {
 } from "@/lib/api/hooks/hr/payroll-extended";
 import { getErrorMessage } from "@/lib/get-error-message";
 import type { HolidayWorkRequest } from "@/lib/api/hooks/hr/payroll-extended";
+import { getTodayString } from "@/lib/date-utils";
 
 const statusBadge = (status: string) => {
   if (status === "APPROVED") return <Badge className="bg-success-soft text-success-strong border-success-strong/25">Approved</Badge>;
@@ -49,7 +50,7 @@ interface HolidayWorkRequestCardProps {
 
 export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [requestDate, setRequestDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [requestDate, setRequestDate] = useState(getTodayString());
   const [reason, setReason] = useState("");
   const [compensation, setCompensation] = useState<"COMP_OFF" | "EXTRA_PAY">("COMP_OFF");
   const [rejectTarget, setRejectTarget] = useState<HolidayWorkRequest | null>(null);
@@ -72,7 +73,7 @@ export function HolidayWorkRequestCard({ isAdmin }: HolidayWorkRequestCardProps)
           toast.success("Request submitted");
           setSheetOpen(false);
           setReason("");
-          setRequestDate(format(new Date(), "yyyy-MM-dd"));
+          setRequestDate(getTodayString());
           setCompensation("COMP_OFF");
         },
         onError: (e) => toast.error(getErrorMessage(e)),

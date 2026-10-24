@@ -3,7 +3,9 @@ import { withAuth, ok, err, parseBody, parseQuery } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { jobRoles, departments } from "@/lib/db/schema";
 import { and, asc, eq, or, isNull } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+// R3-HR-05: the job-role catalog is managed by Admins and the Super Admin
+// only, here and in the Add-employee wizard (same rule as /settings/job-roles).
+import { canManageJobRoles } from "@/lib/constants/roles";
 import { z } from "zod";
 
 const JOB_ROLE_TITLE_MIN = 2;
@@ -77,8 +79,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) {
-      return err("Only Admins and Owners can create job roles.", 403);
+    if (!canManageJobRoles(session.user.role)) {
+      return err("Only Admins and the Super Admin can create job roles.", 403);
     }
 
     const body = await parseBody(req, createSchema);

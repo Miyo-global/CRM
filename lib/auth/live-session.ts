@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { userSessions } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
+import { isPortalAccessBlocked } from "@/lib/auth/portal-access";
 
 const SESSION_CHECK_TTL = 60;
 
@@ -57,5 +58,6 @@ export async function liveAuth(): Promise<Session | null> {
   const session = (await auth()) as Session | null;
   if (!session?.user?.id) return null;
   if (session.user.isActive === false) return null;
+  if (isPortalAccessBlocked(session.user.role, session.user.hasDashboardAccess)) return null;
   return (await sessionRevocationState(session)) === "live" ? session : null;
 }

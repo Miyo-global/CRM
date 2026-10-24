@@ -23,6 +23,7 @@ import { BankDetailsSection } from "@/features/hr/employees/detail/bank-details-
 import { ActiveStatusSection } from "@/features/hr/employees/detail/active-status-section";
 import { PortalAccessSection } from "@/features/hr/employees/portal-access-section";
 import { filterAssignableOrgRoles } from "@/lib/rbac/roles";
+import { canGrantRole } from "@/lib/auth/role-change-rules";
 
 export type EmployeeFormValues = EditEmployeeFormValues;
 
@@ -74,8 +75,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const updateProfileMutation = useUpdateProfile();
   const { data: orgRoles } = useRolesList();
   const assignableRoles = useMemo(
-    () => filterAssignableOrgRoles(orgRoles || []),
-    [orgRoles],
+    // R3-HR-02: only roles the actor may grant, plus the one held now.
+    () =>
+      filterAssignableOrgRoles(orgRoles || []).filter(
+        (r) => r.slug === employee.role || canGrantRole(session?.user?.role, r.slug),
+      ),
+    [orgRoles, employee.role, session?.user?.role],
   );
 
   const form = useForm<EmployeeFormValues>({

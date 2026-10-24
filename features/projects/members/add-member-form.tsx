@@ -21,7 +21,7 @@ const ROLES = [
 ] as const;
 
 export function AddMemberForm({ projectId, existingIds, allowOwner }: { projectId: number; existingIds: string[]; allowOwner: boolean }) {
-  const { data: employeesData } = useHrEmployees();
+  const { data: employeesData } = useHrEmployees({ fields: "picker" });
   const people = useMemo(() => {
     const list = Array.isArray(employeesData) ? employeesData : employeesData?.data ?? [];
     return list.filter((p) => !existingIds.includes(p.id));

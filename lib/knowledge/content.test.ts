@@ -5,6 +5,7 @@ import {
   extractContentText,
   extractMentions,
   extractPageLinks,
+  toTiptapDoc,
 } from "./content";
 
 const plate = [
@@ -156,5 +157,33 @@ describe("extractMentions", () => {
 
   it("ignores a mention with no id", () => {
     expect(extractMentions([{ type: "mention", children: [{ text: "@ghost" }] }])).toEqual([]);
+  });
+});
+
+describe("toTiptapDoc (R3-PRJ-05)", () => {
+  it("passes a Tiptap doc through untouched", () => {
+    const doc = { type: "doc", content: [{ type: "paragraph" }] };
+    expect(toTiptapDoc(doc)).toBe(doc);
+  });
+
+  it("turns Plate blocks into headings, quotes and paragraphs", () => {
+    expect(
+      toTiptapDoc([
+        { type: "h2", children: [{ text: "Steps" }] },
+        { type: "blockquote", children: [{ text: "Note" }] },
+        { type: "p", children: [{ text: "" }] },
+      ]),
+    ).toEqual({
+      type: "doc",
+      content: [
+        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Steps" }] },
+        { type: "blockquote", content: [{ type: "paragraph", content: [{ type: "text", text: "Note" }] }] },
+        { type: "paragraph" },
+      ],
+    });
+  });
+
+  it("gives a blank page one empty paragraph", () => {
+    expect(toTiptapDoc(null)).toEqual({ type: "doc", content: [{ type: "paragraph" }] });
   });
 });

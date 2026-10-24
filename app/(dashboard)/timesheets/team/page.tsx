@@ -24,6 +24,7 @@ import { ViewSettingsCard } from "@/features/timesheets/team/view-settings-card"
 import { TeamSummary } from "@/features/timesheets/team/team-summary";
 import { TeamTable } from "@/features/timesheets/team/team-table";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 
 type TimesheetEntry = TimeEntryWithUser;
 type ViewMode = "day" | "week" | "month";
@@ -109,7 +110,7 @@ function TeamTimesheetsContent() {
     endDate: prevWeekRange.end,
   });
 
-  const { data: employeesData } = useHrEmployees();
+  const { data: employeesData } = useHrEmployees({ fields: "picker" });
   const employees = Array.isArray(employeesData) ? employeesData : employeesData?.data ?? [];
 
   const { data: projectsData } = useProjects();
@@ -147,7 +148,7 @@ function TeamTimesheetsContent() {
       const headers = ["Employee", "Date", "Project", "Ticket", "Hours", "Description", "Status"];
       const rows = timesheets.map((entry) => [
         `${entry.user?.firstName || ""} ${entry.user?.lastName || ""}`.trim(),
-        format(new Date(entry.date), "yyyy-MM-dd"),
+        format(parseCalendarDate(entry.date), "yyyy-MM-dd"),
         entry.ticket?.project?.name || "N/A",
         entry.ticketId ? `#${entry.ticketId}` : "N/A",
         entry.hours || "0",
@@ -167,7 +168,7 @@ function TeamTimesheetsContent() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `team-timesheets-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.download = `team-timesheets-${getTodayString()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("CSV exported successfully");

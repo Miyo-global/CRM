@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatHoursMinutes } from "@/lib/format-utils";
 import { toneDot, toneForKey, type Tone } from "@/lib/design/tones";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 const STATUS_TONES: Record<string, Tone> = {
   APPROVED: "success",
@@ -70,7 +71,7 @@ export function TimesheetTableRow({ entry, onEdit, onDelete }: TimesheetTableRow
     <TableRow>
       <TableCell className="whitespace-nowrap px-4 sm:px-6">
         <span className="text-sm font-medium tabular-nums">
-          {format(new Date(entry.date), "MMM dd, yyyy")}
+          {format(parseCalendarDate(entry.date), "MMM dd, yyyy")}
         </span>
       </TableCell>
       <TableCell className="px-4 sm:px-6">

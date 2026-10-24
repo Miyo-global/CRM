@@ -17,6 +17,7 @@ import {
   statusLabel,
   type ProjectGroupBy,
 } from "./project-options";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 const NONE = "none";
 
@@ -93,7 +94,7 @@ function ProjectRow({ project }: { project: ProjectListItem }) {
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">{managerName(project.manager)}</TableCell>
       <TableCell className="text-xs tabular-nums text-muted-foreground">
-        {project.endDate ? format(new Date(project.endDate), "MMM d, yyyy") : "No due date"}
+        {project.endDate ? format(parseCalendarDate(project.endDate), "MMM d, yyyy") : "No due date"}
       </TableCell>
       <TableCell className="w-12 text-right">
         <ProjectRowActions project={project} />

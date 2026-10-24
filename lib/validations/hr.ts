@@ -12,6 +12,7 @@ import { bankDetailsSchema, optionalBankDetailsSchema } from "@/lib/validations/
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
+import { getTodayString, isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 
 /**
  * Department ↔ System-Role compatibility (D10).
@@ -334,7 +335,7 @@ function refineJoiningDateOptional(
     });
   }
 
-  const maxFuture = startOfCalendarDay(new Date());
+  const maxFuture = parseCalendarDate(getTodayString());
   maxFuture.setFullYear(maxFuture.getFullYear() + 1);
   if (joining > maxFuture) {
     ctx.addIssue({
@@ -425,15 +426,21 @@ function refineFlatBankDetails(values: FlatBankFormValues, ctx: z.RefinementCtx)
   }
 }
 
+/** "YYYY-MM-DD" becomes that local calendar day, never UTC midnight (R3-TZ-01). */
+const calendarDay = (v: unknown) => (isDateOnly(v) ? parseCalendarDate(v) : v);
+
 const requiredDateSchema = (label: string) =>
-  z.coerce.date({
-    message: `${label} is required`,
-  });
+  z.preprocess(
+    calendarDay,
+    z.coerce.date({
+      message: `${label} is required`,
+    }),
+  );
 
 /** Empty / cleared picker is "not given"; anything else must be a real date. */
 const optionalDateSchema = (label: string) =>
   z.preprocess(
-    (v) => (v === "" || v === null ? undefined : v),
+    (v) => (v === "" || v === null ? undefined : calendarDay(v)),
     z.coerce.date({ message: `${label} is not a valid date` }).optional(),
   );
 const fileUrlSchema = storedFileRefSchema;
@@ -665,7 +672,9 @@ export const onboardEmployeeInputSchema = z
     bankDetails: optionalBankDetailsSchema,
   })
   .superRefine((data, ctx) => {
-    const today = startOfCalendarDay(new Date());
+    // Org-timezone today on client and server, so a New York browser and a
+    // UTC server agree on who is exactly 18 (R3-ONB-06).
+    const today = parseCalendarDate(getTodayString());
     const established = startOfCalendarDay(getCompanyEstablishedDate());
     const establishedLabel = format(established, "MMMM d, yyyy");
 

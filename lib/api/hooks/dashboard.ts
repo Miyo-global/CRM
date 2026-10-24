@@ -42,7 +42,8 @@ export const useMyIssues = (
   return useQuery<MyIssue[], Error>({
     queryKey: queryKeys.dashboard.myIssues(userId),
     queryFn: () =>
-      apiClient.get<MyIssue[]>("/dashboard/my-issues", { userId, limit: "20" }),
+      // The server reads the user from the session (R3-NET-03); userId only keys the cache.
+      apiClient.get<MyIssue[]>("/dashboard/my-issues", { limit: "20" }),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
     ...options,

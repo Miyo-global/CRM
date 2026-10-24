@@ -60,7 +60,7 @@ export function ProjectCreateWizard({ open, onOpenChange }: { open: boolean; onO
   const router = useRouter();
   const [step, setStep] = useState(0);
   const create = useCreateProject();
-  const { data: employeesData } = useHrEmployees();
+  const { data: employeesData } = useHrEmployees({ fields: "picker" });
   const people = Array.isArray(employeesData) ? employeesData : employeesData?.data ?? [];
   const form = useForm<ProjectCreateValues>({ resolver: zodResolver(projectCreateSchema), defaultValues: DEFAULTS, mode: "onTouched" });
   const keyCheck = useKeyAvailability(form.watch("key"));

@@ -14,6 +14,7 @@ import { weeklyProjectReport } from "./weekly-project-report";
 import { eventReminders } from "./event-reminders";
 import { leaveEscalation } from "./leave-escalation";
 import { autoPayrollGeneration } from "./auto-payroll-generation";
+import { deactivateExitedEmployees } from "./deactivate-exited-employees";
 
 // Scheduled jobs that also have a Vercel cron route (daily notifications,
 // auto-checkout, holiday notifications, weekly attendance, weekly CEO recap,
@@ -35,4 +36,5 @@ export const inngestFunctions = [
   leaveEscalation,
   autoPayrollGeneration,
   celebrationGreetings,
+  deactivateExitedEmployees,
 ];

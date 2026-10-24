@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { attendance } from "@/lib/db/schema";
 import { timesheets } from "@/lib/db/schema/projects";
 import { eq, and, desc, isNull } from "drizzle-orm";
-import { parseAttendancePunchBody, resolvePunchDate } from "@/lib/validations/attendance";
+import { getTodayString } from "@/lib/date-utils";
 import { notifyHrEmployeeCheckOut } from "@/lib/hr/attendance-hr-notifications";
 import { OVERTIME_PROMPT_MIN_HOURS } from "@/lib/hr/payroll-calculations";
 import { getWorkLogBlockReason } from "@/lib/hr/work-log-guard";
@@ -12,8 +12,10 @@ import type { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    const body = parseAttendancePunchBody(await req.json().catch(() => ({})));
-    const today = resolvePunchDate(body.localDate);
+    // Org-timezone today, the same key the status, break and check-out
+    // queries use. Trusting the browser's date wrote rows the status read
+    // never found (R3-EMP-01).
+    const today = getTodayString();
 
     const workLogBlocked = await getWorkLogBlockReason(
       session.orgId,

@@ -33,6 +33,7 @@ import { LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
 import { ALLOWED_LEAVE_TYPE_NAMES } from "@/lib/leave-policy";
 import { ExportButton } from "@/components/ui/export-button";
 import { pluralise } from "@/lib/format-utils";
+import { getTodayString } from "@/lib/date-utils";
 
 
 const LEAVE_STATUS_FILTER_OPTIONS = [
@@ -337,7 +338,7 @@ export function LeavesTabContent({ balances, myLeaveRequests }: LeavesTabContent
                 </PopoverContent>
               </Popover>
               <ExportButton
-                filename={`leave-requests-${format(new Date(), "yyyy-MM-dd")}`}
+                filename={`leave-requests-${getTodayString()}`}
                 sheets={exportSheets}
               />
             </div>

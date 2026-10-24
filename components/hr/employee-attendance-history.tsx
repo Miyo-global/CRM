@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useHrAttendanceSummary } from "@/lib/api/hooks/hr";
 import { format } from "date-fns";
+import { formatISTTime } from "@/lib/date-utils";
 import {
   Table,
   TableBody,
@@ -250,10 +251,10 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
                         </StatusPill>
                       </TableCell>
                       <TableCell>
-                        {record.checkIn ? format(new Date(record.checkIn), "hh:mm a") : "-"}
+                        {record.checkIn ? formatISTTime(record.checkIn) : "-"}
                       </TableCell>
                       <TableCell>
-                        {record.checkOut ? format(new Date(record.checkOut), "hh:mm a") : "-"}
+                        {record.checkOut ? formatISTTime(record.checkOut) : "-"}
                       </TableCell>
                       <TableCell className="text-right font-semibold">{record.workHours}h</TableCell>
                     </TableRow>

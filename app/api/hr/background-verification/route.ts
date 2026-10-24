@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
@@ -25,7 +26,7 @@ export async function GET() {
   return withAuth(async (session) => {
     const data = await db.query.backgroundVerifications.findMany({
       where: eq(backgroundVerifications.orgId, session.orgId),
-      with: { user: true },
+      with: { user: USER_CARD },
       orderBy: [desc(backgroundVerifications.createdAt)],
     });
     return ok(data);

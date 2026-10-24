@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { performanceReviews } from "@/lib/db/schema";
@@ -17,7 +18,7 @@ export async function GET(
 
     const review = await db.query.performanceReviews.findFirst({
       where: and(eq(performanceReviews.id, reviewId), eq(performanceReviews.orgId, session.orgId)),
-      with: { user: true, reviewer: true, cycle: true },
+      with: { user: USER_CARD, reviewer: USER_CARD, cycle: true },
     });
     if (!review) return err("Review not found.", 404);
     if (

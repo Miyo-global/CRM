@@ -110,6 +110,11 @@ export async function PATCH(
         400
       );
     }
+    // R3-SA-02: re-activation goes through /active, which asks a terminated
+    // employee's re-hire reason and records it.
+    if (body.isActive === true) {
+      return err("Use Account Status on the employee page to re-activate an employee.", 400);
+    }
 
     const adminOnlyFields = [
       "role",

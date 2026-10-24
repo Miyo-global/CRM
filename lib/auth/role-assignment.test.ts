@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
+const targetUser = vi.hoisted(() => ({ isActive: true as boolean | null }));
+
 vi.mock("@/lib/db", () => ({
-  db: { query: { roles: { findFirst: async () => undefined } } },
+  db: {
+    query: {
+      roles: { findFirst: async () => undefined },
+      users: { findFirst: async () => ({ ...targetUser }) },
+    },
+  },
 }));
 
 import { canChangeRoleOf, checkRoleAssignment } from "./role-assignment";
@@ -62,5 +69,17 @@ describe("the Super Admin is locked (QA-AUTH-01, QA-AUTH-02)", () => {
     expect(canChangeRoleOf(owner, { userId: "b", role: "ADMIN" })).toBe(true);
     expect(canChangeRoleOf(owner, { userId: "o", role: "CEO" })).toBe(false);
     expect(canChangeRoleOf({ userId: "e", role: "EMPLOYEE" }, { userId: "x", role: "EMPLOYEE" })).toBe(false);
+  });
+});
+
+describe("terminated accounts keep their role (R3-SA-07)", () => {
+  it("refuses a role change for an inactive target", async () => {
+    targetUser.isActive = false;
+    try {
+      const res = await checkRoleAssignment({ ...base, actorRole: "CEO", newRole: "EMPLOYEE" });
+      expect(res?.status).toBe(400);
+    } finally {
+      targetUser.isActive = true;
+    }
   });
 });

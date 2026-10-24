@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { performanceImprovementPlans } from "@/lib/db/schema";
@@ -37,7 +38,7 @@ export async function POST(
 
     const updated = await db.query.performanceImprovementPlans.findFirst({
       where: eq(performanceImprovementPlans.id, pipId),
-      with: { user: true, manager: true, hrRep: true, goals: true },
+      with: { user: USER_CARD, manager: USER_CARD, hrRep: USER_CARD, goals: true },
     });
 
     scheduleAppraisalPipEmails(() => notifyPIPManagerAfterAcknowledge(pipId));

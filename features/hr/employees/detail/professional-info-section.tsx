@@ -109,7 +109,7 @@ export function ProfessionalInfoSection({ assignableRoles, currentEmployeeId }: 
     clearErrors,
   ]);
 
-  const { data: employeesData } = useHrEmployees();
+  const { data: employeesData } = useHrEmployees({ fields: "picker" });
   const managerOptions = useMemo(() => {
     const list: Employee[] = Array.isArray(employeesData)
       ? employeesData

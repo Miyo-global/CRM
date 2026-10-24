@@ -4,7 +4,7 @@ import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
-import { format, subYears } from "date-fns";
+import { format } from "date-fns";
 import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api-client";
+import { getTodayString, parseCalendarDate, subtractYearsFromDateString } from "@/lib/date-utils";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -28,8 +29,12 @@ const EMAIL_MAX_LENGTH = 254;
 const PERSON_NAME_MAX_LENGTH = 50;
 
 export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
-  const maxDateOfBirth = useMemo(() => subYears(new Date(), MIN_EMPLOYEE_AGE_YEARS), []);
-  const minDateOfBirth = useMemo(() => subYears(new Date(), 100), []);
+  // Org-timezone today: someone turning 18 today is selectable (R3-ONB-06).
+  const maxDateOfBirth = useMemo(
+    () => parseCalendarDate(subtractYearsFromDateString(getTodayString(), MIN_EMPLOYEE_AGE_YEARS)),
+    [],
+  );
+  const minDateOfBirth = useMemo(() => parseCalendarDate(subtractYearsFromDateString(getTodayString(), 100)), []);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const inFlight = useRef<AbortController | null>(null);
 
@@ -185,7 +190,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <DatePicker
                 value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                onChange={(v) => field.onChange(v ? new Date(v) : undefined)}
+                onChange={(v) => field.onChange(v ? parseCalendarDate(v) : undefined)}
                 fromDate={minDateOfBirth}
                 toDate={maxDateOfBirth}
                 fromYear={minDateOfBirth.getFullYear()}

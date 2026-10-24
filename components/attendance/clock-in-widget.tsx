@@ -66,11 +66,11 @@ export function ClockInWidget() {
   const isInCooldown = localCooldown > 0;
 
   const handleClockAction = useCallback(() => {
-    const localDate = new Date().toLocaleDateString("en-CA");
+    // The server dates the punch in the org timezone (R3-EMP-01).
     if (hasActivePunch) {
-      checkOutMutation.mutate({ localDate });
+      checkOutMutation.mutate({});
     } else if (!isInCooldown) {
-      checkInMutation.mutate({ location: undefined, localDate });
+      checkInMutation.mutate({ location: undefined });
     }
   }, [hasActivePunch, isInCooldown, checkOutMutation, checkInMutation]);
 

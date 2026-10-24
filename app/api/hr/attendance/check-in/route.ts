@@ -2,7 +2,8 @@ import { withAuth, ok, err, userErrorOr500 } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { attendance, holidays, users } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { parseAttendancePunchBody, resolvePunchDate } from "@/lib/validations/attendance";
+import { parseAttendancePunchBody } from "@/lib/validations/attendance";
+import { getTodayString } from "@/lib/date-utils";
 import { notifyHrEmployeeCheckIn } from "@/lib/hr/attendance-hr-notifications";
 import {
   getLateCutoffMinutesIst,
@@ -14,7 +15,10 @@ import type { NextRequest } from "next/server";
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
     const body = parseAttendancePunchBody(await req.json().catch(() => ({})));
-    const today = resolvePunchDate(body.localDate);
+    // Org-timezone today, the same key the status, break and check-out
+    // queries use. Trusting the browser's date wrote rows the status read
+    // never found (R3-EMP-01).
+    const today = getTodayString();
 
     const todayDate = new Date(today + "T00:00:00");
     const isSunday = todayDate.getDay() === 0;

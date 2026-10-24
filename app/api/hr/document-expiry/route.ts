@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { documents, certifications } from "@/lib/db/schema";
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
           gte(certifications.expiryDate, todayStr),
           lte(certifications.expiryDate, futureStr)
         ),
-        with: { user: true },
+        with: { user: USER_CARD },
       }),
     ]);
 

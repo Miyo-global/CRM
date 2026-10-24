@@ -22,6 +22,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { useSession } from "next-auth/react";
+import { roleHasPermission } from "@/lib/auth/role-change-rules";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import type { Permission } from "@/lib/rbac/permissions";
 import type { Role } from "@/types/organization";
@@ -75,6 +77,9 @@ function RolesContent() {
   const [templateOpen, setTemplateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
   const deleteRole = useDeleteRole();
+  // R3-ROLE-01: there is no "custom roles enabled" setting, so New Role and
+  // Use Template follow roles:manage (Super Admin only); POST /api/roles too.
+  const canCreateRoles = roleHasPermission(useSession().data?.user?.role, "roles:manage");
 
   const handleDeleteRole = () => {
     if (!deleteTarget) return;
@@ -106,6 +111,7 @@ function RolesContent() {
       title="Roles & permissions"
       noInternalScroll
       actions={
+        canCreateRoles && (
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setTemplateOpen(true)}>
             <Copy aria-hidden /> Use Template
@@ -114,6 +120,7 @@ function RolesContent() {
             <Plus aria-hidden /> New Role
           </Button>
         </div>
+        )
       }
     >
       <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:h-full lg:min-h-0">

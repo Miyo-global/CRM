@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { onboardEmployeeInputSchema } from "./hr";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
 
@@ -157,5 +157,39 @@ describe("onboarding needs only the essentials (R2-LC-03)", () => {
         bankDetails: { ...emptyBank, accountNumber: "1234567890" },
       }).success,
     ).toBe(false);
+  });
+});
+
+// R3-ONB-06 / R3-ONB-02: a New York browser at 15:55 on 23 Oct is already
+// 24 Oct in the org timezone (IST); someone born 24 Oct 2008 is exactly 18.
+describe("onboard DOB in the org timezone (R3-ONB-06)", () => {
+  const originalTz = process.env.TZ;
+  beforeAll(() => {
+    process.env.TZ = "America/New_York";
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-23T19:55:00Z"));
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+    process.env.TZ = originalTz;
+  });
+
+  const withDob = (dateOfBirth: unknown) =>
+    onboardEmployeeInputSchema.safeParse({ ...validBase, joiningDate: "2026-10-24", dateOfBirth });
+
+  it("accepts the exact 18th birthday as a calendar date", () => {
+    const result = withDob("2008-10-24");
+    expect(result.success).toBe(true);
+    // Stays on its day: not UTC midnight (= 23 Oct 20:00 in New York).
+    if (result.success) expect(result.data.dateOfBirth?.getDate()).toBe(24);
+  });
+
+  it("rejects one day short of 18", () => {
+    expect(withDob("2008-10-25").success).toBe(false);
+  });
+
+  it("keeps 5 May 1995 on 5 May", () => {
+    const result = withDob("1995-05-05");
+    expect(result.success && result.data.dateOfBirth?.getDate()).toBe(5);
   });
 });

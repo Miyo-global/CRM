@@ -124,8 +124,51 @@ export function parseDate(value: unknown): Date | null {
   return null;
 }
 
-export function getTodayString(): string {
-  return formatDateOnly(new Date());
+/**
+ * Today as "YYYY-MM-DD" in the organisation timezone, on client and server
+ * alike. Never the browser's or the server's local day (R3-TZ-01).
+ */
+export function getTodayString(timeZone: string = DEFAULT_TIMEZONE): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
+}
+
+/** True for a bare calendar date string "YYYY-MM-DD" that names a real day. */
+export function isDateOnly(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number);
+  const utc = new Date(Date.UTC(y, m - 1, d));
+  return utc.getUTCFullYear() === y && utc.getUTCMonth() === m - 1 && utc.getUTCDate() === d;
+}
+
+function dateOnlyToUtc(value: string): Date {
+  const [y, m, d] = value.slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function utcToDateOnly(d: Date): string {
+  return d.toISOString().slice(0, 10); // UTC midnight, so the slice is the calendar day.
+}
+
+/** "YYYY-MM-DD" plus `days` (may be negative); pure calendar arithmetic, no timezone. */
+export function addDaysToDateString(value: string, days: number): string {
+  const d = dateOnlyToUtc(value);
+  d.setUTCDate(d.getUTCDate() + days);
+  return utcToDateOnly(d);
+}
+
+/**
+ * "YYYY-MM-DD" minus `years`, e.g. the latest date of birth for someone who is
+ * 18 today. 29 Feb falls back to 28 Feb in non-leap years (R3-ONB-06).
+ */
+export function subtractYearsFromDateString(value: string, years: number): string {
+  const [y, m, d] = value.slice(0, 10).split("-").map(Number);
+  const lastDay = new Date(Date.UTC(y - years, m, 0)).getUTCDate();
+  return utcToDateOnly(new Date(Date.UTC(y - years, m - 1, Math.min(d, lastDay))));
+}
+
+/** Whole calendar days from `from` to `to` (negative when `to` is earlier). DST-proof. */
+export function daysBetweenDateStrings(from: string, to: string): number {
+  return Math.round((dateOnlyToUtc(to).getTime() - dateOnlyToUtc(from).getTime()) / 86_400_000);
 }
 
 export function compareDates(date1: Date | string, date2: Date | string): number {
@@ -143,6 +186,10 @@ export function formatDisplayDate(
   locale: string = DEFAULT_LOCALE,
 ): string {
   if (!date) return "";
+  // A bare calendar date never shifts, whatever the org or browser timezone.
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return formatCalendarDate(date, options, locale);
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
   return d.toLocaleDateString(locale, {

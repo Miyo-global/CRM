@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useForm, type FieldPath, type DefaultValues, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -19,7 +19,10 @@ import { StepEmployment } from "./_onboarding/step-employment";
 import { StepSkillsPay } from "./_onboarding/step-skills-pay";
 import { StepBanking } from "./_onboarding/step-banking";
 import { StepReview } from "./_onboarding/step-review";
-import { filterAssignableOrgRoles } from "@/lib/rbac/roles";
+import { ASSIGNABLE_ROLE_OPTIONS, filterAssignableOrgRoles } from "@/lib/rbac/roles";
+import { canGrantRole } from "@/lib/auth/role-change-rules";
+import { useSession } from "next-auth/react";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -98,9 +101,18 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     }));
   }, [employeesData]);
 
+  // R3-HR-02: offer only what the actor may grant; the onboard API enforces
+  // the same rule.
+  const actorRole = useSession().data?.user?.role;
   const assignableRoles = useMemo(
-    () => filterAssignableOrgRoles(orgRoles ?? []),
-    [orgRoles]
+    () => {
+      const fromOrg: Array<{ slug: string; name: string }> = filterAssignableOrgRoles(orgRoles ?? []);
+      const list = fromOrg.length > 0
+        ? fromOrg
+        : ASSIGNABLE_ROLE_OPTIONS.map((r) => ({ slug: r.value, name: r.label }));
+      return list.filter((r) => canGrantRole(actorRole, r.slug));
+    },
+    [orgRoles, actorRole]
   );
 
   const allDepartmentOptions = useMemo(() => {
@@ -117,7 +129,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       firstName: "", lastName: "", email: "", phone: "",
       whatsappSameAsPhone: true, whatsappNumber: "", gender: undefined,
       designation: "", departmentId: undefined, departmentName: "", reportingTo: "",
-      role: "EMPLOYEE", employeeId: "", joiningDate: new Date(),
+      role: "EMPLOYEE", employeeId: "", joiningDate: parseCalendarDate(getTodayString()),
       dateOfBirth: undefined, skills: "", experienceYears: undefined,
       taxId: "", monthlySalary: undefined,
       bankDetails: {
@@ -147,7 +159,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       designation: prefill.designation ?? "",
       departmentId: prefill.departmentId ?? undefined,
       departmentName: prefill.departmentName ?? "",
-      joiningDate: prefill.joiningDate ? parseISO(prefill.joiningDate) : new Date(),
+      joiningDate: parseCalendarDate(prefill.joiningDate || getTodayString()),
       monthlySalary: prefill.monthlySalary ? Number(prefill.monthlySalary) : undefined,
     } as DefaultValues<FormValues> as FormValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps

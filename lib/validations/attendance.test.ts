@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   attendancePunchSchema,
   parseAttendancePunchBody,
-  resolvePunchDate,
   punchLocationSchema,
 } from "./attendance";
 
@@ -57,29 +56,5 @@ describe("attendancePunchSchema", () => {
 
   it("rejects a location that is not an object", () => {
     expect(() => attendancePunchSchema.parse({ location: "somewhere" })).toThrow();
-  });
-});
-
-describe("resolvePunchDate", () => {
-  const SERVER_TODAY = "2026-09-05";
-
-  it("falls back to the server date when the client sends nothing", () => {
-    expect(resolvePunchDate(undefined, SERVER_TODAY)).toBe(SERVER_TODAY);
-  });
-
-  it("accepts the client date on either side of the server's date", () => {
-    expect(resolvePunchDate("2026-09-04", SERVER_TODAY)).toBe("2026-09-04");
-    expect(resolvePunchDate("2026-09-06", SERVER_TODAY)).toBe("2026-09-06");
-    expect(resolvePunchDate(SERVER_TODAY, SERVER_TODAY)).toBe(SERVER_TODAY);
-  });
-
-  it("ignores a date further than a day away rather than back-dating the punch", () => {
-    expect(resolvePunchDate("2026-01-01", SERVER_TODAY)).toBe(SERVER_TODAY);
-    expect(resolvePunchDate("2027-09-05", SERVER_TODAY)).toBe(SERVER_TODAY);
-  });
-
-  it("ignores a malformed date", () => {
-    expect(resolvePunchDate("garbage", SERVER_TODAY)).toBe(SERVER_TODAY);
-    expect(resolvePunchDate("", SERVER_TODAY)).toBe(SERVER_TODAY);
   });
 });

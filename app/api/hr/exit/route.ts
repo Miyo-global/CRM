@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner, isCEO } from "@/lib/auth/helpers";
 import { notInArray } from "drizzle-orm";
@@ -58,7 +59,7 @@ export async function GET() {
 
     const data = await db.query.resignations.findMany({
       where: and(...conditions),
-      with: { user: true, checklists: true, hrReviewer: true, ceoReviewer: true },
+      with: { user: USER_CARD, checklists: true, hrReviewer: USER_CARD, ceoReviewer: USER_CARD },
       orderBy: [desc(resignations.createdAt)],
     });
     return ok(data);
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
         eq(organizationMembers.orgId, session.orgId),
         inArray(organizationMembers.role, ["CEO", "HR"])
       ),
-      with: { user: true },
+      with: { user: USER_CARD },
     });
 
     const submittingUser = await db.query.users.findFirst({

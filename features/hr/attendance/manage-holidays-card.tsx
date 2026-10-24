@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, memo, useCallback, useMemo, useEffect } from "react";
-import { format } from "date-fns";
 import { formatDisplayDate, fromISODateString, getTodayString } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -204,7 +203,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
   const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0]);
 
   const [name, setName] = useState("");
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate] = useState(getTodayString());
   const [message, setMessage] = useState("");
 
   // Edit state
@@ -261,7 +260,7 @@ export const ManageHolidaysCard = memo(function ManageHolidaysCard() {
         onSuccess: () => {
           toast.success("Holiday added");
           setName("");
-          setDate(format(new Date(), "yyyy-MM-dd"));
+          setDate(getTodayString());
           setMessage("");
           setConfirmCreate(false);
           setPendingCreate(null);

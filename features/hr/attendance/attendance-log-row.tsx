@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { format } from "date-fns";
+import { formatCalendarDate, formatISTTime } from "@/lib/date-utils";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { AttendanceLog } from "@/types/hr";
@@ -18,13 +18,13 @@ export const AttendanceLogRow = memo(function AttendanceLogRow({ log, index }: A
   return (
     <TableRow className={index % 2 === 0 ? "bg-card" : "bg-surface-sunken"}>
       <TableCell className="font-medium border border-border px-4 py-2.5">
-        {format(new Date(log.date), "EEE, MMM dd")}
+        {formatCalendarDate(log.date, { weekday: "short", month: "short", day: "2-digit" })}
       </TableCell>
       <TableCell className="font-mono text-sm border border-border px-4 py-2.5">
-        {log.checkIn ? format(new Date(log.checkIn), "hh:mm a") : "--"}
+        {log.checkIn ? formatISTTime(log.checkIn) : "--"}
       </TableCell>
       <TableCell className="font-mono text-sm border border-border px-4 py-2.5">
-        {log.checkOut ? format(new Date(log.checkOut), "hh:mm a") : "--"}
+        {log.checkOut ? formatISTTime(log.checkOut) : "--"}
       </TableCell>
       <TableCell className="border border-border px-4 py-2.5">
         {log.workHours ? formatDuration(log.workHours) : "--"}

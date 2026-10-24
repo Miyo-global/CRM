@@ -43,7 +43,7 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { MinLengthHint } from "@/components/ui/min-length-hint";
 import { ASSIGNABLE_ROLE_OPTIONS, getRoleLabel, isSystemRole } from "@/lib/rbac/roles";
-import { canChangeRoleOf } from "@/lib/auth/role-change-rules";
+import { canChangeRoleOf, canGrantRole } from "@/lib/auth/role-change-rules";
 
 type RoleOption = { value: string; label: string };
 
@@ -57,10 +57,7 @@ function useAssignableRoleOptions(actorRole: string | undefined): RoleOption[] {
   const custom = (orgRoles ?? [])
     .filter((role) => !isSystemRole(role.slug))
     .map((role) => ({ value: role.slug, label: role.name }));
-  const system = ASSIGNABLE_ROLE_OPTIONS.filter(
-    (option) => actorRole === "CEO" || (option.value !== "ADMIN" && option.value !== "HR"),
-  );
-  return [...system, ...custom];
+  return [...ASSIGNABLE_ROLE_OPTIONS, ...custom].filter((option) => canGrantRole(actorRole, option.value));
 }
 
 const countPill = "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-soft px-1.5 text-2xs font-semibold tabular-nums text-neutral-strong";
@@ -464,6 +461,7 @@ interface MemberTableRowProps {
     role: string;
     joinedAt?: string | Date | null;
     hasDashboardAccess?: boolean;
+    isActive?: boolean | null;
   };
   actor: { userId: string | undefined; role: string | undefined };
   roleOptions: RoleOption[];
@@ -479,15 +477,20 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
   // QA-AUTH-01: no role control on the Super Admin's row, on your own row, or
   // on an Admin-level row unless you are the Super Admin. The server applies
   // the same rule.
-  const canChangeRole = canChangeRoleOf(actor, { userId: member.userId, role: member.role });
+  // R3-SA-07: a terminated / deactivated account is flagged and read-only;
+  // the server refuses a role change for it too.
+  const isTerminated = member.isActive === false;
+  const canChangeRole = !isTerminated && canChangeRoleOf(actor, { userId: member.userId, role: member.role });
   // QA-BUG-37: the same people can switch off portal access or start the
   // termination workflow — never for the owner, never for yourself.
-  const canManageMember = canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId);
+  const canManageMember = !isTerminated && (canChangeRole || (actor.role === "CEO" && member.userId !== actor.userId));
   const currentRoleListed = roleOptions.some((r) => r.value === member.role);
   // R2-LC-14: where the actor may not change this role, the control stays
   // visible but disabled and says who can.
   const lockedReason = !canChangeRole && actor.userId && member.userId !== actor.userId
-    ? member.role === "CEO"
+    ? isTerminated
+      ? "This account is terminated or inactive. Its role cannot be changed."
+      : member.role === "CEO"
       ? "The Super Admin's role cannot be changed."
       : "Only the Super Admin can change Admin and HR roles."
     : null;
@@ -505,7 +508,10 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
       </TableCell>
       <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
       <TableCell className="px-5">
-        <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
+          {isTerminated && <StatusPill tone="danger">Terminated</StatusPill>}
+        </div>
       </TableCell>
       <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}

@@ -1,12 +1,13 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
-import { terminations, users, fnfSettlements, assetReturns, assets } from "@/lib/db/schema";
+import { terminations, fnfSettlements, assetReturns, assets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import type { NextRequest } from "next/server";
 import { invalidateHrDashboardCache } from "@/lib/hr-cache";
-import { revokeAllUserSessions } from "@/lib/auth";
+import { deactivateAccountsInTx, afterAccountsDeactivated } from "@/lib/hr/deactivate-account";
+import { getTodayString } from "@/lib/date-utils";
 
 export async function PATCH(
   _req: NextRequest,
@@ -36,15 +37,21 @@ export async function PATCH(
       ),
     });
 
-    await db.transaction(async (tx) => {
+    // R3-SA-09: a termination effective in the future is completed now (F&F,
+    // asset returns) but the account stays open until the effective date; the
+    // daily deactivate-exited-employees job closes it then.
+    const deactivateNow = String(existing.effectiveDate).slice(0, 10) <= getTodayString();
+
+    const { sessionIds } = await db.transaction(async (tx) => {
       await tx.update(terminations).set({
         status: "COMPLETED",
         updatedAt: new Date(),
       }).where(eq(terminations.id, terminationId));
 
-      await tx.update(users).set({
-        isActive: false,
-      }).where(eq(users.id, existing.userId));
+      // R3-SA-01: account off, Portal Access off, sessions revoked, one commit.
+      const revoked = deactivateNow
+        ? await deactivateAccountsInTx(tx, [existing.userId])
+        : { sessionIds: [] };
 
       // fnf_settlements has no unique key, so a resignation approved through
       // the exit flow (which opens its own F&F) must not get a second one.
@@ -82,10 +89,11 @@ export async function PATCH(
           );
         }
       }
+      return revoked;
     });
 
     // A terminated account must not keep working off an unexpired JWT.
-    await revokeAllUserSessions(existing.userId);
+    if (deactivateNow) await afterAccountsDeactivated([existing.userId], sessionIds);
     await invalidateHrDashboardCache(session.orgId);
 
     void writeAuditLog({
@@ -96,12 +104,13 @@ export async function PATCH(
       targetType: "termination",
       metadata: {
         employeeId: existing.userId,
-        userDeactivated: true,
+        userDeactivated: deactivateNow,
+        effectiveDate: existing.effectiveDate,
         fnfInitiated: true,
         assetsToReturn: assignedAssets.length,
       },
     }).catch(() => undefined);
 
-    return ok({ success: true });
+    return ok({ success: true, deactivated: deactivateNow, effectiveDate: existing.effectiveDate });
   });
 }

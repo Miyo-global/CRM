@@ -1,3 +1,4 @@
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
@@ -21,7 +22,7 @@ export async function GET() {
 
     const data = await db.query.reimbursements.findMany({
       where: and(...conditions),
-      with: { user: true },
+      with: { user: USER_CARD },
       orderBy: [desc(reimbursements.createdAt)],
     });
     return ok(data);

@@ -1,15 +1,19 @@
 import "server-only";
 
-import { and, eq, inArray, isNotNull, lt } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { organizations, resignations, users, userSessions } from "@/lib/db/schema";
-import { redis } from "@/lib/redis";
+import { auditLogs, organizations, resignations, terminations, users } from "@/lib/db/schema";
+import { deactivateAccountsInTx, afterAccountsDeactivated } from "@/lib/hr/deactivate-account";
 import { logger } from "@/lib/logger";
 import { getTodayString, formatDisplayDate, fromISODateString } from "@/lib/date-utils";
 import { sendTemplateEmail } from "@/lib/email/sender";
 
-/** Long enough to outlive any JWT still in circulation. */
-const JWT_MAX_AGE_SECONDS = 8 * 60 * 60;
+/**
+ * R3-SA-02: someone re-hired after leaving keeps the old exit record; the
+ * "hr.employee_rehired" audit event marks the account as deliberately reopened.
+ */
+const notRehiredSince = (exitDate: typeof resignations.lastWorkingDate | typeof terminations.effectiveDate) =>
+  sql`NOT EXISTS (SELECT 1 FROM ${auditLogs} WHERE ${auditLogs.action} = 'hr.employee_rehired' AND ${auditLogs.targetId} = ${users.id} AND ${auditLogs.createdAt} >= ${exitDate})`;
 
 /** Resignations that are settled: the person is leaving on the stated date. */
 const FINAL_STATUSES = ["CEO_APPROVED", "APPROVED", "IN_PROGRESS", "COMPLETED"] as const;
@@ -21,6 +25,9 @@ const FINAL_STATUSES = ["CEO_APPROVED", "APPROVED", "IN_PROGRESS", "COMPLETED"] 
  * kept signing in. This runs daily: anyone with a settled resignation whose
  * last working day is before today (IST) is deactivated, their sessions are
  * revoked, and they are told by email.
+ *
+ * R3-SA-09: a termination completed ahead of its effective date leaves the
+ * account open; it is closed here once that date has passed.
  */
 export async function deactivateAfterLastWorkingDay(): Promise<{
   deactivated: number;
@@ -28,15 +35,18 @@ export async function deactivateAfterLastWorkingDay(): Promise<{
 }> {
   const today = getTodayString();
 
-  const leavers = await db
+  const leaverColumns = {
+    email: users.email,
+    personalEmail: users.personalEmail,
+    firstName: users.firstName,
+    name: users.name,
+  };
+
+  const resigned = await db
     .select({
       userId: resignations.userId,
       orgId: resignations.orgId,
-      lastWorkingDate: resignations.lastWorkingDate,
-      email: users.email,
-      personalEmail: users.personalEmail,
-      firstName: users.firstName,
-      name: users.name,
+      ...leaverColumns,
     })
     .from(resignations)
     .innerJoin(users, eq(users.id, resignations.userId))
@@ -46,35 +56,37 @@ export async function deactivateAfterLastWorkingDay(): Promise<{
         isNotNull(resignations.lastWorkingDate),
         lt(resignations.lastWorkingDate, today),
         eq(users.isActive, true),
+        notRehiredSince(resignations.lastWorkingDate),
       ),
     );
 
+  const terminated = await db
+    .select({
+      userId: terminations.userId,
+      orgId: terminations.orgId,
+      ...leaverColumns,
+    })
+    .from(terminations)
+    .innerJoin(users, eq(users.id, terminations.userId))
+    .where(
+      and(
+        eq(terminations.status, "COMPLETED"),
+        lt(terminations.effectiveDate, today),
+        eq(users.isActive, true),
+        notRehiredSince(terminations.effectiveDate),
+      ),
+    );
+
+  const byUser = new Map([...resigned, ...terminated].map((l) => [l.userId, l]));
+  const leavers = [...byUser.values()];
   if (leavers.length === 0) return { deactivated: 0, userIds: [] };
 
-  const userIds = [...new Set(leavers.map((l) => l.userId))];
+  const userIds = [...byUser.keys()];
 
-  await db.update(users).set({ isActive: false }).where(inArray(users.id, userIds));
-
-  // A deactivated account must not keep working off an unexpired JWT.
-  const live = await db.query.userSessions.findMany({
-    where: and(inArray(userSessions.userId, userIds), eq(userSessions.isRevoked, false)),
-    columns: { id: true },
-  });
-  if (live.length > 0) {
-    await db
-      .update(userSessions)
-      .set({ isRevoked: true })
-      .where(inArray(userSessions.id, live.map((s) => s.id)));
-    if (redis) {
-      await Promise.all(
-        live.map((s) =>
-          redis!
-            .set(`revoked:session:${s.id}`, true, { ex: JWT_MAX_AGE_SECONDS })
-            .catch(() => undefined),
-        ),
-      );
-    }
-  }
+  // A deactivated account must not keep working off an unexpired JWT: the
+  // shared helper also turns Portal Access off and revokes every session.
+  const { sessionIds } = await db.transaction((tx) => deactivateAccountsInTx(tx, userIds));
+  await afterAccountsDeactivated(userIds, sessionIds);
 
   const orgIds = [...new Set(leavers.map((l) => l.orgId))];
   const orgRows = await db

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getTodayString, isDateOnly } from "@/lib/date-utils";
 
 export const projectStatusSchema = z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]);
 
@@ -135,7 +136,11 @@ export const deleteTimeEntryInputSchema = z.object({
 
 export const addTimeEntryInputSchema = z.object({
   ticketId: z.number({ error: "Please select a ticket" }).int().positive("Please select a ticket"),
-  date: z.date().refine((d) => d <= new Date(), { message: "Cannot log time for future dates" }),
+  // "YYYY-MM-DD", compared with the org-timezone today, the same rule the API applies (R3-PRJ-01).
+  date: z
+    .string()
+    .refine(isDateOnly, "Pick a date")
+    .refine((d) => d <= getTodayString(), "Cannot log time for future dates"),
   hours: z.number().positive().max(24, "Cannot log more than 24 hours per entry"),
   description: z.string().optional(),
   imageUrl: z.string().optional().or(z.literal("")),

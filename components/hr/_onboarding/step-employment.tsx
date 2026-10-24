@@ -27,6 +27,7 @@ import { JobRoleCombobox } from "@/components/hr/job-role-combobox";
 import { EMPLOYMENT_FIELD_COPY } from "@/features/hr/employees/employment-field-copy";
 import { ASSIGNABLE_ROLE_OPTIONS } from "@/lib/rbac/roles";
 import { EmployeeAssignCombobox, type EmployeeAssignOption } from "@/components/hr/employee-assign-combobox";
+import { getTodayString, parseCalendarDate } from "@/lib/date-utils";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -63,8 +64,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
   const joiningDate = form.watch("joiningDate");
   const isJoiningDateInPast = useMemo(() => {
     if (!joiningDate) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = parseCalendarDate(getTodayString());
     const picked = new Date(joiningDate);
     picked.setHours(0, 0, 0, 0);
     return picked < today;
@@ -158,7 +158,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
               />
             </FormControl>
             <FormDescription className="text-xs">
-              {EMPLOYMENT_FIELD_COPY.designation.description} Pick from the catalog or type to add a new one.
+              {EMPLOYMENT_FIELD_COPY.designation.description} Pick from the catalog. Admins can add new titles.
             </FormDescription>
             <FormMessage />
           </FormItem>

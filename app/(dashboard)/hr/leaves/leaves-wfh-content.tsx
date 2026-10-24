@@ -35,6 +35,7 @@ import type {
 import { LeavesTabContent } from "./leaves-tab-content";
 import { WfhTabContent } from "./wfh-tab-content";
 import { LeaveApprovalsContent } from "./leave-approvals";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 export function LeavesWfhContent() {
   const { data: session } = useSession();
@@ -176,8 +177,8 @@ export function LeavesWfhContent() {
                           {leave.user?.firstName} {leave.user?.lastName}
                         </p>
                         <p className="text-2xs tabular-nums text-muted-foreground">
-                          {format(new Date(leave.startDate), "MMM dd")} –{" "}
-                          {format(new Date(leave.endDate), "MMM dd")}
+                          {format(parseCalendarDate(leave.startDate), "MMM dd")} –{" "}
+                          {format(parseCalendarDate(leave.endDate), "MMM dd")}
                           {leave.leaveType && (
                             <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}

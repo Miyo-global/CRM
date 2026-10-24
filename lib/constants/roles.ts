@@ -121,6 +121,11 @@ export function hasFullAccess(role: string | undefined | null): boolean {
   return !!role && FULL_ACCESS_ROLES.includes(role);
 }
 
+/** R3-HR-05: who adds, edits and deletes job titles (wizard and /settings/job-roles). */
+export function canManageJobRoles(role: string | undefined | null): boolean {
+  return hasFullAccess(role);
+}
+
 /**
  * The one page-level access check. `allowed` lists the extra roles a page is
  * open to; CEO and ADMIN always pass.

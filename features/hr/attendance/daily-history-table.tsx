@@ -1,7 +1,6 @@
 "use client";
 
 import { memo, useMemo, useState, useCallback, useEffect } from "react";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,7 +16,7 @@ import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { AttendanceLogRow } from "./attendance-log-row";
 import type { Employee } from "@/types/hr";
-import { getTodayString } from "@/lib/date-utils";
+import { formatISTTime, getTodayString } from "@/lib/date-utils";
 import { type PageSizeOption } from "@/lib/pagination-constants";
 
 const ATTENDANCE_PAGE_SIZE = 10 as PageSizeOption;
@@ -125,9 +124,9 @@ export const DailyHistoryTable = memo(function DailyHistoryTable({
               try {
                 const { downloadXlsx } = await import("@/lib/export/xlsx-utils");
                 const rows = logs.map((log) => ({
-                  date: log.date ? format(new Date(log.date), "yyyy-MM-dd") : "",
-                  checkIn: log.checkIn ? format(new Date(log.checkIn), "hh:mm a") : "",
-                  checkOut: log.checkOut ? format(new Date(log.checkOut), "hh:mm a") : "",
+                  date: log.date ? String(log.date).slice(0, 10) : "",
+                  checkIn: log.checkIn ? formatISTTime(log.checkIn) : "",
+                  checkOut: log.checkOut ? formatISTTime(log.checkOut) : "",
                   totalHours: log.workHours || "",
                   status: log.status || "PRESENT",
                 }));

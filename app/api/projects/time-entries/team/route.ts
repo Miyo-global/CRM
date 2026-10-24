@@ -1,5 +1,4 @@
-
-
+import { USER_CARD } from "@/lib/db/user-card-columns";
 import { NextRequest } from "next/server";
 import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
@@ -45,7 +44,7 @@ export async function GET(req: NextRequest) {
       limit,
       offset,
       with: {
-        user: true,
+        user: USER_CARD,
         ticket: { with: { project: true } },
       },
     });

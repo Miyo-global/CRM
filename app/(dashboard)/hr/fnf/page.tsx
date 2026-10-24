@@ -23,6 +23,7 @@ import { Plus, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatINRWhole } from "@/lib/format-utils";
 import { DatePicker } from "@/components/ui/date-picker";
+import { parseCalendarDate } from "@/lib/date-utils";
 
 interface FnfSettlement {
   id: number; userId: string; employeeName: string | null; lastWorkingDate: string | null;
@@ -136,7 +137,7 @@ function FnfContent() {
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {f.lastWorkingDate ? format(new Date(f.lastWorkingDate), "MMM d, yyyy") : "—"}
+                    {f.lastWorkingDate ? format(parseCalendarDate(f.lastWorkingDate), "MMM d, yyyy") : "—"}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">{money(f.grossPay)}</TableCell>
                   <TableCell className="text-right text-danger-strong">{money(f.deductions)}</TableCell>

@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { useTerminatedEmployees } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,7 +13,7 @@ import { ArrowLeft, Download } from "lucide-react";
 import { TerminatedEmployeeTable } from "@/features/hr/employees/terminated-employee-table";
 import { ROLE_LABELS } from "@/features/hr/employees/hr-types";
 import { toast } from "sonner";
-import { getTodayString } from "@/lib/date-utils";
+import { formatDateOnly, getTodayString } from "@/lib/date-utils";
 
 export default function TerminatedEmployeesPage() {
   const { data, isLoading, isError, error, refetch } = useTerminatedEmployees();
@@ -50,9 +49,8 @@ export default function TerminatedEmployeesPage() {
       employeeId: employee.employeeId ?? "",
       department: employee.department?.name ?? "",
       role: employee.designation ?? ROLE_LABELS[employee.role] ?? employee.role,
-      terminatedAt: employee.terminatedAt
-        ? format(new Date(employee.terminatedAt), "yyyy-MM-dd")
-        : "",
+      effectiveDate: employee.effectiveDate ?? "",
+      terminatedAt: formatDateOnly(employee.terminatedAt),
     }));
     await downloadXlsx(`terminated-employees-${getTodayString()}.xlsx`, [
       {
@@ -63,7 +61,8 @@ export default function TerminatedEmployeesPage() {
           { header: "Employee ID", key: "employeeId", width: 16 },
           { header: "Department", key: "department", width: 20 },
           { header: "Role", key: "role", width: 20 },
-          { header: "Terminated", key: "terminatedAt", width: 14 },
+          { header: "Effective date", key: "effectiveDate", width: 14 },
+          { header: "Deactivated", key: "terminatedAt", width: 14 },
         ],
         rows,
       },
