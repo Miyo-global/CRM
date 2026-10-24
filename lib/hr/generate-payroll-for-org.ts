@@ -34,8 +34,7 @@ export interface GeneratePayrollForOrgResult {
 /**
  * All-employee payroll generation for a single org + month.
  *
- * Used by the manual bulk-generate API route and by the automated payroll
- * schedule (Inngest). Inputs come from `loadPayrollInputs` and the money from
+ * Used by the manual bulk-generate API route. Inputs come from `loadPayrollInputs` and the money from
  * `computePayroll` — the same loader and the same pure function the preview and
  * the per-employee generate route use (A3).
  *

@@ -31,7 +31,6 @@ const capabilities = {
   ai: false,
   embeddings: false,
   storage: false,
-  jobs: false,
   email: false,
   vector: false,
   helpCentre: false,

@@ -16,7 +16,6 @@ const OPTIONAL_VARS = [
   "R2_ACCESS_KEY_ID",
   "R2_SECRET_ACCESS_KEY",
   "R2_ENDPOINT",
-  "INNGEST_EVENT_KEY",
   "ZEPTOMAIL_API_TOKEN",
   "ZEPTOMAIL_TOKEN",
   "ZEPTOMAIL_API_KEY",
@@ -46,7 +45,6 @@ describe("getKbCapabilities", () => {
       ai: false,
       embeddings: false,
       storage: false,
-      jobs: false,
       email: false,
       vector: false,
       helpCentre: false,
@@ -55,7 +53,6 @@ describe("getKbCapabilities", () => {
 
   it("returns booleans only, so no env value can leak into the response", async () => {
     process.env.OPENAI_API_KEY = "sk-secret-value";
-    process.env.INNGEST_EVENT_KEY = "inngest-secret-value";
     process.env.ZEPTOMAIL_API_TOKEN = "zepto-secret-value";
     execute.mockResolvedValue([{ present: true }]);
 
@@ -65,14 +62,13 @@ describe("getKbCapabilities", () => {
       ai: true,
       embeddings: true,
       storage: false,
-      jobs: true,
       email: true,
       vector: true,
       helpCentre: false,
     });
     expect(Object.values(capabilities).every((value) => typeof value === "boolean")).toBe(true);
     const body = JSON.stringify(capabilities);
-    for (const secret of ["sk-secret-value", "inngest-secret-value", "zepto-secret-value"]) {
+    for (const secret of ["sk-secret-value", "zepto-secret-value"]) {
       expect(body).not.toContain(secret);
     }
   });

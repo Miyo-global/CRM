@@ -8,7 +8,6 @@ import { eq, and, desc, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { sendResignationSubmittedEmail } from "@/lib/email";
 import { after } from "next/server";
-import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { format, parseISO } from "date-fns";
 import type { NextRequest } from "next/server";
@@ -147,16 +146,6 @@ export async function POST(req: NextRequest) {
         }).catch(() => undefined);
       }
     }
-    });
-
-    void inngest.send({
-      name: "hr/resignation.submitted",
-      data: {
-        resignationId: resignation.id,
-        orgId: session.orgId,
-        employeeName: submittingUser?.name ?? "Employee",
-        employeeId: session.user.id,
-      },
     });
 
     return ok(resignation, 201);

@@ -111,7 +111,7 @@ export async function PUT(
         : Promise.resolve(),
     ]);
 
-    void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+    void import("@/lib/webhooks/dispatch").then(({ dispatchWebhook }) =>
       dispatchWebhook(session.orgId, "leave.approved", {
         leaveId,
         userId: existing.userId,

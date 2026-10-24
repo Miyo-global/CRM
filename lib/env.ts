@@ -40,8 +40,6 @@ const serverSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_ENDPOINT: z.string().optional(),
 
-  INNGEST_EVENT_KEY: z.string().optional(),
-  INNGEST_SIGNING_KEY: z.string().optional(),
   // A shared key store, needed for session
   // revocation and rate limits on more than one instance (QA-0068).
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),

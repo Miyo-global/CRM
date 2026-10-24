@@ -8,14 +8,12 @@ import { differenceInDays, addDays } from "date-fns";
 import type { NextRequest } from "next/server";
 import { updateEmployeeProfileBodySchema, isRoleAllowedForDepartment, DEPARTMENT_ROLE_MISMATCH_MESSAGE, checkMinMonthlySalary } from "@/lib/validations/hr";
 import { departments, organizations } from "@/lib/db/schema";
-import { inngest } from "@/lib/inngest/client";
 import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { redactSalary } from "@/lib/hr/redact-salary";
 import { toDirectoryEntry } from "@/lib/hr/directory-view";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
-import { getTodayString } from "@/lib/date-utils";
 import { invalidateUserSession, revokeAllUserSessions } from "@/lib/auth";
 
 export async function GET(
@@ -311,21 +309,6 @@ export async function PATCH(
       await revokeAllUserSessions(targetUserId);
     } else if (body.hasDashboardAccess === true || updateData.role !== undefined) {
       await invalidateUserSession(targetUserId);
-    }
-
-    if (body.isActive === true) {
-      const activatedUser = await db.query.users.findFirst({
-        where: eq(users.id, targetUserId),
-        columns: { joiningDate: true },
-      });
-      await inngest.send({
-        name: "hr/employee.onboarded",
-        data: {
-          userId: targetUserId,
-          orgId: session.orgId,
-          joiningDate: activatedUser?.joiningDate ?? getTodayString(),
-        },
-      });
     }
 
     if (updateData.role !== undefined) {

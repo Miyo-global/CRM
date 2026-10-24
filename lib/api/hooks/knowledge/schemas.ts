@@ -16,7 +16,6 @@ export const kbCapabilitiesSchema = z.object({
   ai: z.boolean(),
   embeddings: z.boolean(),
   storage: z.boolean(),
-  jobs: z.boolean(),
   email: z.boolean(),
   vector: z.boolean(),
   helpCentre: z.boolean(),

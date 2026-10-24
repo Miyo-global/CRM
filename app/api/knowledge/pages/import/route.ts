@@ -6,19 +6,14 @@ import { err, ok, parseBody, withAuth } from "@/lib/api/helpers";
 import { createAuditLog } from "@/lib/audit-log";
 import { db } from "@/lib/db";
 import { kbImportJobs } from "@/lib/db/schema";
-import { inngest } from "@/lib/inngest/client";
 import { kbContext, requireKbPermission } from "@/lib/knowledge/actor";
-import { IMPORT_INLINE_LIMIT, importRequestSchema, runImport } from "@/lib/knowledge/import";
-import { isKbJobsConfigured } from "@/lib/knowledge/config";
-import { logger } from "@/lib/logger";
+import { importRequestSchema, runImport } from "@/lib/knowledge/import";
 
 /**
  * KB-0062: run an import.
  *
- * A small import runs in the request, because waiting for a queue to come back
- * for eight pages is worse than the second it takes. A larger one is queued,
- * and if Inngest is not configured the job row is left pending for the cron
- * sweeper — which is why the row is written before any work happens.
+ * Runs in the request (at most IMPORT_MAX_ITEMS pages). The job row is written
+ * first so a failed run still leaves a record.
  */
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
@@ -55,23 +50,6 @@ export async function POST(req: NextRequest) {
         targetType: "kb_import_job",
         metadata: { items: request.items.length, sourceType: request.sourceType },
       });
-
-      const runNow = request.items.length <= IMPORT_INLINE_LIMIT || !isKbJobsConfigured();
-
-      if (!runNow) {
-        try {
-          await inngest.send({
-            name: "kb/import.requested" as never,
-            data: { orgId: session.orgId, jobId: job.id, actorId: session.user.id, request },
-          });
-          return ok({ jobId: job.id, status: "queued" }, 202);
-        } catch (error) {
-          // Queueing failed: leave it pending for the sweeper rather than
-          // losing the request.
-          logger.error("kb.import.enqueue_failed", { jobId: job.id, error: String(error) });
-          return ok({ jobId: job.id, status: "pending" }, 202);
-        }
-      }
 
       await db
         .update(kbImportJobs)

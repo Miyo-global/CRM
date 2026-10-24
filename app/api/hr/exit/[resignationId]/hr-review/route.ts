@@ -1,8 +1,7 @@
 import { withAdmin, err, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { resignations, users } from "@/lib/db/schema";
+import { resignations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import { getTodayString } from "@/lib/date-utils";
@@ -75,22 +74,6 @@ export async function PATCH(
         ...(lwdChanged ? { lastWorkingDate: { from: record.lastWorkingDate, to: body.lastWorkingDate } } : {}),
       },
     }).catch(() => undefined);
-
-    if (newStatus === "HR_APPROVED") {
-      const employee = await db.query.users.findFirst({
-        where: eq(users.id, record.userId),
-        columns: { name: true },
-      });
-      void inngest.send({
-        name: "hr/resignation.hr_approved",
-        data: {
-          resignationId,
-          orgId: session.orgId,
-          employeeName: employee?.name ?? "Employee",
-          employeeId: record.userId,
-        },
-      });
-    }
 
     return ok({ success: true });
   });

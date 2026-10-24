@@ -8,7 +8,6 @@ import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
 import type { NextRequest } from "next/server";
 import { invalidateHrDashboardCache } from "@/lib/hr-cache";
-import { inngest } from "@/lib/inngest/client";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendSetupLink } from "@/lib/hr/setup-link";
 import { formatDateOnly } from "@/lib/date-utils";
@@ -227,17 +226,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    void inngest.send({
-      name: "hr/employee.onboarded",
-      data: {
-        userId: newUser.id,
-        orgId: session.orgId,
-        joiningDate: body.joiningDate ?? null,
-      },
-    }).catch(() => {
-    });
-
-    void import("@/lib/inngest/dispatch-webhook").then(({ dispatchWebhook }) =>
+    void import("@/lib/webhooks/dispatch").then(({ dispatchWebhook }) =>
       dispatchWebhook(session.orgId, "employee.hired", {
         userId: newUser.id,
         email: newUser.email,
