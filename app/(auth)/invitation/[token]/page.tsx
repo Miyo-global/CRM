@@ -19,7 +19,7 @@ import { PasswordStrengthIndicator } from "@/components/auth/password-strength-i
 import { PasswordConfirmField } from "@/components/auth/password-confirm-field";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, X, Shield } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { getRoleLabel } from "@/lib/rbac/roles";
+import { getRoleLabel, invitationScopeText } from "@/lib/rbac/roles";
 
 const invitationSchema = z.object({
   firstName: z.string().optional(),
@@ -39,6 +39,7 @@ export default function InvitationPage() {
   const params = useParams();
   const token = typeof params.token === "string" ? params.token : "";
   const [showPassword, setShowPassword] = useState(false);
+  const [joined, setJoined] = useState(false);
 
   const form = useForm<InvitationFormValues>({
     resolver: zodResolver(invitationSchema),
@@ -51,7 +52,7 @@ export default function InvitationPage() {
 
   const { data: invitation, error: invitationError } = useQuery({
     queryKey: ["invitation", token],
-    queryFn: () => apiClient.get<{ email: string; organizationName: string; role: string }>("/auth/invitation", { token }),
+    queryFn: () => apiClient.get<{ email: string; organizationName: string; role: string; inviterName?: string | null }>("/auth/invitation", { token }),
     enabled: !!token,
     retry: false,
   });
@@ -93,8 +94,11 @@ export default function InvitationPage() {
             redirect: false,
           }).catch(() => null);
           if (result?.ok && !result.error) {
-            toast.success("Account created. Welcome!");
-            window.location.href = "/dashboard";
+            // The full reload below dropped the toast before anyone saw it
+            // (R3-ACC-03); show a confirmation screen briefly first.
+            setJoined(true);
+            toast.success(`Welcome to ${invitation.organizationName}!`);
+            setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
             return;
           }
           toast.success("Account created. Sign in to continue.");
@@ -120,6 +124,23 @@ export default function InvitationPage() {
     );
   }
 
+  if (joined && invitation) {
+    return (
+      <div role="status" className="flex w-full max-w-[400px] flex-col items-center gap-3 text-center">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">You&apos;re in!</h1>
+        <p className="text-base text-muted-foreground">
+          Your account has been created and you have joined{" "}
+          <span className="font-semibold text-foreground">{invitation.organizationName}</span> as{" "}
+          {getRoleLabel(invitation.role)}.
+        </p>
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          Opening your dashboard...
+        </p>
+      </div>
+    );
+  }
+
   if (!invitation) {
     return (
       <div role="status" className="flex flex-col items-center justify-center gap-4">
@@ -134,7 +155,13 @@ export default function InvitationPage() {
       <div className="mb-6">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">Join Organization</h1>
         <p className="mt-2 text-base text-muted-foreground">
-          You&apos;ve been invited to join <span className="font-semibold text-foreground">{invitation.organizationName}</span>
+          {invitation.inviterName ? (
+            <><span className="font-semibold text-foreground">{invitation.inviterName}</span> invited you</>
+          ) : (
+            <>You&apos;ve been invited</>
+          )}{" "}
+          to join <span className="font-semibold text-foreground">{invitation.organizationName}</span> as{" "}
+          <span className="font-semibold text-foreground">{getRoleLabel(invitation.role)}</span>
         </p>
       </div>
 
@@ -252,7 +279,7 @@ export default function InvitationPage() {
         </div>
 
         <p className="text-xs text-subtle-foreground">
-          By accepting this invitation, you join this organization&apos;s HR, Projects and Time workspace: your profile, leave and attendance, and the projects you are added to.
+          {invitationScopeText(invitation.role)}
         </p>
       </form>
     </div>

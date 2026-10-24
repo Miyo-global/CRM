@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { useAISuggestHelpdeskReply } from "@/lib/api/hooks/ai";
+import { useAISuggestHelpdeskReply, useOrgFeatureFlags } from "@/lib/api/hooks/ai";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { toast } from "sonner";
 
@@ -23,6 +23,8 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const suggestMutation = useAISuggestHelpdeskReply();
   const result = suggestMutation.data;
+  // Hidden when no AI provider is set up: the route would answer 403 (R3-HR-09).
+  const { data: flags } = useOrgFeatureFlags();
 
   const handleSuggest = () => {
     setErrorMsg(null);
@@ -44,6 +46,8 @@ export function AISuggestReplyButton({ ticketId, compact }: AISuggestReplyButton
     navigator.clipboard.writeText(result.suggestedReply);
     toast.success("Reply copied to clipboard");
   };
+
+  if (!flags?.aiConfigured) return null;
 
   return (
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setErrorMsg(null); suggestMutation.reset(); } }}>

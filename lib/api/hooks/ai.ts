@@ -263,6 +263,8 @@ export interface OrgFeatureFlags {
   aiSmartNotifications: boolean;
   aiWeeklyRecap: boolean;
   clientPortal: boolean;
+  /** An AI provider key is configured; AI routes 403 without one. */
+  aiConfigured?: boolean;
 }
 
 export function useOrgFeatureFlags() {

@@ -24,11 +24,12 @@ import {
   leads,
   expenses,
   targets,
+  holidays,
 } from "@/lib/db/schema";
 import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull, gt, sum, ne } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { teamDayStatuses } from "@/lib/hr/team-day-status";
+import { teamDayStatuses, isWeekendDate } from "@/lib/hr/team-day-status";
 import { resolveInitialBalance } from "@/lib/leave-policy";
 import { initializeLeaveBalances } from "@/server/actions/leave-actions/leave-balance";
 
@@ -624,7 +625,7 @@ export async function getExecutiveDashboard(orgId: string) {
  */
 export async function getTeamDay(orgId: string) {
   const today = getTodayString();
-  const [members, checkedIn, onLeave] = await Promise.all([
+  const [members, checkedIn, onLeave, holiday] = await Promise.all([
     db
       .select({ userId: users.id, name: users.name, firstName: users.firstName, lastName: users.lastName })
       .from(organizationMembers)
@@ -644,6 +645,10 @@ export async function getTeamDay(orgId: string) {
         lte(leaveRequests.startDate, today),
         gte(leaveRequests.endDate, today),
       )),
+    db.query.holidays.findFirst({
+      where: and(eq(holidays.orgId, orgId), eq(holidays.date, today)),
+      columns: { id: true },
+    }),
   ]);
   return teamDayStatuses(
     members.map((m) => ({
@@ -652,6 +657,7 @@ export async function getTeamDay(orgId: string) {
     })),
     new Set(checkedIn.map((r) => r.userId)),
     new Set(onLeave.map((r) => r.userId)),
+    !isWeekendDate(today) && !holiday,
   );
 }
 

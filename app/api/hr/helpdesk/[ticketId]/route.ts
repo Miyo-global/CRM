@@ -18,10 +18,15 @@ const updateTicketSchema = z
     assigneeId: z.string().min(1).nullable().optional(),
     resolution: z.string().trim().max(5000).optional(),
     title: cleanRequiredText("Title", 200, 3).optional(),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   })
   .refine(
     (v) =>
-      v.status !== undefined || v.assigneeId !== undefined || v.resolution !== undefined || v.title !== undefined,
+      v.status !== undefined ||
+      v.assigneeId !== undefined ||
+      v.resolution !== undefined ||
+      v.title !== undefined ||
+      v.priority !== undefined,
     { message: "No changes provided." },
   );
 
@@ -58,6 +63,10 @@ export async function PATCH(
 
     if (data.assigneeId !== undefined && !isAdmin) {
       return err("Only an administrator can assign tickets.", 403);
+    }
+    // Triage, like assignment, is for HR/Admin (R3-HR-09).
+    if (data.priority !== undefined && !isAdmin) {
+      return err("Only HR or an administrator can change the priority.", 403);
     }
 
     // The creator or an admin may fix the title until the ticket is resolved (QA-BUG-17).
@@ -101,6 +110,7 @@ export async function PATCH(
     if (data.assigneeId !== undefined) updates.assigneeId = data.assigneeId;
     if (data.resolution !== undefined) updates.resolution = data.resolution || null;
     if (data.title !== undefined) updates.title = data.title;
+    if (data.priority !== undefined) updates.priority = data.priority;
 
     if (data.status !== undefined && RESOLVED_STATUSES.includes(data.status)) {
       if (!RESOLVED_STATUSES.includes(ticket.status ?? "")) updates.resolvedAt = new Date();

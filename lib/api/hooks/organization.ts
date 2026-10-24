@@ -209,8 +209,8 @@ export const useUpdateOrgSecuritySettings = () => {
 export function useResendInvitation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { invitationId: string }) =>
-      apiClient.post<{ success: boolean }>("/organization/invitations/resend", data),
+    mutationFn: (data: { invitationId: string; deliver?: "email" | "link" }) =>
+      apiClient.post<{ success: boolean; url?: string }>("/organization/invitations/resend", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.organization.invitations() });
     },

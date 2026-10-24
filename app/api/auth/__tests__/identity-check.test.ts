@@ -71,6 +71,17 @@ describe("stale invitation after the wizard created the account (R3-ONB-07)", ()
   });
 });
 
+describe("invitation page details (R3-ACC-03)", () => {
+  it("names the inviter and the role", async () => {
+    const { GET } = await import("@/app/api/auth/invitation/route");
+    findInvitation.mockResolvedValue({ ...invitation, role: "ADMIN", invitedBy: "admin1" });
+    findUser.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ firstName: "Asha", lastName: "Rao", name: "asha" });
+    const res = await GET(req("http://localhost/api/auth/invitation?token=t"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ organizationName: "Miyo", role: "ADMIN", inviterName: "Asha Rao" });
+  });
+});
+
 describe("createOrgInvitation identity + email rules (R3-ONB-07, R3-INV-10)", () => {
   const base = { orgId: "o1", role: "EMPLOYEE", invitedBy: "admin", actorRole: "ADMIN" };
 

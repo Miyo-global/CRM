@@ -77,3 +77,34 @@ describe("reset-password (R3-SA-11)", () => {
     expect(transaction).not.toHaveBeenCalled();
   });
 });
+
+describe("forgot-password plain form post (R3-SET-03)", () => {
+  const load = () => import("@/app/api/auth/forgot-password/route");
+  const formPost = (email: string) =>
+    new NextRequest("http://localhost/api/auth/forgot-password", {
+      method: "POST",
+      body: new URLSearchParams({ email }),
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+    });
+
+  it("redirects back with the same result for known and unknown accounts, never with the address", async () => {
+    const { POST } = await load();
+    findUser.mockResolvedValue(undefined);
+    const unknown = await POST(formPost("nobody@example.com"));
+    findUser.mockResolvedValue({ id: "u2", email: "here@example.com", isActive: true, role: "EMPLOYEE", hasDashboardAccess: true });
+    const known = await POST(formPost("here@example.com"));
+
+    for (const res of [unknown, known]) {
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe("http://localhost/forgot-password?sent=1");
+    }
+    expect(insert).toHaveBeenCalledTimes(1);
+  });
+
+  it("redirects an invalid address to the error state", async () => {
+    const { POST } = await load();
+    const res = await POST(formPost("not-an-email"));
+    expect(res.status).toBe(303);
+    expect(res.headers.get("location")).toBe("http://localhost/forgot-password?error=invalid");
+  });
+});

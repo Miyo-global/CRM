@@ -263,6 +263,8 @@ export function UploadDocumentDialog({
     }
 
     setIsLoading(true);
+    // Immediate feedback; the result replaces it once storage answers (R3-HR-12).
+    const toastId = toast.loading(files.length === 1 ? "Uploading document..." : `Uploading ${files.length} documents...`);
     let successCount = 0;
     let failCount = 0;
     const nextErrors: Record<number, string> = {};
@@ -313,15 +315,16 @@ export function UploadDocumentDialog({
           files.length === 1
             ? "Document uploaded successfully"
             : `${successCount} document${successCount > 1 ? "s" : ""} uploaded successfully${failCount > 0 ? `, ${failCount} failed` : ""}`,
+          { id: toastId },
         );
         if (failCount === 0) {
           onSuccess();
         }
       } else {
-        toast.error("Failed to upload documents. See errors below each file.");
+        toast.error("Failed to upload documents. See errors below each file.", { id: toastId });
       }
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error), { id: toastId });
     } finally {
       setIsLoading(false);
       setUploadProgress("");

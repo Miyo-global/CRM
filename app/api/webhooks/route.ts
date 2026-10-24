@@ -6,22 +6,12 @@ import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { createAuditLog } from "@/lib/audit-log";
 import { randomBytes } from "crypto";
-import { isSafePublicHttpsUrl } from "@/lib/security/ssrf";
-import { WEBHOOK_EVENTS } from "@/lib/webhooks/events";
-
-const webhookEventSchema = z.enum(["*", ...WEBHOOK_EVENTS]);
+import { webhookEventsSchema, webhookUrlSchema } from "@/lib/webhooks/events";
 
 const createSchema = z.object({
-  url: z
-    .string()
-    .url()
-    .max(2048)
-    .startsWith("https://")
-    .refine(isSafePublicHttpsUrl, {
-      message: "URL must be a public HTTPS endpoint; private, internal, or loopback addresses are not allowed.",
-    }),
+  url: webhookUrlSchema,
   description: z.string().optional(),
-  events: z.array(webhookEventSchema).default([]),
+  events: webhookEventsSchema,
 });
 
 /** Admin-only: the endpoint list was readable by any employee (QA-0064). */

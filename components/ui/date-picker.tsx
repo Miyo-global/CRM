@@ -48,8 +48,10 @@ export function DatePicker({
   fromDate,
   toDate,
   defaultMonth: defaultMonthProp,
-  fromYear = 1950,
-  toYear = new Date().getFullYear() + 5,
+  // The year dropdown follows the allowed range when one is set, so a leave
+  // form does not list 1950-2031 (R3-EMP-12).
+  fromYear = fromDate?.getFullYear() ?? 1950,
+  toYear = toDate?.getFullYear() ?? new Date().getFullYear() + 5,
   id,
   calendarDisabled,
   invalid,

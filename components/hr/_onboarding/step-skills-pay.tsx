@@ -152,7 +152,9 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
             </FormItem>
           )}
         />
-        {salaryEntered > 0 && (
+        {/* Hidden while the amount is invalid: an out-of-range salary rendered a
+            nonsense breakdown with negative tax (R3-ONB-08). */}
+        {salaryEntered > 0 && !form.formState.errors.monthlySalary && (
           <div className="mt-4 rounded-lg border bg-surface-sunken/40 p-4 text-sm tabular-nums">
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <span className="text-muted-foreground">Basic Pay:</span>

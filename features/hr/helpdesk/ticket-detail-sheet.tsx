@@ -49,7 +49,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { HelpdeskTicket, TicketStatus } from "@/types/hr";
+import type { HelpdeskTicket, TicketPriority, TicketStatus } from "@/types/hr";
+import { PRIORITY_OPTIONS } from "@/features/hr/helpdesk/helpdesk-create-ticket-form";
 import { getRoleLabel } from "@/lib/rbac/roles";
 import { TICKET_STATUSES, TICKET_STATUS_LABELS, ticketStatusLabel } from "@/lib/labels";
 import {
@@ -423,9 +424,36 @@ export function TicketDetailSheet({
                 },
                 {
                   label: "Priority",
-                  value: (
+                  // Admins (HR included) can triage priority; the API allows the
+                  // same people who can assign (R3-HR-09).
+                  value: isAdmin && !isResolved ? (
+                    <Select
+                      value={ticket.priority ?? "MEDIUM"}
+                      onValueChange={(value) => {
+                        if (value === ticket.priority) return;
+                        updateTicket.mutate(
+                          { priority: value as TicketPriority },
+                          {
+                            onSuccess: () => toast.success("Priority updated"),
+                            onError: (e) => toast.error(getErrorMessage(e)),
+                          },
+                        );
+                      }}
+                    >
+                      <SelectTrigger size="sm" className="w-40" aria-label="Priority">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((p) => (
+                          <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
                     <StatusPill tone={priorityTone(ticket.priority)}>
-                      {ticket.priority ?? "MEDIUM"}
+                      {PRIORITY_OPTIONS.find((p) => p.value === ticket.priority)?.label ?? "Medium"}
                     </StatusPill>
                   ),
                 },

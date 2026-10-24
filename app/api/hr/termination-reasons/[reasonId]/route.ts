@@ -1,8 +1,9 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
-import { terminationReasons } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { terminationReasons, terminations } from "@/lib/db/schema";
+import { and, arrayContains, eq } from "drizzle-orm";
+import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
 import { z } from "zod";
 import { writeAuditLog } from "@/lib/db/audit";
 import { findDuplicateTerminationReasonLabel } from "@/lib/hr/termination-reasons";
@@ -84,5 +85,57 @@ export async function PATCH(
     }).catch(() => undefined);
 
     return ok(record);
+  });
+}
+
+/**
+ * R3-ADM-11: a reason no termination ever used can be deleted; one that is
+ * on a termination record (stored by label) can only be deactivated, so the
+ * history keeps its wording.
+ */
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ reasonId: string }> },
+) {
+  return withAuth(async (session) => {
+    if (!isAdminOrOwner(session.user.role)) return err("Forbidden", 403);
+
+    const { reasonId: rawId } = await params;
+    const reasonId = Number(rawId);
+    if (!reasonId) return err("Invalid ID.", 400);
+
+    const scope = and(
+      eq(terminationReasons.id, reasonId),
+      eq(terminationReasons.orgId, session.orgId),
+    );
+    const existing = await db.query.terminationReasons.findFirst({ where: scope });
+    if (!existing) return err("Reason not found.", 404);
+    if (existing.label === OTHER_TERMINATION_REASON) {
+      return err("The system reason cannot be deleted.", 409);
+    }
+
+    const used = await db.query.terminations.findFirst({
+      where: and(
+        eq(terminations.orgId, session.orgId),
+        arrayContains(terminations.reasons, [existing.label]),
+      ),
+      columns: { id: true },
+    });
+    if (used) {
+      return err("This reason is used on a termination record. Deactivate it instead.", 409);
+    }
+
+    await db.delete(terminationReasons).where(scope);
+
+    void writeAuditLog({
+      action: "TERMINATION_REASON_DELETED",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetId: String(reasonId),
+      targetType: "termination_reason",
+      metadata: { label: existing.label },
+    }).catch(() => undefined);
+
+    return ok({ success: true });
   });
 }

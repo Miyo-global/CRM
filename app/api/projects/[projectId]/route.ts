@@ -3,7 +3,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { projects, projectMembers, projectStatuses, tickets, ticketComments, users } from "@/lib/db/schema";
 import { eq, and, asc, inArray, ne, isNull, desc } from "drizzle-orm";
-import { createAuditLog } from "@/lib/audit-log";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { sendProjectAssignmentEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -80,6 +80,24 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return err("Everyone on the project must be a member of this organization", 400);
     }
 
+    const before = await db.query.projects.findFirst({
+      where: and(eq(projects.orgId, session.orgId), eq(projects.id, projectId)),
+      columns: { name: true, description: true, status: true, priority: true, managerId: true, clientId: true, startDate: true, endDate: true },
+    });
+    // R3-ADM-09: only fields whose value really changed reach the audit log.
+    const changedFields = Object.keys(
+      diffFields(before ?? {}, {
+        name: body.name,
+        description: body.description,
+        status: body.status,
+        priority: body.priority,
+        managerId: body.managerId,
+        clientId: body.clientId,
+        startDate: body.startDate === undefined ? undefined : body.startDate ? new Date(body.startDate) : null,
+        endDate: body.endDate === undefined ? undefined : body.endDate ? new Date(body.endDate) : null,
+      }),
+    );
+
     await db
       .update(projects)
       .set({
@@ -121,6 +139,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             .delete(projectMembers)
             .where(and(eq(projectMembers.projectId, projectId), inArray(projectMembers.userId, removedMembers)));
         }
+        if (addedMembers.length > 0 || removedMembers.length > 0) changedFields.push("memberIds");
         if (addedMembers.length > 0) {
           await tx.insert(projectMembers).values(
             addedMembers.map((userId) => ({ projectId, userId, role: "CONTRIBUTOR" }))
@@ -191,14 +210,16 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    void createAuditLog({
-      action: "project.updated",
-      userId: session.user.id,
-      orgId: session.orgId,
-      targetId: String(projectId),
-      targetType: "project",
-      metadata: { changedFields: Object.keys(body) },
-    }).catch(() => {});
+    if (changedFields.length > 0) {
+      void createAuditLog({
+        action: "project.updated",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(projectId),
+        targetType: "project",
+        metadata: { changedFields },
+      }).catch(() => {});
+    }
 
     return ok({ success: true });
   });

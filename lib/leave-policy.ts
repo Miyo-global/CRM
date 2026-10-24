@@ -111,3 +111,31 @@ export function isUnpaidLeaveType(typeName: string): boolean {
   const n = typeName.trim().toLowerCase();
   return n === LEAVE_POLICY.UNPAID.name.toLowerCase() || n.includes("unpaid");
 }
+
+/**
+ * One row of the "My Leaves" balance table. Available is what is left to
+ * request: the balance minus days already awaiting approval, matching the
+ * request dialog's "N available" (R3-EMP-12).
+ */
+export function leaveBalanceRow(balance: number, entitled: number, pending: number) {
+  const total = Math.max(balance, entitled);
+  return {
+    available: Math.max(balance - pending, 0),
+    total,
+    used: Math.max(total - balance, 0),
+    pending,
+  };
+}
+
+/** The limits for a leave type, shown when it is picked rather than only after a refusal (R3-EMP-12). */
+export function leaveTypeLimitHint(typeName: string | undefined): string | null {
+  if (!typeName) return null;
+  const max = LEAVE_MAX_DAYS[typeName];
+  if (max === undefined) return null;
+  if (typeName !== LEAVE_POLICY.CASUAL.name) return `Up to ${max} days a year.`;
+  const perMonth = LEAVE_POLICY.CASUAL.perMonth;
+  return (
+    `Up to ${max} days a year, ${perMonth} earned each month. ` +
+    `Unused days carry into the next month only, so at most ${perMonth * 2} in one month.`
+  );
+}

@@ -444,7 +444,8 @@ export default function ExitManagementPage() {
 
         <div className="space-y-1.5 max-w-full">
           <label className="text-sm font-medium">
-            Detailed Explanation <span className="text-destructive">*</span>
+            Detailed Explanation <span className="text-destructive">*</span>{" "}
+            <span className="font-normal text-muted-foreground">(at least 50 characters)</span>
           </label>
           <Textarea
             className="max-w-full min-h-[100px] resize-y"

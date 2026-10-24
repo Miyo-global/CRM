@@ -260,6 +260,7 @@ export async function POST(req: NextRequest) {
       logger.error("Failed to write onboard audit log", { userId: newUser.id, error: auditErr instanceof Error ? auditErr.message : "Unknown" });
     }
 
+    let welcomeEmailSent = false;
     if (newUser.email) {
       try {
         await sendSetupLink({
@@ -269,12 +270,14 @@ export async function POST(req: NextRequest) {
           joiningDate: body.joiningDate,
           reportingTo,
         });
+        welcomeEmailSent = true;
       } catch (emailErr) {
         logger.error("Failed to send setup email", { email: newUser.email, error: emailErr instanceof Error ? emailErr.message : "Unknown" });
       }
     }
 
     // MIYO-0663: the ATS needs the new user id to close the application.
-    return ok({ success: true, userId: newUser.id, revokedInvitations });
+    // employeeId + welcomeEmailSent feed the wizard's success step (R3-ONB-09).
+    return ok({ success: true, userId: newUser.id, employeeId, welcomeEmailSent, revokedInvitations });
   }, req);
 }

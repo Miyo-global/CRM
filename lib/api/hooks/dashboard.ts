@@ -351,7 +351,7 @@ export interface ExecutiveDashboard {
 }
 
 export interface ManagerDashboard {
-  teamAttendanceToday: { userId: string; name: string; status: "present" | "absent" | "leave" }[];
+  teamAttendanceToday: { userId: string; name: string; status: "present" | "absent" | "leave" | "off" }[];
   teamAttendanceCounts: { total: number; present: number; absent: number; leave: number };
   pendingLeaveApprovals: number;
   pendingExpenseApprovals: number;

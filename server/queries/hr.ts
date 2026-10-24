@@ -1,6 +1,7 @@
 "server-only";
 
 import { db } from "@/lib/db";
+import { uniqueLeaveBalances } from "@/lib/hr/unique-leave-balances";
 import {
   departments,
   organizationMembers,
@@ -485,13 +486,14 @@ export async function getLeaves(orgId: string, userId: string): Promise<LeavesRe
 }
 
 export async function getLeaveBalance(orgId: string, userId: string): Promise<LeaveBalance[]> {
-  return db.query.leaveBalances.findMany({
+  const rows = await db.query.leaveBalances.findMany({
     where: and(
       eq(leaveBalances.userId, userId),
       eq(leaveBalances.orgId, orgId),
       eq(leaveBalances.year, new Date().getFullYear())
     ),
-  }) as unknown as Promise<LeaveBalance[]>;
+  });
+  return uniqueLeaveBalances(rows) as unknown as LeaveBalance[];
 }
 
 export async function getPayrolls(orgId: string, userId: string): Promise<Payroll[]> {

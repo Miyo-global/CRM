@@ -58,3 +58,12 @@ export function useUpdateTerminationReason() {
       qc.invalidateQueries({ queryKey: terminationReasonKeys.all }),
   });
 }
+
+export function useDeleteTerminationReason() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete<{ success: boolean }>(`/hr/termination-reasons/${id}`),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: terminationReasonKeys.all }),
+  });
+}

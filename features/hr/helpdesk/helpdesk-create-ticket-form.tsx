@@ -40,7 +40,7 @@ const CATEGORY_ROUTING: Record<string, string> = {
   Other: "HR triage queue",
 };
 
-const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
+export const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
   { value: "LOW", label: "Low" },
   { value: "MEDIUM", label: "Medium" },
   { value: "HIGH", label: "High" },

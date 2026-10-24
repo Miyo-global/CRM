@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useForm, type FieldPath, type DefaultValues, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,10 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, CircleCheck } from "lucide-react";
 import { useHrDepartments, useOnboardEmployee, useCheckEmailExists, useHrEmployees, isPaginatedEmployees } from "@/lib/api/hooks/hr";
 import { useRolesList } from "@/lib/api/hooks/roles";
-import { useRouter } from "next/navigation";
 import { StepPersonalInfo } from "./_onboarding/step-personal-info";
 import { StepEmployment } from "./_onboarding/step-employment";
 import { StepSkillsPay } from "./_onboarding/step-skills-pay";
@@ -74,7 +74,17 @@ export interface OnboardingPrefill {
 export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
-  const router = useRouter();
+  // One click advances: the button stays busy for the whole validate + email
+  // check, and a second click meanwhile is ignored (R3-INV-05).
+  const [advancing, setAdvancing] = useState(false);
+  const advancingRef = useRef(false);
+  const [onboarded, setOnboarded] = useState<{
+    userId?: string;
+    employeeId?: string;
+    name: string;
+    email: string;
+    welcomeEmailSent?: boolean;
+  } | null>(null);
   const { data: departments } = useHrDepartments();
   const { data: orgRoles } = useRolesList();
   const onboardEmployee = useOnboardEmployee();
@@ -190,9 +200,10 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     return true;
   }, [form, stepOfField, currentStep]);
 
-  const handleNext = useCallback(async () => {
+  const advance = useCallback(async () => {
     // Check for a known duplicate error before form.trigger() clears it
     if (currentStep === 1 && form.formState.errors.email?.message?.includes("already registered")) {
+      toast.error("This email is already registered. Use a different address.");
       return;
     }
 
@@ -227,6 +238,18 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
     setCurrentStep((prev) => Math.min(STEPS.length, prev + 1));
   }, [currentStep, form, checkEmailExists, goToFirstError]);
 
+  const handleNext = useCallback(async () => {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
+    setAdvancing(true);
+    try {
+      await advance();
+    } finally {
+      advancingRef.current = false;
+      setAdvancing(false);
+    }
+  }, [advance]);
+
   const handlePrev = useCallback(() => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   }, []);
@@ -254,6 +277,13 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
         {
           onSuccess: async (result) => {
             toast.success("Employee onboarded successfully");
+            setOnboarded({
+              userId: result?.userId,
+              employeeId: result?.employeeId,
+              name: `${data.firstName.trim()} ${data.lastName.trim()}`,
+              email: data.email.trim(),
+              welcomeEmailSent: result?.welcomeEmailSent,
+            });
             // Close the application this hire came from. A failure here
             // leaves the employee in place; the recruiter can mark it later.
             if (prefill?.applicationId && result?.userId) {
@@ -267,14 +297,51 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
                 toast.error("Employee created, but the application stayed open.");
               }
             }
-            router.push("/hr/onboarding?tab=workflow");
           },
           onError: (err) => toast.error(err.message || "Failed to onboard employee"),
         }
       );
     },
-    [onboardEmployee, router, currentStep, prefill?.applicationId]
+    [onboardEmployee, currentStep, prefill?.applicationId]
   );
+
+  const startAnother = useCallback(() => {
+    form.reset();
+    setOnboarded(null);
+    setCurrentStep(1);
+  }, [form]);
+
+  // Success step (R3-ONB-09): ID, welcome-email status and a link to the profile
+  // instead of a toast and a redirect.
+  if (onboarded) {
+    return (
+      <div role="status" className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 rounded-lg border bg-card p-6 text-center shadow-xs">
+        <CircleCheck className="size-10 text-success-strong" aria-hidden="true" />
+        <h2 className="text-lg font-semibold">{onboarded.name} has been onboarded</h2>
+        <dl className="grid w-full grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-left text-sm">
+          <dt className="text-muted-foreground">Employee ID</dt>
+          <dd className="font-medium tabular-nums">{onboarded.employeeId ?? "Not assigned"}</dd>
+          <dt className="text-muted-foreground">Welcome email</dt>
+          <dd className="font-medium">
+            {onboarded.welcomeEmailSent
+              ? `Sent to ${onboarded.email}`
+              : "Not sent. Resend the set-up link from the employee's profile."}
+          </dd>
+        </dl>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+          {onboarded.userId && (
+            <Button asChild>
+              <Link href={`/hr/employees/${onboarded.userId}`}>View profile</Link>
+            </Button>
+          )}
+          <Button variant="outline" asChild>
+            <Link href="/hr/onboarding?tab=workflow">Onboarding progress</Link>
+          </Button>
+          <Button variant="ghost" onClick={startAnother}>Onboard another</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6 lg:grid-cols-[200px_1fr]">
@@ -373,10 +440,11 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
               <Button
                 type="button"
                 onClick={handleNext}
-                loading={checkEmailExists.isPending}
+                loading={advancing}
+                aria-busy={advancing}
               >
-                {checkEmailExists.isPending ? (
-                  <>Checking...</>
+                {advancing ? (
+                  <>{currentStep === 1 ? "Checking..." : "Validating..."}</>
                 ) : (
                   <>Next<ChevronRight className="size-4" aria-hidden="true" /></>
                 )}

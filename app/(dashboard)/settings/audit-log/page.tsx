@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
+import { useDebouncedValue } from "@/hooks/use-debounce";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Shield, ChevronLeft, ChevronRight, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Shield, Search, ChevronLeft, ChevronRight, Info, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -106,7 +107,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
           <span className="text-2xs text-subtle-foreground tabular-nums"> #{log.targetId}</span>
         )}
       </TableCell>
-      <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+      <TableCell hideBelow="xl" className="text-xs font-mono text-muted-foreground whitespace-nowrap">
         {log.ipAddress ?? ""}
       </TableCell>
       <TableCell pinned="right">
@@ -194,9 +195,7 @@ export default function AuditLogPage() {
 
 function AuditLogContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
-  const [, startTransition] = useTransition();
   const [goToPage, setGoToPage] = useState("");
   const [selectedLog, setSelectedLog] = useState<AuditLogRow | null>(null);
 
@@ -205,28 +204,38 @@ function AuditLogContent() {
   const targetTypeFilter = searchParams.get("target") || "all";
   const dateFrom = searchParams.get("from") || "";
   const dateTo = searchParams.get("to") || "";
+  const query = searchParams.get("q") || "";
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       for (const [key, value] of Object.entries(updates)) {
         if (value === null || value === "") params.delete(key);
         else params.set(key, value);
       }
-      startTransition(() => {
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      });
+      // R3-ADM-09: a shallow history update re-renders with the new filter at
+      // once; router.replace waited on a server round trip first.
+      const qs = params.toString();
+      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     },
-    [searchParams, router, pathname],
+    [pathname],
   );
 
-  const { data, isLoading, isError, error, refetch } = useAuditLogs({
+  const [searchInput, setSearchInput] = useState(query);
+  const debouncedSearch = useDebouncedValue(searchInput.trim(), 300);
+  useEffect(() => {
+    const current = new URLSearchParams(window.location.search).get("q") || "";
+    if (debouncedSearch !== current) updateParams({ q: debouncedSearch || null, page: null });
+  }, [debouncedSearch, updateParams]);
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useAuditLogs({
     page,
     pageSize,
     action: actionFilter !== "all" ? actionFilter : undefined,
     targetType: targetTypeFilter !== "all" ? targetTypeFilter : undefined,
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
+    q: query || undefined,
   });
 
   const { data: actions } = useAuditLogActions();
@@ -237,7 +246,8 @@ function AuditLogContent() {
   const total = data?.total ?? 0;
 
   const resetFilters = useCallback(() => {
-    updateParams({ action: null, target: null, from: null, to: null, page: null });
+    setSearchInput("");
+    updateParams({ action: null, target: null, from: null, to: null, q: null, page: null });
   }, [updateParams]);
 
   const handleActionFilter = useCallback((v: string) => updateParams({ action: v === "all" ? null : v, page: null }), [updateParams]);
@@ -277,10 +287,25 @@ function AuditLogContent() {
     }
   }, [goToPage, totalPages, updateParams]);
 
-  const hasActiveFilters = actionFilter !== "all" || targetTypeFilter !== "all" || !!dateFrom || !!dateTo;
+  const hasActiveFilters = actionFilter !== "all" || targetTypeFilter !== "all" || !!dateFrom || !!dateTo || !!query;
 
   const filtersBar = (
     <div className="flex flex-wrap gap-2 items-end">
+      <div className="flex flex-col gap-1 min-w-48 flex-1">
+        <p className="text-2xs font-medium text-muted-foreground">Search</p>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input
+            type="search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="User, action, entity or ID"
+            aria-label="Search audit log"
+            maxLength={200}
+            className="h-8 pl-8 text-sm"
+          />
+        </div>
+      </div>
       <div className="flex flex-col gap-1 min-w-40 flex-1">
         <p className="text-2xs font-medium text-muted-foreground">Action</p>
         <Select value={actionFilter} onValueChange={handleActionFilter}>
@@ -332,8 +357,8 @@ function AuditLogContent() {
       actions={
         <div className="flex items-center gap-2">
           <Shield className="size-4 text-muted-foreground" aria-hidden />
-          <span className="text-sm text-muted-foreground font-medium tabular-nums">
-            {total.toLocaleString()} events
+          <span className="text-sm text-muted-foreground font-medium tabular-nums" aria-live="polite">
+            {isFetching && !isLoading ? "Updating…" : `${total.toLocaleString()} events`}
           </span>
         </div>
       }
@@ -357,7 +382,7 @@ function AuditLogContent() {
                 {hasActiveFilters ? (
                   <EmptyState
                     title="No results for these filters"
-                    description="Try a different action, entity type or date range."
+                    description="Try a different search, action, entity type or date range."
                     action={{ label: "Clear filters", onClick: resetFilters }}
                   />
                 ) : (
@@ -381,7 +406,7 @@ function AuditLogContent() {
                         <span className="flex items-center justify-between gap-2">
                           <span className="truncate text-sm font-medium">{log.userName ?? log.userEmail ?? log.userId}</span>
                           <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                            {formatIST(log.createdAt, { year: undefined })}
+                            {formatIST(log.createdAt, { year: undefined })} IST
                           </span>
                         </span>
                         <span className="flex flex-wrap items-center gap-2">
@@ -403,11 +428,11 @@ function AuditLogContent() {
                 <Table className="min-w-175">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-44">Timestamp</TableHead>
+                      <TableHead className="w-44">Timestamp (IST)</TableHead>
                       <TableHead className="w-48">User</TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="w-28">Entity</TableHead>
-                      <TableHead className="w-28">IP Address</TableHead>
+                      <TableHead hideBelow="xl" className="w-28">IP Address</TableHead>
                       <TableHead pinned="right" className="w-12"><span className="sr-only">Details</span></TableHead>
                     </TableRow>
                   </TableHeader>

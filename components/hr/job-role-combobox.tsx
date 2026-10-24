@@ -120,6 +120,9 @@ export function JobRoleCombobox({
     return active.filter((r) => r.title.toLowerCase().includes(q));
   }, [roles, search]);
 
+  // R3-INV-05: a new org starts with no titles; say so instead of a bare "not found".
+  const catalogEmpty = !roles.some((r) => r.isActive !== false);
+
   const exactMatch = useMemo(
     () => roles.some((r) => r.title.toLowerCase() === search.trim().toLowerCase()),
     [roles, search],
@@ -236,6 +239,10 @@ export function JobRoleCombobox({
               <p className="py-6 text-center text-sm text-muted-foreground">
                 {search.trim().length === 1
                   ? "Type at least 2 characters."
+                  : catalogEmpty
+                    ? mayCreate
+                      ? "No job titles in the catalog yet. Type a title above to add the first one; it is saved for everyone."
+                      : "No job titles in the catalog yet. Ask an Admin to add them in Settings > Job Roles."
                   : mayCreate
                     ? "No job role found. Type to search or add a new one."
                     : "No job role found. Ask an Admin to add this title in Settings > Job Roles."}

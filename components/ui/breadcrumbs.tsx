@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { canAccessRoute } from "@/lib/auth/route-access";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_ROLES } from "@/lib/constants/roles";
@@ -18,7 +20,25 @@ interface BreadcrumbsProps {
   className?: string;
 }
 
-export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+/** Where a crumb the viewer may not open points instead (R3-EMP-08). */
+const CRUMB_FALLBACKS: Record<string, string> = { "/hr": "/hr/leaves" };
+
+/**
+ * Crumbs this role can follow: a parent the role may not open (an employee's
+ * "My HR" -> /hr) goes to its fallback, or renders as plain text.
+ */
+export function crumbsForRole(items: Crumb[], role: string | null | undefined): Crumb[] {
+  if (!role) return items;
+  return items.map((item) => {
+    if (!item.href || canAccessRoute(item.href.split(/[?#]/)[0], role)) return item;
+    const fallback = CRUMB_FALLBACKS[item.href];
+    return fallback && canAccessRoute(fallback, role) ? { ...item, href: fallback } : { label: item.label };
+  });
+}
+
+export function Breadcrumbs({ items: rawItems, className }: BreadcrumbsProps) {
+  const role = useSession().data?.user?.role;
+  const items = crumbsForRole(rawItems, role);
   if (items.length === 0) return null;
   const last = items.length - 1;
   return (
@@ -99,6 +119,22 @@ function titleCase(segment: string): string {
  */
 const SECTION_LABELS: Record<string, string> = { "/hr": "HR" };
 
+/**
+ * Path prefixes with no page of their own (R3-INV-03): their crumb is plain
+ * text, so it is neither a 404 link nor prefetched. route-links.test.ts fails
+ * when a new page-less parent appears; add a page or list it here.
+ */
+const NO_PAGE_PARENTS: RegExp[] = [
+  /^\/ats\/jobs\/[^/]+$/,
+  /^\/ats\/settings$/,
+  /^\/hr\/documents\/editor$/,
+  /^\/hr\/documents\/templates\/[^/]+$/,
+  /^\/hr\/teams$/,
+  /^\/knowledge\/wiki\/doc$/,
+  /^\/tasks$/,
+  /^\/tickets$/,
+];
+
 /** Crumbs for a pathname: nav label when the prefix is a nav route, else title-cased segment. */
 export function buildBreadcrumbs(pathname: string, labels: Map<string, string> = getNavLabels()): Crumb[] {
   const segments = pathname.split("/").filter(Boolean);
@@ -106,7 +142,7 @@ export function buildBreadcrumbs(pathname: string, labels: Map<string, string> =
     const href = `/${segments.slice(0, i + 1).join("/")}`;
     const section = i < segments.length - 1 ? SECTION_LABELS[href] : undefined;
     const label = section ?? labels.get(href) ?? (isIdSegment(segment) ? "Details" : titleCase(segment));
-    return i === segments.length - 1 ? { label } : { label, href };
+    return i === segments.length - 1 || NO_PAGE_PARENTS.some((re) => re.test(href)) ? { label } : { label, href };
   });
   // Collapse adjacent duplicates (e.g. /hr "Employees" → /hr/employees): keep the nav parent, or the current page if last.
   const last = crumbs.length - 1;

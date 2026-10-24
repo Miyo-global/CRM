@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { z, ZodError } from "zod";
 
 import { err, ok, parseBody, withAuth } from "@/lib/api/helpers";
-import { createAuditLog } from "@/lib/audit-log";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { kbContext, requireKbPermission } from "@/lib/knowledge/actor";
 import { getKbSettings, updateKbSettings } from "@/lib/knowledge/settings";
 
@@ -37,14 +37,19 @@ export async function PATCH(req: NextRequest) {
       const body = await parseBody(req, patchSchema);
       if (Object.keys(body).length === 0) return err("Nothing to change.", 400);
 
+      const before = await getKbSettings(session.orgId);
       const settings = await updateKbSettings(session.orgId, body);
-      await createAuditLog({
-        action: "kb.settings.updated",
-        userId: session.user.id,
-        orgId: session.orgId,
-        targetType: "kb_settings",
-        metadata: body,
-      });
+      // R3-ADM-09: only values that really changed, with old and new.
+      const changes = diffFields(before as unknown as Record<string, unknown>, body);
+      if (Object.keys(changes).length > 0) {
+        await createAuditLog({
+          action: "kb.settings.updated",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetType: "kb_settings",
+          metadata: { changedFields: Object.keys(changes), changes },
+        });
+      }
       return ok(settings);
     } catch (error) {
       if (error instanceof ZodError) return err(error.issues[0]?.message ?? "Invalid settings.", 400);

@@ -3,6 +3,7 @@ import {
   ASSIGNABLE_ROLE_OPTIONS,
   filterAssignableOrgRoles,
   getRoleLabel,
+  invitationScopeText,
 } from "./roles";
 import { ROLE_DEFAULT_PERMISSIONS } from "./permissions";
 import { getNavGroupsForRole } from "@/components/layout/sidebar/sidebar-nav-items";
@@ -30,5 +31,14 @@ describe("QA-ROLE-01: Super Admin, Admin and Employee", () => {
     expect(ROLE_DEFAULT_PERMISSIONS.EMPLOYEE).toEqual(ROLE_DEFAULT_PERMISSIONS.ENGINEERING);
     const hrefs = (role: string) => getNavGroupsForRole(role).flatMap((g) => g.routes.map((r) => r.href));
     expect(hrefs("EMPLOYEE")).toEqual(hrefs("ENGINEERING"));
+  });
+});
+
+describe("invitationScopeText (R3-ACC-03)", () => {
+  it("does not understate Admin or HR access", () => {
+    expect(invitationScopeText("ADMIN")).toMatch(/^As Admin/);
+    expect(invitationScopeText("ADMIN")).toMatch(/settings/);
+    expect(invitationScopeText("HR")).toMatch(/^As HR/);
+    expect(invitationScopeText("EMPLOYEE")).toMatch(/your profile, leave and attendance/);
   });
 });

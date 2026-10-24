@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { assets } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { checkPermission } from "@/lib/rbac/middleware";
 import { formatDateOnly } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 import { assetCreateBodySchema, DUPLICATE_SERIAL_MESSAGE } from "@/lib/validations/hr-assets";
@@ -12,6 +13,13 @@ const postAssetSchema = assetCreateBodySchema;
 
 export async function GET() {
   return withAuth(async (session) => {
+    // Every asset in the org, with assignees. Employees see their own through
+    // /api/hr/my-assets.
+    const allowed = await checkPermission(
+      db, session.user.id, session.orgId, session.user.role, "hr:assets:view",
+    );
+    if (!allowed) return err("You don't have permission to view assets.", 403);
+
     const data = await getAssets(session.orgId);
     return ok(data);
   });

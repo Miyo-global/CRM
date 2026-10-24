@@ -150,7 +150,7 @@ export function useOnboardEmployee() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: OnboardEmployeeInput) =>
-      apiClient.post<{ success: boolean; userId?: string }>("/hr/employees/onboard", data),
+      apiClient.post<{ success: boolean; userId?: string; employeeId?: string; welcomeEmailSent?: boolean }>("/hr/employees/onboard", data),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
   });

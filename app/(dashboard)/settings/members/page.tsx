@@ -29,8 +29,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn } from "lucide-react";
+import { Search, UserPlus, Shield, ShieldOff, RefreshCw, Users, Mail, MoreHorizontal, UserX, LogIn, Copy } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -138,7 +139,7 @@ function MembersSettingsContent() {
       { email, role: inviteRole },
       {
         onSuccess: () => {
-          toast.success("Invitation sent!");
+          toast.success(`Invitation sent to ${email} as ${getRoleLabel(inviteRole)}`);
           setInviteEmail("");
           setShowInviteForm(false);
         },
@@ -149,12 +150,42 @@ function MembersSettingsContent() {
     );
   }, [inviteUser, inviteEmail, inviteRole]);
 
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; email: string } | null>(null);
   const handleCancelInvitation = useCallback((invitationId: string) => {
+    const inv = invitations?.find((i) => i.id === invitationId);
+    setCancelTarget({ id: invitationId, email: inv?.email ?? "this address" });
+  }, [invitations]);
+  const confirmCancelInvitation = useCallback(() => {
+    if (!cancelTarget) return;
+    const { id, email } = cancelTarget;
+    setCancelTarget(null);
     cancelInvitation.mutate(
-      { invitationId },
-      { onError: (err) => toast.error(getErrorMessage(err)) }
+      { invitationId: id },
+      {
+        onSuccess: () => toast.success(`Invitation to ${email} cancelled`),
+        onError: (err) => toast.error(getErrorMessage(err)),
+      }
     );
-  }, [cancelInvitation]);
+  }, [cancelInvitation, cancelTarget]);
+
+  // Only the token hash is stored, so copying mints a fresh link (R3-INV-12).
+  const handleCopyInviteLink = useCallback((invitationId: string) => {
+    resendInvitation.mutate(
+      { invitationId, deliver: "link" },
+      {
+        onSuccess: async (res) => {
+          if (!res.url) return;
+          try {
+            await navigator.clipboard.writeText(res.url);
+            toast.success("Invitation link copied. The link in the earlier email no longer works.");
+          } catch {
+            toast.error("Could not copy the link. Use Resend to email it instead.");
+          }
+        },
+        onError: (err) => toast.error(getErrorMessage(err)),
+      }
+    );
+  }, [resendInvitation]);
 
   const handleResendInvitation = useCallback((invitationId: string) => {
     resendInvitation.mutate(
@@ -309,13 +340,15 @@ function MembersSettingsContent() {
                     {/* The card clipped a table wider than it, cutting off the
                         last columns with no way to reach them (QA-D008). */}
                     <div className="overflow-x-auto">
-                    <Table className="min-w-225">
+                    {/* No forced min width: under md the email moves under the name and
+                        Joined drops, so Role and Actions fit; Actions stay pinned (R3-RSP-02). */}
+                    <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="px-5">Member</TableHead>
-                          <TableHead className="px-5">Email</TableHead>
+                          <TableHead hideBelow="md" className="px-5">Email</TableHead>
                           <TableHead className="px-5">Role</TableHead>
-                          <TableHead className="px-5">Joined</TableHead>
+                          <TableHead hideBelow="sm" className="px-5">Joined</TableHead>
                           <TableHead pinned="right" className="px-5 text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -436,6 +469,7 @@ function MembersSettingsContent() {
                         inv={inv}
                         onCancel={handleCancelInvitation}
                         onResend={handleResendInvitation}
+                        onCopyLink={handleCopyInviteLink}
                         isResending={resendInvitation.isPending}
                       />
                     ))}
@@ -453,6 +487,16 @@ function MembersSettingsContent() {
             </Card>
           </TabsContent>
         </Tabs>
+        <ConfirmDialog
+          open={!!cancelTarget}
+          onOpenChange={(open) => { if (!open) setCancelTarget(null); }}
+          title="Cancel invitation"
+          description={`The invitation to ${cancelTarget?.email ?? "this address"} will stop working. You can invite them again later.`}
+          confirmLabel="Cancel invitation"
+          cancelLabel="Keep invitation"
+          destructive
+          onConfirm={confirmCancelInvitation}
+        />
     </PageWrapper>
   );
 }
@@ -508,24 +552,27 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
             <AvatarImage src={resolveImageUrl(member.image)} />
             <AvatarFallback className="text-xs bg-brand-soft text-brand-text">{member.name?.charAt(0) || "?"}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">{member.name || "Unknown"}</span>
+          <div className="min-w-0">
+            <span className="block text-sm font-medium">{member.name || "Unknown"}</span>
+            <span className="block max-w-44 truncate text-xs text-muted-foreground md:hidden" title={member.email}>{member.email}</span>
+          </div>
         </div>
       </TableCell>
-      <TableCell className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
+      <TableCell hideBelow="md" className="max-w-64 truncate px-5 text-sm text-muted-foreground" title={member.email}>{member.email}</TableCell>
       <TableCell className="px-5">
         <div className="flex flex-wrap items-center gap-1.5">
           <StatusPill tone="neutral">{getRoleLabel(member.role)}</StatusPill>
           {isTerminated && <StatusPill tone="danger">Terminated</StatusPill>}
         </div>
       </TableCell>
-      <TableCell className="px-5 text-sm text-muted-foreground tabular-nums">
+      <TableCell hideBelow="sm" className="px-5 text-sm text-muted-foreground tabular-nums">
         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(DEFAULT_LOCALE) : ""}
       </TableCell>
       <TableCell pinned="right" className="px-5 text-right">
         <div className="flex items-center justify-end gap-2">
           {canChangeRole && (
             <Select value={member.role} onValueChange={handleRoleChange}>
-              <SelectTrigger className="ml-auto h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
+              <SelectTrigger className="ml-auto h-8 w-32 text-xs sm:w-40" aria-label={`Role for ${member.name || member.email}`}><SelectValue /></SelectTrigger>
               <SelectContent>
                 {!currentRoleListed && (
                   <SelectItem value={member.role} className="text-xs" disabled>{getRoleLabel(member.role)}</SelectItem>
@@ -542,7 +589,7 @@ function MemberTableRow({ member, actor, roleOptions, onUpdateRole, onPortalAcce
               <TooltipTrigger asChild>
                 <span tabIndex={0} className="ml-auto rounded-md focus-visible:focus-ring">
                   <Select value={member.role} disabled>
-                    <SelectTrigger className="h-8 w-40 text-xs" aria-label={`Role for ${member.name || member.email}: ${lockedReason}`}>
+                    <SelectTrigger className="h-8 w-32 text-xs sm:w-40" aria-label={`Role for ${member.name || member.email}: ${lockedReason}`}>
                       <SelectValue>{getRoleLabel(member.role)}</SelectValue>
                     </SelectTrigger>
                   </Select>
@@ -584,12 +631,14 @@ interface InvitationRowProps {
   inv: { id: string; email: string; role: string };
   onCancel: (id: string) => void;
   onResend: (id: string) => void;
+  onCopyLink: (id: string) => void;
   isResending: boolean;
 }
 
-function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowProps) {
+function InvitationRow({ inv, onCancel, onResend, onCopyLink, isResending }: InvitationRowProps) {
   const handleCancel = useCallback(() => onCancel(inv.id), [inv.id, onCancel]);
   const handleResend = useCallback(() => onResend(inv.id), [inv.id, onResend]);
+  const handleCopy = useCallback(() => onCopyLink(inv.id), [inv.id, onCopyLink]);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
@@ -607,6 +656,10 @@ function InvitationRow({ inv, onCancel, onResend, isResending }: InvitationRowPr
         >
           <RefreshCw aria-hidden />
           Resend
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleCopy} disabled={isResending} aria-label={`Copy invitation link for ${inv.email}`}>
+          <Copy aria-hidden />
+          Copy link
         </Button>
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={handleCancel}>Cancel</Button>
       </div>

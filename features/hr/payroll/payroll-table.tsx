@@ -215,18 +215,21 @@ export function PayrollTable({
         <CardContent aria-live="polite" className="px-0 pb-0 pt-0">
           {payrollRows.length > 0 ? (
             <div className="overflow-x-auto">
-              <div className="min-w-[720px]">
-                <Table className="tabular-nums [&_td]:py-3 [&_th]:py-3">
+              {/* R3-RSP-02: the min width lives on the table so its own
+                  container scrolls and the pinned columns stick; under md
+                  Gross/LOP/PT drop so Net, Status and the actions fit. */}
+              <div>
+                <Table className="tabular-nums md:min-w-[720px] [&_td]:py-3 [&_th]:py-3">
                   <caption className="sr-only">Payroll records for selected month</caption>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="sticky left-0 z-sticky bg-card pl-4">Employee</TableHead>
-                      <TableHead className="text-right">Gross</TableHead>
-                      <TableHead className="text-right">LOP days</TableHead>
-                      <TableHead className="text-right">PT</TableHead>
+                      <TableHead className="z-sticky bg-card pl-4 md:sticky md:left-0">Employee</TableHead>
+                      <TableHead hideBelow="md" className="text-right">Gross</TableHead>
+                      <TableHead hideBelow="md" className="text-right">LOP days</TableHead>
+                      <TableHead hideBelow="md" className="text-right">PT</TableHead>
                       <TableHead className="text-right">Net</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right pr-4">Actions</TableHead>
+                      <TableHead pinned="right" className="text-right pr-4">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -236,7 +239,7 @@ export function PayrollTable({
                         className="group cursor-pointer"
                         onClick={() => onPreview(payroll)}
                       >
-                        <TableCell className="sticky left-0 z-base bg-card pl-4 group-hover:bg-muted">
+                        <TableCell className="z-base bg-card pl-4 group-hover:bg-muted md:sticky md:left-0">
                           <div>
                             <p className="font-medium whitespace-nowrap">
                               {payroll.user?.firstName} {payroll.user?.lastName}
@@ -246,13 +249,13 @@ export function PayrollTable({
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-mono">
+                        <TableCell hideBelow="md" className="whitespace-nowrap text-right font-mono">
                           ₹{fmtInr(payroll.grossSalary)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-mono">
+                        <TableCell hideBelow="md" className="whitespace-nowrap text-right font-mono">
                           {num(payroll.lopDays) > 0 ? num(payroll.lopDays) : "—"}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-mono">
+                        <TableCell hideBelow="md" className="whitespace-nowrap text-right font-mono">
                           {num(payroll.ptAmount) > 0 ? `₹${fmtInr(payroll.ptAmount)}` : "—"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-right font-mono font-semibold">
@@ -267,7 +270,7 @@ export function PayrollTable({
                             120px-tall column and run off-screen at 375. Only
                             the action the row is waiting on stays visible; the
                             rest moved into the kebab. */}
-                        <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
+                        <TableCell pinned="right" className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-2">
                             {payroll.status === "DRAFT" &&
                               (isPayrollApprover(currentUserRole) && payroll.userId !== currentUserId ? (

@@ -5,11 +5,12 @@ import { webhookEndpoints } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { createAuditLog, diffFields } from "@/lib/audit-log";
+import { webhookEventsSchema, webhookUrlSchema } from "@/lib/webhooks/events";
 
 const updateSchema = z.object({
-  url: z.string().url().optional(),
+  url: webhookUrlSchema.optional(),
   description: z.string().optional(),
-  events: z.array(z.string()).optional(),
+  events: webhookEventsSchema.optional(),
   isActive: z.boolean().optional(),
 });
 

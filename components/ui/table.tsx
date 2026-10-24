@@ -77,20 +77,35 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
 
 /**
  * `pinned` keeps a column (row actions) stuck to the right edge while the
- * table scrolls sideways, so it is never clipped off-screen (QA-BUG-11).
+ * table scrolls sideways, so it is never clipped off-screen (QA-BUG-11). The
+ * left shadow marks that more columns scroll underneath it (R3-RSP-02).
  */
 const PINNED_RIGHT =
-  "sticky right-0 z-[1] bg-card shadow-[inset_1px_0_0_var(--color-border)] [tr:hover>&]:bg-accent";
+  "sticky right-0 z-[1] bg-card shadow-[-8px_0_8px_-8px_rgb(0_0_0/0.25),inset_1px_0_0_var(--color-border)] [tr:hover>&]:bg-accent";
 
-type PinnableProps = { pinned?: "right" };
+/**
+ * `hideBelow` drops a low-priority column under a breakpoint so the priority
+ * columns and actions fit narrow screens (R3-RSP-02). Pass it on both the
+ * head and the cells of the column.
+ */
+const HIDE_BELOW = {
+  sm: "hidden sm:table-cell",
+  md: "hidden md:table-cell",
+  lg: "hidden lg:table-cell",
+  xl: "hidden xl:table-cell",
+  "2xl": "hidden 2xl:table-cell",
+} as const;
 
-function TableHead({ className, pinned, ...props }: React.ComponentProps<"th"> & PinnableProps) {
+type ColumnProps = { pinned?: "right"; hideBelow?: keyof typeof HIDE_BELOW };
+
+function TableHead({ className, pinned, hideBelow, ...props }: React.ComponentProps<"th"> & ColumnProps) {
   return (
     <th
       data-slot="table-head"
       className={cn(
         "h-9 px-3 text-left align-middle text-2xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5",
         pinned === "right" && cn(PINNED_RIGHT, "bg-surface-sunken [tr:hover>&]:bg-surface-sunken"),
+        hideBelow && HIDE_BELOW[hideBelow],
         className
       )}
       {...props}
@@ -98,13 +113,14 @@ function TableHead({ className, pinned, ...props }: React.ComponentProps<"th"> &
   );
 }
 
-function TableCell({ className, pinned, ...props }: React.ComponentProps<"td"> & PinnableProps) {
+function TableCell({ className, pinned, hideBelow, ...props }: React.ComponentProps<"td"> & ColumnProps) {
   return (
     <td
       data-slot="table-cell"
       className={cn(
         "px-3 py-(--cell-py) align-middle text-sm whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5",
         pinned === "right" && PINNED_RIGHT,
+        hideBelow && HIDE_BELOW[hideBelow],
         className
       )}
       {...props}

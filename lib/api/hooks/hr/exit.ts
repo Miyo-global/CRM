@@ -134,9 +134,7 @@ export function useUpdateResignation() {
       feedback?: { question: string; answer: string }[];
       checklistItems?: string[];
     }) => apiClient.patch<{ success: boolean }>(`/hr/exit/${id}`, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: exitKeys.all });
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: exitKeys.all }),
   });
 }
 
@@ -157,11 +155,13 @@ export function useCeoReviewResignation() {
   return useMutation({
     mutationFn: ({ id, action, remarks }: { id: number; action: "approve" | "reject"; remarks?: string }) =>
       apiClient.patch<{ success: boolean }>(`/hr/exit/${id}/ceo-review`, { decision: action, remarks }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: exitKeys.all });
-      // Final approval opens a record on /hr/termination.
-      qc.invalidateQueries({ queryKey: queryKeys.hr.terminations() });
-    },
+    // Awaited so the caller's toast lands on the refreshed card (R3-ADM-04).
+    onSuccess: () =>
+      Promise.all([
+        qc.invalidateQueries({ queryKey: exitKeys.all }),
+        // Final approval opens a record on /hr/termination.
+        qc.invalidateQueries({ queryKey: queryKeys.hr.terminations() }),
+      ]),
   });
 }
 

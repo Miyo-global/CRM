@@ -100,6 +100,7 @@ export function JobRoleSheet({ open, onOpenChange, role, departments }: JobRoleS
       submitLabel={isEdit ? "Save changes" : "Add role"}
       isPending={isPending}
       submitDisabled={title.trim().length < TITLE_MIN}
+      submitDisabledReason={`Enter a job title of at least ${TITLE_MIN} characters.`}
     >
       <div className="space-y-2">
         <Label htmlFor="job-role-title">

@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
 import { updateEmployeeProfileBodySchema, isRoleAllowedForDepartment, DEPARTMENT_ROLE_MISMATCH_MESSAGE, checkMinMonthlySalary } from "@/lib/validations/hr";
 import { departments, organizations } from "@/lib/db/schema";
 import { inngest } from "@/lib/inngest/client";
-import { createAuditLog } from "@/lib/audit-log";
+import { createAuditLog, diffFields } from "@/lib/audit-log";
 import { redactSalary } from "@/lib/hr/redact-salary";
 import { toDirectoryEntry } from "@/lib/hr/directory-view";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
@@ -256,6 +256,16 @@ export async function PATCH(
         : null;
     }
 
+    // R3-ADM-09: log only the fields whose value really changed (names only;
+    // salary, tax and bank values stay out of the audit log).
+    const beforeRow = Object.keys(updateData).length > 0
+      ? await db.query.users.findFirst({
+          where: eq(users.id, targetUserId),
+          columns: Object.fromEntries(Object.keys(updateData).map((k) => [k, true])),
+        })
+      : undefined;
+    const changedFields = Object.keys(diffFields((beforeRow ?? {}) as Record<string, unknown>, updateData));
+
     await db.transaction(async (tx) => {
       if (Object.keys(updateData).length > 0) {
         await tx.update(users).set(updateData).where(eq(users.id, targetUserId));
@@ -329,14 +339,16 @@ export async function PATCH(
       }).catch(() => {});
     }
 
-    void createAuditLog({
-      action: "hr.employee_updated",
-      userId: session.user.id,
-      orgId: session.orgId,
-      targetId: targetUserId,
-      targetType: "employee",
-      metadata: { changedFields: Object.keys(updateData) },
-    }).catch(() => {});
+    if (changedFields.length > 0) {
+      void createAuditLog({
+        action: "hr.employee_updated",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: targetUserId,
+        targetType: "employee",
+        metadata: { changedFields },
+      }).catch(() => {});
+    }
 
     return ok({ success: true });
   }, req);
