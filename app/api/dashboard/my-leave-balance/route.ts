@@ -2,7 +2,6 @@ import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveBalances, leaveTypes } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { uniqueLeaveBalances } from "@/lib/hr/unique-leave-balances";
 
 export async function GET() {
   return withAuth(async (session) => {
@@ -27,6 +26,6 @@ export async function GET() {
         )
       );
 
-    return ok(uniqueLeaveBalances(data));
+    return ok(data);
   });
 }

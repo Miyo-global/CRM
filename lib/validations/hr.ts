@@ -12,6 +12,7 @@ import { bankDetailsSchema, optionalBankDetailsSchema } from "@/lib/validations/
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { PERSON_NAME_HINT, PERSON_NAME_PATTERN } from "@/lib/utils/person-name";
 import { storedFileRefSchema } from "@/lib/validations/stored-file-ref";
+import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
 import { amountSchema, optionalAmountSchema, type AmountRules } from "@/lib/numeric-input";
 import { getTodayString, isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 
@@ -134,7 +135,6 @@ export const DEPARTMENT_ROLE_MISMATCH_MESSAGE =
 
 const PERSON_NAME_MIN_LENGTH = 2;
 const PERSON_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 254;
 export const MIN_EMPLOYEE_AGE_YEARS = 18;
 const MAX_EMPLOYEE_AGE_YEARS = 100;
 const EMPLOYEE_ID_MIN_LENGTH = 2;
@@ -635,12 +635,8 @@ export const onboardEmployeeInputSchema = z
   .object({
     firstName: personNameSchema("First name"),
     lastName: personNameSchema("Last name"),
-    email: z
-      .string()
-      .trim()
-      .min(1, "Email is required")
-      .email("Invalid email address")
-      .max(EMAIL_MAX_LENGTH, `Email must be at most ${EMAIL_MAX_LENGTH} characters`),
+    // Same rule as invites: 254 max, 64 before the @ (R3-INV-10).
+    email: EMAIL_ADDRESS_SCHEMA,
     // R2-LC-03: only what is needed to create the account and send the set-up
     // link is required; phone, gender, DOB and banking can be filled in later.
     gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),

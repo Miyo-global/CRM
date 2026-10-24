@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { FileCheck, Clock, XCircle, CheckCircle2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { ackStatusLabel } from "@/lib/labels";
 
 function ackTone(status: string | null): Tone {
   if (status === "ACKNOWLEDGED") return "success";
@@ -163,7 +164,7 @@ export default function CompliancePage() {
                     </TableCell>
                     <TableCell>
                       <StatusPill tone={ackTone(ack.status)} dot>
-                        {ack.status}
+                        {ackStatusLabel(ack.status)}
                       </StatusPill>
                     </TableCell>
                   </TableRow>

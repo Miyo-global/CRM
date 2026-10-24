@@ -13,7 +13,7 @@ export async function POST(
 ) {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
-      return err("Only HR or CEO can reopen an appraisal.", 403);
+      return err("Only HR or the Super Admin can reopen an appraisal.", 403);
     }
     const { id } = await params;
     const appraisalId = Number(id);

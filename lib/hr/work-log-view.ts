@@ -38,3 +38,16 @@ export function resolveWorkLogView(params: {
 
   return { effectiveUserId: undefined, isMultiUser: false, isSelfView: false };
 }
+
+/**
+ * The entry a day's work-log row shows and edits. A day can hold ticket time
+ * entries as well as the free-form log (drizzle/0194); the free-form one is
+ * what /api/hr/work-logs saves, so it wins, else the first ticket entry.
+ */
+export function logForDay<T extends { date: string; ticketId?: number | null }>(
+  logs: readonly T[] | undefined,
+  dateStr: string,
+): T | undefined {
+  const day = logs?.filter((l) => l.date === dateStr) ?? [];
+  return day.find((l) => l.ticketId == null) ?? day[0];
+}

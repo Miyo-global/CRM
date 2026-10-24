@@ -119,6 +119,15 @@ export function GeneratePayrollSheet({
       submitLabel="Preview Payslip"
       isPending={false}
       submitDisabled={!customRangeValid || !!bonusError || !!deductionsError}
+      submitDisabledReason={
+        !customRangeValid
+          ? "Pick a start and end date inside this month."
+          : bonusError
+            ? `Bonus: ${bonusError}`
+            : deductionsError
+              ? `Other deductions: ${deductionsError}`
+              : null
+      }
     >
       <div className="space-y-2 rounded-md border border-border bg-surface-sunken px-3 py-2.5">
         <div className="flex items-center justify-between">

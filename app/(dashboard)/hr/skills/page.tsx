@@ -457,6 +457,7 @@ export default function SkillsPage() {
         submitLabel="Add Skill"
         isPending={addSkill.isPending}
         submitDisabled={!skillName.trim()}
+        submitDisabledReason="Enter a skill name."
       >
         <div className="space-y-4">
           <div className="space-y-1.5">

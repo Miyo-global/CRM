@@ -111,7 +111,6 @@ export async function processLeaveRequest(data: {
             }
           }
           const balanceRecord = await tx.query.leaveBalances.findFirst({
-            orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
             where: and(
               eq(leaveBalances.userId, request.userId),
               eq(leaveBalances.leaveTypeId, request.leaveTypeId),
@@ -147,7 +146,6 @@ export async function processLeaveRequest(data: {
           }
 
           const balanceRecord = await tx.query.leaveBalances.findFirst({
-            orderBy: (b, { asc }) => [asc(b.id)], // oldest row (R3-PRJ-08)
             where: and(
               eq(leaveBalances.userId, request.userId),
               eq(leaveBalances.leaveTypeId, request.leaveTypeId),

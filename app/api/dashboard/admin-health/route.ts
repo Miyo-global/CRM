@@ -1,11 +1,13 @@
 import { type NextRequest } from "next/server";
-import { withAdmin, ok } from "@/lib/api/helpers";
+import { withRoles, ok } from "@/lib/api/helpers";
+import { FULL_ACCESS_ROLES } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { leads, expenses, tasks, users, leaveRequests, organizationMembers } from "@/lib/db/schema";
 import { eq, and, isNull, lt, sql, count } from "drizzle-orm";
 
 export async function GET(_req: NextRequest) {
-  return withAdmin(async (session) => {
+  // System Health is Super Admin / Admin only; HR is turned away.
+  return withRoles(FULL_ACCESS_ROLES)(async (session) => {
     const orgId = session.orgId;
 
     const [

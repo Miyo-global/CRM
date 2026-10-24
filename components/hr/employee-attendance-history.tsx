@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { isPresentAttendanceStatus } from "@/lib/hr/attendance-summary";
 import type { AttendanceSummaryPeriod } from "@/types/hr";
+import { attendanceStatusLabel } from "@/lib/labels";
 
 export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
   const [date, setDate] = useState(new Date());
@@ -247,7 +248,7 @@ export function EmployeeAttendanceHistory({ userId }: { userId: string }) {
                       <TableCell>{format(new Date(record.date + "T12:00:00"), "MMM d, yyyy")}</TableCell>
                       <TableCell>
                         <StatusPill tone={isPresentAttendanceStatus(record.status) ? "success" : "neutral"} dot>
-                          {record.status}
+                          {attendanceStatusLabel(record.status)}
                         </StatusPill>
                       </TableCell>
                       <TableCell>

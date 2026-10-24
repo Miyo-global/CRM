@@ -86,12 +86,12 @@ describe("ticket time-entry POST (R3-PRJ-01, R3-PRJ-04)", () => {
     expect((await post({ date: "2026-10-23T19:55:00.000Z", hours: 2 })).status).toBe(400);
   });
 
-  it("returns 409 with a message for a duplicate day", async () => {
+  it("returns 409 with a message for the same ticket on the same day", async () => {
     insertResult.mockImplementation(() => {
       throw Object.assign(new Error("duplicate key"), { code: "23505" });
     });
     const res = await post({ date: "2026-10-24", hours: 2 });
     expect(res.status).toBe(409);
-    expect((await res.json()).error).toMatch(/already logged time for 2026-10-24/);
+    expect((await res.json()).error).toMatch(/already logged time on this ticket for 2026-10-24/);
   });
 });

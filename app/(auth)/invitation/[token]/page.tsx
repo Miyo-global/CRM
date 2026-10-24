@@ -21,6 +21,11 @@ import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, X, Shield } from "lucide-
 import { getErrorMessage } from "@/lib/get-error-message";
 import { getRoleLabel, invitationScopeText } from "@/lib/rbac/roles";
 
+/** Full page load, so the new session cookie is read fresh. */
+function openDashboard() {
+  window.location.href = "/dashboard";
+}
+
 const invitationSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
@@ -98,7 +103,7 @@ export default function InvitationPage() {
             // (R3-ACC-03); show a confirmation screen briefly first.
             setJoined(true);
             toast.success(`Welcome to ${invitation.organizationName}!`);
-            setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
+            window.setTimeout(openDashboard, 1500);
             return;
           }
           toast.success("Account created. Sign in to continue.");

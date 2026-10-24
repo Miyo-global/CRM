@@ -90,6 +90,7 @@ export function PayslipDetailSheet({
       }
       isPending={isGenerating}
       submitDisabled={!monthEnded && !overrideIncompleteMonth}
+      submitDisabledReason='Tick "Generate anyway" to generate for a month that has not ended.'
     >
       {!monthEnded && (
         <div className="rounded-md border border-border p-3 space-y-2">

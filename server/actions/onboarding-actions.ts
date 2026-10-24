@@ -259,5 +259,5 @@ async function allocateDefaultLeaves(userId: string, orgId: string) {
       balance: String(lt.daysPerYear),
       year: currentYear,
     }))
-  );
+  ).onConflictDoNothing();
 }

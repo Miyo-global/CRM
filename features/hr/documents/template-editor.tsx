@@ -357,6 +357,8 @@ export function TemplateEditor({ template }: TemplateEditorProps) {
               <div className="overflow-x-auto rounded-lg bg-surface-sunken p-3 sm:p-8">
                 <div
                   className="tiptap mx-auto w-full max-w-[816px] rounded-xs bg-card p-6 shadow-sm sm:p-12"
+                  // Preview HTML is passed through sanitizeHtml (sanitize-html allowlist) first.
+                  // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml) }}
                 />
               </div>

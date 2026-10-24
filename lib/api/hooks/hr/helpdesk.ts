@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { HelpdeskTicket, TicketPriority, TicketStatus } from "@/types/hr";
 
-export type HelpdeskCommentKind = "comment" | "internal_note" | "status_change" | "assignment";
+export type HelpdeskCommentKind = "comment" | "internal_note" | "status_change" | "assignment" | "priority_change";
 
 export interface HelpdeskTicketComment {
   id: number;
@@ -38,7 +38,7 @@ export function useHelpdeskTicketComments(ticketId: number | null) {
 export function useAddHelpdeskTicketComment(ticketId: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { body: string; kind?: Exclude<HelpdeskCommentKind, "status_change"> }) =>
+    mutationFn: (input: { body: string; kind?: "comment" | "internal_note" }) =>
       apiClient.post<HelpdeskTicketComment>(
         `/hr/helpdesk/${ticketId}/comments`,
         input,

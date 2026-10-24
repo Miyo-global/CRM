@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) return err("Only HR or CEO can manage categories.", 403);
+    if (!isAdminOrOwner(session.user.role)) return err("Only HR or the Super Admin can manage categories.", 403);
     const body = await parseBody(req, createCategorySchema);
     const [row] = await db
       .insert(appraisalCategories)

@@ -63,7 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        # pgvector, like Neon: drizzle/0179 only creates kb_chunks and
+        # kb_ingestion_checkpoints when the vector extension is available.
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: drift

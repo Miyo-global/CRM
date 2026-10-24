@@ -11,12 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -59,7 +53,7 @@ import {
 } from "@/lib/api/hooks/crm";
 import { toast } from "sonner";
 
-type EntityType = "lead" | "deal" | "contact";
+type EntityType = "contact";
 type FieldType = "text" | "number" | "date" | "boolean" | "select";
 
 interface SelectOption {
@@ -570,23 +564,8 @@ export default function CustomFieldsPage() {
     <PageWrapper
       title="Custom fields"
     >
-      <Tabs defaultValue="lead">
-        <TabsList variant="underline" className="mb-6">
-          <TabsTrigger value="lead">Leads</TabsTrigger>
-          <TabsTrigger value="deal">Deals</TabsTrigger>
-          <TabsTrigger value="contact">Contacts</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="lead">
-          <EntityFieldsTab entityType="lead" />
-        </TabsContent>
-        <TabsContent value="deal">
-          <EntityFieldsTab entityType="deal" />
-        </TabsContent>
-        <TabsContent value="contact">
-          <EntityFieldsTab entityType="contact" />
-        </TabsContent>
-      </Tabs>
+      {/* Leads and Deals were removed with the sales module. */}
+      <EntityFieldsTab entityType="contact" />
     </PageWrapper>
   );
 }

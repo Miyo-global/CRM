@@ -1,0 +1,10 @@
+# Extends the default gitleaks ruleset; only narrows it where triaged.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Triaged false positives"
+# .omc/ is oh-my-claudecode local job state (scopeKey/intentKey/idempotencyKey
+# are sha256 hashes, not credentials). Committed once in 94eff6027, now
+# gitignored. Scoped to that directory only.
+paths = ['''^\.omc/''']

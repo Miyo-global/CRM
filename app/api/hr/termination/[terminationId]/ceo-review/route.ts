@@ -19,7 +19,7 @@ export async function PATCH(
 ) {
   return withAuth(async (session) => {
     if (!roleHasPermission(session.user.role, "hr:termination:approve")) {
-      return err("Only CEO can review terminations.", 403);
+      return err("Only the Super Admin can review terminations.", 403);
     }
 
     const { terminationId: id } = await params;
@@ -30,7 +30,7 @@ export async function PATCH(
       where: and(eq(terminations.id, terminationId), eq(terminations.orgId, session.orgId)),
     });
     if (!existing) return err("Termination not found.", 404);
-    if (existing.status !== "PENDING_CEO") return err("Termination is not pending CEO review.", 400);
+    if (existing.status !== "PENDING_CEO") return err("Termination is not pending Super Admin review.", 400);
 
     const body = reviewSchema.parse(await req.json());
 

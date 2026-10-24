@@ -94,7 +94,7 @@ export async function PATCH(
     const body = await parseBody(req, patchPIPSchema);
 
     if (body.finalOutcome && !admin) {
-      return err("Only HR or CEO can set final PIP outcome.", 403);
+      return err("Only HR or the Super Admin can set final PIP outcome.", 403);
     }
 
     if (body.status === "ACTIVE" && !admin && row.managerId !== session.user.id && row.hrRepId !== session.user.id) {

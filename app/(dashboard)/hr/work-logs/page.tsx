@@ -24,7 +24,7 @@ import { WorkLogList } from "@/features/hr/work-logs/work-log-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { resolveWorkLogWindow, normalizeWorkLogFilters } from "@/lib/hr/work-log-window";
 import { normalizeWorkLogPeopleFilters } from "@/lib/hr/work-log-people-filters";
-import { resolveWorkLogView } from "@/lib/hr/work-log-view";
+import { logForDay, resolveWorkLogView } from "@/lib/hr/work-log-view";
 
 export default function WorkLogsPage() {
   const { data: session } = useSession();
@@ -262,7 +262,7 @@ export default function WorkLogsPage() {
 
       if (!searchTerm.trim()) return true;
       const term = searchTerm.trim().toLowerCase();
-      const log = logs?.find((l) => l.date === dateStr);
+      const log = logForDay(logs, dateStr);
 
       const dateDisplay = format(date, "dd MMM yyyy EEEE").toLowerCase();
       if (dateDisplay.includes(term)) return true;
@@ -356,7 +356,7 @@ export default function WorkLogsPage() {
       const filteredDays = days.filter(filterDay);
       for (const date of filteredDays) {
         const dateStr = format(date, "yyyy-MM-dd");
-        const log = logs?.find((l) => l.date === dateStr);
+        const log = logForDay(logs, dateStr);
         const holidayName = holidayByDate.get(dateStr);
         const leaveReason = leaveByDate.get(dateStr);
         sheet.addRow({

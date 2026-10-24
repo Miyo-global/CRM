@@ -20,7 +20,8 @@ SELECT m, ok FROM (VALUES
   -- NOT covered by db:apply-pending: must already exist
   ('0126 interview_questions.sample_answer', EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'interview_questions' AND column_name = 'sample_answer')),
   ('0127 one_on_one_meetings.scheduled_at timestamptz', EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'one_on_one_meetings' AND column_name = 'scheduled_at' AND data_type = 'timestamp with time zone')),
-  ('0128 timesheets_org_user_date_unique', EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'timesheets_org_user_date_unique')),
+  -- 0194 replaced 0128's timesheets_org_user_date_unique with per-ticket indexes.
+  ('0194 uq_timesheets_org_user_date_ticket', to_regclass('public.uq_timesheets_org_user_date_ticket') IS NOT NULL),
   ('0133 assets.brand', EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'assets' AND column_name = 'brand')),
   ('0134 employee_career_profiles', to_regclass('public.employee_career_profiles') IS NOT NULL),
   ('0138 asset_assignment_history', to_regclass('public.asset_assignment_history') IS NOT NULL),

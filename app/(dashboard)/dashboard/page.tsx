@@ -160,11 +160,6 @@ export default function DashboardPage() {
           { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
           { id: "org", label: "Organization", value: stats.orgName, icon: Building2, tone: "neutral" as const },
         ];
-      case "SALES":
-        return [
-          { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "info" as const, href: "/projects" },
-          { id: "present", label: "Present Today", value: stats.presentToday, icon: CalendarCheck, tone: "success" as const, href: "/hr/attendance" },
-        ];
       case "CUSTOMER_SUPPORT":
         return [
           { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "brand" as const, href: "/projects" },

@@ -246,7 +246,6 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "Core",
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-            { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
             ...(AI_MODULE_ENABLED ? [{ label: "AI Hub", icon: Sparkles, href: "/ai" }] : []),
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "Notifications", icon: Bell, href: "/notifications" },
@@ -370,9 +369,8 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "System",
           routes: [
             { label: "Settings", icon: Settings, href: "/settings" },
-            { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
+            // Organization, Data Export and System Health are Super Admin / Admin only.
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
-            { label: "Data Export", icon: FileText, href: "/settings/data-hub", isSubItem: true },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },

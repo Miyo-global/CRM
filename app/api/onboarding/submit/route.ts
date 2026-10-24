@@ -60,7 +60,7 @@ export async function POST() {
               balance: String(lt.daysPerYear),
               year: currentYear,
             }))
-          );
+          ).onConflictDoNothing();
         }
       }
 

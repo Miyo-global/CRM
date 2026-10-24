@@ -151,6 +151,7 @@ export default function MyDocumentsPage() {
         submitLabel="Upload"
         isPending={createDocument.isPending}
         submitDisabled={!file}
+        submitDisabledReason="Choose a file to upload."
       >
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="doc-name">

@@ -76,6 +76,7 @@ import {
   type PipDocType,
 } from "@/lib/validations/hr-pip";
 import { getTodayString } from "@/lib/date-utils";
+import { pipProgressStatusLabel, pipStatusLabel } from "@/lib/labels";
 
 function isHrRepEligible(e: Employee): boolean {
   const dept = (e.department?.name ?? "").toLowerCase();
@@ -488,7 +489,7 @@ export function PipTab() {
                   </p>
                 </div>
                 <StatusPill tone={statusColor(p.status)} dot className="shrink-0">
-                  {(p.status ?? "DRAFT").replace(/_/g, " ")}
+                  {pipStatusLabel(p.status)}
                 </StatusPill>
               </CardContent>
             </Card>
@@ -1018,7 +1019,7 @@ function PipDetailBody({
           <PhaseTimeline phase={row.phase} />
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill tone={statusColor(row.status)} dot>
-              {(row.status ?? "DRAFT").replace(/_/g, " ")}
+              {pipStatusLabel(row.status)}
             </StatusPill>
             {row.finalOutcome && (
               <StatusPill tone={row.finalOutcome === "SUCCESS" ? "success" : row.finalOutcome === "EXTENDED" ? "warning" : "danger"}>
@@ -1206,7 +1207,7 @@ function PipDetailBody({
                         : "text-destructive font-medium"
                     }
                   >
-                    {ci.overallStatus.replace(/_/g, " ")}
+                    {pipProgressStatusLabel(ci.overallStatus)}
                   </span>
                 </div>
               </div>
@@ -1231,7 +1232,7 @@ function PipDetailBody({
                   {(ci.goalProgressRows ?? []).map((gp) => (
                     <div key={gp.id} className="text-2xs text-muted-foreground">
                       <span className="font-medium text-foreground/80">{gp.goal?.title ?? "Goal"}: </span>
-                      {gp.percentComplete}% · {gp.progressStatus.replace(/_/g, " ")}
+                      {gp.percentComplete}% · {pipProgressStatusLabel(gp.progressStatus)}
                       {gp.blockers && gp.blockers !== "None" && <span> · {gp.blockers}</span>}
                     </div>
                   ))}

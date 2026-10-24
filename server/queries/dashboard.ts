@@ -19,11 +19,7 @@ import {
   calendarEvents,
   notifications,
   timesheets,
-  deals,
-  jobPostings,
-  leads,
   expenses,
-  targets,
   holidays,
 } from "@/lib/db/schema";
 import { eq, and, desc, or, inArray, count, sql, gte, lte, lt, isNull, isNotNull, gt, sum, ne } from "drizzle-orm";
@@ -278,17 +274,12 @@ export async function getActiveSprintSummary(orgId: string, userId: string, role
 
 export async function getRoleStats(orgId: string, userId: string): Promise<Record<string, number>> {
   const coIds = await coassignedTicketIdsForUser(userId);
-  const today = getTodayString();
 
   const [
     myProjectsRow,
     myTicketsRow,
     myTicketsDoneRow,
     myTicketsInProgressRow,
-    myLeadsRow,
-    myConvertedRow,
-    myDealsRow,
-    activeTargets,
   ] = await Promise.all([
     db
       .select({ c: sql<number>`count(distinct ${projects.id})::int` })
@@ -318,75 +309,13 @@ export async function getRoleStats(orgId: string, userId: string): Promise<Recor
           or(eq(tickets.status, "IN_PROGRESS"), eq(tickets.status, "IN_REVIEW")),
         ),
       ),
-    db
-      .select({ c: count() })
-      .from(leads)
-      .where(
-        and(
-          eq(leads.orgId, orgId),
-          eq(leads.assignedToId, userId),
-          isNull(leads.deletedAt),
-          ne(leads.status, "CONVERTED"),
-          ne(leads.status, "LOST"),
-        ),
-      ),
-    db
-      .select({ c: count() })
-      .from(leads)
-      .where(
-        and(
-          eq(leads.orgId, orgId),
-          eq(leads.assignedToId, userId),
-          isNull(leads.deletedAt),
-          eq(leads.status, "CONVERTED"),
-        ),
-      ),
-    db
-      .select({ c: count() })
-      .from(deals)
-      .where(
-        and(
-          eq(deals.orgId, orgId),
-          eq(deals.assignedToId, userId),
-          ne(deals.stage, "WON"),
-          ne(deals.stage, "LOST"),
-        ),
-      ),
-    db.query.targets.findMany({
-      where: and(
-        eq(targets.orgId, orgId),
-        eq(targets.userId, userId),
-        lte(targets.startDate, today),
-        gte(targets.endDate, today),
-      ),
-      columns: { targetValue: true, currentValue: true },
-    }),
   ]);
-
-  let targetProgress = 0;
-  if (activeTargets.length > 0) {
-    let acc = 0;
-    let n = 0;
-    for (const t of activeTargets) {
-      const tv = Number(t.targetValue);
-      const cv = Number(t.currentValue ?? 0);
-      if (tv > 0) {
-        acc += Math.min(cv / tv, 1);
-        n += 1;
-      }
-    }
-    targetProgress = n > 0 ? Math.round((acc / n) * 100) : 0;
-  }
 
   return {
     myProjects: Number(myProjectsRow[0]?.c ?? 0),
     myTickets: Number(myTicketsRow[0]?.c ?? 0),
     myTicketsDone: Number(myTicketsDoneRow[0]?.c ?? 0),
     myTicketsInProgress: Number(myTicketsInProgressRow[0]?.c ?? 0),
-    myLeads: Number(myLeadsRow[0]?.c ?? 0),
-    myConverted: Number(myConvertedRow[0]?.c ?? 0),
-    myDeals: Number(myDealsRow[0]?.c ?? 0),
-    targetProgress,
   };
 }
 

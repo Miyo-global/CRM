@@ -7,7 +7,7 @@ import {
 } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
-import { canAccessRoute, isOwnEmployeeRecord } from "@/lib/auth/route-access";
+import { canAccessRoute, isDisabledModuleRoute, isOwnEmployeeRecord } from "@/lib/auth/route-access";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { buildCsp } from "@/lib/security/csp";
 
@@ -124,6 +124,17 @@ export default async function proxy(req: NextRequest) {
     const httpsUrl = req.nextUrl.clone();
     httpsUrl.protocol = "https";
     return NextResponse.redirect(httpsUrl, 301);
+  }
+
+  // The ATS ships off: its pages and APIs are not reachable at all.
+  if (isDisabledModuleRoute(pathname)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Not found." }, { status: 404 });
+    }
+    const url = req.nextUrl.clone();
+    url.pathname = "/access-restricted";
+    url.search = `?from=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(url);
   }
 
   if (pathname.startsWith("/api/")) {

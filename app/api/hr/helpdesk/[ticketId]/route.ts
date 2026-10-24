@@ -105,6 +105,7 @@ export async function PATCH(
     const updates: Partial<typeof helpdeskTickets.$inferInsert> = { updatedAt: new Date() };
     const statusChanged = data.status !== undefined && data.status !== ticket.status;
     const assigneeChanged = data.assigneeId !== undefined && data.assigneeId !== ticket.assigneeId;
+    const priorityChanged = data.priority !== undefined && data.priority !== ticket.priority;
 
     if (data.status !== undefined) updates.status = data.status;
     if (data.assigneeId !== undefined) updates.assigneeId = data.assigneeId;
@@ -144,6 +145,18 @@ export async function PATCH(
         kind: "assignment",
         body: null,
         metadata: { from: ticket.assigneeId, to: data.assigneeId ?? null, toName: assigneeName },
+      });
+    }
+
+    // Triage is in the trail as well, so the requester sees who changed it.
+    if (priorityChanged) {
+      await db.insert(helpdeskTicketComments).values({
+        orgId: session.orgId,
+        ticketId,
+        authorId: session.user.id,
+        kind: "priority_change",
+        body: null,
+        metadata: { from: ticket.priority, to: data.priority },
       });
     }
 

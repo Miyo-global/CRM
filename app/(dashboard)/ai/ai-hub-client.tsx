@@ -1,6 +1,5 @@
 "use client";
 
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -20,13 +19,12 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain, Mail, TrendingUp, Target, MessageSquare, FileText, ShieldCheck, Zap, AlertTriangle, ClipboardList, type LucideIcon } from "lucide-react";
+import { Mail, MessageSquare, FileText, AlertTriangle, ClipboardList, type LucideIcon } from "lucide-react";
 import {
-  useAIScoreLead, useGenerateEmail, usePredictDeal, useNextBestAction,
-  useObjectionHandler, useGenerateSubjectLines, useSentimentAnalysis,
+  useGenerateSubjectLines,
   useAIGenerateReview, useAISuggestHelpdeskReply,
   useAIAttritionRisk,
-  useMeetingPrep, useGenerateContentBrief,
+  useGenerateContentBrief,
 } from "@/lib/api/hooks/ai";
 
 interface AiFeature {
@@ -34,31 +32,24 @@ interface AiFeature {
   title: string;
   description: string;
   icon: LucideIcon;
-  category: "sales" | "hr" | "marketing" | "general";
+  category: "hr" | "marketing" | "general";
   tone: Tone;
 }
 
 const ALL_AI_FEATURES: AiFeature[] = [
-  { id: "score-lead", title: "Lead Scoring", description: "AI scores leads 0-100 based on engagement, fit, and conversion signals", icon: Target, category: "sales", tone: "warning" },
-  { id: "generate-email", title: "Email Generator", description: "Generate follow-up emails in formal, friendly, or urgent tones", icon: Mail, category: "sales", tone: "info" },
-  { id: "predict-deal", title: "Deal Prediction", description: "Predict deal win probability based on pipeline metrics", icon: TrendingUp, category: "sales", tone: "success" },
-  { id: "next-action", title: "Next Best Action", description: "AI suggests the optimal next step for any lead", icon: Zap, category: "sales", tone: "plum" },
-  { id: "objection-handler", title: "Objection Handler", description: "Get counter-arguments and talking points for sales objections", icon: MessageSquare, category: "sales", tone: "danger" },
   { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", tone: "info" },
   { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", tone: "teal" },
-  { id: "sentiment", title: "Sentiment Analysis", description: "Analyze client communication for churn risk signals", icon: Brain, category: "sales", tone: "plum" },
   { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", tone: "warning" },
   { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", tone: "success" },
   { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", tone: "danger" },
-  { id: "meeting-prep", title: "Meeting Prep", description: "Generate pre-meeting briefs with context and talking points", icon: ShieldCheck, category: "sales", tone: "info" },
 ];
 
-// Sales tools read leads and deals, which only exist with the CRM module on.
-const AI_FEATURES = ALL_AI_FEATURES.filter((f) => CRM_MODULE_ENABLED || f.category !== "sales");
+// The sales tools (lead scoring, deal prediction, objection handler, ...) were
+// removed with the sales module.
+const AI_FEATURES = ALL_AI_FEATURES;
 
 const CATEGORIES = [
   { value: "all", label: "All Features" },
-  ...(CRM_MODULE_ENABLED ? [{ value: "sales", label: "Sales & CRM" }] : []),
   { value: "hr", label: "HR & People" },
   { value: "marketing", label: "Marketing" },
   { value: "general", label: "General" },
@@ -154,27 +145,16 @@ export function AIHubClient() {
 
 function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () => void }) {
   const [input, setInput] = useState("");
-  const [secondInput, setSecondInput] = useState("");
   const [result, setResult] = useState<string | null>(null);
 
-  const scoreLead = useAIScoreLead();
-  const generateEmail = useGenerateEmail();
-  const predictDeal = usePredictDeal();
-  const nextAction = useNextBestAction();
-  const objectionHandler = useObjectionHandler();
   const subjectLines = useGenerateSubjectLines();
-  const sentiment = useSentimentAnalysis();
   const generateReview = useAIGenerateReview();
   const helpdeskReply = useAISuggestHelpdeskReply();
   const attritionRisk = useAIAttritionRisk();
-  const meetingPrep = useMeetingPrep();
   const contentBrief = useGenerateContentBrief();
 
-  const isLoading = scoreLead.isPending || generateEmail.isPending || predictDeal.isPending ||
-    nextAction.isPending || objectionHandler.isPending || subjectLines.isPending ||
-    sentiment.isPending || generateReview.isPending ||
-    helpdeskReply.isPending || attritionRisk.isPending ||
-    meetingPrep.isPending || contentBrief.isPending;
+  const isLoading = subjectLines.isPending || generateReview.isPending ||
+    helpdeskReply.isPending || attritionRisk.isPending || contentBrief.isPending;
 
   const handleSubmit = () => {
     if (!input.trim()) { toast.error("Please enter input"); return; }
@@ -185,7 +165,7 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
     };
     const onError = (err: Error) => toast.error(err.message);
 
-    const numericFeatures = ["score-lead", "predict-deal", "next-action", "helpdesk-reply"];
+    const numericFeatures = ["helpdesk-reply"];
     if (numericFeatures.includes(featureId)) {
       const parsed = Number(input.trim());
       if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -195,36 +175,22 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
     }
 
     switch (featureId) {
-      case "score-lead": scoreLead.mutate(Number(input), { onSuccess, onError }); break;
-      case "generate-email": generateEmail.mutate({ leadName: input, tone: "friendly" }, { onSuccess, onError }); break;
-      case "predict-deal": predictDeal.mutate(Number(input), { onSuccess, onError }); break;
-      case "next-action": nextAction.mutate(Number(input), { onSuccess, onError }); break;
-      case "objection-handler": objectionHandler.mutate({ objection: input, dealStage: secondInput || "PROPOSAL" }, { onSuccess, onError }); break;
       case "subject-lines": subjectLines.mutate({ campaignContext: input, count: 5 }, { onSuccess, onError }); break;
       case "content-brief": contentBrief.mutate({ topic: input, contentType: "blog" }, { onSuccess, onError }); break;
-      case "sentiment": sentiment.mutate({ text: input }, { onSuccess, onError }); break;
       case "generate-review": generateReview.mutate({ userId: input, periodStart: "2026-01-01", periodEnd: "2026-03-31" }, { onSuccess, onError }); break;
       case "helpdesk-reply": helpdeskReply.mutate(Number(input), { onSuccess, onError }); break;
       case "attrition-risk": attritionRisk.mutate(input, { onSuccess, onError }); break;
-      case "meeting-prep": meetingPrep.mutate({ meetingTitle: input, attendeeType: "lead", attendeeId: Number(secondInput || "0"), scheduledAt: new Date().toISOString() }, { onSuccess, onError }); break;
       default: toast.error("Feature not implemented");
     }
   };
 
   const getInputConfig = () => {
     switch (featureId) {
-      case "score-lead": return { label: "Lead ID", placeholder: "Enter lead ID (number)", type: "number" };
-      case "generate-email": return { label: "Lead Name", placeholder: "Enter lead/prospect name", type: "text" };
-      case "predict-deal": return { label: "Deal ID", placeholder: "Enter deal ID", type: "number" };
-      case "next-action": return { label: "Lead ID", placeholder: "Enter lead ID", type: "number" };
-      case "objection-handler": return { label: "Objection", placeholder: "What objection did the prospect raise?", type: "text", hasSecond: true, secondLabel: "Deal Stage", secondPlaceholder: "e.g., PROPOSAL, NEGOTIATION" };
       case "subject-lines": return { label: "Topic", placeholder: "Campaign topic or product name", type: "text" };
       case "content-brief": return { label: "Topic", placeholder: "Content topic", type: "text" };
-      case "sentiment": return { label: "Text to Analyze", placeholder: "Paste client message or email", type: "textarea" };
       case "generate-review": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
       case "helpdesk-reply": return { label: "Ticket ID", placeholder: "Enter helpdesk ticket ID", type: "number" };
       case "attrition-risk": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
-      case "meeting-prep": return { label: "Meeting Title", placeholder: "e.g., Quarterly review with client", type: "text", hasSecond: true, secondLabel: "Attendee ID (Lead)", secondPlaceholder: "Lead ID number" };
       default: return { label: "Input", placeholder: "Enter input", type: "text" };
     }
   };
@@ -241,13 +207,6 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
           ) : (
             <Input type={config.type === "number" ? "number" : "text"} value={input} onChange={(e) => setInput(e.target.value)} placeholder={config.placeholder} />
           )}
-        </div>
-      )}
-
-      {"hasSecond" in config && config.hasSecond && (
-        <div className="space-y-1.5">
-          <Label>{config.secondLabel}</Label>
-          <Input value={secondInput} onChange={(e) => setSecondInput(e.target.value)} placeholder={config.secondPlaceholder} />
         </div>
       )}
 

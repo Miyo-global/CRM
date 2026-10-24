@@ -83,6 +83,17 @@ export function useUpdateProfile() {
   });
 }
 
+/** Self-service photo: own user only, needs no HR permission. */
+export function useUpdateOwnPhoto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (image: string) =>
+      apiClient.patch<{ success: boolean }>("/hr/my-profile/photo", { image }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: queryKeys.hr.all }),
+  });
+}
+
 export function useToggleDashboardAccess() {
   const qc = useQueryClient();
   return useMutation({

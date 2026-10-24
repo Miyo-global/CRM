@@ -28,6 +28,7 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { format, parseISO } from "date-fns";
 import { Download, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { payrollStatusLabel } from "@/lib/labels";
 
 export default function MyPayslipsPage() {
   const router = useRouter();
@@ -269,7 +270,7 @@ export default function MyPayslipsPage() {
                     onClick={() => setSelectedMonth(payslip.month)}
                   >
                     <TableCell className="font-medium whitespace-nowrap">{monthLabel}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{payslip.status}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{payrollStatusLabel(payslip.status)}</TableCell>
                     <TableCell className="text-right font-mono">
                       ₹{parseFloat(payslip.netSalary || "0").toLocaleString(DEFAULT_LOCALE)}
                     </TableCell>

@@ -3,7 +3,7 @@ import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizations, organizationMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { hasFullAccess } from "@/lib/constants/roles";
 import { createAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
 import { invalidateUserSession } from "@/lib/auth";
@@ -15,7 +15,7 @@ const schema = z.object({
 
 export async function PATCH(req: NextRequest) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) return err("Forbidden", 403);
+    if (!hasFullAccess(session.user.role)) return err("Forbidden", 403);
 
     const body = await parseBody(req, schema);
 

@@ -1,0 +1,4 @@
+# Test-only placeholder secrets set via process.env in unit tests (not real keys).
+7491e44d0d4cda80341786c01f6289dd0e455fbb:lib/secret-crypto.test.ts:generic-api-key:46
+451e535c0baac8ee8d80493378557d08d34b91d5:lib/secret-crypto.test.ts:generic-api-key:9
+af1d1cba778018f00feb28a431e6259dfe34757f:scripts/_guard.test.ts:generic-api-key:36

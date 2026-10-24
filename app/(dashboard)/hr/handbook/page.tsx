@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { viewFile } from "@/hooks/use-file-url";
 import { plural } from "@/lib/format-utils";
+import { handbookStatusLabel } from "@/lib/labels";
 
 interface HandbookVersion {
   id: number;
@@ -442,7 +443,7 @@ function HandbookAdminContent() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="max-w-48 truncate text-sm font-semibold sm:max-w-none" title={v.title}>{v.title}</p>
                     <Badge variant="outline" className="font-mono">v{v.version}</Badge>
-                    <StatusPill tone={statusTone(v.status)} dot>{v.status}</StatusPill>
+                    <StatusPill tone={statusTone(v.status)} dot>{handbookStatusLabel(v.status)}</StatusPill>
                   </div>
                   <div className="mt-0.5 flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
                     {v.description && <span className="line-clamp-1 max-w-full">{v.description}</span>}

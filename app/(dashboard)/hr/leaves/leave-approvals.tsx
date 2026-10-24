@@ -468,9 +468,9 @@ export function LeaveApprovalsContent({
   }, []);
 
   const handleWfhRejectConfirm = useCallback(() => {
-    if (rejectingId === null) return;
+    if (rejectingId === null || !rejectionReason.trim()) return;
     processWfhRequestMutation.mutate(
-      { requestId: rejectingId, status: "REJECTED", rejectionReason: rejectionReason || undefined },
+      { requestId: rejectingId, status: "REJECTED", rejectionReason: rejectionReason.trim() },
       {
         onSuccess: () => {
           toast.success("WFH request rejected");
@@ -597,9 +597,12 @@ export function LeaveApprovalsContent({
           </SheetHeader>
           <div className="flex-1 space-y-4 px-6 py-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Rejection reason</label>
+              <label className="text-sm font-medium">
+                Rejection reason <span className="text-destructive">*</span>
+              </label>
               <Textarea
                 placeholder="E.g. Not enough prior notice, project deadline..."
+                maxLength={500}
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
@@ -615,6 +618,7 @@ export function LeaveApprovalsContent({
               variant="destructive"
               onClick={handleWfhRejectConfirm}
               loading={processWfhRequestMutation.isPending}
+              disabled={processWfhRequestMutation.isPending || rejectionReason.trim().length === 0}
             >
               Reject Request
             </Button>

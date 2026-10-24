@@ -124,11 +124,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         return inserted;
       });
     } catch (e) {
-      // One work log per person per day (timesheets_org_user_date_unique).
+      // One entry per person per ticket per day (uq_timesheets_org_user_date_ticket).
       // This used to surface as an empty 500 (R3-PRJ-04).
       if (isUniqueViolation(e)) {
         return err(
-          `You already logged time for ${body.date}. Edit that entry on Timesheets instead.`,
+          `You already logged time on this ticket for ${body.date}. Edit that entry on Timesheets instead.`,
           409,
         );
       }

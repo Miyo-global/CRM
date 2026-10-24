@@ -121,7 +121,7 @@ export async function ensureUserBalances(
       leaveTypeId: t.id,
       year,
       balance: balance.toString(),
-    });
+    }).onConflictDoNothing(); // a racing request may have seeded it first
   }
 }
 
@@ -160,16 +160,10 @@ export async function initializeLeaveBalances(
 
   if (toInsert.length > 0) {
     try {
-      await db.insert(leaveBalances).values(toInsert);
+      // Rows a concurrent seeder already inserted are skipped by the unique index.
+      await db.insert(leaveBalances).values(toInsert).onConflictDoNothing();
     } catch (err) {
-      logger.error("Failed bulk leave balance insert; retrying per row", err);
-      for (const row of toInsert) {
-        try {
-          await db.insert(leaveBalances).values(row);
-        } catch (rowErr) {
-          logger.error("Failed to insert leave balance row", rowErr);
-        }
-      }
+      logger.error("Failed to insert leave balance rows", err);
     }
   }
 }
