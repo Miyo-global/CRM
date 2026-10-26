@@ -40,6 +40,9 @@ export function htmlToText(html: string): string {
   return html
     .replace(/<(style|script|head)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
     .replace(/<!--[\s\S]*?-->/g, " ")
+    // The hidden preheader is inbox-preview filler; in a text part it showed
+    // up as a stray line of "&#8203; &#8203;" (FR1-025).
+    .replace(/<div\b[^>]*display:\s*none[^>]*>[\s\S]*?<\/div>/gi, " ")
     .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, label) => {
       const text = String(label).replace(/<[^>]*>/g, "").trim();
       const url = String(href);
@@ -57,6 +60,7 @@ export function htmlToText(html: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#8203;|&#x200b;|&zwnj;|&#8204;|\u200b|\u200c/gi, "")
     .replace(/[ \t]+/g, " ")
     // Trim first, then collapse: trimming after collapsing turns indented
     // layout rows back into runs of blank lines (QA-0009).
