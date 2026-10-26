@@ -4,10 +4,10 @@ import { useForm } from "react-hook-form";
 import { StepReview } from "./step-review";
 
 function Review({ values }: { values: Record<string, unknown> }) {
-  const form = useForm({ defaultValues: values as never });
+  const form = useForm({ defaultValues: values });
   return (
     <StepReview
-      form={form}
+      form={form as never}
       allDepartmentOptions={[]}
       assignableRoles={[]}
       managerOptions={[]}
