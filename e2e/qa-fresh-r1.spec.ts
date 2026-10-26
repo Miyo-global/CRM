@@ -116,3 +116,22 @@ test("FR1-029/030: dashboard clock widget timer and blocked clock-out", async ({
   await page.getByRole("button", { name: "Open work log" }).click();
   await expect(page).toHaveURL(/\/hr\/work-logs/);
 });
+
+test("FR1-031: approving a reimbursement asks first and confirms with a toast", async ({ page }) => {
+  await signIn(page, EMPLOYEE);
+  const created = await api(page, "/api/hr/reimbursements", {
+    method: "POST",
+    body: { category: "Travel", amount: 500, description: "QA-TEST FR1 reimbursement" },
+  });
+  expect(created.status, created.text).toBeLessThan(300);
+
+  await page.context().clearCookies();
+  await signIn(page, ADMIN);
+  await page.goto("/hr/reimbursements");
+  const row = page.getByRole("row", { name: /QA-TEST FR1 reimbursement/ }).first();
+  await row.getByRole("button", { name: "Approve" }).click();
+  const dialog = page.getByRole("alertdialog").or(page.getByRole("dialog"));
+  await expect(dialog.getByText("Approve this reimbursement?")).toBeVisible();
+  await dialog.getByRole("button", { name: "Approve" }).click();
+  await expect(page.getByText("Reimbursement approved")).toBeVisible();
+});

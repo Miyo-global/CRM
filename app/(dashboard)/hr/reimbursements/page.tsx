@@ -45,6 +45,7 @@ export default function ReimbursementsPage() {
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [payId, setPayId] = useState<number | null>(null);
+  const [approveId, setApproveId] = useState<number | null>(null);
 
   const handleCreate = useCallback(
     (values: ReimbursementRequestFormValues) => {
@@ -67,12 +68,17 @@ export default function ReimbursementsPage() {
     [create],
   );
 
-  const handleApprove = useCallback((id: number) => {
-    process.mutate({ id, status: "APPROVED" }, {
-      onSuccess: () => toast.success("Approved"),
+  // Approve asks first, like leave approval does (FR1-031).
+  const handleApprove = useCallback(() => {
+    if (!approveId) return;
+    process.mutate({ id: approveId, status: "APPROVED" }, {
+      onSuccess: () => {
+        toast.success("Reimbursement approved");
+        setApproveId(null);
+      },
       onError: (e) => toast.error(getErrorMessage(e)),
     });
-  }, [process]);
+  }, [approveId, process]);
 
   const handleReject = useCallback(() => {
     if (!rejectId) return;
@@ -154,7 +160,7 @@ export default function ReimbursementsPage() {
                     <TableCell className="text-right">
                       {r.status === "PENDING" ? (
                         <div className="flex justify-end gap-1.5">
-                          <Button size="sm" onClick={() => handleApprove(r.id)} disabled={process.isPending}>
+                          <Button size="sm" onClick={() => setApproveId(r.id)} disabled={process.isPending}>
                             <CheckCircle2 className="size-4" aria-hidden="true" />Approve
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => setRejectId(r.id)}>
@@ -219,6 +225,17 @@ export default function ReimbursementsPage() {
           />
         </div>
       </ConfirmActionDialog>
+
+      <ConfirmActionDialog
+        open={approveId !== null}
+        onOpenChange={(open) => { if (!open) setApproveId(null); }}
+        title="Approve this reimbursement?"
+        description="The employee is told straight away. You can mark it paid once the money is sent."
+        confirmLabel="Approve"
+        variant="default"
+        onConfirm={handleApprove}
+        isPending={process.isPending}
+      />
 
       <ConfirmActionDialog
         open={payId !== null}
