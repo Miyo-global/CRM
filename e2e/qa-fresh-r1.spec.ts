@@ -103,3 +103,16 @@ test("FR1-016: an empty termination draft shows inline errors per field", async 
   await expect(dialog.getByText("Set an effective date.")).toBeVisible();
   await expect(dialog.getByLabel("Detailed explanation")).toHaveAttribute("aria-invalid", "true");
 });
+
+test("FR1-029/030: dashboard clock widget timer and blocked clock-out", async ({ page }) => {
+  // Needs an employee who has not clocked in today and has no work log yet.
+  test.skip(!process.env.E2E_CLOCK_EMAIL, "E2E_CLOCK_EMAIL is not set");
+  await signIn(page, [process.env.E2E_CLOCK_EMAIL, process.env.E2E_CLOCK_PASSWORD ?? EMPLOYEE[1]]);
+  await page.getByRole("button", { name: "WEB CLOCK-IN" }).click();
+  const timer = page.getByText(/^\d{2}:\d{2}:\d{2}$/).first();
+  await expect(timer).toBeVisible();
+  expect(await timer.innerText()).not.toContain("-");
+  await page.getByRole("button", { name: "WEB CLOCK-OUT" }).click();
+  await page.getByRole("button", { name: "Open work log" }).click();
+  await expect(page).toHaveURL(/\/hr\/work-logs/);
+});
