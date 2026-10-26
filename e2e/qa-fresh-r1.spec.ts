@@ -32,3 +32,61 @@ test("FR1-019: /roles leads to the role editor, or to access denied", async ({ p
   expect(res?.status()).not.toBe(404);
   await expect(page.getByText(/access restricted|does not have access/i).first()).toBeVisible();
 });
+
+/** fetch() from the signed-in page, so the session cookie goes with it. */
+export async function api(page: Page, url: string, init?: { method?: string; body?: unknown }) {
+  return page.evaluate(
+    async ({ url, init }) => {
+      const res = await fetch(url, {
+        method: init?.method ?? "GET",
+        headers: init?.body === undefined ? undefined : { "content-type": "application/json" },
+        body: init?.body === undefined ? undefined : JSON.stringify(init.body),
+      });
+      const text = await res.text();
+      let json: unknown = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        // not JSON
+      }
+      return { status: res.status, text, json };
+    },
+    { url, init },
+  );
+}
+
+/** Onboard a QA-TEST employee through the API; returns the new user id. */
+export async function onboardQaEmployee(page: Page, overrides: Record<string, unknown> = {}): Promise<string> {
+  const depts = (await api(page, "/api/hr/departments")).json as Array<{ id: number }> | { data: Array<{ id: number }> };
+  const list = Array.isArray(depts) ? depts : depts.data;
+  const res = await api(page, "/api/hr/employees/onboard", {
+    method: "POST",
+    body: {
+      firstName: "QA-TEST",
+      lastName: "Fresh",
+      email: `qa-test.fr1.${Date.now()}@example.com`,
+      designation: "QA-TEST Engineer",
+      departmentId: list[0].id,
+      role: "EMPLOYEE",
+      monthlySalary: 30000,
+      joiningDate: new Date().toISOString().slice(0, 10),
+      ...overrides,
+    },
+  });
+  expect(res.status, res.text).toBe(200);
+  return (res.json as { userId: string }).userId;
+}
+
+test("FR1-017: a terminated profile hides the account set-up status", async ({ page }) => {
+  await signIn(page, ADMIN);
+  const userId = await onboardQaEmployee(page);
+  await page.goto(`/hr/employees/${userId}`);
+  await expect(page.getByText("Account set-up")).toBeVisible();
+
+  const off = await api(page, `/api/hr/employees/${userId}/active`, { method: "PATCH", body: { isActive: false } });
+  expect(off.status, off.text).toBe(200);
+  await page.reload();
+  await expect(page.getByText("Terminated").first()).toBeVisible();
+  await expect(page.getByText("Account set-up")).toHaveCount(0);
+  await expect(page.getByText("Set-up link expired")).toHaveCount(0);
+});
