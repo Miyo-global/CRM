@@ -51,3 +51,16 @@ describe("email template catalog (MIYO-0097..0100)", () => {
     }
   });
 });
+
+describe("footer address (FR1-024)", () => {
+  it("drops the separator when no address is configured", () => {
+    const out = renderEmail("auth-welcome-set-password", { org_address: "" });
+    expect(out.text).not.toMatch(/·\s*$/m);
+    expect(out.html).not.toMatch(/&middot;\s*<\/p>/);
+  });
+
+  it("keeps it when an address is set", () => {
+    const out = renderEmail("auth-welcome-set-password", { org_address: "Hyderabad, India" });
+    expect(out.text).toContain("· Hyderabad, India");
+  });
+});

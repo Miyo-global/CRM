@@ -40,6 +40,15 @@ function fill(template: string, vars: Record<string, string>, escape: boolean): 
 }
 
 /**
+ * With no company address configured the footer read "Miyo Global ·" with
+ * nothing after the dot (FR1-024); drop the separator along with the address.
+ */
+function dropEmptyAddress(template: string, vars: Record<string, string>): string {
+  if (vars.org_address?.trim()) return template;
+  return template.replace(/\s*(?:&middot;|·)\s*\{\{\s*org_address\s*\}\}/g, "");
+}
+
+/**
  * Render one of the email-templates/ templates (MIYO-0097). Values are
  * HTML-escaped in the HTML part only; the subject, preheader and text part get
  * the raw values, so "A & B" never shows up as "A &amp; B" in a subject
@@ -53,8 +62,8 @@ export function renderEmail(id: EmailTemplateId, vars: EmailVars = {}): Rendered
   return {
     subject: fill(entry.subject, all, false),
     preheader: fill(entry.preheader, all, false),
-    html: fill(entry.html, all, true),
-    text: fill(entry.text, all, false),
+    html: fill(dropEmptyAddress(entry.html, all), all, true),
+    text: fill(dropEmptyAddress(entry.text, all), all, false),
   };
 }
 
