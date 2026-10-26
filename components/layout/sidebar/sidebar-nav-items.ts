@@ -566,7 +566,8 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-            { label: "My Support Tickets", icon: LifeBuoy, href: "/support/inbox" },
+            // Employees' own HR helpdesk tickets, not the Customer Support inbox (FR1-032).
+            { label: "My Support Tickets", icon: LifeBuoy, href: "/hr/helpdesk" },
           ],
         },
         {
@@ -585,7 +586,6 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];
@@ -607,7 +607,8 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
             { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
             { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-            { label: "My Support Tickets", icon: LifeBuoy, href: "/support/inbox" },
+            // Employees' own HR helpdesk tickets, not the Customer Support inbox (FR1-032).
+            { label: "My Support Tickets", icon: LifeBuoy, href: "/hr/helpdesk" },
           ],
         },
         {
@@ -626,7 +627,6 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
             { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
             { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
           ],
         },
       ];

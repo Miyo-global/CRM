@@ -89,3 +89,14 @@ describe("KB-0065: the Knowledge module in the nav", () => {
     }
   });
 });
+
+describe("My Support Tickets (FR1-032)", () => {
+  it("opens the employee's own HR helpdesk tickets, listed once", async () => {
+    const { getNavGroupsForRole } = await import("./sidebar-nav-items");
+    const routes = getNavGroupsForRole("EMPLOYEE").flatMap((g) => g.routes);
+    const tickets = routes.filter((r) => r.label === "My Support Tickets");
+    expect(tickets.map((r) => r.href)).toEqual(["/hr/helpdesk"]);
+    expect(routes.filter((r) => r.href === "/hr/helpdesk")).toHaveLength(1);
+    expect(routes.some((r) => r.href === "/support/inbox")).toBe(false);
+  });
+});
