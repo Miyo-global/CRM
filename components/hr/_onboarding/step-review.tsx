@@ -4,6 +4,7 @@ import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { formatProfessionalTax, ptAmountSchema } from "@/lib/validations/professional-tax";
+import { monthlyBreakdown } from "@/lib/payroll/rules";
 import { format } from "date-fns";
 import { AlertCircle, Check, Lightbulb } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -86,6 +87,15 @@ function formatCurrency(amount: number | undefined) {
   }).format(amount);
 }
 
+/** Rupees with paise when there are any (a PT of ₹200.50 makes the net ₹49,799.50). */
+function formatMoney(amount: number) {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
+    style: "currency",
+    currency: DEFAULT_CURRENCY,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 function formatDate(value: Date | undefined) {
   if (!value || Number.isNaN(value.getTime())) return "";
   return format(value, "PPP");
@@ -102,6 +112,9 @@ export function StepReview({
   const values = form.watch();
   // Form state holds the raw text; parse it the same way the server will.
   const ptReview = ptAmountSchema.safeParse(values.professionalTax);
+  // Confirm shows the same breakdown as Skills & Pay (FR1-004).
+  const salary = Number(values.monthlySalary) || 0;
+  const breakdown = salary > 0 ? monthlyBreakdown(salary, ptReview.success ? ptReview.data : 0) : null;
   const bank = values.bankDetails;
 
   const departmentName =
@@ -163,11 +176,20 @@ export function StepReview({
           value={formatCurrency(values.monthlySalary)}
           className="sm:col-span-2"
         />
+        {breakdown && (
+          <>
+            <ReviewField label="Basic pay" value={formatMoney(breakdown.basicSalary)} />
+            <ReviewField label="HRA" value={formatMoney(breakdown.hra)} />
+            <ReviewField label="Special allowance" value={formatMoney(breakdown.specialAllowance)} />
+          </>
+        )}
         <ReviewField
           label="Professional Tax"
           value={formatProfessionalTax(ptReview.success ? ptReview.data : null)}
-          className="sm:col-span-2"
         />
+        {breakdown && (
+          <ReviewField label="Net salary (monthly)" value={formatMoney(breakdown.net)} />
+        )}
       </ReviewSection>
 
       <ReviewSection title="Banking details">

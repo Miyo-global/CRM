@@ -85,6 +85,16 @@ export function splitEarnings(monthlySalary: number): {
   };
 }
 
+/**
+ * What the wizard shows for a monthly CTC before the first payroll run:
+ * the 50/25/25 split, the employee's PT and the resulting net.
+ */
+export function monthlyBreakdown(monthlySalary: number, professionalTax: number | null) {
+  const salary = Number.isFinite(monthlySalary) ? Math.max(0, monthlySalary) : 0;
+  const pt = Math.max(0, professionalTax ?? 0);
+  return { ...splitEarnings(salary), professionalTax: pt, net: round2(salary - pt) };
+}
+
 export function overtimeAmountForDays(
   perDay: number,
   days: number,
