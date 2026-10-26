@@ -184,14 +184,6 @@ export const healthDotColors: Record<HealthStatus, string> = {
   critical: toneDot.danger,
 };
 
-export type CrmRole = "sales_rep" | "csm" | "marketing";
-
-export const roleBadgeConfig: Record<CrmRole, { label: string; color: string }> = {
-  sales_rep: { label: "Sales", color: toneSoft.info },
-  csm: { label: "Customer Success", color: toneSoft.success },
-  marketing: { label: "Marketing", color: toneSoft.plum },
-};
-
 const VALID_PROJECT_STATUSES: ReadonlySet<string> = new Set(["ACTIVE", "PLANNING", "COMPLETED", "ON_HOLD", "ARCHIVED"]);
 
 export function isProjectStatus(value: unknown): value is ProjectStatus | "ARCHIVED" {
