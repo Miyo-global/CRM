@@ -296,7 +296,11 @@ export default function TerminationPage() {
       toast.error("Please set an effective date");
       return;
     }
-    const dateError = terminationDateError(effectiveDate, { canBackdate, today });
+    const dateError = terminationDateError(effectiveDate, {
+      canBackdate,
+      today,
+      joiningDate: employees.find((e) => e.id === selectedUserId)?.joiningDate ?? null,
+    });
     if (dateError) {
       toast.error(dateError);
       return;
@@ -349,6 +353,7 @@ export default function TerminationPage() {
   }, [
     selectedUserId,
     selectedEmployee,
+    employees,
     currentUserId,
     selectedReasons,
     explanation,

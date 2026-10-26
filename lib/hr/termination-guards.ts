@@ -9,8 +9,16 @@ export function canBackdateTermination(role: string | null | undefined): boolean
   return roleHasPermission(role, "hr:termination:approve");
 }
 
-export function checkTerminationDate(effectiveDate: string, role: string | null | undefined): string | null {
-  return terminationDateError(effectiveDate, { canBackdate: canBackdateTermination(role) });
+export async function checkTerminationDate(
+  effectiveDate: string,
+  role: string | null | undefined,
+  userId: string,
+): Promise<string | null> {
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { joiningDate: true } });
+  return terminationDateError(effectiveDate, {
+    canBackdate: canBackdateTermination(role),
+    joiningDate: user?.joiningDate ?? null,
+  });
 }
 
 /**

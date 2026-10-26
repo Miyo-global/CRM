@@ -32,7 +32,7 @@ export async function PATCH(
     // R3-ADM-02 / R3-ADM-07: a draft saved earlier (or a rejected one being
     // resubmitted) is checked again: the date may have passed, and a rejected
     // one may now sit beside another open termination.
-    const dateError = checkTerminationDate(String(existing.effectiveDate).slice(0, 10), session.user.role);
+    const dateError = await checkTerminationDate(String(existing.effectiveDate).slice(0, 10), session.user.role, existing.userId);
     if (dateError) return err(`${dateError} Edit the date first.`, 400);
     if (existing.status === "REJECTED") {
       const conflict = await terminationConflict(session.orgId, existing.userId, existing.id);

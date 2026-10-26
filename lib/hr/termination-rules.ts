@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addDaysToDateString, getTodayString, isDateOnly } from "@/lib/date-utils";
+import { addDaysToDateString, getTodayString, isDateOnly, formatCalendarDate } from "@/lib/date-utils";
 import { OTHER_TERMINATION_REASON } from "@/lib/constants/hr-separation";
 import { TERMINATION_EXPLANATION_MAX, TERMINATION_NOTES_MAX } from "@/lib/validations/termination-reasons";
 
@@ -25,9 +25,14 @@ export const MAX_TERMINATION_LEAD_DAYS = 365;
  */
 export function terminationDateError(
   effectiveDate: string,
-  opts: { canBackdate: boolean; today?: string },
+  opts: { canBackdate: boolean; today?: string; joiningDate?: string | null },
 ): string | null {
   if (!isDateOnly(effectiveDate)) return "Effective date must be a valid date.";
+  // Nobody leaves before they joined, backdated or not (FR1-015).
+  const joined = opts.joiningDate?.slice(0, 10);
+  if (joined && isDateOnly(joined) && effectiveDate < joined) {
+    return `Effective date cannot be before the joining date (${formatCalendarDate(joined)}).`;
+  }
   const today = opts.today ?? getTodayString();
   if (!opts.canBackdate && effectiveDate < today) {
     return "Effective date cannot be in the past. Only the Super Admin can backdate a termination.";

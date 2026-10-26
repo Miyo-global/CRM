@@ -59,3 +59,15 @@ describe("diffFields (R3-ADM-12)", () => {
     });
   });
 });
+
+describe("effective date before joining (FR1-015)", () => {
+  it("is refused, even for a Super Admin who may backdate", async () => {
+    const { terminationDateError } = await import("./termination-rules");
+    const opts = { canBackdate: true, today: "2026-10-26", joiningDate: "2026-10-26" };
+    expect(terminationDateError("2026-10-20", opts)).toBe(
+      "Effective date cannot be before the joining date (26 Oct 2026).",
+    );
+    expect(terminationDateError("2026-10-26", opts)).toBeNull();
+    expect(terminationDateError("2026-10-20", { ...opts, joiningDate: null })).toBeNull();
+  });
+});
