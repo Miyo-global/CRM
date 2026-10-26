@@ -9,8 +9,12 @@ const TURNSTILE = "https://challenges.cloudflare.com";
  * browsers; Turnstile still loads because the nonced app bundle injects its
  * script tag, and trust propagates to scripts a trusted script creates.
  *
- * style-src keeps 'unsafe-inline': the inline styles Next and the UI
- * components emit are not nonced.
+ * style-src keeps 'unsafe-inline' (FR1-035, accepted risk): React style=""
+ * attributes are everywhere and no nonce covers attributes, and sonner,
+ * Radix ScrollArea and react-remove-scroll inject <style> tags without a
+ * nonce. A nonce-only style-src breaks toasts, dialogs and scroll areas.
+ * Inline CSS cannot run script, and script-src above is what stops XSS.
+ * Revisit with style-src-elem + nonce once those libraries accept one.
  */
 export function buildCsp(nodeEnv: string | undefined, nonce?: string): string {
   const scriptSrc = nonce
