@@ -19,12 +19,10 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Mail, MessageSquare, FileText, AlertTriangle, ClipboardList, type LucideIcon } from "lucide-react";
+import { MessageSquare, AlertTriangle, ClipboardList, type LucideIcon } from "lucide-react";
 import {
-  useGenerateSubjectLines,
   useAIGenerateReview, useAISuggestHelpdeskReply,
   useAIAttritionRisk,
-  useGenerateContentBrief,
 } from "@/lib/api/hooks/ai";
 
 interface AiFeature {
@@ -32,26 +30,23 @@ interface AiFeature {
   title: string;
   description: string;
   icon: LucideIcon;
-  category: "hr" | "marketing" | "general";
+  category: "hr" | "general";
   tone: Tone;
 }
 
 const ALL_AI_FEATURES: AiFeature[] = [
-  { id: "subject-lines", title: "Subject Lines", description: "Generate high-converting email subject line variations", icon: Mail, category: "marketing", tone: "info" },
-  { id: "content-brief", title: "Content Brief", description: "Create content outlines with keywords, CTA, and word count", icon: FileText, category: "marketing", tone: "teal" },
   { id: "generate-review", title: "Review Generator", description: "Draft employee performance reviews with category ratings", icon: ClipboardList, category: "hr", tone: "warning" },
   { id: "helpdesk-reply", title: "Helpdesk Reply", description: "AI-suggested replies for employee helpdesk tickets", icon: MessageSquare, category: "hr", tone: "success" },
   { id: "attrition-risk", title: "Attrition Risk", description: "Predict employee attrition risk based on behavior signals", icon: AlertTriangle, category: "hr", tone: "danger" },
 ];
 
-// The sales tools (lead scoring, deal prediction, objection handler, ...) were
-// removed with the sales module.
+// The sales and marketing tools (lead scoring, deal prediction, campaign
+// subject lines, content briefs, ...) were removed with the sales module.
 const AI_FEATURES = ALL_AI_FEATURES;
 
 const CATEGORIES = [
   { value: "all", label: "All Features" },
   { value: "hr", label: "HR & People" },
-  { value: "marketing", label: "Marketing" },
   { value: "general", label: "General" },
 ];
 
@@ -147,14 +142,11 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
   const [input, setInput] = useState("");
   const [result, setResult] = useState<string | null>(null);
 
-  const subjectLines = useGenerateSubjectLines();
   const generateReview = useAIGenerateReview();
   const helpdeskReply = useAISuggestHelpdeskReply();
   const attritionRisk = useAIAttritionRisk();
-  const contentBrief = useGenerateContentBrief();
 
-  const isLoading = subjectLines.isPending || generateReview.isPending ||
-    helpdeskReply.isPending || attritionRisk.isPending || contentBrief.isPending;
+  const isLoading = generateReview.isPending || helpdeskReply.isPending || attritionRisk.isPending;
 
   const handleSubmit = () => {
     if (!input.trim()) { toast.error("Please enter input"); return; }
@@ -175,8 +167,6 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
     }
 
     switch (featureId) {
-      case "subject-lines": subjectLines.mutate({ campaignContext: input, count: 5 }, { onSuccess, onError }); break;
-      case "content-brief": contentBrief.mutate({ topic: input, contentType: "blog" }, { onSuccess, onError }); break;
       case "generate-review": generateReview.mutate({ userId: input, periodStart: "2026-01-01", periodEnd: "2026-03-31" }, { onSuccess, onError }); break;
       case "helpdesk-reply": helpdeskReply.mutate(Number(input), { onSuccess, onError }); break;
       case "attrition-risk": attritionRisk.mutate(input, { onSuccess, onError }); break;
@@ -186,8 +176,6 @@ function AIFeatureForm({ featureId, onClose }: { featureId: string; onClose: () 
 
   const getInputConfig = () => {
     switch (featureId) {
-      case "subject-lines": return { label: "Topic", placeholder: "Campaign topic or product name", type: "text" };
-      case "content-brief": return { label: "Topic", placeholder: "Content topic", type: "text" };
       case "generate-review": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
       case "helpdesk-reply": return { label: "Ticket ID", placeholder: "Enter helpdesk ticket ID", type: "number" };
       case "attrition-risk": return { label: "Employee User ID", placeholder: "Enter user ID", type: "text" };
