@@ -8,6 +8,7 @@ import {
   useHrCheckOut,
 } from "../../lib/hooks/trpc-hooks";
 import { toast } from "sonner";
+import { elapsedHms } from "@/lib/attendance/elapsed";
 import { Clock, Timer } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toneDot } from "../../lib/design/tones";
@@ -82,12 +83,7 @@ export function ClockInWidget() {
 
   const sessionTime = useMemo(() => {
     if (!statusData?.todayLog?.checkIn || statusData?.todayLog?.checkOut) return null;
-    const checkInTime = new Date(statusData.todayLog.checkIn);
-    const diffMs = now.getTime() - checkInTime.getTime();
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-    return { hours, minutes, seconds };
+    return elapsedHms(statusData.todayLog.checkIn, now);
   }, [now, statusData?.todayLog]);
 
   const dailyStats = statusData?.dailyStats;
