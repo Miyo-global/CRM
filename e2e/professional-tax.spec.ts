@@ -68,6 +68,20 @@ async function userIdFor(page: Page, email: string): Promise<string> {
   return hit!.id;
 }
 
+async function pdfTextOf(page: Page, payrollId: number): Promise<string> {
+  const pdfBase64 = await page.evaluate(async (id) => {
+    const res = await fetch(`/api/hr/payrolls/${id}/download`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    let bin = "";
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin);
+  }, payrollId);
+  const { PDFParse } = (await import("pdf-parse")) as unknown as {
+    PDFParse: new (o: { data: Buffer }) => { getText: () => Promise<{ text: string }> };
+  };
+  return (await new PDFParse({ data: Buffer.from(pdfBase64, "base64") }).getText()).text;
+}
+
 const noHorizontalScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
 
@@ -95,6 +109,10 @@ test.describe("HR on a phone", () => {
     await page.getByPlaceholder("25000").fill("50000");
     const pt = page.getByLabel("Professional Tax (monthly), rupees");
     await expect(pt).toBeVisible();
+    // Keyboard: Tab from the salary box lands on the PT box; its name says rupees.
+    await page.getByPlaceholder("25000").focus();
+    await page.keyboard.press("Tab");
+    await expect(pt).toBeFocused();
     expect((await pt.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(await noHorizontalScroll(page)).toBe(true);
 
@@ -157,7 +175,12 @@ test.describe("payroll uses each employee's own PT", () => {
     ids.hr = await userIdFor(page, env.hr[0] as string);
     const ptUrl = (id: string) => `/api/hr/salary-structures/${id}/professional-tax`;
 
+    // A4: a rejected edit writes no audit entry.
+    const auditCount = async () =>
+      ((await api(page, "/api/audit-log?action=EMPLOYEE_PT_UPDATED&limit=100")).text.match(/"EMPLOYEE_PT_UPDATED"/g) ?? []).length;
+    const before = await auditCount();
     expect((await api(page, ptUrl(ids.employee), { method: "PATCH", body: { professionalTax: "-50" } })).status).toBe(400);
+    expect(await auditCount()).toBe(before);
     expect((await api(page, ptUrl(ids.employee), { method: "PATCH", body: { professionalTax: "200.50" } })).status).toBe(200);
     expect((await api(page, ptUrl(ids.other), { method: "PATCH", body: { professionalTax: null } })).status).toBe(200);
     // R8: HR may not change their own PT.
@@ -239,17 +262,7 @@ test.describe("Employee", () => {
     expect(html.text).toContain("Professional Tax");
     expect(html.text).toContain("₹200.50");
 
-    const pdfBase64 = await page.evaluate(async (id) => {
-      const res = await fetch(`/api/hr/payrolls/${id}/download`);
-      const bytes = new Uint8Array(await res.arrayBuffer());
-      let bin = "";
-      for (const b of bytes) bin += String.fromCharCode(b);
-      return btoa(bin);
-    }, ids.payrollId);
-    const { PDFParse } = (await import("pdf-parse")) as unknown as {
-      PDFParse: new (o: { data: Buffer }) => { getText: () => Promise<{ text: string }> };
-    };
-    const pdfText = (await new PDFParse({ data: Buffer.from(pdfBase64, "base64") }).getText()).text;
+    const pdfText = await pdfTextOf(page, ids.payrollId as number);
     expect(pdfText).toContain("Professional Tax");
     expect(pdfText).toMatch(/200\.50/);
     // Net pay matches between the HTML payslip and the PDF.
@@ -273,5 +286,105 @@ test.describe("Employee", () => {
       body: { professionalTax: "0" },
     });
     expect(patch.status).toBe(403);
+  });
+});
+
+test.describe("QA plan extras", () => {
+  test("Roles page lists the PT permissions; Audit Log page shows the readable diff in IST", async ({ page }) => {
+    await signIn(page, env.admin);
+    await page.goto("/settings/roles");
+    await page.getByRole("button", { name: /^HR \d+ permissions$/ }).click();
+    const group = page.getByRole("button", { name: "HR › Payroll › Professional tax 2/2" });
+    await expect(group).toBeVisible(); // HR holds both PT permissions
+    await group.click();
+    await expect(page.getByText("View other employees' professional tax amount").first()).toBeVisible();
+    await expect(page.getByText("Set or change an employee's professional tax amount").first()).toBeVisible();
+
+    await page.goto("/settings/audit-log");
+    await page.getByRole("row", { name: /Professional tax updated/ }).first().click();
+    await expect(page.getByRole("dialog").getByText(/PT (₹[\d,]+\.\d{2}|N\/A) → (₹[\d,]+\.\d{2}|N\/A)/).first()).toBeVisible();
+    await expect(page.getByRole("dialog").getByText(/\d{1,2}:\d{2}:\d{2} [ap]m IST/i)).toBeVisible();
+  });
+
+  test("onboarding without PT completes and shows Not applicable (375px)", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await signIn(page, env.hr);
+    await page.goto("/hr/onboarding?tab=wizard");
+    await page.getByLabel(/first name/i).fill("QA-TEST");
+    await page.getByLabel(/last name/i).fill("Nopt");
+    await page.getByLabel(/^email/i).fill(`qa-test.nopt.${Date.now()}@example.com`);
+    await page.getByRole("button", { name: /^next/i }).click();
+    await page.getByRole("combobox", { name: /department/i }).click();
+    await page.getByRole("option", { name: "Engineering" }).click();
+    await page.getByText("e.g. Senior Software Engineer").click();
+    await page.getByText("QA-TEST Engineer", { exact: true }).click();
+    await page.getByRole("button", { name: /^next/i }).click();
+    await page.getByPlaceholder("25000").fill("30000");
+    await page.getByRole("button", { name: /^next/i }).click();
+    await page.getByRole("button", { name: /^next/i }).click();
+    await expect(page.getByText("Not applicable")).toBeVisible();
+    await page.getByRole("checkbox").last().check();
+    const onboarded = page.waitForResponse((r) => r.url().includes("/api/hr/employees/onboard"));
+    await page.getByRole("button", { name: /confirm & onboard/i }).click();
+    const response = await onboarded;
+    expect(response.status()).toBe(200);
+    const { userId } = (await response.json()) as { userId: string };
+    await page.goto(`/hr/employees/${userId}`);
+    await expect(page.getByText("Not applicable")).toBeVisible();
+    expect(await noHorizontalScroll(page)).toBe(true);
+  });
+
+  test("P2/P7: a PT-free payslip has no PT line on screen or PDF, figures match", async ({ page }) => {
+    await signIn(page, env.admin);
+    const otherId = await userIdFor(page, env.other as string);
+    const slips = (await api(page, `/api/hr/payslips?userId=${otherId}`)).json as Array<{ id: number; month: string; status: string }>;
+    const slip = slips.find((p) => p.month === env.month);
+    expect(slip).toBeTruthy();
+    if (slip!.status === "DRAFT") {
+      expect((await api(page, `/api/hr/payrolls/${slip!.id}/approve`, { method: "PATCH", body: {} })).status).toBe(200);
+    }
+    if (slip!.status !== "PAID") {
+      expect((await api(page, `/api/hr/payrolls/${slip!.id}/paid`, { method: "PATCH", body: {} })).status).toBe(200);
+    }
+    const html = await api(page, `/api/hr/payrolls/${slip!.id}/download?format=html&toolbar=0`);
+    expect(html.text).not.toContain("Professional Tax");
+    const pdfText = await pdfTextOf(page, slip!.id);
+    expect(pdfText).not.toContain("Professional Tax");
+    const net = /Net (?:Pay|Salary)[^₹\d]*₹?\s*([\d,]+\.\d{2})/i.exec(html.text)?.[1];
+    expect(net).toBeTruthy();
+    expect(pdfText).toContain(net as string);
+  });
+
+  test("Employee payslip view at 375px", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await signIn(page, env.employee);
+    await page.goto("/hr/my-payslips");
+    await page.getByRole("combobox", { name: "Select payslip month" }).click();
+    await page.getByRole("option").first().click();
+    await expect(page.frameLocator("iframe[title^='Payslip for']").getByText("Professional Tax")).toBeVisible();
+    expect(await noHorizontalScroll(page)).toBe(true);
+  });
+
+  test("R7: a deactivated user gets 401/403 on PT endpoints", async ({ browser }) => {
+    const victim = await browser.newPage();
+    await signIn(victim, env.hr);
+    const hrId = await userIdFor(victim, env.hr[0] as string);
+    const targetId = await userIdFor(victim, env.other as string);
+
+    const admin = await browser.newPage();
+    await signIn(admin, env.admin);
+    expect((await api(admin, `/api/hr/employees/${hrId}/active`, { method: "PATCH", body: { isActive: false } })).status).toBe(200);
+    try {
+      const get = await api(victim, `/api/hr/salary-structures/${targetId}/professional-tax`);
+      expect([401, 403]).toContain(get.status);
+      expect(get.text).not.toContain("professionalTax");
+      const patch = await api(victim, `/api/hr/salary-structures/${targetId}/professional-tax`, {
+        method: "PATCH",
+        body: { professionalTax: "100" },
+      });
+      expect([401, 403]).toContain(patch.status);
+    } finally {
+      expect((await api(admin, `/api/hr/employees/${hrId}/active`, { method: "PATCH", body: { isActive: true } })).status).toBe(200);
+    }
   });
 });
