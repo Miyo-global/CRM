@@ -90,3 +90,16 @@ test("FR1-017: a terminated profile hides the account set-up status", async ({ p
   await expect(page.getByText("Account set-up")).toHaveCount(0);
   await expect(page.getByText("Set-up link expired")).toHaveCount(0);
 });
+
+test("FR1-016: an empty termination draft shows inline errors per field", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/hr/termination");
+  await page.getByRole("button", { name: "New Termination" }).first().click();
+  await page.getByRole("button", { name: "Save as Draft" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("Select an employee.", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("Select at least one termination reason.")).toBeVisible();
+  await expect(dialog.getByText(/at least 50 characters/)).toBeVisible();
+  await expect(dialog.getByText("Set an effective date.")).toBeVisible();
+  await expect(dialog.getByLabel("Detailed explanation")).toHaveAttribute("aria-invalid", "true");
+});

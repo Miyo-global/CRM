@@ -71,3 +71,32 @@ describe("effective date before joining (FR1-015)", () => {
     expect(terminationDateError("2026-10-20", { ...opts, joiningDate: null })).toBeNull();
   });
 });
+
+describe("terminationFormErrors (FR1-016)", () => {
+  const base = {
+    employeeId: "e1",
+    employeeIsSuperAdmin: false,
+    actorId: "hr1",
+    reasons: ["Misconduct"],
+    explanation: "x".repeat(60),
+    otherSelected: false,
+    effectiveDate: "2026-11-30",
+    canBackdate: false,
+    today: "2026-10-26",
+    joiningDate: "2026-01-01",
+  };
+
+  it("lists every problem of an empty form, by field", async () => {
+    const { terminationFormErrors } = await import("./termination-rules");
+    const errors = terminationFormErrors({ ...base, employeeId: null, reasons: [], explanation: "", effectiveDate: "" });
+    expect(Object.keys(errors).sort()).toEqual(["effectiveDate", "employee", "explanation", "reasons"]);
+  });
+
+  it("is empty for a valid form and flags a date before joining", async () => {
+    const { terminationFormErrors } = await import("./termination-rules");
+    expect(terminationFormErrors(base)).toEqual({});
+    expect(terminationFormErrors({ ...base, canBackdate: true, effectiveDate: "2025-12-01" }).effectiveDate).toMatch(
+      /before the joining date/,
+    );
+  });
+});

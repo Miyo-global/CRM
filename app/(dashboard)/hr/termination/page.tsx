@@ -57,7 +57,8 @@ import { canManage, roleHasPermission } from "@/lib/auth/role-change-rules";
 import {
   blocksNewTermination,
   MAX_TERMINATION_LEAD_DAYS,
-  terminationDateError,
+  terminationFormErrors,
+  type TerminationFormField,
 } from "@/lib/hr/termination-rules";
 import {
   TERMINATION_STATUSES,
@@ -73,6 +74,16 @@ import {
 } from "./_lib/utils";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { addDaysToDateString, getTodayString, parseCalendarDate } from "@/lib/date-utils";
+
+/** One field's validation message, under the field (FR1-016). */
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className="text-xs text-destructive">
+      {message}
+    </p>
+  );
+}
 
 export default function TerminationPage() {
   const { data: session } = useSession();
@@ -228,7 +239,18 @@ export default function TerminationPage() {
     return counts;
   }, [terminations]);
 
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<TerminationFormField, string>>>({});
+  const clearFieldError = useCallback((field: TerminationFormField) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }, []);
+
   const resetCreateForm = useCallback(() => {
+    setFieldErrors({});
     setEditingRecord(null);
     setSelectedUserId("");
     setSelectedReasons([]);
@@ -268,41 +290,21 @@ export default function TerminationPage() {
   }, []);
 
   const handleCreateSubmit = useCallback(() => {
-    if (!selectedUserId) {
-      toast.error("Please select an employee");
-      return;
-    }
-    if (isCeoRole(selectedEmployee?.role)) {
-      toast.error("The Super Admin cannot be terminated through this process.");
-      return;
-    }
-    if (selectedUserId === currentUserId) {
-      toast.error("You cannot initiate your own termination.");
-      return;
-    }
-    if (selectedReasons.length === 0) {
-      toast.error("Please select at least one termination reason");
-      return;
-    }
-    if (explanation.trim().length < 50) {
-      toast.error(
-        isOtherSelected
-          ? "Selecting 'Other' requires a detailed explanation (min 50 characters)"
-          : "Detailed explanation must be at least 50 characters"
-      );
-      return;
-    }
-    if (!effectiveDate) {
-      toast.error("Please set an effective date");
-      return;
-    }
-    const dateError = terminationDateError(effectiveDate, {
+    const errors = terminationFormErrors({
+      employeeId: selectedUserId,
+      employeeIsSuperAdmin: isCeoRole(selectedEmployee?.role),
+      actorId: currentUserId,
+      reasons: selectedReasons,
+      explanation,
+      otherSelected: isOtherSelected,
+      effectiveDate,
       canBackdate,
       today,
       joiningDate: employees.find((e) => e.id === selectedUserId)?.joiningDate ?? null,
     });
-    if (dateError) {
-      toast.error(dateError);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error("Fix the highlighted fields to continue.");
       return;
     }
 
@@ -605,13 +607,17 @@ export default function TerminationPage() {
           <EmployeeAssignCombobox
             employees={employeeOptions}
             value={selectedUserId}
-            onValueChange={setSelectedUserId}
+            onValueChange={(id) => {
+              setSelectedUserId(id);
+              clearFieldError("employee");
+            }}
             placeholder="Select an employee..."
             searchPlaceholder="Search by name or designation…"
             ariaLabel="Select employee"
             showUnassigned={false}
           />
           )}
+          <FieldError message={fieldErrors.employee} />
         </div>
 
         <Separator />
@@ -643,7 +649,10 @@ export default function TerminationPage() {
                 <Checkbox
                   id={`reason-${reason.label}`}
                   checked={selectedReasons.includes(reason.label)}
-                  onCheckedChange={() => handleToggleReason(reason.label)}
+                  onCheckedChange={() => {
+                    handleToggleReason(reason.label);
+                    clearFieldError("reasons");
+                  }}
                   aria-label={reason.label}
                   className="mt-0.5"
                 />
@@ -664,6 +673,7 @@ export default function TerminationPage() {
             ))}
           </div>
           )}
+          <FieldError message={fieldErrors.reasons} />
         </div>
 
         <Separator />
@@ -680,11 +690,16 @@ export default function TerminationPage() {
           <Textarea
             placeholder="Minimum 50 characters. Describe the reasons and circumstances in detail..."
             value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
+            onChange={(e) => {
+              setExplanation(e.target.value);
+              clearFieldError("explanation");
+            }}
             rows={4}
             maxLength={TERMINATION_EXPLANATION_MAX}
             aria-label="Detailed explanation"
+            aria-invalid={fieldErrors.explanation ? true : undefined}
           />
+          <FieldError message={fieldErrors.explanation} />
           <p className="text-2xs text-muted-foreground">
             {explanation.length} / 50 min characters (max {TERMINATION_EXPLANATION_MAX})
           </p>
@@ -697,11 +712,16 @@ export default function TerminationPage() {
           <Input
             type="date"
             value={effectiveDate}
-            onChange={(e) => setEffectiveDate(e.target.value)}
+            onChange={(e) => {
+              setEffectiveDate(e.target.value);
+              clearFieldError("effectiveDate");
+            }}
             min={canBackdate ? undefined : today}
             max={latestEffectiveDate}
             aria-label="Effective date"
+            aria-invalid={fieldErrors.effectiveDate ? true : undefined}
           />
+          <FieldError message={fieldErrors.effectiveDate} />
           <p className="text-2xs text-muted-foreground">
             {canBackdate
               ? "Up to one year ahead. As Super Admin you may backdate."

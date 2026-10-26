@@ -87,3 +87,43 @@ export function requireExplanationForOther(
     });
   }
 }
+
+export type TerminationFormField = "employee" | "reasons" | "explanation" | "effectiveDate";
+
+/**
+ * Every problem with the termination form, keyed by field, so each one is
+ * shown next to its input instead of one toast at a time (FR1-016).
+ */
+export function terminationFormErrors(input: {
+  employeeId: string | null | undefined;
+  employeeIsSuperAdmin: boolean;
+  actorId: string | null | undefined;
+  reasons: readonly string[];
+  explanation: string;
+  otherSelected: boolean;
+  effectiveDate: string;
+  canBackdate: boolean;
+  today: string;
+  joiningDate: string | null | undefined;
+}): Partial<Record<TerminationFormField, string>> {
+  const errors: Partial<Record<TerminationFormField, string>> = {};
+  if (!input.employeeId) errors.employee = "Select an employee.";
+  else if (input.employeeIsSuperAdmin) errors.employee = "The Super Admin cannot be terminated through this process.";
+  else if (input.employeeId === input.actorId) errors.employee = "You cannot initiate your own termination.";
+  if (input.reasons.length === 0) errors.reasons = "Select at least one termination reason.";
+  if (input.explanation.trim().length < 50) {
+    errors.explanation = input.otherSelected
+      ? "Selecting 'Other' requires a detailed explanation (at least 50 characters)."
+      : "The detailed explanation must be at least 50 characters.";
+  }
+  if (!input.effectiveDate) errors.effectiveDate = "Set an effective date.";
+  else {
+    const dateError = terminationDateError(input.effectiveDate, {
+      canBackdate: input.canBackdate,
+      today: input.today,
+      joiningDate: input.joiningDate,
+    });
+    if (dateError) errors.effectiveDate = dateError;
+  }
+  return errors;
+}
