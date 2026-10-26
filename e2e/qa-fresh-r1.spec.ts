@@ -221,3 +221,39 @@ test("FR1-033: creating a project opens it", async ({ page }) => {
   await dialog.getByRole("button", { name: "Create project" }).click();
   await expect(page).toHaveURL(/\/projects\/\d+/);
 });
+
+test("FR1-007: an Admin can onboard HR and Admins; HR still cannot", async ({ page, browser }) => {
+  await signIn(page, ADMIN);
+  const depts = (await api(page, "/api/hr/departments")).json as
+    | Array<{ id: number; name: string }>
+    | { data: Array<{ id: number; name: string }> };
+  const hr = (Array.isArray(depts) ? depts : depts.data).find((d) => /^h(uman )?r/i.test(d.name));
+  test.skip(!hr, "no HR department to onboard into");
+  await onboardQaEmployee(page, { role: "HR", departmentId: hr?.id, lastName: "AdminMadeHr" });
+  await onboardQaEmployee(page, { role: "ADMIN", lastName: "AdminMadeAdmin" });
+
+  const hrPage = await (await browser.newContext()).newPage();
+  await signIn(hrPage, [process.env.E2E_HR_EMAIL, process.env.E2E_HR_PASSWORD]);
+  const res = await api(hrPage, "/api/hr/employees/onboard", {
+    method: "POST",
+    body: {
+      firstName: "QA-TEST",
+      lastName: "HrMadeAdmin",
+      email: `qa-test.fr1.${Date.now()}@example.com`,
+      designation: "QA-TEST Engineer",
+      departmentId: hr?.id,
+      role: "ADMIN",
+      monthlySalary: 30000,
+      joiningDate: new Date().toISOString().slice(0, 10),
+    },
+  });
+  expect(res.status).toBe(403);
+});
+
+test("Customer Support is hidden from employees", async ({ page }) => {
+  await signIn(page, EMPLOYEE);
+  await page.goto("/support");
+  await expect(page).not.toHaveURL(/\/support$/);
+  await page.goto("/hr/helpdesk");
+  await expect(page.getByRole("link", { name: "Go to Customer Support" })).toHaveCount(0);
+});
