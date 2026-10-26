@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { onboardEmployeeInputSchema, isRoleAllowedForDepartment } from "@/lib/validations/hr";
+import { onboardEmployeeInputSchema, isRoleAllowedForDepartment, hiddenRolesHint } from "@/lib/validations/hr";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -92,6 +92,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
 
   const visibleRoles = useMemo(
     () => assignableRoles.filter((r) => isRoleAllowedForDepartment(r.slug, selectedDepartmentName)),
+    [assignableRoles, selectedDepartmentName],
+  );
+
+  const roleHint = useMemo(
+    () => hiddenRolesHint(assignableRoles.length > 0 ? assignableRoles : FALLBACK_ROLES, selectedDepartmentName),
     [assignableRoles, selectedDepartmentName],
   );
 
@@ -204,6 +209,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
                 ? ` Showing the roles that fit the ${selectedDepartmentName} team.`
                 : " Pick a department first to see the roles that fit it."}
             </FormDescription>
+            {roleHint && <p className="text-xs text-muted-foreground">{roleHint}</p>}
             <FormMessage />
           </FormItem>
         )}

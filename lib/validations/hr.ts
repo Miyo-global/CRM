@@ -121,6 +121,22 @@ export function isRoleAllowedForDepartment(
   return allowed.has(slug);
 }
 
+/**
+ * Why a role the actor could assign is missing from the list: it belongs to
+ * another department (e.g. HR only with the HR team). Null when nothing is
+ * hidden (FR1-009).
+ */
+export function hiddenRolesHint(
+  roles: ReadonlyArray<{ slug: string; name: string }>,
+  departmentName: string | null | undefined,
+): string | null {
+  if (!departmentName?.trim()) return null;
+  const hidden = roles.filter((r) => !isRoleAllowedForDepartment(r.slug, departmentName)).map((r) => r.name);
+  if (hidden.length === 0) return null;
+  const list = hidden.join(", ");
+  return `${list} ${hidden.length === 1 ? "is" : "are"} not offered for ${departmentName}. To assign ${hidden.length === 1 ? "it" : "one"}, pick the matching department.`;
+}
+
 /** Job title ("designation" in the DB), worded the way the form labels it (R3-ONB-01). */
 const JOB_TITLE_MAX_LENGTH = 120;
 const jobTitleSchema = z
