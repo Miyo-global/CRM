@@ -172,6 +172,19 @@ export function employmentWindow(input: EmploymentWindowInput): EmploymentWindow
 }
 
 /**
+ * Extra line for the "month has not ended" banner. Remaining days are paid as
+ * present, but a mid-month joiner is still prorated from the joining date, which
+ * read as a contradiction without this (FR1-005).
+ */
+export function joinerProrationNote(month: string, joiningDate: string | null | undefined): string | null {
+  if (!PRORATE_JOINERS) return null;
+  const window = employmentWindow({ month, joiningDate, exitDate: null, todayIst: null });
+  if (window.empty || window.daysEmployed >= window.calendarDays) return null;
+  const days = window.daysEmployed === 1 ? "1 day" : `${window.daysEmployed} days`;
+  return `Pay starts on the joining date, so it covers ${days} of this month.`;
+}
+
+/**
  * Salary actually earned for the month, before any deduction.
  *
  * Proration divides by 31 like every other per-day figure, not by the month's
