@@ -23,6 +23,7 @@ import { ROLES } from "@/lib/constants/roles";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { afterResponse } from "@/lib/after-response";
 import { findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
+import { onboardedNotification } from "@/lib/hr/onboarded-notification";
 import { auditProfessionalTax, professionalTaxColumn, professionalTaxEditError } from "@/lib/hr/professional-tax";
 
 export async function POST(req: NextRequest) {
@@ -219,8 +220,7 @@ export async function POST(req: NextRequest) {
 
     afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       type: "SUCCESS",
-      title: "New Employee Onboarded",
-      message: `${body.firstName} ${body.lastName} (${body.designation}) has been onboarded${body.joiningDate ? `, joining ${formatDateOnly(body.joiningDate)}` : ""}.`,
+      ...onboardedNotification(body),
       link: `/hr/employees/${newUser.id}`,
       metadata: { employeeId: newUser.id },
       excludeUserId: session.user.id,
