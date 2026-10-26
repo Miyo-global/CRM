@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
       // QA-D006: /login and /register are what people type; this app signs
       // in at /signin.
       { source: "/login", destination: "/signin", permanent: false },
+      // People type /roles for the role editor; it lives under Settings (FR1-019).
+      { source: "/roles", destination: "/settings/roles", permanent: false },
       { source: "/register", destination: "/signin", permanent: false },
       { source: "/build", destination: "/projects", permanent: false },
       // QA-AUTH-07: the QR code manager moved off the CEO-named path.

@@ -138,7 +138,7 @@ export function decidePageAccess(
     return denied(`${action} needs more than ${held} (via ${via})`);
   }
 
-  return allowed({ orgId: page.orgId, pageId: String(page.id), action, via });
+  return allowed({ orgId: page.orgId, pageId: String(page.id), action, held, via });
 }
 
 function holdsPermission(actor: KbActor, permission: string): boolean {
@@ -309,5 +309,5 @@ export function decideSpaceAccess(
   if (!accessSatisfies(held, action)) {
     return denied(`${action} needs more than ${held} (via ${via})`);
   }
-  return allowed({ orgId: space.orgId, spaceId: String(space.id), action, via });
+  return allowed({ orgId: space.orgId, spaceId: String(space.id), action, held, via });
 }

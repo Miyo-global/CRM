@@ -2,6 +2,7 @@ import { ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { hasFullAccess } from "@/lib/constants/roles";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import { SYSTEM_ROLES } from "@/lib/rbac/roles";
+import { SUPPORT_STAFF_ROLES } from "@/lib/constants/support-sla";
 
 /** Routes any signed-in employee may open. */
 const EVERYONE: string[] = [...SYSTEM_ROLES];
@@ -14,7 +15,6 @@ const HR_TEAM: string[] = ["CEO", "HR"];
  */
 export const HR_SETTINGS_PAGES = [
   "members",
-  "custom-fields",
   "email-templates",
   "job-roles",
   "payroll-schedule",
@@ -73,7 +73,6 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/holidays": EVERYONE,
   "/hr/performance": HR_TEAM,
   "/hr/org-chart": HR_TEAM,
-  "/hr/incentives": HR_TEAM,
   "/hr/my-payslips": EVERYONE,
   "/hr/my-documents": EVERYONE,
   "/hr/my-assets": EVERYONE,
@@ -96,8 +95,10 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/tickets": EVERYONE,
   "/timesheets": EVERYONE,
   "/timesheets/team": HR_TEAM,
-  "/support": EVERYONE,
-  "/support/inbox": EVERYONE,
+  // The Customer Support module is for the staff handling external support;
+  // employees raise their own issues on /hr/helpdesk (owner decision, FR1-032).
+  "/support": [...SUPPORT_STAFF_ROLES],
+  "/support/inbox": [...SUPPORT_STAFF_ROLES],
   // /settings itself is the personal account page (profile, security).
   // Every admin settings page is listed explicitly; ADMIN_SETTINGS_PAGES
   // below is checked against app/(dashboard)/settings/* in the tests.

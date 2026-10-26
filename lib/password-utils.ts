@@ -9,6 +9,8 @@ export function getPasswordStrength(password: string) {
   if (passed >= 5) { level = "strong"; color = toneBar.success; }
   else if (passed >= 4) { level = "good"; color = toneBar.info; }
   else if (passed >= 3) { level = "fair"; color = toneBar.warning; }
+  // An edge space makes the password invalid (FR1-018); never call it strong.
+  if (/\S/.test(password) && password !== password.trim()) { level = "weak"; color = toneBar.danger; }
   return { checks, passed, level, color, percentage: (passed / 5) * 100 };
 }
 

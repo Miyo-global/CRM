@@ -17,6 +17,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import type { Employee } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { fmtInr } from "@/lib/hr/payslip-view-model";
+import { joinerProrationNote } from "@/lib/payroll/rules";
 
 export interface PayslipPreview {
   basicPay: number;
@@ -65,6 +66,7 @@ export function PayslipDetailSheet({
   const today = isoDateInTimezone();
   const monthEnded = today > `${selectedMonth}-${getDaysInMonth(monthKeyToDate(selectedMonth))}`;
   const [overrideIncompleteMonth, setOverrideIncompleteMonth] = useState(false);
+  const joinerNote = joinerProrationNote(selectedMonth, selectedEmployeeData?.joiningDate);
   useEffect(() => {
     setOverrideIncompleteMonth(false);
   }, [selectedMonth, selectedEmployeeData?.id]);
@@ -101,6 +103,7 @@ export function PayslipDetailSheet({
           <p className="text-xs text-muted-foreground">
             Attendance is counted to {format(new Date(`${today}T00:00:00`), "dd MMM yyyy")} only.
             The remaining days of the month are paid as present.
+            {joinerNote && <> {joinerNote}</>}
           </p>
           <label className="flex items-start gap-2 text-xs">
             <input

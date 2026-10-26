@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const execute = vi.fn();
 
 vi.mock("@/lib/db", () => ({ db: { execute: (...a: unknown[]) => execute(...a) } }));
-vi.mock("@/lib/constants/modules", () => ({ CRM_MODULE_ENABLED: false }));
 
 const {
   availableRecordLinkTargets,
@@ -18,31 +17,22 @@ beforeEach(() => {
 });
 
 describe("availableRecordLinkTargets", () => {
-  it("hides the CRM targets when the module is off", () => {
-    expect(availableRecordLinkTargets(false)).toEqual([
+  it("offers no sales (CRM lead, deal or contact) targets", () => {
+    expect(availableRecordLinkTargets()).toEqual([
       "project",
       "project_ticket",
       "hr_employee",
       "support_ticket",
     ]);
   });
-
-  it("offers all seven when it is on", () => {
-    expect(availableRecordLinkTargets(true)).toHaveLength(7);
-  });
 });
 
 describe("checkRecordTarget", () => {
-  it("refuses a crm target with the module off, with 400", async () => {
-    await expect(checkRecordTarget("org-a", "crm_lead", "7", false)).resolves.toMatchObject({
-      ok: false,
-      status: 400,
-    });
+  it("refuses the removed CRM targets with 400", async () => {
+    for (const type of ["crm_lead", "crm_deal", "crm_contact"]) {
+      await expect(checkRecordTarget("org-a", type, "7")).resolves.toMatchObject({ ok: false, status: 400 });
+    }
     expect(execute).not.toHaveBeenCalled();
-  });
-
-  it("allows a crm target when the module is on and the row exists", async () => {
-    await expect(checkRecordTarget("org-a", "crm_lead", "7", true)).resolves.toEqual({ ok: true });
   });
 
   it("answers 404 for a record that is not in this org", async () => {
@@ -81,11 +71,12 @@ describe("recordHref and isRecordLinkTarget", () => {
   it("points at the record's page", () => {
     expect(recordHref("project", "4")).toBe("/projects/4");
     expect(recordHref("hr_employee", "u1")).toBe("/hr/employees/u1");
-    expect(recordHref("crm_deal", "9")).toBe("/crm/deals/9");
+    expect(recordHref("support_ticket", "9")).toBe("/support/9");
   });
 
   it("narrows a string", () => {
     expect(isRecordLinkTarget("project")).toBe(true);
     expect(isRecordLinkTarget("nope")).toBe(false);
+    expect(isRecordLinkTarget("crm_lead")).toBe(false);
   });
 });

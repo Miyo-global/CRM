@@ -135,9 +135,11 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Monthly Salary (CTC) <span className="text-danger-strong">*</span></FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
+              {/* FormControl on the input itself, not the wrapper, so the label
+                  names it ("Monthly Salary (CTC)", not "25000") (FR1-014). */}
+              <div className="relative">
+                <span aria-hidden className="absolute left-3 top-2.5 text-muted-foreground">&#8377;</span>
+                <FormControl>
                   <MoneyInput
                     inputMode="numeric"
                     placeholder="25000"
@@ -148,8 +150,8 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
                     ref={field.ref}
                     className="pl-8"
                   />
-                </div>
-              </FormControl>
+                </FormControl>
+              </div>
               <FormDescription>
                 Basic (50%) + HRA (25%) + Special allowance (25%), less the professional tax below
               </FormDescription>

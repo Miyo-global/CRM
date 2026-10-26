@@ -9,12 +9,10 @@ export const ROLE_LABELS: Record<SystemRole, string> = {
   CEO: "Super Admin",
   HR: "HR",
   ADMIN: "Admin",
-  SALES: "Sales",
   CUSTOMER_SUPPORT: "Customer Support",
   ENGINEERING: "Engineering",
   DESIGN: "Design",
   VIDEO_EDITOR: "Video Editor",
-  DIGITAL_MARKETING: "Digital Marketing",
   RECRUITER: "Recruiter",
   EMPLOYEE: "Employee",
 };
@@ -57,7 +55,9 @@ export const ACTIVE_SYSTEM_ROLES: readonly SystemRole[] = SYSTEM_ROLES.filter(
 
 /** Org roles from the roles API, minus Super Admin and the retired job titles. */
 export function filterAssignableOrgRoles<T extends { slug: string }>(orgRoles: readonly T[]): T[] {
-  return orgRoles.filter((role) => !isSystemRole(role.slug) || isAssignableSystemRole(role.slug));
+  return orgRoles.filter(
+    (role) => !isLegacyJobTitleRole(role.slug) && (!isSystemRole(role.slug) || isAssignableSystemRole(role.slug)),
+  );
 }
 
 export function isSystemRole(role: string | undefined | null): role is SystemRole {

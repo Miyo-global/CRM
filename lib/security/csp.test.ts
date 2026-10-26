@@ -74,4 +74,11 @@ describe("buildCsp with a nonce (MIYO-0132)", () => {
   it("keeps unsafe-inline for styles, which are not nonced", () => {
     expect(directive(buildCsp("production", "abc123"), "style-src")).toContain("'unsafe-inline'");
   });
+
+  it("keeps inline script out once a nonce is set, whatever style-src allows (FR1-035)", () => {
+    const csp = buildCsp("production", "abc");
+    expect(directive(csp, "script-src")).not.toContain("'unsafe-inline'");
+    expect(directive(csp, "script-src")).toContain("'nonce-abc'");
+    expect(directive(csp, "style-src")).not.toMatch(/(^|\s)(\*|https:)(\s|$)/);
+  });
 });

@@ -1,6 +1,5 @@
 "use client";
 
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { useState, useCallback } from "react";
 import { Plus, Webhook, Trash2, Copy, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -25,14 +24,6 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const ALL_EVENTS = [
-  { id: "lead.created", label: "Lead Created" },
-  { id: "lead.status_changed", label: "Lead Status Changed" },
-  { id: "lead.assigned", label: "Lead Assigned" },
-  { id: "lead.converted", label: "Lead Converted" },
-  { id: "deal.created", label: "Deal Created" },
-  { id: "deal.stage_changed", label: "Deal Stage Changed" },
-  { id: "deal.won", label: "Deal Won" },
-  { id: "deal.lost", label: "Deal Lost" },
   { id: "resignation.submitted", label: "Resignation Submitted" },
   { id: "resignation.approved", label: "Resignation Approved" },
   { id: "termination.submitted", label: "Termination Submitted" },
@@ -45,10 +36,8 @@ const ALL_EVENTS = [
   { id: "leave.approved", label: "Leave Approved" },
 ];
 
-// Lead and deal events only fire from the CRM module.
-const AVAILABLE_EVENTS = CRM_MODULE_ENABLED
-  ? ALL_EVENTS
-  : ALL_EVENTS.filter((ev) => !ev.id.startsWith("lead.") && !ev.id.startsWith("deal."));
+// The lead and deal events went with the sales module.
+const AVAILABLE_EVENTS = ALL_EVENTS;
 
 interface WebhookEndpoint {
   id: number;

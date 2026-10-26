@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { onboardEmployeeInputSchema, isRoleAllowedForDepartment } from "@/lib/validations/hr";
+import { onboardEmployeeInputSchema, isRoleAllowedForDepartment, hiddenRolesHint } from "@/lib/validations/hr";
 import { getCompanyEstablishedDate } from "@/lib/constants/company";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -62,6 +62,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
   // uses negative placeholder ids for not-yet-created "common" departments;
   // for those we fall back to org-wide roles only.
   const joiningDate = form.watch("joiningDate");
+  const maxJoiningDate = useMemo(() => {
+    const max = parseCalendarDate(getTodayString());
+    max.setFullYear(max.getFullYear() + 1);
+    return max;
+  }, []);
   const isJoiningDateInPast = useMemo(() => {
     if (!joiningDate) return false;
     const today = parseCalendarDate(getTodayString());
@@ -87,6 +92,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
 
   const visibleRoles = useMemo(
     () => assignableRoles.filter((r) => isRoleAllowedForDepartment(r.slug, selectedDepartmentName)),
+    [assignableRoles, selectedDepartmentName],
+  );
+
+  const roleHint = useMemo(
+    () => hiddenRolesHint(assignableRoles.length > 0 ? assignableRoles : FALLBACK_ROLES, selectedDepartmentName),
     [assignableRoles, selectedDepartmentName],
   );
 
@@ -199,6 +209,7 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
                 ? ` Showing the roles that fit the ${selectedDepartmentName} team.`
                 : " Pick a department first to see the roles that fit it."}
             </FormDescription>
+            {roleHint && <p className="text-xs text-muted-foreground">{roleHint}</p>}
             <FormMessage />
           </FormItem>
         )}
@@ -234,7 +245,8 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
           <FormItem className="flex flex-col">
             <FormLabel>Joining Date <span className="text-destructive">*</span></FormLabel>
             <FormDescription className="text-xs">
-              Cannot be before {format(companyEstablishedDate, "MMMM d, yyyy")} (company establishment).
+              Between {format(companyEstablishedDate, "MMMM d, yyyy")} (company establishment) and{" "}
+              {format(maxJoiningDate, "MMMM d, yyyy")} (one year ahead).
             </FormDescription>
             <Popover>
               <PopoverTrigger asChild>
@@ -260,8 +272,11 @@ export function StepEmployment({ form, departments, allDepartmentOptions, assign
                       companyEstablishedDate.getMonth(),
                       companyEstablishedDate.getDate(),
                     );
-                    return day < min;
+                    // The schema refuses more than a year ahead, but only once the
+                    // whole form is valid; the picker stops there up front (FR1-010).
+                    return day < min || day > maxJoiningDate;
                   }}
+                  toDate={maxJoiningDate}
                   initialFocus
                 />
               </PopoverContent>

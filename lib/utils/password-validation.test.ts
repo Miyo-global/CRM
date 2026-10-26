@@ -93,3 +93,24 @@ describe("password must not contain email or name (R3-SET-01)", () => {
     expect(passwordIssue("priya", who)).toBe("Password must be at least 8 characters");
   });
 });
+
+describe("leading or trailing spaces (FR1-018)", () => {
+  it("are refused with a clear message", async () => {
+    const { validatePasswordStrength, PASSWORD_ZOD_SCHEMA } = await import("./password-validation");
+    for (const pw of [" Abcdef1!x", "Abcdef1!x ", "  Abcdef1!x  "]) {
+      expect(validatePasswordStrength(pw).valid).toBe(false);
+      expect(validatePasswordStrength(pw).missing).toContain("Password can't start or end with a space");
+      expect(PASSWORD_ZOD_SCHEMA.safeParse(pw).success).toBe(false);
+    }
+  });
+
+  it("never show as Strong in the meter", () => {
+    expect(getPasswordStrength(" Abcdef1!x").level).toBe("weak");
+    expect(getPasswordStrength("Abcdef1!x").level).toBe("strong");
+  });
+
+  it("still allow spaces inside", async () => {
+    const { validatePasswordStrength } = await import("./password-validation");
+    expect(validatePasswordStrength("Abc def1!x").valid).toBe(true);
+  });
+});

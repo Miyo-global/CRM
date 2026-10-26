@@ -47,12 +47,12 @@ describe("kb role defaults", () => {
   });
 
   it("does not let an employee role manage spaces or create pages org-wide", () => {
-    const sales = new Set(ROLE_DEFAULT_PERMISSIONS.SALES);
-    expect(sales.has("kb:spaces:manage")).toBe(false);
-    expect(sales.has("kb:pages:create")).toBe(false);
-    expect(sales.has("kb:settings:manage")).toBe(false);
-    expect(sales.has("kb:ai:generate")).toBe(true);
-    expect(sales.has("kb:pages:export")).toBe(true);
-    expect(sales.has("kb:reviews:view")).toBe(true);
+    const employee = new Set(ROLE_DEFAULT_PERMISSIONS.EMPLOYEE);
+    expect(employee.has("kb:spaces:manage")).toBe(false);
+    expect(employee.has("kb:pages:create")).toBe(false);
+    expect(employee.has("kb:settings:manage")).toBe(false);
+    expect(employee.has("kb:ai:generate")).toBe(true);
+    expect(employee.has("kb:pages:export")).toBe(true);
+    expect(employee.has("kb:reviews:view")).toBe(true);
   });
 });

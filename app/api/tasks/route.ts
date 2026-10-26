@@ -13,7 +13,7 @@ const listSchema = z.object({
   assigneeId: z.string().optional(),
   status: z.enum(["pending", "completed", "cancelled"]).optional(),
   type: z.enum(["CALL", "EMAIL", "MEETING", "CUSTOM"]).optional(),
-  entityType: z.enum(["LEAD", "DEAL", "CONTACT", "PROJECT"]).optional(),
+  entityType: z.enum(["PROJECT"]).optional(),
   entityId: z.string().optional(),
   limit: z.string().optional().transform((v) => (v ? Math.min(Number(v), 100) : 50)),
   page: z.string().optional().transform((v) => (v ? Math.max(Number(v), 1) : 1)),
@@ -23,7 +23,7 @@ const listSchema = z.object({
 const createSchema = z.object({
   title: z.string().min(1).max(255),
   notes: z.string().optional(),
-  entityType: z.enum(["LEAD", "DEAL", "CONTACT", "PROJECT"]).optional(),
+  entityType: z.enum(["PROJECT"]).optional(),
   entityId: z.number().int().positive().optional(),
   type: z.enum(["CALL", "EMAIL", "MEETING", "CUSTOM"]).default("CUSTOM"),
   assigneeId: z.string().optional(),

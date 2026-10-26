@@ -21,11 +21,11 @@ import { getTodayString, isDateOnly, parseCalendarDate } from "@/lib/date-utils"
  * Department ↔ System-Role compatibility (D10).
  *
  * System roles are org-defined but their slugs map to the built-in ROLES
- * constants (HR, SALES, ENGINEERING, …). Departments are free-text but seed
- * with a known set (HR, Sales, Customer Support, Engineering, Design,
- * Video Editing). This map is intentionally PERMISSIVE: it only declares the
- * role slugs that are *clearly wrong* for a given department so we can block
- * obvious mismatches (e.g. an HR system role under the Sales department) while
+ * constants (HR, ENGINEERING, …). Departments are free-text but seed with a
+ * known set (HR, Customer Support, Engineering, Design, Video Editing). This
+ * map is intentionally PERMISSIVE: it only declares the role slugs that are
+ * *clearly wrong* for a given department so we can block obvious mismatches
+ * (e.g. an HR system role under the Engineering department) while
  * allowing everything we are not confident about.
  *
  * Generic / cross-functional roles (CEO, ADMIN, branch roles, and any custom
@@ -41,12 +41,10 @@ const GENERIC_ROLE_SLUGS = new Set([
 
 const KNOWN_DEPARTMENT_ROLE_SLUGS = new Set([
   "HR",
-  "SALES",
   "ENGINEERING",
   "DESIGN",
   "CUSTOMER_SUPPORT",
   "VIDEO_EDITOR",
-  "DIGITAL_MARKETING",
 ]);
 
 /**
@@ -61,9 +59,6 @@ function normalizeDepartmentKey(name: string): string {
   }
   if (cleaned.includes("humanresource") || cleaned === "hr" || cleaned.includes("people") || cleaned.includes("talent")) {
     return "hr";
-  }
-  if (cleaned.includes("sale") || cleaned.includes("business") || cleaned === "bd" || cleaned.includes("revenue")) {
-    return "sales";
   }
   if (cleaned.includes("design") || cleaned.includes("creative")) {
     return "design";
@@ -88,11 +83,10 @@ function normalizeDepartmentKey(name: string): string {
 const DEPARTMENT_ALLOWED_ROLE_SLUGS: Record<string, ReadonlySet<string>> = {
   engineering: new Set(["ENGINEERING", "DESIGN"]),
   hr: new Set(["HR"]),
-  sales: new Set(["SALES", "DIGITAL_MARKETING"]),
   design: new Set(["DESIGN", "VIDEO_EDITOR"]),
   support: new Set(["CUSTOMER_SUPPORT"]),
   video: new Set(["VIDEO_EDITOR", "DESIGN"]),
-  marketing: new Set(["DIGITAL_MARKETING", "DESIGN"]),
+  marketing: new Set(["DESIGN"]),
 };
 
 /**
@@ -121,6 +115,22 @@ export function isRoleAllowedForDepartment(
   return allowed.has(slug);
 }
 
+/**
+ * Why a role the actor could assign is missing from the list: it belongs to
+ * another department (e.g. HR only with the HR team). Null when nothing is
+ * hidden (FR1-009).
+ */
+export function hiddenRolesHint(
+  roles: ReadonlyArray<{ slug: string; name: string }>,
+  departmentName: string | null | undefined,
+): string | null {
+  if (!departmentName?.trim()) return null;
+  const hidden = roles.filter((r) => !isRoleAllowedForDepartment(r.slug, departmentName)).map((r) => r.name);
+  if (hidden.length === 0) return null;
+  const list = hidden.join(", ");
+  return `${list} ${hidden.length === 1 ? "is" : "are"} not offered for ${departmentName}. To assign ${hidden.length === 1 ? "it" : "one"}, pick the matching department.`;
+}
+
 /** Job title ("designation" in the DB), worded the way the form labels it (R3-ONB-01). */
 const JOB_TITLE_MAX_LENGTH = 120;
 const jobTitleSchema = z
@@ -135,7 +145,7 @@ export const DEPARTMENT_ROLE_MISMATCH_MESSAGE =
   "This system role is not compatible with the selected department. Pick a role that fits the team, or choose a generic role.";
 
 const PERSON_NAME_MIN_LENGTH = 2;
-const PERSON_NAME_MAX_LENGTH = 50;
+export const PERSON_NAME_MAX_LENGTH = 50;
 export const MIN_EMPLOYEE_AGE_YEARS = 18;
 const MAX_EMPLOYEE_AGE_YEARS = 100;
 const EMPLOYEE_ID_MIN_LENGTH = 2;

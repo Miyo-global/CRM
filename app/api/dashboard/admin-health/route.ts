@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { withRoles, ok } from "@/lib/api/helpers";
 import { FULL_ACCESS_ROLES } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
-import { leads, expenses, tasks, users, leaveRequests, organizationMembers } from "@/lib/db/schema";
-import { eq, and, isNull, lt, sql, count } from "drizzle-orm";
+import { expenses, tasks, users, leaveRequests, organizationMembers } from "@/lib/db/schema";
+import { eq, and, lt, sql, count } from "drizzle-orm";
 
 export async function GET(_req: NextRequest) {
   // System Health is Super Admin / Admin only; HR is turned away.
@@ -11,7 +11,6 @@ export async function GET(_req: NextRequest) {
     const orgId = session.orgId;
 
     const [
-      unassignedLeadsResult,
       overdueTasksResult,
       pendingExpensesResult,
       pendingLeavesResult,
@@ -20,11 +19,6 @@ export async function GET(_req: NextRequest) {
       /** Active accounts only (matches HR metrics `activeEmployees` and main dashboard headcount). */
       activeEmployeesResult,
     ] = await Promise.all([
-      db
-        .select({ count: count() })
-        .from(leads)
-        .where(and(eq(leads.orgId, orgId), isNull(leads.assignedToId), sql`${leads.status} NOT IN ('CONVERTED', 'LOST')`)),
-
       db
         .select({ count: count() })
         .from(tasks)
@@ -56,7 +50,6 @@ export async function GET(_req: NextRequest) {
     ]);
 
     return ok({
-      unassignedLeads: unassignedLeadsResult[0]?.count ?? 0,
       overdueTasks: overdueTasksResult[0]?.count ?? 0,
       pendingExpenses: {
         count: pendingExpensesResult[0]?.count ?? 0,

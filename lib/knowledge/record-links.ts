@@ -10,7 +10,6 @@ import "server-only";
 
 import { sql } from "drizzle-orm";
 
-import { CRM_MODULE_ENABLED } from "@/lib/constants/modules";
 import { db } from "@/lib/db";
 
 export const RECORD_LINK_TARGET_TYPES = [
@@ -18,9 +17,6 @@ export const RECORD_LINK_TARGET_TYPES = [
   "project_ticket",
   "hr_employee",
   "support_ticket",
-  "crm_lead",
-  "crm_deal",
-  "crm_contact",
 ] as const;
 export type RecordLinkTargetType = (typeof RECORD_LINK_TARGET_TYPES)[number];
 
@@ -28,8 +24,6 @@ interface TargetSpec {
   table: string;
   /** Numeric ids are cast; a user id is text. */
   idKind: "int" | "text";
-  /** Gated behind NEXT_PUBLIC_CRM_MODULE. */
-  crmOnly?: boolean;
 }
 
 const TARGETS: Record<RecordLinkTargetType, TargetSpec> = {
@@ -37,20 +31,18 @@ const TARGETS: Record<RecordLinkTargetType, TargetSpec> = {
   project_ticket: { table: "tickets", idKind: "int" },
   hr_employee: { table: "users", idKind: "text" },
   support_ticket: { table: "support_tickets", idKind: "int" },
-  crm_lead: { table: "crm_leads", idKind: "int", crmOnly: true },
-  crm_deal: { table: "deals", idKind: "int", crmOnly: true },
-  crm_contact: { table: "contacts", idKind: "int", crmOnly: true },
 };
 
 export function isRecordLinkTarget(value: string): value is RecordLinkTargetType {
   return (RECORD_LINK_TARGET_TYPES as readonly string[]).includes(value);
 }
 
-/** Pure: which targets this deployment offers at all. */
-export function availableRecordLinkTargets(
-  crmEnabled = CRM_MODULE_ENABLED,
-): RecordLinkTargetType[] {
-  return RECORD_LINK_TARGET_TYPES.filter((type) => crmEnabled || !TARGETS[type].crmOnly);
+/**
+ * Which targets a page can link to. The CRM lead, deal and contact targets went
+ * with the sales module; links stored to them are no longer listed.
+ */
+export function availableRecordLinkTargets(): RecordLinkTargetType[] {
+  return [...RECORD_LINK_TARGET_TYPES];
 }
 
 export type RecordLinkCheck =
@@ -66,16 +58,12 @@ export async function checkRecordTarget(
   orgId: string,
   targetType: string,
   targetId: string,
-  crmEnabled = CRM_MODULE_ENABLED,
 ): Promise<RecordLinkCheck> {
   if (!isRecordLinkTarget(targetType)) {
     return { ok: false, status: 400, message: `${targetType} is not a linkable record.` };
   }
 
   const spec = TARGETS[targetType];
-  if (spec.crmOnly && !crmEnabled) {
-    return { ok: false, status: 400, message: "The CRM module is switched off." };
-  }
 
   if (spec.idKind === "int") {
     const numeric = Number(targetId);
@@ -113,11 +101,5 @@ export function recordHref(targetType: RecordLinkTargetType, targetId: string): 
       return `/hr/employees/${targetId}`;
     case "support_ticket":
       return `/support/${targetId}`;
-    case "crm_lead":
-      return `/crm/leads/${targetId}`;
-    case "crm_deal":
-      return `/crm/deals/${targetId}`;
-    case "crm_contact":
-      return `/crm/contacts/${targetId}`;
   }
 }

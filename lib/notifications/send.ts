@@ -17,14 +17,9 @@ export interface NotificationPayload {
   recipientEmail?: string;
 }
 
-const EMAIL_EVENTS = [
-  "Lead Assigned",
-  "Lead Converted",
-  "Client Invested!",
-  "Incentive Approved",
-  "Target Achieved",
-  "SLA Breach",
-];
+// The sales titles (lead assigned/converted, client invested, incentive
+// approved, target achieved) went with the sales module.
+const EMAIL_EVENTS = ["SLA Breach"];
 
 export async function sendNotification(payload: NotificationPayload): Promise<boolean> {
   const channel = payload.channel || "in_app";

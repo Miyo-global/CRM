@@ -21,7 +21,6 @@
     "db:check-drift": "tsx scripts/check-schema-drift.ts",
     "db:generate": "drizzle-kit generate",
     "db:fix-orphaned": "tsx scripts/fix-orphaned-data.ts",
-    "backfill:converted-leads": "tsx --env-file=.env scripts/backfill-converted-leads.ts",
     "seed:worklogs": "ALLOW_REMOTE_DB=1 npx tsx --env-file=.env scripts/seed-worklogs.ts",
     "seed:demo": "npx tsx --env-file=.env scripts/seed-demo-accounts.ts",
     "seed:career-ladders": "npx tsx --env-file=.env scripts/seed-career-ladders.ts",

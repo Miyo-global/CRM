@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { blocksNewTermination, terminationDateError } from "./termination-rules";
+import { blocksNewTermination, terminationDateError, terminationEmailNotice } from "./termination-rules";
 import { fnfHasFigures, fnfTotals } from "./fnf-figures";
 vi.mock("@/lib/db", () => ({ db: {} }));
 import { diffFields } from "@/lib/audit-log";
@@ -57,5 +57,60 @@ describe("diffFields (R3-ADM-12)", () => {
     expect(diffFields({ url: "a", secret: "s1" }, { url: undefined, secret: "s2" })).toEqual({
       secret: { from: "[redacted]", to: "[redacted]" },
     });
+  });
+});
+
+describe("effective date before joining (FR1-015)", () => {
+  it("is refused, even for a Super Admin who may backdate", async () => {
+    const { terminationDateError } = await import("./termination-rules");
+    const opts = { canBackdate: true, today: "2026-10-26", joiningDate: "2026-10-26" };
+    expect(terminationDateError("2026-10-20", opts)).toBe(
+      "Effective date cannot be before the joining date (26 Oct 2026).",
+    );
+    expect(terminationDateError("2026-10-26", opts)).toBeNull();
+    expect(terminationDateError("2026-10-20", { ...opts, joiningDate: null })).toBeNull();
+  });
+});
+
+describe("terminationFormErrors (FR1-016)", () => {
+  const base = {
+    employeeId: "e1",
+    employeeIsSuperAdmin: false,
+    actorId: "hr1",
+    reasons: ["Misconduct"],
+    explanation: "x".repeat(60),
+    otherSelected: false,
+    effectiveDate: "2026-11-30",
+    canBackdate: false,
+    today: "2026-10-26",
+    joiningDate: "2026-01-01",
+  };
+
+  it("lists every problem of an empty form, by field", async () => {
+    const { terminationFormErrors } = await import("./termination-rules");
+    const errors = terminationFormErrors({ ...base, employeeId: null, reasons: [], explanation: "", effectiveDate: "" });
+    expect(Object.keys(errors).sort()).toEqual(["effectiveDate", "employee", "explanation", "reasons"]);
+  });
+
+  it("is empty for a valid form and flags a date before joining", async () => {
+    const { terminationFormErrors } = await import("./termination-rules");
+    expect(terminationFormErrors(base)).toEqual({});
+    expect(terminationFormErrors({ ...base, canBackdate: true, effectiveDate: "2025-12-01" }).effectiveDate).toMatch(
+      /before the joining date/,
+    );
+  });
+});
+
+describe("terminationEmailNotice (FR1-036)", () => {
+  it("says a future-dated employee is notified now and stays active until the effective date", () => {
+    const text = terminationEmailNotice("QA-TEST Emp2", "2026-11-30", "2026-10-26");
+    expect(text).toContain("notified now");
+    expect(text).toContain("stay active until the effective date, 30 Nov 2026");
+  });
+
+  it("keeps the plain wording when the effective date has come", () => {
+    expect(terminationEmailNotice(null, "2026-10-26", "2026-10-26")).toMatch(
+      /^Send termination email to this employee\?.*mark the termination as Complete\.$/,
+    );
   });
 });

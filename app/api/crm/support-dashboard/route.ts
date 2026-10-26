@@ -1,5 +1,5 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
-import { getSupportDashboard } from "@/server/queries/crm";
+import { getSupportDashboard } from "@/server/queries/support-dashboard";
 import { isSupportStaff } from "@/lib/constants/support-sla";
 
 export async function GET() {

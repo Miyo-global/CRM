@@ -1,5 +1,7 @@
 "use client";
 
+import { z } from "zod";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api-client";
@@ -13,11 +15,15 @@ export interface KbSpaceFilters extends Record<string, unknown> {
   q?: string;
 }
 
+const kbSpaceListSchema = z.array(kbSpaceSchema).transform((items) => ({ items }));
+
 export function useKbSpaces(filters: KbSpaceFilters = {}) {
   return useQuery({
     queryKey: queryKeys.knowledge.spaces(filters),
     queryFn: async () =>
-      kbCollection(kbSpaceSchema).parse(await apiClient.get("/knowledge/spaces", { ...filters })),
+      // The route returns a bare array; reading it as { items } failed on every
+      // wiki page and left the editor read-only (FR1-001).
+      kbSpaceListSchema.parse(await apiClient.get("/knowledge/spaces", { ...filters })),
   });
 }
 

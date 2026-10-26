@@ -1,13 +1,7 @@
 /**
- * Optional modules.
- *
- * The CRM side of the app (leads, deals, contacts) ships behind a flag: HR-only
- * deployments should not be offered Deals notification categories or Deal
- * custom fields (A36). Set NEXT_PUBLIC_CRM_MODULE=on to enable it.
- *
- * OPEN QUESTION for Tarun: confirm the CRM module stays off for Miyo Global.
+ * Optional modules. The sales CRM (leads, deals, contacts) and its
+ * NEXT_PUBLIC_CRM_MODULE flag were removed: Miyo Global has no sales features.
  */
-export const CRM_MODULE_ENABLED = process.env.NEXT_PUBLIC_CRM_MODULE === "on";
 
 /**
  * AI features (AI hub, AI-assisted drafts). The hub is only offered when a

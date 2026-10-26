@@ -3,7 +3,7 @@
 import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
+import { MIN_EMPLOYEE_AGE_YEARS, PERSON_NAME_MAX_LENGTH, onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { format } from "date-fns";
 import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import { Input } from "@/components/ui/input";
@@ -90,6 +90,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="John"
+                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
@@ -109,6 +110,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="Doe"
+                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
@@ -125,10 +127,15 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
+            {/* The "Checking…" hint sits inside the box: a line appearing under it
+                on blur pushed the Next button down between mousedown and mouseup,
+                so the first click on Next was lost (FR1-008). */}
+            <div className="relative">
             <FormControl>
               <Input
                 type="email"
                 placeholder="john@company.com"
+                className={checkingEmail ? "pr-24" : undefined}
                 maxLength={EMAIL_MAX_LENGTH}
                 {...field}
                 onChange={(e) => {
@@ -142,8 +149,15 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
               />
             </FormControl>
             {checkingEmail && (
-              <p id="email-checking" className="text-xs text-muted-foreground">Checking email…</p>
+              <span
+                id="email-checking"
+                role="status"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+              >
+                Checking…
+              </span>
             )}
+            </div>
             {pendingInvitation && !checkingEmail && (
               <p role="status" className="text-xs text-warning-strong">
                 This email has a pending invitation. Onboarding here cancels that invitation.

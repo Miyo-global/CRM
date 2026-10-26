@@ -23,10 +23,6 @@ export const queryKeys = {
     performanceReviews: (userId?: string) => [...base, "hr", "performanceReviews", userId] as const,
     goals: (userId?: string) => [...base, "hr", "goals", userId] as const,
     workLogs: (params?: Record<string, unknown>) => [...base, "hr", "workLogs", ...(params ? [params] : [])] as const,
-    incentives: (params?: Record<string, unknown>) => [...base, "hr", "incentives", ...(params ? [params] : [])] as const,
-    incentiveStats: () => [...base, "hr", "incentiveStats"] as const,
-    incentiveConfigs: () => [...base, "hr", "incentiveConfigs"] as const,
-    incentiveConfigHistory: (params?: Record<string, unknown>) => [...base, "hr", "incentiveConfigHistory", ...(params ? [params] : [])] as const,
     orgChart: () => [...base, "hr", "orgChart"] as const,
     helpdeskTickets: (params?: Record<string, unknown>) => [...base, "hr", "helpdeskTickets", ...(params ? [params] : [])] as const,
     wfhRequests: () => [...base, "hr", "wfhRequests"] as const,
@@ -74,49 +70,10 @@ export const queryKeys = {
     payrollPreview: (params: Record<string, unknown>) => [...base, "hr", "payrollPreview", params] as const,
   },
 
-  leads: {
-    all: [...base, "leads"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "leads", "list", ...(params ? [params] : [])] as const,
-    board: () => [...base, "leads", "board"] as const,
-    detail: (id: number) => [...base, "leads", "detail", id] as const,
-    stats: (params?: Record<string, unknown>) => [...base, "leads", "stats", ...(params ? [params] : [])] as const,
-    activities: (leadId: number) => [...base, "leads", "activities", leadId] as const,
-    timeline: (leadId: number) => [...base, "leads", "timeline", leadId] as const,
-    slaAlerts: () => [...base, "leads", "slaAlerts"] as const,
-    analyticsSummary: (params?: Record<string, unknown>) => [...base, "leads", "analyticsSummary", ...(params ? [params] : [])] as const,
-    dashboardMetrics: () => [...base, "leads", "dashboardMetrics"] as const,
-    unverified: () => [...base, "leads", "unverified"] as const,
-    duplicates: () => [...base, "leads", "duplicates"] as const,
-  },
 
-  deals: {
-    all: [...base, "deals"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "deals", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "deals", "detail", id] as const,
-    forecast: () => [...base, "deals", "forecast"] as const,
-  },
 
-  contacts: {
-    all: [...base, "contacts"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "contacts", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "contacts", "detail", id] as const,
-  },
 
-  clients: {
-    all: [...base, "clients"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "clients", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "clients", "detail", id] as const,
-    activities: (id: number) => [...base, "clients", "activities", id] as const,
-    crmStats: () => [...base, "clients", "crmStats"] as const,
-  },
 
-  targets: {
-    all: [...base, "targets"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "targets", "list", ...(params ? [params] : [])] as const,
-    myTargets: () => [...base, "targets", "myTargets"] as const,
-    leaderboard: (metricType?: string) => [...base, "targets", "leaderboard", metricType] as const,
-    history: (targetId: number) => [...base, "targets", "history", targetId] as const,
-  },
 
   projects: {
     all: [...base, "projects"] as const,
@@ -225,84 +182,18 @@ export const queryKeys = {
     peopleSlugs: () => [...base, "crm", "peopleSlugs"] as const,
   },
 
-  crmSettings: {
-    all: [...base, "crmSettings"] as const,
-    assignmentRules: () => [...base, "crmSettings", "assignmentRules"] as const,
-    emailTemplates: (params?: Record<string, unknown>) => [...base, "crmSettings", "emailTemplates", ...(params ? [params] : [])] as const,
-    scoringRules: () => [...base, "crmSettings", "scoringRules"] as const,
-    slaPolicies: () => [...base, "crmSettings", "slaPolicies"] as const,
-    slaReport: () => [...base, "crmSettings", "slaReport"] as const,
-    slaBreachedLeads: (params?: Record<string, unknown>) => [...base, "crmSettings", "slaBreachedLeads", ...(params ? [params] : [])] as const,
-  },
 
-  crmOrganizations: {
-    all: [...base, "crmOrganizations"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "crmOrganizations", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "crmOrganizations", "detail", id] as const,
-    hierarchy: (id: number) => [...base, "crmOrganizations", "hierarchy", id] as const,
-    rollup: (id: number) => [...base, "crmOrganizations", "rollup", id] as const,
-    timeline: (id: number) => [...base, "crmOrganizations", "timeline", id] as const,
-    relatedLeads: (id: number) => [...base, "crmOrganizations", "relatedLeads", id] as const,
-  },
 
-  clientStats: {
-    all: [...base, "clientStats"] as const,
-    stats: () => [...base, "clientStats", "stats"] as const,
-  },
 
-  dealActivities: {
-    all: [...base, "dealActivities"] as const,
-    list: (dealId: number, params?: Record<string, unknown>) => [...base, "dealActivities", "list", dealId, params] as const,
-  },
 
-  salesTeamCapacity: {
-    all: [...base, "salesTeamCapacity"] as const,
-    list: () => [...base, "salesTeamCapacity", "list"] as const,
-  },
 
-  salesQuotas: {
-    all: [...base, "salesQuotas"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "salesQuotas", "list", ...(params ? [params] : [])] as const,
-  },
 
-  salesLeaderboard: {
-    all: [...base, "salesLeaderboard"] as const,
-    list: () => [...base, "salesLeaderboard", "list"] as const,
-  },
 
-  marketingCampaigns: {
-    all: [...base, "marketingCampaigns"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "marketingCampaigns", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "marketingCampaigns", "detail", id] as const,
-  },
 
-  abTests: {
-    all: [...base, "abTests"] as const,
-    list: () => [...base, "abTests", "list"] as const,
-    detail: (id: number) => [...base, "abTests", "detail", id] as const,
-  },
 
-  dmLeads: {
-    all: [...base, "dmLeads"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "dmLeads", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "dmLeads", "detail", id] as const,
-  },
 
-  dmCampaigns: {
-    all: [...base, "dmCampaigns"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "dmCampaigns", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "dmCampaigns", "detail", id] as const,
-  },
 
-  socialMedia: {
-    all: [...base, "socialMedia"] as const,
-    latest: () => [...base, "socialMedia", "latest"] as const,
-  },
 
-  socialMetrics: {
-    all: [...base, "socialMetrics"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "socialMetrics", "list", ...(params ? [params] : [])] as const,
-  },
 
   auditLog: {
     all: [...base, "auditLog"] as const,
@@ -321,35 +212,10 @@ export const queryKeys = {
     results: (query: string) => [...base, "globalSearch", query] as const,
   },
 
-  landingPages: {
-    all: [...base, "landingPages"] as const,
-    list: () => [...base, "landingPages", "list"] as const,
-    detail: (id: number) => [...base, "landingPages", "detail", id] as const,
-  },
 
-  crmPages: {
-    all: [...base, "crmPages"] as const,
-    list: () => [...base, "crmPages", "list"] as const,
-    detail: (id: number) => [...base, "crmPages", "detail", id] as const,
-    analytics: (id: number, days?: number) => [...base, "crmPages", "analytics", id, days] as const,
-  },
 
-  webLeadForms: {
-    all: [...base, "webLeadForms"] as const,
-    list: () => [...base, "webLeadForms", "list"] as const,
-    detail: (id: number) => [...base, "webLeadForms", "detail", id] as const,
-  },
 
-  contentCalendar: {
-    all: [...base, "contentCalendar"] as const,
-    list: (month?: string) => [...base, "contentCalendar", "list", month] as const,
-  },
 
-  quotes: {
-    all: [...base, "quotes"] as const,
-    list: (params?: Record<string, unknown>) => [...base, "quotes", "list", ...(params ? [params] : [])] as const,
-    detail: (id: number) => [...base, "quotes", "detail", id] as const,
-  },
 
   // KB-0066: the Knowledge Base. Every key hangs off "knowledge", so one
   // invalidate clears the module; list keys carry their params so a filter

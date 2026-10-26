@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
 
     // R3-ADM-02 / R3-ADM-07: sane effective date, one open termination per
     // person, nobody already terminated.
-    const dateError = checkTerminationDate(body.effectiveDate, session.user.role);
+    const dateError = await checkTerminationDate(body.effectiveDate, session.user.role, body.userId);
     if (dateError) return err(dateError, 400);
     const conflict = await terminationConflict(session.orgId, body.userId);
     if (conflict) return err(conflict, 409);

@@ -41,7 +41,13 @@ export type KbAccessRoute = (typeof KB_ACCESS_ROUTES)[number];
 export interface KbPageScope {
   orgId: string;
   pageId: string;
+  /** The action that was asked for and allowed. */
   action: KbPageAction;
+  /**
+   * The strongest access the actor holds. Callers that show or branch on
+   * "what may this person do" read this, not `action` (FR1-001).
+   */
+  held: KbPageAction;
   via: KbAccessRoute;
 }
 
@@ -49,6 +55,8 @@ export interface KbSpaceScope {
   orgId: string;
   spaceId: string;
   action: KbPageAction;
+  /** The strongest access the actor holds in the space. */
+  held: KbPageAction;
   via: KbAccessRoute;
 }
 

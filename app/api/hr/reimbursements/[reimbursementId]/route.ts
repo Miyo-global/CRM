@@ -6,6 +6,9 @@ import { expenses, reimbursements } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
+import { createNotification } from "@/server/actions/create-notification";
+import { reimbursementDecisionNotice } from "@/lib/notifications/reimbursement-notice";
 
 const updateSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED", "PAID"]),
@@ -45,6 +48,17 @@ export async function PATCH(
       await db.update(expenses).set({ status: "PAID", paidAt: new Date(), updatedAt: new Date() })
         .where(and(eq(expenses.id, existing.expenseId), eq(expenses.orgId, session.orgId), eq(expenses.status, "APPROVED")));
     }
+
+    // The employee only learnt the outcome by opening the page (FR1-006).
+    const notice = reimbursementDecisionNotice({
+      status: body.status,
+      amount: existing.amount,
+      category: existing.category,
+      rejectionReason: body.rejectionReason,
+    });
+    afterResponse("hr/reimbursements/decision", () =>
+      createNotification({ orgId: session.orgId, userId: existing.userId, ...notice }),
+    );
 
     return ok({ success: true });
   });

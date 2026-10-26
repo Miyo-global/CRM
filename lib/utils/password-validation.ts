@@ -52,6 +52,11 @@ export function validatePasswordStrength(password: string): {
   if (!/\S/.test(password)) {
     missing.push("Password must contain a non-space character");
   }
+  // A leading or trailing space is invisible in the box and easy to lose
+  // when the password is pasted elsewhere; it was accepted as "Strong" (FR1-018).
+  if (/\S/.test(password) && password !== password.trim()) {
+    missing.push("Password can't start or end with a space");
+  }
   if (!checks.uppercase) {
     missing.push("Password must contain an uppercase letter");
   }

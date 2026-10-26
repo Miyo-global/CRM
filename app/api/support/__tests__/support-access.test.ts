@@ -18,7 +18,7 @@ vi.mock("@/lib/db", () => ({
     },
   },
 }));
-vi.mock("@/server/queries/crm", () => ({ getSupportDashboard: vi.fn(async () => ({ ok: true })) }));
+vi.mock("@/server/queries/support-dashboard", () => ({ getSupportDashboard: vi.fn(async () => ({ ok: true })) }));
 vi.mock("@/server/queries/support", () => ({
   getSupportTickets: (...a: unknown[]) => getTickets(...a),
   getSupportTicketStats: (...a: unknown[]) => getStats(...a),

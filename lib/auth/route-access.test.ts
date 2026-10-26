@@ -41,7 +41,7 @@ describe("canAccessRoute", () => {
   });
 
   it("lets every role reach notifications", () => {
-    for (const role of ["SALES", "ENGINEERING"]) {
+    for (const role of ["EMPLOYEE", "ENGINEERING"]) {
       expect(canAccessRoute("/notifications", role)).toBe(true);
     }
   });
@@ -106,13 +106,13 @@ describe("previously unmapped pages (QA-0065)", () => {
       "/timesheets/team",
       "/hr/leaves/policies",
     ]) {
-      expect(canAccessRoute(path, "SALES")).toBe(false);
+      expect(canAccessRoute(path, "EMPLOYEE")).toBe(false);
     }
   });
 
   it("still lets everyone open their own leave and timesheets", () => {
-    expect(canAccessRoute("/hr/leaves", "SALES")).toBe(true);
-    expect(canAccessRoute("/timesheets", "SALES")).toBe(true);
+    expect(canAccessRoute("/hr/leaves", "EMPLOYEE")).toBe(true);
+    expect(canAccessRoute("/timesheets", "EMPLOYEE")).toBe(true);
   });
 
   it("lets HR open the policy editor and the team views", () => {
@@ -197,5 +197,17 @@ describe("isDisabledModuleRoute (ATS off)", () => {
     for (const path of ["/atsx", "/api/atsx", "/hr", "/api/hr/employees"]) {
       expect(isDisabledModuleRoute(path, false)).toBe(false);
     }
+  });
+});
+
+describe("Customer Support module (owner decision)", () => {
+  it("is for support staff, not employees", () => {
+    for (const path of ["/support", "/support/inbox", "/support/42"]) {
+      expect(canAccessRoute(path, "EMPLOYEE")).toBe(false);
+      expect(canAccessRoute(path, "HR")).toBe(true);
+      expect(canAccessRoute(path, "ADMIN")).toBe(true);
+      expect(canAccessRoute(path, "CUSTOMER_SUPPORT")).toBe(true);
+    }
+    expect(canAccessRoute("/hr/helpdesk", "EMPLOYEE")).toBe(true);
   });
 });

@@ -75,7 +75,7 @@ export async function PATCH(
     const { existing } = loaded;
 
     const body = await parseBody(req, editSchema);
-    const dateError = checkTerminationDate(body.effectiveDate, session.user.role);
+    const dateError = await checkTerminationDate(body.effectiveDate, session.user.role, existing.userId);
     if (dateError) return err(dateError, 400);
 
     const configuredReasons = await ensureTerminationReasonsForOrg(session.orgId, session.user.id);

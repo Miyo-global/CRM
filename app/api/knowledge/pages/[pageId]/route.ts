@@ -73,7 +73,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ pageId:
       isPageSpaceArchived(session.orgId, page.spaceId),
     ]);
 
-    const held = decision.scope.action;
+    const held = decision.scope.held;
     const may = (action: KbPageAction) =>
       accessSatisfies(held, action) && !(spaceArchived && action !== "view") && !(page.isLocked && action !== "view" && !accessSatisfies(held, "manage"));
 
@@ -115,7 +115,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ pageI
 
     // A locked page is still editable by someone who can manage it; that is
     // what unlocking is for.
-    if (page.isLocked && !accessSatisfies(decision.scope.action, "manage")) {
+    if (page.isLocked && !accessSatisfies(decision.scope.held, "manage")) {
       return err("This page is locked.", 403);
     }
     if (await isPageSpaceArchived(session.orgId, page.spaceId)) {

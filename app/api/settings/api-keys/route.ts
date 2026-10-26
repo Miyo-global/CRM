@@ -8,9 +8,6 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 
 const VALID_SCOPES = [
-  "leads:read", "leads:write",
-  "deals:read", "deals:write",
-  "contacts:read", "contacts:write",
   "hr:read", "hr:write",
   "*",
 ] as const;

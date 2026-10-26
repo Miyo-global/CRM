@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -26,7 +25,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, ChevronDown, ChevronUp } from "lucide-react";
-import type { CustomFieldDefinition } from "@/lib/api/hooks/crm";
 import {
   HR_EMAIL_MERGE_FIELD_CATALOG,
   type HrEmailMergeField,
@@ -186,13 +184,7 @@ function VariableHelpPanel({
   );
 }
 
-function InsertFieldPopover({
-  customFields,
-  onInsert,
-}: {
-  customFields: CustomFieldDefinition[];
-  onInsert: (token: string) => void;
-}) {
+function InsertFieldPopover({ onInsert }: { onInsert: (token: string) => void }) {
   const [open, setOpen] = useState(false);
 
   const pick = useCallback(
@@ -228,20 +220,6 @@ function InsertFieldPopover({
             <CommandEmpty>No fields found.</CommandEmpty>
             <CommandGroup heading="Employee profile">{profileFields.map(renderMergeItem)}</CommandGroup>
             <CommandGroup heading="Date">{dateFields.map(renderMergeItem)}</CommandGroup>
-            {customFields.length > 0 && (
-              <CommandGroup heading="Custom fields">
-                {customFields.map((f) => (
-                  <CommandItem
-                    key={f.id}
-                    value={`${f.label} ${f.name} custom`}
-                    onSelect={() => pick(f.name)}
-                  >
-                    <span className="flex-1 truncate">{f.label}</span>
-                    <code className="font-mono text-2xs text-muted-foreground">{`{{${f.name}}}`}</code>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -253,78 +231,21 @@ export function TemplateFieldInput({
   fieldKey,
   value,
   onChange,
-  customField,
 }: {
   fieldKey: string;
   value: string;
   onChange: (v: string) => void;
-  customField?: CustomFieldDefinition;
 }) {
   const id = `tv-${fieldKey}`;
-  const label = customField?.label ?? fieldKey;
-
-  const labelRow = (
-    <label className="text-2xs font-medium text-muted-foreground flex items-center gap-1.5" htmlFor={id}>
-      <span className="truncate">{label}</span>
-      <code className="font-mono text-2xs">{`{{${fieldKey}}}`}</code>
-      {customField && (
-        <Badge variant="outline" className="text-3xs px-1 py-0">
-          Custom
-        </Badge>
-      )}
-    </label>
-  );
-
-  if (customField?.fieldType === "select" && customField.options?.length) {
-    return (
-      <div className="space-y-0.5">
-        {labelRow}
-        <Select value={value || undefined} onValueChange={onChange}>
-          <SelectTrigger id={id} className="h-8 text-xs">
-            <SelectValue placeholder="Select…" />
-          </SelectTrigger>
-          <SelectContent>
-            {customField.options.map((o) => (
-              <SelectItem key={o.value} value={o.value} className="text-xs">
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  }
-
-  if (customField?.fieldType === "boolean") {
-    return (
-      <div className="space-y-0.5">
-        {labelRow}
-        <Select value={value || undefined} onValueChange={onChange}>
-          <SelectTrigger id={id} className="h-8 text-xs">
-            <SelectValue placeholder="Select…" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Yes" className="text-xs">
-              Yes
-            </SelectItem>
-            <SelectItem value="No" className="text-xs">
-              No
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  }
-
-  const inputType =
-    customField?.fieldType === "date" ? "date" : customField?.fieldType === "number" ? "number" : "text";
-
   return (
     <div className="space-y-0.5">
-      {labelRow}
+      <label className="text-2xs font-medium text-muted-foreground flex items-center gap-1.5" htmlFor={id}>
+        <span className="truncate">{fieldKey}</span>
+        <code className="font-mono text-2xs">{`{{${fieldKey}}}`}</code>
+      </label>
       <Input
         id={id}
-        type={inputType}
+        type="text"
         className="h-8 text-xs"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -344,7 +265,6 @@ export function TemplateFormFields({
   category,
   setCategory,
   errors,
-  customFields,
 }: {
   name: string;
   setName: (v: string) => void;
@@ -355,7 +275,6 @@ export function TemplateFormFields({
   category: string;
   setCategory: (v: string) => void;
   errors: TemplateFieldErrors;
-  customFields: CustomFieldDefinition[];
   }) {
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -439,7 +358,7 @@ export function TemplateFormFields({
         <p className="text-2xs text-muted-foreground">
           Insert a merge or custom field into the last-edited field (Subject or Body).
         </p>
-        <InsertFieldPopover customFields={customFields} onInsert={insertToken} />
+        <InsertFieldPopover onInsert={insertToken} />
       </div>
 
       <VariableHelpPanel category={category} onInsert={insertToken} />

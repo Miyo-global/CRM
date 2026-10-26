@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from "react";
+import { clockOutErrorToastOptions, WORK_LOGS_PATH } from "@/lib/attendance/clock-out-error";
 import { formatISTTime, getTodayString } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,9 +49,7 @@ export const TimerCard = memo(function TimerCard() {
     // Clock-out is refused until today's work log is saved; point straight at
     // it instead of leaving a bare error (V5-0010).
     onError: (err) =>
-      toast.error(err.message, /work log/i.test(err.message)
-        ? { action: { label: "Open work log", onClick: () => router.push("/hr/work-logs") } }
-        : undefined),
+      toast.error(err.message, clockOutErrorToastOptions(err.message, () => router.push(WORK_LOGS_PATH))),
   });
 
   const [localBreakOverride, setLocalBreakOverride] = useState<boolean | null>(null);

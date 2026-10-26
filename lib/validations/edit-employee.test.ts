@@ -69,7 +69,7 @@ describe("editEmployeeFormSchema", () => {
       editEmployeeFormSchema.safeParse({
         ...validEdit,
         role: "HR",
-        departmentName: "Sales",
+        departmentName: "Engineering",
       }).success,
     ).toBe(false);
   });
@@ -78,15 +78,15 @@ describe("editEmployeeFormSchema", () => {
     expect(
       editEmployeeFormSchema.safeParse({
         ...validEdit,
-        role: "SALES",
-        departmentName: "Sales",
+        role: "DESIGN",
+        departmentName: "Design",
       }).success,
     ).toBe(true);
     expect(
       editEmployeeFormSchema.safeParse({
         ...validEdit,
         role: "ADMIN",
-        departmentName: "Sales",
+        departmentName: "Design",
       }).success,
     ).toBe(true);
   });
@@ -94,15 +94,15 @@ describe("editEmployeeFormSchema", () => {
 
 describe("isRoleAllowedForDepartment", () => {
   it("allows generic and custom roles everywhere", () => {
-    expect(isRoleAllowedForDepartment("CEO", "Sales")).toBe(true);
+    expect(isRoleAllowedForDepartment("CEO", "Design")).toBe(true);
     expect(isRoleAllowedForDepartment("ADMIN", "Engineering")).toBe(true);
     // Unknown / custom role slug → unconstrained.
     expect(isRoleAllowedForDepartment("FINANCE", "Engineering")).toBe(true);
   });
 
   it("blocks built-in role-specific mismatches but allows fits", () => {
-    expect(isRoleAllowedForDepartment("HR", "Sales")).toBe(false);
-    expect(isRoleAllowedForDepartment("SALES", "Engineering")).toBe(false);
+    expect(isRoleAllowedForDepartment("HR", "Engineering")).toBe(false);
+    expect(isRoleAllowedForDepartment("CUSTOMER_SUPPORT", "Engineering")).toBe(false);
     expect(isRoleAllowedForDepartment("ENGINEERING", "Engineering")).toBe(true);
     expect(isRoleAllowedForDepartment("HR", "Human Resources")).toBe(true);
     expect(isRoleAllowedForDepartment("CUSTOMER_SUPPORT", "Customer Support")).toBe(true);
@@ -110,7 +110,7 @@ describe("isRoleAllowedForDepartment", () => {
 
   it("is permissive for unknown departments and empty inputs", () => {
     expect(isRoleAllowedForDepartment("HR", "Legal")).toBe(true);
-    expect(isRoleAllowedForDepartment("SALES", undefined)).toBe(true);
-    expect(isRoleAllowedForDepartment(undefined, "Sales")).toBe(true);
+    expect(isRoleAllowedForDepartment("DESIGN", undefined)).toBe(true);
+    expect(isRoleAllowedForDepartment(undefined, "Design")).toBe(true);
   });
 });

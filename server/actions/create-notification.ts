@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/email";
 import { buildNotificationEmail } from "@/lib/notifications/email";
 import { logger } from "@/lib/logger";
 import { HR_NOTIFICATION_EMAIL } from "@/lib/constants/hr-leave-routing";
+import { roleRecipients } from "@/lib/notifications/role-recipients";
 
 async function emailMemberIds(
   userIds: string[],
@@ -111,7 +112,8 @@ export async function notifyByRoles(
     message: string;
     link?: string;
     metadata?: Record<string, unknown>;
-    excludeUserId?: string;
+    /** One user or several: the actor, and the person the notice is about (FR1-027). */
+    excludeUserId?: string | string[];
     email?: boolean;
   }
 ) {
@@ -120,11 +122,7 @@ export async function notifyByRoles(
     .from(organizationMembers)
     .where(eq(organizationMembers.orgId, orgId));
 
-  const targetMembers = members.filter(
-    (m) =>
-      roles.includes(m.role) &&
-      (!opts.excludeUserId || m.userId !== opts.excludeUserId)
-  );
+  const targetMembers = roleRecipients(members, roles, opts.excludeUserId);
 
   const ccHrInbox = roles.includes("CEO") || roles.includes("HR");
 

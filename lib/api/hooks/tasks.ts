@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 
 
-export type TaskEntityType = "LEAD" | "DEAL" | "CONTACT" | "PROJECT";
+export type TaskEntityType = "PROJECT";
 export type TaskType = "CALL" | "EMAIL" | "MEETING" | "CUSTOM";
 export type TaskStatus = "pending" | "completed" | "cancelled";
 export type TaskBucket = "OVERDUE" | "TODAY" | "THIS_WEEK" | "UPCOMING" | "NO_DATE";
@@ -281,24 +281,5 @@ export function useApplyTaskSequence() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.tasks.all });
     },
-  });
-}
-
-
-export interface TaskPriorityItem {
-  taskId: number;
-  rank: number;
-  urgencyScore: number;
-  reasoning: string;
-}
-
-export interface TaskPriorityResult {
-  items: TaskPriorityItem[];
-  summary: string;
-}
-
-export function useAIPrioritizeTasks() {
-  return useMutation({
-    mutationFn: () => apiClient.get<TaskPriorityResult>("/ai/prioritize-tasks"),
   });
 }

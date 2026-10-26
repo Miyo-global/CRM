@@ -8,12 +8,16 @@ import {
   useHrCheckOut,
 } from "../../lib/hooks/trpc-hooks";
 import { toast } from "sonner";
+import { elapsedHms } from "@/lib/attendance/elapsed";
+import { clockOutErrorToastOptions, WORK_LOGS_PATH } from "@/lib/attendance/clock-out-error";
+import { useRouter } from "next/navigation";
 import { Clock, Timer } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toneDot } from "../../lib/design/tones";
 import { formatIST } from "@/lib/date-utils";
 
 export function ClockInWidget() {
+  const router = useRouter();
   const [now, setNow] = useState(new Date());
   const [localCooldown, setLocalCooldown] = useState(0);
 
@@ -35,7 +39,7 @@ export function ClockInWidget() {
       setLocalCooldown(120);
     },
     onError: (err) => {
-      toast.error(err.message);
+      toast.error(err.message, clockOutErrorToastOptions(err.message, () => router.push(WORK_LOGS_PATH)));
     },
   });
   useEffect(() => {
@@ -82,12 +86,7 @@ export function ClockInWidget() {
 
   const sessionTime = useMemo(() => {
     if (!statusData?.todayLog?.checkIn || statusData?.todayLog?.checkOut) return null;
-    const checkInTime = new Date(statusData.todayLog.checkIn);
-    const diffMs = now.getTime() - checkInTime.getTime();
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-    return { hours, minutes, seconds };
+    return elapsedHms(statusData.todayLog.checkIn, now);
   }, [now, statusData?.todayLog]);
 
   const dailyStats = statusData?.dailyStats;
@@ -145,9 +144,13 @@ export function ClockInWidget() {
         {hasActivePunch ? (
           "WEB CLOCK-OUT"
         ) : isInCooldown ? (
-          <span className="flex items-center gap-1.5 tabular-nums">
+          // A bare "2:00" read as a mystery number (FR1-030).
+          <span
+            className="flex items-center gap-1.5 tabular-nums"
+            title="You can clock in again when this reaches 0:00"
+          >
             <Timer className="size-3.5" aria-hidden="true" />
-            {formatCooldown(localCooldown)}
+            Clock in again in {formatCooldown(localCooldown)}
           </span>
         ) : (
           "WEB CLOCK-IN"

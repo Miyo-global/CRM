@@ -43,3 +43,13 @@ describe("plain-text part", () => {
     expect(htmlToText(html)).toBe("One\n\nTwo");
   });
 });
+
+describe("preheader filler (FR1-025)", () => {
+  const html = `<body><div style="display:none;max-height:0;overflow:hidden;">New hire joins Monday&#8203;&nbsp;&#8203;&nbsp;</div><p>Hello &#8203;there</p></body>`;
+
+  it("drops the hidden preheader and zero-width entities", () => {
+    const text = htmlToText(html);
+    expect(text).toBe("Hello there");
+    expect(text).not.toContain("&#8203;");
+  });
+});

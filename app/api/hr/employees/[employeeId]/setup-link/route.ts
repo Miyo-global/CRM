@@ -31,7 +31,7 @@ export async function POST(
     const user = await db.query.users.findFirst({
       where: eq(users.id, targetUserId),
       columns: {
-        email: true, name: true, firstName: true, lastName: true, designation: true,
+        email: true, name: true, firstName: true, lastName: true, designation: true, employeeId: true,
         joiningDate: true, reportingTo: true, isActive: true, hasDashboardAccess: true,
         isPasswordChangeRequired: true,
       },
@@ -50,6 +50,8 @@ export async function POST(
     const { expiresAt } = await sendSetupLink({
       email: user.email,
       name: user.name ?? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+      firstName: user.firstName,
+      employeeId: user.employeeId,
       designation: user.designation,
       joiningDate: user.joiningDate,
       reportingTo: user.reportingTo,

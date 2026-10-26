@@ -11,6 +11,7 @@ import { kbDenied, kbNotFound } from "@/lib/knowledge/errors";
 import {
   availableRecordLinkTargets,
   checkRecordTarget,
+  isRecordLinkTarget,
   recordHref,
   RECORD_LINK_TARGET_TYPES,
   type RecordLinkTargetType,
@@ -55,10 +56,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ pageId:
       .limit(100);
 
     return ok({
-      items: rows.map((row) => ({
-        ...row,
-        href: recordHref(row.targetType as RecordLinkTargetType, row.targetId ?? ""),
-      })),
+      items: rows
+        .filter((row) => isRecordLinkTarget(row.targetType))
+        .map((row) => ({
+          ...row,
+          href: recordHref(row.targetType as RecordLinkTargetType, row.targetId ?? ""),
+        })),
       available: availableRecordLinkTargets(),
     });
   }, req);

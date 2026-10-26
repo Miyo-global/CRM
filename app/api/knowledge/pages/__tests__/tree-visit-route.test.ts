@@ -33,7 +33,7 @@ beforeEach(() => {
   access.mockReset();
   access.mockResolvedValue({
     outcome: "allowed",
-    scope: { orgId: "org-a", pageId: "5", action: "view", via: "organization" },
+    scope: { orgId: "org-a", pageId: "5", action: "view", held: "view", via: "organization" },
   });
 });
 

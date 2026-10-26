@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 import {
   useCreateKbPage,
@@ -87,7 +88,7 @@ export function PageTree({
       { parentPageId, spaceId, projectId },
       {
         onSuccess: (page) => router.push(pageHref(page.id)),
-        onError: () => toast.error("Couldn't create the page."),
+        onError: (error) => toast.error("Couldn't create the page.", { description: getErrorMessage(error) }),
       },
     );
   }

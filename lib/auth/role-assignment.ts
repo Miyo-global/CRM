@@ -80,13 +80,13 @@ export async function checkRoleAssignment(
 
   const actorManagesRoles = roleHasPermission(input.actorRole, "roles:manage");
   if (!actorManagesRoles && currentRole && ELEVATED_ROLES.includes(currentRole)) {
-    return { message: "Only the Super Admin can grant or remove the Admin and HR roles.", status: 403 };
+    return { message: "Only the Super Admin can change an Admin or HR account's role.", status: 403 };
   }
   // R3-HR-02: the same rule the role pickers filter with.
   if (!canGrantRole(input.actorRole, newRole)) {
     return {
       message: ELEVATED_ROLES.includes(newRole)
-        ? "Only the Super Admin can grant or remove the Admin and HR roles."
+        ? "Only the Super Admin or an Admin can grant the Admin and HR roles."
         : "You can only assign the Employee role.",
       status: 403,
     };

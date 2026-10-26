@@ -31,6 +31,8 @@ vi.mock("@/lib/db", () => ({
     query: {
       terminations: { findFirst: (...a: unknown[]) => findTermination(...a) },
       organizationMembers: { findFirst: (...a: unknown[]) => findMember(...a) },
+      // checkTerminationDate reads the joining date (FR1-015).
+      users: { findFirst: async () => ({ joiningDate: "2024-01-01" }) },
     },
     update: () => {
       update();

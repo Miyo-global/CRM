@@ -215,3 +215,17 @@ describe("payslip PT snapshot", () => {
     expect(nextRun.ptAmount).toBe("250");
   });
 });
+
+describe("monthlyBreakdown (wizard Confirm step, FR1-004)", () => {
+  it("splits the CTC and nets out the employee's PT", async () => {
+    const { monthlyBreakdown } = await import("../rules");
+    expect(monthlyBreakdown(50000, 200.5)).toEqual({
+      basicSalary: 25000,
+      hra: 12500,
+      specialAllowance: 12500,
+      professionalTax: 200.5,
+      net: 49799.5,
+    });
+    expect(monthlyBreakdown(10000, null).net).toBe(10000);
+  });
+});

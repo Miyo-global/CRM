@@ -176,11 +176,6 @@ export function formatINRCompact(amount: string | number): string {
   return `${sign}${CURRENCY_SYMBOL}${new Intl.NumberFormat(DEFAULT_LOCALE, { minimumFractionDigits: hasPaisa ? 2 : 0, maximumFractionDigits: 2 }).format(abs)}`;
 }
 
-
-export function formatDealId(id: number): string {
-  return `DEAL-${id.toString().padStart(4, "0")}`;
-}
-
 export function numberToWords(num: number): string {
   const ones = [
     "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",

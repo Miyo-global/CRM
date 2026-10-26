@@ -6,8 +6,7 @@ export const HR_LETTER_DOCUMENT_TYPES = [
   { value: "TERMINATION",      label: "Voluntary Resignation" },
   { value: "TERMINATION_HR",   label: "Termination by Company" },
   { value: "APPOINTMENT",      label: "Appointment Letter" },
-  { value: "NDA_SALES",        label: "NDA – Sales Roles" },
-  { value: "NDA",              label: "NDA – General Roles" },
+  { value: "NDA",              label: "NDA" },
   { value: "EXPERIENCE",       label: "Experience Certificate" },
   { value: "RELIEVING",        label: "Relieving Letter" },
   { value: "INCREMENT",        label: "Increment Letter" },
@@ -17,7 +16,6 @@ export const HR_LETTER_DOCUMENT_TYPES = [
 export type HrLetterDocumentType = (typeof HR_LETTER_DOCUMENT_TYPES)[number]["value"];
 
 export const HR_LETTER_TYPE_TITLES: Record<string, string> = {
-  NDA_SALES: "NON-DISCLOSURE AGREEMENT (NDA) – SALES",
   NDA: "NON-DISCLOSURE AGREEMENT (NDA)",
   OFFER_LETTER:   "OFFER LETTER",
   TERMINATION:    "VOLUNTARY TERMINATION OF EMPLOYMENT",
@@ -121,13 +119,6 @@ export const HR_LETTER_TOKEN_LEGEND: Record<string, readonly string[]> = {
     "{{date}} — Letter date",
     "{{orgName}} — Organisation name",
   ],
-  NDA_SALES: [
-    "{{employeeName}} — Full name of the receiving party",
-    "{{designation}} — Designation / title of the receiving party",
-    "{{date}} — Agreement date",
-    "{{orgName}} — Disclosing party (organisation name)",
-    "{{orgAddress}} — Registered office of the disclosing party",
-  ],
   NDA: [
     "{{employeeName}} — Full name of the receiving party",
     "{{designation}} — Designation / title of the receiving party",
@@ -194,7 +185,6 @@ export const HR_LETTER_EXTRA_FIELDS: Record<string, { key: string; label: string
   WARNING: [
     { key: "incidentDate", label: "Date of Incident", type: "date" },
   ],
-  NDA_SALES:    [],
   NDA:          [],
   OFFER_LETTER: [],
 };
@@ -239,91 +229,6 @@ I request the management to kindly accept my voluntary resignation and relieve m
 I also confirm that I will complete the necessary handover of my responsibilities and return any company property, documents, or confidential information in my possession.
 
 I sincerely thank the management for the opportunity given to work with {{orgName}} and for the cooperation gained during my tenure.`,
-
-  NDA_SALES: `This Non-Disclosure Agreement ("Agreement") is entered into on this {{date}} by and between:
-
-Disclosing Party: {{orgName}}, a company incorporated under the Companies Act, 2013, having its registered office at {{orgAddress}} — hereinafter referred to as the "Disclosing Party".
-
-Receiving Party: {{employeeName}}, who is employed by the Disclosing Party — hereinafter referred to as the "Receiving Party".
-
-1. Purpose
-The purpose of this Agreement is to protect the confidential and proprietary information shared in connection with software development activities, including but not limited to planning, coding, design, documentation, and support services.
-
-2. Definition of Confidential Information
-"Confidential Information" includes, but is not limited to:
-- Technical information (e.g., software code, algorithms, system designs)
-- Project documentation and system architecture
-- Client business models, customer lists, and user data
-- Business plans, pricing structures, legal documents, financials
-
-Such information may be disclosed verbally, in writing, electronically, or visually, and includes any analysis, compilation, studies, or other documents prepared by the Receiving Party.
-
-3. Legal Compliance (India)
-This Agreement is governed by the provisions of the Indian Contract Act, 1872 and is legally binding under Indian law. Any digital transmission, receipt, or storage of Confidential Information shall be maintained under the Information Technology Act, 2000, including adherence to reasonable security practices and procedures (as defined in Section 43A of the IT Act).
-
-Any breach involving personal or sensitive information will be subject to penalties under the IT (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011.
-
-4. Obligations of the Receiving Party
-The Receiving Party shall:
-- Keep all Confidential Information strictly confidential and not disclose it to any third party without prior written consent
-- Use the Confidential Information solely for the intended business purpose
-- Limit access to the Confidential Information solely to its employees or consultants on a strict need-to-know basis, ensuring they are bound by similar confidentiality obligations
-- Maintain physical, electronic, and managerial procedures to safeguard the Confidential Information
-
-5. Exceptions
-Confidential Information shall not include information that:
-- Is or enters the public domain without breach of this Agreement
-- Was independently developed without use of the Confidential Information
-- Is required to be disclosed under applicable law or a court or government directive (with prior written notice to the Disclosing Party)
-
-6. Term & Survival
-This Agreement shall remain in force for two (2) years from the date of execution. The confidentiality obligations shall survive for a period of three (3) years after the termination or expiration of this Agreement.
-
-7. Return on Destruction
-Upon termination of this Agreement, or upon written request from the Disclosing Party, the Receiving Party shall return or securely destroy all Confidential Information and provide written certification of such return or destruction.
-
-8. No Intellectual Property Transfer
-This Agreement does not transfer any rights, title, or interest in the Confidential Information or any intellectual property of the Disclosing Party.
-
-9. Remedies and Indemnity
-The Receiving Party acknowledges that breach of this Agreement may cause irreparable harm to the Disclosing Party shall be entitled to:
-- Seek injunctive relief from a court of competent jurisdiction in India
-- Claim damages and legal costs
-
-The Receiving Party agrees to indemnify and hold the Disclosing Party harmless from any losses arising out of breach, including third-party claims.
-
-10. Governing Law and Jurisdiction
-This Agreement shall be governed by and construed in accordance with the laws of India. Any dispute arising out of or in connection with this Agreement shall be subject to the exclusive jurisdiction of the courts of India.
-
-11. Miscellaneous
-This Agreement constitutes the entire understanding between the Parties. Any amendment must be in writing and signed by both Parties. If any clause is held invalid, the remainder shall remain enforceable.
-
-Performance-Based Compensation Structure:
-
-Compensation & Performance Terms:
-- The Employee shall receive full agreed salary for the first two (2) months from the date of joining.
-
-From the third (3rd) month onwards:
-- If the assigned sales targets are not achieved in the third month, a fixed support payment of Rs. 7,500 shall be provided
-- The same support payment of Rs. 7,500 shall be applicable in the fourth month if targets are not met
-
-From the fifth (5th) month onwards:
-- In the event of continued non-achievement of sales targets, the Employee may be transitioned to a Freelancer / Commission-based engagement at the discretion of the Company.
-
-Sales Incentive:
-- An additional incentive of 2% shall be payable on each successfully completed sales order.
-
-IN WITNESS WHEREOF, the Parties have executed this Agreement as of the date first above written.
-
-Disclosing Party ({{orgName}})          Receiving Party
-
-Name: Vamsi Siva Sairam                 Name: {{employeeName}}
-
-Title: Founder and President            Title: {{designation}}
-
-Signature: _______________________      Signature: ___________________
-
-Date: {{date}}                          Date: _______________________`,
 
   NDA: `This Non-Disclosure Agreement ("Agreement") is entered into on this {{date}} by and between:
 

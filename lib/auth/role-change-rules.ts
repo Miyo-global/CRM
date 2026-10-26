@@ -1,10 +1,10 @@
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, isLegacyJobTitleRole } from "@/lib/constants/roles";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import { isAssignableSystemRole, isSystemRole } from "@/lib/rbac/roles";
 
 /**
- * Admin-level roles — only the Super Admin may grant or take them away, so an
- * Admin invited a minute ago cannot mint more Admins (QA-AUTH-01).
+ * Admin-level roles. Admins may grant them (FR1-007); only the Super Admin may
+ * take them away or change an Admin-level account (QA-AUTH-01).
  */
 export const ELEVATED_ROLES: readonly string[] = [ROLES.ADMIN, ROLES.HR];
 
@@ -21,7 +21,9 @@ export function roleHasPermission(role: Role, permission: string): boolean {
 
 /**
  * The one rule for which role an actor may hand out (R3-HR-02). Super Admin:
- * Admin, HR, Employee or a custom role; Admin and HR: Employee only. Nobody
+ * Admin, HR, Employee or a custom role; Admin: Admin, HR or Employee, so Admins
+ * can onboard HR and other leads (FR1-007, owner decision); HR: Employee only.
+ * Taking an Admin-level role away stays with the Super Admin (canManage). Nobody
  * grants Super Admin, and the retired job-title roles are never offered.
  * The invite form, the members table, the Add-employee wizard and every API
  * route that writes a role filter or check with this.
@@ -29,10 +31,12 @@ export function roleHasPermission(role: Role, permission: string): boolean {
 export function canGrantRole(actorRole: Role, targetRole: Role): boolean {
   const role = targetRole?.trim().toUpperCase();
   if (!role || role === ROLES.CEO) return false;
+  if (isLegacyJobTitleRole(role)) return false;
   if (isSystemRole(role) && !isAssignableSystemRole(role)) return false;
   if (roleHasPermission(actorRole, "roles:manage")) return true;
-  if (actorRole !== ROLES.ADMIN && actorRole !== ROLES.HR) return false;
-  return role === ROLES.EMPLOYEE;
+  if (actorRole === ROLES.ADMIN) return role === ROLES.EMPLOYEE || ELEVATED_ROLES.includes(role);
+  if (actorRole === ROLES.HR) return role === ROLES.EMPLOYEE;
+  return false;
 }
 
 export interface RoleChangeTarget {

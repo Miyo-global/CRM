@@ -400,6 +400,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
 
   const setupLinkExpiresAt = typeof e.setupLinkExpiresAt === "string" ? new Date(e.setupLinkExpiresAt) : null;
   const setupLinkExpired = !setupLinkExpiresAt || setupLinkExpiresAt.getTime() < Date.now();
+  const isTerminated = employee.isActive === false || !!e.terminatedAt;
   const resendSetupLink = useMutation({
     mutationFn: () => apiClient.post(`/hr/employees/${employee.id}/setup-link`, {}),
     onSuccess: () => {
@@ -611,7 +612,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                       }
                     />
                   )}
-                  {canManage && (
+                  {/* A terminated person will never set a password; "Set-up link
+                      expired" on their record read as a task (FR1-017). */}
+                  {canManage && !isTerminated && (
                     <DetailRow
                       label="Account set-up"
                       value={

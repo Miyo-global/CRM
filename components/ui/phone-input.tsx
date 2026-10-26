@@ -29,6 +29,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+/** Anything a phone number can't contain (letters, symbols other than + - ( ) and spaces). */
+export const NON_PHONE_CHARS = /[^\d+\-()\s]/;
+
 type PhoneInputProps = Omit<
   React.ComponentProps<"input">,
   "onChange" | "value" | "ref"
@@ -52,7 +55,18 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
       },
       ref,
     ) => {
+      // The library drops letters without a word, so the box just stayed
+      // empty (FR1-012). Say why when that happens.
+      const [rejected, setRejected] = React.useState(false);
+      const check = (text: string) => setRejected(NON_PHONE_CHARS.test(text));
       return (
+        <div
+          className="contents"
+          onKeyDown={(e) => {
+            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) check(e.key);
+          }}
+          onPaste={(e) => check(e.clipboardData.getData("text"))}
+        >
         <RPNInput.default
           ref={ref}
           className={cn(
@@ -73,6 +87,12 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
           {...props}
         />
+        {rejected && (
+          <p role="status" className="mt-1 text-xs text-destructive">
+            Phone numbers can only contain digits.
+          </p>
+        )}
+        </div>
       );
     },
   );

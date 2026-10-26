@@ -13,7 +13,6 @@ import Link from "next/link";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 interface AdminHealthData {
-  unassignedLeads: number;
   overdueTasks: number;
   pendingExpenses: { count: number; totalAmount: string };
   pendingLeaves: number;
