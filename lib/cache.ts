@@ -84,8 +84,6 @@ export const CACHE_KEYS = {
   ceDashboard: (orgId: string) => `ce:dashboard:${orgId}`,
   supportDashboard: (orgId: string) => `support:dashboard:${orgId}`,
 
-  dealsForecast: (orgId: string) => `deals:forecast:${orgId}`,
-  approvalsList: (orgId: string) => `deals:approvals:${orgId}`,
 
   clientsHealth: (orgId: string) => `clients:health:${orgId}`,
   churnAlerts: (orgId: string) => `clients:churn:${orgId}`,

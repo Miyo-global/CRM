@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 
 
-export type TaskEntityType = "LEAD" | "DEAL" | "CONTACT" | "PROJECT";
+export type TaskEntityType = "PROJECT";
 export type TaskType = "CALL" | "EMAIL" | "MEETING" | "CUSTOM";
 export type TaskStatus = "pending" | "completed" | "cancelled";
 export type TaskBucket = "OVERDUE" | "TODAY" | "THIS_WEEK" | "UPCOMING" | "NO_DATE";

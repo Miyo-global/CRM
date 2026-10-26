@@ -85,37 +85,6 @@ export const reimbursementRequestSchema = z.object({
 
 export type ReimbursementRequestFormValues = z.infer<typeof reimbursementRequestSchema>;
 
-export const createDealFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Deal name is required")
-    .max(200, "Deal name must be at most 200 characters")
-    .regex(/^[A-Za-z]/, "Deal name must start with a letter"),
-  value: z.number().min(0, "Value cannot be negative"),
-  stage: z.enum(["LEAD", "CONTACTED", "PROPOSAL", "NEGOTIATION", "WON", "LOST"]),
-  probability: z.number().min(0).max(100),
-  contactPerson: z
-    .string()
-    .trim()
-    .max(120)
-    .regex(/^[A-Za-z\s]*$/, "Contact person can only contain letters")
-    .optional()
-    .or(z.literal("")),
-  contactEmail: z
-    .string()
-    .trim()
-    .email("Invalid email address")
-    .optional()
-    .or(z.literal("")),
-  contactPhone: z.string().trim().max(30).optional().or(z.literal("")),
-  assignedToId: z.string().optional().or(z.literal("")),
-  expectedCloseDate: z.string().trim().optional().or(z.literal("")),
-  notes: z.string().trim().max(5000).optional().or(z.literal("")),
-});
-
-export type CreateDealFormValues = z.infer<typeof createDealFormSchema>;
-
 export const JOB_POSTING_LIMITS = {
   titleMin: 5,
   titleMax: 150,

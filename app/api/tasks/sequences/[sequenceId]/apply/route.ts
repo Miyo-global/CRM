@@ -8,7 +8,7 @@ import { addDays } from "date-fns";
 
 const applySchema = z.object({
   baseDate: z.string().datetime({ offset: true }),
-  entityType: z.enum(["LEAD", "DEAL", "CONTACT", "PROJECT"]).optional(),
+  entityType: z.enum(["PROJECT"]).optional(),
   entityId: z.number().int().positive().optional(),
   assigneeId: z.string().optional(),
 });

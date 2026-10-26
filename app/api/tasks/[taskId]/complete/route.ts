@@ -78,7 +78,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
         type: activityType,
         message: `Task completed: ${existing.title}`,
         time: completedAt.toISOString(),
-        category: "sales",
+        category: "tasks",
       });
 
       if (recurrence && existing.dueDate) {
