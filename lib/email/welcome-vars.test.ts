@@ -13,3 +13,14 @@ describe("welcome email greeting (FR1-020)", () => {
     expect(welcomeEmailVars("a@x.com", "Ravi Kumar", "https://x").first_name).toBe("Ravi");
   });
 });
+
+describe("welcome email employee ID (FR1-021)", () => {
+  it("is shown when known and left out otherwise", async () => {
+    const { renderEmail } = await import("@/lib/email-templates/render");
+    const withId = renderEmail("auth-welcome-set-password", welcomeEmailVars("a@x.com", "A B", "https://x", { employeeId: "VC26019" }));
+    expect(withId.text).toContain("Employee ID:   VC26019");
+    expect(withId.html).toContain("VC26019");
+    const without = renderEmail("auth-welcome-set-password", welcomeEmailVars("a@x.com", "A B", "https://x"));
+    expect(without.text).not.toContain("Employee ID");
+  });
+});

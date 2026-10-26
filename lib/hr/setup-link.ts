@@ -19,6 +19,7 @@ export async function sendSetupLink(employee: {
   email: string;
   name: string;
   firstName?: string | null;
+  employeeId?: string | null;
   designation?: string | null;
   joiningDate?: Date | string | null;
   reportingTo?: string | null;
@@ -46,6 +47,7 @@ export async function sendSetupLink(employee: {
 
   await sendWelcomeEmail(employee.email, employee.name, `${appUrl}/setup-password?token=${setupToken}`, {
     firstName: employee.firstName,
+    employeeId: employee.employeeId,
     designation: employee.designation ?? undefined,
     joiningDate: employee.joiningDate ? formatCalendarDate(formatDateOnly(employee.joiningDate)) : undefined,
     managerName: manager?.name ?? null,

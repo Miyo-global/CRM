@@ -284,6 +284,7 @@ export async function POST(req: NextRequest) {
           email: newUser.email,
           name: `${body.firstName} ${body.lastName}`,
           firstName: body.firstName,
+          employeeId,
           designation: body.designation,
           joiningDate: body.joiningDate,
           reportingTo,
