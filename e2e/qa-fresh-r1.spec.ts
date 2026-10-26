@@ -206,3 +206,18 @@ test("FR1-002: an employee can start a wiki page, blank or from a template", asy
   expect(res.status).toBe(201);
   expect(res.json).toMatchObject({ visibility: "private" });
 });
+
+test("FR1-033: creating a project opens it", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/projects");
+  await page.getByRole("button", { name: "New project" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "New project" });
+  await dialog.getByPlaceholder("Website redesign").fill(`QA-TEST FR1 ${Date.now() % 100000}`);
+  await expect(dialog.getByText("Available")).toBeVisible();
+  for (const next of ["Team", "Setup", "Review"]) {
+    await dialog.getByRole("button", { name: "Continue" }).click();
+    await expect(dialog.getByText(new RegExp(`Step \\d of 4: ${next}`))).toBeVisible();
+  }
+  await dialog.getByRole("button", { name: "Create project" }).click();
+  await expect(page).toHaveURL(/\/projects\/\d+/);
+});
