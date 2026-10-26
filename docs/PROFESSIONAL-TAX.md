@@ -74,3 +74,10 @@ hide the PT line when it is 0 or not applicable.
 - Money arithmetic in integer paise across `computePayroll`. Today it uses
   floats and rounds once at the end, which is exact to the paisa for the
   amounts payroll handles.
+
+## Manual payslip scripts
+
+`scripts/generate-miyo-payslips.ts`, `generate-batch-payslips.ts` and
+`generate-sample-payslip.ts` take PT from `PAYSLIP_PT` (validated by
+`ptAmountSchema`). To re-issue the historical payslips exactly as before, run
+them with `PAYSLIP_PT=200`. To issue payslips with no PT, set `PAYSLIP_PT=`.

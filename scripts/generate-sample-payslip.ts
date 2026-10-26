@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import { PAYSLIP_PT } from "./_payslip-pt";
 import path from "path";
 import { PAYSLIP_OUTPUT_DIR } from "@/lib/constants/paths";
 import { generatePayslipPdf } from "@/lib/payslip-pdf-core";
@@ -17,7 +18,7 @@ async function main() {
   const allowances = rnd(5_000, 28_000);
   const overtime = rnd(0, 14_000);
   const gross = basic + hra + allowances + overtime;
-  const pt = 200; // sample figure for this demo PDF only; real PT comes from the salary structure
+  const pt = PAYSLIP_PT;
   const lopD = rnd(0, 9_000);
   const adv = rnd(0, 6_000);
   const other = rnd(0, 4_000);

@@ -29,7 +29,7 @@
     "send:perf-notice-test": "npx tsx --env-file=.env scripts/send-performance-notice-test.ts",
     "send:all-emails-test": "npx tsx --env-file=.env scripts/send-all-emails-test.ts",
     "send:mail-test": "npx tsx --env-file=.env scripts/send-zeptomail-test.ts",
-    "gen:sample-payslip": "tsx scripts/generate-sample-payslip.ts",
+    "gen:sample-payslip": "PAYSLIP_PT=200 tsx scripts/generate-sample-payslip.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

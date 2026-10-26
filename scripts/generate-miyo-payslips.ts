@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import { PAYSLIP_PT } from "./_payslip-pt";
 import os from "os";
 import path from "path";
 import type { z } from "zod";
@@ -52,7 +53,7 @@ const employees: SheetRow[] = [
     bankBranch: "Shaikpet",
     joiningDateDisplay: "01-04-2026",
     monthlyCtc: 28350,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 1,
     lopDays: 0,
   },
@@ -68,7 +69,7 @@ const employees: SheetRow[] = [
     bankBranch: "Velugodu",
     joiningDateDisplay: "01-04-2026",
     monthlyCtc: 18900,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 1,
     lopDays: 0,
   },
@@ -84,7 +85,7 @@ const employees: SheetRow[] = [
     bankBranch: "Kukatpally",
     joiningDateDisplay: "01-04-2026",
     monthlyCtc: 20000,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 3,
     lopDays: 1,
   },
@@ -100,7 +101,7 @@ const employees: SheetRow[] = [
     bankBranch: "Kothagudem",
     joiningDateDisplay: "01-04-2026",
     monthlyCtc: 45000,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 2,
     lopDays: 0,
     months: [
@@ -140,7 +141,7 @@ const employees: SheetRow[] = [
     bankBranch: "Bandlaguda",
     joiningDateDisplay: "15-06-2026",
     monthlyCtc: 25000,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 1,
     lopDays: 0,
   },
@@ -154,7 +155,7 @@ const employees: SheetRow[] = [
     ifsc: "HDFC0007602",
     joiningDateDisplay: "29-07-2026",
     monthlyCtc: 33200,
-    professionalTax: 200,
+    professionalTax: PAYSLIP_PT,
     leaveDaysInMonth: 1,
     lopDays: 0,
     overtimeAmount: 2142,
