@@ -58,6 +58,9 @@ interface JobRoleComboboxProps {
   allowCreate?: boolean;
   className?: string;
   "aria-invalid"?: boolean;
+  /** From FormControl, so the field label names the combobox (FR1-014). */
+  id?: string;
+  "aria-describedby"?: string;
 }
 
 interface JobRoleOptionProps {
@@ -97,6 +100,8 @@ export function JobRoleCombobox({
   allowCreate = true,
   className,
   "aria-invalid": ariaInvalid,
+  id,
+  "aria-describedby": ariaDescribedBy,
 }: JobRoleComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -190,9 +195,11 @@ export function JobRoleCombobox({
         <Button
           type="button"
           variant="outline"
+          id={id}
           role="combobox"
           aria-expanded={open}
           aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
           disabled={disabled}
           className={cn(
             comboboxTriggerClassName,

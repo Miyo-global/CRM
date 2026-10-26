@@ -8,6 +8,8 @@ import { expect, test, type Page } from "@playwright/test";
  */
 const EMAIL = process.env.E2E_HR_EMAIL;
 const PASSWORD = process.env.E2E_HR_PASSWORD;
+/** A job title in the catalog of the first department listed. */
+const JOB_TITLE = process.env.E2E_JOB_TITLE ?? "QA-TEST Engineer";
 
 test.skip(!EMAIL || !PASSWORD, "E2E_HR_EMAIL and E2E_HR_PASSWORD are not set");
 
@@ -63,4 +65,23 @@ test("FR1-010: the joining date picker stops one year ahead", async ({ page }) =
   const next = page.getByRole("button", { name: /next month/i });
   for (let i = 0; i < 13 && (await next.isEnabled()); i++) await next.click();
   await expect(next).toBeDisabled();
+});
+
+test("FR1-014: Job Title and Monthly Salary have real accessible names", async ({ page }) => {
+  await openWizard(page);
+  await page.getByLabel(/first name/i).fill("QA-TEST");
+  await page.getByLabel(/last name/i).fill("Wizard");
+  await page.getByLabel(/^email/i).fill(`qa-test.fr1.${Date.now()}@example.com`);
+  await page.getByRole("button", { name: /^next/i }).click();
+  await expect(page.getByRole("combobox", { name: /job title/i })).toBeVisible();
+
+  await page.getByRole("combobox", { name: /department/i }).click();
+  await page.getByRole("option").first().click();
+  await page.getByRole("combobox", { name: /job title/i }).click();
+  await page.getByRole("button", { name: JOB_TITLE }).click();
+  await page.getByRole("button", { name: /^next/i }).click();
+  const salary = page.getByRole("textbox", { name: /monthly salary/i });
+  await expect(salary).toBeVisible();
+  await salary.fill("25000");
+  await expect(page.getByRole("textbox", { name: /monthly salary/i })).toBeVisible();
 });
