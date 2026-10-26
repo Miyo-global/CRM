@@ -135,3 +135,27 @@ test("FR1-031: approving a reimbursement asks first and confirms with a toast", 
   await dialog.getByRole("button", { name: "Approve" }).click();
   await expect(page.getByText("Reimbursement approved")).toBeVisible();
 });
+
+test("FR1-006: the employee is notified when a reimbursement is approved", async ({ browser }) => {
+  const emp = await browser.newPage();
+  await signIn(emp, EMPLOYEE);
+  const description = `QA-TEST FR1 notify ${Date.now()}`;
+  const created = await api(emp, "/api/hr/reimbursements", {
+    method: "POST",
+    body: { category: "Travel", amount: 750, description },
+  });
+  expect(created.status, created.text).toBeLessThan(300);
+  const list = (await api(emp, "/api/hr/reimbursements")).json as Array<{ id: number; description: string }> | { data: Array<{ id: number; description: string }> };
+  const rows = Array.isArray(list) ? list : list.data;
+  const id = rows.find((r) => r.description === description)?.id;
+  expect(id).toBeTruthy();
+
+  const admin = await browser.newPage();
+  await signIn(admin, ADMIN);
+  const decided = await api(admin, `/api/hr/reimbursements/${id}`, { method: "PATCH", body: { status: "APPROVED" } });
+  expect(decided.status, decided.text).toBe(200);
+
+  await expect
+    .poll(async () => (await api(emp, "/api/notifications?unreadOnly=false&limit=20")).text, { timeout: 10_000 })
+    .toContain("Your reimbursement of ₹750 (Travel) was approved.");
+});
