@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowRight, CircleAlert, Eye, EyeOff } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { signInThrownMessage } from "@/lib/auth/sign-in-error";
 
 export const dynamic = "force-dynamic";
 
@@ -77,10 +78,8 @@ export default function SignInPage() {
         }
         return result;
       } catch (error) {
-        if (error instanceof TypeError && error.message.includes("fetch")) {
-          throw new Error("No internet connection. Check your network and try again.");
-        }
-        throw error;
+        const message = signInThrownMessage(error);
+        throw message ? new Error(message) : error;
       }
     },
     onSuccess: (result) => {
