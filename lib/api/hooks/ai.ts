@@ -2,96 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import { queryKeys } from "@/lib/query-keys";
-import type {
-  LeadScoreResult, EmailTone, GeneratedEmail, DealPredictionResult,
-  NextActionResult, ChurnRiskResult, LeadEnrichmentResult,
-  ReviewDraftResult, HelpdeskReplyResult, AttritionRiskResult,
-} from "@/lib/ai/prompts";
-
-export function useAIScoreLead() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (leadId: number) =>
-      apiClient.post<LeadScoreResult>("/ai/score-lead", { leadId }),
-    onSuccess: (_, leadId) => {
-      qc.invalidateQueries({ queryKey: queryKeys.leads.detail(leadId) });
-      qc.invalidateQueries({ queryKey: queryKeys.leads.all });
-    },
-  });
-}
-
-export function useAIBatchScoreLeads() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (leadIds: number[]) =>
-      apiClient.post<{ results: Record<number, LeadScoreResult>; scored: number }>(
-        "/ai/score-lead",
-        { leadIds },
-      ),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.leads.all });
-    },
-  });
-}
-
-interface GenerateEmailInput {
-  leadName: string;
-  company?: string;
-  designation?: string;
-  dealStage?: string;
-  lastActivityType?: string;
-  lastActivityDate?: string;
-  lastActivityNotes?: string;
-  potentialValue?: string;
-  tone?: EmailTone;
-  context?: string;
-  allVariations?: boolean;
-}
-
-export function useGenerateEmail() {
-  return useMutation({
-    mutationFn: (input: GenerateEmailInput) =>
-      apiClient.post<GeneratedEmail>("/ai/generate-email", input),
-  });
-}
-
-export function usePredictDeal() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (dealId: number) =>
-      apiClient.post<DealPredictionResult>("/ai/predict-deal", { dealId }),
-    onSuccess: (_, dealId) => {
-      qc.invalidateQueries({ queryKey: queryKeys.deals.detail(dealId) });
-      qc.invalidateQueries({ queryKey: queryKeys.deals.all });
-    },
-  });
-}
-
-export function useNextBestAction() {
-  return useMutation({
-    mutationFn: (leadId: number) =>
-      apiClient.post<NextActionResult>("/ai/next-action", { leadId }),
-  });
-}
-
-export function useAnalyzeChurnRisk() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { clientId: number; openTickets?: number; ticketsLast90Days?: number; daysSinceLastActivity?: number | null }) =>
-      apiClient.post<ChurnRiskResult>("/ai/churn-risk", input),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.clients.all });
-    },
-  });
-}
-
-export function useEnrichLead() {
-  return useMutation({
-    mutationFn: (input: { name: string; company?: string; email?: string; designation?: string; city?: string }) =>
-      apiClient.post<LeadEnrichmentResult>("/ai/enrich-lead", input),
-  });
-}
+import type { ReviewDraftResult, HelpdeskReplyResult, AttritionRiskResult } from "@/lib/ai/prompts";
 
 export function useAIGenerateReview() {
   return useMutation({
@@ -111,26 +22,6 @@ export function useAIAttritionRisk() {
   return useMutation({
     mutationFn: (userId: string) =>
       apiClient.post<AttritionRiskResult>("/ai/attrition-risk", { userId }),
-  });
-}
-
-export interface ObjectionHandlerInput {
-  objection: string;
-  dealStage: string;
-  productName?: string;
-  dealValue?: string;
-}
-
-export interface ObjectionHandlerResult {
-  counterArguments: string[];
-  talkingPoints: string[];
-  suggestedResponse: string;
-}
-
-export function useObjectionHandler() {
-  return useMutation({
-    mutationFn: (data: ObjectionHandlerInput) =>
-      apiClient.post<ObjectionHandlerResult>("/ai/objection-handler", data),
   });
 }
 
@@ -171,89 +62,6 @@ export function useGenerateContentBrief() {
       keywords?: string;
     }) => apiClient.post<ContentBrief>("/ai/content-brief", data),
   });
-}
-
-export interface SentimentResult {
-  sentiment: "positive" | "neutral" | "negative" | "critical";
-  score: number;
-  summary: string;
-  riskFactors: string[];
-  recommendations: string[];
-  churnRisk: "low" | "medium" | "high";
-}
-
-export function useSentimentAnalysis() {
-  return useMutation({
-    mutationFn: (data: { text: string; clientName?: string }) =>
-      apiClient.post<SentimentResult>("/ai/sentiment-analysis", data),
-  });
-}
-
-export interface NLSearchLead {
-  id: number;
-  name: string;
-  email: string | null;
-  company: string | null;
-  status: string;
-  priority: string | null;
-  source: string | null;
-  value: number | null;
-  city: string | null;
-  assignedTo: string | null;
-}
-
-export interface NLSearchResult {
-  query: string;
-  parsedFilters: Record<string, unknown>;
-  leads: NLSearchLead[];
-  total: number;
-}
-
-export function useNLSearch() {
-  return useMutation({
-    mutationFn: (query: string) =>
-      apiClient.post<NLSearchResult>("/ai/nl-search", { query }),
-  });
-}
-
-export interface AccountSummaryResult {
-  summary: string;
-  clientName: string;
-  generatedAt: string;
-}
-
-export interface ReportNarratorResult {
-  narrative: string;
-  generatedAt: string;
-}
-
-export interface MeetingPrepResult {
-  brief: string;
-  attendeeName: string;
-  generatedAt: string;
-}
-
-export function useMeetingPrep() {
-  return useMutation({
-    mutationFn: (data: {
-      meetingTitle: string;
-      attendeeType: "lead" | "client";
-      attendeeId: number;
-      scheduledAt: string;
-      notes?: string;
-    }) => apiClient.post<MeetingPrepResult>("/ai/meeting-prep", data),
-  });
-}
-
-export interface GenerateJdInput {
-  title: string;
-  requirements?: string;
-  description?: string;
-  location?: string;
-  type?: string;
-  salaryMin?: number;
-  salaryMax?: number;
-  field?: "description" | "requirements";
 }
 
 export interface OrgFeatureFlags {

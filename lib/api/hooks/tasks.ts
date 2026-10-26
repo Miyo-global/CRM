@@ -283,22 +283,3 @@ export function useApplyTaskSequence() {
     },
   });
 }
-
-
-export interface TaskPriorityItem {
-  taskId: number;
-  rank: number;
-  urgencyScore: number;
-  reasoning: string;
-}
-
-export interface TaskPriorityResult {
-  items: TaskPriorityItem[];
-  summary: string;
-}
-
-export function useAIPrioritizeTasks() {
-  return useMutation({
-    mutationFn: () => apiClient.get<TaskPriorityResult>("/ai/prioritize-tasks"),
-  });
-}
