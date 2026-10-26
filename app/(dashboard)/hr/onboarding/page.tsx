@@ -735,7 +735,9 @@ export default function OnboardingPage() {
               Add employee
             </TabsTrigger>
             <TabsTrigger value="workflow">
-              Onboarding progress
+              {/* Short on phones so all three tabs fit at 375px (FR1-034). */}
+              <span className="sm:hidden">Progress</span>
+              <span className="hidden sm:inline">Onboarding progress</span>
             </TabsTrigger>
             <TabsTrigger value="documents">
               Documents

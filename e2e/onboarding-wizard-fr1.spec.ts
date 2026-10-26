@@ -85,3 +85,25 @@ test("FR1-014: Job Title and Monthly Salary have real accessible names", async (
   await salary.fill("25000");
   await expect(page.getByRole("textbox", { name: /monthly salary/i })).toBeVisible();
 });
+
+test.describe("at 375px", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("FR1-034: tabs and stepper fit, no page-level horizontal scroll", async ({ page }) => {
+    await openWizard(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    // Every step of the stepper is inside the viewport.
+    for (const n of ["1", "2", "3", "4", "5"]) {
+      const step = page.getByRole("list").getByRole("button", { name: new RegExp(`^${n}\\b`) }).first();
+      const box = await step.boundingBox();
+      expect(box, `step ${n}`).not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(375);
+    }
+    // Every tab is inside the viewport.
+    for (const tab of await page.getByRole("tab").all()) {
+      const box = await tab.boundingBox();
+      expect(box!.x + box!.width).toBeLessThanOrEqual(375);
+    }
+  });
+});

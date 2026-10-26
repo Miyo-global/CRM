@@ -344,7 +344,9 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-4xl gap-6 lg:grid-cols-[200px_1fr]">
+    // grid-cols-1 = minmax(0,1fr): without it the auto track grew to the
+    // stepper's min-content and pushed step 5 off a 375px screen (FR1-034).
+    <div className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 lg:grid-cols-[200px_1fr]">
       <nav aria-label="Onboarding steps" className="lg:sticky lg:top-20 lg:self-start">
         <ol className="flex items-center gap-1 overflow-x-auto lg:flex-col lg:items-stretch lg:gap-0">
           {STEPS.map((step, i) => {
@@ -358,7 +360,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
                   disabled={step.id > currentStep}
                   aria-current={isActive ? "step" : undefined}
                   className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:focus-ring",
+                    "flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-sm transition-colors focus-visible:focus-ring sm:gap-2.5 sm:px-2",
                     isCompleted && "cursor-pointer text-foreground hover:bg-accent",
                     isActive && "font-semibold text-foreground",
                     !isCompleted && !isActive && "cursor-not-allowed text-muted-foreground"
@@ -378,7 +380,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
                   <div
                     aria-hidden="true"
                     className={cn(
-                      "h-px w-3 shrink-0 lg:ml-5.5 lg:h-4 lg:w-px",
+                      "h-px w-2 shrink-0 sm:w-3 lg:ml-5.5 lg:h-4 lg:w-px",
                       isCompleted ? "bg-gold-400" : "bg-border"
                     )}
                   />
