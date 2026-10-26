@@ -50,6 +50,7 @@ export async function POST(
     const { expiresAt } = await sendSetupLink({
       email: user.email,
       name: user.name ?? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+      firstName: user.firstName,
       designation: user.designation,
       joiningDate: user.joiningDate,
       reportingTo: user.reportingTo,

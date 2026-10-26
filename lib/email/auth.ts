@@ -54,6 +54,22 @@ export async function sendInvitationEmail(
 }
 
 /** MIYO-0159: the hand-written auth-welcome-set-password template. */
+export function welcomeEmailVars(
+  email: string,
+  name: string,
+  setupUrl: string,
+  details: WelcomeEmailDetails = {},
+) {
+  return {
+    first_name: details.firstName?.trim() || name.trim().split(/\s+/)[0] || name,
+    email,
+    setup_url: setupUrl,
+    joining_date: details.joiningDate ?? "your first day",
+    manager_name: details.managerName ?? "your manager",
+    link_expires_at: details.linkExpiresAt ?? "in 7 days",
+  };
+}
+
 export async function sendWelcomeEmail(
   email: string,
   name: string,
@@ -62,14 +78,7 @@ export async function sendWelcomeEmail(
 ) {
   await sendTemplateEmail("auth-welcome-set-password", {
     to: email,
-    vars: {
-      first_name: name.trim().split(/\s+/)[0] || name,
-      email,
-      setup_url: setupUrl,
-      joining_date: details.joiningDate ?? "your first day",
-      manager_name: details.managerName ?? "your manager",
-      link_expires_at: details.linkExpiresAt ?? "in 7 days",
-    },
+    vars: welcomeEmailVars(email, name, setupUrl, details),
   });
 }
 

@@ -18,6 +18,7 @@ const SETUP_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export async function sendSetupLink(employee: {
   email: string;
   name: string;
+  firstName?: string | null;
   designation?: string | null;
   joiningDate?: Date | string | null;
   reportingTo?: string | null;
@@ -44,6 +45,7 @@ export async function sendSetupLink(employee: {
     : null;
 
   await sendWelcomeEmail(employee.email, employee.name, `${appUrl}/setup-password?token=${setupToken}`, {
+    firstName: employee.firstName,
     designation: employee.designation ?? undefined,
     joiningDate: employee.joiningDate ? formatCalendarDate(formatDateOnly(employee.joiningDate)) : undefined,
     managerName: manager?.name ?? null,

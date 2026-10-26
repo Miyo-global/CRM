@@ -39,6 +39,8 @@ export function getVerificationEmailTemplate(verificationUrl: string): string {
 }
 
 export interface WelcomeEmailDetails {
+  /** First name as entered; the greeting used only the first word of the full name (FR1-020). */
+  firstName?: string | null;
   /** Date the employee starts, as a display string. */
   joiningDate?: string | null;
   /** Reporting manager's name. */
