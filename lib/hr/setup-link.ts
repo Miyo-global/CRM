@@ -47,7 +47,8 @@ export async function sendSetupLink(employee: {
     designation: employee.designation ?? undefined,
     joiningDate: employee.joiningDate ? formatCalendarDate(formatDateOnly(employee.joiningDate)) : undefined,
     managerName: manager?.name ?? null,
-    linkExpiresAt: `${formatIST(expiresAt)} IST`,
+    // The template already says "IST" after the time (FR1-023).
+    linkExpiresAt: formatIST(expiresAt),
   });
 
   return { expiresAt };
