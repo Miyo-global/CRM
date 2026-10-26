@@ -127,3 +127,21 @@ export function terminationFormErrors(input: {
   }
   return errors;
 }
+
+/**
+ * Text for the "Send termination email" confirm. The email goes when HR sends
+ * it, which can be before the effective date; owner confirmed that timing
+ * (FR1-036), so the dialog says so instead of leaving it to surprise anyone.
+ */
+export function terminationEmailNotice(
+  employeeName: string | null | undefined,
+  effectiveDate: string | null | undefined,
+  today: string = getTodayString(),
+): string {
+  const who = employeeName?.trim() || "this employee";
+  const base = `Send termination email to ${who}? The employee will be officially notified now.`;
+  if (effectiveDate && effectiveDate > today) {
+    return `${base} They stay active until the effective date, ${formatCalendarDate(effectiveDate)}; their account closes when you mark the termination Complete.`;
+  }
+  return `${base} Account deactivation will happen when you mark the termination as Complete.`;
+}

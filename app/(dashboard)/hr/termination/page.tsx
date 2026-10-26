@@ -59,6 +59,7 @@ import {
   MAX_TERMINATION_LEAD_DAYS,
   terminationFormErrors,
   type TerminationFormField,
+  terminationEmailNotice,
 } from "@/lib/hr/termination-rules";
 import {
   TERMINATION_STATUSES,
@@ -1069,7 +1070,7 @@ export default function TerminationPage() {
           if (!open) setEmailRecord(null);
         }}
         title="Send termination email"
-        description={`Send termination email to ${emailRecord?.employee?.name ?? "this employee"}? The employee will be officially notified. Account deactivation will happen when you mark the termination as Complete.`}
+        description={terminationEmailNotice(emailRecord?.employee?.name, emailRecord?.effectiveDate, today)}
         confirmLabel="Send Email"
         variant="default"
         onConfirm={handleSendEmailConfirm}

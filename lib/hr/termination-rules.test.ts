@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { blocksNewTermination, terminationDateError } from "./termination-rules";
+import { blocksNewTermination, terminationDateError, terminationEmailNotice } from "./termination-rules";
 import { fnfHasFigures, fnfTotals } from "./fnf-figures";
 vi.mock("@/lib/db", () => ({ db: {} }));
 import { diffFields } from "@/lib/audit-log";
@@ -97,6 +97,20 @@ describe("terminationFormErrors (FR1-016)", () => {
     expect(terminationFormErrors(base)).toEqual({});
     expect(terminationFormErrors({ ...base, canBackdate: true, effectiveDate: "2025-12-01" }).effectiveDate).toMatch(
       /before the joining date/,
+    );
+  });
+});
+
+describe("terminationEmailNotice (FR1-036)", () => {
+  it("says a future-dated employee is notified now and stays active until the effective date", () => {
+    const text = terminationEmailNotice("QA-TEST Emp2", "2026-11-30", "2026-10-26");
+    expect(text).toContain("notified now");
+    expect(text).toContain("stay active until the effective date, 30 Nov 2026");
+  });
+
+  it("keeps the plain wording when the effective date has come", () => {
+    expect(terminationEmailNotice(null, "2026-10-26", "2026-10-26")).toMatch(
+      /^Send termination email to this employee\?.*mark the termination as Complete\.$/,
     );
   });
 });
