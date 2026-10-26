@@ -1,8 +1,8 @@
 
 
-import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, Sliders, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
 
-import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED, CRM_MODULE_ENABLED } from "@/lib/constants/modules";
+import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 
 export interface NavRoute {
@@ -212,20 +212,12 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Settings", icon: Settings, href: "/settings" },
             { label: "Organization", icon: Building2, href: "/settings/organization", isSubItem: true },
             { label: "Members", icon: UserCog, href: "/settings/members", isSubItem: true },
-            // CRM-only: leads, deals and contacts (A36).
-            ...(CRM_MODULE_ENABLED
-              ? [{ label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true }]
-              : []),
             { label: "Roles & Permissions", icon: Shield, href: "/settings/roles" },
             { label: "Permission Matrix", icon: ShieldAlert, href: "/settings/permissions", isSubItem: true },
             { label: "Audit Log", icon: ShieldCheck, href: "/settings/audit-log" },
             { label: "Webhooks", icon: Zap, href: "/settings/webhooks" },
             { label: "AI Settings", icon: Brain, href: "/settings/ai" },
             { label: "Notifications", icon: Bell, href: "/settings/notifications", isSubItem: true },
-            // CRM-only: leads, deals and contacts (A36).
-            ...(CRM_MODULE_ENABLED
-              ? [{ label: "Custom Fields", icon: Sliders, href: "/settings/custom-fields", isSubItem: true }]
-              : []),
             { label: "Data Export", icon: FileText, href: "/settings/data-hub" },
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
