@@ -31,3 +31,13 @@ test("FR1-008: the first Next click on step 1 advances", async ({ page }) => {
   await page.getByRole("button", { name: /^next/i }).click();
   await expect(page.getByRole("combobox", { name: /department/i })).toBeVisible({ timeout: 5000 });
 });
+
+test("FR1-011: name inputs stop at 50 characters", async ({ page }) => {
+  await openWizard(page);
+  const first = page.getByLabel(/first name/i);
+  await first.fill("a".repeat(300));
+  await expect(first).toHaveValue("a".repeat(50));
+  const last = page.getByLabel(/last name/i);
+  await last.fill("b".repeat(300));
+  await expect(last).toHaveValue("b".repeat(50));
+});

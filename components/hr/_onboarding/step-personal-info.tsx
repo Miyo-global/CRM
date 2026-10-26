@@ -3,7 +3,7 @@
 import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { MIN_EMPLOYEE_AGE_YEARS, onboardEmployeeInputSchema } from "@/lib/validations/hr";
+import { MIN_EMPLOYEE_AGE_YEARS, PERSON_NAME_MAX_LENGTH, onboardEmployeeInputSchema } from "@/lib/validations/hr";
 import { format } from "date-fns";
 import { normalizePersonNameInput, PERSON_NAME_HINT } from "@/lib/utils/person-name";
 import { Input } from "@/components/ui/input";
@@ -90,6 +90,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="John"
+                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}
@@ -109,6 +110,7 @@ export function StepPersonalInfo({ form }: StepPersonalInfoProps) {
             <FormControl>
               <Input
                 placeholder="Doe"
+                maxLength={PERSON_NAME_MAX_LENGTH}
                 {...field}
                 onChange={(e) => field.onChange(normalizePersonNameInput(e.target.value))}
                 onBlur={(e) => field.onChange(e.target.value.trim())}

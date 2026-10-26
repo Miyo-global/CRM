@@ -135,7 +135,7 @@ export const DEPARTMENT_ROLE_MISMATCH_MESSAGE =
   "This system role is not compatible with the selected department. Pick a role that fits the team, or choose a generic role.";
 
 const PERSON_NAME_MIN_LENGTH = 2;
-const PERSON_NAME_MAX_LENGTH = 50;
+export const PERSON_NAME_MAX_LENGTH = 50;
 export const MIN_EMPLOYEE_AGE_YEARS = 18;
 const MAX_EMPLOYEE_AGE_YEARS = 100;
 const EMPLOYEE_ID_MIN_LENGTH = 2;
