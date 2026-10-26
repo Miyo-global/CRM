@@ -1,6 +1,10 @@
 import { formatCalendarDate, formatDateOnly } from "@/lib/date-utils";
+import { ROLES } from "@/lib/constants/roles";
 
-/** The "new employee onboarded" notice HR and the CEO receive (bell and email). */
+/** Who hears about a new hire. Admins were left out (FR1-037, owner decision). */
+export const ONBOARDED_NOTIFY_ROLES = [ROLES.CEO, ROLES.ADMIN, ROLES.HR];
+
+/** The "new employee onboarded" notice Super Admin, Admins and HR receive (bell and email). */
 export function onboardedNotification(employee: {
   firstName: string;
   lastName: string;

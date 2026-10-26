@@ -19,11 +19,10 @@ import { departments, organizations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { notifyByRoles } from "@/server/actions/create-notification";
-import { ROLES } from "@/lib/constants/roles";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { afterResponse } from "@/lib/after-response";
 import { findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
-import { onboardedNotification } from "@/lib/hr/onboarded-notification";
+import { ONBOARDED_NOTIFY_ROLES, onboardedNotification } from "@/lib/hr/onboarded-notification";
 import { runConcurrently } from "@/lib/run-concurrently";
 import { auditProfessionalTax, professionalTaxColumn, professionalTaxEditError } from "@/lib/hr/professional-tax";
 
@@ -213,7 +212,7 @@ export async function POST(req: NextRequest) {
       return u;
     });
 
-    afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
+    afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, ONBOARDED_NOTIFY_ROLES, {
       type: "SUCCESS",
       ...onboardedNotification(body),
       link: `/hr/employees/${newUser.id}`,
