@@ -36,7 +36,6 @@ import { DashboardGate } from "@/components/shared/dashboard-gate";
 import { toast } from "sonner";
 import { useHrEmployees } from "@/lib/api/hooks/hr/employees";
 import type { Employee } from "@/types/hr";
-import type { CustomFieldDefinition } from "@/lib/api/hooks/crm";
 import { Plus, Trash2, Copy, Pencil, Eye, Send, Search, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
@@ -154,38 +153,12 @@ function EmailTemplatesContent() {
 
   const { data: rawEmployees, isLoading: employeesLoading } = useHrEmployees();
 
-  const { data: customFieldsResp } = useQuery({
-    queryKey: ["custom-fields", "all"] as const,
-    queryFn: () =>
-      apiClient.get<{ fields: CustomFieldDefinition[] }>("/settings/custom-fields"),
-    retry: false,
-    staleTime: 60_000,
-  });
-
   const employees = useMemo(() => {
     const list = Array.isArray(rawEmployees)
       ? rawEmployees
       : (rawEmployees as { data?: Employee[] })?.data ?? [];
     return list as Employee[];
   }, [rawEmployees]);
-
-  const customFields = useMemo(() => {
-    const list = customFieldsResp?.fields ?? [];
-    const seen = new Set<string>();
-    const out: CustomFieldDefinition[] = [];
-    for (const f of list) {
-      if (f.isActive === false) continue;
-      if (seen.has(f.name)) continue;
-      seen.add(f.name);
-      out.push(f);
-    }
-    return out;
-  }, [customFieldsResp]);
-
-  const customFieldByName = useMemo(
-    () => new Map(customFields.map((f) => [f.name, f])),
-    [customFields]
-  );
 
   const create = useMutation({
     mutationFn: (data: { name: string; subject: string; body: string; category?: string }) =>
@@ -627,7 +600,6 @@ function EmailTemplatesContent() {
           category={category}
           setCategory={setCategory}
           errors={formErrors}
-          customFields={customFields}
         />
       </HrSheet>
 
@@ -655,7 +627,6 @@ function EmailTemplatesContent() {
           category={category}
           setCategory={setCategory}
           errors={formErrors}
-          customFields={customFields}
         />
       </HrSheet>
 
@@ -836,7 +807,6 @@ function EmailTemplatesContent() {
                     fieldKey={key}
                     value={templateVarValues[key] ?? ""}
                     onChange={(v) => setTemplateVarField(key, v)}
-                    customField={customFieldByName.get(key)}
                   />
                 ))}
               </div>

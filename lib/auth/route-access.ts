@@ -15,7 +15,6 @@ const HR_TEAM: string[] = ["CEO", "HR"];
  */
 export const HR_SETTINGS_PAGES = [
   "members",
-  "custom-fields",
   "email-templates",
   "job-roles",
   "payroll-schedule",
