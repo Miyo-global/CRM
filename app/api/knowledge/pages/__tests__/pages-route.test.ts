@@ -88,11 +88,29 @@ describe("POST /api/knowledge/pages", () => {
     expect(res.status).toBe(403);
   });
 
-  it("answers 403 for a loose page without kb:pages:create", async () => {
+  it("answers 403 for a shared loose page without kb:pages:create", async () => {
+    const res = await POST(
+      kbRequest("/api/knowledge/pages", { method: "POST", body: { title: "x", visibility: "org" } }) as never,
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("creates a private loose page without kb:pages:create (FR1-002)", async () => {
+    harness.insertReturns = [[{ id: 12 }]];
     const res = await POST(
       kbRequest("/api/knowledge/pages", { method: "POST", body: { title: "x" } }) as never,
     );
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(201);
+    expect(harness.inserts[0].rows).toMatchObject({ visibility: "private", createdById: "u1" });
+  });
+
+  it("starts a private page from a starter template without kb:pages:create (FR1-002)", async () => {
+    harness.insertReturns = [[{ id: 13 }]];
+    const res = await POST(
+      kbRequest("/api/knowledge/pages", { method: "POST", body: { title: "x", starterKey: "meeting-notes" } }) as never,
+    );
+    expect(res.status).toBe(201);
+    expect(harness.inserts[0].rows).toMatchObject({ visibility: "private" });
   });
 
   it("answers 400 for an unknown field", async () => {

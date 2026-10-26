@@ -191,3 +191,18 @@ test("FR1-001: a new wiki page opens editable for its creator", async ({ page })
   await expect(page.locator("[contenteditable]").first()).toHaveAttribute("contenteditable", "true");
   await expect(page.locator("input, textarea").first()).not.toHaveAttribute("readonly", /.*/);
 });
+
+test("FR1-002: an employee can start a wiki page, blank or from a template", async ({ page }) => {
+  await signIn(page, EMPLOYEE);
+  await page.goto("/knowledge/wiki");
+  await page.getByRole("button", { name: /new page/i }).first().click();
+  await expect(page).toHaveURL(/\/knowledge\/wiki\/doc\/\d+/);
+  await expect(page.locator("[contenteditable]").first()).toHaveAttribute("contenteditable", "true");
+
+  const res = await api(page, "/api/knowledge/pages", {
+    method: "POST",
+    body: { title: "QA-TEST FR1 notes", starterKey: "meeting-notes" },
+  });
+  expect(res.status).toBe(201);
+  expect(res.json).toMatchObject({ visibility: "private" });
+});

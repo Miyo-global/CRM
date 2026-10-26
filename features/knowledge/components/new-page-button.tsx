@@ -3,6 +3,7 @@
 import { ChevronDown, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +39,7 @@ export function NewPageButton({
       { spaceId, parentPageId, templateId },
       {
         onSuccess: (page) => router.push(pageHref(page.id)),
-        onError: () => toast.error("Couldn't create the page."),
+        onError: (error) => toast.error("Couldn't create the page.", { description: getErrorMessage(error) }),
       },
     );
   }

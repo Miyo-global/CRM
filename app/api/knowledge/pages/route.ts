@@ -117,8 +117,12 @@ export async function POST(req: NextRequest) {
         !(actor.permissions ?? []).includes("kb:pages:create") &&
         !body.parentPageId
       ) {
-        // No space and no parent means a loose org-level page.
-        return err("Creating a page outside a space needs kb:pages:create.", 403);
+        // A loose org-level page needs kb:pages:create. Without it the page is
+        // the caller's own private draft, which anyone may write (FR1-002).
+        if (body.visibility && body.visibility !== "private") {
+          return err("Only people who can publish to the whole wiki can create a shared page here. Your page can be private.", 403);
+        }
+        defaultVisibility = "private";
       }
 
       let content = body.content ?? null;

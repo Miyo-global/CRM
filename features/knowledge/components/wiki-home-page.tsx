@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -126,7 +127,7 @@ function useCreateBlankPage() {
         {},
         {
           onSuccess: (page) => router.push(pageHref(page.id)),
-          onError: () => toast.error("Couldn't create the page."),
+          onError: (error) => toast.error("Couldn't create the page.", { description: getErrorMessage(error) }),
         },
       ),
   };

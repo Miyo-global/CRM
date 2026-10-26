@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -36,7 +37,7 @@ export function TemplatesPage({ canManage = false }: { canManage?: boolean }) {
   function use(input: { templateId?: number; starterKey?: string }) {
     createPage.mutate(input, {
       onSuccess: (page) => router.push(pageHref(page.id)),
-      onError: () => toast.error("Couldn't start a page from that template."),
+      onError: (error) => toast.error("Couldn't start a page from that template.", { description: getErrorMessage(error) }),
     });
   }
 
