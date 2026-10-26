@@ -223,7 +223,8 @@ export async function POST(req: NextRequest) {
       ...onboardedNotification(body),
       link: `/hr/employees/${newUser.id}`,
       metadata: { employeeId: newUser.id },
-      excludeUserId: session.user.id,
+      // A new HR hire is in the HR list too; nobody is told about their own hire.
+      excludeUserId: [session.user.id, newUser.id],
     }));
 
     // Start the checklist straight away, so a successful hire always shows in
