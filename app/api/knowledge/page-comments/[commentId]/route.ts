@@ -80,7 +80,7 @@ export async function DELETE(
     if (decision.outcome === "denied") return kbDenied();
 
     const isAuthor = comment.authorId === session.user.id;
-    const canManage = accessSatisfies(decision.scope.action, "manage");
+    const canManage = accessSatisfies(decision.scope.held, "manage");
     if (!isAuthor && !canManage) {
       return err("Only the author or a page manager can delete a comment.", 403);
     }

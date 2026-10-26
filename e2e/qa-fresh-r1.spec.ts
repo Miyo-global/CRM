@@ -182,3 +182,12 @@ test("FR1-006: the employee is notified of an HR helpdesk reply, and the link op
   await emp.goto(`/hr/helpdesk?ticket=${ticketId}`);
   await expect(emp.getByRole("dialog").getByText(title)).toBeVisible();
 });
+
+test("FR1-001: a new wiki page opens editable for its creator", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/knowledge/wiki");
+  await page.getByRole("button", { name: /new page/i }).first().click();
+  await expect(page).toHaveURL(/\/knowledge\/wiki\/doc\/\d+/);
+  await expect(page.locator("[contenteditable]").first()).toHaveAttribute("contenteditable", "true");
+  await expect(page.locator("input, textarea").first()).not.toHaveAttribute("readonly", /.*/);
+});

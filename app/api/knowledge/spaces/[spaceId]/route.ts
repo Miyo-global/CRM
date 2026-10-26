@@ -56,7 +56,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ spaceId
     return ok({
       ...space,
       counts: await countSpacePages(session.orgId, space!.id),
-      myAccess: decision.scope.action,
+      myAccess: decision.scope.held,
       via: decision.scope.via,
     });
   }, req);

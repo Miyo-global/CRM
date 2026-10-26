@@ -60,7 +60,7 @@ beforeEach(() => {
   harness.findFirst = { kbPages: page };
   access.mockResolvedValue({
     outcome: "allowed",
-    scope: { orgId: "org-a", pageId: "5", action: "edit", via: "space" },
+    scope: { orgId: "org-a", pageId: "5", action: "edit", held: "edit", via: "space" },
   });
   commit.mockResolvedValue({
     contentRevision: 5,
@@ -202,7 +202,7 @@ describe("PATCH /api/knowledge/pages/[pageId]", () => {
     harness.findFirst = { kbPages: { ...page, isLocked: true } };
     access.mockResolvedValue({
       outcome: "allowed",
-      scope: { orgId: "org-a", pageId: "5", action: "manage", via: "admin" },
+      scope: { orgId: "org-a", pageId: "5", action: "manage", held: "manage", via: "admin" },
     });
     const res = await PATCH(
       kbRequest(url, { method: "PATCH", body: { title: "x" } }) as never,

@@ -202,3 +202,32 @@ describe("decideSpaceAccess", () => {
     ).toEqual({ outcome: "notFound" });
   });
 });
+
+describe("held access (FR1-001)", () => {
+  // Pages are loaded with "view"; the editor decides read-only from `held`,
+  // so `held` must be the strongest level, not the one that was asked for.
+  it("reports manage for a page's creator even when asked for view", () => {
+    const decision = decidePageAccess(ctx({ page: { ...PAGE, createdById: "u1" } }), "view");
+    expect(decision.outcome).toBe("allowed");
+    if (decision.outcome === "allowed") {
+      expect(decision.scope.action).toBe("view");
+      expect(decision.scope.held).toBe("manage");
+    }
+  });
+
+  it("reports edit for a space editor asked for view", () => {
+    const decision = decidePageAccess(ctx({ spaceRole: "editor" }), "view");
+    if (decision.outcome === "allowed") expect(decision.scope.held).toBe("edit");
+    else throw new Error("expected allowed");
+  });
+
+  it("reports the held level for a space too", () => {
+    const space = { id: 11, orgId: "org-a", deletedAt: null, createdById: "u1" };
+    const decision = decideSpaceAccess(
+      { actor: ACTOR, space, spaceRole: null, isKbAdmin: false, canViewOrgWide: true },
+      "view",
+    );
+    if (decision.outcome === "allowed") expect(decision.scope.held).toBe("manage");
+    else throw new Error("expected allowed");
+  });
+});
