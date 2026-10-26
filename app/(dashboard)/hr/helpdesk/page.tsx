@@ -135,6 +135,19 @@ export default function HelpdeskPage() {
   const [canSubmitTicket, setCanSubmitTicket] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<HelpdeskTicket | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  // A reply notification links to ?ticket=<id>; open that ticket (FR1-006).
+  const linkedTicketId = Number(searchParams.get("ticket")) || null;
+  const [openedLinked, setOpenedLinked] = useState(false);
+  if (!openedLinked && linkedTicketId && tickets) {
+    // Adjusting state during render (once, when the list arrives) rather than
+    // in an effect.
+    setOpenedLinked(true);
+    const linked = tickets.find((t) => t.id === linkedTicketId);
+    if (linked) {
+      setSelectedTicket(linked);
+      setDetailOpen(true);
+    }
+  }
   const { page, pageSize, setPage, setPageSize } = usePaginationParams();
 
   const setFilter = useCallback(

@@ -159,3 +159,26 @@ test("FR1-006: the employee is notified when a reimbursement is approved", async
     .poll(async () => (await api(emp, "/api/notifications?unreadOnly=false&limit=20")).text, { timeout: 10_000 })
     .toContain("Your reimbursement of ₹750 (Travel) was approved.");
 });
+
+test("FR1-006: the employee is notified of an HR helpdesk reply, and the link opens the ticket", async ({ browser }) => {
+  const emp = await browser.newPage();
+  await signIn(emp, EMPLOYEE);
+  const title = `QA-TEST FR1 ticket ${Date.now()}`;
+  const created = await api(emp, "/api/hr/helpdesk", {
+    method: "POST",
+    body: { title, description: "QA-TEST FR1 helpdesk reply notification check", category: "OTHER", priority: "MEDIUM" },
+  });
+  expect(created.status, created.text).toBeLessThan(300);
+  const ticketId = (created.json as { id: number }).id;
+
+  const admin = await browser.newPage();
+  await signIn(admin, ADMIN);
+  const reply = await api(admin, `/api/hr/helpdesk/${ticketId}/comments`, { method: "POST", body: { body: "QA-TEST reply" } });
+  expect(reply.status, reply.text).toBe(200);
+
+  await expect
+    .poll(async () => (await api(emp, "/api/notifications?unreadOnly=false&limit=20")).text, { timeout: 10_000 })
+    .toContain(`New reply on \\"${title}\\"`);
+  await emp.goto(`/hr/helpdesk?ticket=${ticketId}`);
+  await expect(emp.getByRole("dialog").getByText(title)).toBeVisible();
+});

@@ -6,6 +6,9 @@ import { and, asc, eq } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { afterResponse } from "@/lib/after-response";
+import { createNotification } from "@/server/actions/create-notification";
+import { helpdeskReplyNotice } from "@/lib/notifications/helpdesk-reply-notice";
 
 const createCommentSchema = z.object({
   body: z
@@ -19,7 +22,7 @@ const createCommentSchema = z.object({
 async function loadTicketForAccess(orgId: string, ticketId: number) {
   return db.query.helpdeskTickets.findFirst({
     where: and(eq(helpdeskTickets.id, ticketId), eq(helpdeskTickets.orgId, orgId)),
-    columns: { id: true, userId: true, assigneeId: true },
+    columns: { id: true, userId: true, assigneeId: true, title: true },
   });
 }
 
@@ -118,6 +121,21 @@ export async function POST(
       .update(helpdeskTickets)
       .set({ updatedAt: new Date() })
       .where(and(eq(helpdeskTickets.id, ticketId), eq(helpdeskTickets.orgId, session.orgId)));
+
+    // The employee only saw HR's reply by reopening the ticket (FR1-006).
+    const notice = helpdeskReplyNotice({
+      ticketId,
+      ticketTitle: ticket.title,
+      ownerId: ticket.userId,
+      assigneeId: ticket.assigneeId,
+      authorId: session.user.id,
+      authorName: session.user.name ?? null,
+      kind,
+      body: data.body,
+    });
+    if (notice) {
+      afterResponse("hr/helpdesk/reply", () => createNotification({ orgId: session.orgId, type: "INFO", ...notice }));
+    }
 
     return ok({
       ...comment,
