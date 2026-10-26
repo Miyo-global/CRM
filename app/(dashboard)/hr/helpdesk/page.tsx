@@ -8,6 +8,7 @@ import { TicketDetailSheet } from "@/features/hr/helpdesk/ticket-detail-sheet";
 import { useHelpdeskAssignees } from "@/lib/api/hooks/hr/helpdesk";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { isSupportStaff } from "@/lib/constants/support-sla";
 import type { HelpdeskTicketFormValues } from "@/lib/validations/common-forms";
 import { usePaginationParams } from "@/hooks/use-pagination-params";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
@@ -70,15 +71,22 @@ const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
 ];
 
 // BUG-13: Helpdesk and Customer Support are separate queues; say which is which.
-const HELPDESK_SUBTITLE = (
-  <>
-    Questions for HR: payroll, leave, policy, equipment and access.{" "}
-    Reporting a client issue?{" "}
-    <Link href="/support" className="font-medium text-brand-text hover:underline">
-      Go to Customer Support
-    </Link>
-  </>
-);
+// Customer Support is for support staff only, so employees get no link to it.
+function helpdeskSubtitle(showCustomerSupport: boolean) {
+  return (
+    <>
+      Questions for HR: payroll, leave, policy, equipment and access.
+      {showCustomerSupport && (
+        <>
+          {" "}Reporting a client issue?{" "}
+          <Link href="/support" className="font-medium text-brand-text hover:underline">
+            Go to Customer Support
+          </Link>
+        </>
+      )}
+    </>
+  );
+}
 
 const CATEGORY_OPTIONS = [
   "IT Support",
@@ -230,7 +238,7 @@ export default function HelpdeskPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="HR Helpdesk" subtitle={HELPDESK_SUBTITLE}>
+      <PageWrapper title="HR Helpdesk" subtitle={helpdeskSubtitle(isSupportStaff(session?.user?.role))}>
         <div className="space-y-4">
           <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-2">
@@ -246,7 +254,7 @@ export default function HelpdeskPage() {
   return (
     <PageWrapper
       title="HR Helpdesk"
-      subtitle={HELPDESK_SUBTITLE}
+      subtitle={helpdeskSubtitle(isSupportStaff(session?.user?.role))}
       badge={`${stats.total} tickets`}
       actions={
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

@@ -199,3 +199,15 @@ describe("isDisabledModuleRoute (ATS off)", () => {
     }
   });
 });
+
+describe("Customer Support module (owner decision)", () => {
+  it("is for support staff, not employees", () => {
+    for (const path of ["/support", "/support/inbox", "/support/42"]) {
+      expect(canAccessRoute(path, "EMPLOYEE")).toBe(false);
+      expect(canAccessRoute(path, "HR")).toBe(true);
+      expect(canAccessRoute(path, "ADMIN")).toBe(true);
+      expect(canAccessRoute(path, "CUSTOMER_SUPPORT")).toBe(true);
+    }
+    expect(canAccessRoute("/hr/helpdesk", "EMPLOYEE")).toBe(true);
+  });
+});
