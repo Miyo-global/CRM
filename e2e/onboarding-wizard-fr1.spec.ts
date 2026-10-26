@@ -50,3 +50,17 @@ test("FR1-012: letters typed into Phone get an inline explanation", async ({ pag
   await phone.pressSequentially("98765");
   await expect(page.getByText("Phone numbers can only contain digits.")).toBeHidden();
 });
+
+test("FR1-010: the joining date picker stops one year ahead", async ({ page }) => {
+  await openWizard(page);
+  await page.getByLabel(/first name/i).fill("QA-TEST");
+  await page.getByLabel(/last name/i).fill("Wizard");
+  await page.getByLabel(/^email/i).fill(`qa-test.fr1.${Date.now()}@example.com`);
+  await page.getByRole("button", { name: /^next/i }).click();
+  await expect(page.getByText(/\(one year ahead\)/)).toBeVisible();
+  await page.getByRole("button", { name: /joining date/i }).click();
+  // Thirteen months forward is past the limit, so "next month" stops working.
+  const next = page.getByRole("button", { name: /next month/i });
+  for (let i = 0; i < 13 && (await next.isEnabled()); i++) await next.click();
+  await expect(next).toBeDisabled();
+});
