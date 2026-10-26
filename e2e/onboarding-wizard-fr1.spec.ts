@@ -41,3 +41,12 @@ test("FR1-011: name inputs stop at 50 characters", async ({ page }) => {
   await last.fill("b".repeat(300));
   await expect(last).toHaveValue("b".repeat(50));
 });
+
+test("FR1-012: letters typed into Phone get an inline explanation", async ({ page }) => {
+  await openWizard(page);
+  const phone = page.getByPlaceholder("Enter phone number");
+  await phone.pressSequentially("abcdef");
+  await expect(page.getByText("Phone numbers can only contain digits.")).toBeVisible();
+  await phone.pressSequentially("98765");
+  await expect(page.getByText("Phone numbers can only contain digits.")).toBeHidden();
+});
