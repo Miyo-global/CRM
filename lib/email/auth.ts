@@ -65,7 +65,7 @@ export function welcomeEmailVars(
     email,
     setup_url: setupUrl,
     joining_date: details.joiningDate ?? "your first day",
-    manager_name: details.managerName ?? "your manager",
+    manager_name: details.managerName ?? "",
     link_expires_at: details.linkExpiresAt ?? "in 7 days",
   };
 }

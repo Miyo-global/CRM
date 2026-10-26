@@ -38,3 +38,24 @@ describe("welcome / set-up email", () => {
     expect(text).not.toContain("IST IST");
   });
 });
+
+describe("manager line (FR1-022)", () => {
+  it("is left out when no manager is set", async () => {
+    await sendSetupLink({ email: "a@example.com", name: "QA-TEST FR1 Emp1" });
+    const { text, html } = renderEmail("auth-welcome-set-password", {
+      manager_name: sent[0].details.managerName as string | null,
+    });
+    expect(text).not.toContain("Reporting to");
+    expect(text).not.toContain("your manager");
+    expect(html).not.toContain("Reporting to");
+  });
+
+  it("names the manager when one is set", async () => {
+    managers.current = { name: "Priya Rao" };
+    await sendSetupLink({ email: "a@example.com", name: "QA-TEST FR1 Emp1", reportingTo: "m1" });
+    const { text } = renderEmail("auth-welcome-set-password", {
+      manager_name: sent[0].details.managerName as string,
+    });
+    expect(text).toContain("Reporting to:  Priya Rao");
+  });
+});

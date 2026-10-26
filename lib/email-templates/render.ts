@@ -40,6 +40,17 @@ function fill(template: string, vars: Record<string, string>, escape: boolean): 
 }
 
 /**
+ * `{{#key}}…{{/key}}` keeps its body only when `key` has a value, so an
+ * optional row (manager, employee ID) is left out instead of showing a
+ * placeholder like "your manager" (FR1-022).
+ */
+function sections(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{\{#([a-z0-9_]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_m, key: string, body: string) =>
+    vars[key]?.trim() ? body : "",
+  );
+}
+
+/**
  * With no company address configured the footer read "Miyo Global ·" with
  * nothing after the dot (FR1-024); drop the separator along with the address.
  */
@@ -62,8 +73,8 @@ export function renderEmail(id: EmailTemplateId, vars: EmailVars = {}): Rendered
   return {
     subject: fill(entry.subject, all, false),
     preheader: fill(entry.preheader, all, false),
-    html: fill(dropEmptyAddress(entry.html, all), all, true),
-    text: fill(dropEmptyAddress(entry.text, all), all, false),
+    html: fill(dropEmptyAddress(sections(entry.html, all), all), all, true),
+    text: fill(dropEmptyAddress(sections(entry.text, all), all), all, false),
   };
 }
 
