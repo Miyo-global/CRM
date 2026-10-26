@@ -7,4 +7,10 @@ describe("onboarded notification", () => {
   it("names the employee in the subject (FR1-028)", () => {
     expect(onboardedNotification(hire).title).toBe("New employee onboarded: QA-TEST FR1 Emp1");
   });
+
+  it("writes the joining date like the welcome mail does (FR1-026)", () => {
+    const { message } = onboardedNotification(hire);
+    expect(message).toContain("joining 26 Oct 2026");
+    expect(message).not.toContain("2026-10-26");
+  });
 });
