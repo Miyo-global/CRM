@@ -9,6 +9,7 @@ import {
   EmployeePayslipsTab,
 } from "./employee-profile-tabs";
 import { SelfEditProfileForm } from "@/components/hr/self-edit-profile-form";
+import { ProfessionalTaxEditor } from "@/components/hr/professional-tax-editor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useHrEmployeeStats,
@@ -693,6 +694,7 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                   >
                     <DetailRow label="Monthly" value={monthly} />
                     <DetailRow label="Annual (est.)" value={annual} />
+                    {canManage && <ProfessionalTaxEditor userId={employee.id} />}
                     <DetailRow label="PAN / Tax ID" value={maskTaxId(e.taxId)} />
                     <DetailRow label="Bank" value={asStr(bank?.bankName)} />
                     <DetailRow label="Account" value={maskAccount(bank?.accountNumber)} />

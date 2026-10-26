@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
         continue;
       }
       const run = computePayroll(input);
+      // Deductions above gross would save a misleading ₹0 net; leave the draft as is.
+      if (run.deductionsExceedGross) {
+        skipped++;
+        continue;
+      }
       const values = payrollRowValues(run, {
         orgId: session.orgId,
         userId: draft.userId,

@@ -129,7 +129,8 @@ export const payrolls = pgTable("payrolls", {
   lopAmount: decimal("lop_amount").default("0"),
   halfDays: decimal("half_days").default("0"),
   halfDayAmount: decimal("half_day_amount").default("0"),
-  ptAmount: decimal("pt_amount").default("200"),
+  /** PT deducted on this payslip, snapshotted at generation (0195). */
+  ptAmount: decimal("pt_amount", { precision: 10, scale: 2 }).default("0").notNull(),
   pfEmployee: decimal("pf_employee").default("0"),
   pfEmployer: decimal("pf_employer").default("0"),
   esiEmployee: decimal("esi_employee").default("0"),
@@ -169,8 +170,8 @@ export const salaryStructures = pgTable("salary_structures", {
   allowances: decimal("allowances").default("0"),
   specialAllowance: decimal("special_allowance").default("0"),
   deductions: decimal("deductions").default("0"),
-  /** Null = by band (lib/payroll/rules professionalTax); "0" = not levied. */
-  professionalTax: decimal("professional_tax"),
+  /** Monthly PT for this employee (INR). Null = not applicable; payroll deducts 0. */
+  professionalTax: decimal("professional_tax", { precision: 10, scale: 2 }),
   pfApplicable: boolean("pf_applicable").default(false).notNull(),
   pfEmployeeRate: decimal("pf_employee_rate", { precision: 5, scale: 2 }).default("12"),
   pfEmployerRate: decimal("pf_employer_rate", { precision: 5, scale: 2 }).default("12"),

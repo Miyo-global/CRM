@@ -129,6 +129,9 @@ function DetailField({ label, children }: { label: string; children: React.React
 }
 
 function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => void }) {
+  // Events that carry a readable diff ("PT ₹200.00 → ₹250.00") show it above the raw metadata.
+  const changeSummary = typeof log.metadata?.summary === "string" ? log.metadata.summary : null;
+  const changeTarget = typeof log.metadata?.employeeName === "string" ? log.metadata.employeeName : null;
   return (
     <Sheet open onOpenChange={(v) => !v && onClose()}>
       <SheetContent size="sm" className="flex flex-col gap-0 p-0 w-full">
@@ -161,6 +164,14 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
               <p className="text-sm">
                 <span className="font-medium">{auditTargetTypeLabel(log.targetType)}</span>
                 {log.targetId && <span className="text-muted-foreground"> #{log.targetId}</span>}
+              </p>
+            </DetailField>
+          )}
+          {changeSummary && (
+            <DetailField label="Change">
+              <p className="text-sm tabular-nums">
+                {changeTarget && <span className="font-medium">{changeTarget}: </span>}
+                {changeSummary}
               </p>
             </DetailField>
           )}

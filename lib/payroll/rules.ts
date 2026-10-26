@@ -6,16 +6,25 @@
  */
 
 /**
- * Professional tax bands (monthly, INR), lowest band first.
+ * Professional tax is a per-employee amount stored on the salary structure
+ * (`salary_structures.professional_tax`), never a band or constant in code.
+ * NULL means "not applicable" and payroll deducts 0.
  *
- * OPEN QUESTION (confirm with Tarun): "exactly 11,000 pays 150" and "the upper
- * band is 250, not 200" both come from the Oct 2026 QA sheet, not from a state
- * notification. PT is a state levy, so these need sign-off per state.
+ * PT_MAX_MONTHLY caps the field: Article 276(2) limits PT to ₹2,500 a year,
+ * and a single month can legitimately carry a large share of it (Maharashtra
+ * takes ₹300 in February). PT_ANNUAL_CAP drives a soft warning only.
+ *
+ * Future work (not built): per-month overrides (e.g. February), state slab
+ * tables keyed on work location, and tracking the ₹2,500 annual cap.
  */
-export const PT_BANDS: ReadonlyArray<{ upTo: number; amount: number }> = [
-  { upTo: 11_000, amount: 150 },
-  { upTo: Number.POSITIVE_INFINITY, amount: 250 },
-];
+export const PT_MAX_MONTHLY = 2500;
+export const PT_ANNUAL_CAP = 2500;
+
+/** Stored PT (decimal string or null) as the amount payroll deducts. */
+export function professionalTaxFromStored(stored: string | null | undefined): number {
+  const n = stored == null ? NaN : parseFloat(stored);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
 
 /** Earnings split of monthly CTC. */
 export const BASIC_PCT = 50;
@@ -39,24 +48,6 @@ export const OVERTIME_DAY_MULTIPLIER = 1;
 export function otMultiplier(stored: string | null | undefined): number {
   const n = stored == null ? NaN : parseFloat(stored);
   return Number.isFinite(n) ? n : OVERTIME_DAY_MULTIPLIER;
-}
-
-/** Professional tax for a monthly salary, by band. */
-export function professionalTax(monthlySalary: number): number {
-  const salary = Number.isFinite(monthlySalary) ? Math.max(0, monthlySalary) : 0;
-  for (const band of PT_BANDS) {
-    if (salary <= band.upTo) return band.amount;
-  }
-  return PT_BANDS[PT_BANDS.length - 1]!.amount;
-}
-
-/** Human hint for the onboarding salary step: which band a salary falls in. */
-export function professionalTaxBandLabel(monthlySalary: number): string {
-  const amount = professionalTax(monthlySalary);
-  const band = PT_BANDS.find((b) => Math.max(0, monthlySalary) <= b.upTo);
-  const bound =
-    band && Number.isFinite(band.upTo) ? `up to ₹${band.upTo.toLocaleString("en-IN")}` : "above the top band";
-  return `Professional tax ₹${amount}/month (${bound})`;
 }
 
 /** Calendar days in a YYYY-MM month. */

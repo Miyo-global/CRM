@@ -3,6 +3,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { onboardEmployeeInputSchema } from "@/lib/validations/hr";
+import { formatProfessionalTax, ptAmountSchema } from "@/lib/validations/professional-tax";
 import { format } from "date-fns";
 import { AlertCircle, Check, Lightbulb } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -99,6 +100,8 @@ export function StepReview({
   onConfirmedChange,
 }: StepReviewProps) {
   const values = form.watch();
+  // Form state holds the raw text; parse it the same way the server will.
+  const ptReview = ptAmountSchema.safeParse(values.professionalTax);
   const bank = values.bankDetails;
 
   const departmentName =
@@ -158,6 +161,11 @@ export function StepReview({
         <ReviewField
           label="Monthly salary (CTC)"
           value={formatCurrency(values.monthlySalary)}
+          className="sm:col-span-2"
+        />
+        <ReviewField
+          label="Professional Tax"
+          value={formatProfessionalTax(ptReview.success ? ptReview.data : null)}
           className="sm:col-span-2"
         />
       </ReviewSection>

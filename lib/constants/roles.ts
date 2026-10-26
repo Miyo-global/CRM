@@ -157,6 +157,14 @@ export function isPayrollApprover(role: string | undefined | null): boolean {
   return !!role && PAYROLL_APPROVER_ROLES.includes(role);
 }
 
+/**
+ * HR and Admin set everyone's professional tax but not their own; only the
+ * Super Admin may change their own (owner policy default).
+ */
+export function canEditOwnProfessionalTax(role: string | undefined | null): boolean {
+  return role === ROLES.CEO;
+}
+
 /** Who may add, edit or delete holidays: the same on the API and server actions (MIYO-0085). */
 export function canManageHolidays(role: string | undefined | null): boolean {
   return isAdminOrOwner(role);

@@ -17,7 +17,7 @@ import {
   resolvePayrollMonthlyCtc,
 } from "@/lib/hr/salary-effective-dates";
 import { DEFAULT_TIMEZONE } from "@/lib/constants/locale";
-import { daysInMonth, emiDueFor, otMultiplier, perDayRate, round2 } from "./rules";
+import { daysInMonth, emiDueFor, otMultiplier, perDayRate, professionalTaxFromStored, round2 } from "./rules";
 import type { PayrollComputeInput } from "./compute";
 
 export function todayIst(): string {
@@ -173,7 +173,6 @@ export async function loadPayrollInputs(
     );
 
     const attendanceForUser = att.get(userId);
-    const structurePt = structure?.professionalTax != null ? parseFloat(structure.professionalTax) : null;
 
     out.set(userId, {
       month: opts.month,
@@ -201,9 +200,8 @@ export async function loadPayrollInputs(
             esiWageCeiling: parseFloat(structure.esiWageCeiling ?? "21000"),
           }
         : undefined,
-      // Professional tax comes from the bands (A1). A structure may still switch
-      // it off entirely where the state does not levy it.
-      professionalTaxOverride: structurePt === 0 ? 0 : null,
+      // Per-employee PT from the salary structure; NULL = not applicable.
+      professionalTax: professionalTaxFromStored(structure?.professionalTax),
     });
   }
 

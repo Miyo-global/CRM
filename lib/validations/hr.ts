@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { ptAmountSchema } from "./professional-tax";
 import { z } from "zod";
 import { PASSWORD_ZOD_SCHEMA } from "@/lib/utils/password-validation";
 import {
@@ -673,6 +674,8 @@ export const onboardEmployeeInputSchema = z
       .optional()
       .or(z.literal("")),
     monthlySalary: amountSchema(MONTHLY_SALARY_RULES),
+    /** Monthly PT; empty or null = not applicable (payroll deducts 0). */
+    professionalTax: ptAmountSchema.optional(),
     bankDetails: optionalBankDetailsSchema,
   })
   .superRefine((data, ctx) => {

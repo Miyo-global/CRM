@@ -16,6 +16,7 @@ import { isoDateInTimezone } from "@/lib/constants/locale";
 import { HrSheet } from "@/features/hr/hr-sheet";
 import type { Employee } from "@/types/hr";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { fmtInr } from "@/lib/hr/payslip-view-model";
 
 export interface PayslipPreview {
   basicPay: number;
@@ -185,12 +186,15 @@ export function PayslipDetailSheet({
           <div>
             <h4 className="font-semibold text-xs mb-3 text-danger-strong uppercase tracking-wider">Deductions</h4>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Professional Tax</span>
-                <span className="text-danger-strong tabular-nums">
-                  -₹{payslipPreview?.professionalTax.toLocaleString(DEFAULT_LOCALE)}
-                </span>
-              </div>
+              {/* Hidden at 0 / N/A, as on the payslip PDF (payslip-view-model). */}
+              {(payslipPreview?.professionalTax ?? 0) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Professional Tax</span>
+                  <span className="text-danger-strong tabular-nums">
+                    -{fmtInr(payslipPreview?.professionalTax ?? 0)}
+                  </span>
+                </div>
+              )}
               {(payslipPreview?.salaryStructureDeductions || 0) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>

@@ -93,6 +93,18 @@ export const PERMISSIONS: Permission[] = [
     description: "Manage salary structures",
   },
   {
+    name: "hr:payroll:pt:view",
+    resource: "hr:payroll:pt",
+    action: "view",
+    description: "View other employees' professional tax amount",
+  },
+  {
+    name: "hr:payroll:pt:edit",
+    resource: "hr:payroll:pt",
+    action: "edit",
+    description: "Set or change an employee's professional tax amount",
+  },
+  {
     name: "hr:expenses:view",
     resource: "hr:expenses",
     action: "view",
@@ -473,6 +485,8 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "hr:payroll:approve",
     "hr:salary:view",
     "hr:salary:manage",
+    "hr:payroll:pt:view",
+    "hr:payroll:pt:edit",
     "hr:expenses:view",
     "hr:expenses:approve",
     "hr:documents:view",

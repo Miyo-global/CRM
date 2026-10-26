@@ -23,6 +23,7 @@ import { ROLES } from "@/lib/constants/roles";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { afterResponse } from "@/lib/after-response";
 import { findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
+import { auditProfessionalTax, professionalTaxColumn, professionalTaxEditError } from "@/lib/hr/professional-tax";
 
 export async function POST(req: NextRequest) {
   return withRoles(ONBOARDING_MUTATE_ROLES)(async (session) => {
@@ -116,6 +117,19 @@ export async function POST(req: NextRequest) {
     const passwordHash = await hash(nanoid(48), 12);
     const userId = randomUUID();
 
+    // Setting a PT amount needs hr:payroll:pt:edit; leaving it blank (N/A) does not.
+    const professionalTax = body.professionalTax ?? null;
+    const writesStructure = !!body.monthlySalary && body.monthlySalary > 0;
+    if (professionalTax != null && writesStructure) {
+      const ptError = await professionalTaxEditError({
+        orgId: session.orgId,
+        actorId: session.user.id,
+        actorRole: session.user.role,
+        targetUserId: userId,
+      });
+      if (ptError) return err(ptError.message, ptError.status);
+    }
+
     let employeeId = normalizeEmployeeIdInput(body.employeeId);
     if (!employeeId) {
       employeeId = await generateNextEmployeeId(body.joiningDate ?? new Date());
@@ -175,7 +189,7 @@ export async function POST(req: NextRequest) {
       // so the department delete-guard and headcount stay accurate (D18).
       await syncUserDepartmentMembership(tx, u.id, departmentId);
 
-      if (body.monthlySalary && body.monthlySalary > 0) {
+      if (writesStructure) {
         const basicSalary = body.monthlySalary * 0.5;
         const specialAllowance = body.monthlySalary * 0.25;
         await tx.insert(salaryStructures).values({
@@ -188,6 +202,7 @@ export async function POST(req: NextRequest) {
           specialAllowance: specialAllowance.toString(),
           allowances: "0",
           deductions: "0",
+          professionalTax: professionalTaxColumn(professionalTax),
           effectiveFrom: formatDateOnly(body.joiningDate),
           isActive: true,
         });
@@ -247,6 +262,19 @@ export async function POST(req: NextRequest) {
       });
     } catch (auditErr) {
       logger.error("Failed to write onboard audit log", { userId: newUser.id, error: auditErr instanceof Error ? auditErr.message : "Unknown" });
+    }
+
+    if (writesStructure) {
+      await auditProfessionalTax({
+        orgId: session.orgId,
+        actorId: session.user.id,
+        actorRole: session.user.role,
+        employeeId: newUser.id,
+        employeeName: `${body.firstName} ${body.lastName}`,
+        oldValue: null,
+        newValue: professionalTax,
+        isCreate: true,
+      });
     }
 
     let welcomeEmailSent = false;

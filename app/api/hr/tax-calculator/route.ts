@@ -2,7 +2,7 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
-import { professionalTax as professionalTaxForMonth } from "@/lib/payroll/rules";
+import { ptAmountSchema } from "@/lib/validations/professional-tax";
 
 const calcSchema = z.object({
   annualCtc: z.number().positive(),
@@ -10,6 +10,8 @@ const calcSchema = z.object({
   hraPercentage: z.number().min(0).max(100).optional().default(40),
   regime: z.enum(["OLD", "NEW"]).optional().default("NEW"),
   pfOptOut: z.boolean().optional().default(false),
+  /** The employee's monthly PT; omitted or null = not applicable. */
+  professionalTaxMonthly: ptAmountSchema.optional(),
 });
 
 const OLD_REGIME_SLABS = [
@@ -41,7 +43,7 @@ function calculateTax(taxableIncome: number, slabs: typeof OLD_REGIME_SLABS): nu
 export async function POST(req: NextRequest) {
   return withAuth(async () => {
     const body = calcSchema.parse(await req.json());
-    const { annualCtc, basicPercentage, hraPercentage, regime, pfOptOut } = body;
+    const { annualCtc, basicPercentage, hraPercentage, regime, pfOptOut, professionalTaxMonthly } = body;
 
     const basic = (annualCtc * basicPercentage) / 100;
     const hra = (basic * hraPercentage) / 100;
@@ -49,8 +51,8 @@ export async function POST(req: NextRequest) {
     const pfEmployer = pfOptOut ? 0 : Math.min(basic * 0.12, 21600);
     const esiEmployee = annualCtc <= 252000 ? annualCtc * 0.0075 : 0;
     const esiEmployer = annualCtc <= 252000 ? annualCtc * 0.0325 : 0;
-    // Monthly PT band on monthly CTC (same basis as payroll), x 12.
-    const professionalTax = professionalTaxForMonth(annualCtc / 12) * 12;
+    // Per-employee monthly PT (same source as payroll), x 12.
+    const professionalTax = (professionalTaxMonthly ?? 0) * 12;
     const standardDeduction = 75000;
 
     const grossSalary = annualCtc - pfEmployer - esiEmployer;

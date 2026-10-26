@@ -38,6 +38,8 @@ export type AuditAction =
   | "hr.employee_onboarded"
   | "hr.salary_changed"
   | "hr.salary_revised"
+  | "EMPLOYEE_PT_SET"
+  | "EMPLOYEE_PT_UPDATED"
   | "hr.leave_approved"
   | "hr.leave_rejected"
   | "hr.leave_cancelled"
@@ -164,6 +166,8 @@ export const ALWAYS_LISTED_AUDIT_ACTIONS: readonly AuditAction[] = [
   "webhook.updated",
   "webhook.deleted",
   "user.deactivated",
+  "EMPLOYEE_PT_SET",
+  "EMPLOYEE_PT_UPDATED",
 ];
 
 /**
