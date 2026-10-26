@@ -112,6 +112,12 @@ export async function POST(req: NextRequest) {
         400,
       );
     }
+    if (run.deductionsExceedGross) {
+      return err(
+        `Deductions (₹${run.totalDeductions.toLocaleString("en-IN")}) exceed gross pay (₹${run.grossSalary.toLocaleString("en-IN")}) for ${body.month}. Reduce professional tax or other deductions before generating.`,
+        422,
+      );
+    }
 
     let payroll;
     try {

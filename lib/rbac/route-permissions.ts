@@ -31,6 +31,8 @@ export const ROUTE_PERMISSIONS: readonly RoutePermissionRule[] = [
   { pattern: "/api/hr/payrolls", methods: ["POST"], permission: "hr:payroll:generate" },
   { pattern: "/api/hr/payrolls/:id/approve", methods: ["PATCH", "PUT"], permission: "hr:payroll:approve" },
   { pattern: "/api/hr/payrolls/:id/paid", methods: ["PATCH", "PUT"], permission: "hr:payroll:approve" },
+  { pattern: "/api/hr/salary-structures/:id/professional-tax", methods: ["GET"], permission: "hr:payroll:pt:view" },
+  { pattern: "/api/hr/salary-structures/:id/professional-tax", methods: ["PATCH"], permission: "hr:payroll:pt:edit" },
   { pattern: "/api/hr/attendance/check-in", methods: ["POST"], permission: "self:attendance" },
   { pattern: "/api/hr/attendance/check-out", methods: ["POST"], permission: "self:attendance" },
 ];

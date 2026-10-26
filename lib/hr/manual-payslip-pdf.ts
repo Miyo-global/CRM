@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { monthKeyToDate } from "@/lib/date-utils";
-import { professionalTax } from "@/lib/payroll/rules";
 import { z } from "zod";
 import type { PayslipPdfData } from "@/lib/payslip-pdf-core";
 import type { PayslipMoneyLine } from "@/lib/hr/payslip-view-model";
@@ -79,7 +78,7 @@ export function manualPayslipBodyToPdfData(body: ManualPayslipPdfBody): PayslipP
   }
 
   const deductions: PayslipMoneyLine[] = [];
-  const pt = body.professionalTax ?? professionalTax(body.grossSalary);
+  const pt = body.professionalTax ?? 0;
   if (pt > 0) deductions.push({ label: "Professional Tax", amount: pt });
   if (body.pfEmployee > 0) deductions.push({ label: "Provident Fund (PF)", amount: body.pfEmployee });
   if (body.esiEmployee > 0) deductions.push({ label: "Employee State Insurance (ESI)", amount: body.esiEmployee });

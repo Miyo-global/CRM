@@ -15,7 +15,7 @@ import {
 
 void perDaySalaryForLop;
 void computeTotalDeductionsAndNet;
-const PROFESSIONAL_TAX_INR = 250; // PT band for every salary in these fixtures (> ₹11,000)
+const PROFESSIONAL_TAX_INR = 250; // per-employee PT used by these fixtures; there is no default
 
 describe("splitMonthlyCtc505025", () => {
   it("splits monthly CTC into 50% basic, 25% HRA, 25% special", () => {
@@ -85,9 +85,23 @@ describe("roundInr", () => {
 });
 
 describe("computeTotalDeductionsAndNet", () => {
-  it("includes professional tax by default", () => {
+  it("deducts no professional tax when none is given (no hardcoded default)", () => {
     const result = computeTotalDeductionsAndNet({
       month: "2026-04",
+      monthlySalary: 30000,
+      grossSalary: 30000,
+      salaryStructureDeductions: 0,
+      lopDays: 0,
+      otherDeductions: 0,
+    });
+    expect(result.totalDeductions).toBe(0);
+    expect(result.netSalary).toBe(30000);
+  });
+
+  it("deducts the professional tax it is given", () => {
+    const result = computeTotalDeductionsAndNet({
+      month: "2026-04",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 30000,
       grossSalary: 30000,
       salaryStructureDeductions: 0,
@@ -102,6 +116,7 @@ describe("computeTotalDeductionsAndNet", () => {
   it("₹27,000 gross → ₹26,750 net and ₹25,000 gross → ₹24,750 net when only PT applies", () => {
     const r27 = computeTotalDeductionsAndNet({
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 27000,
       grossSalary: 27000,
       salaryStructureDeductions: 0,
@@ -114,6 +129,7 @@ describe("computeTotalDeductionsAndNet", () => {
 
     const r25 = computeTotalDeductionsAndNet({
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 25000,
       grossSalary: 25000,
       salaryStructureDeductions: 0,
@@ -127,6 +143,7 @@ describe("computeTotalDeductionsAndNet", () => {
   it("applies LOP deduction proportional to days", () => {
     const result = computeTotalDeductionsAndNet({
       month: "2026-04",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 31000,
       grossSalary: 31000,
       salaryStructureDeductions: 0,
@@ -141,6 +158,7 @@ describe("computeTotalDeductionsAndNet", () => {
   it("includes salary structure and other deductions", () => {
     const result = computeTotalDeductionsAndNet({
       month: "2026-04",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 30000,
       grossSalary: 30000,
       salaryStructureDeductions: 1800,
@@ -172,6 +190,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 27000,
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       lopDays: 0,
 
       otherDeductions: 0,
@@ -193,6 +212,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 25000,
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       lopDays: 0,
 
       otherDeductions: 0,
@@ -301,6 +321,7 @@ describe("buildPayslipPreviewFromEmployee", () => {
     const preview = buildPayslipPreviewFromEmployee({
       monthlySalary: 24999,
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       lopDays: 0,
 
       otherDeductions: 0,
@@ -545,6 +566,7 @@ describe("loan recovery is all-or-nothing", () => {
     lopDays: 0,
 
     otherDeductions: 0,
+    professionalTax: PROFESSIONAL_TAX_INR,
   };
 
   it("recovers the full EMI when it fits", () => {
@@ -568,6 +590,7 @@ describe("deduction line items reconcile with the total", () => {
   it("totalDeductions equals the sum of rounded line items", () => {
     const r = computeTotalDeductionsAndNet({
       month: "2026-05",
+      professionalTax: PROFESSIONAL_TAX_INR,
       monthlySalary: 40000,
       grossSalary: 40000,
       salaryStructureDeductions: 0,

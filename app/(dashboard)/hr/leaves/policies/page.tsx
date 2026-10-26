@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { LEAVE_POLICY, isUnpaidLeaveType } from "@/lib/leave-policy";
 import { MONTHLY_FREE_LEAVE_DAYS } from "@/lib/hr/payroll-calculations";
-import { PER_DAY_DIVISOR, professionalTaxBandLabel } from "@/lib/payroll/rules";
+import { PER_DAY_DIVISOR } from "@/lib/payroll/rules";
 import { useOrgLeaveTypes, useUpdateLeaveType } from "@/lib/api/hooks/hr/leave-types";
 import { getErrorMessage } from "@/lib/get-error-message";
 
@@ -144,10 +144,9 @@ export default function LeavePoliciesPage() {
                 from the month before. Absences beyond that are loss of pay.
               </p>
               <p className="text-sm text-muted-foreground">
-                A day of pay is salary ÷ {PER_DAY_DIVISOR} in every month, and professional
-                tax follows the statutory bands ({professionalTaxBandLabel(11000)};{" "}
-                {professionalTaxBandLabel(25000)}). These two are fixed company and statutory
-                rules, so they are not editable here.
+                A day of pay is salary ÷ {PER_DAY_DIVISOR} in every month; this is a fixed
+                company rule, so it is not editable here. Professional tax is set per employee
+                on their profile (Compensation), and is not deducted where it does not apply.
               </p>
             </section>
           </div>

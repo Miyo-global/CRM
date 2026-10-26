@@ -74,6 +74,7 @@ export const PERMISSION_GROUP_LABELS: Record<string, string> = {
   "hr:leaves": "HR › Leaves",
   "hr:payroll": "HR › Payroll",
   "hr:salary": "HR › Salary",
+  "hr:payroll:pt": "HR › Payroll › Professional tax",
   "hr:expenses": "HR › Expenses",
   "hr:assets": "HR › Assets",
   "hr:documents": "HR › Documents",

@@ -3,7 +3,6 @@ import {
   earnedSalary,
   employmentWindow,
   perDayRate,
-  professionalTax,
   round2,
   splitEarnings,
   type EmploymentWindow,
@@ -31,8 +30,8 @@ export interface PayrollComputeInput {
   structureDeductions?: number;
   advanceRecoveryAmount?: number;
   statutory?: StatutoryParams;
-  /** Explicit PT override (e.g. 0 where PT does not apply). Bands are used when null. */
-  professionalTaxOverride?: number | null;
+  /** The employee's monthly PT from the salary structure; null = not applicable (0). */
+  professionalTax?: number | null;
 }
 
 export interface PayrollComputeResult {
@@ -59,6 +58,11 @@ export interface PayrollComputeResult {
   structureDeductions: number;
   otherDeductions: number;
   advanceRecoveryAmount: number;
+  /**
+   * True when deductions (before any loan EMI) exceed gross pay. Net is shown
+   * as 0, but callers refuse to save such a run rather than hide the shortfall.
+   */
+  deductionsExceedGross: boolean;
   /** True when a loan EMI was due but net pay could not cover it (MIYO-0125). */
   advanceRecoverySkipped: boolean;
   bonus: number;
@@ -104,9 +108,7 @@ export function computePayroll(input: PayrollComputeInput): PayrollComputeResult
   const lopDeduction = lopDays * perDay;
   const grossSalary = earned + bonus + overtimeAmount;
 
-  const pt = window.empty
-    ? 0
-    : input.professionalTaxOverride ?? professionalTax(monthlySalary);
+  const pt = window.empty ? 0 : Math.max(0, input.professionalTax ?? 0);
 
   const statutory = input.statutory
     ? computeStatutory(
@@ -151,6 +153,7 @@ export function computePayroll(input: PayrollComputeInput): PayrollComputeResult
     structureDeductions: round2(structureDeductions),
     otherDeductions: round2(otherDeductions),
     advanceRecoveryAmount: round2(recoveredLoan),
+    deductionsExceedGross: round2(deductionsBeforeRecovery) > round2(grossSalary),
     advanceRecoverySkipped,
     bonus: round2(bonus),
     overtimeDays: window.empty ? 0 : Math.max(0, input.overtimeDays || 0),

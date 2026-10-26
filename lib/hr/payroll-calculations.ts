@@ -1,4 +1,4 @@
-import { PER_DAY_DIVISOR, professionalTax } from "@/lib/payroll/rules";
+import { PER_DAY_DIVISOR } from "@/lib/payroll/rules";
 
 
 function envNumber(name: string, fallback: number): number {
@@ -194,7 +194,7 @@ export function computeTotalDeductionsAndNet(params: {
   totalDeductions: number;
   netSalary: number;
 } {
-  const pt = roundInr(params.professionalTax ?? professionalTax(params.monthlySalary || params.grossSalary));
+  const pt = roundInr(params.professionalTax ?? 0);
   const lopDeduction = roundInr(
     rawLopDeduction(params.month, params.monthlySalary, params.grossSalary, params.lopDays)
   );
@@ -245,7 +245,7 @@ export function buildPayslipPreviewFromEmployee(input: PayslipPreviewInput) {
   const otAmt = input.overtimeAmount || 0;
   const bonusAmt = input.bonus || 0;
   const structDed = input.salaryStructureDeductions ?? 0;
-  const pt = input.professionalTax ?? professionalTax(monthlySalary);
+  const pt = input.professionalTax ?? 0;
 
   let basicPay: number;
   let hra: number;

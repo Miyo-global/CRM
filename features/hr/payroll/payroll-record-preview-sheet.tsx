@@ -24,6 +24,7 @@ import { HrSheet } from "@/features/hr/hr-sheet";
 import type { PayrollWithUser } from "@/types/hr";
 import { calendarDaysInMonth } from "@/lib/hr/payroll-calculations";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { fmtInr } from "@/lib/hr/payslip-view-model";
 import { payrollStatusLabel } from "@/lib/labels";
 
 function n(v: string | null | undefined): number {
@@ -69,7 +70,7 @@ export function PayrollRecordPreviewSheet({
   const bonus = n(payroll.allowances);
   const otAmt = n(payroll.overtimeAmount);
   const grossSalary = n(payroll.grossSalary);
-  const pt = n(payroll.ptAmount ?? "200");
+  const pt = n(payroll.ptAmount);
   const structureDed = n(payroll.structureDeductions);
   const lopAmt = n(payroll.lopAmount);
   const otherDed = n(payroll.otherDeductions);
@@ -165,10 +166,13 @@ export function PayrollRecordPreviewSheet({
           <div>
             <h4 className="font-semibold text-xs mb-3 text-danger-strong uppercase tracking-wider">Deductions</h4>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Professional Tax</span>
-                <span className="text-danger-strong tabular-nums">-₹{pt.toLocaleString(DEFAULT_LOCALE)}</span>
-              </div>
+              {/* Hidden at 0 / N/A, as on the payslip PDF (payslip-view-model). */}
+              {pt > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Professional Tax</span>
+                  <span className="text-danger-strong tabular-nums">-{fmtInr(pt)}</span>
+                </div>
+              )}
               {structureDed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>

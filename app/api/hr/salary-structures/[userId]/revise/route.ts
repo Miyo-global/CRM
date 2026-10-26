@@ -7,31 +7,20 @@ import { snapSalaryEffectiveFrom, dayBeforeIsoDate } from "@/lib/hr/salary-effec
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { createAuditLog } from "@/lib/audit-log";
-import { professionalTax } from "@/lib/payroll/rules";
-
-/**
- * Professional tax for a structure: the band for its monthly CTC (A1), unless
- * the caller sets it explicitly (0 where the state does not levy it).
- */
-function ptForStructure(body: {
-  basicSalary: number;
-  hraPercentage?: number;
-  specialAllowance?: number;
-  allowances?: number;
-  professionalTax?: number;
-}): number {
-  if (body.professionalTax != null) return body.professionalTax;
-  const hra = (body.basicSalary * (body.hraPercentage ?? 50)) / 100;
-  const monthly = body.basicSalary + hra + (body.specialAllowance ?? 0) + (body.allowances ?? 0);
-  return professionalTax(monthly);
-}
+import { ptAmountSchema } from "@/lib/validations/professional-tax";
+import {
+  auditProfessionalTax,
+  professionalTaxColumn,
+  professionalTaxEditError,
+  sameProfessionalTax,
+} from "@/lib/hr/professional-tax";
 
 const reviseSchema = z.object({
   basicSalary: z.number().positive(),
   hraPercentage: z.number().min(0).max(100).default(50),
   specialAllowance: z.number().min(0).default(0),
   deductions: z.number().min(0).default(0),
-  professionalTax: z.number().min(0).optional(),
+  professionalTax: ptAmountSchema.optional(),
   effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   reason: z.string().optional(),
 });
@@ -66,6 +55,24 @@ export async function POST(
       ),
     });
 
+    // Omitted keeps the current PT so a salary revision never drops it silently.
+    const professionalTax =
+      body.professionalTax === undefined
+        ? existing?.professionalTax ?? null
+        : professionalTaxColumn(body.professionalTax);
+    const ptChanged = existing
+      ? !sameProfessionalTax(existing.professionalTax, professionalTax)
+      : professionalTax != null;
+    if (ptChanged) {
+      const ptError = await professionalTaxEditError({
+        orgId: session.orgId,
+        actorId: session.user.id,
+        actorRole: session.user.role,
+        targetUserId: userId,
+      });
+      if (ptError) return err(ptError.message, ptError.status);
+    }
+
     const [newStructure] = await db.transaction(async (tx) => {
       if (existing) {
         await tx
@@ -87,8 +94,8 @@ export async function POST(
           specialAllowance: body.specialAllowance.toString(),
           allowances: "0",
           deductions: body.deductions.toString(),
-          // null = PT by band at payroll time (MIYO-0019); 0 = no PT.
-          professionalTax: body.professionalTax != null ? String(body.professionalTax) : null,
+          // Omitted = keep the current PT; null = not applicable (payroll deducts 0).
+          professionalTax,
           effectiveFrom: effectiveFromSnapped,
           isActive: true,
           createdBy: session.user.id,
@@ -106,7 +113,7 @@ export async function POST(
         newBasic: body.basicSalary.toString(),
         newHraPct: body.hraPercentage.toString(),
         newSpecialAllowance: body.specialAllowance.toString(),
-        newPt: ptForStructure(body).toString(),
+        newPt: professionalTax ?? "0",
         effectiveFrom: effectiveFromSnapped,
         reason: body.reason ?? null,
         changedBy: session.user.id,
@@ -123,6 +130,18 @@ export async function POST(
       targetType: "salary_structure",
       metadata: { newBasic: body.basicSalary, effectiveFrom: effectiveFromSnapped, reason: body.reason },
     }).catch(() => {});
+
+    if (ptChanged) {
+      await auditProfessionalTax({
+        orgId: session.orgId,
+        actorId: session.user.id,
+        actorRole: session.user.role,
+        employeeId: userId,
+        oldValue: existing?.professionalTax ?? null,
+        newValue: professionalTax == null ? null : Number(professionalTax),
+        isCreate: !existing,
+      });
+    }
 
     return ok(newStructure);
   });

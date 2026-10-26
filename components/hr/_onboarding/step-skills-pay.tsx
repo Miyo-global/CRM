@@ -16,12 +16,15 @@ import {
 } from "../../ui/form";
 
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { splitEarnings } from "@/lib/payroll/rules";
+import { ptAmountSchema } from "@/lib/validations/professional-tax";
 import {
-  PT_BANDS,
-  professionalTax,
-  professionalTaxBandLabel,
-  splitEarnings,
-} from "@/lib/payroll/rules";
+  PT_HELPER_TEXT,
+  PT_LABEL,
+  ProfessionalTaxInput,
+  ProfessionalTaxNotApplicable,
+  professionalTaxAnnualWarning,
+} from "@/components/hr/professional-tax-input";
 
 type FormValues = z.infer<typeof onboardEmployeeInputSchema>;
 
@@ -32,7 +35,11 @@ interface StepSkillsPayProps {
 export function StepSkillsPay({ form }: StepSkillsPayProps) {
   const salaryEntered = Number(form.watch("monthlySalary")) || 0;
   const earnings = splitEarnings(salaryEntered);
-  const pt = professionalTax(salaryEntered);
+  const ptRaw = form.watch("professionalTax") as unknown;
+  const ptParsed = ptAmountSchema.safeParse(ptRaw);
+  const pt = ptParsed.success ? ptParsed.data ?? 0 : 0;
+  const ptNotApplicable = ptRaw === null;
+  const ptWarning = typeof ptRaw === "string" && ptParsed.success ? professionalTaxAnnualWarning(ptRaw) : null;
 
   return (
     <div className="space-y-5">
@@ -144,9 +151,7 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
                 </div>
               </FormControl>
               <FormDescription>
-                Basic (50%) + HRA (25%) + Special allowance (25%), less professional tax by band
-                (&#8377;{PT_BANDS[0]!.amount} up to &#8377;{PT_BANDS[0]!.upTo.toLocaleString(DEFAULT_LOCALE)},
-                &#8377;{PT_BANDS[1]!.amount} above it)
+                Basic (50%) + HRA (25%) + Special allowance (25%), less the professional tax below
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -170,9 +175,43 @@ export function StepSkillsPay({ form }: StepSkillsPayProps) {
                 &#8377;{(salaryEntered - pt).toLocaleString(DEFAULT_LOCALE)}
               </span>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">{professionalTaxBandLabel(salaryEntered)}</p>
           </div>
         )}
+
+        <h4 className="mt-6 mb-3 text-sm font-semibold">Deductions</h4>
+        <FormField
+          control={form.control}
+          name="professionalTax"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                {PT_LABEL}
+                <span className="sr-only">, rupees</span>
+              </FormLabel>
+              <FormControl>
+                <ProfessionalTaxInput
+                  value={ptNotApplicable ? "" : ((field.value as unknown as string | undefined) ?? "")}
+                  disabled={ptNotApplicable}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <ProfessionalTaxNotApplicable
+                id="professionalTax-na"
+                checked={ptNotApplicable}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked ? null : "");
+                  void form.trigger("professionalTax");
+                }}
+              />
+              <FormDescription>{PT_HELPER_TEXT}</FormDescription>
+              {ptWarning && <p className="text-xs text-warning-strong">{ptWarning}</p>}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

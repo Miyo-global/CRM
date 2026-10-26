@@ -37,7 +37,7 @@ const STEPS = [
 const STEP_FIELDS: Record<number, FieldPath<FormValues>[]> = {
   1: ["firstName", "lastName", "email", "phone", "gender", "dateOfBirth"],
   2: ["designation", "departmentId", "role", "joiningDate", "employeeId"],
-  3: ["skills", "experienceYears", "taxId", "monthlySalary"],
+  3: ["skills", "experienceYears", "taxId", "monthlySalary", "professionalTax"],
   4: [
     "bankDetails.accountNumber",
     "bankDetails.bankName",

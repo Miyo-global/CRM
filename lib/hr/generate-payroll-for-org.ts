@@ -74,12 +74,18 @@ export async function generatePayrollForOrg(
 
   const newPayrolls = [];
   const emiSkippedFor: string[] = [];
+  const overDeductedFor: string[] = [];
   for (const userId of pendingUserIds) {
     const input = inputs.get(userId);
     if (!input || input.monthlySalary <= 0) continue;
     const run = computePayroll(input);
     // Not employed in this month (joined later, or already left): no payslip.
     if (run.notEmployed) continue;
+    // Never save a payslip whose deductions exceed gross; HR fixes it and reruns.
+    if (run.deductionsExceedGross) {
+      overDeductedFor.push(userId);
+      continue;
+    }
     if (run.advanceRecoverySkipped) emiSkippedFor.push(userId);
     newPayrolls.push(payrollRowValues(run, { orgId, userId, generatedBy }));
   }
@@ -91,6 +97,15 @@ export async function generatePayrollForOrg(
       title: "Loan EMI not recovered",
       message: `${emiSkippedFor.length} payslip${emiSkippedFor.length === 1 ? "" : "s"} for ${month} could not cover the loan EMI, so it was not deducted. The loan schedule is unchanged.`,
       link: "/hr/loans",
+    }));
+  }
+
+  if (overDeductedFor.length > 0) {
+    afterResponse("hr/generate-payroll-for-org", () => notifyByRoles(orgId, [ROLES.CEO, ROLES.HR], {
+      type: "WARNING",
+      title: "Payroll not generated: deductions exceed gross",
+      message: `${overDeductedFor.length} employee${overDeductedFor.length === 1 ? "" : "s"} for ${month} had deductions above gross pay, so no payslip was created. Check their professional tax and other deductions, then run payroll again.`,
+      link: "/hr/payroll",
     }));
   }
 
