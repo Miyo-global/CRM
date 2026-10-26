@@ -444,12 +444,10 @@ export const SYSTEM_ROLES = [
   "CEO",
   "HR",
   "ADMIN",
-  "SALES",
   "CUSTOMER_SUPPORT",
   "ENGINEERING",
   "DESIGN",
   "VIDEO_EDITOR",
-  "DIGITAL_MARKETING",
   "RECRUITER",
   "EMPLOYEE",
 ] as const;
@@ -510,17 +508,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
     "hr:termination:complete",
   ],
 
-  SALES: [
-    ...EMPLOYEE_SELF_SERVICE,
-    ...KB_EMPLOYEE_PERMISSIONS,
-    "projects:view",
-    "projects:tickets:view",
-    "projects:tickets:create",
-    "projects:tickets:update",
-    "projects:timesheets:view",
-    "projects:timesheets:create",
-  ],
-
   CUSTOMER_SUPPORT: [
     ...EMPLOYEE_SELF_SERVICE,
     ...KB_FULL_EXCEPT_PURGE,
@@ -552,17 +539,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
   ],
 
   VIDEO_EDITOR: [
-    ...EMPLOYEE_SELF_SERVICE,
-    ...KB_EMPLOYEE_PERMISSIONS,
-    "projects:view",
-    "projects:tickets:view",
-    "projects:tickets:create",
-    "projects:tickets:update",
-    "projects:timesheets:view",
-    "projects:timesheets:create",
-  ],
-
-  DIGITAL_MARKETING: [
     ...EMPLOYEE_SELF_SERVICE,
     ...KB_EMPLOYEE_PERMISSIONS,
     "projects:view",

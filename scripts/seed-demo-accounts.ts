@@ -17,12 +17,11 @@ const DEMO_ACCOUNTS = [
   { email: "demo.ceo@miyoglobal.demo",             firstName: "Demo", lastName: "CEO",            role: "CEO",              designation: "Chief Executive Officer",       branchScoped: false },
   { email: "demo.hr@miyoglobal.demo",              firstName: "Demo", lastName: "HR",             role: "HR",               designation: "HR Manager",                    branchScoped: false },
   { email: "demo.admin@miyoglobal.demo",           firstName: "Demo", lastName: "Admin",          role: "ADMIN",            designation: "System Administrator",          branchScoped: false },
-  { email: "demo.sales@miyoglobal.demo",           firstName: "Demo", lastName: "Sales",          role: "SALES",            designation: "Sales Representative",          branchScoped: false },
   { email: "demo.engineering@miyoglobal.demo",     firstName: "Demo", lastName: "Engineer",       role: "ENGINEERING",      designation: "Software Engineer",             branchScoped: false },
   { email: "demo.design@miyoglobal.demo",          firstName: "Demo", lastName: "Designer",       role: "DESIGN",           designation: "UI/UX Designer",                branchScoped: false },
   { email: "demo.support@miyoglobal.demo",         firstName: "Demo", lastName: "Support",        role: "CUSTOMER_SUPPORT", designation: "Customer Support Executive",     branchScoped: false },
   { email: "demo.videoeditor@miyoglobal.demo",     firstName: "Demo", lastName: "VideoEditor",    role: "VIDEO_EDITOR",     designation: "Video Editor",                  branchScoped: false },
-  { email: "demo.marketing@miyoglobal.demo",       firstName: "Demo", lastName: "Marketing",      role: "DIGITAL_MARKETING",designation: "Digital Marketing Specialist",  branchScoped: false },
+  { email: "demo.marketing@miyoglobal.demo",       firstName: "Demo", lastName: "Marketing",      role: "EMPLOYEE",         designation: "Digital Marketing Specialist",  branchScoped: false },
 ];
 
 async function main() {

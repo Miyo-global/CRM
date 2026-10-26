@@ -171,7 +171,6 @@ export default function DashboardPage() {
       case "ENGINEERING":
       case "DESIGN":
       case "VIDEO_EDITOR":
-      case "DIGITAL_MARKETING":
         return [
           { id: "projects", label: "My Projects", value: rs?.myProjects ?? 0, icon: Briefcase, tone: "brand" as const, href: "/projects" },
           { id: "tickets", label: "My Tasks", value: rs?.myTickets ?? 0, icon: ListChecks, tone: "info" as const },

@@ -1,4 +1,4 @@
-import { ROLES } from "@/lib/constants/roles";
+import { ROLES, isLegacyJobTitleRole } from "@/lib/constants/roles";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
 import { isAssignableSystemRole, isSystemRole } from "@/lib/rbac/roles";
 
@@ -31,6 +31,7 @@ export function roleHasPermission(role: Role, permission: string): boolean {
 export function canGrantRole(actorRole: Role, targetRole: Role): boolean {
   const role = targetRole?.trim().toUpperCase();
   if (!role || role === ROLES.CEO) return false;
+  if (isLegacyJobTitleRole(role)) return false;
   if (isSystemRole(role) && !isAssignableSystemRole(role)) return false;
   if (roleHasPermission(actorRole, "roles:manage")) return true;
   if (actorRole === ROLES.ADMIN) return role === ROLES.EMPLOYEE || ELEVATED_ROLES.includes(role);

@@ -361,46 +361,6 @@ function roleNavGroups(role: string): NavGroup[] {
         },
       ];
 
-    case "SALES":
-      return [
-        {
-          label: "Core",
-          routes: [
-            { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-            { label: "Calendar", icon: CalendarDays, href: "/calendar" },
-            { label: "Notifications", icon: Bell, href: "/notifications" },
-          ],
-        },
-        {
-          label: "My Work",
-          routes: [
-            { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
-            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
-            { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
-            { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-          ],
-        },
-        {
-          label: "My HR",
-          defaultCollapsed: true,
-          routes: [
-            { label: "My Leaves", icon: CalendarCheck, href: "/hr/leaves" },
-            { label: "My Expenses", icon: Receipt, href: "/hr/expenses" },
-            { label: "My Attendance", icon: Clock, href: "/hr/attendance" },
-            { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips" },
-            { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses" },
-            { label: "My Assets", icon: Package, href: "/hr/my-assets" },
-            { label: "My Documents", icon: FileText, href: "/hr/my-documents" },
-            { label: "My Reimbursements", icon: Coins, href: "/hr/reimbursements" },
-            { label: "My Loans", icon: Wallet, href: "/hr/loans" },
-            { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
-            { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
-            { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-          ],
-        },
-      ];
-
     case "CUSTOMER_SUPPORT":
       return [
         {
@@ -448,47 +408,6 @@ function roleNavGroups(role: string): NavGroup[] {
         },
       ];
 
-    case "DIGITAL_MARKETING":
-      return [
-        {
-          label: "Core",
-          routes: [
-            { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-            { label: "Calendar", icon: CalendarDays, href: "/calendar" },
-            { label: "Notifications", icon: Bell, href: "/notifications" },
-          ],
-        },
-        {
-          label: "My Work",
-          routes: [
-            { label: "My Projects", icon: Briefcase, href: "/projects", isProjectsList: true },
-            { label: "My Work", icon: ListChecks, href: "/projects/my-work", isSubItem: true },
-            { label: "Roadmap", icon: Map, href: "/projects/roadmap", isSubItem: true },
-            { label: "Work Logs", icon: History, href: "/hr/work-logs" },
-          ],
-        },
-        {
-          label: "My HR",
-          defaultCollapsed: true,
-          routes: [
-            { label: "My Leaves", icon: CalendarCheck, href: "/hr/leaves" },
-            { label: "My Expenses", icon: Receipt, href: "/hr/expenses" },
-            { label: "My Attendance", icon: Clock, href: "/hr/attendance" },
-            { label: "My Payslips", icon: Wallet, href: "/hr/my-payslips" },
-            { label: "My Bonuses", icon: Gift, href: "/hr/my-bonuses" },
-            { label: "My Assets", icon: Package, href: "/hr/my-assets" },
-            { label: "My Documents", icon: FileText, href: "/hr/my-documents" },
-            { label: "My Reimbursements", icon: Coins, href: "/hr/reimbursements" },
-            { label: "My Loans", icon: Wallet, href: "/hr/loans" },
-            { label: "Career Ladders", icon: TrendingUp, href: "/hr/career-ladders" },
-            { label: "Holidays", icon: CalendarDays, href: "/hr/holidays" },
-            { label: "Exit", icon: UserMinus, href: "/hr/exit" },
-            { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-          ],
-        },
-      ];
-
-    // MIYO-0628: a recruiter gets the hiring pipeline and their own HR pages.
     case "RECRUITER":
       return [
         {

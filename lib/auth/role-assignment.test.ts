@@ -61,9 +61,13 @@ describe("the Super Admin is locked (QA-AUTH-01, QA-AUTH-02)", () => {
   });
 
   it("refuses the retired job-title roles", async () => {
-    expect((await checkRoleAssignment({ ...base, actorRole: "CEO", targetCurrentRole: "EMPLOYEE", newRole: "SALES" }))?.status).toBe(400);
+    expect((await checkRoleAssignment({ ...base, actorRole: "CEO", targetCurrentRole: "EMPLOYEE", newRole: "ENGINEERING" }))?.status).toBe(400);
     // Leaving a legacy role in place is not an assignment.
-    expect(await checkRoleAssignment({ ...base, actorRole: "HR", targetCurrentRole: "SALES", newRole: "SALES" })).toBeNull();
+    expect(await checkRoleAssignment({ ...base, actorRole: "HR", targetCurrentRole: "ENGINEERING", newRole: "ENGINEERING" })).toBeNull();
+    // Sales and Digital Marketing are gone altogether, not just retired.
+    for (const removed of ["SALES", "DIGITAL_MARKETING"]) {
+      expect((await checkRoleAssignment({ ...base, actorRole: "CEO", targetCurrentRole: "EMPLOYEE", newRole: removed }))?.status).toBe(400);
+    }
   });
 
   it("shows the role control only where a change is allowed", () => {

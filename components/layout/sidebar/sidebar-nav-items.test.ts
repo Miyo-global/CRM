@@ -74,10 +74,10 @@ describe("KB-0065: the Knowledge module in the nav", () => {
     expect(hrefs("HR")).toContain("/knowledge/wiki/reviews");
   });
 
-  it("does not offer SALES import and export, which it cannot do", () => {
-    expect(hrefs("SALES")).not.toContain("/knowledge/wiki/import");
+  it("does not offer an Employee import and export, which it cannot do", () => {
+    expect(hrefs("EMPLOYEE")).not.toContain("/knowledge/wiki/import");
     // It still sees the reviews queue, which every employee may read.
-    expect(hrefs("SALES")).toContain("/knowledge/wiki/reviews");
+    expect(hrefs("EMPLOYEE")).toContain("/knowledge/wiki/reviews");
   });
 
   it("never links a role to a knowledge page the route map denies it", () => {

@@ -4,12 +4,10 @@ export const ROLES = {
   CEO: "CEO",
   HR: "HR",
   ADMIN: "ADMIN",
-  SALES: "SALES",
   ENGINEERING: "ENGINEERING",
   DESIGN: "DESIGN",
   CUSTOMER_SUPPORT: "CUSTOMER_SUPPORT",
   VIDEO_EDITOR: "VIDEO_EDITOR",
-  DIGITAL_MARKETING: "DIGITAL_MARKETING",
   /** MIYO-0628: works the hiring pipeline; no other HR access. */
   RECRUITER: "RECRUITER",
   /**
@@ -56,12 +54,14 @@ export const ALL_ROLES: readonly string[] = Object.values(ROLES);
  * but none is offered for assignment any more.
  */
 export const LEGACY_JOB_TITLE_ROLES: readonly string[] = [
-  ROLES.SALES,
+  // Sales and Digital Marketing were removed with the sales module; the slugs
+  // stay here so a stale row or request naming them is still refused.
+  "SALES",
+  "DIGITAL_MARKETING",
   ROLES.ENGINEERING,
   ROLES.DESIGN,
   ROLES.CUSTOMER_SUPPORT,
   ROLES.VIDEO_EDITOR,
-  ROLES.DIGITAL_MARKETING,
 ];
 
 export function isLegacyJobTitleRole(role: string | undefined | null): boolean {

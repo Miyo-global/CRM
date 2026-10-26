@@ -21,12 +21,10 @@ export type RoleFilter =
   | "ADMIN"
   | "HR"
   | "EMPLOYEE"
-  | "SALES"
   | "CUSTOMER_SUPPORT"
   | "ENGINEERING"
   | "DESIGN"
-  | "VIDEO_EDITOR"
-  | "DIGITAL_MARKETING";
+  | "VIDEO_EDITOR";
 
 // R3-LBL-01: one role map (lib/rbac/roles), widened for lookups by any string.
 export const ROLE_LABELS: Record<string, string> = SYSTEM_ROLE_LABELS;

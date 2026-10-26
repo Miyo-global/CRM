@@ -26,11 +26,6 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
         { label: "Reports", href: "/reports" },
         { label: "Org chart", href: "/hr/org-chart" },
       ];
-    case "SALES":
-      return [
-        { label: "Request leave", href: "/hr/leaves" },
-        { label: "Check in", href: "/hr/attendance" },
-      ];
     case "CUSTOMER_SUPPORT":
       return [
         { label: "My tickets", href: "/support" },
@@ -40,7 +35,6 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
     case "ENGINEERING":
     case "DESIGN":
     case "VIDEO_EDITOR":
-    case "DIGITAL_MARKETING":
       return [
         { label: "My projects", href: "/projects" },
         { label: "Request leave", href: "/hr/leaves" },

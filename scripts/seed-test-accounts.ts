@@ -25,13 +25,6 @@ const TEST_ACCOUNTS = [
     designation: "HR Manager",
   },
   {
-    email: `sales@${TEST_DOMAIN}`,
-    firstName: "Demo",
-    lastName: "Sales",
-    role: "SALES",
-    designation: "Sales Representative",
-  },
-  {
     email: `support@${TEST_DOMAIN}`,
     firstName: "Demo",
     lastName: "Support",
@@ -42,7 +35,7 @@ const TEST_ACCOUNTS = [
     email: `marketing@${TEST_DOMAIN}`,
     firstName: "Demo",
     lastName: "Marketing",
-    role: "DIGITAL_MARKETING",
+    role: "EMPLOYEE",
     designation: "Digital Marketing Lead",
   },
 ];

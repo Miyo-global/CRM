@@ -21,11 +21,11 @@ import { getTodayString, isDateOnly, parseCalendarDate } from "@/lib/date-utils"
  * Department ↔ System-Role compatibility (D10).
  *
  * System roles are org-defined but their slugs map to the built-in ROLES
- * constants (HR, SALES, ENGINEERING, …). Departments are free-text but seed
- * with a known set (HR, Sales, Customer Support, Engineering, Design,
- * Video Editing). This map is intentionally PERMISSIVE: it only declares the
- * role slugs that are *clearly wrong* for a given department so we can block
- * obvious mismatches (e.g. an HR system role under the Sales department) while
+ * constants (HR, ENGINEERING, …). Departments are free-text but seed with a
+ * known set (HR, Customer Support, Engineering, Design, Video Editing). This
+ * map is intentionally PERMISSIVE: it only declares the role slugs that are
+ * *clearly wrong* for a given department so we can block obvious mismatches
+ * (e.g. an HR system role under the Engineering department) while
  * allowing everything we are not confident about.
  *
  * Generic / cross-functional roles (CEO, ADMIN, branch roles, and any custom
@@ -41,12 +41,10 @@ const GENERIC_ROLE_SLUGS = new Set([
 
 const KNOWN_DEPARTMENT_ROLE_SLUGS = new Set([
   "HR",
-  "SALES",
   "ENGINEERING",
   "DESIGN",
   "CUSTOMER_SUPPORT",
   "VIDEO_EDITOR",
-  "DIGITAL_MARKETING",
 ]);
 
 /**
@@ -61,9 +59,6 @@ function normalizeDepartmentKey(name: string): string {
   }
   if (cleaned.includes("humanresource") || cleaned === "hr" || cleaned.includes("people") || cleaned.includes("talent")) {
     return "hr";
-  }
-  if (cleaned.includes("sale") || cleaned.includes("business") || cleaned === "bd" || cleaned.includes("revenue")) {
-    return "sales";
   }
   if (cleaned.includes("design") || cleaned.includes("creative")) {
     return "design";
@@ -88,11 +83,10 @@ function normalizeDepartmentKey(name: string): string {
 const DEPARTMENT_ALLOWED_ROLE_SLUGS: Record<string, ReadonlySet<string>> = {
   engineering: new Set(["ENGINEERING", "DESIGN"]),
   hr: new Set(["HR"]),
-  sales: new Set(["SALES", "DIGITAL_MARKETING"]),
   design: new Set(["DESIGN", "VIDEO_EDITOR"]),
   support: new Set(["CUSTOMER_SUPPORT"]),
   video: new Set(["VIDEO_EDITOR", "DESIGN"]),
-  marketing: new Set(["DIGITAL_MARKETING", "DESIGN"]),
+  marketing: new Set(["DESIGN"]),
 };
 
 /**
