@@ -56,8 +56,7 @@ describe("POST /api/hr/employees/onboard enforces canGrantRole (R3-HR-02)", () =
   it.each([
     ["HR", "ADMIN"],
     ["HR", "HR"],
-    ["ADMIN", "ADMIN"],
-    ["ADMIN", "HR"],
+    ["ADMIN", "CEO"],
     ["CEO", "CEO"],
   ])("%s onboarding a %s gets 403", async (actor, role) => {
     signIn(actor);

@@ -9,7 +9,10 @@ describe("canGrantRole per actor role (R3-HR-02)", () => {
   it("Super Admin grants Admin, HR, Employee and custom roles, never Super Admin or a retired title", () => {
     expect(grantable("CEO")).toEqual(["ADMIN", "HR", "EMPLOYEE", "QA_CUSTOM"]);
   });
-  it("Admin grants Employee only", () => expect(grantable("ADMIN")).toEqual(["EMPLOYEE"]));
+  // FR1-007 (owner decision): Admins onboard HR and other leads.
+  it("Admin grants Admin, HR and Employee, never Super Admin", () => {
+    expect([...grantable("ADMIN")].sort()).toEqual(["ADMIN", "EMPLOYEE", "HR"]);
+  });
   it("HR grants Employee only", () => expect(grantable("HR")).toEqual(["EMPLOYEE"]));
   it("Employee and anonymous grant nothing", () => {
     expect(grantable("EMPLOYEE")).toEqual([]);

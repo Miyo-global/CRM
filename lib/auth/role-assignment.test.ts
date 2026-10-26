@@ -47,10 +47,17 @@ describe("the Super Admin is locked (QA-AUTH-01, QA-AUTH-02)", () => {
     expect((await checkRoleAssignment({ ...base, actorRole: "CEO", newRole: "CEO" }))?.status).toBe(403);
   });
 
-  it("stops an Admin demoting the owner or minting Admins", async () => {
+  it("stops an Admin demoting the owner or an Admin-level account", async () => {
     expect((await checkRoleAssignment({ ...base, actorRole: "ADMIN", targetCurrentRole: "CEO", newRole: "EMPLOYEE" }))?.status).toBe(403);
-    expect((await checkRoleAssignment({ ...base, actorRole: "ADMIN", newRole: "ADMIN" }))?.status).toBe(403);
     expect((await checkRoleAssignment({ ...base, actorRole: "ADMIN", targetCurrentRole: "HR", newRole: "EMPLOYEE" }))?.status).toBe(403);
+    expect((await checkRoleAssignment({ ...base, actorRole: "ADMIN", newRole: "CEO" }))?.status).toBe(403);
+  });
+
+  it("lets an Admin grant Admin or HR, and refuses HR doing the same (FR1-007)", async () => {
+    expect(await checkRoleAssignment({ ...base, actorRole: "ADMIN", newRole: "ADMIN" })).toBeNull();
+    expect(await checkRoleAssignment({ ...base, actorRole: "ADMIN", newRole: "HR" })).toBeNull();
+    expect((await checkRoleAssignment({ ...base, actorRole: "HR", newRole: "ADMIN" }))?.status).toBe(403);
+    expect((await checkRoleAssignment({ ...base, actorRole: "HR", newRole: "HR" }))?.status).toBe(403);
   });
 
   it("refuses the retired job-title roles", async () => {
