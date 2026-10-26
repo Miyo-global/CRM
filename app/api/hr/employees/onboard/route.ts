@@ -24,6 +24,7 @@ import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { afterResponse } from "@/lib/after-response";
 import { findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
 import { onboardedNotification } from "@/lib/hr/onboarded-notification";
+import { runConcurrently } from "@/lib/run-concurrently";
 import { auditProfessionalTax, professionalTaxColumn, professionalTaxEditError } from "@/lib/hr/professional-tax";
 
 export async function POST(req: NextRequest) {
@@ -212,12 +213,6 @@ export async function POST(req: NextRequest) {
       return u;
     });
 
-    if (body.skills) {
-      await syncEmployeeSkillsFromProfile(session.orgId, newUser.id, body.skills);
-    }
-
-    await invalidateHrDashboardCache(session.orgId);
-
     afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, [ROLES.CEO, ROLES.HR], {
       type: "SUCCESS",
       ...onboardedNotification(body),
@@ -226,21 +221,6 @@ export async function POST(req: NextRequest) {
       // A new HR hire is in the HR list too; nobody is told about their own hire.
       excludeUserId: [session.user.id, newUser.id],
     }));
-
-    // Start the checklist straight away, so a successful hire always shows in
-    // Onboarding › Progress (A21). A failure here must not fail the hire.
-    try {
-      await startOnboardingForUser({
-        orgId: session.orgId,
-        userId: newUser.id,
-        joiningDate: body.joiningDate ?? null,
-      });
-    } catch (onboardingErr) {
-      logger.error("Failed to start onboarding checklist", {
-        userId: newUser.id,
-        error: onboardingErr instanceof Error ? onboardingErr.message : "Unknown",
-      });
-    }
 
     void import("@/lib/webhooks/dispatch").then(({ dispatchWebhook }) =>
       dispatchWebhook(session.orgId, "employee.hired", {
@@ -252,49 +232,61 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    try {
-      await createAuditLog({
-        action: "hr.employee_onboarded",
-        userId: session.user.id,
-        orgId: session.orgId,
-        targetId: newUser.id,
-        targetType: "employee",
-        metadata: { email: body.email, name: `${body.firstName} ${body.lastName}`, role: body.role, designation: body.designation, revokedInvitations },
+    // The hire is saved; everything below is independent follow-up work. It
+    // used to run one step after another (skills, cache, checklist, audit,
+    // welcome email), which kept the wizard on "Onboarding..." for 5-10 s
+    // (FR1-013). A failure is logged and never fails the hire.
+    const skills = body.skills;
+    const outcome = await runConcurrently({
+      skills: skills ? () => syncEmployeeSkillsFromProfile(session.orgId, newUser.id, skills) : null,
+      cache: () => invalidateHrDashboardCache(session.orgId),
+      // The checklist starts straight away, so a hire always shows in
+      // Onboarding › Progress (A21).
+      checklist: () =>
+        startOnboardingForUser({ orgId: session.orgId, userId: newUser.id, joiningDate: body.joiningDate ?? null }),
+      audit: () =>
+        createAuditLog({
+          action: "hr.employee_onboarded",
+          userId: session.user.id,
+          orgId: session.orgId,
+          targetId: newUser.id,
+          targetType: "employee",
+          metadata: { email: body.email, name: `${body.firstName} ${body.lastName}`, role: body.role, designation: body.designation, revokedInvitations },
+        }),
+      ptAudit: writesStructure
+        ? () =>
+            auditProfessionalTax({
+              orgId: session.orgId,
+              actorId: session.user.id,
+              actorRole: session.user.role,
+              employeeId: newUser.id,
+              employeeName: `${body.firstName} ${body.lastName}`,
+              oldValue: null,
+              newValue: professionalTax,
+              isCreate: true,
+            })
+        : null,
+      welcome: newUser.email
+        ? () =>
+            sendSetupLink({
+              email: newUser.email,
+              name: `${body.firstName} ${body.lastName}`,
+              firstName: body.firstName,
+              employeeId,
+              designation: body.designation,
+              joiningDate: body.joiningDate,
+              reportingTo,
+            })
+        : null,
+    });
+    for (const [step, result] of Object.entries(outcome)) {
+      if (result === true) continue;
+      logger.error(`Onboarding follow-up failed: ${step}`, {
+        userId: newUser.id,
+        error: result instanceof Error ? result.message : "Unknown",
       });
-    } catch (auditErr) {
-      logger.error("Failed to write onboard audit log", { userId: newUser.id, error: auditErr instanceof Error ? auditErr.message : "Unknown" });
     }
-
-    if (writesStructure) {
-      await auditProfessionalTax({
-        orgId: session.orgId,
-        actorId: session.user.id,
-        actorRole: session.user.role,
-        employeeId: newUser.id,
-        employeeName: `${body.firstName} ${body.lastName}`,
-        oldValue: null,
-        newValue: professionalTax,
-        isCreate: true,
-      });
-    }
-
-    let welcomeEmailSent = false;
-    if (newUser.email) {
-      try {
-        await sendSetupLink({
-          email: newUser.email,
-          name: `${body.firstName} ${body.lastName}`,
-          firstName: body.firstName,
-          employeeId,
-          designation: body.designation,
-          joiningDate: body.joiningDate,
-          reportingTo,
-        });
-        welcomeEmailSent = true;
-      } catch (emailErr) {
-        logger.error("Failed to send setup email", { email: newUser.email, error: emailErr instanceof Error ? emailErr.message : "Unknown" });
-      }
-    }
+    const welcomeEmailSent = outcome.welcome === true;
 
     // MIYO-0663: the ATS needs the new user id to close the application.
     // employeeId + welcomeEmailSent feed the wizard's success step (R3-ONB-09).
