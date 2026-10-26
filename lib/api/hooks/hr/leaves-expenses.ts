@@ -14,11 +14,6 @@ import type {
   HelpdeskTicket,
   WfhRequest,
   Holiday,
-  Incentive,
-  IncentivesResult,
-  IncentiveStats,
-  IncentiveConfig,
-  IncentiveConfigHistoryResult,
   DocumentType,
   TicketStatus,
   RequestLeaveInput,
@@ -35,10 +30,6 @@ import type {
   ProcessWfhRequestInput,
   AddHolidayInput,
   DeleteHolidayInput,
-  GetIncentivesInput,
-  ApproveIncentiveInput,
-  RejectIncentiveInput,
-  SetIncentiveConfigInput,
 } from "@/types/hr";
 
 export function useHrLeaves() {
@@ -752,83 +743,6 @@ export function useUpdateHoliday() {
       // cache made every page on screen refetch and flash a skeleton (A43).
       qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysYearAll() });
       qc.invalidateQueries({ queryKey: queryKeys.hr.holidaysCalendarAll() });
-    },
-  });
-}
-
-export function useHrIncentives(params?: GetIncentivesInput) {
-  return useQuery({
-    queryKey: queryKeys.hr.incentives(
-      params as Record<string, unknown> | undefined,
-    ),
-    queryFn: () =>
-      apiClient.get<IncentivesResult>(
-        "/hr/incentives",
-        params as Record<string, unknown> | undefined,
-      ),
-  });
-}
-
-export function useHrIncentiveStats() {
-  return useQuery({
-    queryKey: queryKeys.hr.incentiveStats(),
-    queryFn: () => apiClient.get<IncentiveStats>("/hr/incentives/stats"),
-  });
-}
-
-export function useHrIncentiveConfigs() {
-  return useQuery({
-    queryKey: queryKeys.hr.incentiveConfigs(),
-    queryFn: () => apiClient.get<IncentiveConfig[]>("/hr/incentives/config"),
-  });
-}
-
-export function useHrIncentiveConfigHistory(
-  params?: { page?: number; limit?: number },
-  options?: { enabled?: boolean },
-) {
-  return useQuery({
-    queryKey: queryKeys.hr.incentiveConfigHistory(params as Record<string, unknown> | undefined),
-    queryFn: () =>
-      apiClient.get<IncentiveConfigHistoryResult>(
-        "/hr/incentives/config/history",
-        params as Record<string, unknown> | undefined,
-      ),
-    enabled: options?.enabled ?? true,
-  });
-}
-
-export function useApproveIncentive() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: ApproveIncentiveInput) =>
-      apiClient.patch<{ success: boolean }>(
-        `/hr/incentives/${id}/approve`,
-        data,
-      ),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: [...queryKeys.hr.all, "incentives"] }),
-  });
-}
-
-export function useRejectIncentive() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id }: RejectIncentiveInput) =>
-      apiClient.patch<{ success: boolean }>(`/hr/incentives/${id}/reject`),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: [...queryKeys.hr.all, "incentives"] }),
-  });
-}
-
-export function useSetIncentiveConfig() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: SetIncentiveConfigInput) =>
-      apiClient.post<IncentiveConfig>("/hr/incentives/config", data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.hr.incentiveConfigs() });
-      qc.invalidateQueries({ queryKey: [...queryKeys.hr.all, "incentiveConfigHistory"] });
     },
   });
 }

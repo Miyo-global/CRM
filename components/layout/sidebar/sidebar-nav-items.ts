@@ -193,11 +193,6 @@ function roleNavGroups(role: string): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
-            // Incentives are computed from CRM conversions, so they follow the
-            // CRM module flag (A36, A41).
-            ...(CRM_MODULE_ENABLED
-              ? [{ label: "Incentives", icon: Coins, href: "/hr/incentives" }]
-              : []),
           ],
         },
         {
@@ -348,11 +343,6 @@ function roleNavGroups(role: string): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
-            // Incentives are computed from CRM conversions, so they follow the
-            // CRM module flag (A36, A41).
-            ...(CRM_MODULE_ENABLED
-              ? [{ label: "Incentives", icon: Coins, href: "/hr/incentives" }]
-              : []),
           ],
         },
         {

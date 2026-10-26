@@ -74,7 +74,6 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/holidays": EVERYONE,
   "/hr/performance": HR_TEAM,
   "/hr/org-chart": HR_TEAM,
-  "/hr/incentives": HR_TEAM,
   "/hr/my-payslips": EVERYONE,
   "/hr/my-documents": EVERYONE,
   "/hr/my-assets": EVERYONE,
