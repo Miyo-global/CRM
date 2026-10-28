@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { StatusPill } from "@/components/ui/status-pill";
+import { RehireButton } from "@/features/hr/employees/detail/rehire-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -441,7 +442,10 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
               </>
             )}
             {employee.isActive === false || (employee as Record<string, unknown>).terminatedAt ? (
-              <StatusPill tone="danger" dot>Terminated</StatusPill>
+              <>
+                <StatusPill tone="danger" dot>Terminated</StatusPill>
+                {canManage && !isSelf && <RehireButton employeeId={employee.id} employeeName={employeeName} />}
+              </>
             ) : canManage && !isSelf && employee.role?.toUpperCase() !== "CEO" && (
               // R2-TERM-01/02: opens the termination workflow (reason, last
               // working day, Super Admin approval) for this person.

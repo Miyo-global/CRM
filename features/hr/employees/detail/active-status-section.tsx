@@ -49,7 +49,7 @@ export function ActiveStatusSection({
             setReason("");
             toast.success(
               res?.rehired
-                ? "Employee re-hired. Portal access stays off until you turn it on."
+                ? "Employee re-hired. Portal access is on and a new onboarding checklist has started."
                 : next ? "Employee marked active" : "Employee marked inactive",
             );
             router.refresh();
@@ -124,7 +124,7 @@ export function ActiveStatusSection({
         open={activateOpen}
         onOpenChange={setActivateOpen}
         title="Re-activate employee"
-        description={`Re-activate ${employeeName}? If they were terminated this is recorded as a re-hire on the termination record and in the audit log. Portal access stays off until you turn it on.`}
+        description={`Re-activate ${employeeName}? If they were terminated this is recorded as a re-hire on the termination record and in the audit log. A re-hire also turns portal access back on and starts a fresh onboarding checklist.`}
         confirmLabel="Re-activate"
         cancelLabel="Cancel"
         variant="default"
