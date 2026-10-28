@@ -3,7 +3,6 @@ import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveRequests, users, departments } from "@/lib/db/schema";
 import { eq, and, gte, lte, count, sql } from "drizzle-orm";
-import { cached, CACHE_TTL } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +21,9 @@ export async function GET(req: NextRequest) {
       return err("Invalid year.", 400);
     }
 
-    const cacheKey = `hr:leave-analytics:${session.orgId}:${year}`;
-    const data = await cached(cacheKey, async () => {
+    // Not cached: the Redis copy was never invalidated on approve/reject, so the
+    // by-department panel lagged the uncached status chart on /hr/analytics.
+    const data = await (async () => {
       const yearStart = `${year}-01-01`;
       const yearEnd = `${year}-12-31`;
 
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         byDepartment: byDept,
         monthlyTrend: monthly.map((m) => ({ month: m.month, count: m.count })),
       };
-    });
+    })();
 
     return ok(data);
   });
