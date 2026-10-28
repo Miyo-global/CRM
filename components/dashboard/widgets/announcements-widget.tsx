@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { WidgetCard } from "@/components/dashboard/widgets/widget-card";
-import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
+import { ViewAllLink, WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +27,8 @@ import { toneDot, toneText } from "@/lib/design/tones";
 
 const MAX_ROWS = 6;
 
-export function AnnouncementsWidget() {
+/** `maxRows` is the dashboard cap; /dashboard/announcements lists them all. */
+export function AnnouncementsWidget({ maxRows = MAX_ROWS }: { maxRows?: number } = {}) {
   const { data: session } = useSession();
   const role = session?.user?.role;
   const isAdmin = role === "CEO" || role === "HR" || role === "ADMIN";
@@ -111,17 +112,23 @@ export function AnnouncementsWidget() {
       tone="warning"
       count={data?.length || undefined}
       actions={
-        isAdmin && (
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => (showForm ? closeForm() : setShowForm(true))}
-            aria-label="Add announcement"
-          >
-            <Plus aria-hidden="true" />
-            Add
-          </Button>
-        )
+        <>
+          {/* Older ones were unreachable past the cap (P3-announcements-dashboard-widget-only-no-archive). */}
+          {(data?.length ?? 0) > maxRows && (
+            <ViewAllLink href="/dashboard/announcements" ariaLabel="View all announcements" />
+          )}
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => (showForm ? closeForm() : setShowForm(true))}
+              aria-label="Add announcement"
+            >
+              <Plus aria-hidden="true" />
+              Add
+            </Button>
+          )}
+        </>
       }
       contentClassName="space-y-3"
     >
@@ -187,7 +194,7 @@ export function AnnouncementsWidget() {
         />
       ) : (
         <ul className="divide-y divide-border">
-          {data.slice(0, MAX_ROWS).map((ann) => {
+          {data.slice(0, maxRows).map((ann) => {
             const authorDisplay =
               ann.authorFirstName && ann.authorLastName
                 ? `${ann.authorFirstName} ${ann.authorLastName}`

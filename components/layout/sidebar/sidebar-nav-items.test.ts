@@ -100,3 +100,14 @@ describe("My Support Tickets (FR1-032)", () => {
     expect(routes.some((r) => r.href === "/support/inbox")).toBe(false);
   });
 });
+
+describe("Customer Support top-nav module (P2-support-not-in-top-nav)", () => {
+  it("highlights Customer Support, not HR, on /support pages", async () => {
+    const { getActiveModule } = await import("./sidebar-nav-items");
+    for (const role of ["CEO", "ADMIN", "HR"]) {
+      const groups = getNavGroupsForRole(role);
+      expect(getActiveModule("/support", groups)).toBe("Customer Support");
+      expect(getActiveModule("/support/inbox", groups)).toBe("Customer Support");
+    }
+  });
+});

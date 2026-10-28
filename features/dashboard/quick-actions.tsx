@@ -17,7 +17,7 @@ export function getQuickActionsForRole(role: string | undefined): QuickAction[] 
       return [
         { label: "Add employee", href: "/hr/onboarding?tab=wizard" },
         { label: "Reports", href: "/reports" },
-        { label: "Team schedule", href: "/hr/attendance" },
+        { label: "Team attendance", href: "/hr/attendance" },
       ];
     case "HR":
     case "ADMIN":

@@ -85,6 +85,19 @@ describe("R3-INV-03: links point at existing routes", () => {
     expect([...missing]).toEqual([]);
   });
 
+  it("every next.config redirect lands on an app route and shadows no static page", async () => {
+    const { default: nextConfig } = await import("@/next.config");
+    const redirects = (await nextConfig.redirects?.()) ?? [];
+    const staticRoutes = new Set(routes.filter((r) => !r.includes("[")));
+    const bad = redirects
+      .filter((r) => !r.source.includes(":"))
+      .flatMap((r) => [
+        ...(isRoute(r.destination) ? [] : [`${r.source} -> ${r.destination} (no such page)`]),
+        ...(staticRoutes.has(r.source) ? [`${r.source} (is a real page)`] : []),
+      ]);
+    expect(bad).toEqual([]);
+  });
+
   it("has pages for the two parents QA saw 404", () => {
     expect(isRoute("/tools")).toBe(true);
     expect(isRoute("/projects/1/tickets")).toBe(true);

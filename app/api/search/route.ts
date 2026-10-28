@@ -130,7 +130,7 @@ async function executeSearch(
         )
         .orderBy(desc(announcements.createdAt))
         .limit(maxPer);
-      return rows.map(a => ({ id: a.id, type: "announcement" as const, title: a.content.slice(0, 120), subtitle: `Announcement · ${a.createdAt.toISOString().slice(0, 10)}`, href: "/dashboard" }));
+      return rows.map(a => ({ id: a.id, type: "announcement" as const, title: a.content.slice(0, 120), subtitle: `Announcement · ${a.createdAt.toISOString().slice(0, 10)}`, href: "/dashboard/announcements" }));
     },
     holidays: async () => {
       const rows = await db

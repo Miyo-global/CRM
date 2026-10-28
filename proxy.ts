@@ -286,6 +286,13 @@ export default async function proxy(req: NextRequest) {
       // the dashboard from some pages and Access Restricted on others
       // (QA-0034).
       const url = req.nextUrl.clone();
+      // Bare /hr is the people team's directory; everyone else's HR home is
+      // their leaves page (P3-emp-hr-breadcrumb-access-restricted).
+      if (pathname === "/hr") {
+        url.pathname = "/hr/leaves";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
       url.pathname = "/access-restricted";
       url.search = `?from=${encodeURIComponent(pathname)}`;
       return NextResponse.redirect(url);

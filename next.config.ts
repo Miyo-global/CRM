@@ -46,6 +46,86 @@ const nextConfig: NextConfig = {
       // QA-AUTH-07: the QR code manager moved off the CEO-named path.
       { source: "/ceo/qr-code", destination: "/tools/qr-code", permanent: true },
       { source: "/build/:path*", destination: "/projects/:path*", permanent: false },
+      // --- QA cluster C (routes-nav-aliases): guessed or old URLs -> canonical pages.
+      // Each destination is a real app route (checked in route-links.test.ts).
+      // Spaces and templates live under /knowledge/wiki (P2-knowledge-spaces-templates-404).
+      { source: "/knowledge/spaces", destination: "/knowledge/wiki/spaces", permanent: false },
+      { source: "/knowledge/spaces/:spaceId", destination: "/knowledge/wiki/spaces/:spaceId", permanent: false },
+      { source: "/knowledge/templates", destination: "/knowledge/wiki/templates", permanent: false },
+      // Data export lives at /settings/data-hub (P3-data-hub-route-404).
+      { source: "/hr/data-hub", destination: "/settings/data-hub", permanent: false },
+      { source: "/data-hub", destination: "/settings/data-hub", permanent: false },
+      // The sidebar calls it Data Export (P3-settings-data-export-route-404).
+      { source: "/settings/data-export", destination: "/settings/data-hub", permanent: false },
+      // QR codes are a tool, not a settings page.
+      { source: "/settings/qr-codes", destination: "/tools/qr-code", permanent: false },
+      // Profile is a section of account settings.
+      { source: "/settings/profile", destination: "/settings#profile", permanent: false },
+      // System health / admin summary lives under the dashboard.
+      { source: "/settings/system-health", destination: "/dashboard/admin-health", permanent: false },
+      { source: "/health", destination: "/dashboard/admin-health", permanent: false },
+      // Analytics is HR Analytics; reports are at /reports.
+      { source: "/analytics", destination: "/hr/analytics", permanent: false },
+      { source: "/audit", destination: "/settings/audit-log", permanent: false },
+      { source: "/settings/audit", destination: "/settings/audit-log", permanent: false },
+      { source: "/hr/org", destination: "/hr/org-chart", permanent: false },
+      { source: "/org-chart", destination: "/hr/org-chart", permanent: false },
+      // Offboarding is split into Exit and Termination; Exit is the lifecycle entry.
+      { source: "/hr/offboarding", destination: "/hr/exit", permanent: false },
+      // Team monitor is a tab of /hr/attendance; /hr/team-schedule is the dashboard's Team schedule.
+      { source: "/hr/attendance/team", destination: "/hr/attendance?tab=team", permanent: false },
+      { source: "/hr/team-schedule", destination: "/hr/attendance", permanent: false },
+      // New hires are created in the onboarding wizard.
+      { source: "/hr/employees/new", destination: "/hr/onboarding", permanent: false },
+      { source: "/hr/find-expert", destination: "/hr/employees/find-expert", permanent: false },
+      // Sidebar labels are Doc Types / Doc Review.
+      { source: "/hr/doc-types", destination: "/hr/document-types", permanent: false },
+      { source: "/hr/doc-review", destination: "/hr/document-review", permanent: false },
+      { source: "/documents/review", destination: "/hr/document-review", permanent: false },
+      // Career growth pages are /hr/career-*.
+      { source: "/hr/promotions", destination: "/hr/career-promotions", permanent: false },
+      { source: "/performance/promotions", destination: "/hr/career-promotions", permanent: false },
+      { source: "/performance/career-ladders", destination: "/hr/career-ladders", permanent: false },
+      { source: "/hr/evaluations", destination: "/hr/career-evaluations", permanent: false },
+      // /projects/allocation used to render a soft 404 as a project id.
+      { source: "/roadmap", destination: "/projects/roadmap", permanent: false },
+      { source: "/resource-allocation", destination: "/projects/resource-allocation", permanent: false },
+      { source: "/projects/allocation", destination: "/projects/resource-allocation", permanent: false },
+      // Leave types and policies are edited at /hr/leaves/policies.
+      { source: "/hr/leave-types", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/hr/leave-policies", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/hr/policies", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/settings/leave", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/settings/leave-policies", destination: "/hr/leaves/policies", permanent: false },
+      // Bare /tickets is the support inbox; /tickets/<key> stays the ticket page.
+      { source: "/tickets", destination: "/support/inbox", permanent: false },
+      { source: "/settings/permission-matrix", destination: "/settings/permissions", permanent: false },
+      { source: "/permission-matrix", destination: "/settings/permissions", permanent: false },
+      { source: "/permissions", destination: "/settings/permissions", permanent: false },
+      { source: "/hr/permissions", destination: "/settings/permissions", permanent: false },
+      { source: "/settings/offer-letter-templates", destination: "/hr/offer-letter-templates", permanent: false },
+      { source: "/settings/offer-letters", destination: "/hr/offer-letter-templates", permanent: false },
+      // Payslips are /hr/my-payslips (FIX-QUEUE blank pages).
+      { source: "/hr/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/profile/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/templates", destination: "/projects/templates", permanent: false },
+      { source: "/hr/templates", destination: "/projects/templates", permanent: false },
+      { source: "/settings/templates", destination: "/projects/templates", permanent: false },
+      { source: "/project-templates", destination: "/projects/templates", permanent: false },
+      { source: "/bonuses", destination: "/hr/bonuses", permanent: false },
+      { source: "/recognition", destination: "/hr/recognition", permanent: false },
+      { source: "/hr/kudos", destination: "/hr/recognition", permanent: false },
+      // Own timesheets are /timesheets (P3-timesheets-nav-inconsistency).
+      { source: "/hr/timesheets", destination: "/timesheets", permanent: false },
+      { source: "/timesheets/my", destination: "/timesheets", permanent: false },
+      { source: "/my-timesheets", destination: "/timesheets", permanent: false },
+      { source: "/work-logs", destination: "/hr/work-logs", permanent: false },
+      // All announcements are listed on /dashboard/announcements.
+      { source: "/announcements", destination: "/dashboard/announcements", permanent: false },
+      { source: "/hr/announcements", destination: "/dashboard/announcements", permanent: false },
+      { source: "/hr/announcement", destination: "/dashboard/announcements", permanent: false },
+      // --- end QA cluster C ---
     ];
   },
   experimental: {

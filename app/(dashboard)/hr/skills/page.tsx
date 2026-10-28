@@ -338,7 +338,7 @@ export default function SkillsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Skills matrix">
+      <PageWrapper title="Manage skills">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
         </div>
@@ -348,7 +348,7 @@ export default function SkillsPage() {
 
   return (
     <PageWrapper
-      title="Skills matrix"
+      title="Manage skills"
       badge={`${pluralise(uniqueSkillCount, "skill")} · ${pluralise(totalEntryCount, "entry", "entries")}`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
