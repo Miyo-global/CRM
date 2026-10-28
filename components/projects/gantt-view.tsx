@@ -95,6 +95,9 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
     const normalized = tickets.map((t) => {
       let start = coerceCalendarDay(t.startDate);
       let due = coerceCalendarDay(t.dueDate);
+      // INFO-gantt-default-today-bars: undated tickets sit on their created
+      // day, drawn hollow so they do not read as a real schedule.
+      const unscheduled = !start && !due;
       if (!start && !due) {
         const fallback =
           coerceCalendarDay(t.createdAt) ?? coerceCalendarDay(t.updatedAt);
@@ -114,10 +117,10 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
       ) {
         return null;
       }
-      return { ...t, startDate: start, dueDate: due };
+      return { ...t, startDate: start, dueDate: due, unscheduled };
     });
     return normalized.filter(
-      (row): row is Ticket & { startDate: string; dueDate: string } => row != null
+      (row): row is Ticket & { startDate: string; dueDate: string; unscheduled: boolean } => row != null
     );
   }, [tickets]);
 
@@ -348,10 +351,12 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
                     width={barWidth}
                     height={24}
                     rx={6}
-                    fill={statusColors[ticket.status] ?? toneVar.neutral}
+                    fill={ticket.unscheduled ? "transparent" : (statusColors[ticket.status] ?? toneVar.neutral)}
+                    stroke={ticket.unscheduled ? (statusColors[ticket.status] ?? toneVar.neutral) : undefined}
+                    strokeDasharray={ticket.unscheduled ? "4 3" : undefined}
                     className="transition-opacity group-hover:opacity-90"
                   >
-                    <title>{`${ticket.title} · ${ticket.status.replace(/_/g, " ")}`}</title>
+                    <title>{`${ticket.title} · ${ticket.status.replace(/_/g, " ")}${ticket.unscheduled ? " · no dates set, shown on its created day" : ""}`}</title>
                   </rect>
                 )}
               </g>
@@ -359,6 +364,12 @@ export function GanttView({ tickets, onTicketClick }: GanttViewProps) {
           })}
         </svg>
       </div>
+
+      {datedTickets.some((t) => t.unscheduled) && (
+        <p className="text-xs text-muted-foreground">
+          Dashed bars have no start or due date and sit on the day they were created.
+        </p>
+      )}
 
       {datedTickets.length === 0 && (
         <EmptyState
