@@ -18,6 +18,8 @@ interface ExportEntity {
   description: string;
   exportEndpoint: string;
   color: string;
+  /** Saved-file prefix when the endpoint's own name doesn't match the card. */
+  fileName?: string;
 }
 
 const ENTITIES: ExportEntity[] = [
@@ -28,6 +30,8 @@ const ENTITIES: ExportEntity[] = [
     description: "Export the employee directory with designation, department, role and status (Excel).",
     exportEndpoint: "/reports/headcount?format=xlsx",
     color: "text-plum-strong",
+    // The shared report endpoint names it headcount-*.xlsx.
+    fileName: "employees",
   },
   {
     id: "payroll",
@@ -84,7 +88,10 @@ function DataHubContent() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = named ?? `${entity.id}-export-${getTodayString()}.csv`;
+      const ext = named?.split(".").pop() ?? "csv";
+      a.download = entity.fileName
+        ? `${entity.fileName}-${getTodayString()}.${ext}`
+        : named ?? `${entity.id}-export-${getTodayString()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`${entity.label} export downloaded`);
