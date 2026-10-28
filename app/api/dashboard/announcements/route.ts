@@ -10,9 +10,10 @@ import {
 import { invalidateCache } from "@/lib/cache";
 import { CACHE_KEYS } from "@/lib/cache";
 import { logger } from "@/lib/logger";
+import { hasHtmlTag, NO_HTML_MESSAGE } from "@/lib/validations/text-rules";
 
 const createSchema = z.object({
-  content: z.string().min(1).max(2000),
+  content: z.string().min(1).max(2000).refine((v) => !hasHtmlTag(v), NO_HTML_MESSAGE),
   isPinned: z.boolean().optional(),
   expiresAt: z.string().datetime().optional(),
 });
@@ -45,8 +46,8 @@ export async function POST(req: NextRequest) {
     if (role !== "CEO" && role !== "HR" && role !== "ADMIN") {
       return err("Forbidden", 403);
     }
+    const body = await parseBody(req, createSchema);
     try {
-      const body = await parseBody(req, createSchema);
       const row = await createAnnouncement({
         orgId: session.orgId,
         authorId: session.user.id,

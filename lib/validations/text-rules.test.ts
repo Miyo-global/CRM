@@ -11,7 +11,21 @@ import {
   cleanRequiredName,
   cleanOptionalName,
   cleanOptionalSimpleName,
+  hasHtmlTag,
 } from "./text-rules";
+
+describe("hasHtmlTag", () => {
+  it("flags tag-shaped markup", () => {
+    expect(hasHtmlTag("<script>alert(1)</script> hi")).toBe(true);
+    expect(hasHtmlTag("hello <b>world</b>")).toBe(true);
+    expect(hasHtmlTag("<!-- x -->")).toBe(true);
+  });
+  it("allows plain text with angle brackets", () => {
+    expect(hasHtmlTag("Salary < 5L and > 2L")).toBe(false);
+    expect(hasHtmlTag("a<3")).toBe(false);
+    expect(hasHtmlTag("Team lunch on Friday")).toBe(false);
+  });
+});
 
 describe("hasMeaningfulContent", () => {
   it("is false for symbols-only / whitespace", () => {
