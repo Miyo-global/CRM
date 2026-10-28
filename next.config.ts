@@ -91,6 +91,12 @@ const nextConfig: NextConfig = {
       { source: "/roadmap", destination: "/projects/roadmap", permanent: false },
       { source: "/resource-allocation", destination: "/projects/resource-allocation", permanent: false },
       { source: "/projects/allocation", destination: "/projects/resource-allocation", permanent: false },
+      // Leave types and policies are edited at /hr/leaves/policies.
+      { source: "/hr/leave-types", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/hr/leave-policies", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/hr/policies", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/settings/leave", destination: "/hr/leaves/policies", permanent: false },
+      { source: "/settings/leave-policies", destination: "/hr/leaves/policies", permanent: false },
       // --- end QA cluster C ---
     ];
   },
