@@ -28,7 +28,7 @@ export interface Resignation {
   exitInterviewDate: Date | string | null;
   feedback: { question: string; answer: string }[] | null;
   createdAt: Date | string | null;
-  user?: { id: string; name: string | null; image: string | null; email: string; designation: string | null; joiningDate?: string | null } | null;
+  user?: { id: string; name: string | null; image: string | null; email: string; designation: string | null; joiningDate?: string | null; isActive?: boolean | null } | null;
   hrReviewer?: { id: string; name: string | null } | null;
   ceoReviewer?: { id: string; name: string | null } | null;
   checklists?: { id: number; item: string; status: string | null; completedAt: Date | string | null }[];

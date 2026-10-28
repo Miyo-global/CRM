@@ -19,6 +19,7 @@ import {
   holidays,
   wfhRequests,
   terminations,
+  auditLogs,
 } from "@/lib/db/schema";
 import { timesheets, projectMembers, projects, tickets } from "@/lib/db/schema/projects";
 import { eq, and, desc, gte, lte, asc, isNull, sql, ilike, or, inArray } from "drizzle-orm";
@@ -133,7 +134,7 @@ export async function getEmployees(
 export async function getTerminatedEmployees(
   orgId: string,
 ): Promise<TerminatedEmployee[]> {
-  const [members, deptRows, completed] = await Promise.all([
+  const [members, deptRows, completed, deactivations] = await Promise.all([
     db.query.organizationMembers.findMany({
       where: eq(organizationMembers.orgId, orgId),
       with: { user: true },
@@ -144,7 +145,15 @@ export async function getTerminatedEmployees(
       .from(terminations)
       .where(and(eq(terminations.orgId, orgId), eq(terminations.status, "COMPLETED")))
       .orderBy(desc(terminations.effectiveDate)),
+    // When the account actually closed. users.updatedAt moves on any later
+    // edit, so "Deactivated" could read weeks off the real date.
+    db
+      .select({ userId: auditLogs.targetId, at: sql<Date>`max(${auditLogs.createdAt})` })
+      .from(auditLogs)
+      .where(and(eq(auditLogs.orgId, orgId), eq(auditLogs.action, "user.deactivated")))
+      .groupBy(auditLogs.targetId),
   ]);
+  const deactivatedAtByUser = new Map(deactivations.map((d) => [d.userId, d.at]));
   const deptNameById = new Map(deptRows.map((d) => [d.id, d.name]));
   // Latest completed termination per person: the list shows its effective
   // date, not the day the record was completed (R3-SA-09).
@@ -193,7 +202,10 @@ export async function getTerminatedEmployees(
       websiteUrl: u.websiteUrl ?? null,
       skills: u.skills ?? null,
       phone: u.phone ?? null,
-      terminatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
+      terminatedAt: (() => {
+        const at = deactivatedAtByUser.get(u.id) ?? u.updatedAt;
+        return at ? new Date(at).toISOString() : null;
+      })(),
       effectiveDate: effectiveDateByUser.get(u.id) ?? null,
     }))
     .sort((a, b) => {
