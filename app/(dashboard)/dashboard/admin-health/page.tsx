@@ -63,7 +63,7 @@ export default function AdminHealthDashboardPage() {
       value: data?.pendingExpenses.count ?? 0,
       icon: Wallet,
       tone: (data?.pendingExpenses.count ?? 0) > 0 ? ("info" as Tone) : ("success" as Tone),
-      description: `INR ${Number(data?.pendingExpenses.totalAmount ?? 0).toLocaleString(DEFAULT_LOCALE)} awaiting approval`,
+      description: `INR ${Number(data?.pendingExpenses.totalAmount ?? 0).toLocaleString(DEFAULT_LOCALE)} awaiting approval, all claims incl. your own`,
       link: "/hr/expenses?status=PENDING",
     },
     {
