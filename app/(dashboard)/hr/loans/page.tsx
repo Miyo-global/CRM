@@ -190,12 +190,23 @@ export default function LoansPage() {
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {loan.createdAt ? format(new Date(loan.createdAt), "MMM d, yyyy") : "—"}
                   </TableCell>
-                  {isAdmin && (
+                  {isAdmin && (() => {
+                    // HR decides employees' loans; its own and HR/Admin staff
+                    // loans go to an Admin or the Super Admin (QA-AUTH-04). Say
+                    // so instead of leaving the cell blank (INFO-hr-cannot-approve-loans).
+                    const duty = canDecideRequest(
+                      { id: session?.user?.id, role: session?.user?.role },
+                      { id: loan.userId, role: loan.user?.role },
+                    );
+                    return (
                     <TableCell className="text-right">
-                      {!canDecideRequest(
-                        { id: session?.user?.id, role: session?.user?.role },
-                        { id: loan.userId, role: loan.user?.role },
-                      ).allowed ? null : loan.status === "PENDING" ? (
+                      {!duty.allowed ? (
+                        loan.status === "PENDING" || loan.status === "APPROVED" || loan.status === "ACTIVE" ? (
+                          <span className="text-xs text-muted-foreground" title={duty.message}>
+                            {loan.userId === session?.user?.id ? "Your request" : "Admin decides"}
+                          </span>
+                        ) : null
+                      ) : loan.status === "PENDING" ? (
                         <div className="flex justify-end gap-1.5">
                           <Button size="sm" onClick={() => handleApprove(loan.id)} disabled={process.isPending}>
                             <CheckCircle2 className="size-4" aria-hidden="true" />Approve
@@ -218,7 +229,8 @@ export default function LoansPage() {
                         </div>
                       ) : null}
                     </TableCell>
-                  )}
+                    );
+                  })()}
                 </TableRow>
               ))}
             </TableBody>
