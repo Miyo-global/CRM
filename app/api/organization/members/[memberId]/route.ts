@@ -5,6 +5,7 @@ import { organizationMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createAuditLog } from "@/lib/audit-log";
+import { invalidateUserSession } from "@/lib/auth";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { z } from "zod";
 
@@ -64,6 +65,8 @@ export async function PATCH(
 
         await tx.update(users).set({ role }).where(eq(users.id, userId));
       });
+      // Drop the cached session so the member's next request reads the new role.
+      await invalidateUserSession(userId);
 
       await createAuditLog({
         action: "org.member_role_changed",

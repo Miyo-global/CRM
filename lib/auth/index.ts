@@ -371,7 +371,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const userId = token.id as string;
           let dbUser: UserSessionCache | null = null;
 
-          if (redis) {
+          // Never trust the cache at sign-in: a role changed within the TTL
+          // would otherwise come back as the old role (QA P0 role-session).
+          if (redis && !user) {
             dbUser = await redis.get<UserSessionCache>(userSessionKey(userId));
           }
 
