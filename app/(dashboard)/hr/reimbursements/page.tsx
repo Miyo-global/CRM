@@ -147,7 +147,7 @@ export default function ReimbursementsPage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.category}</p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
-                          {[r.user?.name, r.description].filter(Boolean).join(" · ") || "—"}
+                          {[r.user?.name, r.user?.employeeId, r.description].filter(Boolean).join(" · ") || "—"}
                         </p>
                       </div>
                     </div>

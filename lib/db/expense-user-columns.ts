@@ -3,7 +3,7 @@
  * whole users row, password hash included (found with QA-AUTH-04).
  */
 export const EXPENSE_USER = {
-  columns: { id: true, firstName: true, lastName: true, name: true, email: true, image: true, role: true },
+  columns: { id: true, firstName: true, lastName: true, name: true, email: true, image: true, role: true, employeeId: true },
 } as const;
 
 export const EXPENSE_APPROVER = {

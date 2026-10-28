@@ -291,6 +291,9 @@ export function AdminExpenseItem({
           <span className="font-medium text-foreground text-sm">
             {formatExpenseSubmitterLabel(expense.user, currentUserId, expense.userId)}
           </span>
+          {expense.user?.employeeId && (
+            <span className="font-mono text-xs text-muted-foreground">{expense.user.employeeId}</span>
+          )}
           <span className="text-muted-foreground">•</span>
           <span className="text-muted-foreground text-sm">{expense.category || "General"}</span>
           <span className="text-muted-foreground">•</span>
