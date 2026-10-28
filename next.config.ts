@@ -99,6 +99,10 @@ const nextConfig: NextConfig = {
       { source: "/settings/leave-policies", destination: "/hr/leaves/policies", permanent: false },
       // Bare /tickets is the support inbox; /tickets/<key> stays the ticket page.
       { source: "/tickets", destination: "/support/inbox", permanent: false },
+      { source: "/settings/permission-matrix", destination: "/settings/permissions", permanent: false },
+      { source: "/permission-matrix", destination: "/settings/permissions", permanent: false },
+      { source: "/permissions", destination: "/settings/permissions", permanent: false },
+      { source: "/hr/permissions", destination: "/settings/permissions", permanent: false },
       // --- end QA cluster C ---
     ];
   },
