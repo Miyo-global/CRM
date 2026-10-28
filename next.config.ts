@@ -72,6 +72,9 @@ const nextConfig: NextConfig = {
       { source: "/org-chart", destination: "/hr/org-chart", permanent: false },
       // Offboarding is split into Exit and Termination; Exit is the lifecycle entry.
       { source: "/hr/offboarding", destination: "/hr/exit", permanent: false },
+      // Team monitor is a tab of /hr/attendance; /hr/team-schedule is the dashboard's Team schedule.
+      { source: "/hr/attendance/team", destination: "/hr/attendance?tab=team", permanent: false },
+      { source: "/hr/team-schedule", destination: "/hr/attendance", permanent: false },
       // --- end QA cluster C ---
     ];
   },
