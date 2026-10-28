@@ -49,7 +49,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [categoryMapping, setCategoryMapping] = useState<Record<string, string>>({});
-  const [autoApprove, setAutoApprove] = useState(true);
+  const [autoApprove, setAutoApprove] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -62,7 +62,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
     setFile(null);
     setParsedRows([]);
     setCategoryMapping({});
-    setAutoApprove(true);
+    setAutoApprove(false);
     setImportResult(null);
     setIsImporting(false);
     setIsParsing(false);
