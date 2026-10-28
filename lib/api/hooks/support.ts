@@ -39,7 +39,7 @@ interface CreateTicketInput {
 interface UpdateTicketInput {
   id: number;
   status?: SupportTicketStatus;
-  assigneeId?: string;
+  assigneeId?: string | null;
 }
 
 interface AddMessageInput {
