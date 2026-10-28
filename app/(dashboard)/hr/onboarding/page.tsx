@@ -580,6 +580,9 @@ function HrWorkflowTab() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
                       <p className="text-sm font-medium truncate">{row.userName}</p>
+                      {row.employeeId ? (
+                        <span className="text-xs tabular-nums text-muted-foreground">{row.employeeId}</span>
+                      ) : null}
                       {row.percentComplete === 100 && (
                         <StatusPill tone="success" dot>
                           Complete

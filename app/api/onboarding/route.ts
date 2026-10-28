@@ -12,6 +12,7 @@ export async function GET(_req: NextRequest) {
       .select({
         userId: onboardingTasks.userId,
         userName: users.name,
+        employeeId: users.employeeId,
         totalTasks: sql<number>`count(*)::int`,
         completedTasks: sql<number>`sum(case when ${onboardingTasks.status} = 'COMPLETED' then 1 else 0 end)::int`,
         lastCompletedAt: sql<string | null>`max(${onboardingTasks.completedAt})`,
@@ -19,11 +20,12 @@ export async function GET(_req: NextRequest) {
       .from(onboardingTasks)
       .leftJoin(users, eq(onboardingTasks.userId, users.id))
       .where(eq(onboardingTasks.orgId, session.orgId))
-      .groupBy(onboardingTasks.userId, users.name);
+      .groupBy(onboardingTasks.userId, users.name, users.employeeId);
 
     const result = rows.map((r) => ({
       userId: r.userId,
       userName: r.userName ?? r.userId,
+      employeeId: r.employeeId ?? null,
       totalTasks: r.totalTasks,
       completedTasks: r.completedTasks ?? 0,
       percentComplete:
