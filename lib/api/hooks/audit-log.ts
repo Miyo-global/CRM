@@ -12,8 +12,12 @@ export interface AuditLogRow {
   userName: string | null;
   userEmail: string | null;
   userImage: string | null;
+  userEmployeeId?: string | null;
   targetId: string | null;
   targetType: string | null;
+  /** Name and Emp ID when the target is a user/employee. */
+  targetName?: string | null;
+  targetEmployeeId?: string | null;
   metadata: Record<string, unknown> | null;
   ipAddress: string | null;
   createdAt: Date;

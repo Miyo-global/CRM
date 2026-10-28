@@ -2,8 +2,12 @@ import { type NextRequest } from "next/server";
 import { withAdmin, ok, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
-import { eq, desc, and, gte, lt, or, ilike, sql } from "drizzle-orm";
+import { eq, desc, and, gte, lt, or, ilike, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { addDaysToDateString, isDateOnly, zonedDayStartUtc } from "@/lib/date-utils";
+
+// The user an event is about, so "User #<id>" can show a name and Emp ID.
+const targetUsers = alias(users, "target_users");
 
 export async function GET(req: NextRequest) {
   return withAdmin(async (session) => {
@@ -55,14 +59,18 @@ export async function GET(req: NextRequest) {
           userName: users.name,
           userEmail: users.email,
           userImage: users.image,
+          userEmployeeId: users.employeeId,
           targetId: auditLogs.targetId,
           targetType: auditLogs.targetType,
+          targetName: targetUsers.name,
+          targetEmployeeId: targetUsers.employeeId,
           metadata: auditLogs.metadata,
           ipAddress: auditLogs.ipAddress,
           createdAt: auditLogs.createdAt,
         })
         .from(auditLogs)
         .leftJoin(users, eq(auditLogs.userId, users.id))
+        .leftJoin(targetUsers, and(inArray(auditLogs.targetType, ["user", "employee"]), eq(auditLogs.targetId, targetUsers.id)))
         .where(where)
         .orderBy(desc(auditLogs.createdAt))
         .limit(pageSize)

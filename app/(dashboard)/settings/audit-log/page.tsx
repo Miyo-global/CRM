@@ -61,6 +61,12 @@ const ACTION_TONES: Record<string, Tone> = {
   "file.upload": "info",
 };
 
+/** "Jane Doe (VC26003)" for a user target, else "#<id>". */
+function targetRef(log: AuditLogRow): string {
+  if (!log.targetName) return `#${log.targetId}`;
+  return log.targetEmployeeId ? `${log.targetName} (${log.targetEmployeeId})` : log.targetName;
+}
+
 function actionTone(action: string): Tone {
   for (const [key, tone] of Object.entries(ACTION_TONES)) {
     if (action.startsWith(key)) return tone;
@@ -94,6 +100,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
           <span className="text-sm font-medium truncate max-w-32" title={log.userName ?? log.userEmail ?? log.userId}>
             {log.userName ?? log.userEmail ?? log.userId}
           </span>
+          {log.userEmployeeId && <span className="font-mono text-2xs text-subtle-foreground">{log.userEmployeeId}</span>}
         </div>
       </TableCell>
       <TableCell className="whitespace-nowrap">
@@ -104,7 +111,7 @@ function LogTableRow({ log, onSelect }: LogTableRowProps) {
       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
         {log.targetType ? auditTargetTypeLabel(log.targetType) : ""}
         {log.targetId && (
-          <span className="text-2xs text-subtle-foreground tabular-nums"> #{log.targetId}</span>
+          <span className="text-2xs text-subtle-foreground tabular-nums"> {targetRef(log)}</span>
         )}
       </TableCell>
       <TableCell hideBelow="xl" className="text-xs font-mono text-muted-foreground whitespace-nowrap">
@@ -163,7 +170,7 @@ function LogDetailSheet({ log, onClose }: { log: AuditLogRow; onClose: () => voi
             <DetailField label="Target">
               <p className="text-sm">
                 <span className="font-medium">{auditTargetTypeLabel(log.targetType)}</span>
-                {log.targetId && <span className="text-muted-foreground"> #{log.targetId}</span>}
+                {log.targetId && <span className="text-muted-foreground"> {targetRef(log)}</span>}
               </p>
             </DetailField>
           )}
@@ -427,7 +434,7 @@ function AuditLogContent() {
                           {log.targetType && (
                             <span className="text-xs text-muted-foreground">
                               {auditTargetTypeLabel(log.targetType)}
-                              {log.targetId && <span className="tabular-nums"> #{log.targetId}</span>}
+                              {log.targetId && <span className="tabular-nums"> {targetRef(log)}</span>}
                             </span>
                           )}
                         </span>
