@@ -83,6 +83,8 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/my-payslips": EVERYONE,
   "/hr/my-documents": EVERYONE,
   "/hr/my-assets": EVERYONE,
+  // Own completed reviews and goals; the APIs scope a non-admin to self.
+  "/hr/my-reviews": EVERYONE,
   // Own claims and own loans: both APIs scope a non-admin to their own rows
   // (MIYO-0152).
   "/hr/reimbursements": EVERYONE,

@@ -113,6 +113,8 @@ describe("previously unmapped pages (QA-0065)", () => {
   it("opens the published handbook and kudos wall to every role but keeps /hr closed", () => {
     expect(canAccessRoute("/hr/handbook", "EMPLOYEE")).toBe(true);
     expect(canAccessRoute("/hr/recognition", "EMPLOYEE")).toBe(true);
+    expect(canAccessRoute("/hr/my-reviews", "EMPLOYEE")).toBe(true);
+    expect(canAccessRoute("/hr/performance", "EMPLOYEE")).toBe(false);
     expect(canAccessRoute("/hr", "EMPLOYEE")).toBe(false);
   });
 
