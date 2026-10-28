@@ -624,12 +624,60 @@ function HrWorkflowTab() {
   );
 }
 
+/** Same endpoint and cache key as /hr/document-review. */
+interface OnboardeeDocSummary {
+  userId: string;
+  userName: string | null;
+  employeeId: string | null;
+  totalRequired: number;
+  totalApproved: number;
+  totalPendingReview: number;
+  totalMissing: number;
+}
+
 function HrDocumentsTab() {
+  const summary = useQuery<OnboardeeDocSummary[]>({
+    queryKey: ["hr", "onboarding-docs", "summary"],
+    queryFn: () => apiClient.get<OnboardeeDocSummary[]>("/hr/onboarding-docs/summary"),
+  });
+  const rows = summary.data ?? [];
+
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
         Manage onboarding document configuration and review employee submissions.
       </p>
+      {summary.isLoading ? (
+        <Skeleton className="h-24 rounded-lg" />
+      ) : summary.isError ? (
+        <QueryErrorState error={summary.error} onRetry={() => void summary.refetch()} />
+      ) : rows.length === 0 ? (
+        <EmptyState title="No onboarding documents to track" compact />
+      ) : (
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <ul className="divide-y">
+              {rows.map((row) => (
+                <li key={row.userId} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {row.userName ?? "Employee"}
+                    {row.employeeId ? <span className="ml-2 text-xs font-normal tabular-nums text-muted-foreground">{row.employeeId}</span> : null}
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {row.totalApproved}/{row.totalRequired} approved
+                  </span>
+                  {row.totalPendingReview > 0 ? (
+                    <StatusPill tone="warning" dot>{row.totalPendingReview} to review</StatusPill>
+                  ) : null}
+                  {row.totalMissing > 0 ? (
+                    <StatusPill tone="danger" dot>{row.totalMissing} missing</StatusPill>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card>
           <CardContent className="flex items-start gap-3 p-5">
