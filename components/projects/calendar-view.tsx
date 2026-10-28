@@ -64,6 +64,9 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
     return map;
   }, [tickets]);
 
+  // QA P3-project-calendar-view-empty: say why tickets are missing.
+  const undated = tickets.filter((t) => !t.dueDate && !t.startDate).length;
+
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const today = getTodayString();
@@ -121,6 +124,13 @@ export function CalendarView({ tickets, onTicketClick }: CalendarViewProps) {
           </Button>
         </div>
       </div>
+
+      {undated > 0 && (
+        <p className="text-xs text-muted-foreground" role="status">
+          {undated === 1 ? "1 ticket has" : `${undated} tickets have`} no due or start date, so{" "}
+          {undated === 1 ? "it is" : "they are"} not on the calendar. Add a due date to place a ticket here.
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <div className="grid min-w-[640px] grid-cols-7">
