@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api-client";
 export interface OnboardingStatus {
   userId: string;
   userName: string;
+  employeeId: string | null;
   totalTasks: number;
   completedTasks: number;
   percentComplete: number;

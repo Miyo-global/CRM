@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import {
   useSupportTickets,
@@ -61,6 +61,10 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
 import { formatIST } from "@/lib/date-utils";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SUPPORT_STAFF_ROLES } from "@/lib/constants/support-sla";
 
 const PRIORITY_TONES: Record<string, Tone> = {
   LOW: "neutral",
@@ -311,8 +315,40 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
     onSuccess: (data) => {
       if (data.suggestedReply) setReplyText(data.suggestedReply);
     },
-    onError: () => toast.error("AI reply generation failed. Please try again."),
+    // Say why (not configured / provider error) instead of one generic line.
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
+  // Hidden without an AI provider, as on the helpdesk: the route 403s (R3-HR-09).
+  const { data: flags } = useOrgFeatureFlags();
+
+  // Staff assign from the support team; others see the name only.
+  const { data: supportStaff } = useQuery({
+    queryKey: ["support", "assignees"],
+    enabled: staff,
+    queryFn: async () =>
+      (
+        await apiClient.get<{ data: { userId: string; name: string | null; email: string }[] }>(
+          "/organization/members",
+          { page: "1", limit: "500", roles: SUPPORT_STAFF_ROLES.join(",") },
+        )
+      ).data,
+  });
+  const assigneeOptions = [
+    { value: "", label: "Unassigned" },
+    ...(supportStaff ?? []).map((m) => ({ value: m.userId, label: m.name ?? m.email })),
+  ];
+  const handleAssigneeChange = (value: string) => {
+    if (!ticket) return;
+    const next = value === "" ? null : value;
+    if (next === (ticket.assigneeId ?? null)) return;
+    updateTicket.mutate(
+      { id: ticket.id, assigneeId: next },
+      {
+        onSuccess: () => toast.success(next ? "Ticket assigned" : "Ticket unassigned"),
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
+    );
+  };
 
   const handleAiReply = useCallback(() => {
     aiReply.mutate(ticketId);
@@ -448,7 +484,7 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
                 {isInternal ? "Internal note (not visible to client)" : "Public reply"}
               </Label>
             </div>
-            <Button
+            {flags?.aiConfigured ? <Button
               variant="ghost"
               size="xs"
               onClick={handleAiReply}
@@ -459,7 +495,7 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
             >
               {!aiReply.isPending && <Sparkles aria-hidden />}
               AI Reply
-            </Button>
+            </Button> : null}
           </div>}
           <div className="flex gap-2">
             <Textarea
@@ -492,7 +528,20 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
             { label: "Status", value: <StatusPill tone={STATUS_TONES[ticket.status] ?? "neutral"} dot>{ticket.status.replace("_", " ")}</StatusPill> },
             { label: "Priority", value: <StatusPill tone={PRIORITY_TONES[ticket.priority] ?? "neutral"}>{ticket.priority}</StatusPill> },
             { label: "Client", value: ticket.client?.name ?? null },
-            { label: "Assignee", value: ticket.assignee?.name ?? null },
+            {
+              label: "Assignee",
+              value: staff ? (
+                <SearchableSelect
+                  options={assigneeOptions}
+                  value={ticket.assigneeId ?? ""}
+                  onValueChange={handleAssigneeChange}
+                  placeholder="Assign…"
+                  searchPlaceholder="Search team…"
+                  emptyText="No team members found."
+                  disabled={updateTicket.isPending}
+                />
+              ) : (ticket.assignee?.name ?? null),
+            },
             { label: "Created by", value: ticket.creator?.name ?? null },
             { label: "Created", value: fmtDate(ticket.createdAt) ? <span className="tabular-nums">{fmtDate(ticket.createdAt)}</span> : null },
             {

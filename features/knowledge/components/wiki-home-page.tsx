@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCreateKbPage, useKbFavoritePages, useKbRecentPages } from "@/lib/api/hooks/knowledge";
+import { useCreateKbPage, useKbFavoritePages, useKbPageTree, useKbRecentPages } from "@/lib/api/hooks/knowledge";
 import { pageHref } from "@/lib/knowledge/routes";
 
 import { NewPageButton } from "./new-page-button";
@@ -27,6 +27,10 @@ export function WikiHomePage() {
   const createBlank = useCreateBlankPage();
   const recent = useKbRecentPages();
   const favorites = useKbFavoritePages();
+  // Same query the sidebar tree uses, so no extra request. Recent and
+  // favourites are per-viewer, so they're empty for someone who hasn't opened
+  // anything yet even when the wiki has pages.
+  const tree = useKbPageTree();
 
   const showRecent = !view || view === "recent";
   const showFavorites = !view || view === "favourites";
@@ -38,8 +42,10 @@ export function WikiHomePage() {
   const isEmpty =
     !recent.isLoading &&
     !favorites.isLoading &&
+    !tree.isLoading &&
     recentPages.length === 0 &&
-    favoritePages.length === 0;
+    favoritePages.length === 0 &&
+    (tree.data?.nodes.length ?? 0) === 0;
 
   return (
     <PageWrapper

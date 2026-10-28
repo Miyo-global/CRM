@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAuth, ok, err, serverError } from "@/lib/api/helpers";
 import { getSupportTicket, logSupportActivity } from "@/server/queries/support";
 import { db } from "@/lib/db";
-import { supportTickets, users } from "@/lib/db/schema";
+import { supportTickets, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { sendSupportTicketStatusEmail, sendSupportTicketCreatedEmail } from "@/lib/email";
@@ -13,7 +13,8 @@ const updateSchema = z.object({
   status: z
     .enum(["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"])
     .optional(),
-  assigneeId: z.string().optional(),
+  // null unassigns.
+  assigneeId: z.string().min(1).nullable().optional(),
 });
 
 const STATUS_TRANSITIONS: Record<string, readonly string[]> = {
@@ -72,6 +73,19 @@ export async function PATCH(
       const input = updateSchema.parse(body);
       if (!staff && input.assigneeId !== undefined) {
         return err("Only the support team can assign tickets.", 403);
+      }
+
+      if (input.assigneeId) {
+        const member = await db.query.organizationMembers.findFirst({
+          where: and(
+            eq(organizationMembers.orgId, session.orgId),
+            eq(organizationMembers.userId, input.assigneeId),
+          ),
+          columns: { role: true },
+        });
+        if (!member || !isSupportStaff(member.role)) {
+          return err("Assignee must be a member of the support team.", 400);
+        }
       }
 
       if (

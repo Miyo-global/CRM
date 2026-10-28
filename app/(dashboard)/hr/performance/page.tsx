@@ -75,6 +75,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Employee, PerformanceReview, Goal, ReviewCycle, MeetingStatus } from "@/types/hr";
+import { cn } from "@/lib/utils";
 import { plural } from "@/lib/format-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { parseCalendarDate } from "@/lib/date-utils";
@@ -151,6 +152,7 @@ function ReviewsTab() {
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [formErrors, setFormErrors] = useState<FieldErrors>({});
+  const [viewing, setViewing] = useState<PerformanceReview | null>(null);
 
   const employees = useMemo(
     () => (Array.isArray(employeesRaw) ? employeesRaw : (employeesRaw as { data?: Employee[] })?.data ?? []) as Employee[],
@@ -251,7 +253,17 @@ function ReviewsTab() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {reviewsList.map((review: PerformanceReview) => (
-            <Card key={review.id}>
+            <Card
+              key={review.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`View review for ${review.user?.name ?? "employee"}`}
+              className="cursor-pointer transition-colors hover:bg-accent/40 focus-visible:focus-ring"
+              onClick={() => setViewing(review)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.target === e.currentTarget) setViewing(review);
+              }}
+            >
               <CardContent className="flex h-full flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <StatusPill tone={REVIEW_TONE[review.status ?? ""] ?? "neutral"} dot>
@@ -282,7 +294,7 @@ function ReviewsTab() {
                   </div>
                 </div>
                 {review.status !== "COMPLETED" && (
-                  <Button variant="outline" size="xs" className="mt-auto w-full" onClick={() => handleComplete(review.id)} disabled={updateReview.isPending} loading={updateReview.isPending && updateReview.variables?.id === review.id}>
+                  <Button variant="outline" size="xs" className="mt-auto w-full" onClick={(e) => { e.stopPropagation(); handleComplete(review.id); }} disabled={updateReview.isPending} loading={updateReview.isPending && updateReview.variables?.id === review.id}>
                     <CheckCircle2 />Mark Complete
                   </Button>
                 )}
@@ -291,6 +303,8 @@ function ReviewsTab() {
           ))}
         </div>
       )}
+
+      <ReviewDetailSheet review={viewing} onClose={() => setViewing(null)} />
 
       <HrSheet open={sheetOpen} onOpenChange={(o) => { setSheetOpen(o); if (!o) resetForm(); }} title="Create review" onSubmit={handleCreate} submitLabel="Create" isPending={createReview.isPending}>
         <div className="space-y-1.5">
@@ -346,6 +360,75 @@ function ReviewsTab() {
         )}
       </HrSheet>
     </div>
+  );
+}
+
+/** Read-only view of one review: ratings, written feedback, goals. */
+function ReviewDetailSheet({ review, onClose }: { review: PerformanceReview | null; onClose: () => void }) {
+  return (
+    <HrSheet
+      open={!!review}
+      onOpenChange={(o) => { if (!o) onClose(); }}
+      title={review?.user?.name ?? "Performance review"}
+      description={
+        review
+          ? `${review.periodStart} → ${review.periodEnd}${review.reviewer?.name ? ` · by ${review.reviewer.name}` : ""}`
+          : undefined
+      }
+      showSubmit={false}
+      footer={<div className="flex justify-end"><Button variant="ghost" onClick={onClose}>Close</Button></div>}
+    >
+      {review ? (
+        <div className="space-y-5 text-sm">
+          <div className="flex items-center gap-3">
+            <StatusPill tone={REVIEW_TONE[review.status ?? ""] ?? "neutral"} dot>{review.status ?? "DRAFT"}</StatusPill>
+            {review.cycle?.name ? <span className="text-muted-foreground">{review.cycle.name}</span> : null}
+            {review.overallRating ? (
+              <span className="ml-auto flex items-center gap-1 text-brand-text">
+                <Star className="size-3.5 fill-current" />
+                <span className="font-display font-bold tabular-nums">{Number(review.overallRating).toFixed(1)}</span>
+              </span>
+            ) : null}
+          </div>
+          <ReviewSection title="Ratings">
+            {review.ratings?.length ? (
+              <ul className="space-y-2">
+                {review.ratings.map((r) => (
+                  <li key={r.category}>
+                    <div className="flex justify-between gap-2"><span>{r.category}</span><span className="tabular-nums font-medium">{r.score}</span></div>
+                    {r.comment ? <p className="text-xs text-muted-foreground">{r.comment}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </ReviewSection>
+          <ReviewSection title="Strengths">{review.strengths ? <p className="whitespace-pre-wrap break-words">{review.strengths}</p> : null}</ReviewSection>
+          <ReviewSection title="Areas to improve">{review.improvements ? <p className="whitespace-pre-wrap break-words">{review.improvements}</p> : null}</ReviewSection>
+          <ReviewSection title="Goals">
+            {review.goals?.length ? (
+              <ul className="space-y-1">
+                {review.goals.map((g, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className={cn("mt-0.5 size-4 shrink-0", g.achieved ? "text-success-strong" : "text-subtle-foreground/50")} aria-label={g.achieved ? "Achieved" : "Not achieved"} />
+                    <span className="break-words">{g.goal}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </ReviewSection>
+          <ReviewSection title="Comments">{review.comments ? <p className="whitespace-pre-wrap break-words">{review.comments}</p> : null}</ReviewSection>
+        </div>
+      ) : null}
+    </HrSheet>
+  );
+}
+
+function ReviewSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-1.5">
+      <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      {children ?? <p className="text-muted-foreground">Not recorded.</p>}
+    </section>
   );
 }
 

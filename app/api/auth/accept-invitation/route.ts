@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { generateNextEmployeeId } from "@/lib/hr/generate-employee-id";
+import { generateNextEmployeeId, lockEmployeeIdAllocation } from "@/lib/hr/generate-employee-id";
 import { hashToken } from "@/lib/secret-crypto";
 import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { ACCOUNT_EXISTS_MESSAGE, findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
@@ -67,11 +67,13 @@ export async function POST(req: NextRequest) {
       ? `${input.firstName} ${input.lastName}`
       : input.firstName || input.lastName || null;
 
-  const employeeId = invitation.role !== "CEO"
-    ? await generateNextEmployeeId(new Date())
-    : undefined;
-
   await db.transaction(async (tx) => {
+    let employeeId: string | undefined;
+    if (invitation.role !== "CEO") {
+      await lockEmployeeIdAllocation(tx);
+      employeeId = await generateNextEmployeeId(new Date(), tx);
+    }
+
     await tx.insert(users).values({
       id: userId,
       email: invitation.email,

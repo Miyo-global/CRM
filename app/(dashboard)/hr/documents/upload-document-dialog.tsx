@@ -353,7 +353,9 @@ export function UploadDocumentDialog({
             ? `Upload ${files.length} Documents`
             : "Upload Document"
       }
-      isPending={isLoading || uploading || files.length === 0}
+      isPending={isLoading || uploading}
+      submitDisabled={files.length === 0}
+      submitDisabledReason="Choose a file to upload"
     >
       <Form {...form}>
         <div className="space-y-4">

@@ -812,7 +812,18 @@ export default function RecognitionPage() {
         </div>
       </HrSheet>
 
-      <AlertDialog open={confirmSendOpen} onOpenChange={setConfirmSendOpen}>
+      <AlertDialog
+        open={confirmSendOpen}
+        onOpenChange={(open) => {
+          setConfirmSendOpen(open);
+          // Dismissed without sending: say so and go back to the form, which
+          // still holds the message (the sheet was closed to show this dialog).
+          if (!open && !isSendingBulk) {
+            setSheetOpen(true);
+            toast.info("Recognition not sent", { description: "Your message is still in the form." });
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Send recognition?</AlertDialogTitle>

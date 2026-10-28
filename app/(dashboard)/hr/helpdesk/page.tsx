@@ -171,6 +171,15 @@ export default function HelpdeskPage() {
     [searchParams, router]
   );
 
+  // Closing (or creating) drops ?new=1 so a reload doesn't reopen the sheet.
+  const changeSheetOpen = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open && searchParams.get("new")) setFilter("new", null);
+    },
+    [searchParams, setFilter],
+  );
+
   const clearFilters = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("q");
@@ -227,13 +236,13 @@ export default function HelpdeskPage() {
         {
           onSuccess: () => {
             toast.success("Ticket created successfully");
-            setSheetOpen(false);
+            changeSheetOpen(false);
           },
           onError: (error) => toast.error(getErrorMessage(error)),
         },
       );
     },
-    [createTicket, tickets],
+    [createTicket, tickets, changeSheetOpen],
   );
 
   if (isLoading) {
@@ -257,7 +266,7 @@ export default function HelpdeskPage() {
       subtitle={helpdeskSubtitle(isSupportStaff(session?.user?.role))}
       badge={`${stats.total} tickets`}
       actions={
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <Sheet open={sheetOpen} onOpenChange={changeSheetOpen}>
           <SheetTrigger asChild>
             <Button>
               <Plus className="size-4" aria-hidden="true" />
@@ -277,7 +286,7 @@ export default function HelpdeskPage() {
               />
             </SheetScrollArea>
             <SheetFooter className="shrink-0 flex-row gap-2 border-t bg-background px-4 py-3">
-              <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
+              <Button variant="outline" className="flex-1" onClick={() => changeSheetOpen(false)}>
                 Cancel
               </Button>
               <Button
@@ -325,7 +334,7 @@ export default function HelpdeskPage() {
             { label: "Total", value: stats.total, icon: Ticket },
             { label: TICKET_STATUS_LABELS.TODO, value: stats.open, icon: AlertCircle, tone: "warning" },
             { label: "In Progress", value: stats.inProgress, icon: Clock, tone: "info" },
-            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, tone: "success" },
+            { label: `${TICKET_STATUS_LABELS.DONE} / ${TICKET_STATUS_LABELS.CLOSED}`, value: stats.resolved, icon: CheckCircle2, tone: "success" },
           ]}
         />
 
@@ -373,8 +382,9 @@ export default function HelpdeskPage() {
                             }
                           }}
                         >
-                          <TableCell className="max-w-80">
-                            <div className="min-w-0">
+                          <TableCell>
+                            {/* max-width on a table cell doesn't bind in auto layout; on the block it does, so truncate gets its ellipsis. */}
+                            <div className="min-w-0 max-w-80">
                               <p className="truncate font-medium text-foreground" title={ticket.title}>{ticket.title}</p>
                               {ticket.description && (
                                 <p className="line-clamp-1 text-xs text-muted-foreground">

@@ -24,6 +24,7 @@ import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toneDot, toneText } from "@/lib/design/tones";
+import { hasHtmlTag, NO_HTML_MESSAGE } from "@/lib/validations/text-rules";
 
 const MAX_ROWS = 6;
 
@@ -64,6 +65,10 @@ export function AnnouncementsWidget({ maxRows = MAX_ROWS }: { maxRows?: number }
 
   const handleSubmit = (allowDuplicate = false) => {
     if (!content.trim()) return;
+    if (hasHtmlTag(content)) {
+      toast.error(NO_HTML_MESSAGE);
+      return;
+    }
     const text = content.trim().toLowerCase();
     if (
       !allowDuplicate &&

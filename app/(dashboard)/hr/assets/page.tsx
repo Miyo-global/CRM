@@ -155,6 +155,8 @@ function sanitizeAssetSerialInput(value: string) {
 export default function HrAssetsPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editAsset, setEditAsset] = useState<Asset | null>(null);
+  // Validation shows under the field, not as stacked toasts over the submit button.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [deleteAssetId, setDeleteAssetId] = useState<number | null>(null);
   const [returnAsset, setReturnAsset] = useState<ReturnAssetState>(null);
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
@@ -254,6 +256,7 @@ export default function HrAssetsPage() {
   );
 
   const resetForm = useCallback(() => {
+    setFieldErrors({});
     setName("");
     setType("Laptop");
     setCustomType("");
@@ -325,12 +328,14 @@ export default function HrAssetsPage() {
     }
     setNotes(a.notes ?? "");
     setReassignmentReason("");
+    setFieldErrors({});
   }, []);
 
   const buildFormInput = useCallback(() => {
+    setFieldErrors({});
     const resolvedType = resolveAssetType(type, customType);
     if (type === "Other" && resolvedType === "") {
-      toast.error("Please specify the asset type");
+      setFieldErrors({ type: "Please specify the asset type" });
       return null;
     }
     return {
@@ -350,12 +355,16 @@ export default function HrAssetsPage() {
     if (!base) return null;
     const parsed = assetCreateSchema.safeParse(base);
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      const errors = issuesByField(parsed.error.issues);
+      setFieldErrors(errors);
+      // Status/assignee live outside the shared fields; those still toast.
+      const unshown = Object.keys(errors).find((k) => !INLINE_FIELDS.has(k));
+      if (unshown) toast.error(errors[unshown], { id: "asset-form" });
       return null;
     }
     const dup = findDuplicateSerial(items, parsed.data.serialNumber ?? "");
     if (dup) {
-      toast.error(DUPLICATE_SERIAL_MESSAGE);
+      setFieldErrors({ serialNumber: DUPLICATE_SERIAL_MESSAGE });
       return null;
     }
     return parsed.data;
@@ -370,7 +379,11 @@ export default function HrAssetsPage() {
       assignedTo: status === "ASSIGNED" ? assignedTo.trim() || undefined : undefined,
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      const errors = issuesByField(parsed.error.issues);
+      setFieldErrors(errors);
+      // Status/assignee live outside the shared fields; those still toast.
+      const unshown = Object.keys(errors).find((k) => !INLINE_FIELDS.has(k));
+      if (unshown) toast.error(errors[unshown], { id: "asset-form" });
       return null;
     }
     const dup = findDuplicateSerial(
@@ -379,7 +392,7 @@ export default function HrAssetsPage() {
       editAsset?.id,
     );
     if (dup) {
-      toast.error(DUPLICATE_SERIAL_MESSAGE);
+      setFieldErrors({ serialNumber: DUPLICATE_SERIAL_MESSAGE });
       return null;
     }
     return parsed.data;
@@ -487,11 +500,19 @@ export default function HrAssetsPage() {
     );
   }, [returnAsset, updateAsset]);
 
+  const fieldError = (key: string) =>
+    fieldErrors[key] ? (
+      <p role="alert" className="text-xs text-destructive">
+        {fieldErrors[key]}
+      </p>
+    ) : null;
+
   const assetDetailFields = (
     <>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Asset Name</label>
             <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder="e.g. MacBook Pro 16-inch" />
+            {fieldError("name")}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Type</label>
@@ -513,6 +534,7 @@ export default function HrAssetsPage() {
                 placeholder="e.g. Docking station"
                 maxLength={64}
               />
+              {fieldError("type")}
               <p className="text-xs text-muted-foreground text-right">{customType.length}/64</p>
             </div>
           ) : null}
@@ -525,6 +547,7 @@ export default function HrAssetsPage() {
                 placeholder="e.g. Apple"
                 maxLength={64}
               />
+              {fieldError("brand")}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Model</label>
@@ -534,6 +557,7 @@ export default function HrAssetsPage() {
                 placeholder="e.g. MacBook Pro M3"
                 maxLength={64}
               />
+              {fieldError("model")}
             </div>
           </div>
           <div className="space-y-1.5">
@@ -546,6 +570,7 @@ export default function HrAssetsPage() {
               className="font-mono"
               autoCapitalize="none"
             />
+            {fieldError("serialNumber")}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -559,6 +584,7 @@ export default function HrAssetsPage() {
                 toDate={new Date()}
                 fromYear={2025}
               />
+              {fieldError("purchaseDate")}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Purchase Cost (₹)</label>
@@ -570,6 +596,7 @@ export default function HrAssetsPage() {
                 placeholder="Enter amount"
                 autoComplete="off"
               />
+              {fieldError("purchaseCost")}
             </div>
           </div>
           <div className="space-y-1.5">
@@ -581,6 +608,7 @@ export default function HrAssetsPage() {
               rows={2}
               maxLength={ASSET_NOTES_MAX_CHARS}
             />
+            {fieldError("notes")}
             <p className="text-xs text-muted-foreground text-right">
               {notes.length}/{ASSET_NOTES_MAX_CHARS}
             </p>
@@ -887,4 +915,18 @@ export default function HrAssetsPage() {
       />
     </PageWrapper>
   );
+}
+
+const INLINE_FIELDS = new Set([
+  "name", "type", "brand", "model", "serialNumber", "purchaseDate", "purchaseCost", "notes",
+]);
+
+/** First zod message per top-level field. */
+function issuesByField(issues: { path: PropertyKey[]; message: string }[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const issue of issues) {
+    const key = String(issue.path[0] ?? "form");
+    out[key] ??= issue.message;
+  }
+  return out;
 }

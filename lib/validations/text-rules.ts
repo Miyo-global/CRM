@@ -32,6 +32,14 @@ const SIMPLE_NAME_ALLOWED = /^[\p{L}\p{N} \-.']+$/u;
 const SIMPLE_NAME_CHAR = /^[\p{L}\p{N} \-.']$/u;
 export const SIMPLE_NAME_ALLOWED_HINT = "letters, numbers, spaces and - . '";
 
+const HTML_TAG = /<\/?[a-z!][^>]*>/i;
+export const NO_HTML_MESSAGE = "Plain text only — remove HTML tags such as <script>";
+
+/** True when the string contains something shaped like an HTML tag. */
+export function hasHtmlTag(v: string): boolean {
+  return HTML_TAG.test(v);
+}
+
 /** True when the string contains at least one letter or digit. */
 export function hasMeaningfulContent(v: string): boolean {
   return MEANINGFUL_CONTENT.test(v);

@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteKbPage, useKbPage, useUpdateKbPage, type KbPage } from "@/lib/api/hooks/knowledge";
 import { getErrorMessage } from "@/lib/get-error-message";
-import { toTiptapDoc } from "@/lib/knowledge/content";
-import { KB_TRASH } from "@/lib/knowledge/routes";
+import { extractContentText, toTiptapDoc } from "@/lib/knowledge/content";
+import { KB_TRASH, KNOWLEDGE_BASE } from "@/lib/knowledge/routes";
 
 import { KbPageNotFound } from "./kb-page-not-found";
 
@@ -50,6 +50,13 @@ function WikiDocEditor({ page, canEdit, canDelete }: { page: KbPage; canEdit: bo
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const dirty = title !== page.title || content !== undefined;
+  // "New page" creates the page straight away; a page nobody wrote anything in
+  // gets a one-click way back out instead of lingering as "Untitled".
+  const isBlankDraft =
+    canDelete &&
+    content === undefined &&
+    (!title.trim() || title.trim() === "Untitled") &&
+    !extractContentText(page.content).trim();
 
   function save() {
     update.mutate(
@@ -63,6 +70,16 @@ function WikiDocEditor({ page, canEdit, canDelete }: { page: KbPage; canEdit: bo
         onError: (error) => toast.error(getErrorMessage(error)),
       },
     );
+  }
+
+  function discardDraft() {
+    remove.mutate(page.id, {
+      onSuccess: () => {
+        toast.success("Draft discarded");
+        router.push(KNOWLEDGE_BASE);
+      },
+      onError: (error) => toast.error(getErrorMessage(error)),
+    });
   }
 
   function moveToTrash() {
@@ -93,7 +110,11 @@ function WikiDocEditor({ page, canEdit, canDelete }: { page: KbPage; canEdit: bo
             Save
           </Button>
         ) : null}
-        {canDelete ? (
+        {isBlankDraft ? (
+          <Button size="sm" variant="ghost" onClick={discardDraft} disabled={remove.isPending}>
+            Discard
+          </Button>
+        ) : canDelete ? (
           <Button
             size="sm"
             variant="secondary"

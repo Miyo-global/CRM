@@ -96,7 +96,7 @@ function PermissionsContent() {
             </h2>
           </div>
           <div className="max-h-[70vh] overflow-auto" onMouseLeave={clearHover}>
-            <table className="w-full min-w-[900px] border-separate border-spacing-0 text-sm">
+            <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
               <thead className="sticky top-0 z-sticky">
                 <tr>
                   <th
