@@ -483,7 +483,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 </p>
               ) : (
                 <p id="ev-title-hint" className="text-2xs text-muted-foreground">
-                  Use letters in the title; numbers-only titles are not allowed.
+                  {CALENDAR_TITLE_MIN}–{CALENDAR_TITLE_MAX} characters, including letters; numbers-only titles are not allowed.
                 </p>
               )}
               <p className="text-2xs text-muted-foreground text-right">
