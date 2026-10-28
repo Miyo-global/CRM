@@ -41,6 +41,8 @@ export default function ReimbursementsPage() {
   const create = useCreateReimbursement();
   const process = useProcessReimbursement();
   const isAdmin = isAdminOrOwner(session?.user?.role);
+  // Employees see only their own requests, as the sidebar's "My Reimbursements" says.
+  const pageTitle = isAdmin ? "Reimbursements" : "My reimbursements";
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [rejectId, setRejectId] = useState<number | null>(null);
@@ -104,7 +106,7 @@ export default function ReimbursementsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Reimbursements">
+      <PageWrapper title={pageTitle}>
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -112,8 +114,8 @@ export default function ReimbursementsPage() {
 
   return (
     <PageWrapper
-      title="Reimbursements"
-      badge={`${items?.length ?? 0} requests`}
+      title={pageTitle}
+      badge={`${items?.length ?? 0} ${items?.length === 1 ? "request" : "requests"}`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New request</Button>}
     >
       {isError ? (
