@@ -373,8 +373,9 @@ export default function HelpdeskPage() {
                             }
                           }}
                         >
-                          <TableCell className="max-w-80">
-                            <div className="min-w-0">
+                          <TableCell>
+                            {/* max-width on a table cell doesn't bind in auto layout; on the block it does, so truncate gets its ellipsis. */}
+                            <div className="min-w-0 max-w-80">
                               <p className="truncate font-medium text-foreground" title={ticket.title}>{ticket.title}</p>
                               {ticket.description && (
                                 <p className="line-clamp-1 text-xs text-muted-foreground">

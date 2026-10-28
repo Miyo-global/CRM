@@ -274,12 +274,20 @@ export function AdminExpenseItem({
             #EXP-{parseCalendarDate(expense.expenseDate).getFullYear()}-{expense.id.toString().padStart(3, "0")}
           </span>
         </div>
-        <h4 className="font-semibold text-base text-foreground mb-0.5">
+        <h4
+          className="font-semibold text-base text-foreground mb-0.5 line-clamp-2 break-words"
+          title={expense.merchant || expense.description || undefined}
+        >
           {expense.merchant || expense.description || "Expense Claim"}
         </h4>
-        <p className="text-sm text-muted-foreground line-clamp-1 mb-2.5">
-          {expense.description || "-"}
-        </p>
+        {/* Without a merchant the heading already is the description. */}
+        {expense.merchant ? (
+          <p className="text-sm text-muted-foreground line-clamp-1 break-all mb-2.5" title={expense.description || undefined}>
+            {expense.description || "-"}
+          </p>
+        ) : (
+          <div className="mb-2.5" />
+        )}
         <div className="flex items-center gap-2 text-sm flex-wrap">
           <Avatar className="h-6 w-6">
             <AvatarImage src={resolveImageUrl(expense.user?.image)} />
