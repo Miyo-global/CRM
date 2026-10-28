@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
       .where(
         and(
           eq(leaveRequests.orgId, session.orgId),
+          eq(users.isActive, true),
           lte(leaveRequests.startDate, monthEnd),
           gte(leaveRequests.endDate, monthStart),
         ),

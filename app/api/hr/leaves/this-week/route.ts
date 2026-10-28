@@ -1,7 +1,7 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { leaveRequests } from "@/lib/db/schema";
-import { eq, and, lte, gte, desc } from "drizzle-orm";
+import { leaveRequests, users } from "@/lib/db/schema";
+import { eq, and, lte, gte, desc, notInArray } from "drizzle-orm";
 import { getTodayString, fromISODateString, formatDateOnly } from "@/lib/date-utils";
 import { canSeeLeaveDetails, REDACTED_LEAVE_LABEL } from "@/lib/hr/leave-visibility";
 
@@ -29,6 +29,11 @@ export async function GET() {
         eq(leaveRequests.status, "APPROVED"),
         lte(leaveRequests.startDate, weekEnd),
         gte(leaveRequests.endDate, weekStart),
+        // Terminated people are not "out", they are gone (same as the dashboard).
+        notInArray(
+          leaveRequests.userId,
+          db.select({ id: users.id }).from(users).where(eq(users.isActive, false)),
+        ),
       ),
       columns: { id: true, userId: true, startDate: true, endDate: true, isHalfDay: true },
       with: {
