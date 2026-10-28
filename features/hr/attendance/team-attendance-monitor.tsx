@@ -22,6 +22,7 @@ import {
   LayoutGrid,
   SearchX,
   CalendarOff,
+  PartyPopper,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,11 @@ const STATUS_META: Record<
     badge: "bg-plum-soft text-plum-strong",
     icon: Palmtree,
   },
+  HOLIDAY: {
+    label: "Holiday",
+    badge: "bg-brand-soft text-brand-soft-foreground",
+    icon: PartyPopper,
+  },
   ABSENT: {
     label: "Absent",
     badge: "bg-danger-soft text-danger-strong",
@@ -83,6 +89,7 @@ const FILTER_TABS: { value: Status; label: string; icon: LucideIcon }[] = [
   { value: "ON_BREAK", label: "On Break", icon: STATUS_META.ON_BREAK.icon },
   { value: "CHECKED_OUT", label: "Checked Out", icon: STATUS_META.CHECKED_OUT.icon },
   { value: "ON_LEAVE", label: "On Leave", icon: STATUS_META.ON_LEAVE.icon },
+  { value: "HOLIDAY", label: "Holiday", icon: STATUS_META.HOLIDAY.icon },
   { value: "ABSENT", label: "Absent", icon: STATUS_META.ABSENT.icon },
 ];
 
@@ -97,6 +104,7 @@ const SUMMARY_STATS: {
   { key: "onBreak", label: "On Break", tone: "warning", icon: Coffee },
   { key: "checkedOut", label: "Checked Out", tone: "info", icon: LogOut },
   { key: "onLeave", label: "On Leave", tone: "plum", icon: Palmtree },
+  { key: "holiday", label: "Holiday", tone: "brand", icon: PartyPopper },
   { key: "absent", label: "Absent", tone: "danger", icon: UserX },
 ];
 
@@ -107,6 +115,7 @@ function buildCounts(all: AttendanceMonitorEntry[]) {
     onBreak: all.filter((r) => r.status === "ON_BREAK").length,
     checkedOut: all.filter((r) => r.status === "CHECKED_OUT").length,
     onLeave: all.filter((r) => r.status === "ON_LEAVE").length,
+    holiday: all.filter((r) => r.status === "HOLIDAY").length,
     absent: all.filter((r) => r.status === "ABSENT").length,
   };
 }

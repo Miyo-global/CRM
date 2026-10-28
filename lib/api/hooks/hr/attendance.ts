@@ -202,7 +202,7 @@ export interface AttendanceMonitorEntry {
   checkIn: string | null;
   checkOut: string | null;
   workHours: string | null;
-  status: "PRESENT" | "ON_BREAK" | "CHECKED_OUT" | "ON_LEAVE" | "ABSENT";
+  status: "PRESENT" | "ON_BREAK" | "CHECKED_OUT" | "ON_LEAVE" | "HOLIDAY" | "ABSENT";
 }
 
 export function useAttendanceMonitor(date?: string) {
