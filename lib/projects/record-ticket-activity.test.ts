@@ -16,8 +16,21 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/logger", () => ({ logger: { error: (...args: unknown[]) => logError(...args) } }));
+const audit = vi.fn(async () => {});
+vi.mock("@/lib/audit-log", () => ({ createAuditLog: (...args: unknown[]) => audit(...(args as [])) }));
 
-import { diffTicketActivity, recordTicketActivity } from "./record-ticket-activity";
+import { diffTicketActivity, recordTicketActivity, ticketAuditAction } from "./record-ticket-activity";
+
+describe("ticketAuditAction", () => {
+  const e = (action: string) => ({ action, field: null, fromValue: null, toValue: null }) as never;
+  it("maps activity batches to one audit action", () => {
+    expect(ticketAuditAction([e("created")])).toBe("ticket.created");
+    expect(ticketAuditAction([e("priority_changed"), e("status_changed")])).toBe("ticket.status_changed");
+    expect(ticketAuditAction([e("title_changed")])).toBe("ticket.updated");
+    expect(ticketAuditAction([e("archived")])).toBe("ticket.archived");
+    expect(ticketAuditAction([e("comment_added")])).toBeNull();
+  });
+});
 
 describe("diffTicketActivity", () => {
   it("records only fields that changed after normalizing", () => {

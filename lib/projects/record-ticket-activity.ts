@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { cycles, sprints, ticketActivity, users } from "@/lib/db/schema";
 import { logger } from "@/lib/logger";
+import { createAuditLog, type AuditAction } from "@/lib/audit-log";
 
 export type TicketActivityAction =
   | "created"
@@ -136,8 +137,37 @@ async function loadDisplayNames(orgId: string, entries: TicketActivityEntry[]): 
   return names;
 }
 
+/**
+ * The audit-log action one batch of ticket activity amounts to, or null for
+ * comment-only batches (QA P2-audit-log-missing-project-events). Every ticket
+ * write already records activity, so mirroring here covers all of them.
+ */
+export function ticketAuditAction(entries: TicketActivityEntry[]): AuditAction | null {
+  const actions = new Set(entries.map((e) => e.action));
+  if (actions.has("created")) return "ticket.created";
+  if (actions.has("archived")) return "ticket.archived";
+  if (actions.has("restored")) return "ticket.restored";
+  if (actions.has("status_changed")) return "ticket.status_changed";
+  const nonComment = entries.some((e) => !e.action.startsWith("comment_"));
+  return nonComment ? "ticket.updated" : null;
+}
+
 export async function recordTicketActivity(ctx: ActivityContext, entries: TicketActivityEntry[]): Promise<void> {
   if (entries.length === 0) return;
+  const auditAction = ticketAuditAction(entries);
+  if (auditAction && ctx.actorId) {
+    void createAuditLog({
+      action: auditAction,
+      userId: ctx.actorId,
+      orgId: ctx.orgId,
+      targetId: String(ctx.ticketId),
+      targetType: "ticket",
+      metadata: {
+        projectId: ctx.projectId,
+        changes: entries.map((e) => ({ field: e.field, from: e.fromValue, to: e.toValue })),
+      },
+    });
+  }
   try {
     const names = await loadDisplayNames(ctx.orgId, entries);
     const named = (field: string | null, value: string | null) =>
