@@ -35,6 +35,7 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
       return (
         (l.description ?? "").toLowerCase().includes(term) ||
         userLabel(l.user).toLowerCase().includes(term) ||
+        (l.user?.employeeId ?? "").toLowerCase().includes(term) ||
         l.date.includes(term)
       );
     })
@@ -42,10 +43,10 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
       a.date < b.date ? 1 : a.date > b.date ? -1 : userLabel(a.user).localeCompare(userLabel(b.user))
     );
 
-  const byUser = new Map<string, { label: string; entries: WorkLog[] }>();
+  const byUser = new Map<string, { label: string; empId: string | null; entries: WorkLog[] }>();
   for (const l of rows) {
     const key = l.userId ?? "unknown";
-    if (!byUser.has(key)) byUser.set(key, { label: userLabel(l.user), entries: [] });
+    if (!byUser.has(key)) byUser.set(key, { label: userLabel(l.user), empId: l.user?.employeeId ?? null, entries: [] });
     byUser.get(key)!.entries.push(l);
   }
 
@@ -68,7 +69,12 @@ export function WorkLogList({ logs, searchTerm }: { logs: WorkLog[]; searchTerm:
         <Card key={group.label}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">{group.label}</h3>
+              <h3 className="text-sm font-semibold">
+                {group.label}
+                {group.empId && (
+                  <span className="ml-2 font-mono text-xs font-normal text-muted-foreground">{group.empId}</span>
+                )}
+              </h3>
               <Badge variant="secondary" className="tabular-nums">
                 {group.entries.length} {group.entries.length === 1 ? "entry" : "entries"}
               </Badge>

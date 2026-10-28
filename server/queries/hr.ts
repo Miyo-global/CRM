@@ -788,7 +788,7 @@ export async function getWorkLogs(opts: GetWorkLogsOptions): Promise<WorkLog[]> 
           project: { columns: { id: true, name: true, key: true } },
         },
       },
-      user: { columns: { id: true, firstName: true, lastName: true, name: true } },
+      user: { columns: { id: true, firstName: true, lastName: true, name: true, employeeId: true } },
     },
     orderBy: [asc(timesheets.date)],
     limit: opts.limit ?? 3000,
