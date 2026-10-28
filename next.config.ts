@@ -70,6 +70,8 @@ const nextConfig: NextConfig = {
       { source: "/settings/audit", destination: "/settings/audit-log", permanent: false },
       { source: "/hr/org", destination: "/hr/org-chart", permanent: false },
       { source: "/org-chart", destination: "/hr/org-chart", permanent: false },
+      // Offboarding is split into Exit and Termination; Exit is the lifecycle entry.
+      { source: "/hr/offboarding", destination: "/hr/exit", permanent: false },
       // --- end QA cluster C ---
     ];
   },
