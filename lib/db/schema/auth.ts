@@ -1,6 +1,6 @@
 
 import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, date, integer, foreignKey, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { genderEnum, onboardingStatusEnum, onboardingDocStatusEnum } from "./enums";
 
 import { departments } from "./hr";
@@ -104,6 +104,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_users_email").on(table.email),
+  // 0199: Employee IDs are unique; blank/NULL (CEO, legacy rows) are exempt.
+  uniqueIndex("uq_users_employee_id").on(table.employeeId).where(sql`${table.employeeId} IS NOT NULL AND ${table.employeeId} <> ''`),
   foreignKey({ columns: [table.reportingTo], foreignColumns: [table.id] }),
 ]);
 

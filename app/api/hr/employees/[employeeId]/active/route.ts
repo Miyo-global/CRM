@@ -1,6 +1,6 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { users, organizationMembers, terminations, auditLogs } from "@/lib/db/schema";
+import { users, organizationMembers, terminations, auditLogs, onboardingTasks } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
@@ -8,10 +8,15 @@ import { z } from "zod";
 import { createAuditLog, requestIp } from "@/lib/audit-log";
 import { invalidateUserSession, revokeAllUserSessions } from "@/lib/auth";
 import { getTodayString } from "@/lib/date-utils";
+import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
+import { completeAccountActivationTasks } from "@/lib/hr/onboarding-auto-complete";
+import { logger } from "@/lib/logger";
 
 const setActiveSchema = z.object({
   isActive: z.boolean(),
   reason: z.string().trim().max(500, "Reason must be at most 500 characters.").optional(),
+  /** The profile's Rehire button: re-hire even without a completed termination (e.g. an exit). */
+  rehire: z.boolean().optional(),
 });
 
 /**
@@ -27,7 +32,8 @@ const setActiveSchema = z.object({
  * it needs a reason, notes the re-hire on the termination record and writes an
  * "hr.employee_rehired" audit event in the same transaction (the daily
  * deactivation job reads that event, so it does not close the account again).
- * Portal Access stays off until an admin turns it on explicitly.
+ * R4b: a re-hire also turns Portal Access back on and starts a fresh onboarding
+ * checklist; the previous employment's checklist is kept in the audit event.
  */
 export async function PATCH(
   req: NextRequest,
@@ -54,7 +60,7 @@ export async function PATCH(
       return err("User not found in your organization.", 404);
     }
 
-    const { isActive, reason } = await parseBody(req, setActiveSchema);
+    const { isActive, reason, rehire } = await parseBody(req, setActiveSchema);
 
     const current = await db.query.users.findFirst({
       where: eq(users.id, targetUserId),
@@ -78,33 +84,53 @@ export async function PATCH(
         })
       : undefined;
 
-    if (termination) {
+    if (termination || (isActive && rehire)) {
       if (!reason || reason.length < 3) {
-        return err("This employee was terminated. Give a reason to re-hire them.", 400);
+        return err("Give a reason to re-hire this employee.", 400);
       }
       const note = `Re-hired on ${getTodayString()} by ${session.user.name ?? session.user.email ?? session.user.id}: ${reason}`;
       const ipAddress = await requestIp();
       await db.transaction(async (tx) => {
-        await tx.update(users).set({ isActive: true, updatedAt: new Date() }).where(eq(users.id, targetUserId));
         await tx
-          .update(terminations)
-          .set({
-            internalNotes: termination.internalNotes ? `${termination.internalNotes}\n${note}` : note,
-            updatedAt: new Date(),
-          })
-          .where(eq(terminations.id, termination.id));
+          .update(users)
+          .set({ isActive: true, hasDashboardAccess: true, updatedAt: new Date() })
+          .where(eq(users.id, targetUserId));
+        if (termination) {
+          await tx
+            .update(terminations)
+            .set({
+              internalNotes: termination.internalNotes ? `${termination.internalNotes}\n${note}` : note,
+              updatedAt: new Date(),
+            })
+            .where(eq(terminations.id, termination.id));
+        }
+        // The old checklist belongs to the previous employment; the audit
+        // event keeps a copy so Onboarding › Progress starts from 0 again.
+        const previousChecklist = await tx
+          .delete(onboardingTasks)
+          .where(and(eq(onboardingTasks.userId, targetUserId), eq(onboardingTasks.orgId, session.orgId)))
+          .returning({ title: onboardingTasks.title, status: onboardingTasks.status, completedAt: onboardingTasks.completedAt });
         await tx.insert(auditLogs).values({
           action: "hr.employee_rehired",
           userId: session.user.id,
           orgId: session.orgId,
           targetId: targetUserId,
           targetType: "employee",
-          metadata: { terminationId: termination.id, reason },
+          metadata: { terminationId: termination?.id ?? null, reason, portalAccess: true, previousChecklist },
           ipAddress,
         });
       });
       await invalidateUserSession(targetUserId);
-      return ok({ success: true, isActive, rehired: true });
+      // The re-hire is saved; a checklist failure is logged, HR can initiate it by hand.
+      const checklistStarted = await startOnboardingForUser({ orgId: session.orgId, userId: targetUserId, joiningDate: getTodayString() })
+        // A re-hire keeps their password and their portal access is back on.
+        .then(() => completeAccountActivationTasks(targetUserId))
+        .then(() => true)
+        .catch((e: unknown) => {
+          logger.error("Re-hire onboarding checklist failed", { userId: targetUserId, error: e instanceof Error ? e.message : e });
+          return false;
+        });
+      return ok({ success: true, isActive, rehired: true, checklistStarted });
     }
 
     await db.update(users).set({ isActive }).where(eq(users.id, targetUserId));

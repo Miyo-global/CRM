@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { ok, err } from "@/lib/api/helpers";
+import { ok, err, isUniqueViolation } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { users, organizationMembers, invitations, projects, projectMembers } from "@/lib/db/schema";
 import { normalizeProjectRole } from "@/lib/projects/project-roles";
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       ? `${input.firstName} ${input.lastName}`
       : input.firstName || input.lastName || null;
 
-  await db.transaction(async (tx) => {
+  const conflict = await db.transaction(async (tx) => {
     let employeeId: string | undefined;
     if (invitation.role !== "CEO") {
       await lockEmployeeIdAllocation(tx);
@@ -113,7 +113,13 @@ export async function POST(req: NextRequest) {
       .update(invitations)
       .set({ acceptedAt: new Date() })
       .where(eq(invitations.id, invitation.id));
+    return false;
+  }).catch((e: unknown) => {
+    // Email or Employee ID (uq_users_employee_id, 0199) taken by a racing write.
+    if (isUniqueViolation(e)) return true;
+    throw e;
   });
+  if (conflict) return err("This account could not be created because its email or employee ID is already in use. Please try again.", 409);
 
   logger.info("Auth: invitation accepted", { email: invitation.email, orgId: invitation.orgId });
   // The invite path told nobody that the person joined (EMAIL-AUDIT: Members-invite admin notify).

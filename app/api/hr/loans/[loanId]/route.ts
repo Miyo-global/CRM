@@ -25,7 +25,7 @@ export async function PATCH(
   { params }: { params: Promise<{ loanId: string }> }
 ) {
   return withAuth(async (session) => {
-    if (!isAdminOrOwner(session.user.role)) return err("Only admins can manage loans.", 403);
+    if (!isAdminOrOwner(session.user.role)) return err("Only HR, an Admin or the Super Admin can manage loans.", 403);
     const { loanId: id } = await params;
     const loanId = Number(id);
     if (!loanId) return err("Invalid ID.", 400);

@@ -9,6 +9,7 @@ import {
   onboardingTemplates,
   onboardingTemplateSteps,
 } from "@/lib/db/schema";
+import { ACCOUNT_ACTIVATION_TASK_TITLE } from "@/lib/hr/onboarding-auto-complete";
 
 /** Fallback checklist when the org has no onboarding template. */
 const DEFAULT_TASKS: {
@@ -17,6 +18,8 @@ const DEFAULT_TASKS: {
   ownerRole: string;
   dueOffsetDays: number;
 }[] = [
+  // Ticked automatically when the hire sets their first password (P2-onboarding-checklist-stuck-0-of-7).
+  { title: ACCOUNT_ACTIVATION_TASK_TITLE, description: "Set a password from the emailed set-up link and sign in. Completes automatically.", ownerRole: "NEW_HIRE", dueOffsetDays: 0 },
   { title: "IT Setup", description: "Set up workstation, email, and required software access.", ownerRole: "IT", dueOffsetDays: 1 },
   { title: "HR Orientation", description: "Attend HR orientation session covering company policies and benefits.", ownerRole: "HR", dueOffsetDays: 2 },
   { title: "Department Intro", description: "Meet with the department head and team for a role overview.", ownerRole: "MANAGER", dueOffsetDays: 3 },

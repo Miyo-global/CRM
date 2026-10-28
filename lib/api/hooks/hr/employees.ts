@@ -111,10 +111,10 @@ export function useToggleDashboardAccess() {
 export function useSetEmployeeActive() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, isActive, reason }: { userId: string; isActive: boolean; reason?: string }) =>
-      apiClient.patch<{ success: boolean; isActive: boolean; rehired?: boolean }>(
+    mutationFn: ({ userId, isActive, reason, rehire }: { userId: string; isActive: boolean; reason?: string; rehire?: boolean }) =>
+      apiClient.patch<{ success: boolean; isActive: boolean; rehired?: boolean; checklistStarted?: boolean }>(
         `/hr/employees/${userId}/active`,
-        { isActive, reason },
+        { isActive, reason, rehire },
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hr.all });
