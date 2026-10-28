@@ -702,7 +702,12 @@ export default function HrAssetsPage() {
                         </TableCell>
                         <TableCell className="text-sm"><Badge variant="outline">{a.type}</Badge></TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">{a.serialNumber ?? ""}</TableCell>
-                        <TableCell><StatusPill tone={badge.tone} dot>{badge.label}</StatusPill></TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap items-center gap-1">
+                            <StatusPill tone={badge.tone} dot>{badge.label}</StatusPill>
+                            {a.returnPending && <StatusPill tone="warning">Return pending</StatusPill>}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-sm">
                           {assigneeName(a, employeeList)}
                         </TableCell>

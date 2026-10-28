@@ -151,7 +151,9 @@ export function useCompleteTermination() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      apiClient.patch<{ success: boolean }>(`/hr/termination/${id}/complete`),
+      apiClient.patch<{ success: boolean; deactivated: boolean; effectiveDate: string | null }>(
+        `/hr/termination/${id}/complete`,
+      ),
     // The whole HR cache: completion also changes the employee's status, the
     // directory and the terminated list.
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.hr.all }),

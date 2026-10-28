@@ -215,8 +215,9 @@ function TerminationReasonsContent() {
               {sorted.map((reason) => (
                 <TableRow key={reason.id}>
                   <TableCell className="max-w-0 w-full whitespace-normal">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="min-w-0 wrap-anywhere text-sm font-medium">{reason.label}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      {/* One line + full text on hover: a 120-char label wrapped the row. */}
+                      <span className="min-w-0 truncate text-sm font-medium" title={reason.label}>{reason.label}</span>
                       {reason.label === OTHER_TERMINATION_REASON && (
                         <StatusPill tone="info">System</StatusPill>
                       )}

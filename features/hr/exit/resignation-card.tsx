@@ -115,7 +115,10 @@ export function ResignationCard({
                 LWD: {format(parseISO(r.lastWorkingDate), "MMM d, yyyy")}
               </span>
             )}
-            {daysLeft !== null && daysLeft > 0 && (
+            {/* Account already closed (e.g. terminated): no countdown to a date that no longer applies. */}
+            {r.user?.isActive === false ? (
+              <StatusPill tone="danger">Account closed</StatusPill>
+            ) : daysLeft !== null && daysLeft > 0 && (
               <span className="flex items-center gap-1">
                 <Clock className="size-3.5" aria-hidden="true" />
                 {daysLeft} days left

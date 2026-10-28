@@ -1,7 +1,7 @@
 "server-only";
 
 import { db } from "@/lib/db";
-import { assets, assetAssignmentHistory } from "@/lib/db/schema";
+import { assets, assetAssignmentHistory, assetReturns } from "@/lib/db/schema";
 import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import type { Asset } from "@/types/hr";
 
@@ -38,14 +38,24 @@ export async function getAssets(orgId: string): Promise<Asset[]> {
     with: { assignedUser: { columns: { id: true, name: true } } },
   });
 
-  const counts = await getAssetAssignmentCounts(
-    orgId,
-    rows.map((row) => row.id),
-  );
+  const ids = rows.map((row) => row.id);
+  const [counts, pendingReturns] = await Promise.all([
+    getAssetAssignmentCounts(orgId, ids),
+    // Still "Assigned" until HR marks the return Received; surface the
+    // outstanding recovery on the list.
+    ids.length === 0
+      ? []
+      : db
+          .select({ assetId: assetReturns.assetId })
+          .from(assetReturns)
+          .where(and(eq(assetReturns.orgId, orgId), eq(assetReturns.status, "PENDING"), inArray(assetReturns.assetId, ids))),
+  ]);
+  const returnPending = new Set(pendingReturns.map((r) => r.assetId));
 
   return rows.map((row) => ({
     ...row,
     assignmentCount: counts.get(row.id) ?? 0,
+    returnPending: returnPending.has(row.id),
   })) as unknown as Asset[];
 }
 

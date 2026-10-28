@@ -7,6 +7,7 @@ import { Receipt, Download, Eye, Pencil, Trash2, CheckCircle2, XCircle, MessageS
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -294,6 +295,8 @@ export function AdminExpenseItem({
           {expense.user?.employeeId && (
             <span className="font-mono text-xs text-muted-foreground">{expense.user.employeeId}</span>
           )}
+          {/* Money owed to a leaver settles through Full & Final; flag it. */}
+          {expense.user?.isActive === false && <StatusPill tone="danger">Terminated</StatusPill>}
           <span className="text-muted-foreground">•</span>
           <span className="text-muted-foreground text-sm">{expense.category || "General"}</span>
           <span className="text-muted-foreground">•</span>

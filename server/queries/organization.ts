@@ -21,11 +21,14 @@ export async function getOrgMembers(
   page = 1,
   limit = 20,
   search?: string,
-  roles?: string[]
+  roles?: string[],
+  /** Omitted = everyone (pickers rely on that); Settings › Members defaults to active. */
+  status?: "active" | "inactive",
 ) {
   const offset = (page - 1) * limit;
 
   const conditions: (SQL | undefined)[] = [eq(organizationMembers.orgId, orgId)];
+  if (status) conditions.push(eq(users.isActive, status === "active"));
   if (roles?.length) {
     conditions.push(inArray(organizationMembers.role, roles));
   }

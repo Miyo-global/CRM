@@ -257,6 +257,11 @@ function EmployeeTableBody({
                         <StatusPill tone={isActive ? "success" : "neutral"} dot>
                           {isActive ? "Active" : "Inactive"}
                         </StatusPill>
+                        {isActive && user.scheduledTerminationDate && (
+                          <StatusPill tone="warning" className="ml-1 whitespace-nowrap">
+                            Leaving {formatJoiningDate(user.scheduledTerminationDate)}
+                          </StatusPill>
+                        )}
                       </TableCell>
 
                       <TableCell pinned="right" className="text-right">

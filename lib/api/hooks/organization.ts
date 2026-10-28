@@ -32,6 +32,8 @@ type OrgMembersQueryOptions = Omit<
 > & {
   /** Filter members by organization role (e.g. CEO, HR). Passed as comma-separated query param. */
   roles?: string[];
+  /** Active / terminated only; omitted = everyone. */
+  status?: "active" | "inactive";
 };
 
 export const useOrgMembers = (
@@ -40,16 +42,17 @@ export const useOrgMembers = (
   search?: string,
   options?: OrgMembersQueryOptions
 ) => {
-  const { roles, ...queryOptions } = options ?? {};
+  const { roles, status, ...queryOptions } = options ?? {};
   const rolesKey = roles?.length ? [...roles].sort().join("|") : "";
   return useQuery<MembersResponse, Error>({
-    queryKey: [...queryKeys.organization.members(), page, limit, search ?? "", rolesKey],
+    queryKey: [...queryKeys.organization.members(), page, limit, search ?? "", rolesKey, status ?? ""],
     queryFn: () =>
       apiClient.get<MembersResponse>("/organization/members", {
         page: String(page),
         limit: String(limit),
         ...(search ? { search } : {}),
         ...(roles?.length ? { roles: roles.join(",") } : {}),
+        ...(status ? { status } : {}),
       }),
     ...queryOptions,
   });

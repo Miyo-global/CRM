@@ -71,6 +71,8 @@ export async function getCalendarEvents(
         and(
           eq(leaveRequests.orgId, orgId),
           eq(leaveRequests.status, "APPROVED"),
+          // Leavers drop off, like the dashboard's Who's On Leave.
+          eq(users.isActive, true),
           lte(leaveRequests.startDate, toIstDateString(end)),
           gte(leaveRequests.endDate, toIstDateString(start))
         )

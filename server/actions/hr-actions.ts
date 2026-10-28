@@ -7,6 +7,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { liveAuth as auth } from "@/lib/auth/live-session";
 import { revalidatePath } from "next/cache";
 import { sendAccountDeactivationEmail } from "@/lib/email";
+import { deactivateAccountsInTx, afterAccountsDeactivated } from "@/lib/hr/deactivate-account";
 import { ROLES, ADMIN_ROLES, EXPENSE_ADMIN_ROLES } from "@/lib/constants/roles";
 
 export async function getEmployees() {
@@ -208,9 +209,9 @@ export async function deleteEmployee(userId: string) {
       if (role === ROLES.CEO && employee.role === ROLES.CEO) {
         return { error: "Cannot delete another Owner account" };
       }
-      await db.update(users)
-        .set({ isActive: false })
-        .where(eq(users.id, userId));
+      // Same shutdown as termination: portal access off, sessions revoked.
+      const { sessionIds } = await db.transaction((tx) => deactivateAccountsInTx(tx, [userId]));
+      await afterAccountsDeactivated([userId], sessionIds);
       if (employee?.email) {
         await sendAccountDeactivationEmail(employee.email, employee.name || "Employee");
       }

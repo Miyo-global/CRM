@@ -1,4 +1,6 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm";
+import { getTodayString } from "@/lib/date-utils";
+import { restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { db } from "@/lib/db";
 import { leaveRequests, passwordResetTokens, users, userSessions } from "@/lib/db/schema";
 import { invalidateUserSession } from "@/lib/auth";
@@ -13,7 +15,8 @@ const REVOKE_TTL_SECONDS = 8 * 60 * 60;
 /**
  * R3-SA-01: everything that ends a person's access, run inside the caller's
  * transaction: account off, Portal Access off, every session row revoked, any
- * outstanding reset link dropped, and pending leave requests cancelled.
+ * outstanding reset link dropped, pending leave requests and approved leave
+ * from today on cancelled (balance restored).
  * Expense / reimbursement claims stay open on purpose: they are money owed and
  * settle through Full & Final. Call `afterAccountsDeactivated` once the
  * transaction has committed.
@@ -42,6 +45,22 @@ export async function deactivateAccountsInTx(tx: Tx, userIds: string[]): Promise
     .update(leaveRequests)
     .set({ status: "CANCELLED" })
     .where(and(inArray(leaveRequests.userId, userIds), eq(leaveRequests.status, "PENDING")));
+
+  // Approved leave that has not started yet will never be taken: cancel it and
+  // give the days back so the F&F balance is right (and it stops showing on
+  // Who's Out / the calendar).
+  const futureLeave = await tx
+    .update(leaveRequests)
+    .set({ status: "CANCELLED" })
+    .where(
+      and(
+        inArray(leaveRequests.userId, userIds),
+        eq(leaveRequests.status, "APPROVED"),
+        gte(leaveRequests.startDate, getTodayString()),
+      ),
+    )
+    .returning();
+  for (const leave of futureLeave) await restoreApprovedLeaveBalance(tx, leave);
 
   return { sessionIds: sessions.map((s) => s.id) };
 }

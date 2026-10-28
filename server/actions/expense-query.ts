@@ -90,6 +90,7 @@ export interface ExpenseWithRelations {
     image: string | null;
     role?: string | null;
     employeeId?: string | null;
+    isActive?: boolean | null;
   } | null;
   approver: {
     id: string;

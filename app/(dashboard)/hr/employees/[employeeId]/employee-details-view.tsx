@@ -498,7 +498,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     .join(" · ") || "—"}
                 </p>
 
-                <AvailabilityDot userId={employee.id} />
+                {/* Terminated overrides any leave / availability status. */}
+                {!isTerminated && <AvailabilityDot userId={employee.id} />}
 
                 {(employeeAsEmployee as Employee).bio && (
                   <p className="text-sm text-muted-foreground line-clamp-2">{(employeeAsEmployee as Employee).bio}</p>
@@ -604,7 +605,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     <DetailRow
                       label="Portal access"
                       value={
-                        employee.hasDashboardAccess ? (
+                        // A deactivated account cannot sign in, whatever the stored flag says.
+                        employee.hasDashboardAccess && !isTerminated ? (
                           <StatusPill tone="success" dot>On</StatusPill>
                         ) : (
                           <StatusPill tone="neutral" dot>Off</StatusPill>

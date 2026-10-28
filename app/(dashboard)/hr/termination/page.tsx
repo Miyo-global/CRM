@@ -60,6 +60,7 @@ import {
   terminationFormErrors,
   type TerminationFormField,
   terminationEmailNotice,
+  terminationCompletedMessage,
 } from "@/lib/hr/termination-rules";
 import {
   TERMINATION_STATUSES,
@@ -475,8 +476,8 @@ export default function TerminationPage() {
   const handleCompleteConfirm = useCallback(() => {
     if (!completeId) return;
     completeTermination.mutate(completeId, {
-      onSuccess: () => {
-        toast.success("Termination completed. Employee deactivated, FnF and asset return initiated.");
+      onSuccess: (res) => {
+        toast.success(terminationCompletedMessage(res));
         setCompleteId(null);
       },
       onError: (e) => toast.error(getErrorMessage(e)),

@@ -5,6 +5,8 @@ const invalidate = vi.fn<(id: string) => Promise<void>>(async () => undefined);
 vi.mock("@/lib/redis", () => ({ redis: { set: (...a: unknown[]) => redisSet(...a) } }));
 vi.mock("@/lib/auth", () => ({ invalidateUserSession: (id: string) => invalidate(id) }));
 vi.mock("@/lib/db", () => ({ db: {} }));
+const restore = vi.fn<(...a: unknown[]) => Promise<void>>(async () => undefined);
+vi.mock("@/lib/hr/deduct-leave-balance", () => ({ restoreApprovedLeaveBalance: (...a: unknown[]) => restore(...a) }));
 
 import { leaveRequests, passwordResetTokens, users, userSessions } from "@/lib/db/schema";
 import { afterAccountsDeactivated, deactivateAccountsInTx } from "./deactivate-account";
@@ -17,7 +19,13 @@ function fakeTx() {
     return Object.assign(p, { returning: async () => rows });
   };
   const rowsFor = (table: unknown) =>
-    table === users ? [{ email: "Gone@Example.com" }] : table === userSessions ? [{ id: "s1" }, { id: "s2" }] : [];
+    table === users
+      ? [{ email: "Gone@Example.com" }]
+      : table === userSessions
+        ? [{ id: "s1" }, { id: "s2" }]
+        : table === leaveRequests
+          ? [{ id: 9 }]
+          : [];
   const tx = {
     update: (table: unknown) => ({
       set: (values: Record<string, unknown>) => ({
@@ -47,7 +55,12 @@ describe("deactivateAccountsInTx (R3-SA-01)", () => {
     expect(writes.find((w) => w.table === users)?.values).toMatchObject({ isActive: false, hasDashboardAccess: false });
     expect(writes.find((w) => w.table === userSessions)?.values).toEqual({ isRevoked: true });
     expect(writes.some((w) => w.op === "delete" && w.table === passwordResetTokens)).toBe(true);
-    expect(writes.find((w) => w.table === leaveRequests)?.values).toEqual({ status: "CANCELLED" });
+    expect(writes.filter((w) => w.table === leaveRequests).map((w) => w.values)).toEqual([
+      { status: "CANCELLED" },
+      { status: "CANCELLED" },
+    ]);
+    // The cancelled future approved leave gets its days back.
+    expect(restore).toHaveBeenCalledWith(tx, { id: 9 });
     expect(sessionIds).toEqual(["s1", "s2"]);
   });
 
