@@ -125,6 +125,8 @@ const nextConfig: NextConfig = {
       { source: "/announcements", destination: "/dashboard/announcements", permanent: false },
       { source: "/hr/announcements", destination: "/dashboard/announcements", permanent: false },
       { source: "/hr/announcement", destination: "/dashboard/announcements", permanent: false },
+      // System email templates live under Settings.
+      { source: "/email-templates", destination: "/settings/email-templates", permanent: false },
       // --- end QA cluster C ---
     ];
   },
