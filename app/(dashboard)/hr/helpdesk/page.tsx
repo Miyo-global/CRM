@@ -334,7 +334,7 @@ export default function HelpdeskPage() {
             { label: "Total", value: stats.total, icon: Ticket },
             { label: TICKET_STATUS_LABELS.TODO, value: stats.open, icon: AlertCircle, tone: "warning" },
             { label: "In Progress", value: stats.inProgress, icon: Clock, tone: "info" },
-            { label: "Resolved", value: stats.resolved, icon: CheckCircle2, tone: "success" },
+            { label: `${TICKET_STATUS_LABELS.DONE} / ${TICKET_STATUS_LABELS.CLOSED}`, value: stats.resolved, icon: CheckCircle2, tone: "success" },
           ]}
         />
 
