@@ -87,6 +87,10 @@ const nextConfig: NextConfig = {
       { source: "/performance/promotions", destination: "/hr/career-promotions", permanent: false },
       { source: "/performance/career-ladders", destination: "/hr/career-ladders", permanent: false },
       { source: "/hr/evaluations", destination: "/hr/career-evaluations", permanent: false },
+      // /projects/allocation used to render a soft 404 as a project id.
+      { source: "/roadmap", destination: "/projects/roadmap", permanent: false },
+      { source: "/resource-allocation", destination: "/projects/resource-allocation", permanent: false },
+      { source: "/projects/allocation", destination: "/projects/resource-allocation", permanent: false },
       // --- end QA cluster C ---
     ];
   },
