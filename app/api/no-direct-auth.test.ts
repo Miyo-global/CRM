@@ -30,6 +30,7 @@ describe("API routes", () => {
   it("are guarded unless deliberately public", () => {
     const PUBLIC = new Set([
       "app/api/webhooks/esign/route.ts", // provider signature
+      "app/api/webhooks/zeptomail/route.ts", // provider signature (bounces)
       "app/api/push/vapid-public-key/route.ts", // public key only
       "app/api/hr/integrations/biometric/route.ts", // device API key
       "app/api/integrations/google/callback/route.ts", // OAuth state

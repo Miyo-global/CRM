@@ -25,6 +25,7 @@ const PUBLIC_ROUTES: Record<string, string> = {
   "push/vapid-public-key/route.ts": "public VAPID key",
   "hr/integrations/biometric/route.ts": "x-api-key header",
   "webhooks/esign/route.ts": "HMAC signature",
+  "webhooks/zeptomail/route.ts": "HMAC signature (producer-signature)",
   "public/wiki/[token]/route.ts":
     "a page shared by link (KB-0047): identified by a hashed share token, noindex, and only while the share is live",
   "public/wiki/[token]/media/route.ts":
