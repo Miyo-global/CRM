@@ -29,7 +29,9 @@ export async function GET() {
         })
         .from(organizationMembers)
         .innerJoin(users, eq(users.id, organizationMembers.userId))
-        .where(eq(organizationMembers.orgId, session.orgId));
+        // QA P2-hr-analytics-metric-inconsistency: active employees only, the
+        // same people the headcount KPI counts (exited staff inflated 20 → 25).
+        .where(and(eq(organizationMembers.orgId, session.orgId), eq(users.isActive, true)));
 
       const total = members.length;
 
