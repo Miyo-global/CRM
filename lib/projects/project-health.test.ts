@@ -4,10 +4,22 @@ import { computeHealth, isDoneStatus, isNotStartedStatus } from "./project-healt
 const now = new Date("2026-10-15T00:00:00Z");
 
 describe("computeHealth", () => {
-  it("uses done percentage thresholds", () => {
-    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 10, done: 7, now })).toEqual({ status: "on_track", donePct: 70 });
-    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 10, done: 3, now }).status).toBe("at_risk");
-    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 10, done: 2, now }).status).toBe("off_track");
+  it("is on track with nothing overdue and no schedule, whatever the done share", () => {
+    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 4, done: 0, overdue: 0, now })).toEqual({ status: "on_track", donePct: 0 });
+  });
+
+  it("uses the overdue share of open tickets", () => {
+    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 10, done: 0, overdue: 1, now }).status).toBe("at_risk");
+    expect(computeHealth({ projectStatus: "ACTIVE", endDate: null, total: 10, done: 0, overdue: 3, now }).status).toBe("off_track");
+  });
+
+  it("compares done % with the elapsed share of the timeline", () => {
+    const startDate = new Date("2026-10-01T00:00:00Z");
+    const endDate = new Date("2026-10-29T00:00:00Z"); // now is 50% through
+    const at = (done: number) => computeHealth({ projectStatus: "ACTIVE", startDate, endDate, total: 10, done, now }).status;
+    expect(at(5)).toBe("on_track");
+    expect(at(3)).toBe("at_risk");
+    expect(at(1)).toBe("off_track");
   });
 
   it("is off track once the end date passes with work left", () => {
