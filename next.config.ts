@@ -61,6 +61,8 @@ const nextConfig: NextConfig = {
       { source: "/settings/qr-codes", destination: "/tools/qr-code", permanent: false },
       // Profile is a section of account settings.
       { source: "/settings/profile", destination: "/settings#profile", permanent: false },
+      // System health / admin summary lives under the dashboard.
+      { source: "/settings/system-health", destination: "/dashboard/admin-health", permanent: false },
       // --- end QA cluster C ---
     ];
   },
