@@ -351,6 +351,10 @@ export default function SkillsMatrixPage() {
             filename={`skills-matrix-${getTodayString()}.xlsx`}
             sheets={matrixExportSheets}
           />
+          {/* Skills are added and verified on /hr/skills (P3-skills-route-split). */}
+          <Button asChild size="sm" variant="outline">
+            <Link href="/hr/skills">Manage skills</Link>
+          </Button>
           <Button asChild size="sm">
             <Link href="/hr/employees/find-expert">
               <Search className="size-4" aria-hidden="true" />
