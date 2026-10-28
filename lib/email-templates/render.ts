@@ -1,6 +1,6 @@
 import { appUrl } from "../app-url";
 import { COMPANY_ADDRESS, COMPANY_LEGAL_NAME, HR_EMAIL, SUPPORT_EMAIL } from "@/lib/constants/company";
-import { escapeHtml } from "./base";
+import { escapeHtml, logoUrl } from "./base";
 import { EMAIL_CATALOG, type EmailTemplateId } from "./catalog.generated";
 
 export type { EmailTemplateId };
@@ -21,7 +21,7 @@ export function sharedEmailVars(): Record<string, string> {
     org_name: COMPANY_LEGAL_NAME,
     org_address: COMPANY_ADDRESS,
     app_url: appUrl,
-    logo_url: `${appUrl}/logo.png`,
+    logo_url: logoUrl,
     support_email: SUPPORT_EMAIL,
     hr_email: HR_EMAIL,
   };

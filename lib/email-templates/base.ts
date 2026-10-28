@@ -3,7 +3,9 @@ import { BRAND } from "@/lib/design/brand-hex";
 
 export const baseUrl = appUrl;
 
-export const logoUrl = `${baseUrl}/logo.png`;
+// The full MI+YO wordmark on the header ink; /logo.png is only the "MI" disc
+// (P2-email-header-logo-truncated-mi).
+export const logoUrl = `${baseUrl}/logo-email.png`;
 
 export function escapeHtml(str: string): string {
   return str
