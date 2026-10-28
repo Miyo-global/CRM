@@ -171,8 +171,6 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "HR – Support",
           routes: [
             { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-            { label: "Customer Support", icon: LifeBuoy, href: "/support", isSubItem: true },
-            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
             { label: "HR Analytics", icon: BarChart3, href: "/hr/analytics" },
           ],
         },
@@ -193,6 +191,14 @@ function roleNavGroups(role: string): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
+          ],
+        },
+        // Customer Support is its own top-nav module, not part of HR (P2-support-not-in-top-nav).
+        {
+          label: "Customer Support",
+          routes: [
+            { label: "Customer Support", icon: LifeBuoy, href: "/support" },
+            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
           ],
         },
         {
@@ -313,8 +319,6 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "HR – Support",
           routes: [
             { label: "HR Helpdesk", icon: HeadphonesIcon, href: "/hr/helpdesk" },
-            { label: "Customer Support", icon: LifeBuoy, href: "/support", isSubItem: true },
-            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
             { label: "HR Analytics", icon: BarChart3, href: "/hr/analytics" },
           ],
         },
@@ -335,6 +339,14 @@ function roleNavGroups(role: string): NavGroup[] {
           defaultCollapsed: true,
           routes: [
             { label: "Bonuses", icon: Gift, href: "/hr/bonuses" },
+          ],
+        },
+        // Customer Support is its own top-nav module, not part of HR (P2-support-not-in-top-nav).
+        {
+          label: "Customer Support",
+          routes: [
+            { label: "Customer Support", icon: LifeBuoy, href: "/support" },
+            { label: "Customer Support Inbox", icon: Inbox, href: "/support/inbox", isSubItem: true },
           ],
         },
         {
