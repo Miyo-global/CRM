@@ -23,6 +23,7 @@ import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { formatINRWhole } from "@/lib/format-utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -158,7 +159,11 @@ export default function ReimbursementsPage() {
                   </TableCell>
                   {isAdmin && (
                     <TableCell className="text-right">
-                      {r.status === "PENDING" ? (
+                      {/* Same rule as the API and Loans: no deciding your own request (QA-AUTH-04). */}
+                      {!canDecideRequest(
+                        { id: session?.user?.id, role: session?.user?.role },
+                        { id: r.userId, role: r.user?.role },
+                      ).allowed ? null : r.status === "PENDING" ? (
                         <div className="flex justify-end gap-1.5">
                           <Button size="sm" onClick={() => setApproveId(r.id)} disabled={process.isPending}>
                             <CheckCircle2 className="size-4" aria-hidden="true" />Approve
