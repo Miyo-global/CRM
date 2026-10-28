@@ -498,7 +498,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     .join(" · ") || "—"}
                 </p>
 
-                <AvailabilityDot userId={employee.id} />
+                {/* Terminated overrides any leave / availability status. */}
+                {!isTerminated && <AvailabilityDot userId={employee.id} />}
 
                 {(employeeAsEmployee as Employee).bio && (
                   <p className="text-sm text-muted-foreground line-clamp-2">{(employeeAsEmployee as Employee).bio}</p>
