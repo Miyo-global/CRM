@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -466,6 +467,13 @@ function EmailTemplatesContent() {
   return (
     <PageWrapper
       title="Email templates"
+      subtitle={
+        // P3-email-templates-route-split: the two template pages point at each other.
+        <>
+          Your own templates for one-off HR mails. Emails the CRM sends automatically are{" "}
+          <Link href="/settings/email-templates" className="underline underline-offset-2 hover:text-foreground">system templates</Link>.
+        </>
+      }
       badge={plural(templates?.length ?? 0, "template")}
       actions={
         <Button size="sm" onClick={() => setSheetOpen(true)}>
