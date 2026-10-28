@@ -20,6 +20,7 @@ export const HR_SETTINGS_PAGES = [
   "payroll-schedule",
   "termination-reasons",
   "departments",
+  "appraisal-categories",
 ] as const;
 
 /**

@@ -78,19 +78,19 @@ export function computeOverallRating(
   return (sum / wsum).toFixed(2);
 }
 
-export async function loadCategories(): Promise<CategoryRow[]> {
-  return db.select().from(appraisalCategories).orderBy(appraisalCategories.sortOrder);
-}
-
-export async function seedRatingsForAppraisal(appraisalId: number): Promise<void> {
-  const cats = await loadCategories();
-  if (cats.length === 0) return;
-  await db.insert(appraisalCategoryRatings).values(
-    cats.map((c) => ({
-      appraisalId,
-      categoryId: c.id,
-    }))
-  );
+/**
+ * The categories an appraisal is scored on: the ones seeded as rating rows
+ * when it was created. Categories are per org (drizzle/0196), and one added
+ * later must not block an appraisal already in flight.
+ */
+export async function loadCategoriesForAppraisal(appraisalId: number): Promise<CategoryRow[]> {
+  const rows = await db
+    .select({ category: appraisalCategories })
+    .from(appraisalCategories)
+    .innerJoin(appraisalCategoryRatings, eq(appraisalCategoryRatings.categoryId, appraisalCategories.id))
+    .where(eq(appraisalCategoryRatings.appraisalId, appraisalId))
+    .orderBy(appraisalCategories.sortOrder);
+  return rows.map((r) => r.category);
 }
 
 export async function getCeoUserId(orgId: string): Promise<string | null> {
@@ -146,7 +146,7 @@ export async function resolveStageAssignee(
 }
 
 export async function assertSelfRatingsComplete(appraisalId: number): Promise<string | null> {
-  const cats = await loadCategories();
+  const cats = await loadCategoriesForAppraisal(appraisalId);
   const ratings = await db.query.appraisalCategoryRatings.findMany({
     where: eq(appraisalCategoryRatings.appraisalId, appraisalId),
   });
@@ -165,7 +165,7 @@ export async function assertSelfRatingsComplete(appraisalId: number): Promise<st
 }
 
 export async function assertManagerRatingsComplete(appraisalId: number): Promise<string | null> {
-  const cats = await loadCategories();
+  const cats = await loadCategoriesForAppraisal(appraisalId);
   const ratings = await db.query.appraisalCategoryRatings.findMany({
     where: eq(appraisalCategoryRatings.appraisalId, appraisalId),
   });
@@ -185,7 +185,7 @@ export async function assertManagerRatingsComplete(appraisalId: number): Promise
 
 export async function refreshOverallRating(appraisalId: number): Promise<void> {
   const [cats, ratings] = await Promise.all([
-    loadCategories(),
+    loadCategoriesForAppraisal(appraisalId),
     db.query.appraisalCategoryRatings.findMany({
       where: eq(appraisalCategoryRatings.appraisalId, appraisalId),
     }),

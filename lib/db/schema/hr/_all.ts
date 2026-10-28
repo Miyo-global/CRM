@@ -1,6 +1,6 @@
 
 import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, date, integer, doublePrecision, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   leaveStatusEnum, payrollStatusEnum, expenseStatusEnum, assetStatusEnum,
   documentTypeEnum, reviewStatusEnum, ticketPriorityEnum, ticketStatusEnum,
@@ -636,13 +636,18 @@ export const backgroundVerifications = pgTable("background_verifications", {
 
 export const appraisalCategories = pgTable("appraisal_categories", {
   id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
+  /** drizzle/0196: NULL = global default shown to every org; else org-owned. */
+  orgId: text("org_id").references(() => organizations.id),
+  slug: text("slug").notNull(),
   name: text("name").notNull(),
   ratingType: appraisalRatingTypeEnum("rating_type").notNull(),
   weight: decimal("weight", { precision: 6, scale: 4 }).default("0.0833").notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  uniqueIndex("uq_appraisal_categories_global_slug").on(table.slug).where(sql`${table.orgId} is null`),
+  uniqueIndex("uq_appraisal_categories_org_slug").on(table.orgId, table.slug).where(sql`${table.orgId} is not null`),
+]);
 
 export const appraisalCycles = pgTable("appraisal_cycles", {
   id: serial("id").primaryKey(),

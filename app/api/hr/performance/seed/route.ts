@@ -10,6 +10,7 @@ import {
 import { eq, count } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createAppraisalBundle } from "@/lib/hr/create-appraisal";
+import { categoriesVisibleTo } from "@/lib/hr/appraisal-categories";
 
 const DEFAULT_CATEGORIES = [
   { slug: "communication", name: "Communication", ratingType: "BOTH" as const, weight: "0.2000", sortOrder: 1 },
@@ -30,9 +31,12 @@ export async function POST() {
 
     const seeded: string[] = [];
 
-    const [{ total }] = await db.select({ total: count() }).from(appraisalCategories);
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(appraisalCategories)
+      .where(categoriesVisibleTo(session.orgId));
     if ((total ?? 0) === 0) {
-      await db.insert(appraisalCategories).values(DEFAULT_CATEGORIES);
+      await db.insert(appraisalCategories).values(DEFAULT_CATEGORIES.map((c) => ({ ...c, orgId: session.orgId })));
       seeded.push(`${DEFAULT_CATEGORIES.length} appraisal categories`);
     } else {
       seeded.push(`categories already exist (${total}), skipped`);

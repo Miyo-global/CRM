@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   useAppraisals,
   useAppraisal,
@@ -389,7 +390,11 @@ export function AppraisalsTab() {
 
       {admin && catList.length === 0 && (
         <div role="status" className="rounded-md border border-warning-500/30 bg-warning-soft px-3 py-2.5 text-xs text-warning-strong">
-          No rating categories configured. Set up appraisal categories before creating appraisals.
+          No rating categories configured.{" "}
+          <Link href="/settings/appraisal-categories" className="font-medium underline underline-offset-2">
+            Set up appraisal categories
+          </Link>{" "}
+          before creating appraisals.
         </div>
       )}
 
