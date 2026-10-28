@@ -152,6 +152,9 @@ export async function GET(req: NextRequest) {
           approvedTodayAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} IN ('APPROVED', 'PAID') AND ${expenses.approvedAt} >= ${kpi.dayStart} AND ${expenses.approvedAt} < ${kpi.dayEnd} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
           rejectedTodayAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} = 'REJECTED' AND ${expenses.updatedAt} >= ${kpi.dayStart} AND ${expenses.updatedAt} < ${kpi.dayEnd} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
           claimedMonthAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} <> 'REJECTED' AND ${expenses.expenseDate} >= ${kpi.monthStart} AND ${expenses.expenseDate} < ${kpi.nextMonthStart} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
+          // Employee tiles: paid out this calendar year; rejected in the last 30 days.
+          reimbursedYtdAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} = 'PAID' AND COALESCE(${expenses.paidAt}, ${expenses.updatedAt}) >= ${kpi.yearStart} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
+          rejected30dAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} = 'REJECTED' AND ${expenses.updatedAt} >= ${kpi.last30Start} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
         })
         .from(expenses)
         .where(and(...baseConditions)),
@@ -190,6 +193,8 @@ export async function GET(req: NextRequest) {
         approvedTodayAmount: Number(s?.approvedTodayAmount) || 0,
         rejectedTodayAmount: Number(s?.rejectedTodayAmount) || 0,
         claimedMonthAmount: Number(s?.claimedMonthAmount) || 0,
+        reimbursedYtdAmount: Number(s?.reimbursedYtdAmount) || 0,
+        rejected30dAmount: Number(s?.rejected30dAmount) || 0,
       },
       categories: categoryList,
       pagination: {

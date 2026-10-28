@@ -47,6 +47,8 @@ export interface ExpenseStats {
   approvedTodayAmount?: number;
   rejectedTodayAmount?: number;
   claimedMonthAmount?: number;
+  reimbursedYtdAmount?: number;
+  rejected30dAmount?: number;
 }
 
 export interface ExpenseCategory {

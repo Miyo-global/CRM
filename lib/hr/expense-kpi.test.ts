@@ -8,6 +8,8 @@ describe("expenseKpiWindows", () => {
     expect(w.dayEnd).toBe("2026-10-28T18:30:00.000Z");
     expect(w.monthStart).toBe("2026-10-01");
     expect(w.nextMonthStart).toBe("2026-11-01");
+    expect(w.yearStart).toBe("2025-12-31T18:30:00.000Z");
+    expect(w.last30Start).toBe("2026-09-28T18:30:00.000Z");
   });
 
   it("rolls the month over at December", () => {
