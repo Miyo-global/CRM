@@ -32,7 +32,20 @@ export async function POST(req: NextRequest) {
         eq(payrolls.status, "DRAFT"),
         body.payrollIds ? inArray(payrolls.id, body.payrollIds) : undefined,
       ),
-      columns: { id: true, userId: true, netSalary: true, allowances: true, otherDeductions: true, generatedBy: true },
+      columns: {
+        id: true,
+        userId: true,
+        grossSalary: true,
+        netSalary: true,
+        ptAmount: true,
+        lopDays: true,
+        lopAmount: true,
+        advanceRecoveryAmount: true,
+        deductions: true,
+        allowances: true,
+        otherDeductions: true,
+        generatedBy: true,
+      },
     });
     if (drafts.length === 0) return ok({ recalculated: 0, skipped: 0 });
 
@@ -84,7 +97,30 @@ export async function POST(req: NextRequest) {
         orgId: session.orgId,
         targetId: String(draft.id),
         targetType: "payroll",
-        metadata: { employeeId: draft.userId, month: body.month, netBefore: draft.netSalary, netAfter: values.netSalary },
+        // Before/after per component, so a changed line (e.g. PT now read from
+        // the employee's profile) is traceable, not just the net.
+        metadata: {
+          employeeId: draft.userId,
+          month: body.month,
+          netBefore: draft.netSalary,
+          netAfter: values.netSalary,
+          before: {
+            gross: draft.grossSalary,
+            pt: draft.ptAmount,
+            lopDays: draft.lopDays,
+            lop: draft.lopAmount,
+            loanEmi: draft.advanceRecoveryAmount,
+            deductions: draft.deductions,
+          },
+          after: {
+            gross: values.grossSalary,
+            pt: values.ptAmount,
+            lopDays: values.lopDays,
+            lop: values.lopAmount,
+            loanEmi: values.advanceRecoveryAmount,
+            deductions: values.deductions,
+          },
+        },
       }).catch(() => {});
     }
 
