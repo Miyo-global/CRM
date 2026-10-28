@@ -12,6 +12,7 @@ import {
   useHrCheckIn,
   useHrCheckOut,
   useHrToggleBreak,
+  useHrHolidaysForCalendar,
 } from "@/lib/api/hooks/hr";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -27,9 +28,17 @@ export const TimerCard = memo(function TimerCard() {
 
   const { data: statusData, isLoading } = useHrAttendanceStatus({ refetchInterval: 60000, staleTime: 30000 });
 
+  // Clocking in on an org holiday is allowed but recorded as holiday work; say so up front.
+  const today = getTodayString();
+  const { data: monthHolidays } = useHrHolidaysForCalendar({
+    year: Number(today.slice(0, 4)),
+    month: Number(today.slice(5, 7)),
+  });
+  const todayHoliday = monthHolidays?.find((h) => h.date === today) ?? null;
+
   const checkInMutation = useHrCheckIn({
     onSuccess: () => {
-      toast.success("Clocked in successfully");
+      toast.success(todayHoliday ? "Clocked in — recorded as holiday work" : "Clocked in successfully");
       setLocalCooldown(0);
     },
     onError: (err) => toast.error(err.message),
@@ -238,7 +247,8 @@ export const TimerCard = memo(function TimerCard() {
         <p className="text-center text-sm tabular-nums text-muted-foreground">
           {isOnBreak && "On break"}
           {!isOnBreak && isCheckedIn && checkInTime && `Checked in at ${formatISTTime(checkInTime)} IST`}
-          {!isOnBreak && !isCheckedIn && !isActive && !isInCooldown && "Not clocked in"}
+          {!isOnBreak && !isCheckedIn && !isActive && !isInCooldown &&
+            (todayHoliday ? `Today is a holiday (${todayHoliday.name}); clocking in records holiday work` : "Not clocked in")}
           {!isOnBreak && !isActive && isInCooldown && `Cooldown: ${Math.floor(localCooldown / 60)}:${String(localCooldown % 60).padStart(2, "0")}`}
         </p>
 
