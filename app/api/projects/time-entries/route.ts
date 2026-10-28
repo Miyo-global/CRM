@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { timesheets, tickets } from "@/lib/db/schema";
-import { eq, and, gte, lte, inArray, desc, isNull } from "drizzle-orm";
+import { eq, and, gte, lte, inArray, desc, isNull, isNotNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
 export async function GET(req: NextRequest) {
@@ -21,7 +21,9 @@ export async function GET(req: NextRequest) {
 
     const isOwnerOrAdmin = isAdminOrOwner(session.user.role);
 
-    const conditions = [eq(timesheets.orgId, session.orgId!)];
+    // Ticket time only: rows with no ticket are the free-form daily work log
+    // (/hr/work-logs, drizzle/0194) and rendered here as "Unknown / 0h".
+    const conditions = [eq(timesheets.orgId, session.orgId!), isNotNull(timesheets.ticketId)];
 
     if (ticketId) {
       conditions.push(eq(timesheets.ticketId, ticketId));

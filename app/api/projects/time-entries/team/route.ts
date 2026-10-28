@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { withAuth, ok, err, toNumber } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { tickets, timesheets } from "@/lib/db/schema";
-import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { eq, and, gte, lte, desc, inArray, isNotNull } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 
 export async function GET(req: NextRequest) {
@@ -22,7 +22,9 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Math.max(toNumber(searchParams.get("limit")) ?? 100, 1), 500);
     const offset = Math.max(toNumber(searchParams.get("offset")) ?? 0, 0);
 
-    const conditions = [eq(timesheets.orgId, session.orgId!)];
+    // Ticket time only: rows with no ticket are the free-form daily work log
+    // (/hr/work-logs, drizzle/0194) and rendered here as "Unknown / 0h".
+    const conditions = [eq(timesheets.orgId, session.orgId!), isNotNull(timesheets.ticketId)];
 
     if (userId) conditions.push(eq(timesheets.userId, userId));
     if (startDate) conditions.push(gte(timesheets.date, startDate));
