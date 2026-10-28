@@ -36,6 +36,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { PayrollRunStepper } from "@/features/hr/payroll/payroll-run-stepper";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { monthKeyToDate } from "@/lib/date-utils";
@@ -108,6 +109,8 @@ export default function PayrollPage() {
   const [generateSheetOpen, setGenerateSheetOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
+  /** Drafts awaiting the Recalculate confirm; `[]` = every draft of the month. */
+  const [recalcTarget, setRecalcTarget] = useState<number[] | null>(null);
   const [otherDeductions, setOtherDeductions] = useState<string>("");
   const [bonus, setBonus] = useState<string>("");
   const [periodMode, setPeriodMode] = useState<PayrollPeriodMode>("month");
@@ -360,7 +363,9 @@ export default function PayrollPage() {
     },
     [recomputeMutation, selectedMonth],
   );
-  const hasDrafts = (allPayrolls ?? []).some((p) => p.status === "DRAFT");
+  const draftCount = (allPayrolls ?? []).filter((p) => p.status === "DRAFT").length;
+  const hasDrafts = draftCount > 0;
+  const recalcCount = recalcTarget?.length ? recalcTarget.length : draftCount;
 
   const filteredPayrolls = useMemo(() => {
     const rows = allPayrolls ?? [];
@@ -380,24 +385,6 @@ export default function PayrollPage() {
     return (
       <PageWrapper title="Payroll management">
         <div className="space-y-6">
-        {(staleDrafts?.staleIds.length ?? 0) > 0 && (
-          <div className="flex flex-col gap-3 rounded-lg border border-warning bg-warning-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-warning-strong">
-              {staleDrafts!.staleIds.length} draft payslip
-              {staleDrafts!.staleIds.length === 1 ? "" : "s"} for this month were calculated under
-              older rules and no longer match a fresh calculation.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => handleRecalculate(staleDrafts!.staleIds)}
-              disabled={recomputeMutation.isPending}
-            >
-              <RefreshCw className="size-4" aria-hidden="true" />
-              Recalculate {staleDrafts!.staleIds.length} draft
-              {staleDrafts!.staleIds.length === 1 ? "" : "s"}
-            </Button>
-          </div>
-        )}
           <Skeleton className="h-16 w-full rounded-lg" />
           <Skeleton className="h-20 w-full rounded-lg" />
           <Card className="gap-0 py-0">
@@ -449,7 +436,7 @@ export default function PayrollPage() {
           {hasDrafts && (
             <Button
               variant="outline"
-              onClick={() => handleRecalculate()}
+              onClick={() => setRecalcTarget([])}
               disabled={recomputeMutation.isPending}
               title="Re-run the current payroll rules for every draft this month. Approved and paid payrolls are not changed."
             >
@@ -496,6 +483,24 @@ export default function PayrollPage() {
       }
     >
       <div className="space-y-6">
+        {(staleDrafts?.staleIds.length ?? 0) > 0 && (
+          <div className="flex flex-col gap-3 rounded-lg border border-warning bg-warning-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-warning-strong">
+              {staleDrafts!.staleIds.length} draft payslip
+              {staleDrafts!.staleIds.length === 1 ? "" : "s"} for this month were calculated under
+              older rules and no longer match a fresh calculation.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setRecalcTarget(staleDrafts!.staleIds)}
+              disabled={recomputeMutation.isPending}
+            >
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Recalculate {staleDrafts!.staleIds.length} draft
+              {staleDrafts!.staleIds.length === 1 ? "" : "s"}
+            </Button>
+          </div>
+        )}
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <div className="space-y-0.5">
@@ -565,7 +570,7 @@ export default function PayrollPage() {
             onApprove={handleApprovePayroll}
             onMarkPaid={handleMarkPaid}
             onDelete={handleDeletePayroll}
-            onRecalculate={(id) => handleRecalculate([id])}
+            onRecalculate={(id) => setRecalcTarget([id])}
             isRecalculatePending={recomputeMutation.isPending}
             isApprovePending={approvePayrollMutation.isPending}
             isMarkPaidPending={markPaidMutation.isPending}
@@ -589,6 +594,24 @@ export default function PayrollPage() {
             if (!open) setPreviewPayroll(null);
           }}
           payroll={previewPayroll}
+        />
+
+        <ConfirmDialog
+          open={recalcTarget !== null}
+          onOpenChange={(open) => {
+            if (!open) setRecalcTarget(null);
+          }}
+          title={`Recalculate ${recalcCount} draft payslip${recalcCount === 1 ? "" : "s"}?`}
+          description={
+            `Every line (LOP, professional tax, PF/ESI, loan EMI, net) is recalculated from the current salary structure and attendance for ${format(monthKeyToDate(selectedMonth), "MMMM yyyy")}. ` +
+            "Professional tax comes from each employee's profile; where it isn't set, PT becomes ₹0. " +
+            "Bonus and other deductions are kept. Approved and paid payslips are not changed. This can't be undone."
+          }
+          confirmLabel="Recalculate"
+          onConfirm={() => {
+            handleRecalculate(recalcTarget?.length ? recalcTarget : undefined);
+            setRecalcTarget(null);
+          }}
         />
       </div>
     </PageWrapper>
