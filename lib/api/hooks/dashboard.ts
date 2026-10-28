@@ -207,6 +207,8 @@ export interface BirthdayEntry {
 export interface PendingApprovalsCount {
   pendingLeaves: number;
   pendingResignations: number;
+  pendingLoans: number;
+  pendingExpenses: number;
   total: number;
 }
 

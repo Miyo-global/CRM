@@ -54,8 +54,8 @@ describe("one layout everywhere", () => {
     expect(html).toMatch(/\/hr\/attendance/);
   });
 
-  it("carries the logo once", () => {
+  it("carries the full wordmark logo once", () => {
     const html = getEmailTemplate({ title: "T", content: "<p>x</p>" });
-    expect(html.match(/logo\.png/g)?.length).toBe(1);
+    expect(html.match(/logo-email\.png/g)?.length).toBe(1);
   });
 });

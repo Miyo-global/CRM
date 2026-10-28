@@ -11,6 +11,7 @@ import { revokeAllUserSessions } from "@/lib/auth";
 import { hashToken } from "@/lib/secret-crypto";
 import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { afterResponse } from "@/lib/after-response";
+import { notifyHireJoined } from "@/lib/hr/notify-hire-joined";
 
 const schema = z.object({
   token: z.string(),
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   // (Portal Access is not checked here: set-up links post to this route too.)
   const owner = await db.query.users.findFirst({
     where: eq(users.email, tokenRecord.email),
-    columns: { isActive: true, email: true, firstName: true, lastName: true, name: true },
+    columns: { isActive: true, email: true, firstName: true, lastName: true, name: true, emailVerified: true },
   });
   if (!owner || owner.isActive === false) {
     return err("Invalid or expired reset token", 400);
@@ -76,8 +77,13 @@ export async function POST(req: NextRequest) {
     return result;
   });
 
-  if (updatedUser[0]?.id) {
-    await revokeAllUserSessions(updatedUser[0].id);
+  const userId = updatedUser[0]?.id;
+  if (userId) {
+    await revokeAllUserSessions(userId);
+    // First password on an unverified account = a new hire finishing set-up.
+    if (!owner.emailVerified) {
+      afterResponse("auth/reset-password:hire-joined", () => notifyHireJoined(userId));
+    }
   }
 
   logger.info("Auth: password reset completed", { email: tokenRecord.email });

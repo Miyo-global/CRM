@@ -8,6 +8,7 @@ import { sendLeaveCancellationEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
 import { restoreApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
 import { createNotification } from "@/server/actions/create-notification";
+import { resolveRequestNotifications } from "@/lib/notifications/resolve";
 import { afterResponse } from "@/lib/after-response";
 
 type LeaveRow = typeof leaveRequests.$inferSelect;
@@ -105,6 +106,7 @@ export async function PATCH(
     if (!cancelled) {
       return err("This leave request was just changed by someone else. Refresh to see its current status.", 409);
     }
+    await resolveRequestNotifications(session.orgId, { kind: "leave", leaveId }, "Cancelled");
 
     await writeAuditLog({
       action: "hr.leave_cancelled",

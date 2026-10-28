@@ -214,7 +214,7 @@ export async function POST(req: NextRequest) {
 
     afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, ONBOARDED_NOTIFY_ROLES, {
       type: "SUCCESS",
-      ...onboardedNotification(body),
+      ...onboardedNotification({ ...body, employeeId }),
       link: `/hr/employees/${newUser.id}`,
       metadata: { employeeId: newUser.id },
       // A new HR hire is in the HR list too; nobody is told about their own hire.

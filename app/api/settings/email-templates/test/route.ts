@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { renderEmail } from "@/lib/email-templates/render";
 import { isEmailTemplateId, sampleVarsFor } from "@/lib/email-templates/sample-vars";
 import { z } from "zod";
+import { createAuditLog } from "@/lib/audit-log";
 
 const bodySchema = z.object({
   templateId: z.string().min(1),
@@ -33,6 +34,14 @@ export async function POST(req: NextRequest) {
 
     const { subject, html, text } = renderEmail(body.templateId, sampleVarsFor(body.templateId));
     await sendEmail({ to: body.testEmail, subject: `[TEST] ${subject}`, html, text });
+    // Sends from Settings used to leave no trace (P2-no-outbound-email-delivery-audit).
+    await createAuditLog({
+      action: "email.test_sent",
+      userId: session.user.id,
+      orgId: session.orgId,
+      targetType: "email_template",
+      metadata: { templateId: body.templateId, to: body.testEmail, subject },
+    });
     return ok({ sent: true, to: body.testEmail, templateId: body.templateId });
   });
 }

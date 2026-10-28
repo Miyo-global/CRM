@@ -5,6 +5,7 @@ import { wfhRequests } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { resolveRequestNotifications } from "@/lib/notifications/resolve";
 
 // Same rule as leave and expense rejection: the employee is told why (QA-0071).
 const updateWfhSchema = z
@@ -54,6 +55,8 @@ export async function PATCH(
         approverId: session.user.id,
       })
       .where(eq(wfhRequests.id, requestId));
+
+    await resolveRequestNotifications(session.orgId, { kind: "wfh", requestId }, body.status === "APPROVED" ? "Approved" : "Rejected");
 
     return ok({ success: true });
   });

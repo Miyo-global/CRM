@@ -21,36 +21,29 @@ export function PendingApprovalsCard() {
         <p className="px-1 py-2 text-sm text-muted-foreground">Nothing to approve.</p>
       ) : (
         <div className="-mx-2">
-          <Link
-            href="/hr/leaves"
-            aria-label={`${counts.pendingLeaves} pending leave requests`}
-            className="block rounded-md outline-none focus-visible:focus-ring"
-          >
-            <WidgetListRow
-              className="hover:bg-accent"
-              title="Leave Requests"
-              trailing={
-                counts.pendingLeaves > 0 && (
-                  <span className="font-mono text-sm tabular-nums text-foreground">{counts.pendingLeaves}</span>
-                )
-              }
-            />
-          </Link>
-          <Link
-            href="/hr/exit"
-            aria-label={`${counts.pendingResignations} pending resignations`}
-            className="block rounded-md outline-none focus-visible:focus-ring"
-          >
-            <WidgetListRow
-              className="hover:bg-accent"
-              title="Resignations"
-              trailing={
-                counts.pendingResignations > 0 && (
-                  <span className="font-mono text-sm tabular-nums text-foreground">{counts.pendingResignations}</span>
-                )
-              }
-            />
-          </Link>
+          {[
+            { href: "/hr/leaves?tab=approvals", title: "Leave Requests", label: "pending leave requests", count: counts.pendingLeaves },
+            { href: "/hr/exit", title: "Resignations", label: "pending resignations", count: counts.pendingResignations },
+            { href: "/hr/loans", title: "Salary Loans", label: "pending salary loans", count: counts.pendingLoans },
+            { href: "/hr/expenses?status=PENDING", title: "Expenses", label: "pending expense claims", count: counts.pendingExpenses },
+          ].map((row) => (
+            <Link
+              key={row.href}
+              href={row.href}
+              aria-label={`${row.count} ${row.label}`}
+              className="block rounded-md outline-none focus-visible:focus-ring"
+            >
+              <WidgetListRow
+                className="hover:bg-accent"
+                title={row.title}
+                trailing={
+                  row.count > 0 && (
+                    <span className="font-mono text-sm tabular-nums text-foreground">{row.count}</span>
+                  )
+                }
+              />
+            </Link>
+          ))}
         </div>
       )}
     </WidgetCard>

@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/ui/empty-state";
 
 function statusTone(s: string | null): Tone {
@@ -84,6 +85,12 @@ export default function LoansPage() {
       },
     );
   }, [parsed, totalEmis, create]);
+
+  // Notifications link here with ?id=<loan> (P3-notification-deeplink-no-entity-id).
+  const focusId = Number(useSearchParams().get("id")) || null;
+  const scrollToFocused = useCallback((row: HTMLTableRowElement | null) => {
+    row?.scrollIntoView({ block: "center" });
+  }, []);
 
   const [disburseId, setDisburseId] = useState<number | null>(null);
   const [repaidId, setRepaidId] = useState<number | null>(null);
@@ -152,7 +159,12 @@ export default function LoansPage() {
             </TableHeader>
             <TableBody>
               {loans.map((loan: SalaryLoan) => (
-                <TableRow key={loan.id}>
+                <TableRow
+                  key={loan.id}
+                  data-state={loan.id === focusId ? "selected" : undefined}
+                  aria-current={loan.id === focusId ? "true" : undefined}
+                  ref={loan.id === focusId ? scrollToFocused : undefined}
+                >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="min-w-0">

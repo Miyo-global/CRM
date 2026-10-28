@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Mail, Send } from "lucide-react";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,6 +148,12 @@ function EmailTemplatesContent() {
   return (
     <PageWrapper
       title="Email templates"
+      subtitle={
+        <>
+          System emails the CRM sends automatically. Your own reusable templates are under{" "}
+          <Link href="/hr/email-templates" className="underline underline-offset-2 hover:text-foreground">HR email templates</Link>.
+        </>
+      }
       actions={
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Input

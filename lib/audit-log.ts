@@ -62,6 +62,7 @@ export type AuditAction =
   | "expense.rejected"
   | "expense.paid"
   | "settings.updated"
+  | "email.test_sent"
   | "file.upload"
   | "file.download"
   | "security_settings.updated"
@@ -153,6 +154,7 @@ export const ALWAYS_LISTED_AUDIT_ACTIONS: readonly AuditAction[] = [
   "user.deactivated",
   "EMPLOYEE_PT_SET",
   "EMPLOYEE_PT_UPDATED",
+  "email.test_sent",
 ];
 
 /**

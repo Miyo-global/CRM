@@ -6,6 +6,14 @@ import { salaryLoans } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
+import { resolveRequestNotifications } from "@/lib/notifications/resolve";
+
+const LOAN_OUTCOME: Record<string, string> = {
+  APPROVED: "Approved",
+  ACTIVE: "Disbursed",
+  REPAID: "Repaid",
+  REJECTED: "Rejected",
+};
 
 const updateSchema = z.object({
   status: z.enum(["APPROVED", "ACTIVE", "REPAID", "REJECTED"]).optional(),
@@ -60,6 +68,9 @@ export async function PATCH(
       ...(autoRepaid && { status: "REPAID" as const }),
       updatedAt: new Date(),
     }).where(and(eq(salaryLoans.id, loanId), eq(salaryLoans.orgId, session.orgId)));
+
+    const newStatus = autoRepaid ? "REPAID" : body.status;
+    if (newStatus) await resolveRequestNotifications(session.orgId, { loanId }, LOAN_OUTCOME[newStatus]);
 
     return ok({ success: true });
   });

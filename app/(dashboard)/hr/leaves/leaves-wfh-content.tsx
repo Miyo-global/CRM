@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import {
   useHrPendingWfhRequests,
   useHrLeaveContext,
@@ -57,6 +58,9 @@ export function LeavesWfhContent() {
     () => new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("apply") === "leave",
   );
   const [wfhSheetOpen, setWfhSheetOpen] = useState(false);
+  // Approver notifications link to ?tab=approvals (P3-notification-deeplink-no-entity-id).
+  const tabParam = useSearchParams().get("tab");
+  const initialTab = tabParam === "wfh" || tabParam === "approvals" ? tabParam : "my-leaves";
 
   const handleOpenLeaveSheet = useCallback(() => setLeaveSheetOpen(true), []);
   const handleOpenWfhSheet = useCallback(() => setWfhSheetOpen(true), []);
@@ -195,7 +199,7 @@ export function LeavesWfhContent() {
             </Card>
           )}
 
-          <Tabs defaultValue="my-leaves" className="min-h-0">
+          <Tabs defaultValue={initialTab} className="min-h-0">
             <TabsList variant="underline" className="overflow-x-auto">
               <TabsTrigger
                 value="my-leaves"
