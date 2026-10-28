@@ -113,6 +113,9 @@ const nextConfig: NextConfig = {
       { source: "/hr/templates", destination: "/projects/templates", permanent: false },
       { source: "/settings/templates", destination: "/projects/templates", permanent: false },
       { source: "/project-templates", destination: "/projects/templates", permanent: false },
+      { source: "/bonuses", destination: "/hr/bonuses", permanent: false },
+      { source: "/recognition", destination: "/hr/recognition", permanent: false },
+      { source: "/hr/kudos", destination: "/hr/recognition", permanent: false },
       // --- end QA cluster C ---
     ];
   },
