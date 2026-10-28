@@ -20,7 +20,10 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { LEAVE_POLICY, isUnpaidLeaveType } from "@/lib/leave-policy";
 import { MONTHLY_FREE_LEAVE_DAYS } from "@/lib/hr/payroll-calculations";
 import { PER_DAY_DIVISOR } from "@/lib/payroll/rules";
-import { useOrgLeaveTypes, useUpdateLeaveType } from "@/lib/api/hooks/hr/leave-types";
+import { useCreateLeaveType, useOrgLeaveTypes, useUpdateLeaveType } from "@/lib/api/hooks/hr/leave-types";
+import { Label } from "@/components/ui/label";
+import { HrSheet } from "@/features/hr/hr-sheet";
+import { Plus } from "lucide-react";
 import { getErrorMessage } from "@/lib/get-error-message";
 
 function accrualFor(name: string): string {
@@ -32,6 +35,33 @@ function accrualFor(name: string): string {
 export default function LeavePoliciesPage() {
   const { data: types, isLoading, isError, error, refetch } = useOrgLeaveTypes();
   const updateType = useUpdateLeaveType();
+  const createType = useCreateLeaveType();
+  const [addOpen, setAddOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDays, setNewDays] = useState("0");
+  const [newCarry, setNewCarry] = useState(false);
+
+  const handleCreate = useCallback(() => {
+    const name = newName.trim();
+    const daysPerYear = Number(newDays);
+    if (!name) return void toast.error("Leave type name is required.");
+    if (!Number.isInteger(daysPerYear) || daysPerYear < 0 || daysPerYear > 365) {
+      return void toast.error("Days per year must be a whole number between 0 and 365.");
+    }
+    createType.mutate(
+      { name, daysPerYear, carryForward: newCarry },
+      {
+        onSuccess: () => {
+          toast.success("Leave type added");
+          setAddOpen(false);
+          setNewName("");
+          setNewDays("0");
+          setNewCarry(false);
+        },
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
+    );
+  }, [newName, newDays, newCarry, createType]);
 
   // Allowances the user has typed but not saved yet.
   const [draft, setDraft] = useState<Record<number, string>>({});
@@ -66,6 +96,12 @@ export default function LeavePoliciesPage() {
       <PageWrapper
         title="Leave policy"
         subtitle="Annual allowances apply to balances granted from the next accrual onwards."
+        actions={
+          <Button size="sm" onClick={() => setAddOpen(true)}>
+            <Plus aria-hidden />
+            Add leave type
+          </Button>
+        }
       >
         {isLoading ? (
           <Skeleton className="h-64 w-full rounded-lg" />
@@ -151,6 +187,46 @@ export default function LeavePoliciesPage() {
             </section>
           </div>
         )}
+
+        <HrSheet
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          title="Add leave type"
+          description="Every employee gets this many days at the start of the year. Paid unless the name contains “unpaid”."
+          onSubmit={handleCreate}
+          submitLabel="Add leave type"
+          isPending={createType.isPending}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-type-name" className="text-sm font-medium">
+              Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="leave-type-name"
+              value={newName}
+              maxLength={60}
+              placeholder="e.g. Maternity Leave"
+              onChange={(e) => setNewName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-type-days" className="text-sm font-medium">Days per year</Label>
+            <Input
+              id="leave-type-days"
+              type="number"
+              min={0}
+              max={365}
+              step={1}
+              inputMode="numeric"
+              value={newDays}
+              onChange={(e) => setNewDays(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="leave-type-carry" className="text-sm font-medium">Carry forward</Label>
+            <Switch id="leave-type-carry" checked={newCarry} onCheckedChange={setNewCarry} />
+          </div>
+        </HrSheet>
       </PageWrapper>
     </DashboardGate>
   );

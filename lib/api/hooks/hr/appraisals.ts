@@ -10,20 +10,57 @@ const keys = {
   categories: () => queryKeys.hr.appraisalCategories(),
 };
 
+export type AppraisalRatingType = "NUMERIC" | "TEXT" | "BOTH";
+
+export interface AppraisalCategory {
+  id: number;
+  /** null = global default, read-only for the org. */
+  orgId: string | null;
+  slug: string;
+  name: string;
+  ratingType: AppraisalRatingType;
+  weight: string;
+  sortOrder: number;
+}
+
+export interface AppraisalCategoryInput {
+  name: string;
+  ratingType: AppraisalRatingType;
+  weight?: number;
+  sortOrder?: number;
+}
+
 export function useAppraisalCategories() {
   return useQuery({
     queryKey: keys.categories(),
-    queryFn: () =>
-      apiClient.get<
-        {
-          id: number;
-          slug: string;
-          name: string;
-          ratingType: string;
-          weight: string;
-          sortOrder: number;
-        }[]
-      >("/hr/performance/appraisals/categories"),
+    queryFn: () => apiClient.get<AppraisalCategory[]>("/hr/performance/appraisals/categories"),
+  });
+}
+
+export function useCreateAppraisalCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AppraisalCategoryInput) =>
+      apiClient.post<AppraisalCategory>("/hr/performance/appraisals/categories", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.categories() }),
+  });
+}
+
+export function useUpdateAppraisalCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: Partial<AppraisalCategoryInput> & { id: number }) =>
+      apiClient.patch<AppraisalCategory>(`/hr/performance/appraisals/categories/${id}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.categories() }),
+  });
+}
+
+export function useDeleteAppraisalCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiClient.delete<{ success: boolean }>(`/hr/performance/appraisals/categories/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.categories() }),
   });
 }
 

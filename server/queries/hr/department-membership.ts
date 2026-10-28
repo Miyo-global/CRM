@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { departmentMembers, departments, organizationMembers, users } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
 
 type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -111,4 +111,59 @@ export async function countDepartmentReferences(
   for (const r of memberRows) distinct.add(r.userId);
   for (const r of directRows) distinct.add(r.userId);
   return distinct.size;
+}
+
+/**
+ * Distinct users per department for the whole org, counted the same way as
+ * countDepartmentReferences (join table OR users.departmentId).
+ */
+export async function countMembersByDepartment(orgId: string): Promise<Map<number, number>> {
+  const [memberRows, directRows] = await Promise.all([
+    db
+      .select({ departmentId: departmentMembers.departmentId, userId: departmentMembers.userId })
+      .from(departmentMembers)
+      .innerJoin(
+        organizationMembers,
+        and(eq(organizationMembers.userId, departmentMembers.userId), eq(organizationMembers.orgId, orgId)),
+      ),
+    db
+      .select({ departmentId: users.departmentId, userId: users.id })
+      .from(users)
+      .innerJoin(
+        organizationMembers,
+        and(eq(organizationMembers.userId, users.id), eq(organizationMembers.orgId, orgId)),
+      )
+      .where(isNotNull(users.departmentId)),
+  ]);
+
+  const byDept = new Map<number, Set<string>>();
+  for (const r of [...memberRows, ...directRows]) {
+    if (r.departmentId == null) continue;
+    const set = byDept.get(r.departmentId) ?? new Set<string>();
+    set.add(r.userId);
+    byDept.set(r.departmentId, set);
+  }
+  return new Map([...byDept].map(([id, set]) => [id, set.size]));
+}
+
+/** Department names are unique per org (case-insensitive). */
+export async function departmentNameTaken(orgId: string, name: string, exceptId?: number): Promise<boolean> {
+  const existing = await db.query.departments.findFirst({
+    where: and(
+      eq(departments.orgId, orgId),
+      sql`lower(${departments.name}) = ${name.toLowerCase()}`,
+      exceptId != null ? ne(departments.id, exceptId) : undefined,
+    ),
+    columns: { id: true },
+  });
+  return !!existing;
+}
+
+/** A department head must belong to the org. */
+export async function isOrgMember(orgId: string, userId: string): Promise<boolean> {
+  const row = await db.query.organizationMembers.findFirst({
+    where: and(eq(organizationMembers.orgId, orgId), eq(organizationMembers.userId, userId)),
+    columns: { id: true },
+  });
+  return !!row;
 }

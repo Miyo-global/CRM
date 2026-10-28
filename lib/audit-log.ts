@@ -82,6 +82,7 @@ export type AuditAction =
   | "VIEW"
   | "role.changed"
   | "leave_policy.updated"
+  | "leave_policy.type_created"
   | "role.created"
   | "role.updated"
   | "submit_lead"

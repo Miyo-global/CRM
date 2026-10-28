@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 import type { LeaveBalance, LeaveRequest, ApprovedLeave } from "./leaves-shared";
 import { LeaveRequestTable, formatLeaveBalanceDisplay } from "./leaves-shared";
-import { ALLOWED_LEAVE_TYPE_NAMES, leaveBalanceRow } from "@/lib/leave-policy";
+import { hasYearlyBalance, leaveBalanceRow } from "@/lib/leave-policy";
 import { ExportButton } from "@/components/ui/export-button";
 import { pluralise } from "@/lib/format-utils";
 import { getTodayString } from "@/lib/date-utils";
@@ -80,7 +80,7 @@ export function LeavesTabContent({ balances, myLeaveRequests, pendingDaysByType 
   const balanceRows = useMemo(
     () =>
       balances
-        .filter((bal) => bal.typeName && ALLOWED_LEAVE_TYPE_NAMES.has(bal.typeName))
+        .filter((bal) => bal.typeName && hasYearlyBalance(bal.typeName))
         .map((bal, index) => ({
           key: `${bal.leaveTypeId}-${index}`,
           name: bal.typeName ?? "Leave",

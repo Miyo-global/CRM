@@ -131,6 +131,9 @@ const nextConfig: NextConfig = {
       // --- QA round 2 cluster R3: rosters live on the Shifts page ---
       { source: "/hr/rosters", destination: "/hr/shifts", permanent: false },
       // --- end QA round 2 cluster R3 ---
+      // --- QA cluster R1 (admin config) ---
+      { source: "/hr/departments", destination: "/settings/departments", permanent: false },
+      // --- end QA cluster R1 ---
     ];
   },
   experimental: {

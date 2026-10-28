@@ -11,6 +11,7 @@ import type {
   PaginatedEmployees,
   EmployeeStats,
   CreateDepartmentInput,
+  UpdateDepartmentInput,
   UpdateProfileInput,
   OnboardEmployeeInput,
 } from "@/types/hr";
@@ -28,6 +29,25 @@ export function useCreateDepartment() {
   return useMutation({
     mutationFn: (data: CreateDepartmentInput) =>
       apiClient.post<{ success: boolean }>("/hr/departments", data),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: queryKeys.hr.departments() }),
+  });
+}
+
+export function useUpdateDepartment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: UpdateDepartmentInput) =>
+      apiClient.patch<{ success: boolean }>(`/hr/departments/${id}`, data),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: queryKeys.hr.departments() }),
+  });
+}
+
+export function useDeleteDepartment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete<{ success: boolean }>(`/hr/departments/${id}`),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: queryKeys.hr.departments() }),
   });

@@ -1,6 +1,6 @@
 
 
-import { CalendarClock, LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
+import { CalendarClock, LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
 
 import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
@@ -230,6 +230,8 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
+            { label: "Departments", icon: Building, href: "/settings/departments", isSubItem: true },
+            { label: "Appraisal Categories", icon: ClipboardList, href: "/settings/appraisal-categories", isSubItem: true },
             { label: "Reports", icon: BarChart2, href: "/reports" },
           ],
         },
@@ -371,6 +373,8 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Job Roles", icon: Briefcase, href: "/settings/job-roles", isSubItem: true },
             { label: "Payroll Schedule", icon: CalendarRange, href: "/settings/payroll-schedule", isSubItem: true },
             { label: "Termination Reasons", icon: UserX, href: "/settings/termination-reasons", isSubItem: true },
+            { label: "Departments", icon: Building, href: "/settings/departments", isSubItem: true },
+            { label: "Appraisal Categories", icon: ClipboardList, href: "/settings/appraisal-categories", isSubItem: true },
             { label: "Notifications", icon: Bell, href: "/settings/notifications", isSubItem: true },
           ],
         },

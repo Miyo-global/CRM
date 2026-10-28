@@ -10,6 +10,7 @@ import {
 import { asc, eq } from "drizzle-orm";
 import type { InferInsertModel } from "drizzle-orm";
 import type { AppraisalStage } from "@/lib/hr/appraisal-workflow";
+import { categoriesVisibleTo } from "@/lib/hr/appraisal-categories";
 
 type AppraisalType = InferInsertModel<typeof appraisalCycles>["type"];
 
@@ -66,7 +67,11 @@ export async function createAppraisalBundle(input: {
 
     const appraisalId = appraisal!.id;
 
-    const cats = await tx.select().from(appraisalCategories).orderBy(asc(appraisalCategories.sortOrder));
+    const cats = await tx
+      .select()
+      .from(appraisalCategories)
+      .where(categoriesVisibleTo(input.orgId))
+      .orderBy(asc(appraisalCategories.sortOrder));
     if (cats.length > 0) {
       await tx.insert(appraisalCategoryRatings).values(
         cats.map((c) => ({

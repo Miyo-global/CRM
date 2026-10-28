@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LEAVE_POLICY, leaveBalanceRow, leaveTypeLimitHint } from "./leave-policy";
+import { COMP_OFF_LEAVE_NAME, LEAVE_POLICY, hasYearlyBalance, leaveBalanceRow, leaveTypeLimitHint } from "./leave-policy";
 
 describe("leaveBalanceRow (R3-EMP-12)", () => {
   it("takes pending days off Available, matching the request dialog", () => {
@@ -25,5 +25,15 @@ describe("leaveTypeLimitHint (R3-EMP-12)", () => {
   it("states the sick leave cap and nothing for unpaid", () => {
     expect(leaveTypeLimitHint(LEAVE_POLICY.SICK.name)).toBe(`Up to ${LEAVE_POLICY.SICK.daysPerYear} days a year.`);
     expect(leaveTypeLimitHint(LEAVE_POLICY.UNPAID.name)).toBeNull();
+  });
+});
+
+describe("hasYearlyBalance (INFO-no-add-leave-type-button)", () => {
+  it("covers the defaults and HR-added types, not comp-off", () => {
+    expect(hasYearlyBalance(LEAVE_POLICY.CASUAL.name)).toBe(true);
+    expect(hasYearlyBalance(LEAVE_POLICY.UNPAID.name)).toBe(true);
+    expect(hasYearlyBalance("Maternity Leave")).toBe(true);
+    expect(hasYearlyBalance(COMP_OFF_LEAVE_NAME)).toBe(false);
+    expect(hasYearlyBalance(null)).toBe(false);
   });
 });
