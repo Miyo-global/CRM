@@ -59,6 +59,8 @@ const nextConfig: NextConfig = {
       { source: "/settings/data-export", destination: "/settings/data-hub", permanent: false },
       // QR codes are a tool, not a settings page.
       { source: "/settings/qr-codes", destination: "/tools/qr-code", permanent: false },
+      // Profile is a section of account settings.
+      { source: "/settings/profile", destination: "/settings#profile", permanent: false },
       // --- end QA cluster C ---
     ];
   },
