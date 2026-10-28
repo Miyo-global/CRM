@@ -109,6 +109,10 @@ const nextConfig: NextConfig = {
       { source: "/hr/payslips", destination: "/hr/my-payslips", permanent: false },
       { source: "/payslips", destination: "/hr/my-payslips", permanent: false },
       { source: "/profile/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/templates", destination: "/projects/templates", permanent: false },
+      { source: "/hr/templates", destination: "/projects/templates", permanent: false },
+      { source: "/settings/templates", destination: "/projects/templates", permanent: false },
+      { source: "/project-templates", destination: "/projects/templates", permanent: false },
       // --- end QA cluster C ---
     ];
   },
